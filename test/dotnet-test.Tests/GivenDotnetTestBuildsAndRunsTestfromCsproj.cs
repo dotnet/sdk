@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void MSTestSingleTFM()
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("3");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItAcceptsMultipleLoggersAsCliArguments()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("10");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
             var trxFileNamePattern = "custom*.trx";
             string trxLoggerDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestWillNotBuildTheProjectIfNoBuildArgsIsGiven()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("5");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
             string configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
             string expectedError = Path.Combine(testProjectDirectory, "bin",
                                    configuration, ToolsetInfo.CurrentTargetFramework, "VSTestCore.dll");
@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestWillCreateTrxLoggerInTheSpecifiedResultsDirectoryBySwitch()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("6");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
 
             string trxLoggerDirectory = Path.Combine(testProjectDirectory, "TR", "x.y");
 
@@ -256,7 +256,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItCreatesTrxReportInTheSpecifiedResultsDirectoryByArgs()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("7");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
             var trxFileNamePattern = "custom*.trx";
             string trxLoggerDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -342,7 +342,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItUsesVerbosityPassedToDefineVerbosityOfConsoleLoggerOfTheTests(string verbosity, bool shouldShowPassedTests)
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp($"9_{verbosity}");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([verbosity, shouldShowPassedTests]);
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
@@ -414,7 +414,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItAcceptsNoLogoAsCliArguments()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("14");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
 
             // Call test with logger enable
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
@@ -434,7 +434,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ItCreatesCoverageFileWhenCodeCoverageEnabledByRunsettings()
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("11");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -475,7 +475,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX | TestPlatforms.Linux)]
         public void ItCreatesCoverageFileInResultsDirectory()
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("12");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -511,7 +511,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX | TestPlatforms.Linux)]
         public void ItCreatesCoberturaFileProvidedByCommandInResultsDirectory()
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("15");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -547,7 +547,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ItHandlesMultipleCollectCommandInResultsDirectory()
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("16");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -588,7 +588,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.FreeBSD)]
         public void ItShouldShowWarningMessageOnCollectCodeCoverage()
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("13");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([]);
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
@@ -714,7 +714,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("--results-directory")]
         public void EnsureOutputPathEscaped(string flag)
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp(flag);
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([flag]);
 
             var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b");
 
@@ -763,7 +763,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // NOTE: We also want to test with forward slashes because on Windows they
             // are converted to backslashes and so need to be handled correctly.
-            string testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp(Guid.NewGuid().ToString());
+            string testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([flag, slashesOrBackslashes]);
             string flagDirectory = Path.Combine(testProjectDirectory, "flag-dir");
 
             // Call test
@@ -788,7 +788,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("-e:foo=barexe")]
         public void ArgumentsEndWithDllOrExeShouldNotFail(string arg)
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([arg]);
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
@@ -804,12 +804,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
+        private string CopyAndRestoreVSTestDotNetCoreTestApp(object[] parameters, [CallerMemberName] string callingMethod = "")
         {
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "VSTestCore";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod, identifier: string.Join(",", parameters.Select(p => p.ToString())))
                             .WithSource()
                             .WithVersionVariables();
 

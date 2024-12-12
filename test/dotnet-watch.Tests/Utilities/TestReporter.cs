@@ -5,10 +5,8 @@
 
 using System.Diagnostics;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher;
-using Microsoft.DotNet.Watcher.Internal;
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal class TestReporter(ITestOutputHelper output) : IReporter
     {
@@ -18,12 +16,15 @@ namespace Microsoft.Extensions.Tools.Internal
         public bool EnableProcessOutputReporting
             => true;
 
+        public bool IsVerbose
+            => true;
+
         public event Action<string, OutputLine>? OnProjectProcessOutput;
         public event Action<OutputLine>? OnProcessOutput;
 
         public void ReportProcessOutput(OutputLine line)
         {
-            output.WriteLine(line.Content);
+            WriteTestOutput(line.Content);
             ProcessOutput.Add(line.Content);
 
             OnProcessOutput?.Invoke(line);
@@ -33,7 +34,7 @@ namespace Microsoft.Extensions.Tools.Internal
         {
             var content = $"[{project.GetDisplayName()}]: {line.Content}";
 
-            output.WriteLine(content);
+            WriteTestOutput(content);
             ProcessOutput.Add(content);
 
             OnProjectProcessOutput?.Invoke(project.ProjectInstance.FullPath, line);
@@ -66,12 +67,24 @@ namespace Microsoft.Extensions.Tools.Internal
         {
             if (descriptor.TryGetMessage(prefix, args, out var message))
             {
-                output.WriteLine($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
+                WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
             }
 
             if (descriptor.Id.HasValue && _actions.TryGetValue(descriptor.Id.Value, out var action))
             {
                 action();
+            }
+        }
+
+        private void WriteTestOutput(string message)
+        {
+            try
+            {
+                output.WriteLine(message);
+            }
+            catch (InvalidOperationException)
+            {
+                // May happen when a test is aborted and no longer running.
             }
         }
 

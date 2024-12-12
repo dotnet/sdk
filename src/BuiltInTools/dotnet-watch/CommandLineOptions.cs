@@ -7,53 +7,28 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
 using System.Diagnostics;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Tools.Run;
+using NuGet.Common;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal sealed class CommandLineOptions
 {
     public const string DefaultCommand = "run";
-
-    private static readonly ImmutableArray<string> s_knownCommands =
-    [
-        "add",
-        "build",
-        "build-server",
-        "clean",
-        "format",
-        "help",
-        "list",
-        "msbuild",
-        "new",
-        "nuget",
-        "pack",
-        "publish",
-        "remove",
-        "restore",
-        "run",
-        "sdk",
-        "solution",
-        "store",
-        "test",
-        "tool",
-        "vstest",
-        "workload"
-    ];
 
     public bool List { get; init; }
     required public GlobalOptions GlobalOptions { get; init; }
 
     public string? ProjectPath { get; init; }
     public string? TargetFramework { get; init; }
-    public IReadOnlyList<(string name, string value)>? BuildProperties { get; init; }
     public bool NoLaunchProfile { get; init; }
     public string? LaunchProfileName { get; init; }
 
     public string? ExplicitCommand { get; init; }
 
     public required IReadOnlyList<string> CommandArguments { get; init; }
+    public required IReadOnlyList<string> BuildArguments { get; init; }
 
     public string Command => ExplicitCommand ?? DefaultCommand;
 
@@ -90,12 +65,10 @@ internal sealed class CommandLineOptions
         var longProjectOption = new CliOption<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var launchProfileOption = new CliOption<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var noLaunchProfileOption = new CliOption<bool>("--no-launch-profile") { Hidden = true };
-        var targetFrameworkOption = new CliOption<string>("--framework", "-f") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var propertyOption = new CliOption<string[]>("--property") { Hidden = true, Arity = ArgumentArity.OneOrMore, AllowMultipleArgumentsPerToken = false };
 
         var rootCommand = new CliRootCommand(Resources.Help)
         {
-            Directives = { new EnvironmentVariablesDirective() }
+            Directives = { new EnvironmentVariablesDirective() },
         };
 
         foreach (var watchOption in watchOptions)
@@ -107,8 +80,6 @@ internal sealed class CommandLineOptions
         rootCommand.Options.Add(shortProjectOption);
         rootCommand.Options.Add(launchProfileOption);
         rootCommand.Options.Add(noLaunchProfileOption);
-        rootCommand.Options.Add(targetFrameworkOption);
-        rootCommand.Options.Add(propertyOption);
 
         // We process all tokens that do not match any of the above options
         // to find the subcommand (the first unmatched token preceding "--")
@@ -125,16 +96,33 @@ internal sealed class CommandLineOptions
         {
             Output = output,
             Error = output,
+
+            // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
+            EnablePosixBundling = false,
         };
 
+        // parse without forwarded options first:
         var parseResult = rootCommand.Parse(args, cliConfig);
-        if (parseResult.Errors.Any())
+        if (ReportErrors(parseResult, reporter))
         {
-            foreach (var error in parseResult.Errors)
-            {
-                reporter.Error(error.Message);
-            }
+            errorCode = 1;
+            return null;
+        }
 
+        // determine subcommand:
+        var explicitCommand = TryGetSubcommand(parseResult);
+        var command = explicitCommand ?? RunCommandParser.GetCommand();
+        var buildOptions = command.Options.Where(o => o is IForwardedOption);
+
+        foreach (var buildOption in buildOptions)
+        {
+            rootCommand.Options.Add(buildOption);
+        }
+
+        // reparse with forwarded options:
+        parseResult = rootCommand.Parse(args, cliConfig);
+        if (ReportErrors(parseResult, reporter))
+        {
             errorCode = 1;
             return null;
         }
@@ -158,6 +146,12 @@ internal sealed class CommandLineOptions
             }
         }
 
+        var commandArguments = GetCommandArguments(parseResult, watchOptions, explicitCommand);
+
+        // We assume that forwarded options, if any, are intended for dotnet build.
+        var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToArray();
+        var targetFrameworkOption = (CliOption<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
+
         return new()
         {
             List = parseResult.GetValue(listOption),
@@ -169,32 +163,21 @@ internal sealed class CommandLineOptions
                 Verbose = parseResult.GetValue(verboseOption),
             },
 
-            CommandArguments = GetCommandArguments(parseResult, watchOptions, out var explicitCommand),
-            ExplicitCommand = explicitCommand,
+            CommandArguments = commandArguments,
+            ExplicitCommand = explicitCommand?.Name,
 
             ProjectPath = projectValue,
             LaunchProfileName = parseResult.GetValue(launchProfileOption),
             NoLaunchProfile = parseResult.GetValue(noLaunchProfileOption),
-            TargetFramework = parseResult.GetValue(targetFrameworkOption),
-            BuildProperties = ParseBuildProperties(parseResult.GetValue(propertyOption) ?? []).ToArray(),
+            BuildArguments = buildArguments,
+            TargetFramework = targetFrameworkOption != null ? parseResult.GetValue(targetFrameworkOption) : null,
         };
-
-        // Parses name=value pairs passed to --property. Skips invalid input.
-        // We don't report error here as it will be reported by dotnet run.
-        static IEnumerable<(string key, string value)> ParseBuildProperties(string[] properties)
-            => from property in properties
-               let index = property.IndexOf('=')
-               where index >= 0
-               let name = property[..index].Trim()
-               let value = property[(index + 1)..]
-               where name is not []
-               select (name, value);
     }
 
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
         IReadOnlyList<CliOption> watchOptions,
-        out string? explicitCommand)
+        CliCommand? explicitCommand)
     {
         var arguments = new List<string>();
 
@@ -210,6 +193,16 @@ internal sealed class CommandLineOptions
                 if (optionResult.Tokens.Count == 0)
                 {
                     arguments.Add(optionResult.IdentifierToken.Value);
+                }
+                else if (optionResult.Option.Name == "--property")
+                {
+                    foreach (var token in optionResult.Tokens)
+                    {
+                        // While dotnet-build allows "/p Name=Value", dotnet-msbuild does not.
+                        // Any command that forwards args to dotnet-msbuild will fail if we don't use colon.
+                        // See https://github.com/dotnet/sdk/issues/44655.
+                        arguments.Add($"{optionResult.IdentifierToken.Value}:{token.Value}");
+                    }
                 }
                 else
                 {
@@ -228,31 +221,64 @@ internal sealed class CommandLineOptions
         var dashDashIndex = IndexOf(parseResult.Tokens, t => t.Value == "--");
         var unmatchedTokensBeforeDashDash = parseResult.UnmatchedTokens.Count - (dashDashIndex >= 0 ? parseResult.Tokens.Count - dashDashIndex - 1 : 0);
 
-        explicitCommand = null;
+        var seenCommand = false;
         var dashDashInserted = false;
 
         for (int i = 0; i < parseResult.UnmatchedTokens.Count; i++)
         {
             var token = parseResult.UnmatchedTokens[i];
 
-            // command token can't follow "--"
-            if (i < unmatchedTokensBeforeDashDash && explicitCommand == null && s_knownCommands.Contains(token))
+            if (i < unmatchedTokensBeforeDashDash && !seenCommand && token == explicitCommand?.Name)
             {
-                explicitCommand = token;
+                seenCommand = true;
+                continue;
             }
-            else
-            {
-                if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
-                {
-                    arguments.Add("--");
-                    dashDashInserted = true;
-                }
 
-                arguments.Add(token);
+            if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
+            {
+                arguments.Add("--");
+                dashDashInserted = true;
             }
+
+            arguments.Add(token);
         }
 
         return arguments;
+    }
+
+    private static CliCommand? TryGetSubcommand(ParseResult parseResult)
+    {
+        // Assuming that all tokens after "--" are unmatched:
+        var dashDashIndex = IndexOf(parseResult.Tokens, t => t.Value == "--");
+        var unmatchedTokensBeforeDashDash = parseResult.UnmatchedTokens.Count - (dashDashIndex >= 0 ? parseResult.Tokens.Count - dashDashIndex - 1 : 0);
+
+        var knownCommandsByName = Parser.Subcommands.ToDictionary(keySelector: c => c.Name, elementSelector: c => c);
+
+        for (int i = 0; i < unmatchedTokensBeforeDashDash; i++)
+        {
+            // command token can't follow "--"
+            if (knownCommandsByName.TryGetValue(parseResult.UnmatchedTokens[i], out var explicitCommand))
+            {
+                return explicitCommand;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool ReportErrors(ParseResult parseResult, IReporter reporter)
+    {
+        if (parseResult.Errors.Any())
+        {
+            foreach (var error in parseResult.Errors)
+            {
+                reporter.Error(error.Message);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     private static int IndexOf<T>(IReadOnlyList<T> list, Func<T, bool> predicate)
@@ -274,12 +300,30 @@ internal sealed class CommandLineOptions
             IsRootProject = true,
             ProjectPath = projectPath,
             WorkingDirectory = workingDirectory,
-            BuildProperties = BuildProperties ?? [],
             Command = Command,
             CommandArguments = CommandArguments,
             LaunchEnvironmentVariables = [],
             LaunchProfileName = LaunchProfileName,
             NoLaunchProfile = NoLaunchProfile,
+            BuildArguments = BuildArguments,
             TargetFramework = TargetFramework,
         };
+
+    // Parses name=value pairs passed to --property. Skips invalid input.
+    public static IEnumerable<(string key, string value)> ParseBuildProperties(IEnumerable<string> arguments)
+        => from argument in arguments
+           let colon = argument.IndexOf(':')
+           where colon >= 0 && argument[0..colon] is "--property" or "-property" or "/property" or "/p" or "-p" or "--p"
+           let eq = argument.IndexOf('=', colon)
+           where eq >= 0
+           let name = argument[(colon + 1)..eq].Trim()
+           let value = argument[(eq + 1)..]
+           where name is not []
+           select (name, value);
+
+    /// <summary>
+    /// Returns true if the command executes the code of the target project.
+    /// </summary>
+    public static bool IsCodeExecutionCommand(string commandName)
+        => commandName is "run" or "test";
 }

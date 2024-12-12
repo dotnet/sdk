@@ -50,10 +50,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
 
             recorder.Run(() =>
             {
-                // First update manifests and install a workload set as necessary
+                // First discover projects. This may return an error if no projects are found, and we shouldn't delay until after Update if that's the case.
+                var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
+
+                // Then update manifests and install a workload set as necessary
                 new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute();
 
-                var allProjects = DiscoverAllProjects(Directory.GetCurrentDirectory(), _slnOrProjectArgument).Distinct();
                 List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
                 Reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
 

@@ -24,7 +24,6 @@
     <Bundled100Templates Include="Microsoft.DotNet.Web.ProjectTemplates.10.0" PackageVersion="$(AspNetCorePackageVersionFor100Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled100Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates100PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <Bundled100Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates100PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <Bundled100Templates Include="Microsoft.DotNet.Test.ProjectTemplates.9.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates90PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

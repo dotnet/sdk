@@ -1,0 +1,258 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": ["Test", "MSTest", "Desktop", "Web"],
+  "name": "MSTest Test Project",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project that contains MSTest tests that can run on .NET on Windows, Linux and MacOS.",
+  "groupIdentity": "Microsoft.Test.MSTest",
+  "precedence": "11000",
+  "identity": "Microsoft.Test.MSTest.CSharp.9.0",
+  "shortName": "mstest",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Company.TestProject1",
+  "preferNameDirectory": true,
+  "symbols": {
+    "TargetFrameworkOverride": {
+      "type": "parameter",
+      "description": "Overrides the target framework",
+      "displayName": "Target framework override",
+      "replaces": "TargetFrameworkOverride",
+      "datatype": "string",
+      "defaultValue": ""
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "displayName": "Framework",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net9.0",
+          "description": ".NET 9"
+        },
+        {
+          "choice": "net9.0-windows",
+          "description": ".NET 9 (Windows only)"
+        },
+        {
+          "choice": "net8.0",
+          "description": ".NET 8"
+        },
+        {
+          "choice": "net8.0-windows",
+          "description": ".NET 8 (Windows only)"
+        },
+        {
+          "choice": "net7.0",
+          "description": ".NET 7"
+        },
+        {
+          "choice": "net7.0-windows",
+          "description": ".NET 7 (Windows only)"
+        },
+        {
+          "choice": "net6.0",
+          "description": ".NET 6"
+        },
+        {
+          "choice": "net6.0-windows",
+          "description": ".NET 6 (Windows only)"
+        },
+        {
+          "choice": "netcoreapp3.1",
+          "description": ".NET Core 3.1"
+        },
+        {
+          "choice": "net481",
+          "description": ".NET Framework 4.8.1"
+        },
+        {
+          "choice": "net48",
+          "description": ".NET Framework 4.8"
+        },
+        {
+          "choice": "net472",
+          "description": ".NET Framework 4.7.2"
+        },
+        {
+          "choice": "net471",
+          "description": ".NET Framework 4.7.1"
+        },
+        {
+          "choice": "net47",
+          "description": ".NET Framework 4.7"
+        },
+        {
+          "choice": "net462",
+          "description": ".NET Framework 4.6.2"
+        }
+      ],
+      "replaces": "net9.0",
+      "defaultValue": "net9.0"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "host:HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "displayName": "Skip restore",
+      "defaultValue": "false"
+    },
+    "langVersion": {
+      "type": "parameter",
+      "datatype": "text",
+      "description": "Sets the LangVersion property in the created project file",
+      "defaultValue": "latest",
+      "replaces": "$(ProjectLanguageVersion)",
+      "displayName": "Language version"
+    },
+    "UseMSTestSdk": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "Use MSTest.Sdk project style. More information at https://aka.ms/mstest/sdk",
+      "displayName": "Use MSTest.Sdk",
+      "defaultValue": "False"
+    },
+    "TestRunner": {
+      "type": "parameter",
+      "datatype": "choice",
+      "enableQuotelessLiterals": true,
+      "description": "Select the runner/platform. More information at https://aka.ms/mstest/sdk/extensions-profile",
+      "displayName": "Test runner",
+      "defaultValue": "VSTest",
+      "choices": [
+        {
+          "choice": "MSTest",
+          "description": "Use MSTest Runner (Microsoft.Testing.Platform)"
+        },
+        {
+          "choice": "VSTest",
+          "description": "Use VSTest platform"
+        }
+      ]
+    },
+    "CoverageTool": {
+      "type": "parameter",
+      "datatype": "choice",
+      "description": "The coverage tool to use for the project.",
+      "displayName": "Coverage tool",
+      "defaultValue": "Microsoft.CodeCoverage",
+      "choices": [
+        {
+          "choice": "Microsoft.CodeCoverage",
+          "description": "Microsoft Code Coverage"
+        },
+        {
+          "choice": "coverlet",
+          "description": "coverlet"
+        }
+      ]
+    },
+    "ExtensionsProfile": {
+      "type": "parameter",
+      "datatype": "choice",
+      "description": "Select the SDK extensions profile when using MSTest Runner. More information at https://aka.ms/mstest/sdk/extensions-profile",
+      "displayName": "Testing extensions profile",
+      "isEnabled": "UseMSTestSdk && (TestRunner == MSTest)",
+      "defaultValue": "Default",
+      "replaces": "$(ExtensionsProfile)",
+      "choices": [
+        {
+          "choice": "Default",
+          "description": "Default extensions profile (recommended)",
+          "displayName": "Default"
+        },
+        {
+          "choice": "None",
+          "description": "No extensions are enabled",
+          "displayName": "None"
+        },
+        {
+          "choice": "AllMicrosoft",
+          "description": "Enable all extensions shipped by Microsoft (including extensions with a restrictive license)",
+          "displayName": "AllMicrosoft"
+        }
+      ]
+    },
+    "Fixture": {
+      "type": "parameter",
+      "datatype": "choice",
+      "description": "Select the fixture kinds to include in the project.",
+      "displayName": "Fixture",
+      "allowMultipleValues": true,
+      "enableQuotelessLiterals": true,
+      "defaultValue": "None",
+      "choices": [
+        {
+          "choice": "None",
+          "description": "No fixture methods",
+          "displayName": "None"
+        },
+        {
+          "choice": "AssemblyInitialize",
+          "description": "AssemblyInitialize fixture method"
+        },
+        {
+          "choice": "AssemblyCleanup",
+          "description": "AssemblyCleanup fixture method"
+        },
+        {
+          "choice": "ClassInitialize",
+          "description": "ClassInitialize fixture method"
+        },
+        {
+          "choice": "ClassCleanup",
+          "description": "ClassCleanup fixture method"
+        },
+        {
+          "choice": "TestInitialize",
+          "description": "TestInitialize fixture method"
+        },
+        {
+          "choice": "TestCleanup",
+          "description": "TestCleanup fixture method"
+        }
+      ]
+    }
+  },
+  "primaryOutputs": [
+    { "path": "Company.TestProject1.csproj" },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "MSTestSettings.cs"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Test1.cs"
+    }
+  ],
+  "defaultName": "TestProject1",
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [{ "text": "Run 'dotnet restore'" }],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "id": "restoreNugetPackages",
+      "continueOnError": true
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens Test1.cs in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "id": "openInEditor",
+      "args": {
+        "files": "1"
+      },
+      "continueOnError": true
+    }
+  ]
+}
