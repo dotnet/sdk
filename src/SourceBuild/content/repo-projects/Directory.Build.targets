@@ -542,7 +542,7 @@
     <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="'$(LogManifestNotFoundError)' == 'true' and '$(MinimalConsoleLogOutput)' == 'true' and Exists('$(RepoConsoleLogFile)')" />
     <Error Text="No repository asset manifest files found at '$(RepoAssetManifestsDir)*.xml'. This often means the build failed but did not log an error." Condition="'$(LogManifestNotFoundError)' == 'true'" />
 
-    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)" RepoOrigin="$(RepositoryName)">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">
       <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
       <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
     </GetKnownArtifactsFromAssetManifests>
@@ -555,7 +555,7 @@
       </ProducedPackage>
 
       <!-- When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages. -->
-      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/$(RepositoryName)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
       <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" />
     </ItemGroup>
 
