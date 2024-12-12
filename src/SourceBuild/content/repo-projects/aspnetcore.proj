@@ -13,7 +13,7 @@
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)BuildInstallers</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'linux'">$(BuildActions) $(FlagParameterPrefix)build-installers</BuildActions>
     <!-- In a source-only build, we don't pass -all, so we need to explicitly opt-in to managed components here. -->
-    <BuildActions Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(BuildOS)' == 'linux'">$(FlagParameterPrefix)build-managed</BuildActions>
+    <BuildActions Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(BuildOS)' == 'linux'">$(BuildActions) $(FlagParameterPrefix)build-managed</BuildActions>
 
     <!-- aspnetcore must be built with desktop msbuild but defaults to dotnet build. -->
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) -msbuildEngine vs</BuildArgs>
