@@ -43,11 +43,6 @@ steps:
   workingDirectory: ${{ parameters.vmrPath }}
 
 - script: |
-    enable_build_lookup=''
-    if [ "$(Build.Reason)" != 'PullRequest' ] && [ "$(System.TeamProject)" == 'internal' ]; then
-      enable_build_lookup='--enable-build-lookup'
-    fi
-
     ./eng/vmr-sync.sh                                                                                 \
       --vmr ${{ parameters.vmrPath }}                                                                 \
       --tmp $(Agent.TempDirectory)                                                                    \
@@ -56,9 +51,7 @@ steps:
       --repository "sdk:${{ parameters.targetRef }}"                                                  \
       --recursive                                                                                     \
       --remote "sdk:$(Agent.BuildDirectory)/sdk"                                                      \
-      --component-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md      \
       --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt \
-      $enable_build_lookup                                                                            \
       --ci                                                                                            \
       --debug
 
@@ -75,11 +68,6 @@ steps:
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
 - powershell: |
-    $enableBuildLookup = ""
-    if ('$(Build.Reason)' -ne 'PullRequest' -and '$(System.TeamProject)' -eq 'internal') {
-      $enableBuildLookup = "--enable-build-lookup"
-    }
-
     ./eng/vmr-sync.ps1 `
       -vmr ${{ parameters.vmrPath }} `
       -tmp $(Agent.TempDirectory) `
@@ -87,9 +75,7 @@ steps:
       -branch ${{ parameters.vmrBranch }} `
       -repository "sdk:${{ parameters.targetRef }}" `
       -recursive `
-      -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
       -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
-      $enableBuildLookup `
       -ci `
       -debugOutput
 

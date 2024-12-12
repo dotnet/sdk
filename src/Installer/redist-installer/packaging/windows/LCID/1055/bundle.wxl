@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
   <String Id="HelpHeader">Kurulum Yardımı</String>
-  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"dizin"[\]] - yüklemeler, onarımlar, kaldırmalar
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"dizin"[\]] - yüklemeler, onarımlar, kaldırmalar
    veya paketin tam bir yerel kopyasını dizinde oluşturur. '/install' varsayılandır.
 
 /passive | /quiet - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve 

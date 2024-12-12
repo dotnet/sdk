@@ -8,6 +8,7 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver;
+using static Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.CachingWorkloadResolver;
 
 namespace Microsoft.DotNet.MSBuildSdkResolver
 {
@@ -237,11 +238,15 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
             //  First check if requested SDK resolves to a workload SDK pack
             string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
-            var workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot!, netcoreSdkVersion!, userProfileDir, globalJsonPath);
+            ResolutionResult? workloadResult = null;
+            if (dotnetRoot is not null && netcoreSdkVersion is not null)
+            {
+                workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot, netcoreSdkVersion, userProfileDir, globalJsonPath);
+            }
 
             if (workloadResult is not CachingWorkloadResolver.NullResolutionResult)
             {
-                return workloadResult.ToSdkResult(sdkReference, factory);
+                return workloadResult?.ToSdkResult(sdkReference, factory);
             }
 
             string msbuildSdkDir = Path.Combine(msbuildSdksDir, sdkReference.Name, "Sdk");
@@ -335,12 +340,14 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             if (!FXVersion.TryParse(netcoreSdkVersion, out netCoreSdkFXVersion) ||
-                !FXVersion.TryParse(minimumVersion, out minimumFXVersion))
+                netCoreSdkFXVersion is null ||
+                !FXVersion.TryParse(minimumVersion, out minimumFXVersion) ||
+                minimumFXVersion is null)
             {
                 return true;
             }
 
-            return FXVersion.Compare(netCoreSdkFXVersion!, minimumFXVersion!) < 0;
+            return FXVersion.Compare(netCoreSdkFXVersion, minimumFXVersion) < 0;
         }
 
 

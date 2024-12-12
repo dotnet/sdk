@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Utils
             private const uint ZoneInternet = 3;
             private const uint ZoneUntrusted = 4;
             private const int REGDB_E_CLASSNOTREG = unchecked((int)0x80040154);
-            private static IInternetSecurityManager internetSecurityManager = null;
+            private static IInternetSecurityManager? internetSecurityManager = null;
 
 #if NETCOREAPP
             [SupportedOSPlatform("windows")]
@@ -38,11 +38,14 @@ namespace Microsoft.DotNet.Cli.Utils
                     // First check the zone, if they are not an untrusted zone, they aren't dangerous
                     if (internetSecurityManager == null)
                     {
-                        Type iismType = Type.GetTypeFromCLSID(new Guid(CLSID_InternetSecurityManager));
-                        internetSecurityManager = (IInternetSecurityManager)Activator.CreateInstance(iismType);
+                        Type? iismType = Type.GetTypeFromCLSID(new Guid(CLSID_InternetSecurityManager));
+                        if (iismType is not null)
+                        {
+                            internetSecurityManager = Activator.CreateInstance(iismType) as IInternetSecurityManager;
+                        }
                     }
                     int zone = 0;
-                    internetSecurityManager.MapUrlToZone(Path.GetFullPath(filename), out zone, 0);
+                    internetSecurityManager?.MapUrlToZone(Path.GetFullPath(filename), out zone, 0);
                     if (zone < ZoneInternet)
                     {
                         return false;
