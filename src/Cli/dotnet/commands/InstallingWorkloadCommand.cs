@@ -2,12 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.DotNetWorkloads;
@@ -249,11 +243,19 @@ namespace Microsoft.DotNet.Workloads.Workload
                      Parser.Instance.Parse("dotnet workload search version " + resolvedWorkloadSetVersion),
                     installer: _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
                     nugetPackageDownloader: PackageDownloader);
-                resolvedWorkloadSetVersion = searchVersionsCommand.FindBestWorkloadSetFromComponents();
-                if (resolvedWorkloadSetVersion is null)
+                 var versions = searchVersionsCommand.FindBestWorkloadSetFromComponents();
+                if (versions is null)
+                {
+                    return;
+                }
+                else if (!versions.Any())
                 {
                     Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
                     return;
+                }
+                else
+                {
+                    resolvedWorkloadSetVersion = versions.First();
                 }
             }
 

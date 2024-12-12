@@ -10,8 +10,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
     public class WorkloadManifest
     {
-        public WorkloadManifest(string id) : this(id, new FXVersion(7, 3, 5), null, string.Empty, [], [], []) { }
-
         internal WorkloadManifest(string id, FXVersion version, string? description, string manifestPath, Dictionary<WorkloadId, BaseWorkloadDefinition> workloads, Dictionary<WorkloadPackId, WorkloadPack> packs, Dictionary<string, FXVersion>? dependsOnManifests)
         {
             Id = id;
@@ -49,5 +47,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public Dictionary<WorkloadId, BaseWorkloadDefinition> Workloads { get; }
         public Dictionary<WorkloadPackId, WorkloadPack> Packs { get; }
-    }
+
+        public static WorkloadManifest CreateForTests(string id) => new(id, new FXVersion(7, 3, 5), null, string.Empty, [], [], []);
+}
 }

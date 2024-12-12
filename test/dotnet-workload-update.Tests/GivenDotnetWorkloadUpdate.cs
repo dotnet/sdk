@@ -361,9 +361,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var parseResult = Parser.Instance.Parse("dotnet workload update --version ios@17.5.9;macos@14.5.92");
             MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
             var testDirectory = _testAssetsManager.CreateTestDirectory(testName: "GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents").Path;
-            WorkloadManifest iosManifest = new("Microsoft.NET.Sdk.iOS");
-            WorkloadManifest macosManifest = new("Microsoft.NET.Sdk.macOS");
-            WorkloadManifest mauiManifest = new("Microsoft.NET.Sdk.Maui");
+            WorkloadManifest iosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.iOS");
+            WorkloadManifest macosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.macOS");
+            WorkloadManifest mauiManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui");
             MockWorkloadResolver resolver = new([new WorkloadInfo(new WorkloadId("ios"), ""), new WorkloadInfo(new WorkloadId("macos"), ""), new WorkloadInfo(new WorkloadId("maui"), "")],
                 installedManifests: [
                     new WorkloadManifestInfo("Microsoft.NET.Sdk.iOS", "17.4.3", Path.Combine(testDirectory, "iosManifest"), "9.0.100"),

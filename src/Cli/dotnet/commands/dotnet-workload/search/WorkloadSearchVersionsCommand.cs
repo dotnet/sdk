@@ -26,6 +26,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         private readonly bool _includePreviews;
         private readonly IWorkloadResolver _resolver;
 
+        public WorkloadSearchVersionsCommand(string workloadVersion)
+        {
+            _workloadVersion = workloadVersion;
+        }
+
         public WorkloadSearchVersionsCommand(
             ParseResult result,
             IReporter reporter = null,
@@ -77,9 +82,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
         {
             if (_workloadVersion is null)
             {
-                var versions = GetVersions(_numberOfWorkloadSetsToTake);
-                if (versions is null)
+                List<string> versions;
+                try
                 {
+                    versions = GetVersions(_numberOfWorkloadSetsToTake);
+                }
+                catch (NuGetPackageNotFoundException)
+                {
+                    Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
                     return 0;
                 }
 
@@ -94,13 +104,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             }
             else if (_workloadVersion.Contains('@'))
             {
-                var firstVersionWithPackage = FindBestWorkloadSetFromComponents();
-                if (firstVersionWithPackage is null)
+                var versions = FindBestWorkloadSetFromComponents();
+                if (versions is null)
                 {
                     return 0;
                 }
 
-                Reporter.WriteLine(string.IsNullOrEmpty(firstVersionWithPackage) ? string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, _workloadVersion) : firstVersionWithPackage);
+                if (!versions.Any())
+                {
+                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, _workloadVersion));
+                }
+                else if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    Reporter.WriteLine(JsonSerializer.Serialize(versions.Select(version => version.ToDictionary(_ => "workloadVersion", v => v))));
+                }
+                else
+                {
+                    Reporter.WriteLine(string.Join('\n', versions));
+                }
             }
             else
             {
@@ -131,25 +152,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             var featureBand = new SdkFeatureBand(_sdkVersion);
             var packageId = _installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
+            return PackageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: _includePreviews)
+                .GetAwaiter().GetResult()
+                .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
+                .ToList();
+        }
+
+        public IEnumerable<string> FindBestWorkloadSetFromComponents()
+        {
+            List<string> versions;
             try
             {
-                return PackageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: _includePreviews)
-                    .GetAwaiter().GetResult()
-                    .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
-                    .ToList();
+                versions = GetVersions(0);
             }
             catch (NuGetPackageNotFoundException)
             {
-                Microsoft.DotNet.Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
-                return null;
-            }
-        }
-
-        public string FindBestWorkloadSetFromComponents()
-        {
-            var versions = GetVersions(0);
-            if (versions is null)
-            {
+                Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
                 return null;
             }
 
@@ -161,11 +179,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             });
 
             // Since these are ordered by version (descending), the first is the highest version
-            return versions.FirstOrDefault(version =>
+            return versions.Where(version =>
             {
                 var manifestVersions = _installer.GetWorkloadSetContents(version).ManifestVersions;
                 return packageNamesAndVersions.All(tuple => manifestVersions.ContainsKey(tuple.Item1) && manifestVersions[tuple.Item1].Version.Equals(tuple.Item2));
-            }, defaultValue: string.Empty);
+            }).Take(_numberOfWorkloadSetsToTake);
         }
     }
 }
