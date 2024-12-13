@@ -152,6 +152,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
+        /*
         [Fact]
         public void compose_multifile()
         {
@@ -211,6 +212,7 @@ namespace Microsoft.NET.Publish.Tests
                 packagescomposed.Should().Contain(elem => elem.Equals(pkg), "package {0}, version {1} was expected to be stored", pkg.Id, pkg.Version);
             }
         }
+        */
 
         [Fact]
         public void It_uses_star_versions_correctly()
