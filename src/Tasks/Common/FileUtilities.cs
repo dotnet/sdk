@@ -7,7 +7,7 @@ namespace Microsoft.NET.Build.Tasks
 {
     static partial class FileUtilities
     {
-        public static Version GetFileVersion(string sourcePath)
+        public static Version? GetFileVersion(string? sourcePath)
         {
             if (sourcePath != null)
             {
@@ -22,8 +22,8 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
-        static readonly HashSet<string> s_assemblyExtensions = new(new[] { ".dll", ".exe", ".winmd" }, StringComparer.OrdinalIgnoreCase);
-        public static Version TryGetAssemblyVersion(string sourcePath)
+        static readonly HashSet<string?> s_assemblyExtensions = new(new[] { ".dll", ".exe", ".winmd" }, StringComparer.OrdinalIgnoreCase);
+        public static Version? TryGetAssemblyVersion(string sourcePath)
         {
             var extension = Path.GetExtension(sourcePath);
 
