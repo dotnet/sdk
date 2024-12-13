@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)-windows</TargetFramework>
@@ -11,8 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SdkSrcRoot)Microsoft.Win32.Msi\InstallUILevel.cs" />
-    <Compile Include="$(SdkSrcRoot)Microsoft.Win32.Msi\InstallState.cs" />
+    <ProjectReference Include="$(SdkSrcRoot)Microsoft.Win32.Msi\Microsoft.Win32.Msi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\SdkFeatureBand.cs" />
   </ItemGroup>
 

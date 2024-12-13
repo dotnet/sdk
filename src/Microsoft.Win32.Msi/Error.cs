@@ -116,6 +116,11 @@ namespace Microsoft.Win32.Msi
         public const uint FUNCTION_FAILED = 1627;
 
         /// <summary>
+        /// Invalid command line argument. Consult the Windows Installer SDK for detailed command line help.
+        /// </summary>
+        public const uint INVALID_COMMAND_LINE = 1639;
+
+        /// <summary>
         /// The installer has initiated a restart. This message is indicative of a success.
         /// </summary>
         public const uint SUCCESS_REBOOT_INITIATED = 1641;
