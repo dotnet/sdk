@@ -31,6 +31,9 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
+        private const string _dotnetHost = "DOTNET_HOST_PATH";
+        private const string _msbuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
 
         private bool _shouldLog = false;
@@ -192,20 +195,28 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string dotnetExe = Path.Combine(dotnetRoot, Constants.DotNet + Constants.ExeSuffix);
+                string dotnetExe = Path.Combine(dotnetRoot, Constants.DotNetExe);
                 if (File.Exists(dotnetExe))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add("DOTNET_HOST_PATH", dotnetExe);
+                    propertiesToAdd.Add(_dotnetHost, dotnetExe);
+                }
+                else
+                {
+                    logger?.LogMessage($"Could set '{_dotnetHost}' because dotnet executable does not exists at '{dotnetExe}'.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
                     _getMsbuildRuntime(resolverResult.ResolvedSdkDirectory, dotnetRoot) :
                     null;
-                if (runtimeVersion != null)
+                if (!string.IsNullOrEmpty(runtimeVersion))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add("SdkResolverMSBuildTaskHostRuntimeVersion", runtimeVersion);
+                    propertiesToAdd.Add(_msbuildTaskHostRuntimeVersion, runtimeVersion);
+                }
+                else
+                {
+                    logger?.LogMessage($"Could not set '{_msbuildTaskHostRuntimeVersion}' because runtime version could not be determined.");
                 }
 
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
@@ -282,7 +293,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 string? runtimeVersion = runtimeOptionsFramework?["version"]?.ToString();
 
                 // 2. Check that the runtime version is installed (in shared folder)
-                if (runtimeName != null && runtimeVersion != null)
+                if (!string.IsNullOrEmpty(runtimeName) && !string.IsNullOrEmpty(runtimeVersion))
                 {
                     string runtimePath = Path.Combine(dotnetRoot, "shared", runtimeName, runtimeVersion);
                     if (Directory.Exists(runtimePath))
