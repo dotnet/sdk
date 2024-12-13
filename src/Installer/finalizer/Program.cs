@@ -185,6 +185,10 @@ static bool RemoveDependent(string dependent)
                 {
                     restartRequired = true;
                 }
+
+                // Remove the provider key. Typically these are removed by the engine, but since the workload
+                // packs and manifest were installed by the CLI, the finalizer needs to clean these up.
+                hkInstallerDependenciesKey.DeleteSubKeyTree(providerKeyName, throwOnMissingSubKey: false);
             }
             catch (Exception ex)
             {
