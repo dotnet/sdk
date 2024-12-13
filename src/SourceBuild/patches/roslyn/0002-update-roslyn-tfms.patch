@@ -1,0 +1,24 @@
+From 0114840c9bc5264189a129e362e4e73f8dc127ea Mon Sep 17 00:00:00 2001
+From: Jan Jones <janjones@microsoft.com>
+Date: Tue, 10 Dec 2024 14:36:16 +0100
+Subject: [PATCH] Fix TFM inconsistency in BuildHost
+
+Backport: https://github.com/dotnet/roslyn/pull/76354
+
+---
+ eng/targets/TargetFrameworks.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/targets/TargetFrameworks.props b/eng/targets/TargetFrameworks.props
+index 728de8b627db9..2dddaff156044 100644
+--- a/eng/targets/TargetFrameworks.props
++++ b/eng/targets/TargetFrameworks.props
+@@ -55,7 +55,7 @@
+         <NetRoslyn>$(NetCurrent)</NetRoslyn>
+         <NetRoslynSourceBuild>$(NetCurrent);$(NetPrevious)</NetRoslynSourceBuild>
+         <NetRoslynAll>$(NetCurrent);$(NetPrevious)</NetRoslynAll>
+-        <NetRoslynBuildHostNetCoreVersion>$(NetCurrent)</NetRoslynBuildHostNetCoreVersion>
++        <NetRoslynBuildHostNetCoreVersion>$(NetPrevious)</NetRoslynBuildHostNetCoreVersion>
+         <NetRoslynNext>$(NetCurrent)</NetRoslynNext>
+       </PropertyGroup>
+     </When>
