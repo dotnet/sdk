@@ -57,6 +57,13 @@
         <target state="translated">CONTAINER1001: Falha ao carregar o blob usando {0}; código de status recebido '{1}'.</target>
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
+      <trans-unit id="BuildingImageIndex">
+        <source>Building image index '{0}' on top of manifests {1}.</source>
+        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <note>
+      {0} is the name of the image index and its tag, {1} is the list of manifests digests
+    </note>
+      </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
         <source>Pushed image '{0}' to {1}.</source>
         <target state="translated">Imagem enviada '{0}' para {1}.</target>
@@ -152,6 +159,11 @@
         <target state="translated">Nenhum objeto de host detectado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageIndexUploadedToRegistry">
+        <source>Pushed image index '{0}' to registry '{1}'.</source>
+        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: falha ao carregar a imagem do registro local. stdout: {0}</target>
@@ -162,10 +174,20 @@
         <target state="translated">CONTAINER1010: A extração de imagens do registro local não é suportada.</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
+      <trans-unit id="ImagesEmpty">
+        <source>Cannot create manifest list (image index) because no images were provided.</source>
+        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="translated">CONTAINER2015: {0}: '{1}' não era uma variável de ambiente válida. Ignorando.</target>
         <note>{StrBegin="CONTAINER2015: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidImageMetadata">
+        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
+        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
         <source>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</source>
@@ -212,6 +234,11 @@
         <target state="translated">CONTAINER2010: inválido {0} fornecido: {1}. {0} deve ser uma lista delimitada por ponto-e-vírgula de marcas de imagem válidas. As tags de imagem devem ser alfanuméricas, sublinhado, hífen ou ponto.</target>
         <note>{StrBegin="CONTAINER2010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTargetRuntimeIdentifiers">
+        <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
+        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidTokenResponse">
         <source>CONTAINER1003: Token response had neither token nor access_token.</source>
         <target state="translated">CONTAINER1003: A resposta do token não tinha token nem access_token.</target>
@@ -246,6 +273,11 @@
         <source>CONTAINER2016: ContainerPort item '{0}' does not specify the port number. Please ensure the item's Include is a port number, for example '&lt;ContainerPort Include="80" /&gt;'</source>
         <target state="translated">CONTAINER2016: O item ContainerPort '{0}' não especifica o número da porta. Certifique-se de que o Include do item seja um número de porta, por exemplo '&lt;ContainerPort Include="80" /&gt;'</target>
         <note>{StrBegin="CONTAINER2016: "}</note>
+      </trans-unit>
+      <trans-unit id="MixedMediaTypes">
+        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
+        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
         <source>CONTAINER1004: No RequestUri specified.</source>
@@ -381,6 +413,11 @@
         <source>CONTAINER2001: Unrecognized mediaType '{0}'.</source>
         <target state="translated">CONTAINER2001: MediaType não reconhecido '{0}'.</target>
         <note>{StrBegin="CONTAINER2001: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedMediaType">
+        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
+        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
         <source>Unable to create tarball for mediaType '{0}'.</source>
