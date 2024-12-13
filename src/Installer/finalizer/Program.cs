@@ -26,14 +26,12 @@ int exitCode = (int)Error.SUCCESS;
 try
 {
     // Step 1: Parse and format SDK feature band version
-    string featureBandVersion = new SdkFeatureBand(sdkVersion).ToString();
+    SdkFeatureBand featureBandVersion = new SdkFeatureBand(sdkVersion);
     string dependent = $"Microsoft.NET.Sdk,{featureBandVersion},{platform}";
 
     // Step 2: Check if SDK feature band is installed
-    bool isInstalled = DetectSdk(featureBandVersion, platform);
-    if (isInstalled)
+    if (DetectSdk(featureBandVersion, platform))
     {
-        Logger.Log($"SDK with feature band {featureBandVersion} is already installed.");
         return (int)Error.SUCCESS;
     }
 
@@ -59,7 +57,7 @@ catch (Exception ex)
 
 return exitCode;
 
-static bool DetectSdk(string featureBandVersion, string platform)
+static bool DetectSdk(SdkFeatureBand featureBandVersion, string platform)
 {
     string registryPath = $@"SOFTWARE\WOW6432Node\dotnet\Setup\InstalledVersions\{platform}\sdk";
     using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(registryPath))
@@ -72,10 +70,21 @@ static bool DetectSdk(string featureBandVersion, string platform)
 
         foreach (var valueName in key.GetValueNames())
         {
-            if (valueName.Contains(featureBandVersion))
+            try
             {
-                Logger.Log($"SDK version detected: {valueName}");
-                return true;
+                // Convert the full SDK version into an SdkFeatureBand to see whether it matches the
+                // SDK being removed.
+                SdkFeatureBand installedFeatureBand = new SdkFeatureBand(valueName);
+
+                if (installedFeatureBand.Equals(featureBandVersion))
+                {
+                    Logger.Log($"Another SDK with the same feature band is installed: {valueName} ({installedFeatureBand})");
+                    return true;
+                }
+            }
+            catch
+            {
+                Logger.Log($"Failed to check installed SDK version: {valueName}");
             }
         }
     }
@@ -201,7 +210,7 @@ static bool RemoveDependent(string dependent)
     return restartRequired;
 }
 
-static void DeleteWorkloadRecords(string featureBandVersion, string platform)
+static void DeleteWorkloadRecords(SdkFeatureBand featureBandVersion, string platform)
 {
     string? workloadKey = $@"SOFTWARE\Microsoft\dotnet\InstalledWorkloads\Standalone\{platform}";
 
@@ -209,7 +218,7 @@ static void DeleteWorkloadRecords(string featureBandVersion, string platform)
     {
         if (key is not null)
         {
-            key.DeleteSubKeyTree(featureBandVersion, throwOnMissingSubKey: false);
+            key.DeleteSubKeyTree(featureBandVersion.ToString(), throwOnMissingSubKey: false);
             Logger.Log($"Deleted workload records for '{featureBandVersion}'.");
         }
         else
@@ -263,10 +272,10 @@ static void DeleteEmptyKeyToRoot(RegistryKey key, string name)
     }
 }
 
-static void RemoveInstallStateFile(string featureBandVersion, string platform)
+static void RemoveInstallStateFile(SdkFeatureBand featureBandVersion, string platform)
 {
     string programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-    string installStatePath = Path.Combine(programDataPath, "dotnet", "workloads", platform, featureBandVersion, "installstate", "default.json");
+    string installStatePath = Path.Combine(programDataPath, "dotnet", "workloads", platform, featureBandVersion.ToString(), "installstate", "default.json");
 
     if (File.Exists(installStatePath))
     {
