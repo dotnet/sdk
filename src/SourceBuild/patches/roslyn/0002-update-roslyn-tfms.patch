@@ -1,7 +1,7 @@
-From 0114840c9bc5264189a129e362e4e73f8dc127ea Mon Sep 17 00:00:00 2001
+From 58d7d7b8b31f453e044da8e6aa2dcdce86e759a1 Mon Sep 17 00:00:00 2001
 From: Jan Jones <janjones@microsoft.com>
-Date: Tue, 10 Dec 2024 14:36:16 +0100
-Subject: [PATCH] Fix TFM inconsistency in BuildHost
+Date: Fri, 13 Dec 2024 12:25:03 +0100
+Subject: [PATCH] Fix TFM inconsistency in BuildHost (#76354)
 
 Backport: https://github.com/dotnet/roslyn/pull/76354
 
@@ -10,7 +10,7 @@ Backport: https://github.com/dotnet/roslyn/pull/76354
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/eng/targets/TargetFrameworks.props b/eng/targets/TargetFrameworks.props
-index 728de8b627db9..2dddaff156044 100644
+index 728de8b6..2dddaff1 100644
 --- a/eng/targets/TargetFrameworks.props
 +++ b/eng/targets/TargetFrameworks.props
 @@ -55,7 +55,7 @@
