@@ -197,7 +197,9 @@
     <comment>Table lable</comment>
   </data>
   <data name="NeedNuGetInConfig" xml:space="preserve">
-    <value>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.</value>
-    <comment>Do not translate 'dotnet tool search' or 'nuget.config'</comment>
+    <value>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
+    This can be done with this command:
+  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</value>
+    <comment>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</comment>
   </data>
 </root>
