@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
                 string command;
-                string logFileLocation = Path.Join(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"),"dotnetTestLog.log");
+                string logFileLocation = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"),"dotnetTestLog.log");
 
                 var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
                 command = $"{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
