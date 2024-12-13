@@ -664,18 +664,18 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.5.0-preview.24611.7">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.6.0-preview.24612.7">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>33f94f8e54d6caf157b593fb5f455a4b38121945</Sha>
+      <Sha>c416216024f123628851eaeea140337fce533470</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.7.0-preview.24611.7">
+    <Dependency Name="MSTest" Version="3.8.0-preview.24612.7">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>33f94f8e54d6caf157b593fb5f455a4b38121945</Sha>
+      <Sha>c416216024f123628851eaeea140337fce533470</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.testfx" Version="1.5.0-preview.24611.7">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.testfx" Version="3.8.0-preview.24612.7">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>33f94f8e54d6caf157b593fb5f455a4b38121945</Sha>
+      <Sha>c416216024f123628851eaeea140337fce533470</Sha>
       <SourceBuild RepoName="testfx" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
