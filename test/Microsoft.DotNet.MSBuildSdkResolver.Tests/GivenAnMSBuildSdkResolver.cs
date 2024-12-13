@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
         private const string _dotnetHost = "DOTNET_HOST_PATH";
-        private const string _msbuildNetTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+        private const string _msbuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
         {
@@ -204,7 +204,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.AdditionalPaths.Should().BeNull();
             result.PropertiesToAdd.Count.Should().Be(2);
             result.PropertiesToAdd.Should().ContainKey(_dotnetHost);
-            result.PropertiesToAdd.Should().ContainKey(_msbuildNetTaskHostRuntimeVersion);
+            result.PropertiesToAdd.Should().ContainKey(_msbuildTaskHostRuntimeVersion);
             result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
             result.Warnings.Should().BeNullOrEmpty();
             result.Errors.Should().BeNullOrEmpty();
@@ -280,7 +280,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.AdditionalPaths.Should().BeNull();
             result.PropertiesToAdd.Count.Should().Be(4);
             result.PropertiesToAdd.Should().ContainKey(_dotnetHost);
-            result.PropertiesToAdd.Should().ContainKey(_msbuildNetTaskHostRuntimeVersion);
+            result.PropertiesToAdd.Should().ContainKey(_msbuildTaskHostRuntimeVersion);
             result.PropertiesToAdd.Should().ContainKey("SdkResolverHonoredGlobalJson");
             result.PropertiesToAdd.Should().ContainKey("SdkResolverGlobalJsonPath");
             result.PropertiesToAdd["SdkResolverHonoredGlobalJson"].Should().Be("false");
