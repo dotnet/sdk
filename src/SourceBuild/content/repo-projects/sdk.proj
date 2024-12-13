@@ -61,6 +61,7 @@
     <RepositoryReference Include="symreader" />
     <RepositoryReference Include="templating" />
     <RepositoryReference Include="test-templates" />
+    <RepositoryReference Include="testfx" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
     <RepositoryReference Include="xdt" />
