@@ -8,5 +8,5 @@ if %errorlevel%==0 (
     set PackInstaller=/p:PackInstaller=false
     set DISABLE_CROSSGEN=true
 )
-powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -nativeToolsOnMachine -msbuildEngine dotnet %PackInstaller% %*"
+powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -msbuildEngine dotnet %PackInstaller% %*"
 exit /b %ErrorLevel%
