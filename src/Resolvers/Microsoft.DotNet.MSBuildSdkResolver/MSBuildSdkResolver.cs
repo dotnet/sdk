@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
         private const string DotnetHost = "DOTNET_HOST_PATH";
-        private const string MsbuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+        private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
 
@@ -212,11 +212,11 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 if (!string.IsNullOrEmpty(runtimeVersion))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(MsbuildTaskHostRuntimeVersion, runtimeVersion);
+                    propertiesToAdd.Add(MSBuildTaskHostRuntimeVersion, runtimeVersion);
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{MsbuildTaskHostRuntimeVersion}' because runtime version could not be determined.");
+                    logger?.LogMessage($"Could not set '{MSBuildTaskHostRuntimeVersion}' because runtime version could not be determined.");
                 }
 
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
