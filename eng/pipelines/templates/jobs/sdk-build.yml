@@ -52,7 +52,7 @@ jobs:
     templateContext:
       sdl:
         binskim:
-          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;
+          analyzeTargetGlob: +:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;
 
     steps:
     ############## PREP ###############
