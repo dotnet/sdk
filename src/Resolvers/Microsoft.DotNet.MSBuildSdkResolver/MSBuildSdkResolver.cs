@@ -36,16 +36,17 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private bool _shouldLog = false;
 
         public DotNetMSBuildSdkResolver()
-            : this(Environment.GetEnvironmentVariable, null, null, VSSettings.Ambient)
+            : this(Environment.GetEnvironmentVariable, null, GetMSbuildRuntimeVersion, VSSettings.Ambient)
         {
         }
 
         // Test constructor
-        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, Func<string, string, string?>? getMsbuildRuntime, VSSettings vsSettings)
+        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, Func<string, string, string?> getMsbuildRuntime, VSSettings vsSettings)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
             _getCurrentProcessPath = getCurrentProcessPath;
             _netCoreSdkResolver = new NETCoreSdkResolver(getEnvironmentVariable, vsSettings);
+            _getMsbuildRuntime = getMsbuildRuntime;
 
             if (_getEnvironmentVariable(EnvironmentVariableNames.DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG) is string val &&
                 (string.Equals(val, "true", StringComparison.OrdinalIgnoreCase) ||
@@ -53,8 +54,6 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             {
                 _shouldLog = true;
             }
-
-            _getMsbuildRuntime = getMsbuildRuntime ?? GetMSbuildRuntimeVersion;
         }
 
         private sealed class CachedState
