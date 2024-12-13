@@ -1,0 +1,504 @@
+From 25efc5179a47fcdb3551167ecd56b6af950abdc9 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Tue, 10 Dec 2024 13:40:42 -0800
+Subject: [PATCH 1/9] Add a new crossgen2 build variant for a published
+ crossgen2 targetting the host OS
+
+Backport: https://github.com/dotnet/runtime/pull/110676
+---
+ .../aot/crossgen2/crossgen2_inbuild_publish.csproj  | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 src/coreclr/tools/aot/crossgen2/crossgen2_inbuild_publish.csproj
+
+diff --git a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild_publish.csproj b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild_publish.csproj
+new file mode 100644
+index 0000000000000..4514fc66051a2
+--- /dev/null
++++ b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild_publish.csproj
+@@ -0,0 +1,13 @@
++<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Publish;PublishItemsOutputGroup">
++  <PropertyGroup>
++    <CrossHostArch Condition="'$(CrossBuild)' == 'true' or '$(TargetArchitecture)' != '$(BuildArchitecture)' or '$(HostOS)' != '$(TargetOS)' or '$(EnableNativeSanitizers)' != ''">$(BuildArchitecture)</CrossHostArch>
++    <_IsPublishing>true</_IsPublishing>
++    <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
++    <PublishDir>$(RuntimeBinDir)crossgen2-inbuild-published/</PublishDir>
++    <SelfContained>true</SelfContained>
++    <PublishTrimmed>true</PublishTrimmed>
++    <TrimmerSingleWarn>false</TrimmerSingleWarn>
++    <AotOrSingleFile>true</AotOrSingleFile>
++  </PropertyGroup>
++  <Import Project="crossgen2.props" />
++</Project>
+
+From 4571db600f2fd5cd07f624c4321481461825aeea Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Tue, 10 Dec 2024 13:45:08 -0800
+Subject: [PATCH 2/9] Remove the .NET-hosted in-build crossgen2 and just use
+ the published in-build host-targeting crossgen2.
+
+---
+ .../tools/aot/crossgen2/crossgen2_inbuild.csproj    | 12 ++++++++----
+ .../aot/crossgen2/crossgen2_inbuild_publish.csproj  | 13 -------------
+ .../sfx/Microsoft.NETCore.App/ReadyToRun.targets    |  6 ++----
+ 3 files changed, 10 insertions(+), 21 deletions(-)
+ delete mode 100644 src/coreclr/tools/aot/crossgen2/crossgen2_inbuild_publish.csproj
+
+diff --git a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
+index bf997aa8ebb03..53f1880f8719e 100644
+--- a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
++++ b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
+@@ -1,9 +1,13 @@
+-<Project Sdk="Microsoft.NET.Sdk">
++<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Publish;PublishItemsOutputGroup">
+   <PropertyGroup>
+     <CrossHostArch Condition="'$(CrossBuild)' == 'true' or '$(TargetArchitecture)' != '$(BuildArchitecture)' or '$(HostOS)' != '$(TargetOS)' or '$(EnableNativeSanitizers)' != ''">$(BuildArchitecture)</CrossHostArch>
+-    <OutputPath>$(RuntimeBinDir)/$(BuildArchitecture)/crossgen2/</OutputPath>
+-    <TargetFramework>$(NetCoreAppToolCurrent)</TargetFramework>
+-    <UseAppHost>false</UseAppHost>
++    <_IsPublishing>true</_IsPublishing>
++    <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
++    <PublishDir>$(RuntimeBinDir)/$(BuildArchitecture)/crossgen2/</PublishDir>
++    <SelfContained>true</SelfContained>
++    <PublishTrimmed>true</PublishTrimmed>
++    <TrimmerSingleWarn>false</TrimmerSingleWarn>
++    <AotOrSingleFile>true</AotOrSingleFile>
+   </PropertyGroup>
+   <Import Project="crossgen2.props" />
+ </Project>
+diff --git a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild_publish.csproj b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild_publish.csproj
+deleted file mode 100644
+index 4514fc66051a2..0000000000000
+--- a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild_publish.csproj
++++ /dev/null
+@@ -1,13 +0,0 @@
+-<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Publish;PublishItemsOutputGroup">
+-  <PropertyGroup>
+-    <CrossHostArch Condition="'$(CrossBuild)' == 'true' or '$(TargetArchitecture)' != '$(BuildArchitecture)' or '$(HostOS)' != '$(TargetOS)' or '$(EnableNativeSanitizers)' != ''">$(BuildArchitecture)</CrossHostArch>
+-    <_IsPublishing>true</_IsPublishing>
+-    <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+-    <PublishDir>$(RuntimeBinDir)crossgen2-inbuild-published/</PublishDir>
+-    <SelfContained>true</SelfContained>
+-    <PublishTrimmed>true</PublishTrimmed>
+-    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+-    <AotOrSingleFile>true</AotOrSingleFile>
+-  </PropertyGroup>
+-  <Import Project="crossgen2.props" />
+-</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/ReadyToRun.targets b/src/installer/pkg/sfx/Microsoft.NETCore.App/ReadyToRun.targets
+index 09730ed226502..1e27f828c5bf5 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/ReadyToRun.targets
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/ReadyToRun.targets
+@@ -2,16 +2,14 @@
+   <Target Name="ResolveReadyToRunCompilers" DependsOnTargets="ResolveRuntimeFilesFromLocalBuild">
+     <PropertyGroup>
+       <PublishReadyToRunPerfmapFormatVersion Condition="'$(PublishReadyToRunPerfmapFormatVersion)' == ''">1</PublishReadyToRunPerfmapFormatVersion>
+-      <Crossgen2Path>$([MSBuild]::NormalizePath('$(Crossgen2InBuildDir)', 'crossgen2.dll'))</Crossgen2Path>
+-      <R2RDotnetHostPath>$(DotNetTool)</R2RDotnetHostPath>
++      <Crossgen2Path>$([MSBuild]::NormalizePath('$(Crossgen2InBuildDir)', 'crossgen2$(ExeSuffix)'))</Crossgen2Path>
+     </PropertyGroup>
+ 
+     <ItemGroup>
+       <Crossgen2Tool Include="$(Crossgen2Path)"
+                      TargetArch="$(TargetArchitecture)"
+                      TargetOS="$(TargetOS)"
+-                     DotnetHostPath="$(R2RDotnetHostPath)"
+                      PerfmapFormatVersion="$(PublishReadyToRunPerfmapFormatVersion)"/>
+     </ItemGroup>
+   </Target>
+-</Project>
+\ No newline at end of file
++</Project>
+
+From 59407a278ee5f7bc022c797929d4c36d8688d187 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Thu, 12 Dec 2024 20:12:36 +0000
+Subject: [PATCH 3/9] Extract crossgen2 sfxproj changes from #109710
+
+---
+ .../Microsoft.NETCore.App.Crossgen2.sfxproj   | 25 ++-----------------
+ 1 file changed, 2 insertions(+), 23 deletions(-)
+
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.sfxproj
+index c9d40b79d38db..d375b395092e8 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.sfxproj
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.sfxproj
+@@ -1,6 +1,5 @@
+-<Project>
+-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+-  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
+ 
+   <PropertyGroup>
+     <!-- Crossgen is not used for Mono -->
+@@ -11,7 +10,6 @@
+     <ArchiveName>dotnet-crossgen2</ArchiveName>
+     <SharedFrameworkHostFileNameOverride>crossgen2</SharedFrameworkHostFileNameOverride>
+     <GenerateInstallers>false</GenerateInstallers>
+-    <HostJsonTargetPath>tools/</HostJsonTargetPath>
+     <PermitDllAndExeFilesLackingFileVersion>true</PermitDllAndExeFilesLackingFileVersion>
+     <!-- Publishing as single-file or NativeAOT means we can't examine the interior DLLs -->
+     <ShouldVerifyClosure>false</ShouldVerifyClosure>
+@@ -72,23 +70,4 @@
+       <_SymbolFilesToPackage Include="@(_Crossgen2SymbolFilesToPackage)" TargetPath="tools/" />
+     </ItemGroup>
+   </Target>
+-
+-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+-  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
+-
+-  <Target Name="GetFilesToPublish">
+-    <MSBuild Projects="$(MSBuildProjectFullPath)"
+-          Targets="_GetAllSharedFrameworkFiles"
+-          RemoveProperties="OutputPath;SymbolsOutputPath">
+-      <Output TaskParameter="TargetOutputs" ItemName="_FilesToPackage" />
+-    </MSBuild>
+-    <ItemGroup>
+-      <_PackagedFilesToPublish Include="@(_FilesToPackage)" Condition="'%(_FilesToPackage.PackOnly)' != 'true'" />
+-    </ItemGroup>
+-    <ItemGroup>
+-      <FilesToPublish Include="@(_PackagedFilesToPublish)"
+-                       TargetPath="" />
+-    </ItemGroup>
+-  </Target>
+-
+ </Project>
+
+From c888d16e33bf5b9fcdd58909a5981fcc70552d7a Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Thu, 12 Dec 2024 20:15:28 +0000
+Subject: [PATCH 4/9] Extract the properties and targets that will be shared
+ into a separate props file.
+
+---
+ .../Microsoft.NETCore.App.Crossgen2.props     | 59 +++++++++++++++++++
+ .../Microsoft.NETCore.App.Crossgen2.sfxproj   | 56 +-----------------
+ 2 files changed, 61 insertions(+), 54 deletions(-)
+ create mode 100644 src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.props
+
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.props b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.props
+new file mode 100644
+index 0000000000000..6650cee2f1894
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.props
+@@ -0,0 +1,59 @@
++<Project>
++  <PropertyGroup>
++    <!-- Crossgen is not used for Mono -->
++    <SkipBuild Condition="'$(RuntimeFlavor)' == 'Mono'">true</SkipBuild>
++    <PlatformPackageType>ToolPack</PlatformPackageType>
++    <SharedFrameworkName>$(SharedFrameworkName).Crossgen2</SharedFrameworkName>
++    <OverridePackageId>$(SharedFrameworkName).$(RuntimeIdentifier)</OverridePackageId>
++    <ArchiveName>dotnet-crossgen2</ArchiveName>
++    <SharedFrameworkHostFileNameOverride>crossgen2</SharedFrameworkHostFileNameOverride>
++    <GenerateInstallers>false</GenerateInstallers>
++    <PermitDllAndExeFilesLackingFileVersion>true</PermitDllAndExeFilesLackingFileVersion>
++    <!-- Publishing as single-file or NativeAOT means we can't examine the interior DLLs -->
++    <ShouldVerifyClosure>false</ShouldVerifyClosure>
++  </PropertyGroup>
++
++  <ItemGroup>
++    <ProjectReference
++      Include="$(CrossgenPublishProject)"
++      OutputItemType="_RawCrossgenPublishFiles"
++      ReferenceOutputAssembly="false" />
++  </ItemGroup>
++
++  <Target Name="PublishCrossgen"
++          BeforeTargets="GetFilesToPackage">
++    <ItemGroup>
++      <_CrossgenPublishFiles Include="@(_RawCrossgenPublishFiles->'%(OutputPath)')"
++                             KeepMetadata="REMOVE_ALL" />
++    </ItemGroup>
++    <ItemGroup Condition="'$(NativeAotSupported)' != 'true'">
++      <FilesToPackage Include="@(_CrossgenPublishFiles)"
++                      Exclude="*.pdb;*.h;*.lib"
++                      TargetPath="tools/" />
++    </ItemGroup>
++    <ItemGroup Condition="'$(NativeAotSupported)' == 'true'">
++      <!-- Treat all native aot assets as native runtime assets -->
++      <FilesToPackage Include="@(_CrossgenPublishFiles->Distinct())"
++                          Condition="'%(Extension)' != '.pdb'"
++                          TargetPath="tools/" />
++    </ItemGroup>
++  </Target>
++
++  <PropertyGroup>
++    <TargetOSComponent>unix</TargetOSComponent>
++    <TargetOSComponent Condition="'$(TargetOS)' == 'windows'">win</TargetOSComponent>
++    <TargetSpec>$(TargetOSComponent)-$(TargetArchitecture)</TargetSpec>
++  </PropertyGroup>
++
++  <Target Name="AddCrossgen2SymbolFilesToPackage" BeforeTargets="GetFilesToPackage" DependsOnTargets="PublishCrossgen">
++    <ItemGroup>
++      <_Crossgen2SymbolFilesToPackage Include="@(_CrossgenPublishFiles)" Condition="'%(Extension)' == '.pdb'" />
++      <!-- Symbol files for JIT libraries are placed in a different location for Windows builds -->
++      <_Crossgen2SymbolFilesToPackage Include="@(NativeRuntimeAsset->'$(CoreCLRArtifactsPdbDir)%(FileName).pdb')" Condition="'$(TargetOS)' == 'windows' and '%(FileName)' != 'crossgen2'" />
++      <_Crossgen2SymbolFilesToPackage Include="@(NativeRuntimeAsset->'$(CoreCLRArtifactsPath)%(FileName)%(Extension)$(SymbolsSuffix)')" Condition="'$(TargetOS)' != 'windows' and '%(FileName)' != 'crossgen2'" />
++      <_Crossgen2SymbolFilesToPackage Remove="@(_Crossgen2SymbolFilesToPackage)" Condition="!Exists('%(Identity)')" />
++
++      <_SymbolFilesToPackage Include="@(_Crossgen2SymbolFilesToPackage)" TargetPath="tools/" />
++    </ItemGroup>
++  </Target>
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.sfxproj
+index d375b395092e8..97e6737c777ac 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.sfxproj
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.sfxproj
+@@ -2,48 +2,14 @@
+   <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
+ 
+   <PropertyGroup>
+-    <!-- Crossgen is not used for Mono -->
+-    <SkipBuild Condition="'$(RuntimeFlavor)' == 'Mono'">true</SkipBuild>
+-    <PlatformPackageType>ToolPack</PlatformPackageType>
+-    <SharedFrameworkName>$(SharedFrameworkName).Crossgen2</SharedFrameworkName>
+-    <OverridePackageId>$(SharedFrameworkName).$(RuntimeIdentifier)</OverridePackageId>
+-    <ArchiveName>dotnet-crossgen2</ArchiveName>
+-    <SharedFrameworkHostFileNameOverride>crossgen2</SharedFrameworkHostFileNameOverride>
+-    <GenerateInstallers>false</GenerateInstallers>
+-    <PermitDllAndExeFilesLackingFileVersion>true</PermitDllAndExeFilesLackingFileVersion>
+-    <!-- Publishing as single-file or NativeAOT means we can't examine the interior DLLs -->
+-    <ShouldVerifyClosure>false</ShouldVerifyClosure>
++    <CrossgenPublishProject>$(RepoRoot)src/coreclr/tools/aot/crossgen2/crossgen2_publish.csproj</CrossgenPublishProject>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Archives" Version="$(MicrosoftDotNetBuildTasksArchivesVersion)" />
+   </ItemGroup>
+ 
+-  <ItemGroup>
+-    <ProjectReference
+-      Include="$(RepoRoot)src/coreclr/tools/aot/crossgen2/crossgen2_publish.csproj"
+-      OutputItemType="_RawCrossgenPublishFiles"
+-      ReferenceOutputAssembly="false" />
+-  </ItemGroup>
+-
+-  <Target Name="PublishCrossgen"
+-          BeforeTargets="GetFilesToPackage">
+-    <ItemGroup>
+-      <_CrossgenPublishFiles Include="@(_RawCrossgenPublishFiles->'%(OutputPath)')"
+-                             KeepMetadata="REMOVE_ALL" />
+-    </ItemGroup>
+-    <ItemGroup Condition="'$(NativeAotSupported)' != 'true'">
+-      <FilesToPackage Include="@(_CrossgenPublishFiles)"
+-                      Exclude="*.pdb;*.h;*.lib"
+-                      TargetPath="tools/" />
+-    </ItemGroup>
+-    <ItemGroup Condition="'$(NativeAotSupported)' == 'true'">
+-      <!-- Treat all native aot assets as native runtime assets -->
+-      <FilesToPackage Include="@(_CrossgenPublishFiles->Distinct())"
+-                          Condition="'%(Extension)' != '.pdb'"
+-                          TargetPath="tools/" />
+-    </ItemGroup>
+-  </Target>
++  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NETCore.App.Crossgen2.props" />
+ 
+   <Target Name="RunPublishedCrossgen" AfterTargets="PublishCrossgen"
+           Condition="'$(TargetOS)' == '$(HostOS)' and '$(TargetArchitecture)' == '$(BuildArchitecture)' and '$(CrossBuild)' != 'true'">
+@@ -52,22 +18,4 @@
+       <Output TaskParameter="ExitCode" PropertyName="CrossgenExitCode" />
+     </Exec>
+   </Target>
+-
+-  <PropertyGroup>
+-    <TargetOSComponent>unix</TargetOSComponent>
+-    <TargetOSComponent Condition="'$(TargetOS)' == 'windows'">win</TargetOSComponent>
+-    <TargetSpec>$(TargetOSComponent)-$(TargetArchitecture)</TargetSpec>
+-  </PropertyGroup>
+-
+-  <Target Name="AddCrossgen2SymbolFilesToPackage" BeforeTargets="GetFilesToPackage" DependsOnTargets="PublishCrossgen">
+-    <ItemGroup>
+-      <_Crossgen2SymbolFilesToPackage Include="@(_CrossgenPublishFiles)" Condition="'%(Extension)' == '.pdb'" />
+-      <!-- Symbol files for JIT libraries are placed in a different location for Windows builds -->
+-      <_Crossgen2SymbolFilesToPackage Include="@(NativeRuntimeAsset->'$(CoreCLRArtifactsPdbDir)%(FileName).pdb')" Condition="'$(TargetOS)' == 'windows' and '%(FileName)' != 'crossgen2'" />
+-      <_Crossgen2SymbolFilesToPackage Include="@(NativeRuntimeAsset->'$(CoreCLRArtifactsPath)%(FileName)%(Extension)$(SymbolsSuffix)')" Condition="'$(TargetOS)' != 'windows' and '%(FileName)' != 'crossgen2'" />
+-      <_Crossgen2SymbolFilesToPackage Remove="@(_Crossgen2SymbolFilesToPackage)" Condition="!Exists('%(Identity)')" />
+-
+-      <_SymbolFilesToPackage Include="@(_Crossgen2SymbolFilesToPackage)" TargetPath="tools/" />
+-    </ItemGroup>
+-  </Target>
+ </Project>
+
+From f79e23cd777704c02e8d4e0c2e4e17a1cff1dfee Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Thu, 12 Dec 2024 22:41:10 +0000
+Subject: [PATCH 5/9] Add a "host crossgen2" project
+
+---
+ .../tools/aot/crossgen2/crossgen2_inbuild.csproj      |  2 +-
+ .../Microsoft.NETCore.App.Crossgen2.Host.sfxproj      | 11 +++++++++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+ create mode 100644 src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.Host.sfxproj
+
+diff --git a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
+index 53f1880f8719e..ca803976ad878 100644
+--- a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
++++ b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
+@@ -3,7 +3,7 @@
+     <CrossHostArch Condition="'$(CrossBuild)' == 'true' or '$(TargetArchitecture)' != '$(BuildArchitecture)' or '$(HostOS)' != '$(TargetOS)' or '$(EnableNativeSanitizers)' != ''">$(BuildArchitecture)</CrossHostArch>
+     <_IsPublishing>true</_IsPublishing>
+     <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+-    <PublishDir>$(RuntimeBinDir)/$(BuildArchitecture)/crossgen2/</PublishDir>
++    <PublishDir>$(RuntimeBinDir)$(BuildArchitecture)/crossgen2/</PublishDir>
+     <SelfContained>true</SelfContained>
+     <PublishTrimmed>true</PublishTrimmed>
+     <TrimmerSingleWarn>false</TrimmerSingleWarn>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.Host.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.Host.sfxproj
+new file mode 100644
+index 0000000000000..6f7c19cda2dab
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.Host.sfxproj
+@@ -0,0 +1,11 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++
++  <PropertyGroup>
++    <CrossgenPublishProject>$(RepoRoot)src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj</CrossgenPublishProject>
++    <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
++    <IsShipping>false</IsShipping>
++  </PropertyGroup>
++
++  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NETCore.App.Crossgen2.props" />
++</Project>
+
+From 6d7961d6adb3fb5ac6b81714baf611bd6f8ccbfa Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Thu, 12 Dec 2024 23:20:41 +0000
+Subject: [PATCH 6/9] Add the crossgen2 host package to Subsets.props for the
+ correct scenarios.
+
+---
+ eng/Subsets.props | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/eng/Subsets.props b/eng/Subsets.props
+index a50fd3e80025e..d10deecfe4127 100644
+--- a/eng/Subsets.props
++++ b/eng/Subsets.props
+@@ -548,6 +548,13 @@
+       <ItemGroup>
+         <ProjectToBuild Condition="'$(NativeAotSupported)' == 'true' and '$(RuntimeFlavor)' != 'Mono' and '$(BuildOnlyPgoInstrumentedAssets)' != 'true'" Include="$(InstallerProjectRoot)\pkg\projects\nativeaot-packages.proj" Category="packs" />
+       </ItemGroup>
++      <ItemGroup>
++        <!--
++          When we're building in the VMR, we need to provide a crossgen2 that runs on the host machine for downstream repos to use to R2R their code.
++          In non-VMR builds, downstream repos can use the crossgen2 built for the target host SDK from another build leg, but in the VMR we need to provide one to use.
++        -->
++        <ProjectToBuild Condition="'$(RuntimeFlavor)' != 'Mono' and '$(DotNetBuildOrchestrator)' == 'true' and '$(OutputRID)' != '$(NETCoreSdkRuntimeIdentifier)'" Include="$(InstallerProjectRoot)pkg\sfx\Microsoft.NETCore.App\Microsoft.NETCore.App.Crossgen2.Host.sfxproj" Category="packs" />
++      </ItemGroup>
+       <ItemGroup>
+         <SharedFrameworkProjectToBuild Condition="'$(BuildMonoAOTCrossCompilerOnly)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\Microsoft.NETCore.App\Microsoft.NETCore.App.Runtime.sfxproj" />
+         <SharedFrameworkProjectToBuild Condition="'$(BuildNativeAOTRuntimePack)' != 'true' and '$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\bundle\Microsoft.NETCore.App.Bundle.bundleproj" />
+
+From 080336c4f6614ae8dc6867680a0915eff9207872 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 13 Dec 2024 12:03:10 -0800
+Subject: [PATCH 7/9] Fix crossgen-corelib to work with the new in-build
+ crossgen2
+
+---
+ src/coreclr/crossgen-corelib.proj | 16 ++++------------
+ 1 file changed, 4 insertions(+), 12 deletions(-)
+
+diff --git a/src/coreclr/crossgen-corelib.proj b/src/coreclr/crossgen-corelib.proj
+index 714c1efafd55a..ed54fc3cf11fa 100644
+--- a/src/coreclr/crossgen-corelib.proj
++++ b/src/coreclr/crossgen-corelib.proj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.Build.NoTargets">
+ 
+   <ItemGroup>
+-    <ProjectReference Include="$(CoreClrProjectRoot)/tools/aot/crossgen2/crossgen2_inbuild.csproj" OutputItemType="Crossgen2" />
++    <ProjectReference Include="$(CoreClrProjectRoot)/tools/aot/crossgen2/crossgen2_inbuild.csproj" OutputItemType="Crossgen2Files" />
+     <ProjectReference Include="$(CoreClrProjectRoot)/tools/dotnet-pgo/dotnet-pgo.csproj" OutputItemType="DotNetPgo" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+     <ProjectReference Include="$([MSBuild]::NormalizePath('$(CoreClrProjectRoot)', 'System.Private.CoreLib', 'System.Private.CoreLib.csproj'))" OutputItemType="CoreLib" />
+   </ItemGroup>
+@@ -92,21 +92,13 @@
+     <ItemGroup>
+       <Crossgen2Inputs Include="@(CoreLib)" />
+       <Crossgen2Inputs Include="$(MergedMibcPath)" />
+-    </ItemGroup>
+-
+-    <PropertyGroup>
+-      <Crossgen2OutputPath>%(Crossgen2.RootDir)/%(Crossgen2.Directory)</Crossgen2OutputPath>
+-    </PropertyGroup>
+-    <ItemGroup>
+-      <Crossgen2Files Include="$(Crossgen2OutputPath)/*.dll" />
+-      <Crossgen2Files Include="$(Crossgen2OutputPath)/*.so" />
+-      <Crossgen2Files Include="$(Crossgen2OutputPath)/*.dylib" />
++      <Crossgen2Inputs Include="@(Crossgen2Files->Metadata('OutputPath'))" />
+     </ItemGroup>
+   </Target>
+ 
+   <Target Name="InvokeCrossgen"
+           DependsOnTargets="PrepareInvokeCrossgen;CreateMergedMibcFile"
+-          Inputs="@(Crossgen2Inputs);@(Crossgen2Files)"
++          Inputs="@(Crossgen2Inputs)"
+           Outputs="$(CoreLibOutputPath);$(CoreLibNiPdbPath);$(CoreLibPerfMapPath)"
+           AfterTargets="Build">
+ 
+@@ -117,7 +109,7 @@
+       Text="Generating native image of System.Private.CoreLib for $(OSPlatformConfig). Logging to $(CrossGenCoreLibLog)" />
+ 
+     <PropertyGroup>
+-      <CrossGenDllCmd>$(DotNetCli) @(Crossgen2)</CrossGenDllCmd>
++      <CrossGenDllCmd>@(Crossgen2Files->Metadata('OutputPath')->WithMetadataValue('Filename','crossgen2')->WithMetadataValue('Extension','$(ExeSuffix)'))</CrossGenDllCmd>
+       <CrossGenDllCmd>$(CrossGenDllCmd) -o:$(CoreLibOutputPath)</CrossGenDllCmd>
+       <CrossGenDllCmd>$(CrossGenDllCmd) -r:$([MSBuild]::NormalizePath('$(BinDir)', 'IL', '*.dll'))</CrossGenDllCmd>
+       <CrossGenDllCmd>$(CrossGenDllCmd) --targetarch:$(TargetArchitecture)</CrossGenDllCmd>
+
+From b1b74f7fcb7a8d0509c7e7d05cfcbe38f159bdfc Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 13 Dec 2024 13:20:36 -0800
+Subject: [PATCH 8/9] Publish the in-build crossgen2 as single file to avoid
+ having to adjust the AOT-in-build logic to handle AOT-ing for the host.
+
+---
+ src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
+index ca803976ad878..5794e80b532f0 100644
+--- a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
++++ b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
+@@ -6,8 +6,10 @@
+     <PublishDir>$(RuntimeBinDir)$(BuildArchitecture)/crossgen2/</PublishDir>
+     <SelfContained>true</SelfContained>
+     <PublishTrimmed>true</PublishTrimmed>
++    <PublishSingleFile>true</PublishSingleFile>
++    <PublishReadyToRun>true</PublishReadyToRun>
++    <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
+     <TrimmerSingleWarn>false</TrimmerSingleWarn>
+-    <AotOrSingleFile>true</AotOrSingleFile>
+   </PropertyGroup>
+   <Import Project="crossgen2.props" />
+ </Project>
+
+From dd2461f510c5b959982fd8c11f6aae224f6b47c7 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 13 Dec 2024 14:06:29 -0800
+Subject: [PATCH 9/9] AOT on Windows only
+
+---
+ src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
+index 5794e80b532f0..5e19365fad161 100644
+--- a/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
++++ b/src/coreclr/tools/aot/crossgen2/crossgen2_inbuild.csproj
+@@ -6,7 +6,12 @@
+     <PublishDir>$(RuntimeBinDir)$(BuildArchitecture)/crossgen2/</PublishDir>
+     <SelfContained>true</SelfContained>
+     <PublishTrimmed>true</PublishTrimmed>
+-    <PublishSingleFile>true</PublishSingleFile>
++    <!--
++      Publish with AOT on Windows as Single file doesn't work well when an app has to include DiaSymReader.Native.
++      Publish single-file elsewhere so we don't need to adjust our "AOT in build" logic to handle targeting the SDK RID.
++    -->
++    <PublishAot Condition="$(NETCoreSdkPortableRuntimeIdentifier.StartsWith('win-'))">true</PublishAot>
++    <PublishSingleFile Condition="'$(PublishAot)' != 'true'">true</PublishSingleFile>
+     <PublishReadyToRun>true</PublishReadyToRun>
+     <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
+     <TrimmerSingleWarn>false</TrimmerSingleWarn>

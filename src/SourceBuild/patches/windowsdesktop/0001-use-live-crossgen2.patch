@@ -1,0 +1,74 @@
+From 1ef690888a7668a6c25ea3f0647ca06108e64d6b Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 13 Dec 2024 13:40:47 -0800
+Subject: [PATCH 1/2] Use the live crossgen2 corresponding to the runtime we're
+ building against.
+
+Backport: https://github.com/dotnet/windowsdesktop/pull/4815
+
+---
+ src/windowsdesktop/src/sfx/Directory.Build.targets | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/windowsdesktop/src/sfx/Directory.Build.targets b/src/windowsdesktop/src/sfx/Directory.Build.targets
+index ca14567ba..721779d78 100644
+--- a/src/windowsdesktop/src/sfx/Directory.Build.targets
++++ b/src/windowsdesktop/src/sfx/Directory.Build.targets
+@@ -5,13 +5,19 @@
+   <ItemGroup>
+     <KnownFrameworkReference
+       Update="Microsoft.NETCore.App"
++      Condition="'%(TargetFramework)' == '$(TargetFramework)'"
+       DefaultRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRefVersion)"
+       LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRefVersion)"
+       TargetingPackVersion="$(MicrosoftNETCoreAppRefVersion)" />
++    <KnownCrossgen2Pack
++      Update="Microsoft.NETCore.App.Crossgen2"
++      Condition="'%(TargetFramework)' == '$(TargetFramework)'"
++      Crossgen2PackVersion="$(MicrosoftNETCoreAppRefVersion)" />
+     <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
+     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
+     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App.WindowsForms" />
+     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App.WPF" />
++
+   </ItemGroup>
+ 
+   <ItemGroup>
+
+From aa7933c4e56dae574cc2314d59561e32f9c12ebe Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 13 Dec 2024 14:14:34 -0800
+Subject: [PATCH 2/2] Change style to enable referencing custom metadata
+
+---
+ .../src/sfx/Directory.Build.targets              | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/src/windowsdesktop/src/sfx/Directory.Build.targets b/src/windowsdesktop/src/sfx/Directory.Build.targets
+index 721779d78..7da1ca224 100644
+--- a/src/windowsdesktop/src/sfx/Directory.Build.targets
++++ b/src/windowsdesktop/src/sfx/Directory.Build.targets
+@@ -4,15 +4,15 @@
+ 
+   <ItemGroup>
+     <KnownFrameworkReference
+-      Update="Microsoft.NETCore.App"
+-      Condition="'%(TargetFramework)' == '$(TargetFramework)'"
+-      DefaultRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRefVersion)"
+-      LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRefVersion)"
+-      TargetingPackVersion="$(MicrosoftNETCoreAppRefVersion)" />
++      Update="Microsoft.NETCore.App">
++      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRefVersion)</DefaultRuntimeFrameworkVersion>
++      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRefVersion)</LatestRuntimeFrameworkVersion>
++      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRefVersion)</TargetingPackVersion>
++    </KnownFrameworkReference>
+     <KnownCrossgen2Pack
+-      Update="Microsoft.NETCore.App.Crossgen2"
+-      Condition="'%(TargetFramework)' == '$(TargetFramework)'"
+-      Crossgen2PackVersion="$(MicrosoftNETCoreAppRefVersion)" />
++      Update="Microsoft.NETCore.App.Crossgen2">
++      <Crossgen2PackVersion Condition="'%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRefVersion)</Crossgen2PackVersion>
++    </KnownCrossgen2Pack>
+     <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
+     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
+     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App.WindowsForms" />
