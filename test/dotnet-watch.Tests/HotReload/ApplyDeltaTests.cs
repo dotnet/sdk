@@ -303,7 +303,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45299")]
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
