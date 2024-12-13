@@ -32,8 +32,8 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
-        private const string _dotnetHost = "DOTNET_HOST_PATH";
-        private const string _msbuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+        private const string DotnetHost = "DOTNET_HOST_PATH";
+        private const string MsbuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
 
@@ -200,11 +200,11 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 if (File.Exists(dotnetExe))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(_dotnetHost, dotnetExe);
+                    propertiesToAdd.Add(DotnetHost, dotnetExe);
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{_dotnetHost}' because dotnet executable '{dotnetExe}' does not exist.");
+                    logger?.LogMessage($"Could not set '{DotnetHost}' because dotnet executable '{dotnetExe}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
@@ -213,11 +213,11 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 if (!string.IsNullOrEmpty(runtimeVersion))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(_msbuildTaskHostRuntimeVersion, runtimeVersion);
+                    propertiesToAdd.Add(MsbuildTaskHostRuntimeVersion, runtimeVersion);
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{_msbuildTaskHostRuntimeVersion}' because runtime version could not be determined.");
+                    logger?.LogMessage($"Could not set '{MsbuildTaskHostRuntimeVersion}' because runtime version could not be determined.");
                 }
 
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
