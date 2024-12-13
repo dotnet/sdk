@@ -337,26 +337,3 @@ extends:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
-
-      ############### POST-BUILD STAGE ###############
-      - template: /eng/common/templates-official/post-build/post-build.yml@self
-        parameters:
-          publishingInfraVersion: 3
-          enableSymbolValidation: false
-          enableSigningValidation: false
-          enableNugetValidation: false
-          enableSourceLinkValidation: false
-          publishInstallersAndChecksums: true
-          publishAssetsImmediately: true
-          SDLValidationParameters:
-            enable: false
-            params: ' -SourceToolsList @("policheck","credscan")
-            -TsaInstanceURL $(_TsaInstanceURL)
-            -TsaProjectName $(_TsaProjectName)
-            -TsaNotificationEmail $(_TsaNotificationEmail)
-            -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-            -TsaBugAreaPath $(_TsaBugAreaPath)
-            -TsaIterationPath $(_TsaIterationPath)
-            -TsaRepositoryName "dotnet-sdk"
-            -TsaCodebaseName "dotnet-sdk"
-            -TsaPublish $True'
