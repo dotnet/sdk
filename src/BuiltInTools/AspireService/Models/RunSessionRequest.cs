@@ -59,7 +59,7 @@ internal class RunSessionRequest
     public EnvVar[] Environment { get; set; } = Array.Empty<EnvVar>();
 
     [JsonPropertyName("args")]
-    public string[] Arguments { get; set; } = Array.Empty<string>();
+    public string[]? Arguments { get; set; }
 
     public ProjectLaunchRequest? ToProjectLaunchInformation()
     {
