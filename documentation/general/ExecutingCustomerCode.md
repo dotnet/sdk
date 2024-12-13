@@ -51,6 +51,7 @@ Some examples of specific patterns to watch out for that can cause issues includ
 2. MSBuild SDKs. At the top of many .NET projects is a line that includes `Sdk="<SDK>"`. This automatically imports build logic associated with the specified SDK. If you are unfamiliar with the specified SDK, ensure it is secure before building any code including it.
 3. MSBuild tasks. Within a `Target` block are MSBuild Tasks. Many of these, including `Exec` and `DownloadFile` execute logic that pulls code or build logic from the internet and may execute it. If you are unfamiliar with any MSBuild Task in a customer-provided project, ensure you fully understand its semantics before executing it (by building).
 4. Typos. NuGet packages starting with Microsoft. and System. can only be pushed to nuget.org by Microsoft accounts, but Mircosoft and Sysstem are unregulated.
+5. Malicious NuGet.Config files. Even if a PackageReference points to a package you're familiar with, perhaps even a Microsoft. or System. package, a NuGet.Config file can dictate searching in a different package source first that may not be secure and may include a malicious version of the package.
 
 More examples of patterns that can easily be exploited by malicious users can be found [here](https://aka.ms/msbuild-security-documentation)
 
