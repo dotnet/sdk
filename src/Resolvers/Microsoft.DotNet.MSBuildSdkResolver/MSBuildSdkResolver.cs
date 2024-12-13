@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 }
                 else
                 {
-                    logger?.LogMessage($"Could set '{_dotnetHost}' because dotnet executable does not exists at '{dotnetExe}'.");
+                    logger?.LogMessage($"Could not set '{_dotnetHost}' because dotnet executable '{dotnetExe}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?
