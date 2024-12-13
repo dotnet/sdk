@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
         private const string _dotnetHost = "DOTNET_HOST_PATH";
-        private const string _msbuildNetTaskHostRuntimeVersion = "MSBuildNetTaskHostRuntimeVersion";
+        private const string _msbuildNetTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
         {
