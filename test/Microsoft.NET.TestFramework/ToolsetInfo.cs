@@ -100,7 +100,7 @@ namespace Microsoft.NET.TestFramework
                     throw new Exception("Failed to get dotnet version" + Environment.NewLine + logger.ToString());
                 }
 
-                _sdkVersion = result.StdOut.Trim();
+                _sdkVersion = result.StdOut?.Trim();
             }
             finally
             {
@@ -123,7 +123,7 @@ namespace Microsoft.NET.TestFramework
                 throw new Exception("Failed to get msbuild version" + Environment.NewLine + logger.ToString());
             }
 
-            _msbuildVersion = result.StdOut.Split().Last();
+            _msbuildVersion = result.StdOut?.Split().Last();
         }
 
         public string? GetMicrosoftNETBuildExtensionsPath()
