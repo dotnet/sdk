@@ -13,8 +13,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
-        private const string _dotnetHost = "DOTNET_HOST_PATH";
-        private const string _msbuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+        private const string DotnetHost = "DOTNET_HOST_PATH";
+        private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
         {
@@ -203,8 +203,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
             result.PropertiesToAdd.Count.Should().Be(2);
-            result.PropertiesToAdd.Should().ContainKey(_dotnetHost);
-            result.PropertiesToAdd.Should().ContainKey(_msbuildTaskHostRuntimeVersion);
+            result.PropertiesToAdd.Should().ContainKey(DotnetHost);
+            result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
+            result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
             result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
             result.Warnings.Should().BeNullOrEmpty();
             result.Errors.Should().BeNullOrEmpty();
@@ -279,8 +280,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
             result.PropertiesToAdd.Count.Should().Be(4);
-            result.PropertiesToAdd.Should().ContainKey(_dotnetHost);
-            result.PropertiesToAdd.Should().ContainKey(_msbuildTaskHostRuntimeVersion);
+            result.PropertiesToAdd.Should().ContainKey(DotnetHost);
+            result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
+            result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
             result.PropertiesToAdd.Should().ContainKey("SdkResolverHonoredGlobalJson");
             result.PropertiesToAdd.Should().ContainKey("SdkResolverGlobalJsonPath");
             result.PropertiesToAdd["SdkResolverHonoredGlobalJson"].Should().Be("false");
