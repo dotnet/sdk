@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Text.Json.Nodes;
+using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Configurer;
@@ -285,25 +285,21 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         {
             // 1. Get the runtime version from the MSBuild.runtimeconfig.json file
             string runtimeConfigPath = Path.Combine(sdkDirectory, "MSBuild.runtimeconfig.json");
-            if (File.Exists(runtimeConfigPath))
-            {
-                var runtimeConfigJson = JsonNode.Parse(File.ReadAllText(runtimeConfigPath)) as JsonObject;
-                var runtimeOptionsFramework = runtimeConfigJson?["runtimeOptions"]?["framework"];
-                string? runtimeName = runtimeOptionsFramework?["name"]?.ToString();
-                string? runtimeVersion = runtimeOptionsFramework?["version"]?.ToString();
+            if (!File.Exists(runtimeConfigPath)) return null;
 
-                // 2. Check that the runtime version is installed (in shared folder)
-                if (!string.IsNullOrEmpty(runtimeName) && !string.IsNullOrEmpty(runtimeVersion))
-                {
-                    string runtimePath = Path.Combine(dotnetRoot, "shared", runtimeName, runtimeVersion);
-                    if (Directory.Exists(runtimePath))
-                    {
-                        return runtimeVersion;
-                    }
-                }
-            }
+            using var stream = File.OpenRead(runtimeConfigPath);
+            using var jsonDoc = JsonDocument.Parse(stream);
 
-            return null;
+            JsonElement root = jsonDoc.RootElement;
+            if (!root.TryGetProperty("runtimeOptions", out JsonElement runtimeOptions) ||
+                !runtimeOptions.TryGetProperty("framework", out JsonElement framework)) return null;
+
+            string? runtimeName = framework.GetProperty("name").GetString();
+            string? runtimeVersion = framework.GetProperty("version").GetString();
+
+            return (!string.IsNullOrEmpty(runtimeName) && !string.IsNullOrEmpty(runtimeVersion) &&
+                    Directory.Exists(Path.Combine(dotnetRoot, "shared", runtimeName, runtimeVersion)))
+                    ? runtimeVersion : null;
         }
 
         private static SdkResult Failure(SdkResultFactory factory, ResolverLogger? logger, SdkLogger sdkLogger, string format, params object?[] args)
