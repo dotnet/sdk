@@ -16,10 +16,24 @@
     <RepoArtifactsShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsShippingPackagesDir>
     <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$([MSBuild]::NormalizeDirectory('$(ArtifactsNonShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsNonShippingPackagesDir>
     <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsNonShippingPackagesDir>
+
+    <RepoArtifactsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts'))</RepoArtifactsDir>
+    <RepoArtifactsPackageCache>$([MSBuild]::NormalizeDirectory('$(RepoArtifactsDir)', 'sb', 'package-cache'))</RepoArtifactsPackageCache>
+
     <!-- Pass location for packages -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltShippingPackagesDir=$(RepoArtifactsShippingPackagesDir)</BuildArgs>
     <!-- Trim the trailing slash as it breaks argument parsing on Windows if this is the last argument. -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltNonShippingPackagesDir=$(RepoArtifactsNonShippingPackagesDir.TrimEnd('\'))</BuildArgs>
+
+    <!-- Pass RID and Portable/non-portable information -->
+    <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
+
+    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(TargetArchitecture)</BaseOS>
+    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -514,23 +528,50 @@
     </Touch>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="GetProducedPackages"
           Condition="'$(IsUtilityProject)' != 'true'"
-          Returns="@(ProducedPackage)">
+          Returns="@(ProducedPackage);@(ProducedPackageFromDependentVertical)">
     <ItemGroup>
       <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
     </ItemGroup>
 
-    <Error Text="No repository asset manifest files found at $(RepoAssetManifestsDir)*.xml. This often means the build failed but did not log an error." Condition="'@(RepoAssetManifest)' == ''" />
+    <PropertyGroup>
+      <LogManifestNotFoundError Condition="('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') and '@(RepoAssetManifest)' == ''">true</LogManifestNotFoundError>
+    </PropertyGroup>
+
+    <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="'$(LogManifestNotFoundError)' == 'true' and '$(MinimalConsoleLogOutput)' == 'true' and Exists('$(RepoConsoleLogFile)')" />
+    <Error Text="No repository asset manifest files found at '$(RepoAssetManifestsDir)*.xml'. This often means the build failed but did not log an error." Condition="'$(LogManifestNotFoundError)' == 'true'" />
 
     <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">
       <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
       <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
     </GetKnownArtifactsFromAssetManifests>
 
+    <!-- Mark the artifacts so that they get binplaced. -->
+    <ItemGroup>
+      <ProducedPackage>
+        <ShippingFolder Condition="%(ProducedPackage.NonShipping) == 'true'">NonShipping</ShippingFolder>
+        <ShippingFolder Condition="%(ProducedPackage.NonShipping) != 'true'">Shipping</ShippingFolder>
+      </ProducedPackage>
+
+      <!-- When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages. -->
+      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/$(RepositoryName)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+      <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" />
+    </ItemGroup>
+
+    <!-- Add manifests from dependent verticals. -->
+    <ItemGroup>
+      <RepoAssetManifestFromDependentVertical Include="$(ArtifactsAssetManifestsDir)*.xml" Exclude="$(MergedAssetManifestOutputPath)" />
+    </ItemGroup>
+
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifestFromDependentVertical)" RepoOrigin="$(RepositoryName)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackageFromDependentVertical" />
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAssetFromDependentVertical" />
+    </GetKnownArtifactsFromAssetManifests>
+
     <ItemGroup>
       <ProducedPackage ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
+      <ProducedPackageFromDependentVertical ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
     </ItemGroup>
   </Target>
 
@@ -547,7 +588,7 @@
   <Target Name="CopyInnerBuildRestoredPackages"
           Condition="'$(IsUtilityProject)' != 'true' and '$(DotNetBuildSourceOnly)' == 'true'">
     <ItemGroup>
-      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/package-cache/**/*" />
+      <_InnerPackageCacheFiles Include="$(RepoArtifactsPackageCache)**/*" />
     </ItemGroup>
 
     <!-- Retries can be necessary due to file locking when parallel builds are enabled and multiple repos
@@ -562,11 +603,11 @@
 
   <Target Name="MoveDotNetBuildLogs"
         Condition="'$(IsUtilityProject)' != 'true' and
-                    Exists('$(ProjectDirectory)artifacts')">
+                    Exists('$(RepoArtifactsDir)')">
     <ItemGroup>
-      <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.log" />
-      <LogFilesToMove Include="$(ProjectDirectory)artifacts/**/*.binlog" />
-      <PrebuiltReportsToMove Include="$(ProjectDirectory)artifacts/sb/prebuilt-report/*" />
+      <LogFilesToMove Include="$(RepoArtifactsDir)**/*.log" />
+      <LogFilesToMove Include="$(RepoArtifactsDir)**/*.binlog" />
+      <PrebuiltReportsToMove Include="$(RepoArtifactsDir)sb/prebuilt-report/*" />
     </ItemGroup>
 
     <!-- Move the build logs -->
@@ -585,15 +626,19 @@
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
           Condition="'$(IsUtilityProject)' != 'true' and
                      '$(CleanWhileBuilding)' == 'true' and
-                     Exists('$(ProjectDirectory)artifacts')">
+                     Exists('$(RepoArtifactsDir)')">
     <!--
       Some repositories (WinForms) use source generators that open files manually and keep file handles open on the compiler server (CsWin32).
       These source generators are written incorrectly (a source generator should never do IO itself),
       but the required features to read in binary files as input to a source generator don't exist.
       To work around these source generators, shut down the compiler server so we can delete the obj directories.
       Don't fail the build when shutdown returns a failure.
+
+      Don't run when source building to prevent the build from hanging indefinitely - https://github.com/dotnet/source-build/issues/4796
     -->
     <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler"
+          Condition="'$(DotNetBuildSourceOnly)' != 'true'"
+          EnvironmentVariables="NUGET_PACKAGES=$(RepoArtifactsPackageCache)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true" />
 
@@ -602,7 +647,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ObjFilesToCopy Include="$(ProjectDirectory)artifacts/**/project.assets.json" />
+      <ObjFilesToCopy Include="$(RepoArtifactsDir)**/project.assets.json" />
     </ItemGroup>
 
     <!-- Make a copy of project.assets.json files -->
@@ -611,7 +656,7 @@
           Condition="'@(ObjFilesToCopy)' != ''" />
 
     <ItemGroup>
-      <DirsToDelete Include="$([System.IO.Directory]::GetDirectories('$(ProjectDirectory)artifacts'))" />
+      <DirsToDelete Include="$([System.IO.Directory]::GetDirectories('$(RepoArtifactsDir)'))" />
 
       <DirsToDeleteWithTrailingSeparator Include="$([MSBuild]::EnsureTrailingSlash('%(DirsToDelete.Identity)'))" />
       <DirsToDeleteWithTrailingSeparator Remove="$(BuildObjDir)" />
@@ -634,7 +679,7 @@
   </Target>
 
   <Target Name="DiscoverToolPackageVersions" DependsOnTargets="GetProducedPackages">
-    <JoinItems Left="@(ProducedPackage)"
+    <JoinItems Left="@(ProducedPackage);@(ProducedPackageFromDependentVertical)"
                Right="@(BuiltSdkPackage)"
                LeftMetadata="*">
       <Output TaskParameter="JoinResult" ItemName="BuiltSdkPackageOverride" />

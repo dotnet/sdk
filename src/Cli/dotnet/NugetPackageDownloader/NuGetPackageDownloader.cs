@@ -348,7 +348,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             List<PackageSource> defaultSources = new();
-            string currentDirectory = Directory.GetCurrentDirectory();
+            string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
             {
@@ -403,6 +403,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         continue;
                     }
 
+                    if (defaultSources.Any(defaultSource => defaultSource.SourceUri == packageSource.SourceUri))
+                    {
+                        continue;
+                    }
+
                     defaultSources.Add(packageSource);
                 }
             }
@@ -410,7 +415,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return defaultSources;
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
+        public IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
                 LoadOverrideSources(packageSourceLocation) :

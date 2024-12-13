@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         private readonly string _forwardApplicationPath;
         private readonly IEnumerable<string> _argsToForward;
-        private readonly string _depsFile;
-        private readonly string _runtimeConfig;
-        private readonly string _additionalProbingPath;
+        private readonly string? _depsFile;
+        private readonly string? _runtimeConfig;
+        private readonly string? _additionalProbingPath;
         private Dictionary<string, string> _environmentVariables;
 
         private readonly string[] _allArgs;
@@ -25,10 +25,10 @@ namespace Microsoft.DotNet.Cli.Utils
         public ForwardingAppImplementation(
             string forwardApplicationPath,
             IEnumerable<string> argsToForward,
-            string depsFile = null,
-            string runtimeConfig = null,
-            string additionalProbingPath = null,
-            Dictionary<string, string> environmentVariables = null)
+            string? depsFile = null,
+            string? runtimeConfig = null,
+            string? additionalProbingPath = null,
+            Dictionary<string, string>? environmentVariables = null)
         {
             _forwardApplicationPath = forwardApplicationPath;
             _argsToForward = argsToForward;
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return this;
         }
 
-        private string GetHostExeName()
+        private string? GetHostExeName()
         {
             // Should instead make this a full path to dotnet
             return Environment.ProcessPath;
