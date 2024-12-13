@@ -302,6 +302,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             string? runtimeName = framework.GetProperty("name").GetString();
             string? runtimeVersion = framework.GetProperty("version").GetString();
 
+            // 2. Check that the runtime version is installed (in shared folder)
             return (!string.IsNullOrEmpty(runtimeName) && !string.IsNullOrEmpty(runtimeVersion) &&
                     Directory.Exists(Path.Combine(dotnetRoot, "shared", runtimeName, runtimeVersion)))
                     ? runtimeVersion : null;
