@@ -3,7 +3,7 @@
   "name": "MSTest-Testprojekt",
   "description": "Ein Projekt, das MSTest-Tests enthält, die auf .NET unter Windows, Linux und macOS ausgeführt werden können.",
   "symbols/TargetFrameworkOverride/description": "Überschreibt das Zielframework",
-  "symbols/TargetFrameworkOverride/displayName": "Überschreibung des Zielframeworks",
+  "symbols/TargetFrameworkOverride/displayName": "Zielframeworküberschreibung",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/displayName": "Framework",
   "symbols/Framework/choices/net9.0/description": ".NET 9",
