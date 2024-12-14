@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 string? dotnetExe = dotnetRoot != null ?
                     Path.Combine(dotnetRoot, Constants.DotNetExe) :
                     null;
-                if (!string.IsNullOrEmpty(dotnetExe) && File.Exists(dotnetExe))
+                if (File.Exists(dotnetExe))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
                     propertiesToAdd.Add(DotnetHost, dotnetExe);
