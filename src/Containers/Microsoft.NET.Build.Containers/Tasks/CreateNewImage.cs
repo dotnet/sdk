@@ -174,6 +174,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         GeneratedContainerConfiguration = builtImage.Config;
         GeneratedContainerDigest = builtImage.Manifest.GetDigest();
         GeneratedArchiveOutputPath = ArchiveOutputPath;
+        GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
 
         switch (destinationImageReference.Kind)
