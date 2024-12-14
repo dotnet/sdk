@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? dotnetExe = !string.IsNullOrEmpty(dotnetRoot) ?
+                string? dotnetExe = dotnetRoot != null ?
                     Path.Combine(dotnetRoot, Constants.DotNetExe) :
                     null;
                 if (!string.IsNullOrEmpty(dotnetExe) && File.Exists(dotnetExe))
