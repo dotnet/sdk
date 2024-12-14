@@ -50,19 +50,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
             // For these operations, we don't have to respect 'msi' because they're equivalent between the two workload
             // install types, and FileBased is much easier to work with.
-            _installer = installer ?? new FileBasedInstaller(
-                reporter,
-                new SdkFeatureBand(_sdkVersion),
-                workloadResolver,
-                CliFolderPathCalculator.DotnetUserProfileFolderPath,
-                nugetPackageDownloader: null,
-                dotnetDir: Path.GetDirectoryName(Environment.ProcessPath),
-                tempDirPath: null,
-                verbosity: Verbosity,
-                packageSourceLocation: null,
-                restoreActionConfig: new RestoreActionConfig(result.HasOption(SharedOptions.InteractiveOption)),
-                nugetPackageDownloaderVerbosity: VerbosityOptions.quiet
-                );
+            _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), workloadResolver, Verbosity, result.HasOption(SharedOptions.InteractiveOption));
 
             _workloadVersion = result.GetValue(WorkloadSearchVersionsCommandParser.WorkloadVersionArgument);
 
@@ -71,6 +59,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 new SdkFeatureBand(_sdkVersion).IsPrerelease;
 
             _resolver = creationResult.WorkloadResolver;
+        }
+
+        private static IInstaller GenerateInstaller(IReporter reporter, SdkFeatureBand sdkFeatureBand, IWorkloadResolver workloadResolver, VerbosityOptions verbosity, bool interactive)
+        {
+            return new FileBasedInstaller(
+                reporter,
+                sdkFeatureBand,
+                workloadResolver,
+                CliFolderPathCalculator.DotnetUserProfileFolderPath,
+                nugetPackageDownloader: null,
+                dotnetDir: Path.GetDirectoryName(Environment.ProcessPath),
+                tempDirPath: null,
+                verbosity: verbosity,
+                packageSourceLocation: null,
+                restoreActionConfig: new RestoreActionConfig(interactive),
+                nugetPackageDownloaderVerbosity: VerbosityOptions.quiet
+                );
         }
 
         public override int Execute()
@@ -123,7 +128,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             }
             else
             {
-                var workloadSet = _installer.GetWorkloadSetContents(_workloadVersion.Last());
+                var workloadSet = _installer.GetWorkloadSetContents(_workloadVersion.Single());
                 if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
                 {
                     var set = new WorkloadSet() { ManifestVersions = workloadSet.ManifestVersions };
@@ -147,11 +152,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
         private List<string> GetVersions(int numberOfWorkloadSetsToTake)
         {
-            return GetVersions(numberOfWorkloadSetsToTake, new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader);
+            return GetVersions(numberOfWorkloadSetsToTake, new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader, _resolver);
         }
 
-        private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader)
+        private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IWorkloadResolver resolver)
         {
+            installer ??= GenerateInstaller(Cli.Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
             var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
             return packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
@@ -167,11 +173,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
         public static IEnumerable<string> FindBestWorkloadSetsFromComponents(SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IEnumerable<string> workloadVersions, IWorkloadResolver resolver, int numberOfWorkloadSetsToTake)
         {
+            installer ??= GenerateInstaller(Cli.Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
             List<string> versions;
             try
             {
                 // 0 indicates 'give all versions'. Not all will match, so we don't know how many we will need
-                versions = GetVersions(0, featureBand, installer, includePreviews, packageDownloader);
+                versions = GetVersions(0, featureBand, installer, includePreviews, packageDownloader, resolver);
             }
             catch (NuGetPackageNotFoundException)
             {
@@ -179,7 +186,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 return null;
             }
 
-            var packageNamesAndVersions = workloadVersions.Select(version =>
+            var manifestIdsAndVersions = workloadVersions.Select(version =>
             {
                 var split = version.Split('@');
                 return (new ManifestId(resolver.GetManifestFromWorkload(new WorkloadId(split[0])).Id), new ManifestVersion(split[1]));
@@ -189,7 +196,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             return versions.Where(version =>
             {
                 var manifestVersions = installer.GetWorkloadSetContents(version).ManifestVersions;
-                return packageNamesAndVersions.All(tuple => manifestVersions.ContainsKey(tuple.Item1) && manifestVersions[tuple.Item1].Version.Equals(tuple.Item2));
+                return manifestIdsAndVersions.All(tuple => manifestVersions.ContainsKey(tuple.Item1) && manifestVersions[tuple.Item1].Version.Equals(tuple.Item2));
             }).Take(numberOfWorkloadSetsToTake);
         }
     }

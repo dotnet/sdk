@@ -348,7 +348,7 @@
     <value>Manifest MSI not found in NuGet package {0}</value>
   </data>
   <data name="WorkloadSetVersionOptionDescription" xml:space="preserve">
-    <value>Update to the specified workload version.</value>
+    <value>A workload version to display or one or more workloads and their versions joined by the '@' character.</value>
   </data>
   <data name="NewWorkloadSet" xml:space="preserve">
     <value>Installing workload version {0}.</value>

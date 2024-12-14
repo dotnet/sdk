@@ -398,8 +398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload version.</source>
-        <target state="translated">Обновление до указанной версии рабочей нагрузки.</target>
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="needs-review-translation">Обновление до указанной версии рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
