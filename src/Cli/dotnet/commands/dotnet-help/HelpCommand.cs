@@ -6,6 +6,8 @@ using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
+using NuGetDocumentedCommand = NuGet.CommandLine.XPlat.Commands.DocumentedCommand;
+
 namespace Microsoft.DotNet.Tools.Help
 {
     public class HelpCommand(string[] helpArgs)
@@ -104,6 +106,11 @@ namespace Microsoft.DotNet.Tools.Help
             if (parsedCommand?.CommandResult?.Command is DocumentedCommand dc)
             {
                 docsLink = dc.DocsLink;
+                return true;
+            }
+            else if (parsedCommand?.CommandResult?.Command is NuGetDocumentedCommand ndc)
+            {
+                docsLink = ndc.HelpUrl;
                 return true;
             }
             docsLink = null;
