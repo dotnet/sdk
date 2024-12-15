@@ -358,7 +358,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 { "9.0.103", workloadSet4 }
             };
 
-            var parseResult = Parser.Instance.Parse("dotnet workload update --version ios@17.5.9;macos@14.5.92");
+            var parseResult = Parser.Instance.Parse("dotnet workload update --version ios@17.5.9 macos@14.5.92");
             MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
             var testDirectory = _testAssetsManager.CreateTestDirectory(testName: "GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents").Path;
             WorkloadManifest iosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.iOS");
