@@ -18,8 +18,10 @@ parameters:
   default: 'Release'
 
 - name: container
-  type: string
-  default: ''
+  type: object
+  default:
+    image: ''
+    name: ''
 
 - name: crossRootFs
   type: string
@@ -115,6 +117,22 @@ jobs:
 - job: ${{ parameters.buildName }}_${{ parameters.targetArchitecture }}${{ replace(format('_BuildPass{0}', coalesce(parameters.buildPass, '1')), '_BuildPass1', '') }}
   pool: ${{ parameters.pool }}
 
+  # 1ES pipeline template requires that the container is specified in the job level.
+  # If we are using a container image, we set the container to correct name.
+  # Otherwise, we set the container to host so that the job runs on the host agent.
+  ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+    ${{ if ne(parameters.container.name, '') }}:
+      container: ${{ parameters.container.name }}
+    ${{ else }}:
+      container: host
+
+  # For public projects, we always use the container image if it is specified.
+  ${{ else }}:
+    ${{ if ne(parameters.container.image, '') }}:
+      container:
+        image: ${{ parameters.container.image }}
+        options: --privileged
+
   # Currently, CodeQL slows the build down too much
   # https://github.com/dotnet/source-build/issues/4276
   ${{ if and(parameters.isBuiltFromVmr, startswith(parameters.buildName, 'Windows'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
@@ -159,10 +177,8 @@ jobs:
     - name: sourcesPath
       value: $(vmrPath)
 
-  # Must be a path under $(sourcesPath). Inside the docker container, we mount $(sourcesPath) to /vmr
-  # and can't write outside of that folder.
   - name: artifactsStagingDir
-    value: $(sourcesPath)/artifacts/staging
+    value: $(Build.ArtifactStagingDirectory)/artifacts
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -285,13 +301,13 @@ jobs:
         if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
         set extraBuildProperties=
         if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) %extraBuildProperties% ${{ parameters.extraProperties }}
+        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) %extraBuildProperties% ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: |
-          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) ${{ parameters.extraProperties }}
+          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) ${{ parameters.extraProperties }}
         displayName: Run Tests
         workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
@@ -328,21 +344,25 @@ jobs:
             eval tar -ozxf "$previousSdkPath" -C "$(sourcesPath)/.dotnet"
             eval rm -f "$previousSdkPath"
 
-            echo "##vso[task.setvariable variable=additionalBuildArgs]--with-sdk /vmr/.dotnet"
+            echo "##vso[task.setvariable variable=additionalBuildArgs]--with-sdk $(sourcesPath)/.dotnet"
           fi
 
-          docker run --rm -v "$(sourcesPath):/vmr" -w /vmr ${{ parameters.container }} ./prep-source-build.sh $customPrepArgs
+          ./prep-source-build.sh $customPrepArgs
         displayName: Prep the Build
+        workingDirectory: $(sourcesPath)
 
     - script: |
         set -ex
         df -h
 
         customEnvVars=""
+        customPreBuildArgs=""
         customBuildArgs="--ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }}"
 
         if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --online"
+        else
+          customPreBuildArgs="$customPreBuildArgs sudo unshare -n"
         fi
 
         if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
@@ -399,35 +419,18 @@ jobs:
         fi
 
         extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+        extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
 
-        # Only use Docker when a container is specified
-        if [[ -n "${{ parameters.container }}" ]]; then
-          # Allows Arcade to have access to the commit for the build, pass it through to the container
-          customEnvVars="$customEnvVars BUILD_SOURCEVERSION=$BUILD_SOURCEVERSION"
+        for envVar in $customEnvVars; do
+          customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
+        done
 
-          customEnvVars="$customEnvVars BUILD_BUILDNUMBER=$(Build.BuildNumber)"
-
-          customDockerRunArgs=""
-          for envVar in $customEnvVars; do
-            customDockerRunArgs="$customDockerRunArgs -e $envVar"
-          done
-
-          if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
-            customDockerRunArgs="$customDockerRunArgs --network none"
-          fi
-
-          docker run --rm -v "$(sourcesPath):/vmr" -w /vmr $customDockerRunArgs ${{ parameters.container }} ./build.sh $buildArgs
-        else
-          for envVar in $customEnvVars; do
-            customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
-          done
-          cd $(sourcesPath)
-          eval $customEnvVarsWithBashSyntax
-          ./build.sh $buildArgs
-        fi
+        eval $customEnvVarsWithBashSyntax
+        $customPreBuildArgs ./build.sh $buildArgs
       displayName: Build
+      workingDirectory: $(sourcesPath)
 
     # Only run tests if enabled
     - ${{ if eq(parameters.runTests, 'True') }}:
@@ -448,9 +451,14 @@ jobs:
       - script: |
           set -ex
 
-          dockerVolumeArgs="-v $(sourcesPath):/vmr"
+          customPreBuildArgs=''
           customBuildArgs=''
           extraBuildProperties=''
+          customBuildArgs="--ci --prepareMachine -c ${{ parameters.configuration }}"
+
+          if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
+            customPreBuildArgs="$customPreBuildArgs sudo"
+          fi
 
           if [[ ! -z '${{ parameters.targetOS }}' ]]; then
             extraBuildProperties="$extraBuildProperties /p:TargetOS=${{ parameters.targetOS }}"
@@ -476,18 +484,14 @@ jobs:
           fi
 
           extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+          extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
             extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
           fi
 
-          # Only use Docker when a container is specified
-          if [[ -n "${{ parameters.container }}" ]]; then
-            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
-          else
-            cd $(sourcesPath)
-            ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
-          fi
+          cd $(sourcesPath)
+          $customPreBuildArgs ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
 
         displayName: Run Tests
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
@@ -536,30 +540,24 @@ jobs:
         targetFolder=$(Build.ArtifactStagingDirectory)/BuildLogs/
         mkdir -p ${targetFolder}
 
-        # Download rsync if using mariner
-        if grep -qE "CBL-Mariner|Azure Linux" /etc/os-release; then
-          sudo tdnf install -y rsync
-          sudo tdnf clean all
-        fi
-
         cd "$(sourcesPath)"
 
-        find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
+        find artifacts/log/ -exec cp --parents {} ${targetFolder} \;
 
         if [ -d "artifacts/scenario-tests/" ]; then
-          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec cp --parents {} ${targetFolder} \;
           echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
         fi
 
         if [ -d "artifacts/TestResults/" ]; then
-          find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.binlog" -exec cp --parents {} ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.diff" -exec cp --parents {} ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec cp --parents {} ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.trx" -exec cp --parents {} ${targetFolder} \;
         fi
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
-          find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/prebuilt-report/ -exec cp --parents {} ${targetFolder} \;
         fi
       displayName: Prepare BuildLogs staging directory and check assets
       continueOnError: true

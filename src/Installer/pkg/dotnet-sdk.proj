@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
-    <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(IsRPMBasedDistro)' != 'true'">true</SkipBuild>
+    <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
+    <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(BuildSdkRpm)' != 'true'">true</SkipBuild>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
     <GenerateInstallers>true</GenerateInstallers>
     <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
-    <BuildRpmPackage Condition="'$(IsRPMBasedDistro)' == 'true'">true</BuildRpmPackage>
+    <BuildRpmPackage Condition="'$(BuildSdkRpm)' == 'true'">true</BuildRpmPackage>
     <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
     <ProductBrandPrefix>Microsoft .NET</ProductBrandPrefix>
     <LicenseFile>$(RepoRoot)LICENSE.TXT</LicenseFile>

@@ -77,6 +77,59 @@ extends:
       baseline:
         baselineFile: $(Build.SourcesDirectory)\.config\guardian\.gdnbaselines
 
+    containers:
+      almaLinuxContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
+        options: --privileged
+      alpineLatestContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
+        options: --privileged
+      alpinePreviousContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
+        options: --privileged
+      centOSStreamContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+        options: --privileged
+      fedoraContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
+        options: --privileged
+      ubuntuContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
+        options: --privileged
+      ubuntuArmContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-arm64
+        options: --privileged
+      azurelinuxX64CrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64
+        options: --privileged
+      azurelinuxArmCrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm
+        options: --privileged
+      azurelinuxArm64CrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64
+        options: --privileged
+      azurelinuxX64AlpineCrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64-alpine
+        options: --privileged
+      azurelinuxArmAlpineCrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
+        options: --privileged
+      azurelinuxArm64AlpineCrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64-alpine
+        options: --privileged
+      androidCrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-android-amd64
+        options: --privileged
+      linuxBionicCrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-android-openssl
+        options: --privileged
+      browserCrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
+        options: --privileged
+      wasiCrossContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
+        options: --privileged
+
     stages:
     - ${{ if and(ne(variables.isPRTrigger, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
       - template: /eng/pipelines/templates/stages/vmr-scan.yml@self
