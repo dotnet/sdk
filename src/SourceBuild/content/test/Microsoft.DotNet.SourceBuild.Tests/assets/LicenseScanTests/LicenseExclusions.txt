@@ -32,6 +32,7 @@ src/aspnetcore/src/Components/THIRD-PARTY-NOTICES.txt|unknown
 src/aspnetcore/THIRD-PARTY-NOTICES.txt|unknown
 
 # Windows installer files that have a reference to a URL for license
+src/aspnetcore/src/Framework/App.Runtime/bundle/theme/**/*.wxl|unknown-license-reference
 src/aspnetcore/src/Installers/Windows/**/*.wxl|unknown-license-reference
 src/aspnetcore/src/Installers/Windows/**/*.wxs|unknown-license-reference
 
@@ -131,12 +132,6 @@ src/roslyn/src/Setup/Roslyn.VsixLicense/EULA.rtf
 # runtime
 #
 
-# Doc describing licenses, not applicable to source
-src/runtime/docs/project/copyright.md
-
-# Doc that references a license, not applicable to source
-src/runtime/src/coreclr/nativeaot/docs/compiling.md|openssl-ssleay
-
 # Installer asset, not applicable to source
 src/runtime/src/installer/pkg/LICENSE-MSFT.TXT
 
@@ -162,6 +157,9 @@ src/runtime/src/libraries/System.Runtime/tests/System.Runtime.Tests/TestModule/R
 src/runtime/src/libraries/System.ServiceModel.Syndication/tests/TestFeeds/AtomFeeds/*.xml
 
 # Reference to a license, not applicable to source
+src/runtime/docs/project/copyright.md
+src/runtime/docs/project/licensing-assets.md
+src/runtime/src/coreclr/nativeaot/docs/compiling.md|openssl-ssleay
 src/runtime/src/libraries/System.Text.Json/roadmap/images/core-components.txt|unknown-license-reference
 src/runtime/src/libraries/System.Text.Json/roadmap/images/higher-level-components.txt
 
