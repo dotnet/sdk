@@ -32,7 +32,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.TestModulesFilterOption.Name, "**/bin/**/Debug/net8.0/TestProject.dll",
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -66,7 +65,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.TestModulesFilterOption.Name, "**/bin/**/Debug/net8.0/TestProject.dll",
                                     TestingPlatformOptions.TestModulesRootDirectoryOption.Name, testInstance.TestRoot,

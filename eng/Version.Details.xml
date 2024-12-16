@@ -224,14 +224,6 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>fc785088a28006c774dcfe0916b69ff54e6f99c1</Sha>
     </Dependency>
-	<Dependency Name="Microsoft.Testing.Platform" Version="1.5.0-preview.24516.3">
-      <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>bc9161306b23641b0364b8f93d546da4d48da1eb</Sha>
-    </Dependency>
-	<Dependency Name="Microsoft.Testing.Extensions.TrxReport" Version="1.5.0-preview.24516.3">
-      <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>bc9161306b23641b0364b8f93d546da4d48da1eb</Sha>
-    </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.13.0-preview-24610-01">
       <Uri>https://github.com/microsoft/vstest</Uri>

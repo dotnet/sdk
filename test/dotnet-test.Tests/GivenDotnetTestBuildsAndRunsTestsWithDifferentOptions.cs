@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string testProjectPath = "TestProject\\TestProject.csproj";
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
@@ -49,7 +48,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, @"TestProject\TestProject1.csproj",
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -66,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             new BuildCommand(testInstance)
-                .Execute()
+                .Execute($"/p:Configuration={configuration}")
                 .Should().Pass();
 
             var binDirectory = new FileInfo($"{testInstance.Path}/bin").Directory;
@@ -74,7 +72,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.NoBuildOption.Name,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
@@ -96,7 +93,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             new BuildCommand(testInstance)
-                .Execute()
+                .Execute($"/p:Configuration={configuration}")
                 .Should().Pass();
 
             var binDirectory = new FileInfo($"{testInstance.Path}/bin").Directory;
@@ -104,7 +101,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.NoRestoreOption.Name,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
@@ -128,10 +124,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration,
-                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             var testAppArgs = Regex.Matches(result.StdOut, TestApplicationArgsPattern);
             Assert.Contains($"{TestingPlatformOptions.ConfigurationOption.Name} {configuration}", testAppArgs.FirstOrDefault().Value.Split(TestApplicationArgsSeparator)[0]);
@@ -150,7 +144,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ArchitectureOption.Name, arch,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
@@ -169,7 +162,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             new BuildCommand(testInstance)
-                .Execute()
+                .Execute($"/p:Configuration={configuration}")
                 .Should().Pass();
 
             var binDirectory = new FileInfo($"{testInstance.Path}/bin").Directory;
@@ -177,7 +170,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, @"TestProject.csproj",
                                             TestingPlatformOptions.NoRestoreOption.Name, TestingPlatformOptions.NoBuildOption.Name,
@@ -203,7 +195,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.AdditionalMSBuildParametersOption.Name, msBuildParams,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
@@ -224,7 +215,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 

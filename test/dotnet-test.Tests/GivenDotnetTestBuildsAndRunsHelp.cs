@@ -21,7 +21,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(CliConstants.HelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -44,7 +43,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(CliConstants.HelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -73,7 +71,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             //.WithTraceOutput() should be removed later
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(CliConstants.HelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
 

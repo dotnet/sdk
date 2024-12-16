@@ -7,23 +7,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests;
 
 public class GivenDotnetTestsRunsWithDifferentCultures : SdkTest
 {
-	public GivenDotnetTestsRunsWithDifferentCultures(ITestOutputHelper log) : base(log)
-	{
-	}
+    public GivenDotnetTestsRunsWithDifferentCultures(ITestOutputHelper log) : base(log)
+    {
+    }
 
-	[InlineData("en-US")]
-	[InlineData("de-DE")]
-	[Theory]
-	public void CanRunTestsAgainstProjectInLocale(string locale)
-	{
-		TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+    [InlineData("en-US")]
+    [InlineData("de-DE")]
+    [Theory]
+    public void CanRunTestsAgainstProjectInLocale(string locale)
+    {
+        TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
-		CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-								.WithWorkingDirectory(testInstance.Path)
-								.WithCulture(locale)
-								.WithEnableTestingPlatform()
-								.Execute();
+        CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                .WithWorkingDirectory(testInstance.Path)
+                                .WithCulture(locale)
+                                .Execute();
 
-		result.ExitCode.Should().Be(0);
-	}
+        result.ExitCode.Should().Be(0);
+    }
 }
