@@ -507,6 +507,7 @@ jobs:
         artifacts/TestResults/**/*.diff
         artifacts/TestResults/**/Updated*.txt
         artifacts/TestResults/**/*.trx
+        artifacts/TestResults/**/*.xml
         artifacts/prebuilt-report/**
       TargetFolder: '$(Build.ArtifactStagingDirectory)/BuildLogs'
       CleanTargetFolder: true
