@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             _process.EnableRaisingEvents = true;
 
-            Stopwatch sw = null;
+            Stopwatch? sw = null;
             if (CommandLoggingContext.IsVerbose)
             {
                 sw = Stopwatch.StartNew();
@@ -74,6 +74,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             if (CommandLoggingContext.IsVerbose)
             {
+                Debug.Assert(sw is not null);
                 var message = string.Format(
                     LocalizableStrings.ProcessExitedWithCode,
                     FormatProcessInfo(_process.StartInfo),

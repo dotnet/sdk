@@ -202,7 +202,6 @@
   <PropertyGroup>
     <!-- Respect the VerticalName property which is set to a unique identifier in CI. Otherwise default to 'VerticalManifest'. -->
     <MergedAssetManifestOutputPath>$(ArtifactsAssetManifestsDir)$([MSBuild]::ValueOrDefault('$(VerticalName)', 'VerticalManifest')).xml</MergedAssetManifestOutputPath>
-    <ArtifactsStagingDir Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(ArtifactsDir)staging</ArtifactsStagingDir>
   </PropertyGroup>
 
 </Project>
