@@ -496,72 +496,22 @@ jobs:
         displayName: Run Tests
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
-  - ${{ if eq(parameters.targetOS, 'windows') }}:
-
-    # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
-    - powershell: |
-        function CopyWithRelativeFolders($sourcePath, $targetFolder, $filter) {
-          Get-ChildItem -Path $sourcePath -Filter $filter -Recurse | ForEach-Object {
-            $targetPath = Join-Path $targetFolder (Resolve-Path -Relative $_.FullName)
-            New-Item -ItemType Directory -Path (Split-Path -Parent $targetPath) -Force | Out-Null
-            Copy-Item $_.FullName -Destination $targetPath -Force
-            Write-Host "Copied $_ to $targetPath"
-          }
-        }
-
-        $targetFolder = "$(Build.ArtifactStagingDirectory)/BuildLogs/"
-        New-Item -ItemType Directory -Path $targetFolder -Force | Out-Null
-
-        cd "$(sourcesPath)"
-
-        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*"
-
-        if (Test-Path "artifacts/scenario-tests/") {
-            CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
-            echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
-        }
-
-        if (Test-Path "artifacts/TestResults/*") {
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.binlog"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.diff"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "Updated*.txt"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.trx"
-        }
-      displayName: Prepare BuildLogs staging directory and check assets
-      continueOnError: true
-      condition: succeededOrFailed()
-
-  - ${{ else }}:
-
-    # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
-    - script: |
-        set -ex
-
-        targetFolder=$(Build.ArtifactStagingDirectory)/BuildLogs/
-        mkdir -p ${targetFolder}
-
-        cd "$(sourcesPath)"
-
-        find artifacts/log/ -exec cp --parents {} ${targetFolder} \;
-
-        if [ -d "artifacts/scenario-tests/" ]; then
-          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec cp --parents {} ${targetFolder} \;
-          echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
-        fi
-
-        if [ -d "artifacts/TestResults/" ]; then
-          find artifacts/TestResults/ -type f -name "*.binlog" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.diff" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.trx" -exec cp --parents {} ${targetFolder} \;
-        fi
-
-        if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
-          find artifacts/prebuilt-report/ -exec cp --parents {} ${targetFolder} \;
-        fi
-      displayName: Prepare BuildLogs staging directory and check assets
-      continueOnError: true
-      condition: succeededOrFailed()
+  - task: CopyFiles@2
+    displayName: Prepare BuildLogs staging directory and check assets
+    inputs:
+      SourceFolder: '$(sourcesPath)'
+      Contents: |
+        artifacts/log/**
+        artifacts/scenario-tests/**/*.binlog
+        artifacts/TestResults/**/*.binlog
+        artifacts/TestResults/**/*.diff
+        artifacts/TestResults/**/Updated*.txt
+        artifacts/TestResults/**/*.trx
+        artifacts/prebuilt-report/**
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/BuildLogs'
+      CleanTargetFolder: true
+    continueOnError: true
+    condition: succeededOrFailed()
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(Build.ArtifactStagingDirectory)/BuildLogs
