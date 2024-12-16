@@ -60,3 +60,21 @@ index 66976bd6cd..535ad48b08 100644
      </KnownFrameworkReference>
  
      <KnownAppHostPack Update="Microsoft.NETCore.App">
+diff --git a/eng/targets/Sfx.Common.targets b/eng/targets/Sfx.Common.targets
+index 5ff818b44f..c587e3760e 100644
+--- a/eng/targets/Sfx.Common.targets
++++ b/eng/targets/Sfx.Common.targets
+@@ -36,4 +36,13 @@
+       <PublishReadyToRunPgoFiles Include="%(MIBCPackage.PackagePath)/**/*.mibc" />
+     </ItemGroup>
+   </Target>
++
++  <!-- We need to reference the live RID graph to get a graph with any additionally supported RIDs for this build. -->
++  <ItemGroup>
++    <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsVersion)]" />
++  </ItemGroup>
++
++  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)')">
++    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
++  </PropertyGroup>
+ </Project>
