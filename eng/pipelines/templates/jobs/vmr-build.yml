@@ -432,6 +432,13 @@ jobs:
       displayName: Build
       workingDirectory: $(sourcesPath)
 
+    - ${{ if ne(parameters.runOnline, 'True' )}}:
+      - script: |
+          set -ex
+          # Update the owner of the staging directory to the current user
+          sudo chown -R $(whoami) $(artifactsStagingDir)
+        displayName: Update owner of artifacts staging directory
+
     # Only run tests if enabled
     - ${{ if eq(parameters.runTests, 'True') }}:
       # Setup the NuGet sources used by the tests to use private feeds. This is necessary when testing internal-only product
