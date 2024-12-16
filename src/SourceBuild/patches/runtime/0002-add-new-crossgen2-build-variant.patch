@@ -325,3 +325,96 @@ index 09730ed2265..1e27f828c5b 100644
 -</Project>
 \ No newline at end of file
 +</Project>
+diff --git a/src/installer/pkg/Directory.Build.props b/src/installer/pkg/Directory.Build.props
+deleted file mode 100644
+index f5171867636..00000000000
+--- a/src/installer/pkg/Directory.Build.props
++++ /dev/null
+@@ -1,21 +0,0 @@
+-﻿<Project>
+-  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
+-
+-  <PropertyGroup>
+-    <Platform>$(TargetArchitecture)</Platform>
+-  </PropertyGroup>
+-
+-  <PropertyGroup>
+-    <PackagePlatform Condition="'$(PackagePlatform)' == ''">$(Platform)</PackagePlatform>
+-    <PackagePlatform Condition="'$(PackagePlatform)' == 'amd64'">x64</PackagePlatform>
+-
+-    <PackageIndexFile>$(MSBuildThisFileDirectory)packageIndex.json</PackageIndexFile>
+-
+-    <!-- this repo doesn't currently use the index so don't force it to be in sync -->
+-    <SkipIndexCheck>true</SkipIndexCheck>
+-  </PropertyGroup>
+-
+-  <ItemGroup>
+-    <PackageIndex Include="$(PackageIndexFile)" />
+-  </ItemGroup>
+-</Project>
+diff --git a/src/installer/pkg/Directory.Build.targets b/src/installer/pkg/Directory.Build.targets
+deleted file mode 100644
+index 9a502b2705e..00000000000
+--- a/src/installer/pkg/Directory.Build.targets
++++ /dev/null
+@@ -1,19 +0,0 @@
+-<Project>
+-  <Import Project="..\Directory.Build.targets" />
+-
+-  <!--
+-    Add hook for depproj build to respect OrderProjectReferences like pkgproj does. "BeforeTargets"
+-    runs after "DependsOnTargets", so hook each crossgen target individually to ensure this happens
+-    before any of them.
+-
+-    TODO: (Consolidation) Add this target properly to the sharedfx tooling. https://github.com/dotnet/runtime/issues/749
+-  -->
+-  <Target Name="EnsureOrderProjectReferencesBuilt"
+-          BeforeTargets="
+-            CrossGen;
+-            CreateCrossGenImages;
+-            CreateCrossGenSymbols">
+-    <MSBuild Projects="@(OrderProjectReference)" Targets="Build" />
+-  </Target>
+-
+-</Project>
+diff --git a/src/installer/pkg/projects/Directory.Build.props b/src/installer/pkg/projects/Directory.Build.props
+index a07b360efc0..08e5bde54a5 100644
+--- a/src/installer/pkg/projects/Directory.Build.props
++++ b/src/installer/pkg/projects/Directory.Build.props
+@@ -2,6 +2,19 @@
+   <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
+ 
+   <PropertyGroup>
++
++    <PackageIndexFile>$(MSBuildThisFileDirectory)packageIndex.json</PackageIndexFile>
++
++    <!-- this repo doesn't currently use the index so don't force it to be in sync -->
++    <SkipIndexCheck>true</SkipIndexCheck>
++  </PropertyGroup>
++
++  <ItemGroup>
++    <PackageIndex Include="$(PackageIndexFile)" />
++  </ItemGroup>
++
++  <PropertyGroup>
++    <Platform>$(TargetArchitecture)</Platform>
+     <PackagePlatform>AnyCPU</PackagePlatform>
+ 
+     <SkipPackageFileCheck>true</SkipPackageFileCheck>
+diff --git a/src/installer/pkg/packageIndex.json b/src/installer/pkg/projects/packageIndex.json
+similarity index 100%
+rename from src/installer/pkg/packageIndex.json
+rename to src/installer/pkg/projects/packageIndex.json
+diff --git a/src/installer/pkg/sfx/installers/dotnet-host.proj b/src/installer/pkg/sfx/installers/dotnet-host.proj
+index 1d4b96ab335..26374305866 100644
+--- a/src/installer/pkg/sfx/installers/dotnet-host.proj
++++ b/src/installer/pkg/sfx/installers/dotnet-host.proj
+@@ -20,7 +20,7 @@
+     <MacOSScriptsTemplateDirectory>osx_scripts/host</MacOSScriptsTemplateDirectory>
+     <MacOSPackageDescription>The .NET Shared Host.</MacOSPackageDescription>
+     <!-- Enables stable upgrade code - do not change -->
+-    <MsiUpgradeCodeSeed>dotnet-host $(MajorVersion).$(MinorVersion) $(Platform)</MsiUpgradeCodeSeed>
++    <MsiUpgradeCodeSeed>dotnet-host $(MajorVersion).$(MinorVersion) $(TargetArchitecture)</MsiUpgradeCodeSeed>
+   </PropertyGroup>
+ 
+   <ItemGroup>
