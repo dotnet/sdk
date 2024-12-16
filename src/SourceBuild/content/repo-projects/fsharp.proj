@@ -8,7 +8,7 @@
 
     <!-- Restore and Build actions are already passed in by the root script. -->
     <BuildActions>$(FlagParameterPrefix)pack $(FlagParameterPrefix)publish</BuildActions>
-    <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
+    <BuildActions Condition="'$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
     
     <!-- noVisualStudio build action must be passed if building with Core MSBuild on Windows. -->
     <BuildActions Condition="'$(BuildOS)' == 'windows' and '$(ForceDotNetMSBuildEngine)' != 'false'">$(BuildActions) $(FlagParameterPrefix)noVisualStudio</BuildActions>

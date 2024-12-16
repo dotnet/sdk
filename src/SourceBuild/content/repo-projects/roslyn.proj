@@ -7,7 +7,7 @@
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
-    <BuildActions Condition="'$(BuildOS)' == 'windows' and '$(DotNetBuildSourceOnly)' != 'true' and '$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
+    <BuildActions Condition="'$(BuildOS)' == 'windows' and '$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
