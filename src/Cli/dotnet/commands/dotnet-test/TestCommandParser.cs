@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.DotNet.Cli.commands.dotnet_test;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
@@ -161,7 +160,7 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
-        private static string GetTestingSdkName()
+        private static string GetTestRunnerName()
         {
             string defaultTestingSdk = CliConstants.VSTest;
 
@@ -196,18 +195,18 @@ namespace Microsoft.DotNet.Cli
 #if RELEASE
             return GetVSTestCliCommand();
 #else
-            string testingSdkName = GetTestingSdkName();
+            string testRunnerName = GetTestRunnerName();
 
-            if (testingSdkName.Equals(CliConstants.VSTest, StringComparison.OrdinalIgnoreCase))
+            if (testRunnerName.Equals(CliConstants.VSTest, StringComparison.OrdinalIgnoreCase))
             {
                 return GetVSTestCliCommand();
             }
-            else if (testingSdkName.Equals(CliConstants.MicrosoftTestingPlatform, StringComparison.OrdinalIgnoreCase))
+            else if (testRunnerName.Equals(CliConstants.MicrosoftTestingPlatform, StringComparison.OrdinalIgnoreCase))
             {
                 return GetTestingPlatformCliCommand();
             }
 
-            throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
+            throw new InvalidOperationException($"Test runner not supported: {testRunnerName}");
 #endif
         }
 
