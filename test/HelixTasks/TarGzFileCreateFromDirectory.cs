@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// <summary>
         /// An item group of regular expressions for content to exclude from the archive.
         /// </summary>
-        public ITaskItem[]? ExcludePatterns { get; set; } 
+        public ITaskItem[]? ExcludePatterns { get; set; }
 
         public bool IgnoreExitCode { get; set; }
 

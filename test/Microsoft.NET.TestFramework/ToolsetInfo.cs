@@ -195,7 +195,7 @@ namespace Microsoft.NET.TestFramework
                 environment.Add("DOTNET_ROOT(x86)", DotNetRoot);
             }
 
-            if (CliHomePath is not null && !string.IsNullOrEmpty(CliHomePath))
+            if (!string.IsNullOrEmpty(CliHomePath))
             {
                 environment.Add("DOTNET_CLI_HOME", CliHomePath);
             }

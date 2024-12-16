@@ -110,7 +110,7 @@ namespace Microsoft.NET.TestFramework
 
             foreach (var testProject in testProjects)
             {
-                new DotnetCommand(Log, "sln", "add", testProject.Name?? string.Empty)
+                new DotnetCommand(Log, "sln", "add", testProject.Name ?? string.Empty)
                     .WithWorkingDirectory(testDestinationDirectory)
                     .Execute()
                     .Should()

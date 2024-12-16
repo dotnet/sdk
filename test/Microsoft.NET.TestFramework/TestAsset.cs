@@ -138,12 +138,13 @@ namespace Microsoft.NET.TestFramework
                     {
                         var packageReferencesToUpdate =
                             project.Root.Descendants(ns + PropertyName)
-                                .Where(p => p.Attribute("Version") != null && p.Attribute("Version")!.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
-                        foreach (var packageReference in packageReferencesToUpdate)
+                                .Select(p => p.Attribute("Version"))
+                                .Where(va => va is not null && va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
+                        foreach (var versionAttribute in packageReferencesToUpdate)
                         {
-                            if(packageReference.Attribute("Version") is not null)
+                            if(versionAttribute is not null)
                             {
-                                packageReference.Attribute("Version")!.Value = targetValue;
+                                versionAttribute.Value = targetValue;
                             }
                         }
                     }

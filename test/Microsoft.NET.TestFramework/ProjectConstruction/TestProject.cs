@@ -160,9 +160,10 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             }
             var ns = projectXml.Root.Name.Namespace;
 
-            if (projectXml.Root.Attribute("Sdk") is not null && ProjectSdk != null)
+            var sdkAttribute = projectXml.Root.Attribute("Sdk");
+            if (sdkAttribute is not null && ProjectSdk != null)
             {
-                projectXml.Root.Attribute("Sdk")!.Value = ProjectSdk;
+                sdkAttribute.Value = ProjectSdk;
             }
 
             var propertyGroup = projectXml.Root?.Elements(ns + "PropertyGroup").First();
