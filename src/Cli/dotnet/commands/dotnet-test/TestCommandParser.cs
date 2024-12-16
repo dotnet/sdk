@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.DotNet.Cli.commands.dotnet_test;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
@@ -154,8 +156,6 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
-
-
         public static CliCommand GetCommand()
         {
             return Command;
@@ -163,21 +163,29 @@ namespace Microsoft.DotNet.Cli
 
         private static string GetTestingSdkName()
         {
-            string defaultTestingSdk = "vstest";
+            string defaultTestingSdk = CliConstants.VSTest;
 
             string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
 
             if (!string.IsNullOrEmpty(globalJsonPath))
             {
                 JsonNode globalJson = JsonObject.Parse(File.ReadAllText(globalJsonPath));
+                JsonNode? testSection = globalJson[CliConstants.TestSectionKey];
 
-                if (globalJson is not null)
+                if (testSection is null)
                 {
-                    var testSdkSection = globalJson["test-sdk"];
-                    if (testSdkSection is not null && testSdkSection["name"] is not null)
-                    {
-                        return testSdkSection["name"].AsValue().GetValue<string>();
-                    }
+                    return defaultTestingSdk;
+                }
+
+                JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                };
+                var testSettings = JsonSerializer.Deserialize<TestSettings>(testSection, JsonSerializerOptions);
+
+                if (testSettings?.Runner?.Name is not null)
+                {
+                    return testSettings.Runner.Name;
                 }
             }
             return defaultTestingSdk;
@@ -190,11 +198,11 @@ namespace Microsoft.DotNet.Cli
 #else
             string testingSdkName = GetTestingSdkName();
 
-            if (testingSdkName.Equals("vstest", StringComparison.OrdinalIgnoreCase))
+            if (testingSdkName.Equals(CliConstants.VSTest, StringComparison.OrdinalIgnoreCase))
             {
                 return GetVSTestCliCommand();
             }
-            else if (testingSdkName.Equals("testingplatform", StringComparison.OrdinalIgnoreCase))
+            else if (testingSdkName.Equals(CliConstants.MicrosoftTestingPlatform, StringComparison.OrdinalIgnoreCase))
             {
                 return GetTestingPlatformCliCommand();
             }
