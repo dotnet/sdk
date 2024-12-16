@@ -542,22 +542,22 @@ jobs:
 
         cd "$(sourcesPath)"
 
-        find artifacts/log/ -exec cp --parents {} ${targetFolder} \;
+        find artifacts/log/ -exec sh -c 'file={}; dir=${targetFolder}$(dirname $file); mkdir -p $dir; cp $file $dir' \;
 
         if [ -d "artifacts/scenario-tests/" ]; then
-          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec cp --parents {} ${targetFolder} \;
+          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec sh -c 'file={}; dir=${targetFolder}$(dirname $file); mkdir -p $dir; cp $file $dir' \;
           echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
         fi
 
         if [ -d "artifacts/TestResults/" ]; then
-          find artifacts/TestResults/ -type f -name "*.binlog" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.diff" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.trx" -exec cp --parents {} ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.binlog" -exec sh -c 'file={}; dir=${targetFolder}$(dirname $file); mkdir -p $dir; cp $file $dir' \;
+          find artifacts/TestResults/ -type f -name "*.diff" -exec sh -c 'file={}; dir=${targetFolder}$(dirname $file); mkdir -p $dir; cp $file $dir' \;
+          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec sh -c 'file={}; dir=${targetFolder}$(dirname $file); mkdir -p $dir; cp $file $dir' \;
+          find artifacts/TestResults/ -type f -name "*.trx" -exec sh -c 'file={}; dir=${targetFolder}$(dirname $file); mkdir -p $dir; cp $file $dir' \;
         fi
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
-          find artifacts/prebuilt-report/ -exec cp --parents {} ${targetFolder} \;
+          find artifacts/prebuilt-report/ -exec sh -c 'file={}; dir=${targetFolder}$(dirname $file); mkdir -p $dir; cp $file $dir' \;
         fi
       displayName: Prepare BuildLogs staging directory and check assets
       continueOnError: true
