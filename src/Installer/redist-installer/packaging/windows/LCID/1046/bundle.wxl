@@ -4,7 +4,7 @@
   <String Id="ConfirmCancelMessage">Tem certeza de que deseja cancelar?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versão anterior</String>
   <String Id="HelpHeader">Ajuda da Instalação</String>
-  <String Id="HelpText"><!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->/install | /repair | /uninstall | /layout [\[]"directory"[\]] – instala, repara, desinstala
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] – instala, repara, desinstala
    ou cria uma cópia local completa do pacote no diretório. "/install" é o padrão.
 
 /passive | /quiet – exibe a interface do usuário mínima sem prompts ou não exibe nenhuma interface do usuário e

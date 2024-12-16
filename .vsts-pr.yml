@@ -63,6 +63,18 @@ stages:
         vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.13.amd64.open
+  ### ARM64 ###
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-latest
+        os: macOS
+      helixTargetQueue: osx.13.arm64.open
+      macOSJobParameterSets:
+      - categoryName: TestBuild
+        buildArchitecture: arm64
+        runtimeIdentifier: osx-arm64
 
   ############### SOURCE BUILD ###############
   - template: /eng/common/templates/job/source-build.yml@self

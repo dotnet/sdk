@@ -341,16 +341,16 @@ public class EndToEndTests : IDisposable
         {
             File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-            (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+            (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
                 .Should().Pass();
 
             // Add package to the project
-            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion ?? string.Empty)
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
@@ -415,16 +415,13 @@ public class EndToEndTests : IDisposable
         Assert.NotNull(processResult.StdOut);
         string appContainerId = processResult.StdOut.Trim();
         bool everSucceeded = false;
-
-
-
         if (projectType == "webapi")
         {
             var portCommand =
             ContainerCli.PortCommand(_testOutput, containerName, 8080)
                 .Execute();
             portCommand.Should().Pass();
-            var port = portCommand.StdOut.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
+            var port = portCommand.StdOut?.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
             _testOutput.WriteLine($"Discovered port was '{port}'");
             var tempUri = new Uri($"http://{port}", UriKind.Absolute);
             var appUri = new UriBuilder(tempUri)
@@ -512,16 +509,16 @@ public class EndToEndTests : IDisposable
 
         File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-        (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+        (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework , "-v", packageVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework , "-v", packageVersion ?? string.Empty)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()

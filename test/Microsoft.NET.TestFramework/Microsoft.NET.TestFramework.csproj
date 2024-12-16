@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -32,6 +33,10 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
       <_Parameter1>MicrosoftAspNetCoreAppRefPackageVersion</_Parameter1>
       <_Parameter2>$(MicrosoftAspNetCoreAppRefPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
+      <_Parameter1>MicrosoftNETSdkAspireManifest80100PackageVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETSdkAspireManifest80100PackageVersion)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
