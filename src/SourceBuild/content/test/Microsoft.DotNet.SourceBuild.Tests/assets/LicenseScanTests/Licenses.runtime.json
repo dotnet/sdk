@@ -1,6 +1,10 @@
 {
   "files": [
     {
+      "path": "docs/project/licensing-assets.md",
+      "detected_license_expression": "(mit AND ms-net-library-2018-11) AND mit"
+    },
+    {
       "path": "src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES",
       "detected_license_expression": "unknown-license-reference"
     },
