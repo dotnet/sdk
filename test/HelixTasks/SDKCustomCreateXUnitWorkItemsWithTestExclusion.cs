@@ -132,8 +132,6 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 throw new NotImplementedException("does not support non support the runtime specified");
             }
 
-            // On mac due to https://github.com/dotnet/sdk/issues/3923, we run against workitem directory
-            // but on Windows, if we running against working item diretory, we would hit long path.
             string testExecutionDirectory = netFramework ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%" : IsPosixShell ? "-testExecutionDirectory $TestExecutionDirectory" : "-testExecutionDirectory %TestExecutionDirectory%";
 
             string msbuildAdditionalSdkResolverFolder = netFramework ? "-e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r" : IsPosixShell ? "" : "-msbuildAdditionalSdkResolverFolder %HELIX_CORRELATION_PAYLOAD%\\r";

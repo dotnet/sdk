@@ -33,11 +33,6 @@
 ###   --debug
 ###       Optional. Turns on the most verbose logging for the VMR tooling
 ###
-###   --component-template
-###       Optional. Template for VMRs Component.md used for regenerating the file to list the newest versions of
-###       components.
-###       Defaults to src/VirtualMonoRepo/Component.template.md
-###
 ###   --recursive
 ###       Optional. Recursively synchronize all the source build dependencies (declared in Version.Details.xml)
 ###       This is used when performing the full synchronization during sdk's CI and the final VMR sync.
@@ -104,8 +99,8 @@ repository=''
 additional_remotes=''
 recursive=false
 verbosity=verbose
-component_template="$sdk_dir/src/VirtualMonoRepo/Component.template.md"
 tpn_template="$sdk_dir/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt"
+enable_build_lookup=''
 azdev_pat=''
 ci=false
 
@@ -140,13 +135,12 @@ while [[ $# -gt 0 ]]; do
       additional_remotes="$additional_remotes $2"
       shift
       ;;
-    --component-template)
-      component_template=$2
-      shift
-      ;;
     --tpn-template)
       tpn_template=$2
       shift
+      ;;
+    --enable-build-lookup)
+      enable_build_lookup="--enable-build-lookup"
       ;;
     --azdev-pat)
       azdev_pat=$2
@@ -181,11 +175,6 @@ fi
 
 if [[ -z "$tmp_dir" ]]; then
   fail "Missing --tmp-dir argument. Please specify the path to the temporary folder where the repositories will be cloned"
-  exit 1
-fi
-
-if [[ ! -f "$component_template" ]]; then
-  fail "File '$component_template' does not exist. Please specify a valid path to the Component.md template"
   exit 1
 fi
 
@@ -278,10 +267,10 @@ fi
   $recursive_arg                             \
   $ci_arg                                    \
   $additional_remotes                        \
-  --component-template "$component_template" \
   --tpn-template "$tpn_template"             \
   --discard-patches                          \
   --generate-credscansuppressions            \
+  $enable_build_lookup                       \
   "$repository"
 
 if [[ $? == 0 ]]; then
