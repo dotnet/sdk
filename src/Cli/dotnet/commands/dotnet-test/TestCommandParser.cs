@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Cli
 
         private static string GetTestRunnerName()
         {
-            string defaultTestingSdk = CliConstants.VSTest;
+            string defaultTestRunnerName = CliConstants.VSTest;
 
             string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
 
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Cli
 
                 if (testSection is null)
                 {
-                    return defaultTestingSdk;
+                    return defaultTestRunnerName;
                 }
 
                 JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Cli
                     return testSettings.Runner.Name;
                 }
             }
-            return defaultTestingSdk;
+            return defaultTestRunnerName;
         }
 
         private static CliCommand ConstructCommand()
@@ -206,7 +206,7 @@ namespace Microsoft.DotNet.Cli
                 return GetTestingPlatformCliCommand();
             }
 
-            throw new InvalidOperationException($"Test runner not supported: {testRunnerName}");
+            throw new InvalidOperationException(string.Format(LocalizableStrings.CmdUnsupportedTestRunnerDescription, testRunnerName));
 #endif
         }
 
