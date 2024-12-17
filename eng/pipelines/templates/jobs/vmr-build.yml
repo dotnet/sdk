@@ -194,6 +194,7 @@ jobs:
       path: $(artifactsStagingDir)
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
+      condition: succeededOrFailed()
       sbomEnabled: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
@@ -567,6 +568,7 @@ jobs:
     - publish: $(artifactsStagingDir)
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
+      condition: succeededOrFailed()
       continueOnError: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
