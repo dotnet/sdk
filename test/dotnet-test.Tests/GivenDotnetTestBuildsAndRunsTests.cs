@@ -164,5 +164,45 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
         }
+
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectsWithUnknownTestRunnerInGlobalJson_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithUnknownTestRunner", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("Test runner not supported: Unknown");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunTestProjectsWithUnconfiguredGlobalJson_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithUnconfiguredGlobalJson", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("VSTest version");
+            }
+
+            result.ExitCode.Should().Be(1);
+        }
     }
 }
