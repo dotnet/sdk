@@ -104,43 +104,43 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>10.0.0-alpha.1.24616.1</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24616.1</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24616.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>10.0.0-alpha.1.24616.1</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETHostModelVersion>10.0.0-alpha.1.24616.1</MicrosoftNETHostModelVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>10.0.0-alpha.1.24616.1</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-alpha.1.24616.1</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-alpha.1.24616.1</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingVersion>10.0.0-alpha.1.24616.1</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftNETILLinkTasksPackageVersion>10.0.0-alpha.1.24616.1</MicrosoftNETILLinkTasksPackageVersion>
-    <SystemServiceProcessServiceControllerVersion>10.0.0-alpha.1.24616.1</SystemServiceProcessServiceControllerVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>10.0.0-alpha.1.24616.9</MicrosoftNETCoreAppRefPackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24616.9</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24616.9</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>10.0.0-alpha.1.24616.9</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftNETHostModelVersion>10.0.0-alpha.1.24616.9</MicrosoftNETHostModelVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>10.0.0-alpha.1.24616.9</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-alpha.1.24616.9</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-alpha.1.24616.9</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>10.0.0-alpha.1.24616.9</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftNETILLinkTasksPackageVersion>10.0.0-alpha.1.24616.9</MicrosoftNETILLinkTasksPackageVersion>
+    <SystemServiceProcessServiceControllerVersion>10.0.0-alpha.1.24616.9</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>10.0.0-alpha.1.24616.1</MicrosoftNETCorePlatformsPackageVersion>
-    <VSRedistCommonNetCoreTargetingPackx64100PackageVersion>10.0.0-alpha.1.24616.1</VSRedistCommonNetCoreTargetingPackx64100PackageVersion>
-    <MicrosoftNETCoreAppHostwinx64PackageVersion>10.0.0-alpha.1.24616.1</MicrosoftNETCoreAppHostwinx64PackageVersion>
-    <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-alpha.1.24616.1</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>10.0.0-alpha.1.24616.1</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftWin32SystemEventsPackageVersion>10.0.0-alpha.1.24616.1</MicrosoftWin32SystemEventsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>10.0.0-alpha.1.24616.9</MicrosoftNETCorePlatformsPackageVersion>
+    <VSRedistCommonNetCoreTargetingPackx64100PackageVersion>10.0.0-alpha.1.24616.9</VSRedistCommonNetCoreTargetingPackx64100PackageVersion>
+    <MicrosoftNETCoreAppHostwinx64PackageVersion>10.0.0-alpha.1.24616.9</MicrosoftNETCoreAppHostwinx64PackageVersion>
+    <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-alpha.1.24616.9</MicrosoftBclAsyncInterfacesPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>10.0.0-alpha.1.24616.9</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftWin32SystemEventsPackageVersion>10.0.0-alpha.1.24616.9</MicrosoftWin32SystemEventsPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
-    <SystemCodeDomPackageVersion>10.0.0-alpha.1.24616.1</SystemCodeDomPackageVersion>
-    <SystemCompositionAttributedModelPackageVersion>10.0.0-alpha.1.24616.1</SystemCompositionAttributedModelPackageVersion>
-    <SystemCompositionConventionPackageVersion>10.0.0-alpha.1.24616.1</SystemCompositionConventionPackageVersion>
-    <SystemCompositionHostingPackageVersion>10.0.0-alpha.1.24616.1</SystemCompositionHostingPackageVersion>
-    <SystemCompositionRuntimePackageVersion>10.0.0-alpha.1.24616.1</SystemCompositionRuntimePackageVersion>
-    <SystemCompositionTypedPartsPackageVersion>10.0.0-alpha.1.24616.1</SystemCompositionTypedPartsPackageVersion>
-    <SystemConfigurationConfigurationManagerPackageVersion>10.0.0-alpha.1.24616.1</SystemConfigurationConfigurationManagerPackageVersion>
-    <SystemReflectionMetadataLoadContextVersion>10.0.0-alpha.1.24616.1</SystemReflectionMetadataLoadContextVersion>
-    <SystemResourcesExtensionsPackageVersion>10.0.0-alpha.1.24616.1</SystemResourcesExtensionsPackageVersion>
-    <SystemSecurityCryptographyPkcsPackageVersion>10.0.0-alpha.1.24616.1</SystemSecurityCryptographyPkcsPackageVersion>
-    <SystemSecurityCryptographyProtectedDataPackageVersion>10.0.0-alpha.1.24616.1</SystemSecurityCryptographyProtectedDataPackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>10.0.0-alpha.1.24616.1</SystemSecurityCryptographyXmlPackageVersion>
-    <SystemSecurityPermissionsPackageVersion>10.0.0-alpha.1.24616.1</SystemSecurityPermissionsPackageVersion>
-    <SystemTextEncodingCodePagesPackageVersion>10.0.0-alpha.1.24616.1</SystemTextEncodingCodePagesPackageVersion>
-    <SystemTextJsonPackageVersion>10.0.0-alpha.1.24616.1</SystemTextJsonPackageVersion>
-    <SystemWindowsExtensionsPackageVersion>10.0.0-alpha.1.24616.1</SystemWindowsExtensionsPackageVersion>
-    <SystemIOHashingPackageVersion>10.0.0-alpha.1.24616.1</SystemIOHashingPackageVersion>
-    <SystemFormatsAsn1Version>10.0.0-alpha.1.24616.1</SystemFormatsAsn1Version>
+    <SystemCodeDomPackageVersion>10.0.0-alpha.1.24616.9</SystemCodeDomPackageVersion>
+    <SystemCompositionAttributedModelPackageVersion>10.0.0-alpha.1.24616.9</SystemCompositionAttributedModelPackageVersion>
+    <SystemCompositionConventionPackageVersion>10.0.0-alpha.1.24616.9</SystemCompositionConventionPackageVersion>
+    <SystemCompositionHostingPackageVersion>10.0.0-alpha.1.24616.9</SystemCompositionHostingPackageVersion>
+    <SystemCompositionRuntimePackageVersion>10.0.0-alpha.1.24616.9</SystemCompositionRuntimePackageVersion>
+    <SystemCompositionTypedPartsPackageVersion>10.0.0-alpha.1.24616.9</SystemCompositionTypedPartsPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>10.0.0-alpha.1.24616.9</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemReflectionMetadataLoadContextVersion>10.0.0-alpha.1.24616.9</SystemReflectionMetadataLoadContextVersion>
+    <SystemResourcesExtensionsPackageVersion>10.0.0-alpha.1.24616.9</SystemResourcesExtensionsPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>10.0.0-alpha.1.24616.9</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyProtectedDataPackageVersion>10.0.0-alpha.1.24616.9</SystemSecurityCryptographyProtectedDataPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>10.0.0-alpha.1.24616.9</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>10.0.0-alpha.1.24616.9</SystemSecurityPermissionsPackageVersion>
+    <SystemTextEncodingCodePagesPackageVersion>10.0.0-alpha.1.24616.9</SystemTextEncodingCodePagesPackageVersion>
+    <SystemTextJsonPackageVersion>10.0.0-alpha.1.24616.9</SystemTextJsonPackageVersion>
+    <SystemWindowsExtensionsPackageVersion>10.0.0-alpha.1.24616.9</SystemWindowsExtensionsPackageVersion>
+    <SystemIOHashingPackageVersion>10.0.0-alpha.1.24616.9</SystemIOHashingPackageVersion>
+    <SystemFormatsAsn1Version>10.0.0-alpha.1.24616.9</SystemFormatsAsn1Version>
     <!-- These are minimum versions used for netfx-targeted components that run in Visual Studio because in those cases,
          Visual Studio is providing those assemblies, and we should work with whichever version it ships. -->
     <MicrosoftBclAsyncInterfacesToolsetPackageVersion>8.0.0</MicrosoftBclAsyncInterfacesToolsetPackageVersion>
@@ -324,7 +324,7 @@
     <XamarinMacOSWorkloadManifestVersion>14.2.9714-net9-p6</XamarinMacOSWorkloadManifestVersion>
     <XamarinTvOSWorkloadManifestVersion>17.2.9714-net9-p6</XamarinTvOSWorkloadManifestVersion>
     <!-- Workloads from dotnet/emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest100100TransportPackageVersion>10.0.0-alpha.1.24575.2</MicrosoftNETWorkloadEmscriptenCurrentManifest100100TransportPackageVersion>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest100100TransportPackageVersion>10.0.0-alpha.1.24613.1</MicrosoftNETWorkloadEmscriptenCurrentManifest100100TransportPackageVersion>
     <EmscriptenWorkloadManifestVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest100100TransportPackageVersion)</EmscriptenWorkloadManifestVersion>
     <!-- emsdk workload prerelease version band must match the emsdk feature band -->
     <EmscriptenWorkloadFeatureBand>10.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-[A-z]*[\.]*\d*`))</EmscriptenWorkloadFeatureBand>
