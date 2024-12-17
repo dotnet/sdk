@@ -5,7 +5,7 @@ namespace Microsoft.NET.TestFramework.Commands
 {
     public class DotnetPublishCommand : DotnetCommand
     {
-        private string _runtime;
+        private string? _runtime;
 
         public DotnetPublishCommand(ITestOutputHelper log, params string[] args) : base(log)
         {

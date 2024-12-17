@@ -341,16 +341,16 @@ public class EndToEndTests : IDisposable
         {
             File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-            (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+            (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
                 .Should().Pass();
 
             // Add package to the project
-            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion ?? string.Empty)
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
@@ -509,16 +509,16 @@ public class EndToEndTests : IDisposable
 
         File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-        (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+        (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework , "-v", packageVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework , "-v", packageVersion ?? string.Empty)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
