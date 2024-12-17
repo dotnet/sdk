@@ -78,3 +78,17 @@ index 5ff818b44f..c587e3760e 100644
 +    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
 +  </PropertyGroup>
  </Project>
+diff --git a/eng/targets/Sfx.Common.targets b/eng/targets/Sfx.Common.targets
+index c587e3760e..f97b379391 100644
+--- a/eng/targets/Sfx.Common.targets
++++ b/eng/targets/Sfx.Common.targets
+@@ -42,7 +42,7 @@
+     <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsVersion)]" />
+   </ItemGroup>
+ 
+-  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)')">
+-    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
++  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)')">
++    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
+   </PropertyGroup>
+ </Project>
