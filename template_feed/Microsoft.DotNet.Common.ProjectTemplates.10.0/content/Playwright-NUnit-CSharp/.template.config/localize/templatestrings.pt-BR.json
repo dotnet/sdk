@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Substituição da estrutura de destino",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
   "symbols/Framework/displayName": "Estrutura",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/EnablePack/description": "Se deseja ou não habilitar o empacotamento (via \"dotnet pack\") para o projeto.",
   "symbols/EnablePack/displayName": "Habilitar pacote",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",

@@ -7,7 +7,7 @@
   "description": "A project that contains MSTest tests that can run on .NET on Windows, Linux and MacOS.",
   "groupIdentity": "Microsoft.Test.MSTest",
   "precedence": "11000",
-  "identity": "Microsoft.Test.MSTest.CSharp.9.0",
+  "identity": "Microsoft.Test.MSTest.CSharp.10.0",
   "shortName": "mstest",
   "tags": {
     "language": "C#",
@@ -31,11 +31,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net9.0",
+          "choice": "net10.0",
           "description": ".NET 9"
         },
         {
-          "choice": "net9.0-windows",
+          "choice": "net10.0-windows",
           "description": ".NET 9 (Windows only)"
         },
         {
@@ -91,8 +91,8 @@
           "description": ".NET Framework 4.6.2"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "HostIdentifier": {
       "type": "bind",

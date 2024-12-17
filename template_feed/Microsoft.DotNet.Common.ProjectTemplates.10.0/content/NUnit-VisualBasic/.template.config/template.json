@@ -8,7 +8,7 @@
   "description": "A project that contains NUnit tests that can run on .NET on Windows, Linux and macOS",
   "groupIdentity": "NUnit3.DotNetNew.Template",
   "precedence": "11000",
-  "identity": "NUnit3.DotNetNew.Template.VisualBasic.9.0",
+  "identity": "NUnit3.DotNetNew.Template.VisualBasic.10.0",
   "shortName": "nunit",
   "tags": {
     "language": "VB",
@@ -32,12 +32,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net9.0",
-          "description": "Target net9.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "EnablePack": {
       "type": "parameter",

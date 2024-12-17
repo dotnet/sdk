@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "대상 프레임워크 재정의",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
   "symbols/Framework/displayName": "프레임워크",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/EnablePack/description": "프로젝트에 대해 패키징(\"dotnet pack\"을 통해)을 활성화할지 여부",
   "symbols/EnablePack/displayName": "팩 사용",
   "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",

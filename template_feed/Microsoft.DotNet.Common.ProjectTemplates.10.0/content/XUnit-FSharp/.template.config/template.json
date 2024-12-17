@@ -7,7 +7,7 @@
   "description": "A project that contains xUnit.net tests that can run on .NET on Windows, Linux and macOS",
   "groupIdentity": "Microsoft.Test.xUnit",
   "precedence": "11000",
-  "identity": "Microsoft.Test.xUnit.FSharp.9.0",
+  "identity": "Microsoft.Test.xUnit.FSharp.10.0",
   "shortName": "xunit",
   "tags": {
     "language": "F#",
@@ -31,12 +31,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net9.0",
-          "description": "Target net9.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "EnablePack": {
       "type": "parameter",

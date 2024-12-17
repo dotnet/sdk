@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "ターゲット フレームワークのオーバーライド",
   "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
   "symbols/Framework/displayName": "フレームワーク",
-  "symbols/Framework/choices/net9.0/description": "ターゲット net9.0",
+  "symbols/Framework/choices/net10.0/description": "ターゲット net10.0",
   "symbols/EnablePack/description": "(\"dotnet pack\" を使用して) プロジェクトのパッケージ化を有効にするかどうか。",
   "symbols/EnablePack/displayName": "パックを有効にする",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",

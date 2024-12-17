@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Target framework override",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/displayName": "Framework",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/EnablePack/description": "Whether or not to enable packaging (via \"dotnet pack\") for the project.",
   "symbols/EnablePack/displayName": "Enable pack",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",

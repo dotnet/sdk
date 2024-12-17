@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Hedef çerçeveyi geçersiz kılma",
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/displayName": "Çerçeve",
-  "symbols/Framework/choices/net9.0/description": "Hedef net9.0",
+  "symbols/Framework/choices/net10.0/description": "Hedef net10.0",
   "symbols/EnablePack/description": "Proje için paketlemeyi etkinleştirip etkinleştirmeme ayarı ( \"dotnet pack\" üzerinden).",
   "symbols/EnablePack/displayName": "Paketi etkinleştir",
   "symbols/skipRestore/description": "Belirtilmişse, oluşturma anında projenin otomatik geri yüklenmesini atlar.",
