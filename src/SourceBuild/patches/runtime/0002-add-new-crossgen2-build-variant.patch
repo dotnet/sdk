@@ -445,3 +445,48 @@ index d10deecfe41..693b3c0d097 100644
        </ItemGroup>
        <ItemGroup>
          <SharedFrameworkProjectToBuild Condition="'$(BuildMonoAOTCrossCompilerOnly)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\Microsoft.NETCore.App\Microsoft.NETCore.App.Runtime.sfxproj" />
+diff --git a/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj b/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
+index 84e378bd855..03b61f277c3 100644
+--- a/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
++++ b/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
+@@ -22,8 +22,18 @@
+ 
+   <ItemGroup>
+     <AdditionalRuntimeIdentifiers Include="$(AdditionalRuntimeIdentifiers)" Imports="$(AdditionalRuntimeIdentifierParent)" />
++  </ItemGroup>
++
++  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
++    <OutputRidOS Condition="$(OutputRID.Contains('-'))">$(OutputRID.Split('-')[0])</OutputRidOS>
++    <AdditionalRidParentOS Condition="$(AdditionalRuntimeIdentifierParent.Contains('-'))">$(AdditionalRuntimeIdentifierParent.Split('-')[0])</AdditionalRidParentOS>
++    <AdditionalRidParentOS Condition="!$(AdditionalRuntimeIdentifierParent.Contains('-'))">$(AdditionalRuntimeIdentifierParent)</AdditionalRidParentOS>
++  </PropertyGroup>
++
++  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+     <!-- When building from source, ensure the RID we're building for is part of the RID graph. -->
+-    <AdditionalRuntimeIdentifiers Include="$(OutputRID)" Imports="$(AdditionalRuntimeIdentifierParent)" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
++    <AdditionalRuntimeIdentifiers Include="$(OutputRidOS)" Imports="$(AdditionalRidParentOS)" Condition="'$(OutputRidOS)' != ''" />
++    <AdditionalRuntimeIdentifiers Include="$(OutputRID)" Imports="$(AdditionalRuntimeIdentifierParent);$(OutputRidOS)" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/libraries/Microsoft.NETCore.Platforms/src/UpdateRuntimeIdentifierGraph.cs b/src/libraries/Microsoft.NETCore.Platforms/src/UpdateRuntimeIdentifierGraph.cs
+index 867da09df9b..182e724f4f9 100644
+--- a/src/libraries/Microsoft.NETCore.Platforms/src/UpdateRuntimeIdentifierGraph.cs
++++ b/src/libraries/Microsoft.NETCore.Platforms/src/UpdateRuntimeIdentifierGraph.cs
+@@ -1,6 +1,7 @@
+ // Licensed to the .NET Foundation under one or more agreements.
+ // The .NET Foundation licenses this file to you under the MIT license.
+ 
++using System;
+ using System.IO;
+ using Microsoft.Build.Framework;
+ using Microsoft.Build.Utilities;
+@@ -40,7 +41,7 @@ public override bool Execute()
+                     continue;
+                 }
+ 
+-                string[] importedRids = rid.GetMetadata("Imports").Split(';');
++                string[] importedRids = rid.GetMetadata("Imports").Split([';'], StringSplitOptions.RemoveEmptyEntries);
+                 runtimes.Add(rid.ItemSpec, new JObject(new JProperty("#import", new JArray(importedRids))));
+             }
+ 
