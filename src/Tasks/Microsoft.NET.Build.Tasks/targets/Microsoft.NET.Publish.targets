@@ -792,6 +792,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             DefaultCopyToPublishDirectoryMetadata;
                             _CreateSingleFileHost;
                             _CreateAppHostForPublish;
+                            AssignProjectConfiguration;
                             _SplitProjectReferencesByFileExistence;
                             _GetProjectReferenceTargetFrameworkProperties">
 
