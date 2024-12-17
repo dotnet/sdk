@@ -229,13 +229,13 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("true");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/dotnet/sdk/issues/45516")]
         public void It_should_get_suggested_workload_by_GetRequiredWorkloads_target()
         {
             var mainProject = new TestProject()
             {
                 Name = "MainProject",
-                TargetFrameworks = $"net9.0-android",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-android",
                 IsSdkProject = true,
                 IsExe = true
             };
@@ -259,11 +259,11 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo("android");
         }
 
-        [Theory]
-        [InlineData("net9.0-android;net9.0-ios", "net9.0-android;net9.0-ios", "android;ios")]
-        [InlineData("net9.0", "net9.0;net9.0-android;net9.0-ios", "android;ios")]
-        [InlineData("net9.0;net9.0-ios", "net9.0;net9.0-android", "android;ios")]
-        [InlineData("net9.0", "net9.0", null)]
+        [Theory(Skip="https://github.com/dotnet/sdk/issues/45516")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "android;ios")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android;{ToolsetInfo.CurrentTargetFramework}-ios", "android;ios")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-ios", $"{ToolsetInfo.CurrentTargetFramework};{ToolsetInfo.CurrentTargetFramework}-android", "android;ios")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFramework, null)]
         public void Given_multi_target_It_should_get_suggested_workload_by_GetRequiredWorkloads_target(string mainTfm, string referencingTfm, string expected)
         {
             // Skip Test if SDK is < 6.0.400
