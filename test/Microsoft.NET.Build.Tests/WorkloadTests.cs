@@ -312,12 +312,6 @@ namespace Microsoft.NET.Build.Tests
             }
             else
             {
-                // Conditionally check the OS and modify the expected workloads on Linux
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    expected = "android;wasi-experimental";
-                }
-                
                 getValuesCommand.GetValues()
                     .Should()
                     .Contain(expected.Split(";")); // there are extra workloads in certain platform, only assert contains
