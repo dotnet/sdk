@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -152,18 +155,39 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
-
-
         public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static bool IsTestingPlatformEnabled()
+        private static string GetTestRunnerName()
         {
-            var testingPlatformEnabledEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE");
-            var isTestingPlatformEnabled = testingPlatformEnabledEnvironmentVariable == "1" || string.Equals(testingPlatformEnabledEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
-            return isTestingPlatformEnabled;
+            string defaultTestRunnerName = CliConstants.VSTest;
+
+            string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+
+            if (!string.IsNullOrEmpty(globalJsonPath))
+            {
+                JsonNode globalJson = JsonObject.Parse(File.ReadAllText(globalJsonPath));
+                JsonNode? testSection = globalJson[CliConstants.TestSectionKey];
+
+                if (testSection is null)
+                {
+                    return defaultTestRunnerName;
+                }
+
+                JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                };
+                var testSettings = JsonSerializer.Deserialize<TestSettings>(testSection, JsonSerializerOptions);
+
+                if (testSettings?.Runner?.Name is not null)
+                {
+                    return testSettings.Runner.Name;
+                }
+            }
+            return defaultTestRunnerName;
         }
 
         private static CliCommand ConstructCommand()
@@ -171,19 +195,18 @@ namespace Microsoft.DotNet.Cli
 #if RELEASE
             return GetVSTestCliCommand();
 #else
-            bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
-            string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
+            string testRunnerName = GetTestRunnerName();
 
-            if (isTestingPlatformEnabled)
-            {
-                return GetTestingPlatformCliCommand();
-            }
-            else
+            if (testRunnerName.Equals(CliConstants.VSTest, StringComparison.OrdinalIgnoreCase))
             {
                 return GetVSTestCliCommand();
             }
+            else if (testRunnerName.Equals(CliConstants.MicrosoftTestingPlatform, StringComparison.OrdinalIgnoreCase))
+            {
+                return GetTestingPlatformCliCommand();
+            }
 
-            throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
+            throw new InvalidOperationException(string.Format(LocalizableStrings.CmdUnsupportedTestRunnerDescription, testRunnerName));
 #endif
         }
 
