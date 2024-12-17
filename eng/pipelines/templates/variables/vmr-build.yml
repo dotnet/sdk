@@ -21,7 +21,7 @@ variables:
 - name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 - name: fedoraContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-40
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
 - name: ubuntuContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
 - name: ubuntuArmContainer
@@ -56,7 +56,7 @@ variables:
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
-  value: Fedora40
+  value: Fedora41
 - name: ubuntuName
   value: Ubuntu2404
 
@@ -75,7 +75,7 @@ variables:
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid
-  value: fedora.40-x64
+  value: fedora.41-x64
 - name: ubuntux64Rid
   value: ubuntu.24.04-x64
 - name: ubuntuArm64Rid
@@ -93,7 +93,7 @@ variables:
   - name: poolName_LinuxArm64
     value: Docker-Linux-Arm-Public
   - name: poolImage_Mac
-    value: macos-12
+    value: macos-13
   - name: poolImage_Windows
     value: windows.vs2022preview.amd64.open
 - ${{ else }}:

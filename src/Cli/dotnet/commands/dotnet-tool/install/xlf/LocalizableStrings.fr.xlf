@@ -95,12 +95,12 @@ Si vous souhaitez créer un manifeste, utilisez l’option `--create-manifest-if
       </trans-unit>
       <trans-unit id="SourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
-        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <target state="translated">Remplacer toutes les sources de package NuGet à utiliser pendant l’installation par celles-ci.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceOptionName">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -194,7 +194,7 @@ Pour plus d'informations, notamment sur le nommage de package, accédez à https
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>ADDSOURCE</source>
-        <target state="needs-review-translation">SOURCE</target>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

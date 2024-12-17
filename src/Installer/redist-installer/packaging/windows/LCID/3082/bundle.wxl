@@ -4,15 +4,14 @@
   <String Id="ConfirmCancelMessage">¿Está seguro de que desea cancelar la operación?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versión anterior</String>
   <String Id="HelpHeader">Ayuda del programa de instalación</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - instala, repara, desinstala
- 
-   o crea una copia local completa del bundle en directorio. '/install' es la opción por defecto.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]]: instala, repara, desinstala
+   o crea una copia local completa de la agrupación en el directorio. "/install" es el valor predeterminado.
 
-/passive | /quiet - muestra una interfaz de usuario mínima sin avisos o no muestra interfaz de usuario ni
-   ni indicaciones. La interfaz de usuario y todos los avisos son mostrados de forma predeterminada.
+/passive | /quiet: muestra una interfaz de usuario mínima sin avisos o no muestra ninguna interfaz de usuario ni
+   ningún aviso. De forma predeterminada, se muestran la interfaz de usuario y todos los avisos.
 
-/norestart - suprime cualquier intento de reinicio. La interfaz de usuario preguntará antes de reiniciar por defecto.
-/log [\[]"log.txt"[\]] - registra en un archivo específico. Un archivo de registro es creado de forma predeterminada en %TEMP%.</String>
+/norestart: suprime los intentos de reinicio. De forma predeterminada, la interfaz de usuario le avisará antes de reiniciar.
+/log [\[]"log.txt"[\]]: registra en un archivo específico. De forma predeterminada, se crea un archivo de registro en %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Cerrar</String>
   <String Id="InstallAcceptCheckbox">&amp;Acepto los términos y condiciones de licencia</String>
   <String Id="InstallOptionsButton">&amp;Opciones</String>
@@ -47,25 +46,25 @@
   <String Id="FilesInUseDontCloseRadioButton">&amp;No cerrar las aplicaciones. Será necesario un reinicio.</String>
   <String Id="FilesInUseOkButton">&amp;Aceptar</String>
   <String Id="FilesInUseCancelButton">&amp;Cancelar</String>
-  <String Id="FirstTimeWelcomeMessage">La instalación se ha realizado correctamente.
+  <String Id="FirstTimeWelcomeMessage">La instalación se realizó correctamente.
 
-Se han instalado los siguientes productos:
-    • .NET SDK [DOTNETSDKVERSION]
+Se instalaron los siguientes productos:
+    • SDK DE .NET [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
-    • Tiempo de ejecución de ASP.NET Core [ASPNETCOREVERSION]
-    •  Tiempo de ejecución de .NET Windows Desktop [WINFORMSANDWPFVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 Este producto recopila datos de uso
-    •Más información y exclusión voluntaria https://aka.ms/dotnet-cli-telemetry
+    • Más información y optar por no participar https://aka.ms/dotnet-cli-telemetry
 
-Recursos 
+Recursos
     • Documentación de .NET https://aka.ms/dotnet-docs
-    • Documentación del SDK https://aka.ms/dotnet-sdk-docs
+    • Documentación de SDK https://aka.ms/dotnet-sdk-docs
     • Notas de la versión https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • Tutoriales https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">SDK de .NET</String>
   <String Id="WelcomeDescription">
-    El SDK de .NET se utiliza para crear, ejecutar y probar aplicaciones .NET. Puede elegir entre varios lenguajes, editores y herramientas de desarrollo, y aprovechar un amplio ecosistema de bibliotecas para crear aplicaciones para web, móvil, escritorio, juegos e IoT. Esperamos que lo disfrutes.</String>
+    El SDK de .NET se usa para compilar, ejecutar y probar las aplicaciones .NET. Puede elegir entre varios lenguajes, editores y herramientas de desarrollo y aprovechar las ventajas de un amplio ecosistema de bibliotecas para compilar aplicaciones web, móviles, de escritorio, juegos e IoT. Esperamos que la disfrute.</String>
   <String Id="LearnMoreTitle">Más información sobre .NET</String>
   <String Id="ResourcesHeader">Recursos</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentación de .NET&lt;/A&gt;</String>
@@ -76,7 +75,7 @@ Recursos
   <String Id="InstallationNoteTitle">Nota de instalación</String>
   <String Id="InstallationNote">Se ejecutará un comando durante el proceso de instalación que mejorará la velocidad de restauración del proyecto y permitirá el acceso sin conexión. La operación tardará hasta un minuto en completarse.
   </String>
-  <String Id="VisualStudioWarning">Si tiene previsto utilizar .NET [VERSIONMAJOR].[VERSIONMINOR] con Visual Studio, necesitará Visual Studio 2022 [MINIMUMVSVERSION] o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si tiene previsto utilizar .NET [VERSIONMAJOR].[VERSIONMINOR] con Visual Studio, necesitará Visual Studio 2022 [MINIMUMVSVERSION] o una versión más reciente. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Más información&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Al hacer clic en Instalar, acepta los siguientes términos:</String>
   <String Id="InstallPathx64x86">La ruta de instalación para las instalaciones del SDK x64: "[DOTNETHOME_X64]" no puede ser la misma que para las instalaciones del SDK x86: "[DOTNETHOME_X86]"</String>

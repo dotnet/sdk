@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/9.0.1xx
+    - release/9.0.2xx
     - internal/release/*
     - exp/*
 
@@ -30,6 +30,7 @@ variables:
 # Helix testing requires a token when internally run.
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
+- group: AzureDevOps-Artifact-Feeds-Pats
 # Allows Arcade to run a signed build by disabling post-build signing for release-branch builds or manual builds that are not running tests.
 - ${{ if and(eq(parameters.runTestBuild, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
   - name: PostBuildSign
@@ -64,20 +65,14 @@ extends:
     containers:
       alpine319WithNode:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-      cblMariner20Fpm:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-      debian11Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-amd64
+      debian12Amd64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
       fedora39:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-      ubuntu2204:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04
       mariner20CrossArm:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
-      ubuntu2204DebPkg:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
@@ -201,21 +196,20 @@ extends:
               runTests: false
             ### PORTABLE ###
             - categoryName: Portable
-              container: ubuntu2204DebPkg
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
-              container: cblMariner20Fpm
+              container: centosStream9
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
             - categoryName: Portable
-              container: cblMariner20Fpm
+              container: centosStream9
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
@@ -292,6 +286,19 @@ extends:
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
+      ### ARM64 TESTBUILD ###
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: Azure Pipelines
+              vmImage: macOS-latest
+              os: macOS
+            helixTargetQueue: osx.13.arm64
+            macOSJobParameterSets:
+            - categoryName: TestBuild
+              buildArchitecture: arm64
+              runtimeIdentifier: osx-arm64
 
       ############### SOURCE BUILD ###############
       - template: /eng/common/templates-official/job/source-build.yml@self
@@ -308,6 +315,7 @@ extends:
           parameters:
             oneESCompat:
               publishTaskPrefix: 1ES.
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
     - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:

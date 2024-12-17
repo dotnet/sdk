@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CmdAdditionalMSBuildParametersDescription">
         <source>The additional msbuild parameters to pass.</source>
-        <target state="new">The additional msbuild parameters to pass.</target>
+        <target state="translated">Paramètres msbuild supplémentaires à transmettre.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArchitectureDescription">
@@ -113,9 +113,14 @@ Exemples :
         <target state="translated">NAME="VALUE"</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdInvalidTestMessageStateException">
+        <source>Invalid test message state '{0}'</source>
+        <target state="new">Invalid test message state '{0}'</target>
+        <note>{0} - test message state</note>
+      </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
-        <target state="new">The max number of test modules that can run in parallel.</target>
+        <target state="translated">Nombre maximal de modules de test qui peuvent s’exécuter en parallèle.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -245,6 +250,16 @@ Le répertoire spécifié est créé, s'il n'existe pas déjà.</target>
         <target state="new">The test modules have the specified root directory.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdUnsupportedMessageRequestTypeException">
+        <source>Message Request type '{0}' is unsupported.</source>
+        <target state="new">Message Request type '{0}' is unsupported.</target>
+        <note>{0} - message request type</note>
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
+        <source>Test application(s) that support VSTest are not supported.</source>
+        <target state="new">Test application(s) that support VSTest are not supported.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">
         <source>DUMP_TYPE</source>
         <target state="translated">DUMP_TYPE</target>
@@ -267,12 +282,12 @@ Le répertoire spécifié est créé, s'il n'existe pas déjà.</target>
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
         <source>No serializer registered with ID '{0}'</source>
-        <target state="new">No serializer registered with ID '{0}'</target>
+        <target state="translated">Aucun sérialiseur inscrit avec l’ID « {0} »</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
         <source>No serializer registered with type '{0}'</source>
-        <target state="new">No serializer registered with type '{0}'</target>
+        <target state="translated">Aucun sérialiseur inscrit avec le type « {0} »</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

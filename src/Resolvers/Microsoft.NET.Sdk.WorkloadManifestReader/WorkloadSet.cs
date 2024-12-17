@@ -6,6 +6,7 @@ using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
 using System.Text.Json;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -165,6 +166,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
 
             return packageVersion;
+        }
+
+        public static SdkFeatureBand GetWorkloadSetFeatureBand(string setVersion)
+        {
+            WorkloadSetVersionToWorkloadSetPackageVersion(setVersion, out SdkFeatureBand sdkFeatureBand);
+            return sdkFeatureBand;
         }
     }
 }

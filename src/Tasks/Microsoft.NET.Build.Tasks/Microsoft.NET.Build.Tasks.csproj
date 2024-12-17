@@ -68,6 +68,11 @@
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Don't reference MS.NET.Build.Extensions.Tasks, but make sure it builds before this project -->
+    <ProjectReference Include="..\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <!--
@@ -96,6 +101,7 @@
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-workload\InstallStateContents.cs" LinkBase="Cli" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-test\IPC\**\*.cs" />
   </ItemGroup>

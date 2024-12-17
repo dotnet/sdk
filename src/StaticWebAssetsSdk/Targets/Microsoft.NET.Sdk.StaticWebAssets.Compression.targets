@@ -222,11 +222,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_CompressedStaticWebAssets)"
     >
       <Output TaskParameter="Assets" ItemName="_CompressionBuildStaticWebAsset" />
+      <Output TaskParameter="AssetDetails" ItemName="_ResolveBuildCompressedStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(_CompressionBuildStaticWebAsset)"
-      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      AssetFileDetails="@(_ResolveBuildCompressedStaticWebAssetsDetails)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="_CompressionBuildStaticWebAssetEndpoint" />
@@ -240,6 +241,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
+      AssetFileDetails="@(_ResolveBuildCompressedStaticWebAssetsDetails)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />
@@ -291,7 +293,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </ResolveCompressedAssets>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(IsPackable)' == 'true'">
       <_StaticWebAssetExcludedFromPack Include="@(_CompressedStaticWebAssets)" />
     </ItemGroup>
 

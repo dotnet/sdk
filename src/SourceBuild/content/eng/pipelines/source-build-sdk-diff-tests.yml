@@ -17,16 +17,17 @@ resources:
     trigger:
       branches:
         include:
-          - refs/heads/release/*.0.1xx-preview*
-          - refs/heads/release/9.0.1xx
-          - refs/heads/internal/release/*.0.1xx*
+        - refs/heads/release/*.0.1xx-preview*
+        - refs/heads/internal/release/*.0.1xx*
+
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
 pr: none
 trigger: none
-
-pool:
-  name: NetCore1ESPool-Svc-Internal
-  demands: ImageOverride -equals 1es-ubuntu-2004
 
 parameters:
 - name: dotnetDotnetRunId
@@ -40,46 +41,60 @@ variables:
 # GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
 - group: DotNet-Source-Build-Bot-Secrets-MVP
 
-jobs:
-- template: templates/jobs/sdk-diff-tests.yml
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    buildName: ${{ format('{0}_Offline_MsftSdk', variables.centOSStreamName) }}
-    targetRid: ${{ variables.centOSStreamX64Rid }}
-    architecture: x64
-    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
-    publishTestResultsPr: true
+    pool:
+      name: NetCore1ESPool-Svc-Internal
+      image: 1es-ubuntu-2204
+      os: linux
+    sdl:
+      sourceAnalysisPool:
+          name: NetCore1ESPool-Svc-Internal
+          image: 1es-windows-2022
+          os: windows
+    stages:
+    - stage: stage
+      jobs:
+      - template: /eng/pipelines/templates/jobs/sdk-diff-tests.yml@self
+        parameters:
+          buildName: ${{ format('{0}_Offline_MsftSdk', variables.centOSStreamName) }}
+          targetRid: ${{ variables.centOSStreamX64Rid }}
+          architecture: x64
+          dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+          publishTestResultsPr: true
 
-- template: templates/jobs/sdk-diff-tests.yml
-  parameters:
-    buildName: ${{ format('{0}_Offline_MsftSdk', variables.almaLinuxName) }}
-    targetRid: ${{ variables.almaLinuxX64Rid }}
-    architecture: x64
-    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+      - template: /eng/pipelines/templates/jobs/sdk-diff-tests.yml@self
+        parameters:
+          buildName: ${{ format('{0}_Offline_MsftSdk', variables.almaLinuxName) }}
+          targetRid: ${{ variables.almaLinuxX64Rid }}
+          architecture: x64
+          dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
 
-- template: templates/jobs/sdk-diff-tests.yml
-  parameters:
-    buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineLatestName) }}
-    targetRid: ${{ variables.alpineLatestX64Rid }}
-    architecture: x64
-    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+      - template: /eng/pipelines/templates/jobs/sdk-diff-tests.yml@self
+        parameters:
+          buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineLatestName) }}
+          targetRid: ${{ variables.alpineLatestX64Rid }}
+          architecture: x64
+          dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
 
-- template: templates/jobs/sdk-diff-tests.yml
-  parameters:
-    buildName: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
-    targetRid: ${{ variables.fedoraX64Rid }}
-    architecture: x64
-    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+      - template: /eng/pipelines/templates/jobs/sdk-diff-tests.yml@self
+        parameters:
+          buildName: ${{ format('{0}_Offline_MsftSdk', variables.fedoraName) }}
+          targetRid: ${{ variables.fedoraX64Rid }}
+          architecture: x64
+          dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
 
-- template: templates/jobs/sdk-diff-tests.yml
-  parameters:
-    buildName: ${{ format('{0}_Offline_MsftSdk', variables.ubuntuName) }}
-    targetRid: ${{ variables.ubuntuX64Rid }}
-    architecture: x64
-    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+      - template: /eng/pipelines/templates/jobs/sdk-diff-tests.yml@self
+        parameters:
+          buildName: ${{ format('{0}_Offline_MsftSdk', variables.ubuntuName) }}
+          targetRid: ${{ variables.ubuntuX64Rid }}
+          architecture: x64
+          dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
 
-- template: templates/jobs/sdk-diff-tests.yml
-  parameters:
-    buildName: ${{ format('{0}Arm64_Offline_MsftSdk', variables.ubuntuName) }}
-    targetRid: ${{ variables.ubuntuArm64Rid }}
-    architecture: arm64
-    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+      - template: /eng/pipelines/templates/jobs/sdk-diff-tests.yml@self
+        parameters:
+          buildName: ${{ format('{0}Arm64_Offline_MsftSdk', variables.ubuntuName) }}
+          targetRid: ${{ variables.ubuntuArm64Rid }}
+          architecture: arm64
+          dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}

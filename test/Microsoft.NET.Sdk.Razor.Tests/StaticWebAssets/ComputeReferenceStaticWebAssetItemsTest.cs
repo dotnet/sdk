@@ -334,7 +334,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
-        private ITaskItem CreateCandidate(
+        private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,
             string sourceType,
@@ -370,7 +370,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             return result.ToTaskItem();
         }
 
-        private ITaskItem CreatePatternCandidate(
+        private static ITaskItem CreatePatternCandidate(
             string name,
             string basePath,
             string contentRoot,

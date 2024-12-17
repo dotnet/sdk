@@ -95,12 +95,12 @@ Si desea crear un manifiesto, use la marca "--create-manifest-if-needed" con el 
       </trans-unit>
       <trans-unit id="SourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
-        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <target state="translated">Reemplazar todos los orígenes de paquetes NuGet que se usarán durante la instalación por estos.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceOptionName">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">FUENTE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -194,7 +194,7 @@ Para ver más razones, como el cumplimiento de la nomenclatura de los paquetes, 
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>ADDSOURCE</source>
-        <target state="needs-review-translation">SOURCE</target>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

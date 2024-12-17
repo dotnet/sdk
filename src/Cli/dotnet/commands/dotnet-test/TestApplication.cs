@@ -18,8 +18,8 @@ namespace Microsoft.DotNet.Cli
         private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         private readonly CancellationTokenSource _cancellationToken = new();
 
-        private NamedPipeServer _pipeConnection;
-        private Task _namedPipeConnectionLoop;
+        private Task _testAppPipeConnectionLoop;
+        private readonly List<NamedPipeServer> _testAppPipeConnections = new();
         private ConcurrentDictionary<string, string> _executionIds = [];
 
         public event EventHandler<HandshakeArgs> HandshakeReceived;
@@ -50,35 +50,52 @@ namespace Microsoft.DotNet.Cli
         {
             Run?.Invoke(this, EventArgs.Empty);
 
-            if (!ModulePathExists())
+            if (isFilterMode && !ModulePathExists())
             {
                 return 1;
             }
-            bool isDll = _module.DLLPath.EndsWith(".dll");
+
+            bool isDll = _module.DllOrExePath.EndsWith(".dll");
+
             ProcessStartInfo processStartInfo = new()
             {
-                FileName = isDll ?
-                Environment.ProcessPath :
-                _module.DLLPath,
-                Arguments = enableHelp ? BuildHelpArgs(isDll) : isFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(builtInOptions),
+                FileName = isFilterMode ? isDll ? Environment.ProcessPath : _module.DllOrExePath : Environment.ProcessPath,
+                Arguments = isFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(enableHelp, builtInOptions),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
 
-            _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
+            if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
+            {
+                processStartInfo.EnvironmentVariables.Add("TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE", _module.RunSettingsFilePath);
+            }
+
+            _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
             var result = await StartProcess(processStartInfo);
 
-            _namedPipeConnectionLoop.Wait();
+            WaitOnTestApplicationPipeConnectionLoop();
+
             return result;
         }
+
+        private void WaitOnTestApplicationPipeConnectionLoop()
+        {
+            _cancellationToken.Cancel();
+            _testAppPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+        }
+
         private async Task WaitConnectionAsync(CancellationToken token)
         {
             try
             {
-                _pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
-                _pipeConnection.RegisterAllSerializers();
+                while (!token.IsCancellationRequested)
+                {
+                    NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                    pipeConnection.RegisterAllSerializers();
 
-                await _pipeConnection.WaitConnectionAsync(token);
+                    await pipeConnection.WaitConnectionAsync(token);
+                    _testAppPipeConnections.Add(pipeConnection);
+                }
             }
             catch (OperationCanceledException ex) when (ex.CancellationToken == token)
             {
@@ -140,7 +157,7 @@ namespace Microsoft.DotNet.Cli
 
                     default:
                         // If it doesn't match any of the above, throw an exception
-                        throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
+                        throw new NotSupportedException(string.Format(LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
                 }
             }
             catch (Exception ex)
@@ -219,19 +236,19 @@ namespace Microsoft.DotNet.Cli
 
         private bool ModulePathExists()
         {
-            if (!File.Exists(_module.DLLPath))
+            if (!File.Exists(_module.DllOrExePath))
             {
-                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.DLLPath}' not found. Build the test application before or run 'dotnet test'." });
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.DllOrExePath}' not found. Build the test application before or run 'dotnet test'." });
                 return false;
             }
             return true;
         }
 
-        private string BuildArgsWithDotnetRun(BuiltInOptions builtInOptions)
+        private string BuildArgsWithDotnetRun(bool hasHelp, BuiltInOptions builtInOptions)
         {
             StringBuilder builder = new();
 
-            builder.Append($"{CliConstants.DotnetRunCommand} {CliConstants.ProjectOptionKey} \"{_module.ProjectPath}\"");
+            builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectPath}\"");
 
             if (builtInOptions.HasNoRestore)
             {
@@ -260,6 +277,11 @@ namespace Microsoft.DotNet.Cli
 
             builder.Append($" {CliConstants.ParametersSeparator} ");
 
+            if (hasHelp)
+            {
+                builder.Append($" {CliConstants.HelpOptionKey} ");
+            }
+
             builder.Append(_args.Count != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
@@ -275,7 +297,7 @@ namespace Microsoft.DotNet.Cli
 
             if (isDll)
             {
-                builder.Append($"exec {_module.DLLPath} ");
+                builder.Append($"exec {_module.DllOrExePath} ");
             }
 
             builder.Append(_args.Count != 0
@@ -287,26 +309,12 @@ namespace Microsoft.DotNet.Cli
             return builder.ToString();
         }
 
-        private string BuildHelpArgs(bool isDll)
-        {
-            StringBuilder builder = new();
-
-            if (isDll)
-            {
-                builder.Append($"exec {_module.DLLPath} ");
-            }
-
-            builder.Append($" {CliConstants.HelpOptionKey} {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
-
-            return builder.ToString();
-        }
-
         public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
         {
             if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
             {
                 AddExecutionId(executionId);
-                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.DLLPath, ExecutionId = executionId });
+                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.DllOrExePath, ExecutionId = executionId });
             }
             HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
         }
@@ -330,8 +338,8 @@ namespace Microsoft.DotNet.Cli
             TestResultsReceived?.Invoke(this, new TestResultEventArgs
             {
                 ExecutionId = testResultMessage.ExecutionId,
-                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Reason, message.SessionUid)).ToArray(),
-                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.SessionUid)).ToArray()
+                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
             });
         }
 
@@ -349,9 +357,9 @@ namespace Microsoft.DotNet.Cli
         {
             StringBuilder builder = new();
 
-            if (!string.IsNullOrEmpty(_module.DLLPath))
+            if (!string.IsNullOrEmpty(_module.DllOrExePath))
             {
-                builder.Append($"DLL: {_module.DLLPath}");
+                builder.Append($"DLL: {_module.DllOrExePath}");
             }
 
             if (!string.IsNullOrEmpty(_module.ProjectPath))
@@ -369,7 +377,12 @@ namespace Microsoft.DotNet.Cli
 
         public void Dispose()
         {
-            _pipeConnection?.Dispose();
+            foreach (var namedPipeServer in _testAppPipeConnections)
+            {
+                namedPipeServer.Dispose();
+            }
+
+            WaitOnTestApplicationPipeConnectionLoop();
         }
     }
 }

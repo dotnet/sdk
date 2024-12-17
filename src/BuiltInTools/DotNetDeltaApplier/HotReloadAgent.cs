@@ -3,54 +3,107 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO.Pipes;
 using System.Reflection;
 
 namespace Microsoft.Extensions.HotReload
 {
     internal sealed class HotReloadAgent : IDisposable
     {
+        private const string MetadataUpdaterTypeName = "System.Reflection.Metadata.MetadataUpdater";
+        private const string ApplyUpdateMethodName = "ApplyUpdate";
+        private const string GetCapabilitiesMethodName = "GetCapabilities";
+
         private delegate void ApplyUpdateDelegate(Assembly assembly, ReadOnlySpan<byte> metadataDelta, ReadOnlySpan<byte> ilDelta, ReadOnlySpan<byte> pdbDelta);
 
-        private readonly Action<string> _log;
+        private readonly AgentReporter _reporter = new();
+        private readonly NamedPipeClientStream _pipeClient;
+        private readonly Action<string> _stdOutLog;
         private readonly AssemblyLoadEventHandler _assemblyLoad;
         private readonly ConcurrentDictionary<Guid, List<UpdateDelta>> _deltas = new();
         private readonly ConcurrentDictionary<Assembly, Assembly> _appliedAssemblies = new();
         private readonly ApplyUpdateDelegate? _applyUpdate;
         private readonly string? _capabilities;
-        private volatile UpdateHandlerActions? _handlerActions;
+        private readonly MetadataUpdateHandlerInvoker _metadataUpdateHandlerInvoker;
 
-        public HotReloadAgent(Action<string> log)
+        public HotReloadAgent(NamedPipeClientStream pipeClient, Action<string> stdOutLog)
         {
-            var metadataUpdater = Type.GetType("System.Reflection.Metadata.MetadataUpdater, System.Runtime.Loader", throwOnError: false);
+            _assemblyLoad = OnAssemblyLoad;
+            _pipeClient = pipeClient;
+            _stdOutLog = stdOutLog;
+            _metadataUpdateHandlerInvoker = new(_reporter);
 
-            if (metadataUpdater != null)
+            GetUpdaterMethods(out _applyUpdate, out _capabilities);
+            AppDomain.CurrentDomain.AssemblyLoad += _assemblyLoad;
+        }
+
+        private void GetUpdaterMethods(out ApplyUpdateDelegate? applyUpdate, out string? capabilities)
+        {
+            applyUpdate = null;
+            capabilities = null;
+
+            var metadataUpdater = Type.GetType(MetadataUpdaterTypeName + ", System.Runtime.Loader", throwOnError: false);
+            if (metadataUpdater == null)
             {
-                _applyUpdate = (ApplyUpdateDelegate?)metadataUpdater.GetMethod("ApplyUpdate", BindingFlags.Public | BindingFlags.Static, binder: null,
-                    new[] { typeof(Assembly), typeof(ReadOnlySpan<byte>), typeof(ReadOnlySpan<byte>), typeof(ReadOnlySpan<byte>) }, modifiers: null)?.CreateDelegate(typeof(ApplyUpdateDelegate));
-
-                if (_applyUpdate != null)
-                {
-                    try
-                    {
-                        _capabilities = metadataUpdater.GetMethod("GetCapabilities", BindingFlags.NonPublic | BindingFlags.Static, binder: null, Type.EmptyTypes, modifiers: null)?.
-                            Invoke(obj: null, parameters: null) as string;
-                    }
-                    catch
-                    {
-                    }
-                }
+                _reporter.Report($"Type not found: {MetadataUpdaterTypeName}", AgentMessageSeverity.Error);
+                return;
             }
 
-            _log = log;
-            _assemblyLoad = OnAssemblyLoad;
-            AppDomain.CurrentDomain.AssemblyLoad += _assemblyLoad;
+            var applyUpdateMethod = metadataUpdater.GetMethod(ApplyUpdateMethodName, BindingFlags.Public | BindingFlags.Static, binder: null, [typeof(Assembly), typeof(ReadOnlySpan<byte>), typeof(ReadOnlySpan<byte>), typeof(ReadOnlySpan<byte>)], modifiers: null);
+            if (applyUpdateMethod == null)
+            {
+                _reporter.Report($"{MetadataUpdaterTypeName}.{ApplyUpdateMethodName} not found.", AgentMessageSeverity.Error);
+                return;
+            }
+
+            applyUpdate = (ApplyUpdateDelegate)applyUpdateMethod.CreateDelegate(typeof(ApplyUpdateDelegate));
+
+            var getCapabilities = metadataUpdater.GetMethod(GetCapabilitiesMethodName, BindingFlags.NonPublic | BindingFlags.Static, binder: null, Type.EmptyTypes, modifiers: null);
+            if (getCapabilities == null)
+            {
+                _reporter.Report($"{MetadataUpdaterTypeName}.{GetCapabilitiesMethodName} not found.", AgentMessageSeverity.Error);
+                return;
+            }
+
+            try
+            {
+                capabilities = getCapabilities.Invoke(obj: null, parameters: null) as string;
+            }
+            catch (Exception e)
+            {
+                _reporter.Report($"Error retrieving capabilities: {e.Message}", AgentMessageSeverity.Error);
+            }
+        }
+
+        public async Task ReceiveDeltasAsync()
+        {
+            _reporter.Report("Writing capabilities: " + Capabilities, AgentMessageSeverity.Verbose);
+
+            var initPayload = new ClientInitializationPayload(Capabilities);
+            initPayload.Write(_pipeClient);
+
+            while (_pipeClient.IsConnected)
+            {
+                var update = await UpdatePayload.ReadAsync(_pipeClient, CancellationToken.None);
+
+                _stdOutLog($"ResponseLoggingLevel = {update.ResponseLoggingLevel}");
+
+                _reporter.Report("Attempting to apply deltas.", AgentMessageSeverity.Verbose);
+
+                ApplyDeltas(update.Deltas);
+
+                _pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
+
+                UpdatePayload.WriteLog(_pipeClient, _reporter.GetAndClearLogEntries(update.ResponseLoggingLevel));
+            }
         }
 
         public string Capabilities => _capabilities ?? string.Empty;
 
         private void OnAssemblyLoad(object? _, AssemblyLoadEventArgs eventArgs)
         {
-            _handlerActions = null;
+            _metadataUpdateHandlerInvoker.Clear();
+
             var loadedAssembly = eventArgs.LoadedAssembly;
             var moduleId = TryGetModuleId(loadedAssembly);
             if (moduleId is null)
@@ -65,140 +118,6 @@ namespace Microsoft.Extensions.HotReload
             }
         }
 
-        internal sealed class UpdateHandlerActions
-        {
-            public List<Action<Type[]?>> ClearCache { get; } = new();
-            public List<Action<Type[]?>> UpdateApplication { get; } = new();
-        }
-
-        private UpdateHandlerActions GetMetadataUpdateHandlerActions()
-        {
-            // We need to execute MetadataUpdateHandlers in a well-defined order. For v1, the strategy that is used is to topologically
-            // sort assemblies so that handlers in a dependency are executed before the dependent (e.g. the reflection cache action
-            // in System.Private.CoreLib is executed before System.Text.Json clears its own cache.)
-            // This would ensure that caches and updates more lower in the application stack are up to date
-            // before ones higher in the stack are recomputed.
-            var sortedAssemblies = TopologicalSort(AppDomain.CurrentDomain.GetAssemblies());
-            var handlerActions = new UpdateHandlerActions();
-            foreach (var assembly in sortedAssemblies)
-            {
-                foreach (var attr in assembly.GetCustomAttributesData())
-                {
-                    // Look up the attribute by name rather than by type. This would allow netstandard targeting libraries to
-                    // define their own copy without having to cross-compile.
-                    if (attr.AttributeType.FullName != "System.Reflection.Metadata.MetadataUpdateHandlerAttribute")
-                    {
-                        continue;
-                    }
-
-                    IList<CustomAttributeTypedArgument> ctorArgs = attr.ConstructorArguments;
-                    if (ctorArgs.Count != 1 ||
-                        ctorArgs[0].Value is not Type handlerType)
-                    {
-                        _log($"'{attr}' found with invalid arguments.");
-                        continue;
-                    }
-
-                    GetHandlerActions(handlerActions, handlerType);
-                }
-            }
-
-            return handlerActions;
-        }
-
-        internal void GetHandlerActions(UpdateHandlerActions handlerActions, Type handlerType)
-        {
-            bool methodFound = false;
-
-            if (GetUpdateMethod(handlerType, "ClearCache") is MethodInfo clearCache)
-            {
-                handlerActions.ClearCache.Add(CreateAction(clearCache));
-                methodFound = true;
-            }
-
-            if (GetUpdateMethod(handlerType, "UpdateApplication") is MethodInfo updateApplication)
-            {
-                handlerActions.UpdateApplication.Add(CreateAction(updateApplication));
-                methodFound = true;
-            }
-
-            if (!methodFound)
-            {
-                _log($"No invokable methods found on metadata handler type '{handlerType}'. " +
-                    $"Allowed methods are ClearCache, UpdateApplication");
-            }
-
-            Action<Type[]?> CreateAction(MethodInfo update)
-            {
-                var action = (Action<Type[]?>)update.CreateDelegate(typeof(Action<Type[]?>));
-                return types =>
-                {
-                    try
-                    {
-                        action(types);
-                    }
-                    catch (Exception ex)
-                    {
-                        _log($"Exception from '{action}': {ex}");
-                    }
-                };
-            }
-
-            MethodInfo? GetUpdateMethod(Type handlerType, string name)
-            {
-                if (handlerType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, binder: null, new[] { typeof(Type[]) }, modifiers: null) is MethodInfo updateMethod &&
-                    updateMethod.ReturnType == typeof(void))
-                {
-                    return updateMethod;
-                }
-
-                foreach (MethodInfo method in handlerType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
-                {
-                    if (method.Name == name)
-                    {
-                        _log($"Type '{handlerType}' has method '{method}' that does not match the required signature.");
-                        break;
-                    }
-                }
-
-                return null;
-            }
-        }
-
-        internal static List<Assembly> TopologicalSort(Assembly[] assemblies)
-        {
-            var sortedAssemblies = new List<Assembly>(assemblies.Length);
-
-            var visited = new HashSet<string>(StringComparer.Ordinal);
-
-            foreach (var assembly in assemblies)
-            {
-                Visit(assemblies, assembly, sortedAssemblies, visited);
-            }
-
-            static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
-            {
-                var assemblyIdentifier = assembly.GetName().Name!;
-                if (!visited.Add(assemblyIdentifier))
-                {
-                    return;
-                }
-
-                foreach (var dependencyName in assembly.GetReferencedAssemblies())
-                {
-                    var dependency = Array.Find(assemblies, a => a.GetName().Name == dependencyName.Name);
-                    if (dependency is not null)
-                    {
-                        Visit(assemblies, dependency, sortedAssemblies, visited);
-                    }
-                }
-
-                sortedAssemblies.Add(assembly);
-            }
-
-            return sortedAssemblies;
-        }
-
         public void ApplyDeltas(IReadOnlyList<UpdateDelta> deltas)
         {
             Debug.Assert(Capabilities.Length > 0);
@@ -211,7 +130,7 @@ namespace Microsoft.Extensions.HotReload
                 {
                     if (TryGetModuleId(assembly) is Guid moduleId && moduleId == item.ModuleId)
                     {
-                        _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                        _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, pdbDelta: []);
                     }
                 }
 
@@ -220,24 +139,7 @@ namespace Microsoft.Extensions.HotReload
                 cachedDeltas.Add(item);
             }
 
-            try
-            {
-                // Defer discovering metadata updata handlers until after hot reload deltas have been applied.
-                // This should give enough opportunity for AppDomain.GetAssemblies() to be sufficiently populated.
-                _handlerActions ??= GetMetadataUpdateHandlerActions();
-                var handlerActions = _handlerActions;
-
-                Type[]? updatedTypes = GetMetadataUpdateTypes(deltas);
-
-                handlerActions.ClearCache.ForEach(a => a(updatedTypes));
-                handlerActions.UpdateApplication.ForEach(a => a(updatedTypes));
-
-                _log("Deltas applied.");
-            }
-            catch (Exception ex)
-            {
-                _log(ex.ToString());
-            }
+            _metadataUpdateHandlerInvoker.Invoke(GetMetadataUpdateTypes(deltas));
         }
 
         private Type[] GetMetadataUpdateTypes(IReadOnlyList<UpdateDelta> deltas)
@@ -266,7 +168,7 @@ namespace Microsoft.Extensions.HotReload
                     }
                     catch (Exception e)
                     {
-                        _log($"Failed to load type 0x{updatedType:X8}: {e.Message}");
+                        _reporter.Report($"Failed to load type 0x{updatedType:X8}: {e.Message}", AgentMessageSeverity.Warning);
                     }
                 }
             }
@@ -285,11 +187,11 @@ namespace Microsoft.Extensions.HotReload
                     _applyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
                 }
 
-                _log("Deltas applied.");
+                _reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);
             }
             catch (Exception ex)
             {
-                _log(ex.ToString());
+                _reporter.Report(ex.ToString(), AgentMessageSeverity.Warning);
             }
         }
 

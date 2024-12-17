@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private Dictionary<string, FileMeta> _knownEntities = new();
         private Dictionary<string, FileMeta> _tempDictionary = new();
-        private Dictionary<string, bool> _changes = new();
+        private Dictionary<string, ChangeKind> _changes = new();
 
         private Thread _pollingThread;
         private bool _raiseEvents;
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _pollingThread.Start();
         }
 
-        public event EventHandler<(string filePath, bool newFile)>? OnFileChange;
+        public event EventHandler<(string filePath, ChangeKind kind)>? OnFileChange;
 
 #pragma warning disable CS0067 // not used
         public event EventHandler<Exception>? OnError;
@@ -106,8 +106,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                 if (!_knownEntities.ContainsKey(fullFilePath))
                 {
-                    // New file
-                    RecordChange(f, isNewFile: true);
+                    // New file or directory
+                    RecordChange(f, ChangeKind.Add);
                 }
                 else
                 {
@@ -115,10 +115,11 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     try
                     {
-                        if (fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
+                        if (!fileMeta.FileInfo.Attributes.HasFlag(FileAttributes.Directory) &&
+                            fileMeta.FileInfo.LastWriteTime != f.LastWriteTime)
                         {
                             // File changed
-                            RecordChange(f, isNewFile: false);
+                            RecordChange(f, ChangeKind.Update);
                         }
 
                         _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, foundAgain: true);
@@ -136,8 +137,8 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 if (!file.Value.FoundAgain)
                 {
-                    // File deleted
-                    RecordChange(file.Value.FileInfo, isNewFile: false);
+                    // File or directory deleted
+                    RecordChange(file.Value.FileInfo, ChangeKind.Delete);
                 }
             }
 
@@ -148,7 +149,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _tempDictionary.Clear();
         }
 
-        private void RecordChange(FileSystemInfo fileInfo, bool isNewFile)
+        private void RecordChange(FileSystemInfo fileInfo, ChangeKind kind)
         {
             if (_changes.ContainsKey(fileInfo.FullName) ||
                 fileInfo.FullName.Equals(_watchedDirectory.FullName, StringComparison.Ordinal))
@@ -156,18 +157,15 @@ namespace Microsoft.DotNet.Watcher.Internal
                 return;
             }
 
-            _changes.Add(fileInfo.FullName, isNewFile);
+            _changes.Add(fileInfo.FullName, kind);
 
-            if (fileInfo.FullName != _watchedDirectory.FullName)
+            if (fileInfo is FileInfo { Directory: { } directory })
             {
-                if (fileInfo is FileInfo { Directory: { } directory })
-                {
-                    RecordChange(directory, isNewFile: false);
-                }
-                else if (fileInfo is DirectoryInfo { Parent: { } parent })
-                {
-                    RecordChange(parent, isNewFile: false);
-                }
+                RecordChange(directory, ChangeKind.Update);
+            }
+            else if (fileInfo is DirectoryInfo { Parent: { } parent })
+            {
+                RecordChange(parent, ChangeKind.Update);
             }
         }
 
@@ -202,14 +200,14 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void NotifyChanges()
         {
-            foreach (var (path, isNewFile) in _changes)
+            foreach (var (path, kind) in _changes)
             {
                 if (_disposed || !_raiseEvents)
                 {
                     break;
                 }
 
-                OnFileChange?.Invoke(this, (path, isNewFile));
+                OnFileChange?.Invoke(this, (path, kind));
             }
         }
 

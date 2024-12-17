@@ -151,28 +151,50 @@ namespace Microsoft.NET.Build.Tests
             Directory.Delete(buildProjDir, true);
         }
 
-        [Theory]
-        [InlineData("netcoreapp3.1", "osx-x64")]
-        [InlineData("netcoreapp3.1", "osx-arm64")]
-        [InlineData("net5.0", "osx-x64")]
-        [InlineData("net5.0", "osx-arm64")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64")]
-        public void It_codesigns_a_framework_dependent_app(string targetFramework, string rid)
+        public static TheoryData<string, string, bool> OsxPublishingOptions()
         {
+            // osx-arm64 is only supported on net6.0+
+            string[] x64OnlyTfms = ["netcoreapp3.1", "net5.0"];
+            string[] tfms = ["net6.0", ToolsetInfo.CurrentTargetFramework];
+            string[] rids = ["osx-x64", "osx-arm64"];
+            bool[] selfContained = [true, false];
+
+            var sharedTfmParams = from t in tfms
+                       from r in rids
+                       from s in selfContained
+                       select (t, r, s);
+            var x64OnlyParams = from t in x64OnlyTfms
+                       from s in selfContained
+                       select (t, "osx-x64", s);
+            TheoryData<string, string, bool> data = new TheoryData<string, string, bool>();
+            foreach (var (t, r, s) in sharedTfmParams.Concat(x64OnlyParams))
+            {
+                data.Add(t, r, s);
+            }
+            return data;
+        }
+
+        [Theory]
+        [MemberData(nameof(OsxPublishingOptions))]
+        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid, bool selfContained)
+        {
+            const string testAssetName = "HelloWorld";
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
+            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={rid}" };
+            if (!selfContained)
+                buildArgs.Add("/p:PublishSingleFile=true");
             buildCommand
-                .Execute([$"/p:RuntimeIdentifier={rid}"])
+                .Execute(buildArgs.ToArray())
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
+            var appHostFullPath = Path.Combine(outputDirectory.FullName, testAssetName);
 
             // Check that the apphost is signed
             HasMachOSignatureLoadCommand(new FileInfo(appHostFullPath)).Should().BeTrue();
@@ -180,7 +202,7 @@ namespace Microsoft.NET.Build.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 var codesignPath = @"/usr/bin/codesign";
-                new RunExeCommand(Log, codesignPath, new string[] { "-s", "-", appHostFullPath })
+                new RunExeCommand(Log, codesignPath, ["-s", "-", appHostFullPath])
                     .Execute()
                     .Should()
                     .Fail()
@@ -191,99 +213,6 @@ namespace Microsoft.NET.Build.Tests
                     .Should()
                     .Pass();
             }
-        }
-
-        // Reads the Mach-O load commands and returns true if an LC_CODE_SIGNATURE command is found, otherwise returns false
-        static bool HasMachOSignatureLoadCommand(FileInfo file)
-        {
-            /* Mach-O files have the following structure:
-             * 32 byte header beginning with a magic number and info about the file and load commands
-             * A series of load commands with the following structure:
-             * - 4-byte command type
-             * - 4-byte command size
-             * - variable length command-specific data
-             */
-            const uint LC_CODE_SIGNATURE = 0x1D;
-            using (var stream = file.OpenRead())
-            {
-                // Read the MachO magic number to determine endianness
-                Span<byte> eightByteBuffer = stackalloc byte[8];
-                stream.ReadExactly(eightByteBuffer);
-                // Determine if the magic number is in the same or opposite endianness as the runtime
-                bool reverseEndinanness = BitConverter.ToUInt64(eightByteBuffer.Slice(0, 4)) switch
-                {
-                    0xFEEDFACF => false,
-                    0xCFFAEDFE => true,
-                    _ => throw new InvalidOperationException("Not a 64-bit Mach-O file")
-                };
-                // 4-byte value at offset 16 is the number of load commands
-                // 4-byte value at offset 20 is the size of the load commands
-                stream.Position = 16;
-                ReadUints(stream, eightByteBuffer, out uint loadCommandsCount, out uint loadCommandsSize);
-                // Mach-0 64 byte headers are 32 bytes long, and the first load command will be right after
-                stream.Position = 32;
-                bool hasSignature = false;
-                for (int commandIndex = 0; commandIndex < loadCommandsCount; commandIndex++)
-                {
-                    ReadUints(stream, eightByteBuffer, out uint commandType, out uint commandSize);
-                    if (commandType == LC_CODE_SIGNATURE)
-                    {
-                        hasSignature = true;
-                    }
-                    stream.Position += commandSize;
-                }
-                Debug.Assert(stream.Position == loadCommandsSize + 32);
-                return hasSignature;
-
-                void ReadUints(Stream stream, Span<byte> buffer, out uint val1, out uint val2)
-                {
-                    stream.ReadExactly(buffer);
-                    val1 = BitConverter.ToUInt32(buffer.Slice(0, 4));
-                    val2 = BitConverter.ToUInt32(buffer.Slice(4, 4));
-                    if (reverseEndinanness)
-                    {
-                        val1 = BinaryPrimitives.ReverseEndianness(val1);
-                        val2 = BinaryPrimitives.ReverseEndianness(val2);
-                    }
-                }
-            }
-        }
-
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1", false)]
-        [InlineData("netcoreapp3.1", true)]
-        [InlineData("net5.0", false)]
-        [InlineData("net5.0", true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
-        public void It_codesigns_an_app_targeting_osx(string targetFramework, bool selfContained)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework, allowCopyIfPresent: true)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}" };
-            if (!selfContained)
-                buildArgs.Add("/p:PublishSingleFile=true");
-
-            buildCommand
-                .Execute(buildArgs.ToArray())
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
-
-            // Check that the apphost is signed
-            var codesignPath = @"/usr/bin/codesign";
-            new RunExeCommand(Log, codesignPath, new string[] { "-s", "-", appHostFullPath })
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdErrContaining($"{appHostFullPath}: is already signed");
         }
 
         [Theory]
@@ -578,5 +507,62 @@ namespace Microsoft.NET.Build.Tests
                 return reader.PEHeaders.PEHeader.Magic == PEMagic.PE32;
             }
         }
+
+        // Reads the Mach-O load commands and returns true if an LC_CODE_SIGNATURE command is found, otherwise returns false
+        static bool HasMachOSignatureLoadCommand(FileInfo file)
+        {
+            /* Mach-O files have the following structure:
+             * 32 byte header beginning with a magic number and info about the file and load commands
+             * A series of load commands with the following structure:
+             * - 4-byte command type
+             * - 4-byte command size
+             * - variable length command-specific data
+             */
+            const uint LC_CODE_SIGNATURE = 0x1D;
+            using (var stream = file.OpenRead())
+            {
+                // Read the MachO magic number to determine endianness
+                Span<byte> eightByteBuffer = stackalloc byte[8];
+                stream.ReadExactly(eightByteBuffer);
+                // Determine if the magic number is in the same or opposite endianness as the runtime
+                bool reverseEndinanness = BitConverter.ToUInt32(eightByteBuffer.Slice(0, 4)) switch
+                {
+                    0xFEEDFACF => false,
+                    0xCFFAEDFE => true,
+                    _ => throw new InvalidOperationException("Not a 64-bit Mach-O file")
+                };
+                // 4-byte value at offset 16 is the number of load commands
+                // 4-byte value at offset 20 is the size of the load commands
+                stream.Position = 16;
+                ReadUints(stream, eightByteBuffer, out uint loadCommandsCount, out uint loadCommandsSize);
+                // Mach-0 64 byte headers are 32 bytes long, and the first load command will be right after
+                stream.Position = 32;
+                bool hasSignature = false;
+                for (int commandIndex = 0; commandIndex < loadCommandsCount; commandIndex++)
+                {
+                    ReadUints(stream, eightByteBuffer, out uint commandType, out uint commandSize);
+                    if (commandType == LC_CODE_SIGNATURE)
+                    {
+                        hasSignature = true;
+                    }
+                    stream.Position += commandSize-8;
+                }
+                Debug.Assert(stream.Position == loadCommandsSize + 32);
+                return hasSignature;
+
+                void ReadUints(Stream stream, Span<byte> buffer, out uint val1, out uint val2)
+                {
+                    stream.ReadExactly(buffer);
+                    val1 = BitConverter.ToUInt32(buffer.Slice(0, 4));
+                    val2 = BitConverter.ToUInt32(buffer.Slice(4, 4));
+                    if (reverseEndinanness)
+                    {
+                        val1 = BinaryPrimitives.ReverseEndianness(val1);
+                        val2 = BinaryPrimitives.ReverseEndianness(val2);
+                    }
+                }
+            }
+        }
+
     }
 }

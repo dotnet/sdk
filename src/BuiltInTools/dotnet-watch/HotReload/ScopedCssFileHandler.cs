@@ -5,6 +5,7 @@
 using System.Collections;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -13,14 +14,14 @@ namespace Microsoft.DotNet.Watcher.Tools
     {
         private const string BuildTargetName = "GenerateComputedBuildStaticWebAssets";
 
-        public async ValueTask HandleFileChangesAsync(IReadOnlyList<FileItem> files, CancellationToken cancellationToken)
+        public async ValueTask HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {
             var projectsToRefresh = new HashSet<ProjectGraphNode>();
             var hasApplicableFiles = false;
 
             for (int i = 0; i < files.Count; i++)
             {
-                var file = files[i];
+                var file = files[i].Item;
 
                 if (!file.FilePath.EndsWith(".razor.css", StringComparison.Ordinal) &&
                     !file.FilePath.EndsWith(".cshtml.css", StringComparison.Ordinal))

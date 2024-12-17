@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -106,7 +105,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             newEndpoint.Should().Be(endpoint);
         }
 
-        private StaticWebAssetEndpoint CreateEndpoint(StaticWebAsset asset)
+        private static StaticWebAssetEndpoint CreateEndpoint(StaticWebAsset asset)
         {
             return new StaticWebAssetEndpoint
             {
@@ -149,25 +148,27 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             get
             {
-                var theoryData = new TheoryData<Action<StaticWebAsset>>();
-                theoryData.Add(a => a.SourceId = "");
-                theoryData.Add(a => a.SourceType = "");
-                theoryData.Add(a => a.RelativePath = "");
-                theoryData.Add(a => a.ContentRoot = "");
-                theoryData.Add(a => a.OriginalItemSpec = "");
-                theoryData.Add(a => a.AssetKind = "");
-                theoryData.Add(a => a.AssetRole = "");
-                theoryData.Add(a => a.AssetMode = "");
-                theoryData.Add(a =>
+                var theoryData = new TheoryData<Action<StaticWebAsset>>
                 {
-                    a.AssetRole = "Related";
-                    a.RelatedAsset = "";
-                });
-                theoryData.Add(a =>
-                {
-                    a.AssetRole = "Alternative";
-                    a.RelatedAsset = "";
-                });
+                    a => a.SourceId = "",
+                    a => a.SourceType = "",
+                    a => a.RelativePath = "",
+                    a => a.ContentRoot = "",
+                    a => a.OriginalItemSpec = "",
+                    a => a.AssetKind = "",
+                    a => a.AssetRole = "",
+                    a => a.AssetMode = "",
+                    a =>
+                    {
+                        a.AssetRole = "Related";
+                        a.RelatedAsset = "";
+                    },
+                    a =>
+                    {
+                        a.AssetRole = "Alternative";
+                        a.RelatedAsset = "";
+                    }
+                };
 
                 return theoryData;
             }
@@ -214,31 +215,38 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             get
             {
-                var data = new TheoryData<StaticWebAsset, StaticWebAsset>();
-                // Duplicate assets
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"));
+                var data = new TheoryData<StaticWebAsset, StaticWebAsset>
+                {
+                    // Duplicate assets
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "All")
+                    },
 
-                // Conflicting Build asssets from different projects
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Build"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Build"));
+                    // Conflicting Build asssets from different projects
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Build"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Build")
+                    },
 
-                // Conflicting Publish asssets from different projects
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Publish"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Publish"));
+                    // Conflicting Publish asssets from different projects
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "Publish"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "Publish")
+                    },
 
-                // Conflicting All asssets from different projects
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "All"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "All"));
+                    // Conflicting All asssets from different projects
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Package", "Package", "candidate.js", "All", "All"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "OtherProject", "Project", "candidate.js", "All", "All")
+                    },
 
-                // Assets with compatible kinds but from different projects
-                data.Add(
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "Build"),
-                    CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Other", "Project", "candidate.js", "All", "Publish"));
+                    // Assets with compatible kinds but from different projects
+                    {
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "MyProject", "Computed", "candidate.js", "All", "Build"),
+                        CreateAsset(Path.Combine("wwwroot", "candidate.js"), "Other", "Project", "candidate.js", "All", "Publish")
+                    }
+                };
 
                 return data;
             }
@@ -356,7 +364,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             newProjectConfig.Should().Be(candidatePattern);
         }
 
-        private StaticWebAssetsManifest.ReferencedProjectConfiguration CreateProjectReferenceConfiguration(
+        private static StaticWebAssetsManifest.ReferencedProjectConfiguration CreateProjectReferenceConfiguration(
             int version,
             string source,
             string publishTargets = "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
@@ -427,7 +435,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             return result;
         }
 
-        private StaticWebAssetsDiscoveryPattern CreatePatternCandidate(
+        private static StaticWebAssetsDiscoveryPattern CreatePatternCandidate(
             string name,
             string basePath,
             string pattern,

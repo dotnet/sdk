@@ -95,12 +95,12 @@ Pokud jste chtěli vytvořit manifest, použijte příznak --create-manifest-if-
       </trans-unit>
       <trans-unit id="SourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
-        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <target state="translated">Nahradit všechny zdroje balíčků NuGet, které se mají použít při instalaci, těmito zdroji.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceOptionName">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">ZDROJ</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -194,7 +194,7 @@ Další příčiny, včetně vynucování formátu názvů balíčků, najdete t
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>ADDSOURCE</source>
-        <target state="needs-review-translation">SOURCE</target>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

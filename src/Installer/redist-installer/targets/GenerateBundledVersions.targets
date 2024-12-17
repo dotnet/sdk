@@ -85,13 +85,12 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <!-- TODO: Once .NET 9.0.X has released, update these version numbers to 9.0.$(VersionFeature80) -->
-      <_NET90RuntimePackVersion>9.0.0-preview.7.24405.7</_NET90RuntimePackVersion>
-      <_NET90TargetingPackVersion>9.0.0-preview.7.24405.7</_NET90TargetingPackVersion>
-      <_WindowsDesktop90RuntimePackVersion>9.0.0-preview.7.24405.2</_WindowsDesktop90RuntimePackVersion>
-      <_WindowsDesktop90TargetingPackVersion>9.0.0-preview.7.24405.2</_WindowsDesktop90TargetingPackVersion>
-      <_AspNet90RuntimePackVersion>9.0.0-preview.7.24406.2</_AspNet90RuntimePackVersion>
-      <_AspNet90TargetingPackVersion>9.0.0-preview.7.24406.2</_AspNet90TargetingPackVersion>
+      <_NET90RuntimePackVersion>9.0.$(VersionFeature90)</_NET90RuntimePackVersion>
+      <_NET90TargetingPackVersion>9.0.$(VersionFeature90)</_NET90TargetingPackVersion>
+      <_WindowsDesktop90RuntimePackVersion>9.0.$(VersionFeature90)</_WindowsDesktop90RuntimePackVersion>
+      <_WindowsDesktop90TargetingPackVersion>9.0.$(VersionFeature90)</_WindowsDesktop90TargetingPackVersion>
+      <_AspNet90RuntimePackVersion>9.0.$(VersionFeature90)</_AspNet90RuntimePackVersion>
+      <_AspNet90TargetingPackVersion>9.0.$(VersionFeature90)</_AspNet90TargetingPackVersion>
 
       <_NET80RuntimePackVersion>8.0.$(VersionFeature80)</_NET80RuntimePackVersion>
       <_NET80TargetingPackVersion>8.0.$(VersionFeature80)</_NET80TargetingPackVersion>
@@ -299,6 +298,7 @@
         @(Net70MonoRuntimePackRids);
         freebsd-x64;
         freebsd-arm64;
+        wasi-wasm;
         " />
 
       <Net80MonoRuntimePackRids Remove="win-arm" />
@@ -590,6 +590,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net10.0"
                              WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+
+    <KnownAspNetCorePack Include="Microsoft.AspNetCore.App.Internal.Assets"
+                             TargetFramework="net10.0"
+                             AspNetCorePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net10.0"

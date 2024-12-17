@@ -1,9 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
-using Microsoft.NET.Sdk.StaticWebAssets.Utils;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -23,8 +22,16 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
     [Required]
     public string ManifestPath { get; set; }
 
+    public string CacheFilePath { get; set; }
+
     public override bool Execute()
     {
+        if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
+        {
+            Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
+            return true;
+        }
+
         try
         {
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
@@ -60,7 +67,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                 Endpoints = [.. filteredEndpoints]
             };
 
-            this.PersistFileIfChanged(manifest, ManifestPath);
+            this.PersistFileIfChanged(manifest, ManifestPath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
         }
         catch (Exception ex)
         {
@@ -99,7 +106,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         }
     }
 
-    private class TargetPathAssetPair(string targetPath, StaticWebAsset asset)
+    private sealed class TargetPathAssetPair(string targetPath, StaticWebAsset asset)
     {
         public string TargetPath { get; } = targetPath;
         public StaticWebAsset ResolvedAsset { get; } = asset;

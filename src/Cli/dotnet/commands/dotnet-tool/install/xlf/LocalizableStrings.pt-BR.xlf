@@ -95,12 +95,12 @@ Se você quiser criar um manifesto, use o sinalizador `--create-manifest-if-need
       </trans-unit>
       <trans-unit id="SourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
-        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <target state="translated">Substitua todas as fontes de pacote NuGet a serem usadas durante a instalação por estas.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceOptionName">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">ORIGEM</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -194,7 +194,7 @@ Para ver mais motivos, inclusive a imposição de nome de pacote, visite https:/
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>ADDSOURCE</source>
-        <target state="needs-review-translation">SOURCE</target>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

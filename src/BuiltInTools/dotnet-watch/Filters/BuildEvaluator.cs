@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             return [context.RootProjectOptions.Command, .. context.RootProjectOptions.CommandArguments];
         }
 
-        public async ValueTask<EvaluationResult> EvaluateAsync(FileItem? changedFile, CancellationToken cancellationToken)
+        public async ValueTask<EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)
         {
             if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return _evaluationResult = await CreateEvaluationResult(cancellationToken);
             }
 
-            if (_evaluationResult == null || RequiresMSBuildRevaluation(changedFile))
+            if (_evaluationResult == null || RequiresMSBuildRevaluation(changedFile?.Item))
             {
                 RequiresRevaluation = true;
             }
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await rootProjectFileSetFactory.TryCreateAsync(cancellationToken);
+                var result = await rootProjectFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
                 if (result != null)
                 {
                     return result;

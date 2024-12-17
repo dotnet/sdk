@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli
         private static CliCommand ConstructCommand()
         {
             var command = new CliCommand("search", LocalizableStrings.CommandDescription);
-            command.Subcommands.Add(SearchWorkloadSetsParser.GetCommand());
+            command.Subcommands.Add(WorkloadSearchVersionsCommandParser.GetCommand());
             command.Arguments.Add(WorkloadIdStubArgument);
             command.Options.Add(CommonOptions.HiddenVerbosityOption);
             command.Options.Add(VersionOption);

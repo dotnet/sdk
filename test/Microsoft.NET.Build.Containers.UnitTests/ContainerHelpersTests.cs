@@ -109,7 +109,7 @@ public class ContainerHelpersTests
     [InlineData("80", true, 80, PortType.tcp, null)]
     [InlineData("125/dup", false, 125, PortType.tcp, ContainerHelpers.ParsePortError.InvalidPortType)]
     [InlineData("invalidNumber", false, null, null, ContainerHelpers.ParsePortError.InvalidPortNumber)]
-    [InlineData("welp/unknowntype", false, null, null, (ContainerHelpers.ParsePortError)3)]
+    [InlineData("welp/unknowntype", false, null, null, (ContainerHelpers.ParsePortError)6)]
     [InlineData("a/b/c", false, null, null, ContainerHelpers.ParsePortError.UnknownPortFormat)]
     [InlineData("/tcp", false, null, null, ContainerHelpers.ParsePortError.MissingPortNumber)]
     public void CanParsePort(string input, bool shouldParse, int? expectedPortNumber, PortType? expectedType, ContainerHelpers.ParsePortError? expectedError)

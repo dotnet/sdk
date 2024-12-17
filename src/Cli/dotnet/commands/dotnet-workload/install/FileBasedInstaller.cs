@@ -48,7 +48,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string tempDirPath = null,
             VerbosityOptions verbosity = VerbosityOptions.normal,
             PackageSourceLocation packageSourceLocation = null,
-            RestoreActionConfig restoreActionConfig = null)
+            RestoreActionConfig restoreActionConfig = null,
+            VerbosityOptions nugetPackageDownloaderVerbosity = VerbosityOptions.normal)
         {
             _userProfileDir = userProfileDir;
             _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
@@ -58,7 +59,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _nugetPackageDownloader = nugetPackageDownloader ??
                                       new NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
                                           new FirstPartyNuGetPackageSigningVerifier(), logger,
-                                          restoreActionConfig: _restoreActionConfig);
+                                          restoreActionConfig: _restoreActionConfig,
+                                          verbosityOptions: nugetPackageDownloaderVerbosity);
             bool userLocal = WorkloadFileBasedInstall.IsUserLocal(_dotnetDir, sdkFeatureBand.ToString());
             _workloadRootDir = userLocal ? _userProfileDir : _dotnetDir;
             _workloadMetadataDir = Path.Combine(_workloadRootDir, "metadata", "workloads");
@@ -92,9 +94,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
-            SdkFeatureBand workloadSetFeatureBand;
-            string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
-            var workloadSetPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand);
+            string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
+            var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
 
             var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
 
@@ -117,6 +118,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
 
             return WorkloadSet.FromWorkloadSetFolder(workloadSetPath, workloadSetVersion, _sdkFeatureBand);
+        }
+
+        public WorkloadSet GetWorkloadSetContents(string workloadSetVersion) => GetWorkloadSetContentsAsync(workloadSetVersion).GetAwaiter().GetResult();
+
+        public async Task<WorkloadSet> GetWorkloadSetContentsAsync(string workloadSetVersion)
+        {
+            string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand),
+                                new NuGetVersion(workloadSetPackageVersion), _packageSourceLocation);
+            var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{WorkloadManifestUpdater.WorkloadSetManifestId}-{workloadSetPackageVersion}-extracted");
+            await ExtractManifestAsync(packagePath, tempExtractionDir);
+            return WorkloadSet.FromWorkloadSetFolder(tempExtractionDir, workloadSetVersion, _sdkFeatureBand);
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
@@ -368,7 +381,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             foreach ((string workloadSetVersion, _) in installedWorkloadSets)
             {
                 //  Get the feature band of the workload set
-                WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+                WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
 
                 List<SdkFeatureBand> referencingFeatureBands;
                 if (!workloadSetInstallRecords.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out referencingFeatureBands))

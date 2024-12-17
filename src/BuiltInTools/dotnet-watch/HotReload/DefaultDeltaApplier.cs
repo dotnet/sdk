@@ -83,11 +83,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return ApplyStatus.NoChangesApplied;
             }
 
-            var payload = new UpdatePayload(applicableUpdates.Select(update => new UpdateDelta(
-                update.ModuleId,
-                metadataDelta: update.MetadataDelta.ToArray(),
-                ilDelta: update.ILDelta.ToArray(),
-                update.UpdatedTypes.ToArray())).ToArray());
+            var payload = new UpdatePayload(
+                deltas: applicableUpdates.Select(update => new UpdateDelta(
+                    update.ModuleId,
+                    metadataDelta: update.MetadataDelta.ToArray(),
+                    ilDelta: update.ILDelta.ToArray(),
+                    update.UpdatedTypes.ToArray())).ToArray(),
+                responseLoggingLevel: Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors);
 
             var success = false;
             var canceled = false;
@@ -131,27 +133,49 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             Debug.Assert(_pipe != null);
 
-            var bytes = ArrayPool<byte>.Shared.Rent(1);
+            var status = ArrayPool<byte>.Shared.Rent(1);
             try
             {
-                var numBytes = await _pipe.ReadAsync(bytes, cancellationToken);
-                if (numBytes != 1 || bytes[0] != UpdatePayload.ApplySuccessValue)
+                var statusBytesRead = await _pipe.ReadAsync(status, cancellationToken);
+                if (statusBytesRead != 1 || status[0] != UpdatePayload.ApplySuccessValue)
                 {
-                    Reporter.Error($"Change failed to apply (error code: '{BitConverter.ToString(bytes, 0, numBytes)}'). Further changes won't be applied to this process.");
+                    Reporter.Error($"Change failed to apply (error code: '{BitConverter.ToString(status, 0, statusBytesRead)}'). Further changes won't be applied to this process.");
                     return false;
+                }
+
+                foreach (var (message, severity) in UpdatePayload.ReadLog(_pipe))
+                {
+                    switch (severity)
+                    {
+                        case AgentMessageSeverity.Verbose:
+                            Reporter.Verbose(message, emoji: "🕵️");
+                            break;
+
+                        case AgentMessageSeverity.Error:
+                            Reporter.Error(message);
+                            break;
+
+                        case AgentMessageSeverity.Warning:
+                            Reporter.Warn(message, emoji: "⚠");
+                            break;
+
+                        default:
+                            Reporter.Error($"Unexpected message severity: {severity}");
+                            return false;
+                    }
                 }
 
                 return true;
             }
             finally
             {
-                ArrayPool<byte>.Shared.Return(bytes);
+                ArrayPool<byte>.Shared.Return(status);
             }
         }
 
         private void DisposePipe()
         {
-            Reporter.Verbose("Disposing pipe");
+            Reporter.Verbose("Disposing agent communication pipe");
             _pipe?.Dispose();
             _pipe = null;
         }

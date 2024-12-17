@@ -95,12 +95,12 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
       </trans-unit>
       <trans-unit id="SourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
-        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <target state="translated">설치 중에 사용할 모든 NuGet 패키지 원본을 이러한 패키지 원본으로 바꿉니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceOptionName">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">원본</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -194,7 +194,7 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>ADDSOURCE</source>
-        <target state="needs-review-translation">SOURCE</target>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

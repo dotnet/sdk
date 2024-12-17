@@ -48,7 +48,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
-        <target state="needs-review-translation">使用 `-p` 選項時，一次只能指定一個專案。</target>
+        <target state="translated">使用 -p 選項時，一次只能指定一個專案。</target>
         <note>{Locked="-p"}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
@@ -63,7 +63,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
-        <target state="new">Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</target>
+        <target state="translated">執行 {0} 目標以探索對此專案的執行命令失敗。修正錯誤和警告，然後重新執行。</target>
         <note>{0} is the name of an MSBuild target</note>
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -78,7 +78,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
-        <target state="needs-review-translation">請勿在執行之前建置專案。提示: -no-restore.</target>
+        <target state="translated">請勿在執行之前建置專案。提示: --no-restore.</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
@@ -138,12 +138,12 @@ The current {1} is '{2}'.</source>
       </trans-unit>
       <trans-unit id="RunCommandProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">警告 NETSDK1174: --project 已取代縮寫 -p。請使用 --project。</target>
+        <target state="translated">警告 NETSDK1174: --project 已取代縮寫 -p。請使用 --project。</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
-        <target state="new">'{0}' is not a valid project file.</target>
+        <target state="translated">'{0}' 並非有效的專案名稱。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">

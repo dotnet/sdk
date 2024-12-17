@@ -1,9 +1,9 @@
 ﻿Microsoft.NET.Build.Containers.ContainerHelpers
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType = 2 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 0 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber | Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 2 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType = 4 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = 8 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
 Microsoft.NET.Build.Containers.Port
 Microsoft.NET.Build.Containers.Port.Deconstruct(out int Number, out Microsoft.NET.Build.Containers.PortType Type) -> void
 Microsoft.NET.Build.Containers.Port.Equals(Microsoft.NET.Build.Containers.Port other) -> bool

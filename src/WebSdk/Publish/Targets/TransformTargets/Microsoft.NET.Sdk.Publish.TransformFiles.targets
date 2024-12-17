@@ -245,13 +245,15 @@ Copyright (C) Microsoft Corporation. All rights reserved.
       <_UseAppHost Condition=" '$(_UseAppHost)' == '' Or '$(RuntimeIdentifier)' == '' ">false</_UseAppHost>
       <_ExecutableExtension Condition=" '$(_ExecutableExtension)' == '' And $(RuntimeIdentifier.StartsWith('win')) ">.exe</_ExecutableExtension>
       <_IsLinux Condition=" '$(IsLinux)' == 'True'">true</_IsLinux>
+      <_WebJobsDirectory>$(PublishIntermediateOutputPath)\app_data\Jobs\$(WebJobType)\$(WebJobName)\</_WebJobsDirectory>
+      <_WebJobsDirectory Condition="'$(WebPublishMethod)' == 'OneDeploy'">$(PublishIntermediateOutputPath)\</_WebJobsDirectory>
     </PropertyGroup>
 
     <GenerateRunCommandFile
         Condition="'$(_IsWebJobProject)' == 'true' And '$(IsGenerateRunCommandFileDisabled)' != 'true'"
         ProjectDirectory="$(MSBuildProjectDirectory)"
         TargetPath="$(TargetPath)"
-        WebJobsDirectory="$(PublishIntermediateOutputPath)\app_data\Jobs\$(WebJobType)\$(WebJobName)\"
+        WebJobsDirectory="$(_WebJobsDirectory)"
         UseAppHost="$(_UseAppHost)"
         ExecutableExtension="$(_ExecutableExtension)"
         IsLinux="$(_IsLinux)" />

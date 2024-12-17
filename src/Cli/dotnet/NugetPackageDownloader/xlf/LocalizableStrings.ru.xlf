@@ -36,7 +36,7 @@
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="needs-review-translation">{0} не найдено в веб-каналах NuGet {1}.</target>
+        <target state="translated">{0} не найдено в веб-каналах NuGet {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageShouldNotBeSigned">

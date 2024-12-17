@@ -48,7 +48,7 @@
     <PackageReference Include="System.Text.Json" ExcludeAssets="runtime">
       <!-- For the net472 flavor, lock back to a System.Text.Json equal to or older than MSBuild will provide
            so it doesn't have to be redistributed. -->
-      <VersionOverride Condition="'$(TargetFramework)' == 'net472'">8.0.3</VersionOverride>
+      <VersionOverride Condition="'$(TargetFramework)' == 'net472'">$(SystemTextJsonToolsetPackageVersion)</VersionOverride>
     </PackageReference>
   </ItemGroup>
 
@@ -113,7 +113,7 @@
   </Target>
 
   <!-- This target adds the generated deps.json file to our package output -->
-  <Target Name="AddBuildDependencyFileToBuiltProjectOutputGroupOutput" BeforeTargets="BuiltProjectOutputGroup" Condition=" '$(GenerateDependencyFile)' == 'true'">
+  <Target Name="AddBuildDependencyFileToBuiltProjectOutputGroupOutput" BeforeTargets="BuiltProjectOutputGroup" Condition="'$(GenerateDependencyFile)' == 'true'">
     <ItemGroup>
       <BuiltProjectOutputGroupOutput Include="$(ProjectDepsFilePath)" TargetPath="$(ProjectDepsFileName)" FinalOutputPath="$(ProjectDepsFilePath)" />
     </ItemGroup>
@@ -121,7 +121,7 @@
 
   <!-- Copy to *.csproj for using in sanity checks integration tests. -->
   <Target Name="CopyCsprojToTestExecutionDirectory" AfterTargets="Build">
-    <Copy SourceFiles="$(MSBuildThisFileFullPath)" DestinationFiles="$(ArtifactsTmpDir)Container\ProjectFiles\$(MSBuildThisFileName).csproj" />
+    <Copy SourceFiles="$(MSBuildThisFileFullPath)" DestinationFiles="$(ArtifactsTmpDir)Container\ProjectFiles\$(MSBuildThisFileName).csproj" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

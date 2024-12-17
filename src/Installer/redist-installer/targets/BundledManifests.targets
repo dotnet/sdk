@@ -103,15 +103,27 @@
     <Copy SourceFiles="@(ManifestContent)"
           DestinationFolder="$(RedistLayoutPath)sdk-manifests/%(DestinationPath)" />
 
+  </Target>
+
+  <PropertyGroup>
+    <!-- NOTE: When setting this to true, we need to also add logic to include it in the exe installation bundle, either via a new MSI or by including it in an existing one. -->
+    <GenerateBaselineWorkloadSet>false</GenerateBaselineWorkloadSet>
+  </PropertyGroup>
+  
+  <Target Name="LayoutBaselineWorkloadSet" DependsOnTargets="LayoutManifests" Condition="'$(GenerateBaselineWorkloadSet)' == 'true'">
+
     <PropertyGroup>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(VersionPrefix)-baseline$(_BuildNumberLabels)</WorkloadSetVersion>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' != 'release'">$(Version)</WorkloadSetVersion>
-      <WorkloadSetFeatureBand>$(VersionPrefix.Substring(0, $([MSBuild]::Subtract($(VersionPrefix.Length), 2))))00$([System.Text.RegularExpressions.Regex]::Match($(WorkloadSetVersion), `-[A-z]*[\.]*\d*`))</WorkloadSetFeatureBand>
-      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
     </PropertyGroup>
 
-    <ItemGroup>
-    </ItemGroup>
+    <GetWorkloadSetFeatureBand WorkloadSetVersion="$(WorkloadSetVersion)">
+      <Output TaskParameter="WorkloadSetFeatureBand" PropertyName="WorkloadSetFeatureBand" />
+    </GetWorkloadSetFeatureBand>
+
+    <PropertyGroup>
+      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>      
+    </PropertyGroup>
 
     <ItemGroup>
       <FormattedBaselineManifest Include="{" />

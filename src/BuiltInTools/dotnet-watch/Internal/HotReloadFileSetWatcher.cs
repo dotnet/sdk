@@ -3,19 +3,21 @@
 
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal sealed class HotReloadFileSetWatcher(IReadOnlyDictionary<string, FileItem> fileSet, DateTime buildCompletionTime, IReporter reporter) : IDisposable
+    internal sealed class HotReloadFileSetWatcher(IReadOnlyDictionary<string, FileItem> fileSet, DateTime buildCompletionTime, IReporter reporter, TestFlags testFlags) : IDisposable
     {
         private static readonly TimeSpan s_debounceInterval = TimeSpan.FromMilliseconds(50);
+        private static readonly DateTime s_fileNotExistFileTime = DateTime.FromFileTime(0);
 
         private readonly FileWatcher _fileWatcher = new(fileSet, reporter);
         private readonly object _changedFilesLock = new();
-        private readonly ConcurrentDictionary<string, FileItem> _changedFiles = new(StringComparer.Ordinal);
+        private readonly ConcurrentDictionary<string, ChangedFile> _changedFiles = new(StringComparer.Ordinal);
 
-        private TaskCompletionSource<FileItem[]?>? _tcs;
+        private TaskCompletionSource<ChangedFile[]?>? _tcs;
         private bool _initialized;
         private bool _disposed;
 
@@ -46,7 +48,13 @@ namespace Microsoft.DotNet.Watcher.Internal
             _fileWatcher.StartWatching();
             _fileWatcher.OnFileChange += FileChangedCallback;
 
-            reporter.Report(MessageDescriptor.WaitingForChanges);
+            var waitingForChanges = MessageDescriptor.WaitingForChanges;
+            if (testFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity))
+            {
+                waitingForChanges = waitingForChanges with { Severity = MessageSeverity.Output };
+            }
+
+            reporter.Report(waitingForChanges);
 
             Task.Factory.StartNew(async () =>
             {
@@ -65,7 +73,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         continue;
                     }
 
-                    FileItem[] changedFiles;
+                    ChangedFile[] changedFiles;
                     lock (_changedFilesLock)
                     {
                         changedFiles = _changedFiles.Values.ToArray();
@@ -82,7 +90,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             }, default, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
-            void FileChangedCallback(string path, bool newFile)
+            void FileChangedCallback(string path, ChangeKind kind)
             {
                 // only handle file changes:
                 if (Directory.Exists(path))
@@ -90,43 +98,66 @@ namespace Microsoft.DotNet.Watcher.Internal
                     return;
                 }
 
-                try
+                if (kind != ChangeKind.Delete)
                 {
-                    // TODO: Deleted files will be ignored https://github.com/dotnet/sdk/issues/42535
-
-                    // Do not report changes to files that happened during build:
-                    var creationTime = File.GetCreationTimeUtc(path);
-                    var writeTime = File.GetLastWriteTimeUtc(path);
-                    if (creationTime.Ticks < buildCompletionTime.Ticks && writeTime.Ticks < buildCompletionTime.Ticks)
+                    try
                     {
-                        reporter.Verbose($"Ignoring file updated during build: '{path}' ({FormatTimestamp(creationTime)},{FormatTimestamp(writeTime)} < {FormatTimestamp(buildCompletionTime)}).");
+                        // Do not report changes to files that happened during build:
+                        var creationTime = File.GetCreationTimeUtc(path);
+                        var writeTime = File.GetLastWriteTimeUtc(path);
+
+                        if (creationTime == s_fileNotExistFileTime || writeTime == s_fileNotExistFileTime)
+                        {
+                            // file might have been deleted since we received the event
+                            kind = ChangeKind.Delete;
+                        }
+                        else if (creationTime.Ticks < buildCompletionTime.Ticks && writeTime.Ticks < buildCompletionTime.Ticks)
+                        {
+                            reporter.Verbose(
+                                $"Ignoring file change during build: {kind} '{path}' " +
+                                $"(created {FormatTimestamp(creationTime)} and written {FormatTimestamp(writeTime)} before {FormatTimestamp(buildCompletionTime)}).");
+
+                            return;
+                        }
+                        else if (writeTime > creationTime)
+                        {
+                            reporter.Verbose($"File change: {kind} '{path}' (written {FormatTimestamp(writeTime)} after {FormatTimestamp(buildCompletionTime)}).");
+                        }
+                        else
+                        {
+                            reporter.Verbose($"File change: {kind} '{path}' (created {FormatTimestamp(creationTime)} after {FormatTimestamp(buildCompletionTime)}).");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        reporter.Verbose($"Ignoring file '{path}' due to access error: {e.Message}.");
                         return;
                     }
                 }
-                catch (Exception e)
+
+                if (kind == ChangeKind.Delete)
                 {
-                    reporter.Verbose($"Ignoring file '{path}' due to access error: {e.Message}.");
-                    return;
+                    reporter.Verbose($"File '{path}' deleted after {FormatTimestamp(buildCompletionTime)}.");
                 }
 
-                if (newFile)
+                if (kind == ChangeKind.Add)
                 {
                     lock (_changedFilesLock)
                     {
-                        _changedFiles.TryAdd(path, new FileItem { FilePath = path, IsNewFile = newFile });
+                        _changedFiles.TryAdd(path, new ChangedFile(new FileItem { FilePath = path }, kind));
                     }
                 }
                 else if (fileSet.TryGetValue(path, out var fileItem))
                 {
                     lock (_changedFilesLock)
                     {
-                        _changedFiles.TryAdd(path, fileItem);
+                        _changedFiles.TryAdd(path, new ChangedFile(fileItem, kind));
                     }
                 }
             }
         }
 
-        public Task<FileItem[]?> GetChangedFilesAsync(CancellationToken cancellationToken, bool forceWaitForNewUpdate = false)
+        public Task<ChangedFile[]?> GetChangedFilesAsync(CancellationToken cancellationToken, bool forceWaitForNewUpdate = false)
         {
             EnsureInitialized();
 
@@ -142,6 +173,6 @@ namespace Microsoft.DotNet.Watcher.Internal
         }
 
         internal static string FormatTimestamp(DateTime time)
-            => time.ToString("yyyy-MM-dd HH:mm:ss.fffffff");
+            => time.ToString("HH:mm:ss.fffffff");
     }
 }

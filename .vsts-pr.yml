@@ -8,6 +8,11 @@ pr:
     - main
     - release/*
     - internal/release/*
+  paths:
+    exclude:
+    - documentation/*
+    - README.md
+    - CODEOWNERS
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -20,12 +25,12 @@ resources:
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
   - container: centosStream9
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-  - container: debian11Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-amd64
+  - container: debian12Amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
   - container: fedora39
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-  - container: ubuntu2204
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04
+  - container: ubuntu2204DebPkg
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
 
 stages:
 ############### BUILD STAGE ###############
@@ -58,9 +63,21 @@ stages:
         vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.13.amd64.open
+  ### ARM64 ###
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-latest
+        os: macOS
+      helixTargetQueue: osx.13.arm64.open
+      macOSJobParameterSets:
+      - categoryName: TestBuild
+        buildArchitecture: arm64
+        runtimeIdentifier: osx-arm64
 
   ############### SOURCE BUILD ###############
-  - template: /eng/common/templates/job/source-build.yml
+  - template: /eng/common/templates/job/source-build.yml@self
     parameters:
       platform:
         name: Managed

@@ -354,7 +354,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(string workloadSetVersion, DirectoryPath? offlineCache)
         {
             SdkFeatureBand workloadSetFeatureBand;
-            string msiPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
+            string msiPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
             string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand).ToString();
 
             Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");

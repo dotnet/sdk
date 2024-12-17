@@ -1,25 +1,22 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.Immutable;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.WebTools.AspireServer.Contracts;
 using Microsoft.WebTools.AspireServer.Helpers;
 using Microsoft.WebTools.AspireServer.Models;
+using Microsoft.WebTools.AspireService.Helpers;
 using IAsyncDisposable = System.IAsyncDisposable;
 
 namespace Microsoft.WebTools.AspireServer;
@@ -38,7 +35,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
     private readonly IAspireServerEvents _aspireServerEvents;
 
-    private readonly Action<string>? _tracer;
+    private readonly Action<string>? _reporter;
 
     private readonly string _currentSecret;
     private readonly string _displayName;
@@ -52,8 +49,11 @@ internal partial class AspireServerService : IAsyncDisposable
 
     private readonly SocketConnectionManager _socketConnectionManager = new();
 
+    private volatile bool _isDisposed;
+
     private static readonly char[] s_charSeparator = { ' ' };
-    private int _isListening;
+
+    private readonly Task _requestListener;
 
     public static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
@@ -65,10 +65,10 @@ internal partial class AspireServerService : IAsyncDisposable
         }
     };
 
-    public AspireServerService(IAspireServerEvents aspireServerEvents, string displayName, Action<string>? tracer)
+    public AspireServerService(IAspireServerEvents aspireServerEvents, string displayName, Action<string>? reporter)
     {
         _aspireServerEvents = aspireServerEvents;
-        _tracer = tracer;
+        _reporter = reporter;
         _displayName = displayName;
 
         _port = SocketUtilities.GetNextAvailablePort();
@@ -85,83 +85,97 @@ internal partial class AspireServerService : IAsyncDisposable
         var certBytes = _certificate.Export(X509ContentType.Cert);
         _certificateEncodedBytes = Convert.ToBase64String(certBytes);
 
-        // Start the server
-        Initialize();
+        // Kick of the web server.
+        _requestListener = StartListening();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Shutdown the service:
+        _shutdownCancellationTokenSource.Cancel();
+
+        Log("Waiting for server to shutdown ...");
+
+        try
+        {
+            await _requestListener;
+        }
+        catch (OperationCanceledException)
+        {
+            // nop
+        }
+
+        _isDisposed = true;
+
+        _socketConnectionManager.Dispose();
+        _certificate.Dispose();
+        _shutdownCancellationTokenSource.Dispose();
     }
 
     /// <inheritdoc/>
-    public ValueTask<List<KeyValuePair<string, string>>> GetServerConnectionEnvironmentAsync(CancellationToken cancelToken)
-    {
-        return new ValueTask<List<KeyValuePair<string, string>>>(new List<KeyValuePair<string, string>>
-        {
-            new KeyValuePair<string, string>(DebugSessionPortEnvVar,$"localhost:{_port}"),
-            new KeyValuePair<string, string>(DebugSessionTokenEnvVar, _currentSecret),
-            new KeyValuePair<string, string>(DebugSessionServerCertEnvVar, _certificateEncodedBytes),
-        });
-    }
+    public List<KeyValuePair<string, string>> GetServerConnectionEnvironment()
+        => 
+        [
+            new(DebugSessionPortEnvVar, $"localhost:{_port}"),
+            new(DebugSessionTokenEnvVar, _currentSecret),
+            new(DebugSessionServerCertEnvVar, _certificateEncodedBytes),
+        ];
 
-    public async ValueTask SessionEndedAsync(string dcpId, string sessionId, int processId, int? exitCode, CancellationToken cancelToken)
-    {
-        var payload = new SessionChangeNotification()
-        {
-            NotificationType = NotificationType.SessionTerminated,
-            SessionId = sessionId,
-            PID = processId,
-            ExitCode = exitCode
-        };
+    public ValueTask NotifySessionEndedAsync(string dcpId, string sessionId, int processId, int? exitCode, CancellationToken cancelationToken)
+        => SendNotificationAsync(
+            new SessionTerminatedNotification()
+            {
+                NotificationType = NotificationType.SessionTerminated,
+                SessionId = sessionId,
+                Pid = processId,
+                ExitCode = exitCode
+            },
+            dcpId,
+            sessionId,
+            cancelationToken);
 
+    public ValueTask NotifySessionStartedAsync(string dcpId, string sessionId, int processId, CancellationToken cancelationToken)
+        => SendNotificationAsync(
+            new ProcessRestartedNotification()
+            {
+                NotificationType = NotificationType.ProcessRestarted,
+                SessionId = sessionId,
+                PID = processId
+            },
+            dcpId,
+            sessionId,
+            cancelationToken);
+
+    public ValueTask NotifyLogMessageAsync(string dcpId, string sessionId, bool isStdErr, string data, CancellationToken cancelationToken)
+        => SendNotificationAsync(
+            new ServiceLogsNotification()
+            {
+                NotificationType = NotificationType.ServiceLogs,
+                SessionId = sessionId,
+                IsStdErr = isStdErr,
+                LogMessage = data
+            },
+            dcpId,
+            sessionId,
+            cancelationToken);
+
+    private async ValueTask SendNotificationAsync<TNotification>(TNotification notification, string dcpId, string sessionId, CancellationToken cancelationToken)
+        where TNotification : SessionNotification
+    {
         try
         {
-            LogTrace($"Sending SessionEndedAsync for session {sessionId}");
-            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(payload, JsonSerializerOptions);
-            await SendMessageAsync(dcpId, jsonSerialized, cancelToken);
+            Log($"[#{sessionId}] Sending '{notification.NotificationType}'");
+            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(notification, JsonSerializerOptions);
+            await SendMessageAsync(dcpId, jsonSerialized, cancelationToken);
         }
-        catch (Exception ex)
+        catch (Exception e) when (LogAndPropagate(e))
         {
-            // Send messageAsync can fail if the connection is lost
-            LogTrace($"Sending session ended failed: {ex}");
         }
-    }
 
-    public async ValueTask SessionStartedAsync(string dcpId, string sessionId, int processId, CancellationToken cancelToken)
-    {
-        var payload = new SessionChangeNotification()
+        bool LogAndPropagate(Exception e)
         {
-            NotificationType = NotificationType.ProcessRestarted,
-            SessionId = sessionId,
-            PID = processId
-        };
-
-        try
-        {
-            LogTrace($"Sending SessionStartedAsync for session {sessionId}");
-            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(payload, JsonSerializerOptions);
-            await SendMessageAsync(dcpId, jsonSerialized, cancelToken);
-        }
-        catch (Exception ex)
-        {
-            LogTrace($"Sending session started failed: {ex}");
-        }
-    }
-
-    public async ValueTask SendLogMessageAsync(string dcpId, string sessionID, bool isStdErr, string data, CancellationToken cancelToken)
-    {
-        var payload = new SessionLogsNotification()
-        {
-            NotificationType = NotificationType.ServiceLogs,
-            SessionId = sessionID,
-            IsStdErr = isStdErr,
-            LogMessage = data
-        };
-
-        try
-        {
-            var jsonSerialized = JsonSerializer.SerializeToUtf8Bytes(payload, JsonSerializerOptions);
-            await SendMessageAsync(dcpId, jsonSerialized, cancelToken);
-        }
-        catch (Exception ex)
-        {
-            LogTrace($"Sending service logs failed {ex}");
+            Log($"[#{sessionId}] Sending '{notification.NotificationType}' failed: {e.Message}");
+            return false;
         }
     }
 
@@ -169,7 +183,7 @@ internal partial class AspireServerService : IAsyncDisposable
     /// Waits for a connection so that it can get the WebSocket that will be used to send messages tio the client. It accepts messages via Restful http
     /// calls.
     /// </summary>
-    private void StartListening()
+    private Task StartListening()
     {
         var builder = WebApplication.CreateSlimBuilder();
 
@@ -181,6 +195,12 @@ internal partial class AspireServerService : IAsyncDisposable
             });
         });
 
+        if (_reporter != null)
+        {
+            builder.Logging.ClearProviders();
+            builder.Logging.AddProvider(new LoggerProvider(_reporter));
+        }
+
         var app = builder.Build();
 
         app.MapGet("/", () => _displayName);
@@ -191,7 +211,7 @@ internal partial class AspireServerService : IAsyncDisposable
 
         runSessionApi.MapPut("/", RunSessionPutAsync);
         runSessionApi.MapDelete("/{sessionId}", RunSessionDeleteAsync);
-        runSessionApi.Map(SessionNotificationBase.Url, RunSessionNotifyAsync);
+        runSessionApi.Map(SessionNotification.Url, RunSessionNotifyAsync);
 
         app.UseWebSockets(new WebSocketOptions
         {
@@ -199,7 +219,7 @@ internal partial class AspireServerService : IAsyncDisposable
         });
 
         // Run the application async. It will shutdown when the cancel token is signaled
-        _ = app.RunAsync(_shutdownCancellationTokenSource.Token);
+        return app.RunAsync(_shutdownCancellationTokenSource.Token);
     }
 
     private async Task RunSessionPutAsync(HttpContext context)
@@ -207,12 +227,12 @@ internal partial class AspireServerService : IAsyncDisposable
         // Check the authentication header
         if (!IsValidAuthentication(context))
         {
-            LogTrace("Authorization failure");
+            Log("Authorization failure");
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
         }
         else
         {
-            await ProcessStartSessionRequestAsync(context);
+            await HandleStartSessionRequestAsync(context);
         }
     }
 
@@ -221,12 +241,12 @@ internal partial class AspireServerService : IAsyncDisposable
         // Check the authentication header
         if (!IsValidAuthentication(context))
         {
-            LogTrace("Authorization failure");
+            Log("Authorization failure");
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
         }
         else
         {
-            context.Response.StatusCode = await HandleStopSessionRequestAsync(context.GetDcpId(), sessionId);
+            await HandleStopSessionRequestAsync(context, sessionId);
         }
     }
 
@@ -235,7 +255,7 @@ internal partial class AspireServerService : IAsyncDisposable
         // Check the authentication header
         if (!IsValidAuthentication(context))
         {
-            LogTrace("Authorization failure");
+            Log("Authorization failure");
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
         }
         else
@@ -250,7 +270,7 @@ internal partial class AspireServerService : IAsyncDisposable
         // Check the authentication header
         if (!IsValidAuthentication(context))
         {
-            LogTrace("Authorization failure");
+            Log("Authorization failure");
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
             return;
         }
@@ -270,35 +290,9 @@ internal partial class AspireServerService : IAsyncDisposable
         await socketTcs.Task;
     }
 
-    private void LogTrace(string traceMsg)
+    private void Log(string message)
     {
-        _tracer?.Invoke($"AspireServer - {traceMsg}");
-    }
-
-    /// <summary>
-    /// starts the web server running
-    /// </summary>
-    private void Initialize()
-    {
-        if (Interlocked.CompareExchange(ref _isListening, 1, 0) == 1)
-        {
-            return;
-        }
-
-        // Kick of the web server.
-        StartListening();
-    }
-
-    public ValueTask DisposeAsync()
-    {
-        _socketConnectionManager.Dispose();
-
-        _certificate.Dispose();
-
-        // Shutdown the app
-        _shutdownCancellationTokenSource.Cancel();
-        _shutdownCancellationTokenSource.Dispose();
-        return ValueTask.CompletedTask;
+        _reporter?.Invoke(message);
     }
 
     private bool IsValidAuthentication(HttpContext context)
@@ -317,29 +311,39 @@ internal partial class AspireServerService : IAsyncDisposable
         return false;
     }
 
-    private async Task ProcessStartSessionRequestAsync(HttpContext context)
+    private async Task HandleStartSessionRequestAsync(HttpContext context)
     {
-        // Get the project launch request data
-        var projectLaunchRequest = await context.GetProjectLaunchInformationAsync(_shutdownCancellationTokenSource.Token);
-        if (projectLaunchRequest is not null)
+        string? projectPath = null;
+
+        try
         {
-            try
+            if (_isDisposed)
             {
-                var sessionId = await LaunchProjectAsync(context.GetDcpId(), projectLaunchRequest);
-                context.Response.StatusCode = (int)HttpStatusCode.Created;
-                context.Response.Headers.Location = $"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}/{sessionId}";
+                throw new ObjectDisposedException(nameof(AspireServerService), "Received 'PUT /run_session' request after the service has been disposed.");
             }
-            catch (Exception ex)
+
+            // Get the project launch request data
+            var projectLaunchRequest = await context.GetProjectLaunchInformationAsync(_shutdownCancellationTokenSource.Token);
+            if (projectLaunchRequest == null)
             {
-                LogTrace($"Exception thrown starting project {projectLaunchRequest.ProjectPath}:  {ex}");
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                await WriteResponseTextAsync(context.Response, ex, context.GetApiVersion() is not null);
+                // Unknown or unsupported version
+                context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return;
             }
+
+            projectPath = projectLaunchRequest.ProjectPath;
+
+            var sessionId = await _aspireServerEvents.StartProjectAsync(context.GetDcpId(), projectLaunchRequest, _shutdownCancellationTokenSource.Token);
+
+            context.Response.StatusCode = (int)HttpStatusCode.Created;
+            context.Response.Headers.Location = $"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}/{sessionId}";
         }
-        else
+        catch (Exception e)
         {
-            // Unknown or unsupported version
-            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+            Log($"Failed to start project{(projectPath == null ? "" : $" '{projectPath}'")}: {e}");
+
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            await WriteResponseTextAsync(context.Response, e, context.GetApiVersion() is not null);
         }
     }
 
@@ -367,48 +371,58 @@ internal partial class AspireServerService : IAsyncDisposable
         }
     }
 
-    private async Task SendMessageAsync(string dcpId,byte[] messageBytes, CancellationToken cancellationToken)
+    private async Task SendMessageAsync(string dcpId, byte[] messageBytes, CancellationToken cancellationToken)
     {
         // Find the connection for the passed in dcpId
         WebSocketConnection? connection = _socketConnectionManager.GetSocketConnection(dcpId);
         if (connection is null)
         {
             // Most likely the connection has already gone away
-            LogTrace($"Send message failure: Connection with the following dcpId was not found {dcpId}");
+            Log($"Send message failure: Connection with the following dcpId was not found {dcpId}");
             return;
         }
 
+        var success = false;
         try
         {
-            using var cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _shutdownCancellationTokenSource.Token,
-                                                                                          connection.HttpRequestAborted);
+            using var cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken, _shutdownCancellationTokenSource.Token, connection.HttpRequestAborted);
+
             await _webSocketAccess.WaitAsync(cancelTokenSource.Token);
             await connection.Socket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, endOfMessage: true, cancelTokenSource.Token);
-        }
-        catch (Exception ex)
-        {
-            // If the connection throws it almost certainly means the client has gone away, so clean up that connection
-            _socketConnectionManager.RemoveSocketConnection(connection);
-            LogTrace($"Send message failure: {ex.GetMessageFromException()}");
-            throw;
+
+            success = true;
         }
         finally
         {
+            if (!success)
+            {
+                // If the connection throws it almost certainly means the client has gone away, so clean up that connection
+                _socketConnectionManager.RemoveSocketConnection(connection);
+            }
+
             _webSocketAccess.Release();
         }
     }
 
-    private async Task<int> HandleStopSessionRequestAsync(string dcpId, string sessionId)
+    private async ValueTask HandleStopSessionRequestAsync(HttpContext context, string sessionId)
     {
-        bool sessionExists = await _aspireServerEvents.StopSessionAsync(dcpId, sessionId, _shutdownCancellationTokenSource.Token);
+        try
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(AspireServerService), "Received 'DELETE /run_session' request after the service has been disposed.");
+            }
 
-        return (int)(sessionExists ? HttpStatusCode.OK : HttpStatusCode.NoContent);
+            var sessionExists = await _aspireServerEvents.StopSessionAsync(context.GetDcpId(), sessionId, _shutdownCancellationTokenSource.Token);
+            context.Response.StatusCode = (int)(sessionExists ? HttpStatusCode.OK : HttpStatusCode.NoContent);
+        }
+        catch (Exception e)
+        {
+            Log($"[#{sessionId}] Failed to stop: {e}");
+
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            await WriteResponseTextAsync(context.Response, e, context.GetApiVersion() is not null);
+        }
     }
-
-    /// <summary>
-    /// Called to launch the project after first creating a LaunchProfile from the sessionRequest object. Returns the sessionId
-    /// for the launched process. If it throws an exception most likely the project couldn't be launched
-    /// </summary>
-    private Task<string> LaunchProjectAsync(string dcpId, ProjectLaunchRequest projectLaunchInfo)
-        => _aspireServerEvents.StartProjectAsync(dcpId, projectLaunchInfo, _shutdownCancellationTokenSource.Token).AsTask();
 }

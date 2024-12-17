@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         private bool _skipManifestUpdate;
         private readonly IReadOnlyCollection<string> _workloadIds;
+        private readonly bool _shouldShutdownInstaller;
 
         public bool IsRunningRestore { get; set; }
 
@@ -45,6 +46,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                  WorkloadInstallerFactory.GetWorkloadInstaller(resolvedReporter, _sdkFeatureBand,
                                      _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
                                      _packageSourceLocation, RestoreActionConfiguration, elevationRequired: !_printDownloadLinkOnly && string.IsNullOrWhiteSpace(_downloadToCacheOption));
+            _shouldShutdownInstaller = _workloadInstallerFromConstructor != null;
 
             _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
@@ -120,7 +122,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndVersion,
                     WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.VersionOption.Name), isUserError: true);
             }
-            else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson)
+            else if ((_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson) &&
+                !IsRunningRestore)  //  When running restore, we first update workloads, then query the projects to figure out what workloads should be installed, then run the install command.
+                                    //  When we run the install command we set skipManifestUpdate to true as an optimization to avoid trying to update twice
             {
                 throw new GracefulException(string.Format(LocalizableStrings.CannotUseSkipManifestWithGlobalJsonWorkloadVersion,
                     WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, _globalJsonPath), isUserError: true);
@@ -146,14 +150,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 catch (Exception e)
                 {
-                    _workloadInstaller.Shutdown();
+                    if (_shouldShutdownInstaller)
+                    {
+                        _workloadInstaller.Shutdown();
+                    }
 
                     // Don't show entire stack trace
                     throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message), e, isUserError: false);
                 }
             }
 
-            _workloadInstaller.Shutdown();
+            if (_shouldShutdownInstaller)
+            {
+                _workloadInstaller.Shutdown();
+            }
+            
             return _workloadInstaller.ExitCode;
         }
 

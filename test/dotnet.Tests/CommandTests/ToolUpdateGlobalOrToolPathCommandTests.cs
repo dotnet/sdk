@@ -201,6 +201,21 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenAnExistedPreviewVersionInstallationWhenUpdateToHigherVersionItSucceeds()
+        {
+            var installCommand = CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
+            installCommand.Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPackageVersion} --verbosity minimal");
+            command.Execute().Should().Be(0);
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                LocalizableStrings.UpdateSucceeded,
+                _packageId, HigherPreviewPackageVersion, HigherPackageVersion));
+        }
+
+        [Fact]
         public void GivenAnExistedHigherversionInstallationWhenUpdateToLowerVersionItErrors()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();

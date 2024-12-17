@@ -53,7 +53,7 @@
         TestSdkVersion=$(SourceBuiltSdkVersion);
         AdditionalTestArgs=$(_ScenarioTestsAdditionalArgs);
         DotNetTool=$(_DotNetTool);
-        _InitializeDotNetCli=$(DotNetSdkExtractDir)" />
+        _InitializeDotNetCli=$(DotNetSdkExtractDir.TrimEnd('/\'))" />
     </ItemGroup>
   </Target>
 

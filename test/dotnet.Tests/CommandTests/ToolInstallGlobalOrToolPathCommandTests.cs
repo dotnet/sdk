@@ -78,6 +78,55 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenPassingRestoreActionConfigOptions()
+        {
+            var parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources");
+            var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(parseResult);
+            toolInstallCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+        }
+
+        [Fact]
+        public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                Parser.Instance.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources"),
+                _packageId,
+                _createToolPackageStoreDownloaderUninstaller,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
+        }
+
+
+        [Fact]
+        public void WhenDuplicateSourceIsPassedIgnore()
+        {
+            var duplicateSource = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("NuGetConfigRandomPackageSources", allowCopyIfPresent: true)
+                .WithSource();
+
+            var packageSourceLocation = new PackageSourceLocation(
+                nugetConfig: new FilePath(Path.Combine(testAsset.Path, "NuGet.config")),
+                rootConfigDirectory: new DirectoryPath(testAsset.Path),
+                additionalSourceFeeds: [duplicateSource]);
+            var nuGetPackageDownloader = new NuGetPackageDownloader(new DirectoryPath(testAsset.Path));
+
+            var sources = nuGetPackageDownloader.LoadNuGetSources(new ToolPackage.PackageId(PackageId), packageSourceLocation);
+            // There should only be one source
+            sources.Where(s => s.SourceUri == new Uri(duplicateSource))
+                .Should().HaveCount(1);
+            // It should be the source from the NuGet.config file
+            sources.Where(s => s.SourceUri == new Uri(duplicateSource)).Single().Name
+                .Should().Be("example_source");
+        }
+
+        [Fact]
         public void WhenRunWithPackageIdItShouldCreateValidShim()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -967,6 +1016,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             {
             }
         }
+
+        private string _nugetConfigWithInvalidSources = @"{
+<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget"" value=""https://api.nuget.org/v3/index.json"" />
+    <add key=""invalid_source"" value=""https://api.nuget.org/v3/invalid.json"" />
+  </packageSources>
+</configuration>
+}";
     }
 }
 

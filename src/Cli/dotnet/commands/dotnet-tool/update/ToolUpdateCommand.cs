@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using CreateShellShimRepository = Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
@@ -43,16 +44,17 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                         localToolsResolverCache,
                         reporter);
 
+            _global = result.GetValue(ToolInstallCommandParser.GlobalOption);
+            _toolPath = result.GetValue(ToolInstallCommandParser.ToolPathOption);
+            DirectoryPath? location = string.IsNullOrWhiteSpace(_toolPath) ? null : new DirectoryPath(_toolPath);
             _toolUpdateGlobalOrToolPathCommand =
                 toolUpdateGlobalOrToolPathCommand
                 ?? new ToolUpdateGlobalOrToolPathCommand(
                     result,
                     createToolPackageStoreDownloaderUninstaller,
                     createShellShimRepository,
-                    reporter);
-
-            _global = result.GetValue(ToolInstallCommandParser.GlobalOption);
-            _toolPath = result.GetValue(ToolInstallCommandParser.ToolPathOption);
+                    reporter,
+                    ToolPackageFactory.CreateToolPackageStoreQuery(location));
         }
 
 

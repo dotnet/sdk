@@ -3,18 +3,27 @@
 
 namespace Microsoft.Extensions.HotReload
 {
-    internal readonly struct UpdatePayload
+    internal enum ResponseLoggingLevel : byte
+    {
+        WarningsAndErrors = 0,
+        Verbose = 1, 
+    }
+
+    internal enum AgentMessageSeverity : byte
+    {
+        Verbose = 0,
+        Warning = 1,
+        Error = 2,
+    }
+
+    internal readonly struct UpdatePayload(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel)
     {
         public const byte ApplySuccessValue = 0;
 
-        private static readonly byte Version = 1;
+        private const byte Version = 2;
 
-        public IReadOnlyList<UpdateDelta> Deltas { get; }
-
-        public UpdatePayload(IReadOnlyList<UpdateDelta> deltas)
-        {
-            Deltas = deltas;
-        }
+        public IReadOnlyList<UpdateDelta> Deltas { get; } = deltas;
+        public ResponseLoggingLevel ResponseLoggingLevel { get; } = responseLoggingLevel;
 
         /// <summary>
         /// Called by the dotnet-watch.
@@ -33,6 +42,8 @@ namespace Microsoft.Extensions.HotReload
                 await WriteBytesAsync(binaryWriter, delta.ILDelta, cancellationToken);
                 WriteIntArray(binaryWriter, delta.UpdatedTypes);
             }
+
+            binaryWriter.Write((byte)ResponseLoggingLevel);
 
             static ValueTask WriteBytesAsync(BinaryWriter binaryWriter, byte[] bytes, CancellationToken cancellationToken)
             {
@@ -54,6 +65,22 @@ namespace Microsoft.Extensions.HotReload
                 {
                     binaryWriter.Write(value);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Called by the dotnet-watch.
+        /// </summary>
+        public static void WriteLog(Stream stream, IReadOnlyCollection<(string message, AgentMessageSeverity severity)> log)
+        {
+            using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
+
+            writer.Write(log.Count);
+
+            foreach (var (message, severity) in log)
+            {
+                writer.Write(message);
+                writer.Write((byte)severity);
             }
         }
 
@@ -82,7 +109,9 @@ namespace Microsoft.Extensions.HotReload
                 deltas[i] = new UpdateDelta(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, updatedTypes);
             }
 
-            return new UpdatePayload(deltas);
+            var responseLoggingLevel = (ResponseLoggingLevel)binaryReader.ReadByte();
+
+            return new UpdatePayload(deltas, responseLoggingLevel: responseLoggingLevel);
 
             static async ValueTask<byte[]> ReadBytesAsync(BinaryReader binaryReader, CancellationToken cancellationToken)
             {
@@ -115,6 +144,21 @@ namespace Microsoft.Extensions.HotReload
                 }
 
                 return values;
+            }
+        }
+
+        /// <summary>
+        /// Called by delta applier.
+        /// </summary>
+        public static IEnumerable<(string message, AgentMessageSeverity severity)> ReadLog(Stream stream)
+        {
+            using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
+
+            var entryCount = reader.ReadInt32();
+
+            for (var i = 0; i < entryCount; i++)
+            {
+                yield return (reader.ReadString(), (AgentMessageSeverity)reader.ReadByte());
             }
         }
     }
