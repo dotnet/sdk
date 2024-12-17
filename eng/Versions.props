@@ -159,18 +159,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.13.0-rc.95</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.13.0-rc.95</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.13.0-rc.95</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.13.0-rc.95</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.13.0-rc.95</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.13.0-rc.95</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.13.0-rc.95</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.13.0-rc.95</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.13.0-rc.95</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.13.0-rc.95</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.13.0-rc.95</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.13.0-rc.95</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.13.0-rc.98</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.13.0-rc.98</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.13.0-rc.98</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.13.0-rc.98</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.13.0-rc.98</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.13.0-rc.98</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.13.0-rc.98</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.13.0-rc.98</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.13.0-rc.98</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.13.0-rc.98</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.13.0-rc.98</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.13.0-rc.98</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
