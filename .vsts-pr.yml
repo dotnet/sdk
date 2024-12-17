@@ -35,7 +35,7 @@ resources:
 stages:
 ############### BUILD STAGE ###############
 - stage: build
-  displayName: 🟣 Build
+  displayName: Build
   jobs:
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self

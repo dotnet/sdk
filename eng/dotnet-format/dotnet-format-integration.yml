@@ -66,7 +66,7 @@ parameters:
 
 jobs:
 - job: Formatting_Check
-  displayName: 🟣 Run Formatting Check
+  displayName: Run Formatting Check
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       name: $(DncEngPublicBuildPool)
@@ -95,7 +95,7 @@ jobs:
 
 - ${{ each testArgs in parameters.TestArguments }}:
   - job: dotnet_format_integration_tests_${{ testArgs.Name }}
-    displayName: '🟣 Dotnet-Format Integration Tests: ${{ testArgs.Name }}'
+    displayName: 'Dotnet-Format Integration Tests: ${{ testArgs.Name }}'
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
