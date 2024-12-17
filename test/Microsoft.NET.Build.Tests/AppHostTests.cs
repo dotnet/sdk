@@ -151,32 +151,12 @@ namespace Microsoft.NET.Build.Tests
             Directory.Delete(buildProjDir, true);
         }
 
-        public static TheoryData<string, string, bool> OsxPublishingOptions()
-        {
-            // osx-arm64 is only supported on net6.0+
-            string[] x64OnlyTfms = ["netcoreapp3.1", "net5.0"];
-            string[] tfms = ["net6.0", ToolsetInfo.CurrentTargetFramework];
-            string[] rids = ["osx-x64", "osx-arm64"];
-            bool[] selfContained = [true, false];
-
-            var sharedTfmParams = from t in tfms
-                       from r in rids
-                       from s in selfContained
-                       select (t, r, s);
-            var x64OnlyParams = from t in x64OnlyTfms
-                       from s in selfContained
-                       select (t, "osx-x64", s);
-            TheoryData<string, string, bool> data = new TheoryData<string, string, bool>();
-            foreach (var (t, r, s) in sharedTfmParams.Concat(x64OnlyParams))
-            {
-                data.Add(t, r, s);
-            }
-            return data;
-        }
-
         [Theory]
-        [MemberData(nameof(OsxPublishingOptions))]
-        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid, bool selfContained)
+        [InlineData("net6.0", "osx-x64")]
+        [InlineData("net6.0", "osx-arm64")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64")]
+        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid)
         {
             const string testAssetName = "HelloWorld";
             var testAsset = _testAssetsManager
@@ -186,8 +166,6 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(testAsset);
             var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={rid}" };
-            if (!selfContained)
-                buildArgs.Add("/p:PublishSingleFile=true");
             buildCommand
                 .Execute(buildArgs.ToArray())
                 .Should()
@@ -534,23 +512,23 @@ namespace Microsoft.NET.Build.Tests
                 // 4-byte value at offset 16 is the number of load commands
                 // 4-byte value at offset 20 is the size of the load commands
                 stream.Position = 16;
-                ReadUints(stream, eightByteBuffer, out uint loadCommandsCount, out uint loadCommandsSize);
+                ReadUInts(stream, eightByteBuffer, out uint loadCommandsCount, out uint loadCommandsSize);
                 // Mach-0 64 byte headers are 32 bytes long, and the first load command will be right after
                 stream.Position = 32;
                 bool hasSignature = false;
                 for (int commandIndex = 0; commandIndex < loadCommandsCount; commandIndex++)
                 {
-                    ReadUints(stream, eightByteBuffer, out uint commandType, out uint commandSize);
+                    ReadUInts(stream, eightByteBuffer, out uint commandType, out uint commandSize);
                     if (commandType == LC_CODE_SIGNATURE)
                     {
                         hasSignature = true;
                     }
-                    stream.Position += commandSize-8;
+                    stream.Position += commandSize - eightByteBuffer.Length;
                 }
                 Debug.Assert(stream.Position == loadCommandsSize + 32);
                 return hasSignature;
 
-                void ReadUints(Stream stream, Span<byte> buffer, out uint val1, out uint val2)
+                void ReadUInts(Stream stream, Span<byte> buffer, out uint val1, out uint val2)
                 {
                     stream.ReadExactly(buffer);
                     val1 = BitConverter.ToUInt32(buffer.Slice(0, 4));
