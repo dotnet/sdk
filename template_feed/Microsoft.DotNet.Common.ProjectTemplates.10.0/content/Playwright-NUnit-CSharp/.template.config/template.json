@@ -6,7 +6,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project that contains Playwright tests using NUnit test framework, that can run on .NET on Windows, Linux and MacOS.",
   "groupIdentity": "Microsoft.Test.Playwright.NUnit",
-  "precedence": "11000",
+  "precedence": "12000",
   "identity": "Microsoft.Test.Playwright.NUnit.CSharp.10.0",
   "shortName": "nunit-playwright",
   "tags": {

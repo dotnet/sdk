@@ -6,7 +6,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project that contains xUnit.net tests that can run on .NET on Windows, Linux and macOS",
   "groupIdentity": "Microsoft.Test.xUnit",
-  "precedence": "11000",
+  "precedence": "12000",
   "identity": "Microsoft.Test.xUnit.FSharp.10.0",
   "shortName": "xunit",
   "tags": {

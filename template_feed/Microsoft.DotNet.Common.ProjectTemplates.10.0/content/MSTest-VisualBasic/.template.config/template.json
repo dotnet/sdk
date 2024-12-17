@@ -6,7 +6,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project that contains MSTest tests that can run on .NET on Windows, Linux and MacOS.",
   "groupIdentity": "Microsoft.Test.MSTest",
-  "precedence": "11000",
+  "precedence": "12000",
   "identity": "Microsoft.Test.MSTest.VisualBasic.10.0",
   "shortName": "mstest",
   "tags": {
