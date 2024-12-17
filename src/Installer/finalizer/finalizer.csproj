@@ -8,6 +8,7 @@
 
   <PropertyGroup Condition="$(NETCoreSdkPortableRuntimeIdentifier.StartsWith('win-'))">
     <PublishAot>true</PublishAot>
+    <ControlFlowGuard>Guard</ControlFlowGuard>
     <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     <_IsPublishing>true</_IsPublishing>
     <PublishDir>$(ArtifactsDir)bin\finalizer\$(Configuration)\$(SdkTargetFramework)-win-$(Architecture)\publish</PublishDir>
