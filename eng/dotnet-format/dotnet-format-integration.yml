@@ -66,7 +66,7 @@ parameters:
 
 jobs:
 - job: Formatting_Check
-  displayName: Run Formatting Check
+  displayName: 🟣 Run Formatting Check
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       name: $(DncEngPublicBuildPool)
@@ -80,13 +80,13 @@ jobs:
   - template: /eng/common/templates/steps/enable-internal-runtimes.yml
   - template: /eng/common/templates/steps/enable-internal-sources.yml
   - script: .\restore.cmd ${{ parameters.runtimeSourceProperties }}
-    displayName: Restore dependencies
+    displayName: 🟣 Restore dependencies
   - script: |
       .\artifacts\sdk-build-env.bat
         dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release  -- @eng\dotnet-format\validate.rsp
-    displayName: Run dotnet-format
+    displayName: 🟣 Run dotnet-format
   - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
-    displayName: Publish Logs
+    displayName: 🟣 Publish Logs
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
       ArtifactName: dotnet-format formatting Check
@@ -95,7 +95,7 @@ jobs:
 
 - ${{ each testArgs in parameters.TestArguments }}:
   - job: dotnet_format_integration_tests_${{ testArgs.Name }}
-    displayName: 'Dotnet-Format Integration Tests: ${{ testArgs.Name }}'
+    displayName: '🟣 Dotnet-Format Integration Tests: ${{ testArgs.Name }}'
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
@@ -109,10 +109,10 @@ jobs:
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
     - template: /eng/common/templates/steps/enable-internal-sources.yml
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare' -runtimeSourceProperties '${{ parameters.runtimeSourceProperties }}'
-      displayName: Prepare ${{ testArgs._repoName }} for formatting
+      displayName: 🟣 Prepare ${{ testArgs._repoName }} for formatting
 
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'format-workspace'
-      displayName: Run dotnet-format on ${{ testArgs._repoName }} ${{ testArgs._targetSolution }}
+      displayName: 🟣 Run dotnet-format on ${{ testArgs._repoName }} ${{ testArgs._targetSolution }}
 
     - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'format-folder'
-      displayName: Run dotnet-format on ${{ testArgs._repoName }} repo folder
+      displayName: 🟣 Run dotnet-format on ${{ testArgs._repoName }} repo folder
