@@ -5,6 +5,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload.Search;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Abstractions.Components;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Search.Tests
@@ -93,7 +94,14 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
             MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.103.0"), new NuGetVersion("9.102.0"), new NuGetVersion("9.101.0"), new NuGetVersion("9.100.0")]);
             var parseResult = Parser.Instance.Parse("dotnet workload search version android@17.5.9 macos@14.5.92 --take 1");
-            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader);
+            MockWorkloadResolver resolver = new(
+                [new WorkloadResolver.WorkloadInfo(new WorkloadId("Microsoft.NET.Sdk.Android"), null),
+                 new WorkloadResolver.WorkloadInfo(new WorkloadId("Microsoft.NET.Sdk.macOS"), null),
+                 new WorkloadResolver.WorkloadInfo(new WorkloadId("Microsoft.NET.Sdk.Maui"), null)],
+                getManifest: id => id.Equals(new WorkloadId("android")) ? WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Android") :
+                                   id.Equals(new WorkloadId("macos")) ? WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.macOS") :
+                                   WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui"));
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver);
             _reporter.Clear();
             command.Execute();
             _reporter.Lines.Count.Should().Be(1);

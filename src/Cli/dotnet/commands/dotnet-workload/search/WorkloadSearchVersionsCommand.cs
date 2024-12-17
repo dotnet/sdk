@@ -31,7 +31,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             IReporter reporter = null,
             IWorkloadResolverFactory workloadResolverFactory = null,
             IInstaller installer = null,
-            INuGetPackageDownloader nugetPackageDownloader = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter, nugetPackageDownloader: nugetPackageDownloader)
+            INuGetPackageDownloader nugetPackageDownloader = null,
+            IWorkloadResolver resolver = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter, nugetPackageDownloader: nugetPackageDownloader)
         {
             workloadResolverFactory ??= new WorkloadResolverFactory();
 
@@ -43,14 +44,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             var creationResult = workloadResolverFactory.Create();
 
             _sdkVersion = creationResult.SdkVersion;
-            var workloadResolver = creationResult.WorkloadResolver;
+            _resolver = resolver ?? creationResult.WorkloadResolver;
 
             _numberOfWorkloadSetsToTake = result.GetValue(WorkloadSearchVersionsCommandParser.TakeOption);
             _workloadSetOutputFormat = result.GetValue(WorkloadSearchVersionsCommandParser.FormatOption);
 
             // For these operations, we don't have to respect 'msi' because they're equivalent between the two workload
             // install types, and FileBased is much easier to work with.
-            _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), workloadResolver, Verbosity, result.HasOption(SharedOptions.InteractiveOption));
+            _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), _resolver, Verbosity, result.HasOption(SharedOptions.InteractiveOption));
 
             _workloadVersion = result.GetValue(WorkloadSearchVersionsCommandParser.WorkloadVersionArgument);
 
@@ -58,7 +59,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
                 result.GetValue(WorkloadSearchVersionsCommandParser.IncludePreviewsOption) :
                 new SdkFeatureBand(_sdkVersion).IsPrerelease;
 
-            _resolver = creationResult.WorkloadResolver;
         }
 
         private static IInstaller GenerateInstaller(IReporter reporter, SdkFeatureBand sdkFeatureBand, IWorkloadResolver workloadResolver, VerbosityOptions verbosity, bool interactive)
