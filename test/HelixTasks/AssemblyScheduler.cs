@@ -250,7 +250,16 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 foreach (var attributeHandle in methodAttributes)
                 {
                     var attribute = reader.GetCustomAttribute(attributeHandle);
-                    var attributeConstructor = reader.GetMemberReference((MemberReferenceHandle)attribute.Constructor);
+                    var attributeConstructorHandle = attribute.Constructor;
+                    MemberReference attributeConstructor;
+                    if (attributeConstructorHandle.Kind == HandleKind.MemberReference)
+                    {
+                        attributeConstructor = reader.GetMemberReference((MemberReferenceHandle)attributeConstructorHandle);
+                    }
+                    else
+                    {
+                        continue;
+                    }
                     var attributeType = reader.GetTypeReference((TypeReferenceHandle)attributeConstructor.Parent);
                     var attributeTypeName = reader.GetString(attributeType.Name);
 
