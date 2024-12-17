@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 #endif
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -18,36 +20,44 @@ namespace Microsoft.DotNet.GenAPI
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
-        public static void Run(GenAPIConfiguration config)
+        public static void Run(ILog logger,
+                               Dictionary<string, IAssemblySymbol> assemblySymbols,
+                               string? outputPath,
+                               AssemblySymbolLoader loader,
+                               ISymbolFilter symbolFilter,
+                               ISymbolFilter attributeSymbolFilter,
+                               string header,
+                               string? exceptionMessage,
+                               bool includeAssemblyAttributes)
         {
             // Invoke an assembly symbol writer for each directly loaded assembly.
-            foreach (KeyValuePair<string, IAssemblySymbol> kvp in config.AssemblySymbols)
+            foreach (KeyValuePair<string, IAssemblySymbol> kvp in assemblySymbols)
             {
-                using TextWriter textWriter = GetTextWriter(config.OutputPath, kvp.Key);
-                IAssemblySymbolWriter writer = new CSharpFileBuilder(config.Logger,
+                using TextWriter textWriter = GetTextWriter(outputPath, kvp.Key);
+                IAssemblySymbolWriter writer = new CSharpFileBuilder(logger,
                                                                      textWriter,
-                                                                     config.Loader,
-                                                                     config.SymbolFilter,
-                                                                     config.AttributeDataSymbolFilter,
-                                                                     config.Header,
-                                                                     config.ExceptionMessage,
-                                                                     config.IncludeAssemblyAttributes);
+                                                                     loader,
+                                                                     symbolFilter,
+                                                                     attributeSymbolFilter,
+                                                                     header,
+                                                                     exceptionMessage,
+                                                                     includeAssemblyAttributes);
                 writer.WriteAssembly(kvp.Value);
             }
 
-            if (config.Loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
+            if (loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
             {
                 foreach (Diagnostic warning in roslynDiagnostics)
                 {
-                    config.Logger.LogWarning(warning.Id, warning.ToString());
+                    logger.LogWarning(warning.Id, warning.ToString());
                 }
             }
 
-            if (config.Loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
+            if (loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
             {
                 foreach (AssemblyLoadWarning warning in loadWarnings)
                 {
-                    config.Logger.LogWarning(warning.DiagnosticId, warning.Message);
+                    logger.LogWarning(warning.DiagnosticId, warning.Message);
                 }
             }
         }

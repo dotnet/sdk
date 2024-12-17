@@ -13,8 +13,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     {
         private readonly HashSet<string> _docIdsToExclude;
 
-        public static DocIdSymbolFilter Create(params string[] docIdsToExclude)
-            => new DocIdSymbolFilter(ReadDocIdsAttributes(docIdsToExclude));
+        public static DocIdSymbolFilter CreateFromFiles(params string[] filesWithDocIdsToExclude)
+            => new DocIdSymbolFilter(ReadDocIdsFromFiles(filesWithDocIdsToExclude));
+
+        public static DocIdSymbolFilter CreateFromDocIDs(params string[] docIdsToExclude)
+            => new DocIdSymbolFilter(ReadDocIdsFromList(docIdsToExclude));
 
         private DocIdSymbolFilter(IEnumerable<string> docIdsToExclude)
             => _docIdsToExclude = [.. docIdsToExclude];
@@ -35,7 +38,22 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
             return true;
         }
 
-        private static IEnumerable<string> ReadDocIdsAttributes(params string[] docIdsToExcludeFiles)
+        private static IEnumerable<string> ReadDocIdsFromList(params string[] ids)
+        {
+            foreach (string id in ids)
+            {
+#if NET
+                if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith('#') && !id.StartsWith("//"))
+#else
+                if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
+#endif
+                {
+                    yield return id.Trim();
+                }
+            }
+        }
+
+        private static IEnumerable<string> ReadDocIdsFromFiles(params string[] docIdsToExcludeFiles)
         {
             foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
             {
@@ -44,16 +62,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
                     continue;
                 }
 
-                foreach (string id in File.ReadAllLines(docIdsToExcludeFile))
+                foreach (string docId in ReadDocIdsFromList(File.ReadAllLines(docIdsToExcludeFile)))
                 {
-#if NET
-                    if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith('#') && !id.StartsWith("//"))
-#else
-                    if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
-#endif
-                    {
-                        yield return id.Trim();
-                    }
+                    yield return docId;
                 }
             }
         }

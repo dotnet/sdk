@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         }
 
         /// <inheritdoc />
-        public IReadOnlyDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths)
+        public IDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths)
         {
             // First resolve all assemblies that are passed in and create metadata references out of them.
             // Reference assemblies of the passed in assemblies that themselves are passed in, will be skipped to be resolved,

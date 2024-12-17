@@ -9,17 +9,12 @@ using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
-using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI.Filtering;
+using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Microsoft.DotNet.GenAPI;
-
-public enum OutputType
-{
-    Console,
-    Files,
-    Diff
-}
 
 public class GenAPIConfiguration
 {
@@ -28,46 +23,121 @@ public class GenAPIConfiguration
     }
 
     [AllowNull]
-    public ILog Logger { get; private set; }
-    public OutputType OutputType { get; private set; } = OutputType.Console;
-    public string? OutputPath { get; private set; }
-    [AllowNull]
-    public string Header { get; private set; }
-    public string? ExceptionMessage { get; private set; }
-    public bool IncludeAssemblyAttributes { get; private set; }
-    [AllowNull]
     public AssemblySymbolLoader Loader { get; private set; }
     [AllowNull]
-    public IReadOnlyDictionary<string, IAssemblySymbol> AssemblySymbols { get; private set; }
-    [AllowNull]
-    public CompositeSymbolFilter SymbolFilter { get; private set; }
-    [AllowNull]
-    public CompositeSymbolFilter AttributeDataSymbolFilter { get; private set; }
+    public Dictionary<string, IAssemblySymbol> AssemblySymbols { get; private set; }
 
     public static Builder GetBuilder() => new Builder();
 
+    public static ISymbolFilter GetSymbolFilterFromFiles(string[]? apiExclusionFilePaths,
+                                                                 bool respectInternals = false,
+                                                                 bool includeEffectivelyPrivateSymbols = true,
+                                                                 bool includeExplicitInterfaceImplementationSymbols = true)
+    {
+        DocIdSymbolFilter? docIdSymbolFilter =
+            apiExclusionFilePaths?.Count() > 0 ?
+            DocIdSymbolFilter.CreateFromFiles(apiExclusionFilePaths) : null;
+
+        return GetCompositeSymbolFilter(docIdSymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, withImplicitSymbolFilter: true);
+    }
+
+    public static ISymbolFilter GetSymbolFilterFromList(string[]? apiExclusionList,
+                                                                bool respectInternals = false,
+                                                                bool includeEffectivelyPrivateSymbols = true,
+                                                                bool includeExplicitInterfaceImplementationSymbols = true)
+    {
+        DocIdSymbolFilter? docIdSymbolFilter =
+            apiExclusionList?.Count() > 0 ?
+            DocIdSymbolFilter.CreateFromDocIDs(apiExclusionList) : null;
+
+        return GetCompositeSymbolFilter(docIdSymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, withImplicitSymbolFilter: true);
+    }
+
+    public static ISymbolFilter GetAttributeFilterFromPaths(string[]? attributeExclusionFilePaths,
+                                                                    bool respectInternals = false,
+                                                                    bool includeEffectivelyPrivateSymbols = true,
+                                                                    bool includeExplicitInterfaceImplementationSymbols = true)
+    {
+        DocIdSymbolFilter? docIdSymbolFilter =
+            attributeExclusionFilePaths?.Count() > 0 ?
+            DocIdSymbolFilter.CreateFromFiles(attributeExclusionFilePaths) : null;
+
+        return GetCompositeSymbolFilter(docIdSymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, withImplicitSymbolFilter: false);
+    }
+
+    public static ISymbolFilter GetAttributeFilterFromList(string[]? attributeExclusionList,
+                                                                   bool respectInternals = false,
+                                                                   bool includeEffectivelyPrivateSymbols = true,
+                                                                   bool includeExplicitInterfaceImplementationSymbols = true)
+    {
+        DocIdSymbolFilter? docIdSymbolFilter =
+            attributeExclusionList?.Count() > 0 ?
+            DocIdSymbolFilter.CreateFromDocIDs(attributeExclusionList) : null;
+
+        return GetCompositeSymbolFilter(docIdSymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, withImplicitSymbolFilter: false);
+    }
+
+    private static ISymbolFilter GetCompositeSymbolFilter(DocIdSymbolFilter? customFilter,
+                                                                  bool respectInternals,
+                                                                  bool includeEffectivelyPrivateSymbols,
+                                                                  bool includeExplicitInterfaceImplementationSymbols,
+                                                                  bool withImplicitSymbolFilter)
+    {
+        AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+                respectInternals,
+                includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols);
+
+        CompositeSymbolFilter filter = new();
+
+        if (customFilter != null)
+        {
+            filter.Add(customFilter);
+        }
+        if (withImplicitSymbolFilter)
+        {
+            filter.Add(new ImplicitSymbolFilter());
+        }
+
+        filter.Add(accessibilitySymbolFilter);
+
+        return filter;
+    }
+
+
+    public static string GetFormattedHeader(string? customHeader = null)
+    {
+        const string defaultFileHeader = """
+            //------------------------------------------------------------------------------
+            // <auto-generated>
+            //     This code was generated by a tool.
+            //
+            //     Changes to this file may cause incorrect behavior and will be lost if
+            //     the code is regenerated.
+            // </auto-generated>
+            //------------------------------------------------------------------------------
+
+            """;
+
+        if (customHeader != null)
+        {
+#if NET
+            return customHeader.ReplaceLineEndings();
+#else
+            return Regex.Replace(customHeader, @"\r\n|\n\r|\n|\r", Environment.NewLine);
+#endif
+        }
+
+        return defaultFileHeader;
+    }
+
     public class Builder
     {
-        private ILog? _logger = null;
         private string[]? _assembliesPaths = null;
         private string[]? _assemblyReferencesPaths = null;
-        private OutputType _outputType = OutputType.Console;
-        private string? _outputPath = null;
-        private (string, Stream)[]? _assemblyStreams;
-        private string? _header = null;
-        private string? _exceptionMessage = null;
-        private string[]? _apiExclusionFilePaths = null;
-        private string[]? _attributeExclusionFilePaths = null;
-        bool _includeEffectivelyPrivateSymbols = true;
-        bool _includeExplicitInterfaceImplementationSymbols = true;
-        bool _respectInternals = false;
-        bool _includeAssemblyAttributes = false;
-
-        public Builder WithLogger(ILog logger)
-        {
-            _logger = logger;
-            return this;
-        }
+        private (string, string)[]? _assemblyTexts;
+        private bool _allowUnsafe = false;
+        private bool _respectInternals = false;
 
         public Builder WithAssembliesPaths(params string[]? assembliesPaths)
         {
@@ -75,7 +145,7 @@ public class GenAPIConfiguration
             {
                 return this;
             }
-            if (_assemblyStreams != null)
+            if (_assemblyTexts != null)
             {
                 throw new InvalidOperationException("Cannot specify both assembly paths and streams.");
             }
@@ -87,9 +157,9 @@ public class GenAPIConfiguration
             return this;
         }
 
-        public Builder WithAssemblyStreams(params (string, Stream)[]? assemblyStreams)
+        public Builder WithAssemblyTexts(params (string, string)[]? assemblyTexts)
         {
-            if (assemblyStreams == null)
+            if (assemblyTexts == null)
             {
                 return this;
             }
@@ -98,7 +168,7 @@ public class GenAPIConfiguration
                 throw new InvalidOperationException("Cannot specify both assembly paths and streams.");
             }
 
-            _assemblyStreams = assemblyStreams;
+            _assemblyTexts = assemblyTexts;
             return this;
         }
 
@@ -116,87 +186,9 @@ public class GenAPIConfiguration
             return this;
         }
 
-        public Builder WithOutputPath(string? outputPath)
+        public Builder WithAllowUnsafe(bool allowUnsafe)
         {
-            if (outputPath == null)
-            {
-                return this;
-            }
-            ThrowIfDirectoryNotFound(nameof(outputPath), outputPath);
-            _outputPath = outputPath;
-            _outputType = OutputType.Files;
-            return this;
-        }
-
-        public Builder WithHeaderFilePath(string? headerFilePath)
-        {
-            if (headerFilePath == null)
-            {
-                return this;
-            }
-            ThrowIfFileNotFound(nameof(headerFilePath), headerFilePath);
-            return WithHeader(File.ReadAllText(headerFilePath));
-        }
-
-        public Builder WithHeader(string? header)
-        {
-            if (header == null)
-            {
-                return this;
-            }
-            _header = header;
-            return this;
-        }
-
-        public Builder WithExceptionMessage(string? exceptionMessage)
-        {
-            if (exceptionMessage == null)
-            {
-                return this;
-            }
-            _exceptionMessage = exceptionMessage;
-            return this;
-        }
-
-        public Builder WithApiExclusionFilePaths(params string[]? apiExclusionFilePaths)
-        {
-            if (apiExclusionFilePaths == null)
-            {
-                return this;
-            }
-
-            foreach (string path in apiExclusionFilePaths)
-            {
-                ThrowIfPathIsDirectory(nameof(apiExclusionFilePaths), path);
-            }
-            _apiExclusionFilePaths = apiExclusionFilePaths;
-            return this;
-        }
-
-        public Builder WithAttributeExclusionFilePaths(params string[]? attributeExclusionFilePaths)
-        {
-            if (attributeExclusionFilePaths == null)
-            {
-                return this;
-            }
-
-            foreach (string path in attributeExclusionFilePaths)
-            {
-                ThrowIfPathIsDirectory(nameof(attributeExclusionFilePaths), path);
-            }
-            _attributeExclusionFilePaths = attributeExclusionFilePaths;
-            return this;
-        }
-
-        public Builder WithIncludeEffectivelyPrivateSymbols(bool includeEffectivelyPrivateSymbols)
-        {
-            _includeEffectivelyPrivateSymbols = includeEffectivelyPrivateSymbols;
-            return this;
-        }
-
-        public Builder WithIncludeExplicitInterfaceImplementationSymbols(bool includeExplicitInterfaceImplementationSymbols)
-        {
-            _includeExplicitInterfaceImplementationSymbols = includeExplicitInterfaceImplementationSymbols;
+            _allowUnsafe = allowUnsafe;
             return this;
         }
 
@@ -206,136 +198,111 @@ public class GenAPIConfiguration
             return this;
         }
 
-        public Builder WithIncludeAssemblyAttributes(bool includeAssemblyAttributes)
-        {
-            _includeAssemblyAttributes = includeAssemblyAttributes;
-            return this;
-        }
-
         public GenAPIConfiguration Build()
         {
             AssemblySymbolLoader loader;
-            IReadOnlyDictionary<string, IAssemblySymbol> assemblySymbols;
+            Dictionary<string, IAssemblySymbol> assemblySymbols;
 
             if (_assembliesPaths?.Length > 0)
             {
                 bool resolveAssemblyReferences = _assemblyReferencesPaths?.Count() > 0;
-                loader = new(resolveAssemblyReferences, _respectInternals);
-                if (_assemblyReferencesPaths?.Count() > 0)
+                loader = new AssemblySymbolLoader(resolveAssemblyReferences, _respectInternals);
+                if (_assemblyReferencesPaths?.Length > 0)
                 {
                     loader.AddReferenceSearchPaths(_assemblyReferencesPaths);
                 }
-                assemblySymbols = loader.LoadAssembliesAsDictionary(_assembliesPaths);
+                assemblySymbols = new Dictionary<string, IAssemblySymbol>(loader.LoadAssembliesAsDictionary(_assembliesPaths));
             }
-            else if (_assemblyStreams?.Count() > 0)
+            else if (_assemblyTexts?.Count() > 0)
             {
-                loader = new(resolveAssemblyReferences: true, includeInternalSymbols: _respectInternals);
+                loader = new AssemblySymbolLoader(resolveAssemblyReferences: true, includeInternalSymbols: _respectInternals);
                 loader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
                 loader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
-                Dictionary<string, IAssemblySymbol> symbols = [];
-                foreach ((string assemblyName, Stream assemblyStream) in _assemblyStreams)
+
+                assemblySymbols = new Dictionary<string, IAssemblySymbol>();
+                foreach ((string assemblyName, string assemblyText) in _assemblyTexts)
                 {
+                    using Stream assemblyStream = EmitAssemblyStreamFromSyntax(assemblyText, enableNullable: true, allowUnsafe: _allowUnsafe, assemblyName: assemblyName);
                     if (loader.LoadAssembly(assemblyName, assemblyStream) is IAssemblySymbol assemblySymbol)
                     {
-                        symbols.Add(assemblyName, assemblySymbol);
+                        assemblySymbols.Add(assemblyName, assemblySymbol);
                     }
                 }
-
-                assemblySymbols = symbols;
             }
             else
             {
                 throw new InvalidOperationException("No assemblies were specified, either from files or from streams.");
             }
 
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                _respectInternals,
-                includeEffectivelyPrivateSymbols: _includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols: _includeExplicitInterfaceImplementationSymbols);
-
-            // Configure the symbol filter
-            CompositeSymbolFilter symbolFilter = new();
-            if (_apiExclusionFilePaths?.Count() > 0)
-            {
-                symbolFilter.Add(DocIdSymbolFilter.Create(_apiExclusionFilePaths));
-            }
-            symbolFilter.Add(new ImplicitSymbolFilter());
-            symbolFilter.Add(accessibilitySymbolFilter);
-
-            // Configure the attribute data symbol filter
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (_attributeExclusionFilePaths?.Count() > 0)
-            {
-                attributeDataSymbolFilter.Add(DocIdSymbolFilter.Create(_attributeExclusionFilePaths));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
-
             return new GenAPIConfiguration()
             {
-                Logger = _logger ?? new ConsoleLog(MessageImportance.Normal),
-                OutputType = _outputType,
-                OutputPath = _outputPath,
-                Header = GetHeader(),
-                ExceptionMessage = _exceptionMessage,
-                IncludeAssemblyAttributes = _includeAssemblyAttributes,
                 Loader = loader,
-                AssemblySymbols = assemblySymbols,
-                SymbolFilter = symbolFilter,
-                AttributeDataSymbolFilter = attributeDataSymbolFilter
+                AssemblySymbols = assemblySymbols
             };
-
         }
 
-        private string GetHeader()
+
+        private static IEnumerable<KeyValuePair<string, ReportDiagnostic>> DiagnosticOptions { get; } = new[]
         {
-            const string defaultFileHeader = """
-            //------------------------------------------------------------------------------
-            // <auto-generated>
-            //     This code was generated by a tool.
-            //
-            //     Changes to this file may cause incorrect behavior and will be lost if
-            //     the code is regenerated.
-            // </auto-generated>
-            //------------------------------------------------------------------------------
+            // Suppress warning for unused events.
+            new KeyValuePair<string, ReportDiagnostic>("CS0067", ReportDiagnostic.Suppress)
+        };
 
-            """;
+        private static IEnumerable<MetadataReference> DefaultReferences { get; } = new[]
+        {
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(DynamicAttribute).Assembly.Location),
+        };
 
-            if (_header != null)
-            {
-#if NET
-                _header = _header.ReplaceLineEndings();
+        public static Stream EmitAssemblyStreamFromSyntax(string syntax,
+            bool enableNullable = false,
+            byte[]? publicKey = null,
+            [CallerMemberName] string assemblyName = "",
+            bool allowUnsafe = false)
+        {
+            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax([syntax], assemblyName, enableNullable, publicKey, allowUnsafe);
+
+            Debug.Assert(compilation.GetDiagnostics().IsEmpty);
+
+            MemoryStream stream = new();
+            compilation.Emit(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+            return stream;
+        }
+
+        private static SyntaxTree GetSyntaxTree(string syntax)
+        {
+            return CSharpSyntaxTree.ParseText(syntax, ParseOptions);
+        }
+
+        private static CSharpParseOptions ParseOptions { get; } = new CSharpParseOptions(preprocessorSymbols:
+#if NETFRAMEWORK
+                new string[] { "NETFRAMEWORK" }
 #else
-                _header = Regex.Replace(_header, @"\r\n|\n\r|\n|\r", Environment.NewLine);
+                Array.Empty<string>()
 #endif
-                return _header;
-            }
+        );
 
-            return defaultFileHeader;
-        }
-
-        private void ThrowIfFileNotFound(string argumentName, string filePath)
+        private static CSharpCompilation CreateCSharpCompilationFromSyntax(IEnumerable<string> syntax, string name, bool enableNullable, byte[]? publicKey, bool allowUnsafe)
         {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException($"The {argumentName} file was not found: {filePath}");
-            }
+            CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe);
+            IEnumerable<SyntaxTree> syntaxTrees = syntax.Select(s => GetSyntaxTree(s));
+            return compilation.AddSyntaxTrees(syntaxTrees);
         }
 
-        private void ThrowIfDirectoryNotFound(string argumentName, string directoryPath)
+        private static CSharpCompilation CreateCSharpCompilation(string name, bool enableNullable, byte[]? publicKey, bool allowUnsafe)
         {
-            if (!Directory.Exists(directoryPath))
-            {
-                throw new DirectoryNotFoundException($"The {argumentName} directory was not found: {directoryPath}");
-            }
+            bool publicSign = publicKey != null ? true : false;
+            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                                                                  publicSign: publicSign,
+                                                                  cryptoPublicKey: publicSign ? publicKey!.ToImmutableArray() : default,
+                                                                  nullableContextOptions: enableNullable ? NullableContextOptions.Enable : NullableContextOptions.Disable,
+                                                                  allowUnsafe: allowUnsafe,
+                                                                  specificDiagnosticOptions: DiagnosticOptions);
+
+            return CSharpCompilation.Create(name, options: compilationOptions, references: DefaultReferences);
         }
 
-        private void ThrowIfPathIsDirectory(string argumentName, string path)
-        {
-            if (Directory.Exists(path))
-            {
-                throw new DirectoryNotFoundException($"The {argumentName} is a directory, not a file: {path}");
-            }
-        }
 
         private void ThrowIfFileSystemEntryNotFound(string argumentName, string path)
         {
