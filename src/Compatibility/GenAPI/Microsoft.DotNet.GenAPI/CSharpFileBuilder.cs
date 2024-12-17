@@ -27,22 +27,24 @@ namespace Microsoft.DotNet.GenAPI
         private readonly ILog _logger;
         private readonly TextWriter _textWriter;
         private readonly AssemblySymbolLoader _loader;
-        private readonly CompositeSymbolFilter _symbolFilter;
-        private readonly CompositeSymbolFilter _attributeDataSymbolFilter;
+        private readonly ISymbolFilter _symbolFilter;
+        private readonly ISymbolFilter _attributeDataSymbolFilter;
         private readonly string _header;
         private readonly string? _exceptionMessage;
         private readonly bool _includeAssemblyAttributes;
         private readonly AdhocWorkspace _adhocWorkspace;
         private readonly SyntaxGenerator _syntaxGenerator;
+        private readonly IEnumerable<MetadataReference>? _metadataReferences;
 
         public CSharpFileBuilder(ILog logger,
                                  TextWriter textWriter,
                                  AssemblySymbolLoader loader,
-                                 CompositeSymbolFilter symbolFilter,
-                                 CompositeSymbolFilter attributeDataSymbolFilter,
+                                 ISymbolFilter symbolFilter,
+                                 ISymbolFilter attributeDataSymbolFilter,
                                  string header,
                                  string? exceptionMessage,
-                                 bool includeAssemblyAttributes)
+                                 bool includeAssemblyAttributes,
+                                 IEnumerable<MetadataReference>? metadataReferences = null)
         {
             _logger = logger;
             _textWriter = textWriter;
@@ -54,19 +56,26 @@ namespace Microsoft.DotNet.GenAPI
             _includeAssemblyAttributes = includeAssemblyAttributes;
             _adhocWorkspace = new AdhocWorkspace();
             _syntaxGenerator = SyntaxGenerator.GetGenerator(_adhocWorkspace, LanguageNames.CSharp);
+            _metadataReferences = metadataReferences;
         }
 
         /// <inheritdoc />
         public void WriteAssembly(IAssemblySymbol assemblySymbol)
         {
             _textWriter.Write(_header);
+            Document document = GetDocumentForAssembly(assemblySymbol);
+            GetFormattedRootNodeForDocument(document).WriteTo(_textWriter);
+        }
 
+        /// <inheritdoc />
+        public Document GetDocumentForAssembly(IAssemblySymbol assemblySymbol)
+        {
             CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary,
-                    nullableContextOptions: NullableContextOptions.Enable);
+                   nullableContextOptions: NullableContextOptions.Enable);
             Project project = _adhocWorkspace.AddProject(ProjectInfo.Create(
                 ProjectId.CreateNewId(), VersionStamp.Create(), assemblySymbol.Name, assemblySymbol.Name, LanguageNames.CSharp,
                 compilationOptions: compilationOptions));
-            project = project.AddMetadataReferences(_loader.MetadataReferences);
+            project = project.AddMetadataReferences(_metadataReferences ?? _loader.MetadataReferences);
 
             IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_symbolFilter.Include);
             List<SyntaxNode> namespaceSyntaxNodes = [];
@@ -98,10 +107,11 @@ namespace Microsoft.DotNet.GenAPI
             document = Simplifier.ReduceAsync(document).Result;
             document = Formatter.FormatAsync(document, DefineFormattingOptions()).Result;
 
-            document.GetSyntaxRootAsync().Result!
-                .Rewrite(new SingleLineStatementCSharpSyntaxRewriter())
-                .WriteTo(_textWriter);
+            return document;
         }
+
+        /// <inheritdoc />
+        public SyntaxNode GetFormattedRootNodeForDocument(Document document) => document.GetSyntaxRootAsync().Result!.Rewrite(new SingleLineStatementCSharpSyntaxRewriter());
 
         private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)
         {

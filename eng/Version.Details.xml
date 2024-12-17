@@ -131,6 +131,10 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>d7b0a8c4b320a592e6b81dc5a40bc724cd8b71ba</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.13.0-3.25056.21">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>d7b0a8c4b320a592e6b81dc5a40bc724cd8b71ba</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.13.0-3.25056.21">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>d7b0a8c4b320a592e6b81dc5a40bc724cd8b71ba</Sha>

@@ -98,19 +98,22 @@ namespace Microsoft.DotNet.GenAPI.Tool
             rootCommand.SetAction((ParseResult parseResult) =>
             {
                 GenAPIConfiguration config = GenAPIConfiguration.GetBuilder()
-                    .WithLogger(new ConsoleLog(MessageImportance.Normal))
                     .WithAssembliesPaths(parseResult.GetValue(assembliesOption)!)
                     .WithAssemblyReferencesPaths(parseResult.GetValue(assemblyReferencesOption))
-                    .WithOutputPath(parseResult.GetValue(outputPathOption))
-                    .WithHeaderFilePath(parseResult.GetValue(headerFileOption))
-                    .WithExceptionMessage(parseResult.GetValue(exceptionMessageOption))
-                    .WithApiExclusionFilePaths(parseResult.GetValue(excludeApiFilesOption))
-                    .WithAttributeExclusionFilePaths(parseResult.GetValue(excludeAttributesFilesOption))
                     .WithRespectInternals(parseResult.GetValue(respectInternalsOption))
-                    .WithIncludeAssemblyAttributes(parseResult.GetValue(includeAssemblyAttributesOption))
                     .Build();
 
-                GenAPIApp.Run(config);
+                bool respectInternals = parseResult.GetValue(respectInternalsOption);
+
+                GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal),
+                              config.AssemblySymbols,
+                              parseResult.GetValue(outputPathOption),
+                              config.Loader,
+                              GenAPIConfiguration.GetSymbolFilterFromFiles(parseResult.GetValue(excludeApiFilesOption), respectInternals),
+                              GenAPIConfiguration.GetAttributeFilterFromPaths(parseResult.GetValue(excludeAttributesFilesOption), respectInternals),
+                              GenAPIConfiguration.GetFormattedHeader(parseResult.GetValue(headerFileOption)),
+                              parseResult.GetValue(exceptionMessageOption),
+                              parseResult.GetValue(includeAssemblyAttributesOption));
             });
 
             return rootCommand.Parse(args).Invoke();

@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
@@ -30,32 +29,29 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
-            string excludeApiFile = null,
-            string excludedAttributeFile = null,
+            string[] excludedAttributeList = null,
             [CallerMemberName] string assemblyName = "")
         {
             using StringWriter stringWriter = new();
 
-            using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-
             GenAPIConfiguration config = GenAPIConfiguration.GetBuilder()
-                .WithLogger(new ConsoleLog(MessageImportance.Low))
-                .WithAssemblyStreams((assemblyName, assemblyStream))
+                .WithAssemblyTexts((assemblyName, original))
+                .WithAllowUnsafe(allowUnsafe)
                 .WithRespectInternals(includeInternalSymbols)
-                .WithIncludeEffectivelyPrivateSymbols(includeEffectivelyPrivateSymbols)
-                .WithIncludeExplicitInterfaceImplementationSymbols(includeExplicitInterfaceImplementationSymbols)
-                .WithApiExclusionFilePaths(excludeApiFile)
-                .WithAttributeExclusionFilePaths(excludedAttributeFile)
                 .Build();
 
-            IAssemblySymbolWriter writer = new CSharpFileBuilder(config.Logger,
-                                                                 stringWriter,
-                                                                 config.Loader,
-                                                                 config.SymbolFilter,
-                                                                 config.AttributeDataSymbolFilter,
-                                                                 config.Header,
-                                                                 config.ExceptionMessage,
-                                                                 config.IncludeAssemblyAttributes);
+
+            IAssemblySymbolWriter writer = new CSharpFileBuilder(
+                new ConsoleLog(MessageImportance.Low),
+                stringWriter,
+                config.Loader,
+                GenAPIConfiguration.GetSymbolFilterFromList([], includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols),
+                GenAPIConfiguration.GetAttributeFilterFromList(excludedAttributeList, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols),
+                header: string.Empty,
+                exceptionMessage: null,
+                includeAssemblyAttributes: false,
+                MetadataReferences);
+
             writer.WriteAssembly(config.AssemblySymbols.First().Value);
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
@@ -2748,10 +2744,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestAttributesExcludedWithFilter()
         {
-            using TempDirectory root = new();
-            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
-            File.WriteAllText(filePath, "T:A.AnyTestAttribute");
-
             RunTest(original: """
                     namespace A
                     {
@@ -2787,7 +2779,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false,
-                excludedAttributeFile: filePath);
+                excludedAttributeList: ["T:A.AnyTestAttribute"]);
         }
 
         [Fact]

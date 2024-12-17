@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// </summary>
         /// <param name="paths">List of paths to load binaries from. Can be full paths to binaries or directories.</param>
         /// <returns>The dictionary of resolved <see cref="IAssemblySymbol"/> instances,excluding those which resolved as <see langword="null"/>.</returns>
-        IReadOnlyDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths);
+        IDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths);
 
         /// <summary>
         /// Loads assemblies from an archive based on the given relative paths.

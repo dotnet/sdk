@@ -215,6 +215,7 @@
     <MicrosoftCodeAnalysisCSharpPackageVersion>4.13.0-3.25056.21</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.13.0-3.25056.21</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
     <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.13.0-3.25056.21</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>4.13.0-3.25056.21</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.13.0-3.25056.21</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.13.0-3.25056.21</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
   </PropertyGroup>
