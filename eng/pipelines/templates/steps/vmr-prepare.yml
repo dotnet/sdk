@@ -10,14 +10,9 @@ steps:
     displayName: Clone dotnet/dotnet
     path: vmr
     clean: true
-    fetchTags: true
-    fetchDepth: 0
 
-  - powershell: |
-      $branchName = "${{ parameters.vmrBranch }}" -replace "refs/heads/", ""
-      if (-not (git checkout --track origin/$branchName)) {
-          throw "Failed to checkout branch $branchName"
-      }
-      echo "##vso[task.setvariable variable=vmrBranch]$branchName"
+  - script: |
+      git checkout --track origin/${{ parameters.vmrBranch }}
+      echo "##vso[task.setvariable variable=vmrBranch]${{ parameters.vmrBranch }}"
     displayName: Check out ${{ parameters.vmrBranch }}
     workingDirectory: $(Agent.BuildDirectory)/vmr
