@@ -86,7 +86,7 @@ extends:
     stages:
     ############### BUILD STAGE ###############
     - stage: build
-      displayName: Build
+      displayName: 🟣 Build
       jobs:
       ############### WINDOWS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -320,7 +320,7 @@ extends:
     ############### PUBLISH STAGE ###############
     - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
       - stage: publish
-        displayName: Publish
+        displayName: 🟣 Publish
         dependsOn: build
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
