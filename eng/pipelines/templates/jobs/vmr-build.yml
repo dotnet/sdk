@@ -181,6 +181,12 @@ jobs:
     value: $(Build.ArtifactStagingDirectory)/artifacts
 
   templateContext:
+    ${{ if eq(parameters.pool.os, 'macOS') }}:
+      sdl:
+        codeql:
+          compiled:
+            enabled: false
+            justificationForDisabling: "CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary"
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
     outputs:
     - output: pipelineArtifact
