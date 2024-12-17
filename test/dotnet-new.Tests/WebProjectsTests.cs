@@ -33,6 +33,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("mvc_cs-80", "mvc", "-f", "net8.0")]
         [InlineData("mvc_fs-80", "mvc", "-lang", "F#", "-f", "net8.0")]
         [InlineData("api_cs-80", "webapi", "-f", "net8.0")]
+        [InlineData("emptyweb_cs-90", "web", "-f", "net9.0")]
+        [InlineData("mvc_cs-90", "mvc", "-f", "net9.0")]
+        [InlineData("mvc_fs-90", "mvc", "-lang", "F#", "-f", "net9.0")]
+        [InlineData("api_cs-90", "webapi", "-f", "net9.0")]
         public void AllWebProjectsRestoreAndBuild(string testName, params string[] args)
         {
             string workingDir = Path.Combine(_fixture.BaseWorkingDirectory, testName);
@@ -133,6 +137,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates60Path, BaseWorkingDirectory);
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates70Path, BaseWorkingDirectory);
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates80Path, BaseWorkingDirectory);
+            InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates90Path, BaseWorkingDirectory);
         }
 
         internal string BaseWorkingDirectory { get; private set; }

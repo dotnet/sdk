@@ -57,4 +57,10 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="SetAzureDevOpsVariableForScenarioTests"
+          Condition="'$(ContinuousIntegrationBuild)' == 'true'"
+          BeforeTargets="Test">
+    <Message Importance="High" Text="##vso[task.setvariable variable=hasScenarioTestResults]true" />
+  </Target>
+
 </Project>
