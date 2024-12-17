@@ -107,6 +107,11 @@ Eğer komut bağımsız değişken olmadan belirtilirse yüklü tüm şablon pak
         <target state="translated">Yalnızca güncelleştirmeleri denetler ve güncelleştirmeyi uygulamadan, sadece güncelleştirilecek şablon paketlerini görüntüler.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListCommand_Option_Format">
+        <source>Specifies the output format type for the list packages command</source>
+        <target state="new">Specifies the output format type for the list packages command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListCommand_Option_IgnoreConstraints">
         <source>Disables checking if the template meets the constraints to be run.</source>
         <target state="translated">Şablonun çalıştırılacak kısıtlamaları karşılayıp karşılamadığını kontrol etmeyi devre dışı bırakır.</target>
