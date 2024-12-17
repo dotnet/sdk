@@ -9,9 +9,9 @@ namespace Microsoft.NET.TestFramework
     /// </summary>
     public class TestAsset : TestDirectory
     {
-        private readonly string _testAssetRoot;
+        private readonly string? _testAssetRoot;
 
-        private List<string> _projectFiles;
+        private List<string>? _projectFiles;
 
         public string TestRoot => Path;
 
@@ -25,15 +25,15 @@ namespace Microsoft.NET.TestFramework
         public ITestOutputHelper Log { get; }
 
         //  The TestProject from which this asset was created, if any
-        public TestProject TestProject { get; set; }
+        public TestProject? TestProject { get; set; }
 
-        internal TestAsset(string testDestination, string sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
+        internal TestAsset(string testDestination, string? sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
         {
             Log = log;
             Name = new DirectoryInfo(testDestination).Name;
         }
 
-        internal TestAsset(string testAssetRoot, string testDestination, string sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
+        internal TestAsset(string testAssetRoot, string testDestination, string? sdkVersion, ITestOutputHelper log) : base(testDestination, sdkVersion)
         {
             if (string.IsNullOrEmpty(testAssetRoot))
             {
@@ -64,15 +64,15 @@ namespace Microsoft.NET.TestFramework
         {
             _projectFiles = new List<string>();
 
-            var sourceDirs = Directory.GetDirectories(_testAssetRoot, "*", SearchOption.AllDirectories)
+            var sourceDirs = Directory.GetDirectories(_testAssetRoot ?? string.Empty, "*", SearchOption.AllDirectories)
               .Where(dir => !IsBinOrObjFolder(dir));
 
             foreach (string sourceDir in sourceDirs)
             {
-                Directory.CreateDirectory(sourceDir.Replace(_testAssetRoot, Path));
+                Directory.CreateDirectory(sourceDir.Replace(_testAssetRoot ?? string.Empty, Path));
             }
 
-            var sourceFiles = Directory.GetFiles(_testAssetRoot, "*.*", SearchOption.AllDirectories)
+            var sourceFiles = Directory.GetFiles(_testAssetRoot ?? string.Empty, "*.*", SearchOption.AllDirectories)
                                   .Where(file =>
                                   {
                                       return !IsInBinOrObjFolder(file);
@@ -80,7 +80,7 @@ namespace Microsoft.NET.TestFramework
 
             foreach (string srcFile in sourceFiles)
             {
-                string destFile = srcFile.Replace(_testAssetRoot, Path);
+                string destFile = srcFile.Replace(_testAssetRoot ?? string.Empty, Path);
 
                 if (System.IO.Path.GetFileName(srcFile).EndsWith("proj") || System.IO.Path.GetFileName(srcFile).EndsWith("xml"))
                 {
@@ -115,10 +115,13 @@ namespace Microsoft.NET.TestFramework
             return WithProjectChanges(
             p =>
             {
-                var ns = p.Root.Name.Namespace;
-                var getNode = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).FirstOrDefault();
-                getNode ??= p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s").FirstOrDefault();
-                getNode?.SetValue(getNode?.Value.Replace(variableName, targetValue));
+                if (p.Root is not null)
+                {
+                    var ns = p.Root.Name.Namespace;
+                    var getNode = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).FirstOrDefault();
+                    getNode ??= p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s").FirstOrDefault();
+                    getNode?.SetValue(getNode?.Value.Replace(variableName, targetValue) ?? string.Empty);
+                }
             });
         }
 
@@ -128,21 +131,29 @@ namespace Microsoft.NET.TestFramework
 
             return WithProjectChanges(project =>
             {
-                var ns = project.Root.Name.Namespace;
-                foreach (var PropertyName in PropertyNames)
+                if (project.Root is not null)
                 {
-                    var packageReferencesToUpdate =
-                        project.Root.Descendants(ns + PropertyName)
-                            .Where(p => p.Attribute("Version") != null && p.Attribute("Version").Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
-                    foreach (var packageReference in packageReferencesToUpdate)
+                    var ns = project.Root.Name.Namespace;
+                    foreach (var PropertyName in PropertyNames)
                     {
-                        packageReference.Attribute("Version").Value = targetValue;
+                        var packageReferencesToUpdate =
+                            project.Root.Descendants(ns + PropertyName)
+                                .Select(p => p.Attribute("Version"))
+                                .Where(va => va is not null && va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
+                        foreach (var versionAttribute in packageReferencesToUpdate)
+                        {
+                            if(versionAttribute is not null)
+                            {
+                                versionAttribute.Value = targetValue;
+                            }
+                        }
                     }
                 }
+                
             });
         }
 
-        public TestAsset WithTargetFramework(string targetFramework, string projectName = null)
+        public TestAsset WithTargetFramework(string targetFramework, string? projectName = null)
         {
             if (targetFramework == null)
             {
@@ -151,13 +162,16 @@ namespace Microsoft.NET.TestFramework
             return WithProjectChanges(
             p =>
             {
-                var ns = p.Root.Name.Namespace;
-                p.Root.Elements(ns + "PropertyGroup").Elements(ns + "TargetFramework").Single().SetValue(targetFramework);
+                if (p.Root is not null)
+                {
+                    var ns = p.Root.Name.Namespace;
+                    p.Root.Elements(ns + "PropertyGroup").Elements(ns + "TargetFramework").Single().SetValue(targetFramework);
+                }
             },
             projectName);
         }
 
-        public TestAsset WithTargetFrameworks(string targetFrameworks, string projectName = null)
+        public TestAsset WithTargetFrameworks(string targetFrameworks, string? projectName = null)
         {
             if (targetFrameworks == null)
             {
@@ -166,16 +180,19 @@ namespace Microsoft.NET.TestFramework
             return WithProjectChanges(
             p =>
             {
-                var ns = p.Root.Name.Namespace;
-                var propertyGroup = p.Root.Elements(ns + "PropertyGroup").First();
-                propertyGroup.Elements(ns + "TargetFramework").SingleOrDefault()?.Remove();
-                propertyGroup.Elements(ns + "TargetFrameworks").SingleOrDefault()?.Remove();
-                propertyGroup.Add(new XElement(ns + "TargetFrameworks", targetFrameworks));
+                if (p.Root is not null)
+                {
+                    var ns = p.Root.Name.Namespace;
+                    var propertyGroup = p.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Elements(ns + "TargetFramework").SingleOrDefault()?.Remove();
+                    propertyGroup.Elements(ns + "TargetFrameworks").SingleOrDefault()?.Remove();
+                    propertyGroup.Add(new XElement(ns + "TargetFrameworks", targetFrameworks));
+                }
             },
             projectName);
         }
 
-        public TestAsset WithTargetFrameworkOrFrameworks(string targetFrameworkOrFrameworks, bool multitarget, string projectName = null)
+        public TestAsset WithTargetFrameworkOrFrameworks(string targetFrameworkOrFrameworks, bool multitarget, string? projectName = null)
         {
             if (multitarget)
             {
@@ -187,18 +204,21 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        private TestAsset WithProjectChanges(Action<XDocument> actionOnProject, string projectName = null)
+        private TestAsset WithProjectChanges(Action<XDocument> actionOnProject, string? projectName = null)
         {
             return WithProjectChanges((path, project) =>
             {
                 if (!string.IsNullOrEmpty(projectName))
                 {
-                    if (!projectName.Equals(System.IO.Path.GetFileNameWithoutExtension(path), StringComparison.OrdinalIgnoreCase))
+                    if (projectName is not null && !projectName.Equals(System.IO.Path.GetFileNameWithoutExtension(path), StringComparison.OrdinalIgnoreCase))
                     {
                         return;
                     }
                 }
-
+                if (project.Root is null)
+                {
+                    throw new InvalidOperationException($"The project file '{projectName}' does not have a root element.");
+                }
                 var ns = project.Root.Name.Namespace;
                 actionOnProject(project);
             });
@@ -215,7 +235,7 @@ namespace Microsoft.NET.TestFramework
             {
                 FindProjectFiles();
             }
-            foreach (var projectFile in _projectFiles)
+            foreach (var projectFile in _projectFiles ?? new())
             {
                 var project = XDocument.Load(projectFile);
 
