@@ -63,22 +63,22 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public void GivenWorkloadSearchWithComponentsItFindsHighestMatchingSet()
         {
             string workloadSet1 = @"{
-""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.Android"": ""17.5.9/9.0.100"",
 ""Microsoft.NET.Sdk.macOS"": ""14.5.92/9.0.100""
 }
 ";
             string workloadSet2 = @"{
-""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.Android"": ""17.5.9/9.0.100"",
 ""Microsoft.NET.Sdk.macOS"": ""14.5.92/9.0.100""
 }
 ";
             string workloadSet3 = @"{
-""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.Android"": ""17.5.9/9.0.100"",
 ""Microsoft.NET.Sdk.Maui"": ""14.5.92/9.0.100""
 }
 ";
             string workloadSet4 = @"{
-""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.Android"": ""17.5.9/9.0.100"",
 ""Microsoft.NET.Sdk.macOS"": ""14.5.93/9.0.100""
 }
 ";
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
 
             MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
             MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.103.0"), new NuGetVersion("9.102.0"), new NuGetVersion("9.101.0"), new NuGetVersion("9.100.0")]);
-            var parseResult = Parser.Instance.Parse("dotnet workload search version ios@17.5.9 macos@14.5.92 --take 1");
+            var parseResult = Parser.Instance.Parse("dotnet workload search version android@17.5.9 macos@14.5.92 --take 1");
             var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader);
             _reporter.Clear();
             command.Execute();
