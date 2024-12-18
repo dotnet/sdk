@@ -196,7 +196,7 @@ function BootstrapArtifacts {
   fi
 
   # Run restore on project to initiate download of bootstrap packages
-  "$DOTNET_SDK_PATH/dotnet" restore "$workingDir/buildBootstrapPreviouslySB.csproj" /bl:artifacts/log/prep-bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/log/prep-bootstrap.log /p:ArchiveDir="$packagesArchiveDir""
+  "$DOTNET_SDK_PATH/dotnet" restore "$workingDir/buildBootstrapPreviouslySB.csproj" /bl:artifacts/log/prep-bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/log/prep-bootstrap.log /p:ArchiveDir="$packagesArchiveDir"
 
   # Remove working directory
   rm -rf "$workingDir"
