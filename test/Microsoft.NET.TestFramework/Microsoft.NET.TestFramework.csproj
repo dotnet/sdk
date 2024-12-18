@@ -35,8 +35,8 @@
       <_Parameter2>$(MicrosoftAspNetCoreAppRefPackageVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" >
-      <_Parameter1>MicrosoftNETSdkAspireManifest80100PackageVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNETSdkAspireManifest80100PackageVersion)</_Parameter2>
+      <_Parameter1>AspirePackageVersion</_Parameter1>
+      <_Parameter2>$(AspirePackageVersion)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 

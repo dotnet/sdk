@@ -219,13 +219,6 @@ src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.i
 src/sourcelink/docs/GitSpec/GitSpec.md|unknown-license-reference
 
 #
-# test-templates
-#
-
-# Not applicable to source
-src/test-templates/Templates/**/*.vstemplate
-
-#
 # vstest
 #
 
