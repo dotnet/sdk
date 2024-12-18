@@ -9,10 +9,8 @@ using System.Net.Http.Headers;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using Microsoft.WebTools.AspireServer.Helpers;
-using Microsoft.WebTools.AspireServer.Models;
 
-namespace Microsoft.WebTools.AspireServer.UnitTests;
+namespace Aspire.Tools.Service.UnitTests;
 
 public class AspireServerServiceTests(ITestOutputHelper output)
 {

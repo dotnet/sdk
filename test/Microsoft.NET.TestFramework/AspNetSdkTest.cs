@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -11,7 +12,7 @@ namespace Microsoft.NET.TestFramework
     [Trait("AspNetCore", "Integration")]
     public abstract class AspNetSdkTest : SdkTest
     {
-        public readonly string DefaultTfm;
+        public readonly string? DefaultTfm;
 
 #if !GENERATE_MSBUILD_LOGS
         public static bool GenerateMSbuildLogs = true;
@@ -25,27 +26,27 @@ namespace Microsoft.NET.TestFramework
         {
             var assembly = Assembly.GetCallingAssembly();
             var testAssemblyMetadata = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
-            DefaultTfm = testAssemblyMetadata.SingleOrDefault(a => a.Key == "AspNetTestTfm").Value;
+            DefaultTfm = testAssemblyMetadata.SingleOrDefault(a => a.Key == "AspNetTestTfm")?.Value;
         }
 
         public TestAsset CreateAspNetSdkTestAsset(
             string testAsset,
             [CallerMemberName] string callerName = "",
             string subdirectory = "",
-            string overrideTfm = null,
-            string identifier = null)
+            string? overrideTfm = null,
+            string? identifier = null)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
-                    var ns = project.Root.Name.Namespace;
+                    var ns = project.Root?.Name.Namespace;
                     var targetFramework = project.Descendants()
                        .SingleOrDefault(e => e.Name.LocalName == "TargetFramework");
                     if (targetFramework?.Value == "$(AspNetTestTfm)")
                     {
-                        targetFramework.Value = overrideTfm ?? DefaultTfm;
+                        targetFramework.Value = overrideTfm ?? DefaultTfm ?? string.Empty;
                         targetFramework.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                     }
                     var targetFrameworks = project.Descendants()
@@ -67,15 +68,15 @@ namespace Microsoft.NET.TestFramework
             string testAsset,
             [CallerMemberName] string callerName = "",
             string subdirectory = "",
-            string overrideTfm = null,
-            string identifier = null)
+            string? overrideTfm = null,
+            string? identifier = null)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
-                    var ns = project.Root.Name.Namespace;
+                    var ns = project.Root?.Name.Namespace;
                     var targetFramework = project.Descendants()
                        .Single(e => e.Name.LocalName == "TargetFrameworks");
                     targetFramework.Value = targetFramework.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
@@ -83,7 +84,7 @@ namespace Microsoft.NET.TestFramework
             return projectDirectory;
         }
 
-        protected virtual RestoreCommand CreateRestoreCommand(TestAsset asset, string relativePathToProject = null)
+        protected virtual RestoreCommand CreateRestoreCommand(TestAsset asset, string? relativePathToProject = null)
         {
             var restore = new RestoreCommand(asset, relativePathToProject);
             restore.WithWorkingDirectory(asset.TestRoot);
@@ -91,7 +92,7 @@ namespace Microsoft.NET.TestFramework
             return restore;
         }
 
-        protected virtual BuildCommand CreateBuildCommand(TestAsset asset, string relativePathToProject = null)
+        protected virtual BuildCommand CreateBuildCommand(TestAsset asset, string? relativePathToProject = null)
         {
             var build = new BuildCommand(asset, relativePathToProject);
             build.WithWorkingDirectory(asset.TestRoot);
@@ -100,7 +101,7 @@ namespace Microsoft.NET.TestFramework
             return build;
         }
 
-        protected virtual RebuildCommand CreateRebuildCommand(TestAsset asset, string relativePathToProject = null)
+        protected virtual RebuildCommand CreateRebuildCommand(TestAsset asset, string? relativePathToProject = null)
         {
             var rebuild = new RebuildCommand(Log, asset.Path, relativePathToProject);
             rebuild.WithWorkingDirectory(asset.TestRoot);
@@ -109,7 +110,7 @@ namespace Microsoft.NET.TestFramework
             return rebuild;
         }
 
-        protected virtual PackCommand CreatePackCommand(TestAsset asset, string relativePathToProject = null)
+        protected virtual PackCommand CreatePackCommand(TestAsset asset, string? relativePathToProject = null)
         {
             var pack = new PackCommand(asset, relativePathToProject);
             pack.WithWorkingDirectory(asset.TestRoot);
@@ -118,7 +119,7 @@ namespace Microsoft.NET.TestFramework
             return pack;
         }
 
-        protected virtual PublishCommand CreatePublishCommand(TestAsset asset, string relativePathToProject = null)
+        protected virtual PublishCommand CreatePublishCommand(TestAsset asset, string? relativePathToProject = null)
         {
             var publish = new PublishCommand(asset, relativePathToProject);
             publish.WithWorkingDirectory(asset.TestRoot);
@@ -134,7 +135,7 @@ namespace Microsoft.NET.TestFramework
             if (_generateMSbuildLogs)
             {
                 var i = 0;
-                for (i = 0; File.Exists(Path.Combine(command.WorkingDirectory, $"msbuild{i}.binlog")) && i < 20; i++) { }
+                for (i = 0; command.WorkingDirectory is not null && File.Exists(Path.Combine(command.WorkingDirectory, $"msbuild{i}.binlog")) && i < 20; i++) { }
                 var log = $"msbuild{i}.binlog";
 
                 return command.Execute([$"/bl:{log}", .. arguments]);
@@ -152,7 +153,7 @@ namespace Microsoft.NET.TestFramework
             if (_generateMSbuildLogs)
             {
                 var i = 0;
-                for (i = 0; File.Exists(Path.Combine(command.WorkingDirectory, $"msbuild{i}.binlog")) && i < 20; i++) { }
+                for (i = 0; command.WorkingDirectory is not null && File.Exists(Path.Combine(command.WorkingDirectory, $"msbuild{i}.binlog")) && i < 20; i++) { }
                 var log = $"msbuild{i}.binlog";
                 return command.ExecuteWithoutRestore([$"/bl:{log}", .. arguments]);
             }
@@ -184,6 +185,6 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        protected virtual string GetNuGetCachePath() => null;
+        protected virtual string? GetNuGetCachePath() => null;
     }
 }

@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 //  If there isn't a rollback state file, don't garbage collect the latest workload set installed for the feature band
                 if (installedWorkloadSets.Any())
                 {
-                    var latestWorkloadSetVersion = installedWorkloadSets.Keys.MaxBy(k => new ReleaseVersion(k));
+                    var latestWorkloadSetVersion = installedWorkloadSets.Keys.Aggregate((s1, s2) => WorkloadUtilities.VersionCompare(s1, s2) >= 0 ? s1 : s2);
                     _workloadSets[latestWorkloadSetVersion] = GCAction.Keep;
                     _verboseReporter.WriteLine($"GC: Keeping latest installed workload set version {latestWorkloadSetVersion}");
                 }
