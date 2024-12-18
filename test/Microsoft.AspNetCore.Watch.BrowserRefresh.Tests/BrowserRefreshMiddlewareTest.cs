@@ -492,14 +492,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             var middleware = new BrowserRefreshMiddleware(async (context) =>
             {
-
                 context.Response.ContentType = "application/json";
                 await context.Response.StartAsync();
                 await context.Response.WriteAsync("{ }");
             }, NullLogger<BrowserRefreshMiddleware>.Instance);
 
-            UnsafeBrowserRefreshMiddlewareAccessor.GetSetPrivateDotnetModifiableAssemblies(middleware) = "true";
-            UnsafeBrowserRefreshMiddlewareAccessor.GetSetPrivateAspnetcoreBrowserTools(middleware) = "true";
+            middleware.Test_SetEnvironment(dotnetModifiableAssemblies: "true", aspnetcoreBrowserTools: "true");
 
             // Act
             await middleware.InvokeAsync(context);
@@ -545,8 +543,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 await context.Response.WriteAsync("{ }");
             }, NullLogger<BrowserRefreshMiddleware>.Instance);
 
-            UnsafeBrowserRefreshMiddlewareAccessor.GetSetPrivateDotnetModifiableAssemblies(middleware) = "true";
-            UnsafeBrowserRefreshMiddlewareAccessor.GetSetPrivateAspnetcoreBrowserTools(middleware) = "true";
+            middleware.Test_SetEnvironment(dotnetModifiableAssemblies: "true", aspnetcoreBrowserTools: "true");
 
             // Act
             await middleware.InvokeAsync(context);
@@ -596,15 +593,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Assert
             var responseContent = Encoding.UTF8.GetString(stream.ToArray());
             Assert.Equal("<html><body><h1>Hello world</h1><script src=\"/_framework/aspnetcore-browser-refresh.js\"></script></body></html>", responseContent);
-        }
-
-        private static class UnsafeBrowserRefreshMiddlewareAccessor
-        {
-            [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_dotnetModifiableAssemblies")]
-            extern internal static ref string GetSetPrivateDotnetModifiableAssemblies(BrowserRefreshMiddleware middleware);
-
-            [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_aspnetcoreBrowserTools")]
-            extern internal static ref string GetSetPrivateAspnetcoreBrowserTools(BrowserRefreshMiddleware middleware);
         }
 
         private class TestHttpResponseFeature : IHttpResponseFeature, IHttpResponseBodyFeature

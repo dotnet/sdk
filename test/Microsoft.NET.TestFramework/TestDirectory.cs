@@ -5,7 +5,7 @@ namespace Microsoft.NET.TestFramework
 {
     public class TestDirectory
     {
-        internal TestDirectory(string path, string sdkVersion)
+        internal TestDirectory(string path, string? sdkVersion)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -24,7 +24,7 @@ namespace Microsoft.NET.TestFramework
 
         public string Path { get; private set; }
 
-        private static void EnsureExistsAndEmpty(string path, string sdkVersion)
+        private static void EnsureExistsAndEmpty(string path, string? sdkVersion)
         {
             if (Directory.Exists(path))
             {
