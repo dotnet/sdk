@@ -172,7 +172,7 @@ jobs:
   # We either build the repo directly, or we extract them outside (which is what partners do)
   - ${{ if parameters.buildFromArchive }}:
     - name: sourcesPath
-      value: $(Build.ArtifactStagingDirectory)/dotnet-sources/
+      value: $(Agent.TempDirectory)/dotnet-sources/
   - ${{ else }}:
     - name: sourcesPath
       value: $(vmrPath)
