@@ -160,5 +160,26 @@ namespace Microsoft.NET.Restore.Tests
             var toolsetPackageDir = Path.Combine(customPackagesDir, "microsoft.net.sdk.compilers.toolset");
             new DirectoryInfo(toolsetPackageDir).Should().Exist();
         }
+
+        [FullMSBuildOnlyFact] // https://github.com/dotnet/sdk/issues/44605
+        public void It_does_not_throw_a_warning_when_NuGetPackageRoot_is_empty_in_wpftmp()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("DesktopWpf")
+                .WithSource();
+                
+            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+
+            var buildCommand = new BuildCommand(testAsset, relativePathToProject: "FxWpf")
+            {
+                WorkingDirectory = Path.Combine(testAsset.Path, "FxWpf")
+            };
+
+            // simulate mismatched MSBuild versions via _IsDisjointMSBuildVersion
+            buildCommand.Execute("-p:_IsDisjointMSBuildVersion=true")
+                .Should().Pass().And.NotHaveStdOutContaining("NETSDK1221");
+
+            Assert.True(File.Exists(Path.Combine(testAsset.Path, "obj", "net472", "MainWindow.g.cs")));
+        }
     }
 }
