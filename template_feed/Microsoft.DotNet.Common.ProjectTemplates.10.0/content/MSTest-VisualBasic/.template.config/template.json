@@ -32,10 +32,18 @@
       "choices": [
         {
           "choice": "net10.0",
-          "description": ".NET 9"
+          "description": ".NET 10"
         },
         {
           "choice": "net10.0-windows",
+          "description": ".NET 10 (Windows only)"
+        },
+        {
+          "choice": "net9.0",
+          "description": ".NET 9"
+        },
+        {
+          "choice": "net9.0-windows",
           "description": ".NET 9 (Windows only)"
         },
         {
