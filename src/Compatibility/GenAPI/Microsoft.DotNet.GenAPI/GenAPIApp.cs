@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 #endif
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI
@@ -21,27 +20,29 @@ namespace Microsoft.DotNet.GenAPI
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
         public static void Run(ILog logger,
-                               Dictionary<string, IAssemblySymbol> assemblySymbols,
-                               string? outputPath,
-                               AssemblySymbolLoader loader,
-                               ISymbolFilter symbolFilter,
-                               ISymbolFilter attributeSymbolFilter,
-                               string header,
-                               string? exceptionMessage,
-                               bool includeAssemblyAttributes)
+            IAssemblySymbolLoader loader,
+            Dictionary<string, IAssemblySymbol> assemblySymbols,
+            string? outputPath,
+            string? headerFile,
+            string? exceptionMessage,
+            string[]? excludeApiFiles,
+            string[]? excludeAttributesFiles,
+            bool respectInternals,
+            bool includeAssemblyAttributes)
         {
+
             // Invoke an assembly symbol writer for each directly loaded assembly.
             foreach (KeyValuePair<string, IAssemblySymbol> kvp in assemblySymbols)
             {
                 using TextWriter textWriter = GetTextWriter(outputPath, kvp.Key);
-                IAssemblySymbolWriter writer = new CSharpFileBuilder(logger,
-                                                                     textWriter,
-                                                                     loader,
-                                                                     symbolFilter,
-                                                                     attributeSymbolFilter,
-                                                                     header,
-                                                                     exceptionMessage,
-                                                                     includeAssemblyAttributes);
+                CSharpFileBuilder writer = new(logger,
+                                               textWriter,
+                                               loader,
+                                               SymbolFilterFactory.GetSymbolFilterFromFiles(excludeApiFiles, respectInternals),
+                                               SymbolFilterFactory.GetAttributeFilterFromPaths(excludeAttributesFiles, respectInternals),
+                                               headerFile,
+                                               exceptionMessage,
+                                               includeAssemblyAttributes);
                 writer.WriteAssembly(kvp.Value);
             }
 
