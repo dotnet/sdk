@@ -180,13 +180,13 @@ jobs:
   - name: artifactsStagingDir
     value: $(Build.ArtifactStagingDirectory)/artifacts
 
+  # manually disable CodeQL until https://dev.azure.com/mseng/1ES/_workitems/edit/2211548 is implemented
+  # CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary
+  - ${{ if eq(parameters.pool.os, 'macOS') }}:
+    - name: ONEES_ENFORCED_CODEQL_ENABLED
+      value: false
+
   templateContext:
-    ${{ if eq(parameters.pool.os, 'macOS') }}:
-      sdl:
-        codeql:
-          compiled:
-            enabled: false
-            justificationForDisabling: "CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary"
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
     outputs:
     - output: pipelineArtifact
