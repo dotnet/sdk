@@ -29,14 +29,11 @@ public abstract class DotNetWatchTestBase : IDisposable
     public void UpdateSourceFile(string path, string text)
     {
         WriteAllText(path, text);
-        Log($"File '{path}' updated ({HotReloadDotNetWatcher.FormatTimestamp(File.GetLastWriteTimeUtc(path))}).");
+        Log($"File '{path}' updated.");
     }
 
     public void UpdateSourceFile(string path, Func<string, string> contentTransform)
-    {
-        WriteAllText(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)));
-        Log($"File '{path}' updated.");
-    }
+        => UpdateSourceFile(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)));
 
     /// <summary>
     /// Replacement for <see cref="File.WriteAllText"/>, which fails to write to hidden file

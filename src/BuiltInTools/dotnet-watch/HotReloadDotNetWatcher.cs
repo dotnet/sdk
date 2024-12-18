@@ -611,8 +611,7 @@ namespace Microsoft.DotNet.Watch
                 return false;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                PathUtilities.GetContainingDirectories(path).FirstOrDefault(IsHiddenWindowsPath) is { } containingHiddenDir)
+            if (PathUtilities.GetContainingDirectories(path).FirstOrDefault(IsHiddenDirectory) is { } containingHiddenDir)
             {
                 Context.Reporter.Report(MessageDescriptor.IgnoringChangeInHiddenDirectory, containingHiddenDir, kind, path);
                 return false;
@@ -621,15 +620,20 @@ namespace Microsoft.DotNet.Watch
             return true;
         }
 
-        private static bool IsHiddenWindowsPath(string path)
-            // Note: the device root directory on Windows has hidden attribute:
-            => File.GetAttributes(path).HasFlag(FileAttributes.Hidden) && Path.GetDirectoryName(path) != null;
-
-        internal static string FormatTimestamp(DateTime time)
-            => time.ToString("HH:mm:ss.fffffff");
+        // Directory name starts with '.' on Unix is considered hidden.
+        // Apply the same convention on Windows as well (instead of checking for hidden attribute).
+        // This is consistent with SDK rules for default item exclusions:
+        // https://github.com/dotnet/sdk/blob/124be385f90f2c305dde2b817cb470e4d11d2d6b/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.DefaultItems.targets#L42
+        private static bool IsHiddenDirectory(string dir)
+            => Path.GetFileName(dir).StartsWith('.');
 
         private static IReadOnlySet<string> GetProjectOutputDirectories(ProjectGraph projectGraph)
         {
+            // TODO: https://github.com/dotnet/sdk/issues/45539
+            // Consider evaluating DefaultItemExcludes and DefaultExcludesInProjectFolder msbuild properties using
+            // https://github.com/dotnet/msbuild/blob/37eb419ad2c986ac5530292e6ee08e962390249e/src/Build/Globbing/MSBuildGlob.cs
+            // to determine which directories should be excluded.
+
             var projectOutputDirectories = new HashSet<string>(PathUtilities.OSSpecificPathComparer);
 
             foreach (var projectNode in projectGraph.ProjectNodes)

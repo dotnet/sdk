@@ -533,40 +533,38 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)]
+    [Theory]
     [CombinatorialData]
-    public Task IgnoredChange_Windows(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
-        => IgnoredChange(isExisting, isIncluded, directoryKind);
-
-    [PlatformSpecificTheory(TestPlatforms.AnyUnix)]
-    [CombinatorialData]
-    public Task IgnoredChange_Unix(
+    public async Task IgnoredChange(
         bool isExisting,
         bool isIncluded,
-        [CombinatorialValues(DirectoryKind.Obj, DirectoryKind.Bin, DirectoryKind.Ordinary)] DirectoryKind directoryKind)
-        => IgnoredChange(isExisting, isIncluded, directoryKind);
-
-    private async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
+        [CombinatorialValues] DirectoryKind directoryKind)
     {
         var testAsset = CopyTestAsset("WatchNoDepsApp", [isExisting, isIncluded, directoryKind]);
 
         var workingDirectory = testAsset.Path;
+        string dir;
 
-        var objDir = Path.Combine(workingDirectory, "obj", "Debug", ToolsetInfo.CurrentTargetFramework);
-        var binDir = Path.Combine(workingDirectory, "bin", "Debug", ToolsetInfo.CurrentTargetFramework);
+        switch (directoryKind)
+        {
+            case DirectoryKind.Bin:
+                dir = Path.Combine(workingDirectory, "bin", "Debug", ToolsetInfo.CurrentTargetFramework);
+                break;
 
-        var hiddenDir = Path.Combine(workingDirectory, "hidden");
-        Directory.CreateDirectory(hiddenDir);
-        File.SetAttributes(hiddenDir, FileAttributes.Hidden | FileAttributes.Directory);
+            case DirectoryKind.Obj:
+                dir = Path.Combine(workingDirectory, "obj", "Debug", ToolsetInfo.CurrentTargetFramework);
+                break;
+
+            case DirectoryKind.Hidden:
+                dir = Path.Combine(workingDirectory, ".dir");
+                break;
+
+            default:
+                dir = workingDirectory;
+                break;
+        }
 
         var extension = isIncluded ? ".cs" : ".txt";
-        var dir = directoryKind switch
-        {
-            DirectoryKind.Bin => binDir,
-            DirectoryKind.Obj => objDir,
-            DirectoryKind.Hidden => hiddenDir,
-            _ => workingDirectory,
-        };
 
         Directory.CreateDirectory(dir);
 
@@ -576,7 +574,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         {
             File.WriteAllText(path, "class C { int F() => 1; }");
 
-            if (isIncluded && directoryKind is DirectoryKind.Bin or DirectoryKind.Obj)
+            if (isIncluded && directoryKind is DirectoryKind.Bin or DirectoryKind.Obj or DirectoryKind.Hidden)
             {
                 var project = Path.Combine(workingDirectory, "WatchNoDepsApp.csproj");
                 File.WriteAllText(project, File.ReadAllText(project).Replace(
