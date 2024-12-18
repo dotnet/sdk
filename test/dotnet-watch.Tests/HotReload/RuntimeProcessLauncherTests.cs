@@ -535,10 +535,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
     [Theory]
     [CombinatorialData]
-    public async Task IgnoredChange(
-        bool isExisting,
-        bool isIncluded,
-        [CombinatorialValues] DirectoryKind directoryKind)
+    public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
         var testAsset = CopyTestAsset("WatchNoDepsApp", [isExisting, isIncluded, directoryKind]);
 
