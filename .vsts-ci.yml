@@ -271,7 +271,7 @@ extends:
             name: Azure Pipelines
             image: macOS-latest
             os: macOS
-          helixTargetQueue: osx.13.amd64
+          helixTargetQueue: osx.15.amd64
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
@@ -299,7 +299,7 @@ extends:
               name: Azure Pipelines
               vmImage: macOS-latest
               os: macOS
-            helixTargetQueue: osx.13.arm64
+            helixTargetQueue: osx.15.arm64
             macOSJobParameterSets:
             - categoryName: TestBuild
               buildArchitecture: arm64
