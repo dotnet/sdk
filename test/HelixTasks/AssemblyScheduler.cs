@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 _methodLimit = methodLimit;
             }
 
-            internal static void Build(string assemblyPath, int methodLimit, List<TypeInfo> typeInfoList, out List<Partition> partitionList, out List<AssemblyPartitionInfo> assemblyInfoList, bool netFramework = false)
+            internal static void Build(string assemblyPath, int methodLimit, List<TypeInfo> typeInfoList, out List<Partition> partitionList, out List<AssemblyPartitionInfo> assemblyInfoList)
             {
                 var builder = new AssemblyInfoBuilder(assemblyPath, methodLimit);
                 builder.Build(typeInfoList);
@@ -94,19 +94,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 foreach (var typeInfo in typeInfoList)
                 {
                     _currentTypeInfoList.Add(typeInfo);
-                    if (_netFramework)
-                    {
-                        if (_builder.Length > 0)
-                        {
-                            _builder.Append("|");
-                        }
-                        _builder.Append($@"{typeInfo.FullName}");
-
-                    }
-                    else
-                    {
-                        _builder.Append($@"-class ""{typeInfo.FullName}"" ");
-                    }
+                    _builder.Append($@"-class ""{typeInfo.FullName}"" ");
                     CheckForPartitionLimit(done: false);
                 }
 
@@ -182,12 +170,12 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             return list;
         }
 
-        public IEnumerable<AssemblyPartitionInfo> Schedule(string assemblyPath, bool force = false, bool netFramework = false)
+        public IEnumerable<AssemblyPartitionInfo> Schedule(string assemblyPath, bool force = false)
         {
             var typeInfoList = GetTypeInfoList(assemblyPath);
             var assemblyInfoList = new List<AssemblyPartitionInfo>();
             var partitionList = new List<Partition>();
-            AssemblyInfoBuilder.Build(assemblyPath, _methodLimit, typeInfoList, out partitionList, out assemblyInfoList, netFramework);
+            AssemblyInfoBuilder.Build(assemblyPath, _methodLimit, typeInfoList, out partitionList, out assemblyInfoList;
 
             // If the scheduling didn't actually produce multiple partition then send back an unpartitioned
             // representation.
