@@ -4,6 +4,7 @@
     <TargetFramework>%FRAMEWORK%</TargetFramework>
     <LangVersion>%LANG%</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 </Project>

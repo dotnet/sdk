@@ -5,6 +5,7 @@
     <TargetFramework>%FRAMEWORK%</TargetFramework>
     <RootNamespace>vb_console</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
