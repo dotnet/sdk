@@ -170,7 +170,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)../../Microsoft.NET.Sdk.WindowsDesktop/targets/Microsoft.NET.Sdk.WindowsDesktop.props" Condition="Exists('$(MSBuildThisFileDirectory)../../Microsoft.NET.Sdk.WindowsDesktop/targets/Microsoft.NET.Sdk.WindowsDesktop.props')" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Windows.props" />
 
-  <!-- Hook for importing custom logic after .NET SDK props, for example for additional default item processing -->
+  <!--
+      Extensibility point for users to import build logic after all of the .NET SDKs .props are imported but before the project's contents are evaluated.
+      This can be useful for overriding default globs or properties that the SDK sets. 
+      -->
   <Import Project="$(AfterMicrosoftNetSdkProps)" Condition="$(AfterMicrosoftNetSdkProps) != ''" />
 
 </Project>
