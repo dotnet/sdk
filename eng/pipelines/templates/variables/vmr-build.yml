@@ -15,6 +15,9 @@ variables:
 - name: _TeamName
   value: DotNetCore
 
+- name: defaultContainerOptions
+  value: --privileged
+
 - name: almaLinuxContainerName
   value: almaLinuxContainer
 - name: almaLinuxContainerImage
