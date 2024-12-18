@@ -1235,7 +1235,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
   <PropertyGroup>
     <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -1311,7 +1310,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
   <PropertyGroup>
     <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -1389,7 +1387,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
   <PropertyGroup>
     <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

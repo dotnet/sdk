@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>%FRAMEWORK%</TargetFramework>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 </Project>
