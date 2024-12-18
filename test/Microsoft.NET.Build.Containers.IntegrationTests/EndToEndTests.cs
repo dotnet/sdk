@@ -1171,7 +1171,8 @@ public class EndToEndTests : IDisposable
             imageX64)
         .Execute();
         inspectResult.Should().Pass();
-        var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(inspectResult.StdOut);
+        inspectResult.StdOut.Should().NotBeNullOrEmpty();
+        var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(inspectResult.StdOut!);
         labels.Should().NotBeNull().And.HaveCountGreaterThan(0);
         labels!.Values.Should().AllSatisfy(value => value.Should().NotBeNullOrEmpty());
 
