@@ -21,7 +21,7 @@
   "symbols/Framework/choices/net471/description": ".NET Framework 4.7.1",
   "symbols/Framework/choices/net47/description": ".NET Framework 4.7",
   "symbols/Framework/choices/net462/description": ".NET Framework 4.6.2",
-  "symbols/skipRestore/description": "Позволяет пропускать автоматическое восстановление проекта при создании.",
+  "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
   "symbols/skipRestore/displayName": "Пропустить восстановление",
   "symbols/langVersion/description": "Задает свойство LangVersion в создаваемом файле проекта.",
   "symbols/langVersion/displayName": "Версия языка",
