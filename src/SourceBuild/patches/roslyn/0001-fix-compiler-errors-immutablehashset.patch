@@ -1,0 +1,32 @@
+From 3947cd2577d601a06cdf3d859c62f8b55c91b623 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Wed, 18 Dec 2024 14:38:02 +0100
+Subject: [PATCH] FIx build errors with newer toolset and dependencies
+
+Fixes the following two errors:
+- src/Features/Core/Portable/ExternalAccess/Watch/Api/WatchHotReloadService.cs(217,13): error CS1503: Argument 4: cannot convert from 'System.Collections.Immutable.ImmutableHashSet<Microsoft.CodeAnalysis.Project>' to 'System.Collections.Generic.IReadOnlySet<Microsoft.CodeAnalysis.Project>' [src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj::TargetFramework=net9.0]
+- src/roslyn/src/Features/Core/Portable/ExternalAccess/Watch/Api/WatchHotReloadService.cs(218,13): error CS1503: Argument 5: cannot convert from 'System.Collections.Immutable.ImmutableHashSet<Microsoft.CodeAnalysis.Project>' to 'System.Collections.Generic.IReadOnlySet<Microsoft.CodeAnalysis.Project>' [src/roslyn/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj::TargetFramework=net9.0]
+
+The underlying SDK being used is "10.0.100-alpha.1.24555.54"
+
+Backport: https://github.com/dotnet/roslyn/pull/76486
+
+---
+ .../ExternalAccess/Watch/Api/WatchHotReloadService.cs         | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/Features/Core/Portable/ExternalAccess/Watch/Api/WatchHotReloadService.cs b/src/Features/Core/Portable/ExternalAccess/Watch/Api/WatchHotReloadService.cs
+index 2173339e29b..b7cfb0356df 100644
+--- a/src/Features/Core/Portable/ExternalAccess/Watch/Api/WatchHotReloadService.cs
++++ b/src/Features/Core/Portable/ExternalAccess/Watch/Api/WatchHotReloadService.cs
+@@ -68,8 +68,8 @@ public readonly struct Updates(
+         ModuleUpdateStatus status,
+         ImmutableArray<Diagnostic> diagnostics,
+         ImmutableArray<Update> projectUpdates,
+-        IReadOnlySet<Project> projectsToRestart,
+-        IReadOnlySet<Project> projectsToRebuild)
++        ImmutableHashSet<Project> projectsToRestart,
++        ImmutableHashSet<Project> projectsToRebuild)
+     {
+         /// <summary>
+         /// Status of the updates.
