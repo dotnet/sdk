@@ -5,6 +5,8 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI.Tool
@@ -97,23 +99,24 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
-                GenAPIConfiguration config = GenAPIConfiguration.GetBuilder()
-                    .WithAssembliesPaths(parseResult.GetValue(assembliesOption)!)
-                    .WithAssemblyReferencesPaths(parseResult.GetValue(assemblyReferencesOption))
-                    .WithRespectInternals(parseResult.GetValue(respectInternalsOption))
-                    .Build();
-
                 bool respectInternals = parseResult.GetValue(respectInternalsOption);
 
+                (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblyLoaderFactory.CreateFromFiles(
+                    assembliesPaths: parseResult.GetValue(assembliesOption) ?? throw new NullReferenceException("No assemblies provided."),
+                    assemblyReferencesPaths: parseResult.GetValue(assemblyReferencesOption),
+                    respectInternals);
+
                 GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal),
-                              config.AssemblySymbols,
-                              parseResult.GetValue(outputPathOption),
-                              config.Loader,
-                              GenAPIConfiguration.GetSymbolFilterFromFiles(parseResult.GetValue(excludeApiFilesOption), respectInternals),
-                              GenAPIConfiguration.GetAttributeFilterFromPaths(parseResult.GetValue(excludeAttributesFilesOption), respectInternals),
-                              GenAPIConfiguration.GetFormattedHeader(parseResult.GetValue(headerFileOption)),
-                              parseResult.GetValue(exceptionMessageOption),
-                              parseResult.GetValue(includeAssemblyAttributesOption));
+                    loader,
+                    assemblySymbols,
+                    parseResult.GetValue(outputPathOption),
+                    parseResult.GetValue(headerFileOption),
+                    parseResult.GetValue(exceptionMessageOption),
+                    parseResult.GetValue(excludeApiFilesOption),
+                    parseResult.GetValue(excludeAttributesFilesOption),
+                    respectInternals,
+                    parseResult.GetValue(includeAssemblyAttributesOption)
+                );
             });
 
             return rootCommand.Parse(args).Invoke();
