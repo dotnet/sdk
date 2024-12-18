@@ -25,7 +25,7 @@
     -->
     <PrivateSourceBuiltSdkVersion>10.0.100-alpha.1.24612.1</PrivateSourceBuiltSdkVersion>
     <PrivateSourceBuiltArtifactsVersion>10.0.100-alpha.1.24612.1</PrivateSourceBuiltArtifactsVersion>
-    <PrivateSourceBuiltPrebuiltsVersion>0.1.0-10.0.100-6</PrivateSourceBuiltPrebuiltsVersion>
+    <PrivateSourceBuiltPrebuiltsVersion>0.1.0-10.0.100-7</PrivateSourceBuiltPrebuiltsVersion>
     <!-- command-line-api dependencies -->
     <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
     <!-- msbuild dependencies -->
