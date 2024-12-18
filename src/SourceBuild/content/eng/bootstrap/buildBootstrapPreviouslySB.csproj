@@ -132,7 +132,6 @@
     <!-- Repack tarball with new bootstrap name -->
     <Message Text="  Repacking tarball to $(NewTarballName)" Importance="High" />
     <Exec Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props *.xml SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
-
   </Target>
 
   <Target Name="CopyDownloadedPackage">
