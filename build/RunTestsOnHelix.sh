@@ -22,8 +22,8 @@ dotnet new --debug:ephemeral-hive
 
 # We downloaded a special zip of files to the .nuget folder so add that as a source
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
-dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/NuGet.config
-dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/NuGet.config --name nugetcache
+dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config --name testpackages
 #Remove feeds not needed for tests
 dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/NuGet.config
