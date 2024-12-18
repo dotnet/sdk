@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task BaselineCompilationError()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
             var programPath = Path.Combine(testAsset.Path, "Program.cs");
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ProjectChangeAndRestart()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchNoDepsApp")
                 .WithSource();
 
             var programPath = Path.Combine(testAsset.Path, "Program.cs");
@@ -385,7 +385,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
+            var testAsset = _testAssetsManager.CopyTestAsset("WatchRazorWithDeps")
                 .WithSource();
 
             var port = TestOptions.GetTestPort();
