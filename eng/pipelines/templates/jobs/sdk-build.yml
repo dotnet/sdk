@@ -49,6 +49,10 @@ jobs:
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    templateContext:
+      sdl:
+        binskim:
+          analyzeTargetGlob: +:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;
 
     steps:
     ############## PREP ###############
