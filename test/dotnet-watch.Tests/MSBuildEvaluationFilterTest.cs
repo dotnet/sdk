@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class MSBuildEvaluationFilterTest
     {
@@ -28,7 +25,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Test.csproj" }, ChangeKind.Update), CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Test.csproj", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
         }
@@ -52,7 +49,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs" }, ChangeKind.Update), CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.False(evaluator.RequiresRevaluation);
             Assert.Equal(1, counter);
@@ -78,7 +75,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs" }, ChangeKind.Update), CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
             Assert.Equal(2, counter);
@@ -93,8 +90,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             var result = new EvaluationResult(
                 new Dictionary<string, FileItem>()
                 {
-                    { "Controlller.cs", new FileItem { FilePath = "Controlller.cs" } },
-                    { "Proj.csproj", new FileItem { FilePath = "Proj.csproj" } },
+                    { "Controlller.cs", new FileItem { FilePath = "Controlller.cs", ContainingProjectPaths = []} },
+                    { "Proj.csproj", new FileItem { FilePath = "Proj.csproj", ContainingProjectPaths = [] } },
                 },
                 projectGraph: null);
 
@@ -121,7 +118,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             evaluator.RequiresRevaluation = false;
             evaluator.Timestamps["Proj.csproj"] = new DateTime(1007);
 
-            await evaluator.EvaluateAsync(new(new() { FilePath = "Controller.cs" }, ChangeKind.Update), CancellationToken.None);
+            await evaluator.EvaluateAsync(new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
         }

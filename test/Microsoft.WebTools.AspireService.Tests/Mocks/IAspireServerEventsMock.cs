@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 
-using Microsoft.WebTools.AspireServer.Contracts;
 using Moq;
 
-namespace Microsoft.WebTools.AspireServer.UnitTests;
+namespace Aspire.Tools.Service.UnitTests;
 
 internal class IAspireServerEventsMock : MockFactory<IAspireServerEvents>
 {
