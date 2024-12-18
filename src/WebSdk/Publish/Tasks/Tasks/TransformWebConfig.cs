@@ -13,14 +13,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         /// </summary>
         /// <returns></returns>
         [Required]
-        public string TargetPath { get; set; }
+        public string? TargetPath { get; set; }
 
         /// <summary>
         /// Destination folder of the publish
         /// </summary>
         /// <returns></returns>
         [Required]
-        public string PublishDir { get; set; }
+        public string? PublishDir { get; set; }
 
         [Required]
         public bool UseAppHost { get; set; }
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         /// <summary>
         /// ProjectGuid that uniquely identifies the project. Used for Telemetry
         /// </summary>
-        public string ProjectGuid { get; set; }
+        public string? ProjectGuid { get; set; }
 
         /// <summary>
         /// Flag that determines whether the publish telemetry needs to be disabled. 
@@ -43,43 +43,47 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         /// <summary>
         /// Absolute path to the project file.
         /// </summary>
-        public string ProjectFullPath { get; set; }
+        public string? ProjectFullPath { get; set; }
         /// <summary>
         /// Absolute path to the Solution file.
         /// </summary>
-        public string SolutionPath { get; set; }
+        public string? SolutionPath { get; set; }
         /// <summary>
         /// Native executable extension
         /// </summary>
-        public string ExecutableExtension { get; set; }
+        public string? ExecutableExtension { get; set; }
 
         /// <summary>
         /// AspNetCoreHostingModel defines whether the hosting will be InProcess or OutOfProcess.
         /// </summary>
         /// <returns></returns>
-        public string AspNetCoreHostingModel { get; set; }
+        public string? AspNetCoreHostingModel { get; set; }
 
         /// <summary>
         /// AspNetCoreModule defines the module name
         /// </summary>
         /// <returns></returns>
-        public string AspNetCoreModuleName { get; set; }
+        public string? AspNetCoreModuleName { get; set; }
 
-        public string EnvironmentName { get; set; }
+        public string? EnvironmentName { get; set; }
 
         public override bool Execute()
         {
             Log.LogMessage(MessageImportance.Low, $"Configuring the following project for use with IIS: '{PublishDir}'");
 
-            XDocument webConfigXml = null;
+            XDocument? webConfigXml = null;
 
             // Initialize the publish web.config file with project web.config content if present. Else, clean the existing web.config in the
             // publish folder to make sure we have a consistent web.config update experience.
             string defaultWebConfigPath = "web.config";
-            string projectWebConfigPath = null;
-            string publishWebConfigPath = Path.Combine(PublishDir, defaultWebConfigPath);
+            string? projectWebConfigPath = null;
+            string publishWebConfigPath = string.Empty;
+            if (PublishDir is not null)
+            {
+                publishWebConfigPath = Path.Combine(PublishDir, defaultWebConfigPath);
+            }
 
-            if (!string.IsNullOrEmpty(ProjectFullPath))
+            if (ProjectFullPath is not null && ProjectFullPath.Length != 0 && PublishDir is not null)
             {
                 //Ensure that we load the actual web.config name (case-sensitive on Unix-like systems)
                 projectWebConfigPath = GetWebConfigFileOrDefault(ProjectFullPath, defaultWebConfigPath);
@@ -120,8 +124,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 Log.LogMessage("Configuring web.config for deployment to Azure");
             }
 
-            string outputFile = Path.GetFileName(TargetPath);
-            XDocument transformedConfig = WebConfigTransform.Transform(
+            string? outputFile = Path.GetFileName(TargetPath) ?? string.Empty;
+            XDocument? transformedConfig = WebConfigTransform.Transform(
                 webConfigXml,
                 outputFile,
                 IsAzure,
@@ -136,7 +140,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             transformedConfig = WebConfigTelemetry.AddTelemetry(transformedConfig, ProjectGuid, IgnoreProjectGuid, SolutionPath, ProjectFullPath);
             using (FileStream f = new(publishWebConfigPath, FileMode.Create))
             {
-                transformedConfig.Save(f);
+                transformedConfig?.Save(f);
             }
 
             Log.LogMessage(MessageImportance.Low, "Configuring project completed successfully");
@@ -147,11 +151,15 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         /// Searches for an existing (case-insensitive) `Web.config` file. Otherwise defaults to defaultWebConfigName
         /// </summary>
         /// <param name="projectPath">Full path to project file</param>
-        /// <param name="defaultWebConfigName">Web Config file name to search for i.e. `web.config`</param> 
+        /// <param name="defaultWebConfigName">Web Config file name to search for i.e. `web.config`</param>
         /// <returns></returns>
         public string GetWebConfigFileOrDefault(string projectPath, string defaultWebConfigName)
         {
             var projectDirectory = Path.GetDirectoryName(projectPath);
+            if (projectDirectory is null)
+            {
+                return string.Empty;
+            }
             var currentWebConfigFileName = Directory.EnumerateFiles(projectDirectory)
                 .FirstOrDefault(file => string.Equals(Path.GetFileName(file), defaultWebConfigName, StringComparison.OrdinalIgnoreCase));
             var webConfigFileName = currentWebConfigFileName == null ? defaultWebConfigName : Path.GetFileName(currentWebConfigFileName);
@@ -159,6 +167,5 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
             return projectWebConfigPath;
         }
-
     }
 }

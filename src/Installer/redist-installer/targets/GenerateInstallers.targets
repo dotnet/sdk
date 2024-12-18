@@ -10,9 +10,7 @@
           DependsOnTargets="$(_BuildUnlessNoBuild);
                             GetCurrentRuntimeInformation;
                             GenerateMsis;
-                            GeneratePkgs;
-                            GenerateRpms;
-                            GenerateDebs"
+                            GeneratePkgs"
           />
 
 </Project>

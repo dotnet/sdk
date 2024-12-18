@@ -1,0 +1,41 @@
+<Project>
+
+  <PropertyGroup>
+    <SdkTasksTargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core'">$(SdkTargetFramework)</SdkTasksTargetFramework>
+    <SdkTasksTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</SdkTasksTargetFramework>
+    <SdkTasksAssembly>$(ArtifactsBinDir)sdk-tasks\$(Configuration)\$(SdkTasksTargetFramework)\sdk-tasks.dll</SdkTasksAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.csproj" />
+  </ItemGroup>
+
+  <UsingTask TaskName="AddMetadataIsPE" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="CalculateTemplateVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="ChangeEntryPointLibraryName" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Chmod" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="CollatePackageDownloads" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Crossgen" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GenerateDefaultRuntimeFrameworkVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GenerateMSBuildExtensionsSWR" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GenerateMsiVersionFromFullVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GenerateSdkRuntimeIdentifierChain" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GetCurrentRuntimeInformation" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GetDependencyInfo" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GetLinuxNativeInstallerDependencyVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GetWorkloadSetFeatureBand" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="OverrideAndCreateBundledNETCoreAppPackageVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="OverrideWasmRuntimePackVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="RemoveAssetFromDepsPackages" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="ReplaceFilesWithSymbolicLinks" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="UpdateRuntimeConfig" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+
+  <!-- Tasks from the Arcade SDK -->
+  <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
+
+</Project>

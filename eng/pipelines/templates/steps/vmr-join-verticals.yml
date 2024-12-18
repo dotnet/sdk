@@ -1,0 +1,37 @@
+parameters:
+- name: dotNetBuildPass
+  type: string
+  default: final
+
+- name: primaryDependentJob
+  type: string
+  default: Windows_x64
+
+- name: outputFolder
+  type: string
+  default: $(Build.ArtifactStagingDirectory)/artifacts
+
+steps:
+- task: DownloadBuildArtifacts@1
+  inputs:
+    artifactName: 'VerticalManifests'
+    downloadPath: $(Build.ArtifactStagingDirectory)
+    checkDownloadedFiles: true
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    artifactName: ${{ parameters.primaryDependentJob }}_Artifacts
+    targetPath: $(Build.ArtifactStagingDirectory)/${{ parameters.primaryDependentJob }}_Artifacts
+    checkDownloadedFiles: true
+
+- powershell: eng/join-verticals.ps1
+    /p:VerticalManifestsPath=$(Build.ArtifactStagingDirectory)/VerticalManifests 
+    /p:MainVertical=${{ parameters.primaryDependentJob }}
+    /p:DotNetBuildPass=${{ parameters.dotNetBuildPass }}
+    /p:BuildId=$(Build.BuildId)
+    /p:AzureDevOpsToken=$(System.AccessToken) 
+    /p:AzureDevOpsBaseUri=$(System.CollectionUri)
+    /p:AzureDevOpsProject=$(System.TeamProject)
+    /p:MainVerticalArtifactsFolder=$(Build.ArtifactStagingDirectory)/${{ parameters.primaryDependentJob }}_Artifacts
+    /p:OutputFolder=${{ parameters.outputFolder }}
+  displayName: Join Verticals

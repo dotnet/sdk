@@ -1,14 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Cryptography;
+using System.IO.Hashing;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
     public class Uuid
     {
         /// <summary>
-        /// Generate a Version 5 (SHA1 Name Based) Guid from a name.
+        /// Generate a Version 8 (XxHash3 Name Based) Guid from a name.
         /// </summary>
         /// <param name="name">The name to use for generating the GUID.</param>
         /// <returns>A generated <see cref="GUID"/>.</returns>
@@ -17,31 +17,28 @@ namespace Microsoft.DotNet.Cli.Utils
             // Any fixed GUID will do for a namespace.
             Guid namespaceId = new("28F1468D-672B-489A-8E0C-7C5B3030630C");
 
-            using (SHA1 hasher = SHA1.Create())
-            {
-                var nameBytes = Encoding.UTF8.GetBytes(name ?? string.Empty);
-                var namespaceBytes = namespaceId.ToByteArray();
+            var nameBytes = Encoding.UTF8.GetBytes(name ?? string.Empty);
+            var namespaceBytes = namespaceId.ToByteArray();
 
-                SwapGuidByteOrder(namespaceBytes);
+            SwapGuidByteOrder(namespaceBytes);
 
-                var streamToHash = new byte[namespaceBytes.Length + nameBytes.Length];
+            var streamToHash = new byte[namespaceBytes.Length + nameBytes.Length];
 
-                Array.Copy(namespaceBytes, streamToHash, namespaceBytes.Length);
-                Array.Copy(nameBytes, 0, streamToHash, namespaceBytes.Length, nameBytes.Length);
+            Array.Copy(namespaceBytes, streamToHash, namespaceBytes.Length);
+            Array.Copy(nameBytes, 0, streamToHash, namespaceBytes.Length, nameBytes.Length);
 
-                var hashResult = hasher.ComputeHash(streamToHash);
+            var hashResult = XxHash3.Hash(streamToHash); // This is just used for generating a named pipe so we don't need a cryptographic hash
 
-                var res = new byte[16];
+            var res = new byte[16];
 
-                Array.Copy(hashResult, res, res.Length);
+            Array.Copy(hashResult, res, res.Length);
 
-                unchecked { res[6] = (byte)(0x50 | (res[6] & 0x0F)); }
-                unchecked { res[8] = (byte)(0x40 | (res[8] & 0x3F)); }
+            unchecked { res[6] = (byte)(0x80 | (res[6] & 0x0F)); }
+            unchecked { res[8] = (byte)(0x40 | (res[8] & 0x3F)); }
 
-                SwapGuidByteOrder(res);
+            SwapGuidByteOrder(res);
 
-                return new Guid(res);
-            }
+            return new Guid(res);
         }
 
         // Do a byte order swap, .NET GUIDs store multi byte components in little

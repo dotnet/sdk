@@ -95,11 +95,8 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    foreach (var command in package.Commands)
-                    {
-                        shellShimRepository.RemoveShim(command.Name);
-                    }
-
+                    shellShimRepository.RemoveShim(package.Command.Name);
+                 
                     toolPackageUninstaller.Uninstall(package.PackageDirectory);
 
                     scope.Complete();

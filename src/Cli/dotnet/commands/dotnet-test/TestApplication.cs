@@ -1,57 +1,200 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO.Pipes;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal class TestApplication
+    internal sealed class TestApplication : IDisposable
     {
-        private readonly string _modulePath;
-        private readonly string _pipeName;
-        private readonly string[] _args;
+        private readonly Module _module;
+        private readonly List<string> _args;
+
         private readonly List<string> _outputData = [];
         private readonly List<string> _errorData = [];
+        private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+        private readonly CancellationTokenSource _cancellationToken = new();
 
-        public event EventHandler<HandshakeInfoArgs> HandshakeInfoReceived;
+        private Task _testAppPipeConnectionLoop;
+        private readonly List<NamedPipeServer> _testAppPipeConnections = new();
+        private ConcurrentDictionary<string, string> _executionIds = [];
+
+        public event EventHandler<HandshakeArgs> HandshakeReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
-        public event EventHandler<SuccessfulTestResultEventArgs> SuccessfulTestResultReceived;
-        public event EventHandler<FailedTestResultEventArgs> FailedTestResultReceived;
-        public event EventHandler<FileArtifactInfoEventArgs> FileArtifactInfoReceived;
+        public event EventHandler<DiscoveredTestEventArgs> DiscoveredTestsReceived;
+        public event EventHandler<TestResultEventArgs> TestResultsReceived;
+        public event EventHandler<FileArtifactEventArgs> FileArtifactsReceived;
         public event EventHandler<SessionEventArgs> SessionEventReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
+        public event EventHandler<EventArgs> Run;
+        public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
-        public string ModulePath => _modulePath;
+        public Module Module => _module;
 
-        public TestApplication(string modulePath, string pipeName, string[] args)
+        public TestApplication(Module module, List<string> args)
         {
-            _modulePath = modulePath;
-            _pipeName = pipeName;
+            _module = module;
             _args = args;
         }
 
-        public async Task<int> RunAsync(bool enableHelp)
+        public void AddExecutionId(string executionId)
         {
-            if (!ModulePathExists())
+            _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
+        }
+
+        public async Task<int> RunAsync(bool isFilterMode, bool enableHelp, BuiltInOptions builtInOptions)
+        {
+            Run?.Invoke(this, EventArgs.Empty);
+
+            if (isFilterMode && !ModulePathExists())
             {
                 return 1;
             }
 
-            bool isDll = _modulePath.EndsWith(".dll");
+            bool isDll = _module.DllOrExePath.EndsWith(".dll");
+
             ProcessStartInfo processStartInfo = new()
             {
-                FileName = isDll ?
-                Environment.ProcessPath :
-                _modulePath,
-                Arguments = enableHelp ? BuildHelpArgs(isDll) : BuildArgs(isDll),
+                FileName = isFilterMode ? isDll ? Environment.ProcessPath : _module.DllOrExePath : Environment.ProcessPath,
+                Arguments = isFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(enableHelp, builtInOptions),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
 
-            return await StartProcess(processStartInfo);
+            if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
+            {
+                processStartInfo.EnvironmentVariables.Add("TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE", _module.RunSettingsFilePath);
+            }
+
+            _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
+            var result = await StartProcess(processStartInfo);
+
+            WaitOnTestApplicationPipeConnectionLoop();
+
+            return result;
         }
+
+        private void WaitOnTestApplicationPipeConnectionLoop()
+        {
+            _cancellationToken.Cancel();
+            _testAppPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+        }
+
+        private async Task WaitConnectionAsync(CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
+                    pipeConnection.RegisterAllSerializers();
+
+                    await pipeConnection.WaitConnectionAsync(token);
+                    _testAppPipeConnections.Add(pipeConnection);
+                }
+            }
+            catch (OperationCanceledException ex) when (ex.CancellationToken == token)
+            {
+                // We are exiting
+            }
+            catch (Exception ex)
+            {
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                }
+
+                Environment.FailFast(ex.ToString());
+            }
+        }
+
+        private Task<IResponse> OnRequest(IRequest request)
+        {
+            try
+            {
+                switch (request)
+                {
+                    case HandshakeMessage handshakeMessage:
+                        if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string value))
+                        {
+                            OnHandshakeMessage(handshakeMessage);
+
+                            return Task.FromResult((IResponse)CreateHandshakeMessage(GetSupportedProtocolVersion(handshakeMessage)));
+                        }
+                        break;
+
+                    case CommandLineOptionMessages commandLineOptionMessages:
+                        OnCommandLineOptionMessages(commandLineOptionMessages);
+                        break;
+
+                    case DiscoveredTestMessages discoveredTestMessages:
+                        OnDiscoveredTestMessages(discoveredTestMessages);
+                        break;
+
+                    case TestResultMessages testResultMessages:
+                        OnTestResultMessages(testResultMessages);
+                        break;
+
+                    case FileArtifactMessages fileArtifactMessages:
+                        OnFileArtifactMessages(fileArtifactMessages);
+                        break;
+
+                    case TestSessionEvent sessionEvent:
+                        OnSessionEvent(sessionEvent);
+                        break;
+
+                    // If we don't recognize the message, log and skip it
+                    case UnknownMessage unknownMessage:
+                        if (VSTestTrace.TraceEnabled)
+                        {
+                            VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                        }
+                        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+
+                    default:
+                        // If it doesn't match any of the above, throw an exception
+                        throw new NotSupportedException(string.Format(LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                }
+            }
+            catch (Exception ex)
+            {
+                if (VSTestTrace.TraceEnabled)
+                {
+                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                }
+
+                Environment.FailFast(ex.ToString());
+            }
+
+            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+        }
+
+        private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
+        {
+            handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string protocolVersions);
+
+            string version = string.Empty;
+            if (protocolVersions is not null && protocolVersions.Split(";").Contains(ProtocolConstants.Version))
+            {
+                version = ProtocolConstants.Version;
+            }
+
+            return version;
+        }
+
+        private static HandshakeMessage CreateHandshakeMessage(string version) =>
+            new(new Dictionary<byte, string>
+            {
+                { HandshakeMessagePropertyNames.PID, Process.GetCurrentProcess().Id.ToString() },
+                { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
+                { HandshakeMessagePropertyNames.Framework, RuntimeInformation.FrameworkDescription },
+                { HandshakeMessagePropertyNames.OS, RuntimeInformation.OSDescription },
+                { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
+            });
 
         private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
         {
@@ -93,12 +236,59 @@ namespace Microsoft.DotNet.Cli
 
         private bool ModulePathExists()
         {
-            if (!File.Exists(_modulePath))
+            if (!File.Exists(_module.DllOrExePath))
             {
-                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_modulePath}' not found. Build the test application before or run 'dotnet test'." });
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.DllOrExePath}' not found. Build the test application before or run 'dotnet test'." });
                 return false;
             }
             return true;
+        }
+
+        private string BuildArgsWithDotnetRun(bool hasHelp, BuiltInOptions builtInOptions)
+        {
+            StringBuilder builder = new();
+
+            builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectPath}\"");
+
+            if (builtInOptions.HasNoRestore)
+            {
+                builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
+            }
+
+            if (builtInOptions.HasNoBuild)
+            {
+                builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
+            }
+
+            if (!string.IsNullOrEmpty(builtInOptions.Architecture))
+            {
+                builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {builtInOptions.Architecture}");
+            }
+
+            if (!string.IsNullOrEmpty(builtInOptions.Configuration))
+            {
+                builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {builtInOptions.Configuration}");
+            }
+
+            if (!string.IsNullOrEmpty(_module.TargetFramework))
+            {
+                builder.Append($" {CliConstants.FrameworkOptionKey} {_module.TargetFramework}");
+            }
+
+            builder.Append($" {CliConstants.ParametersSeparator} ");
+
+            if (hasHelp)
+            {
+                builder.Append($" {CliConstants.HelpOptionKey} ");
+            }
+
+            builder.Append(_args.Count != 0
+                ? _args.Aggregate((a, b) => $"{a} {b}")
+                : string.Empty);
+
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
+
+            return builder.ToString();
         }
 
         private string BuildArgs(bool isDll)
@@ -107,60 +297,92 @@ namespace Microsoft.DotNet.Cli
 
             if (isDll)
             {
-                builder.Append($"exec {_modulePath} ");
+                builder.Append($"exec {_module.DllOrExePath} ");
             }
 
-            builder.Append(_args.Length != 0
+            builder.Append(_args.Count != 0
                 ? _args.Aggregate((a, b) => $"{a} {b}")
                 : string.Empty);
 
-            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
 
             return builder.ToString();
         }
 
-        private string BuildHelpArgs(bool isDll)
+        public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
         {
-            StringBuilder builder = new();
-
-            if (isDll)
+            if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
             {
-                builder.Append($"exec {_modulePath} ");
+                AddExecutionId(executionId);
+                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.DllOrExePath, ExecutionId = executionId });
             }
-
-            builder.Append($" {CliConstants.HelpOptionKey} {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeName}");
-
-            return builder.ToString();
-        }
-
-        public void OnHandshakeInfo(HandshakeInfo handshakeInfo)
-        {
-            HandshakeInfoReceived?.Invoke(this, new HandshakeInfoArgs { handshakeInfo = handshakeInfo });
+            HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
         }
 
         public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
         {
-            HelpRequested?.Invoke(this, new HelpEventArgs { CommandLineOptionMessages = commandLineOptionMessages });
+            HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn)).ToArray() });
         }
 
-        internal void OnSuccessfulTestResultMessage(SuccessfulTestResultMessage successfulTestResultMessage)
+        internal void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
         {
-            SuccessfulTestResultReceived?.Invoke(this, new SuccessfulTestResultEventArgs { SuccessfulTestResultMessage = successfulTestResultMessage });
+            DiscoveredTestsReceived?.Invoke(this, new DiscoveredTestEventArgs
+            {
+                ExecutionId = discoveredTestMessages.ExecutionId,
+                DiscoveredTests = discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName)).ToArray()
+            });
         }
 
-        internal void OnFailedTestResultMessage(FailedTestResultMessage failedTestResultMessage)
+        internal void OnTestResultMessages(TestResultMessages testResultMessage)
         {
-            FailedTestResultReceived?.Invoke(this, new FailedTestResultEventArgs { FailedTestResultMessage = failedTestResultMessage });
+            TestResultsReceived?.Invoke(this, new TestResultEventArgs
+            {
+                ExecutionId = testResultMessage.ExecutionId,
+                SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
+            });
         }
 
-        internal void OnFileArtifactInfo(FileArtifactInfo fileArtifactInfo)
+        internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
         {
-            FileArtifactInfoReceived?.Invoke(this, new FileArtifactInfoEventArgs { FileArtifactInfo = fileArtifactInfo });
+            FileArtifactsReceived?.Invoke(this, new FileArtifactEventArgs { FileArtifacts = fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid)).ToArray() });
         }
 
         internal void OnSessionEvent(TestSessionEvent sessionEvent)
         {
-            SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = sessionEvent });
+            SessionEventReceived?.Invoke(this, new SessionEventArgs { SessionEvent = new TestSession(sessionEvent.SessionType, sessionEvent.SessionUid, sessionEvent.ExecutionId) });
+        }
+
+        public override string ToString()
+        {
+            StringBuilder builder = new();
+
+            if (!string.IsNullOrEmpty(_module.DllOrExePath))
+            {
+                builder.Append($"DLL: {_module.DllOrExePath}");
+            }
+
+            if (!string.IsNullOrEmpty(_module.ProjectPath))
+            {
+                builder.Append($"Project: {_module.ProjectPath}");
+            };
+
+            if (!string.IsNullOrEmpty(_module.TargetFramework))
+            {
+                builder.Append($"Target Framework: {_module.TargetFramework}");
+            };
+
+            return builder.ToString();
+        }
+
+        public void Dispose()
+        {
+            foreach (var namedPipeServer in _testAppPipeConnections)
+            {
+                namedPipeServer.Dispose();
+            }
+
+            WaitOnTestApplicationPipeConnectionLoop();
         }
     }
 }

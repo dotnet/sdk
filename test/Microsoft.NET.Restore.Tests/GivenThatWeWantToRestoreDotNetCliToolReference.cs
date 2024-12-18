@@ -50,7 +50,7 @@ namespace Microsoft.NET.Restore.Tests
 
             DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
             DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
-            NuGetConfigWriter.Write(toolReferenceProjectInstance.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed, nupkgPath);
+            NuGetConfigWriter.Write(toolReferenceProjectInstance.TestRoot, nupkgPath);
 
             RestoreCommand restoreCommand =
                 toolReferenceProjectInstance.GetRestoreCommand(log: Log, relativePath: toolReferenceProject.Name);

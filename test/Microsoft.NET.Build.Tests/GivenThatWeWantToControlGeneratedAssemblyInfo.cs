@@ -855,11 +855,11 @@ class Program
                 .Should()
                 .Pass();
 
-            var result = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name))
-                .Execute();
+            var exePath = Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, testProject.Name + ".dll");
+
+            var result = new DotnetCommand(Log, "exec", exePath).Execute();
             result.Should().Pass();
-            result.StdOut.StripTerminalLoggerProgressIndicators().Should().BeEquivalentTo(expectedFrameworkDisplayName);
+            result.StdOut.Should().BeEquivalentTo(expectedFrameworkDisplayName);
         }
     }
 }

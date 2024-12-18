@@ -7,7 +7,7 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "Creates a new NUnit test class",
   "groupIdentity": "NUnit3.DotNetNew.ItemTemplate",
-  "precedence": "11000",
+  "precedence": "12000",
   "identity": "NUnit3.DotNetNew.ItemTemplate.CSharp.9.0",
   "shortName": "nunit-test",
   "tags": {

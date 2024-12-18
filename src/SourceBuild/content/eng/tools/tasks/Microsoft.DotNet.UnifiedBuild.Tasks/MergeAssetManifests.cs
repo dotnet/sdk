@@ -33,7 +33,13 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         /// </summary>
         public string VmrBuildNumber { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Vmr Vertical Name, e.g. "Android_Shortstack_arm". Allowed to be empty for non official builds.
+        /// </summary>
+        public string VerticalName { get; set; } = string.Empty;
+
         private static readonly string _buildIdAttribute = "BuildId";
+        private static readonly string _verticalNameAttribute = "VerticalName";
         private static readonly string _azureDevOpsBuildNumberAttribute = "AzureDevOpsBuildNumber";
         private static readonly string[] _ignoredAttributes = [
             _buildIdAttribute,
@@ -54,6 +60,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             // Set the BuildId and AzureDevOpsBuildNumber attributes to the value of VmrBuildNumber
             mergedManifestRoot.SetAttributeValue(_buildIdAttribute, VmrBuildNumber);
             mergedManifestRoot.SetAttributeValue(_azureDevOpsBuildNumberAttribute, VmrBuildNumber);
+            mergedManifestRoot.SetAttributeValue(_verticalNameAttribute, VerticalName);
 
             List<XElement> packageElements = new();
             List<XElement> blobElements = new();
@@ -69,7 +76,11 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             XDocument verticalManifest = new(new XElement(mergedManifestRoot.Name, mergedManifestRoot.Attributes(), packageElements, blobElements));
 
-            File.WriteAllText(MergedAssetManifestOutputPath, verticalManifest.ToString());
+            FileInfo outputFileInfo = new(MergedAssetManifestOutputPath);
+            outputFileInfo.Directory!.Create();
+            File.WriteAllText(outputFileInfo.FullName, verticalManifest.ToString());
+
+            Log.LogMessage(MessageImportance.High, $"Merged asset manifest written to {MergedAssetManifestOutputPath}");
 
             return !Log.HasLoggedErrors;
         }

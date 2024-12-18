@@ -1,16 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.Sdk.Publish.Tasks.Properties;
+using CultureInfo = System.Globalization.CultureInfo;
+using Framework = Microsoft.Build.Framework;
+using Utilities = Microsoft.Build.Utilities;
+
 namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
-    using System;
-    using System.Linq;
-    using Microsoft.NET.Sdk.Publish.Tasks.Properties;
-    using CultureInfo = System.Globalization.CultureInfo;
-    using Framework = Microsoft.Build.Framework;
-    using IO = System.IO;
-    using Utilities = Microsoft.Build.Utilities;
-
     /// <summary>
     /// The MSDeploy task, which is a wrapper around msdeploy.exe
     /// </summary>
@@ -152,19 +149,19 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     
         */
 
-        private string m_exePath;
-        private string m_disableRule;
-        private string m_verb;
-        private string m_failureLevel;
-        private string m_xpath;
-        private string m_enableRule;
-        private string m_replace;
-        private string m_skip;
-        private string m_disableLink;
-        private string m_enableLink;
-        private string m_disableSkipDirective;
-        private string m_enableSkipDirective;
-        private string m_lastCommandLine;
+        private string? m_exePath;
+        private string? m_disableRule;
+        private string? m_verb;
+        private string? m_failureLevel;
+        private string? m_xpath;
+        private string? m_enableRule;
+        private string? m_replace;
+        private string? m_skip;
+        private string? m_disableLink;
+        private string? m_enableLink;
+        private string? m_disableSkipDirective;
+        private string? m_enableSkipDirective;
+        private string? m_lastCommandLine;
         private bool m_xml;
         private bool m_whatif;
         private bool m_useChecksum;
@@ -174,27 +171,25 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         private int m_retryAttempts;
         private int m_retryInterval;
         private bool m_useDoubleQuoteForValue = false;
-        private string m_strValueQuote = null;
+        private string? m_strValueQuote = null;
 
         //public const string AppHostConfigDirectory = "-appHostConfigDir";
         // *    public const string WebServerDirectory = "-webServerDir";
         //      public const string WebServerManifest = "-webServerManifest";
 
-        public string WebServerAppHostConfigDirectory { get; set; }
-        public string WebServerDirectory { get; set; }
-        public string WebServerManifest { get; set; }
+        public string? WebServerAppHostConfigDirectory { get; set; }
+        public string? WebServerDirectory { get; set; }
+        public string? WebServerManifest { get; set; }
 
-
-        private Framework.ITaskItem[] m_sourceITaskItem = null;
-        private Framework.ITaskItem[] m_destITaskItem = null;
-        private Framework.ITaskItem[] m_replaceRuleItemsITaskItem = null;
-        private Framework.ITaskItem[] m_skipRuleItemsITaskItem = null;
-        private Framework.ITaskItem[] m_declareParameterItems = null;
-        private Framework.ITaskItem[] m_importDeclareParametersItems = null;
-        private Framework.ITaskItem[] m_simpleSetParamterItems = null;
-        private Framework.ITaskItem[] m_importSetParametersItems = null;
-        private Framework.ITaskItem[] m_setParamterItems = null;
-
+        private Framework.ITaskItem[]? m_sourceITaskItem = null;
+        private Framework.ITaskItem[]? m_destITaskItem = null;
+        private Framework.ITaskItem[]? m_replaceRuleItemsITaskItem = null;
+        private Framework.ITaskItem[]? m_skipRuleItemsITaskItem = null;
+        private Framework.ITaskItem[]? m_declareParameterItems = null;
+        private Framework.ITaskItem[]? m_importDeclareParametersItems = null;
+        private Framework.ITaskItem[]? m_simpleSetParameterItems = null;
+        private Framework.ITaskItem[]? m_importSetParametersItems = null;
+        private Framework.ITaskItem[]? m_setParameterItems = null;
 
         private bool m_previewOnly = false;
 
@@ -223,11 +218,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             public static readonly string DbDacFx = ".dacpac";
         }
 
-
         /// <summary>
         /// Location for the MSdeploy.exe path
         /// </summary>
-        public string ExePath
+        public string? ExePath
         {
             get
             {
@@ -294,27 +288,27 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             set { m_exePath = value; }
         }
 
-        public string DisableRule
+        public string? DisableRule
         {
             get { return m_disableRule; }
             set { m_disableRule = value; }
         }
 
         [Framework.Required]
-        public string Verb
+        public string? Verb
         {
             get { return m_verb; }
             set { m_verb = value; }
         }
 
         [Framework.Required]
-        public Framework.ITaskItem[] Source
+        public Framework.ITaskItem[]? Source
         {
             get { return m_sourceITaskItem; }
             set { m_sourceITaskItem = value; }
         }
 
-        public Framework.ITaskItem[] Destination
+        public Framework.ITaskItem[]? Destination
         {
             get { return m_destITaskItem; }
             set { m_destITaskItem = value; }
@@ -344,7 +338,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             get { return m_verbose; }
             set { m_verbose = value; }
         }
-        public string FailureLevel
+        public string? FailureLevel
         {
             get { return m_failureLevel; }
             set { m_failureLevel = value; }
@@ -354,33 +348,33 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             get { return m_xml; }
             set { m_xml = value; }
         }
-        public string XPath
+        public string? XPath
         {
             get { return m_xpath; }
             set { m_xpath = value; }
         }
-        public string EnableRule
+        public string? EnableRule
         {
             get { return m_enableRule; }
             set { m_enableRule = value; }
         }
-        public string Replace
+        public string? Replace
         {
             get { return m_replace; }
             set { m_replace = value; }
         }
-        public string Skip
+        public string? Skip
         {
             get { return m_skip; }
             set { m_skip = value; }
         }
-        public string DisableLink
+        public string? DisableLink
         {
             get { return m_disableLink; }
             set { m_disableLink = value; }
         }
 
-        public string EnableLink
+        public string? EnableLink
         {
             get { return m_enableLink; }
             set { m_enableLink = value; }
@@ -412,65 +406,63 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-        public Framework.ITaskItem[] ReplaceRuleItems
+        public Framework.ITaskItem[]? ReplaceRuleItems
         {
             get { return m_replaceRuleItemsITaskItem; }
             set { m_replaceRuleItemsITaskItem = value; }
         }
 
-        public Framework.ITaskItem[] SkipRuleItems
+        public Framework.ITaskItem[]? SkipRuleItems
         {
             get { return m_skipRuleItemsITaskItem; }
             set { m_skipRuleItemsITaskItem = value; }
         }
 
-        public string DisableSkipDirective
+        public string? DisableSkipDirective
         {
             get { return m_disableSkipDirective; }
             set { m_disableSkipDirective = value; }
         }
 
-        public string EnableSkipDirective
+        public string? EnableSkipDirective
         {
             get { return m_enableSkipDirective; }
             set { m_enableSkipDirective = value; }
         }
 
-        public Framework.ITaskItem[] DeclareParameterItems
+        public Framework.ITaskItem[]? DeclareParameterItems
         {
             get { return m_declareParameterItems; }
             set { m_declareParameterItems = value; }
         }
-        public Framework.ITaskItem[] ImportDeclareParametersItems
+        public Framework.ITaskItem[]? ImportDeclareParametersItems
         {
             get { return m_importDeclareParametersItems; }
             set { m_importDeclareParametersItems = value; }
         }
 
-
-        public Framework.ITaskItem[] ImportSetParametersItems
+        public Framework.ITaskItem[]? ImportSetParametersItems
         {
             get { return m_importSetParametersItems; }
             set { m_importSetParametersItems = value; }
         }
 
-        public Framework.ITaskItem[] SimpleSetParameterItems
+        public Framework.ITaskItem[]? SimpleSetParameterItems
         {
-            get { return m_simpleSetParamterItems; }
-            set { m_simpleSetParamterItems = value; }
+            get { return m_simpleSetParameterItems; }
+            set { m_simpleSetParameterItems = value; }
         }
 
-
-        public Framework.ITaskItem[] SetParameterItems
+        public Framework.ITaskItem[]? SetParameterItems
         {
-            get { return m_setParamterItems; }
-            set { m_setParamterItems = value; }
+            get { return m_setParameterItems; }
+            set { m_setParameterItems = value; }
         }
 
-        public Framework.ITaskItem[] AdditionalDestinationProviderOptions { get; set; }
+        public Framework.ITaskItem[]? AdditionalDestinationProviderOptions { get; set; }
 
-        string _userAgent;
-        public string UserAgent
+        private string? _userAgent;
+        public string? UserAgent
         {
             get { return _userAgent; }
             set
@@ -533,7 +525,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 return base.SkipTaskExecution();
         }
 
-
         protected override Framework.MessageImportance StandardOutputLoggingImportance
         {
             get
@@ -567,7 +558,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 if (bSuccess)
                     Log.LogMessage(Framework.MessageImportance.Normal, Resources.MSDEPLOY_EXE_Succeeded);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 // Log Failure
                 Log.LogMessage(Framework.MessageImportance.High, Resources.MSDEPLOY_EXE_Failed);
@@ -578,7 +569,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 string type = string.Empty;
                 string path = string.Empty;
-                Framework.ITaskItem taskItem = null;
+                Framework.ITaskItem? taskItem = null;
                 if (Destination != null && Destination.GetLength(0) == 1)
                 {
                     taskItem = Destination[0];
@@ -598,63 +589,58 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return bSuccess;
         }
 
-
-
         // utility function to add the replace rule for the option
-        public static void AddReplaceRulesToOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[] replaceRuleItems, string valueQuoteChar)
+        public static void AddReplaceRulesToOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[]? replaceRuleItems, string? valueQuoteChar)
         {
-            if (commandLineBuilder != null
-                && replaceRuleItems != null)// Dev10 bug 496639 foreach will throw the exception if the replaceRuleItem is null
+            if (commandLineBuilder is not null && replaceRuleItems is not null)// Dev10 bug 496639 foreach will throw the exception if the replaceRuleItem is null
             {
-                System.Collections.Generic.List<string> arguments = new(6);
+                List<string> arguments = new(6);
 
                 foreach (Framework.ITaskItem item in replaceRuleItems)
                 {
                     arguments.Clear();
-                    Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(MsDeploy.ReplaceRuleMetadata), valueQuoteChar);
+                    Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(ReplaceRuleMetadata), valueQuoteChar);
                     commandLineBuilder.AppendSwitchUnquotedIfNotNull("-replace:", arguments.Count == 0 ? null : string.Join(",", arguments.ToArray()));
                 }
             }
         }
 
-        public static void AddSkipDirectiveToBaseOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[] skipRuleItems, string valueQuoteChar)
+        public static void AddSkipDirectiveToBaseOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[]? skipRuleItems, string? valueQuoteChar)
         {
-            if (commandLineBuilder != null
-                && skipRuleItems != null)// Dev10 bug 496639 foreach will throw the exception if the replaceRuleItem is null
+            if (commandLineBuilder is not null && skipRuleItems is not null)// Dev10 bug 496639 foreach will throw the exception if the replaceRuleItem is null
             {
-                System.Collections.Generic.List<string> arguments = new(6);
+                List<string> arguments = new(6);
 
                 foreach (Framework.ITaskItem item in skipRuleItems)
                 {
                     arguments.Clear();
-                    Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(MsDeploy.SkipRuleMetadata), valueQuoteChar);
+                    Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(SkipRuleMetadata), valueQuoteChar);
                     commandLineBuilder.AppendSwitchUnquotedIfNotNull("-skip:", arguments.Count == 0 ? null : string.Join(",", arguments.ToArray()));
                 }
             }
         }
 
-
-        public static void AddDeclareParameterToCommandArgument(System.Collections.Generic.List<string> arguments,
-                                                                Framework.ITaskItem item,
-                                                                string valueQuote,
-                                                                System.Collections.Generic.Dictionary<string, string> lookupDictionary)
+        public static void AddDeclareParameterToCommandArgument(List<string> arguments,
+                                                                Framework.ITaskItem? item,
+                                                                string? valueQuote,
+                                                                Dictionary<string, string> lookupDictionary)
         {
-            if (arguments != null && item != null && lookupDictionary != null)
+            if (arguments is not null && item is not null && lookupDictionary is not null)
             {
                 // special for the name
                 arguments.Clear();
-                System.Collections.Generic.List<string> idenities = new(6);
+                List<string> idenities = new(6);
 
                 string name = item.ItemSpec;
                 if (!string.IsNullOrEmpty(name))
                 {
-                    string element = item.GetMetadata(ExistingParameterValiationMetadata.Element.ToString());
+                    string element = item.GetMetadata(ExistingParameterValidationMetadata.Element.ToString());
                     if (string.IsNullOrEmpty(element))
                         element = "parameterEntry";
                     if (string.Compare(element, "parameterEntry", StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         idenities.Add(name);
-                        foreach (string dPIdentity in Enum.GetNames(typeof(MsDeploy.ExistingDeclareParameterMetadata)))
+                        foreach (string dPIdentity in Enum.GetNames(typeof(ExistingDeclareParameterMetadata)))
                         {
                             idenities.Add(item.GetMetadata(dPIdentity));
                         }
@@ -664,7 +650,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                         {
                             string nameValue = Utility.PutValueInQuote(name, valueQuote);
                             arguments.Add(string.Concat("name=", nameValue));
-                            System.Type enumType = lookupDictionary.ContainsValue(name) ? typeof(MsDeploy.ExistingDeclareParameterMetadata) : typeof(MsDeploy.DeclareParameterMetadata);
+                            Type enumType = lookupDictionary.ContainsValue(name) ? typeof(ExistingDeclareParameterMetadata) : typeof(DeclareParameterMetadata);
                             // the rest, build on the Enum Name
                             Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, enumType, valueQuote);
                             lookupDictionary.Add(identity, name);
@@ -678,19 +664,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-
         /// <summary>
         /// Utility to build DeclareParameterOptions
         /// </summary>
         /// <param name="commandLineBuilder"></param>
         /// <param name="items"></param>
-        public static void AddDeclareParametersOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[] originalItems, string valueQuote, bool foptimisticParameterDefaultValue)
+        public static void AddDeclareParametersOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[]? originalItems, string? valueQuote, bool foptimisticParameterDefaultValue)
         {
-            System.Collections.Generic.IList<Framework.ITaskItem> items = Utility.SortParametersTaskItems(originalItems, foptimisticParameterDefaultValue, DeclareParameterMetadata.DefaultValue.ToString());
-            if (commandLineBuilder != null && items != null)
+            IList<Framework.ITaskItem> items = Utility.SortParametersTaskItems(originalItems, foptimisticParameterDefaultValue, DeclareParameterMetadata.DefaultValue.ToString());
+            if (commandLineBuilder is not null && items is not null)
             {
-                System.Collections.Generic.List<string> arguments = new(6);
-                System.Collections.Generic.Dictionary<string, string> lookupDictionary = new(items.Count);
+                List<string> arguments = new(6);
+                Dictionary<string, string> lookupDictionary = new(items.Count);
 
                 foreach (Framework.ITaskItem item in items)
                 {
@@ -700,24 +685,20 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-
-        public static void AddImportDeclareParametersFilesOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[] items)
+        public static void AddImportDeclareParametersFilesOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[]? items)
         {
             AddImportParametersFilesOptions(commandLineBuilder, "-declareParamFile:", items);
         }
 
-        public static void AddImportSetParametersFilesOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[] items)
+        public static void AddImportSetParametersFilesOptions(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[]? items)
         {
             AddImportParametersFilesOptions(commandLineBuilder, "-setParamFile:", items);
         }
 
-        internal static void AddImportParametersFilesOptions(Utilities.CommandLineBuilder commandLineBuilder, string parameterFlag, Framework.ITaskItem[] items)
+        internal static void AddImportParametersFilesOptions(Utilities.CommandLineBuilder commandLineBuilder, string parameterFlag, Framework.ITaskItem[]? items)
         {
-            if (commandLineBuilder != null
-                && !string.IsNullOrEmpty(parameterFlag)
-                && items != null)// Dev10 bug 496639 foreach will throw the exception if the replaceRuleItem is null
+            if (commandLineBuilder is not null && !string.IsNullOrEmpty(parameterFlag) && items is not null)// Dev10 bug 496639 foreach will throw the exception if the replaceRuleItem is null
             {
-
                 foreach (Framework.ITaskItem item in items)
                 {
                     string fileName = item.ItemSpec;
@@ -729,18 +710,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-
         /// <summary>
-        /// Utility function to set SimpleeSyncParameter Name/Value
+        /// Utility function to set SimpleSyncParameter Name/Value
         /// </summary>
         /// <param name="commandLineBuilder"></param>
         /// <param name="items"></param>
-        public static void AddSimpleSetParametersToObject(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[] originalItems, string valueQuoteChar, bool foptimisticParameterDefaultValue)
+        public static void AddSimpleSetParametersToObject(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[]? originalItems, string? valueQuoteChar, bool foptimisticParameterDefaultValue)
         {
-            System.Collections.Generic.IList<Framework.ITaskItem> items = Utility.SortParametersTaskItems(originalItems, foptimisticParameterDefaultValue, SimpleSyncParameterMetadata.Value.ToString());
-            if (commandLineBuilder != null && items != null)
+            IList<Framework.ITaskItem> items = Utility.SortParametersTaskItems(originalItems, foptimisticParameterDefaultValue, SimpleSyncParameterMetadata.Value.ToString());
+            if (commandLineBuilder is not null && items is not null)
             {
-                System.Collections.Generic.List<string> arguments = new(6);
+                List<string> arguments = new(6);
                 foreach (Framework.ITaskItem item in items)
                 {
                     arguments.Clear();
@@ -754,7 +734,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     }
                     // the rest, build on the enum name
 
-                    Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(MsDeploy.SimpleSyncParameterMetadata), valueQuoteChar);
+                    Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(SimpleSyncParameterMetadata), valueQuoteChar);
                     commandLineBuilder.AppendSwitchUnquotedIfNotNull("-setParam:", arguments.Count == 0 ? null : string.Join(",", arguments.ToArray()));
                 }
             }
@@ -765,41 +745,41 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// </summary>
         /// <param name="commandLineBuilder"></param>
         /// <param name="items"></param>
-        public static void AddSetParametersToObject(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[] originalItems, string valueQuote, bool foptimisticParameterDefaultValue)
+        public static void AddSetParametersToObject(Utilities.CommandLineBuilder commandLineBuilder, Framework.ITaskItem[]? originalItems, string? valueQuote, bool foptimisticParameterDefaultValue)
         {
-            System.Collections.Generic.IList<Framework.ITaskItem> items = Utility.SortParametersTaskItems(originalItems, foptimisticParameterDefaultValue, ExistingSyncParameterMetadata.Value.ToString());
-            if (commandLineBuilder != null && items != null)
+            IList<Framework.ITaskItem> items = Utility.SortParametersTaskItems(originalItems, foptimisticParameterDefaultValue, ExistingSyncParameterMetadata.Value.ToString());
+            if (commandLineBuilder is not null && items is not null)
             {
-                System.Collections.Generic.List<string> arguments = new(6);
-                System.Collections.Generic.Dictionary<string, string> lookupDictionary = new(items.Count);
-                System.Collections.Generic.Dictionary<string, string> nameValueDictionary = new(items.Count, StringComparer.OrdinalIgnoreCase);
+                List<string> arguments = new(6);
+                Dictionary<string, string> lookupDictionary = new(items.Count);
+                Dictionary<string, string> nameValueDictionary = new(items.Count, StringComparer.OrdinalIgnoreCase);
 
                 foreach (Framework.ITaskItem item in items)
                 {
                     arguments.Clear();
 
-                    System.Collections.Generic.List<string> idenities = new(6);
+                    List<string> identities = new(6);
 
                     string name = item.ItemSpec;
                     if (!string.IsNullOrEmpty(name))
                     {
-                        string element = item.GetMetadata(ExistingParameterValiationMetadata.Element.ToString());
+                        string element = item.GetMetadata(ExistingParameterValidationMetadata.Element.ToString());
                         if (string.IsNullOrEmpty(element))
                             element = "parameterEntry";
 
                         if (string.Compare(element, "parameterEntry", StringComparison.OrdinalIgnoreCase) == 0)
                         {
 
-                            idenities.Add(name);
-                            foreach (string dPIdentity in Enum.GetNames(typeof(MsDeploy.ExistingDeclareParameterMetadata)))
+                            identities.Add(name);
+                            foreach (string dPIdentity in Enum.GetNames(typeof(ExistingDeclareParameterMetadata)))
                             {
-                                idenities.Add(item.GetMetadata(dPIdentity));
+                                identities.Add(item.GetMetadata(dPIdentity));
                             }
 
-                            string identity = string.Join(",", idenities.ToArray());
+                            string identity = string.Join(",", identities.ToArray());
                             if (!lookupDictionary.ContainsKey(identity))
                             {
-                                string data = null;
+                                string? data = null;
                                 bool fExistingName = nameValueDictionary.ContainsKey(name);
 
                                 if (nameValueDictionary.ContainsKey(name))
@@ -813,7 +793,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                                 }
 
                                 // the rest, build on the Enum Name
-                                Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(MsDeploy.ExistingDeclareParameterMetadata), valueQuote);
+                                Utility.BuildArgumentsBaseOnEnumTypeName(item, arguments, typeof(ExistingDeclareParameterMetadata), valueQuote);
                                 if (arguments.Count > 0 && !string.IsNullOrEmpty(data))
                                 {
 #if NET472
@@ -838,14 +818,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-
-
-        public static void AddDestinationProviderSettingToObject(Utilities.CommandLineBuilder commandLineBuilder, string dest, Framework.ITaskItem[] items, string valueQuoteChar,
-                                                                Framework.ITaskItem[] additionalProviderItems, MSDeploy msdeploy)
+        public static void AddDestinationProviderSettingToObject(Utilities.CommandLineBuilder commandLineBuilder, string? dest, Framework.ITaskItem[]? items, string? valueQuoteChar,
+                                                                Framework.ITaskItem[]? additionalProviderItems, MSDeploy msdeploy)
         {
             //commandLineBuilder.AppendSwitchUnquotedIfNotNull("-source:", m_source);
             //commandLineBuilder.AppendSwitchUnquotedIfNotNull("-dest:", m_dest);
-            System.Collections.Generic.List<string> arguments = new(6);
+            List<string> arguments = new(6);
 
             if (items != null && items.GetLength(0) == 1)
             {
@@ -880,8 +858,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     }
                     else
                     {
-                        MsDeploy.Utility.IISExpressMetadata expressMetadata;
-                        if (Enum.TryParse<MsDeploy.Utility.IISExpressMetadata>(name, out expressMetadata))
+                        Utility.IISExpressMetadata expressMetadata;
+                        if (Enum.TryParse(name, out expressMetadata))
                         {
                             string value = taskItem.GetMetadata(name);
                             if (!string.IsNullOrEmpty(value))
@@ -900,10 +878,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                                 }
                             }
                         }
-
                     }
                 }
             }
+
             // If additional parameters are specified, we add these too. the itemSpec will be something like iisApp, contentPath, etc and 
             // each item should have a name\value pair defined as metadata. Each provider will be written as itemSpec.Name=Value
             if (additionalProviderItems != null)
@@ -927,17 +905,15 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return;
         }
 
-
         /// <summary>
         /// Utility function to help to generate Switch per item
         /// </summary>
         /// <param name="commandLine"></param>
         /// <param name="strSwitch"></param>
         /// <param name="args"></param>
-        private static void GenerateSwitchPerItem(Utilities.CommandLineBuilder commandLine, string strSwitch, string args)
+        private static void GenerateSwitchPerItem(Utilities.CommandLineBuilder commandLine, string strSwitch, string? args)
         {
-
-            if (!string.IsNullOrEmpty(args))
+            if (args is not null && args.Length != 0)
             {
                 foreach (string dl in args.Split(new char[] { ';' }))
                 {
@@ -947,16 +923,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     }
                 }
             }
-
-
         }
 
-        internal static void IncorporateSettingsFromHostObject(ref Framework.ITaskItem[] skipRuleItems, Framework.ITaskItem[] destProviderSetting, System.Collections.Generic.IEnumerable<Framework.ITaskItem> hostObject)
+        internal static void IncorporateSettingsFromHostObject(ref Framework.ITaskItem[]? skipRuleItems, Framework.ITaskItem[]? destProviderSetting, IEnumerable<Framework.ITaskItem>? hostObject)
         {
             if (hostObject != null)
             {
                 //retrieve user credentials
-                Framework.ITaskItem credentialItem = hostObject.FirstOrDefault<Framework.ITaskItem>(p => p.ItemSpec == VSMsDeployTaskHostObject.CredentailItemSpecName);
+                Framework.ITaskItem? credentialItem = hostObject.FirstOrDefault(p => p.ItemSpec == VSMsDeployTaskHostObject.CredentialItemSpecName);
                 if (credentialItem != null && destProviderSetting != null && destProviderSetting[0] != null)
                 {
                     Framework.ITaskItem destSettings = destProviderSetting[0];
@@ -969,7 +943,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 }
 
                 //retrieve skip rules
-                System.Collections.Generic.IEnumerable<Framework.ITaskItem> skips = hostObject.Where(item => item.ItemSpec == VSMsDeployTaskHostObject.SkipFileItemSpecName);
+                IEnumerable<Framework.ITaskItem> skips = hostObject.Where(item => item.ItemSpec == VSMsDeployTaskHostObject.SkipFileItemSpecName);
                 if (skips != null)
                 {
                     if (skipRuleItems != null)
@@ -990,7 +964,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         protected override string GenerateCommandLineCommands()
         {
             Utilities.CommandLineBuilder commandLine = new();
-            IncorporateSettingsFromHostObject(ref m_skipRuleItemsITaskItem, Destination, HostObject as System.Collections.Generic.IEnumerable<Framework.ITaskItem>);
+            IncorporateSettingsFromHostObject(ref m_skipRuleItemsITaskItem, Destination, HostObject as IEnumerable<Framework.ITaskItem>);
             AddDestinationProviderSettingToObject(commandLine, "-source:", Source, m_strValueQuote, null, this);
             AddDestinationProviderSettingToObject(commandLine, "-dest:", Destination, m_strValueQuote, AdditionalDestinationProviderOptions, this);
 
@@ -1014,8 +988,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             AddDeclareParametersOptions(commandLine, m_declareParameterItems, m_strValueQuote, OptimisticParameterDefaultValue);
 
             AddImportSetParametersFilesOptions(commandLine, m_importSetParametersItems);
-            AddSimpleSetParametersToObject(commandLine, m_simpleSetParamterItems, m_strValueQuote, OptimisticParameterDefaultValue);
-            AddSetParametersToObject(commandLine, m_setParamterItems, m_strValueQuote, OptimisticParameterDefaultValue);
+            AddSimpleSetParametersToObject(commandLine, m_simpleSetParameterItems, m_strValueQuote, OptimisticParameterDefaultValue);
+            AddSetParametersToObject(commandLine, m_setParameterItems, m_strValueQuote, OptimisticParameterDefaultValue);
 
             if (m_xml) commandLine.AppendSwitch("-xml");
             if (m_whatif) commandLine.AppendSwitch("-whatif");
@@ -1062,7 +1036,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <returns>path to aspnet_merge.exe, null if not found</returns>
         protected override string GenerateFullPathToTool()
         {
-            string result = Path.Combine(ExePath, ToolName);
+            string result = ExePath is null ? string.Empty : Path.Combine(ExePath, ToolName);
 
             if (string.Compare(ExePath, "%MSDeployPath%", StringComparison.OrdinalIgnoreCase) == 0)
             {
@@ -1077,10 +1051,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <summary>
         /// Validate the task arguments, log any warnings/errors
         /// </summary>
-        /// <returns>true if arguments are corrent enough to continue processing, false otherwise</returns>
+        /// <returns>true if arguments are current enough to continue processing, false otherwise</returns>
         protected override bool ValidateParameters()
         {
-            if (Source != null && Source.GetLength(0) > 1)
+            if (Source is not null && Source.GetLength(0) > 1)
             {
                 Log.LogError(string.Format(CultureInfo.CurrentCulture, Resources.MSDEPLOY_InvalidSourceCount, Source.GetLength(0)), null);
                 return false;
@@ -1093,7 +1067,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
             else
             {
-                string[] validVerbs = null;
+                string[]? validVerbs = null;
                 bool fNullDestination = false;
                 if (Destination == null || Destination.GetLength(0) == 0)
                 {
@@ -1110,7 +1084,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     validVerbs = new string[] {
                         "delete",
                     };
-
                 }
                 else
                 {
@@ -1129,7 +1102,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                         }
                     }
                 }
-                Log.LogError(string.Format(CultureInfo.CurrentCulture, Resources.MSDEPLOY_InvalidVerbForTheInput, Verb, Source[0].ItemSpec, (fNullDestination) ? null : Destination[0].ItemSpec), null);
+                Log.LogError(string.Format(CultureInfo.CurrentCulture, Resources.MSDEPLOY_InvalidVerbForTheInput, Verb, Source?[0].ItemSpec, (fNullDestination) ? null : Destination?[0].ItemSpec), null);
                 return false;
             }
         }

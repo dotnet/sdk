@@ -74,11 +74,6 @@
         <target state="translated">Verze menší než {0} balíčku {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
-        <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
-        <target state="translated">Přeskočit ověřování podepisování balíčku NuGet. Ověřování podepisování balíčku NuGet není k dispozici na Linuxu nebo v macOS https://aka.ms/workloadskippackagevalidation.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
         <target state="translated">Ověřilo se, že balíček NuGet {0} má platný podpis.</target>

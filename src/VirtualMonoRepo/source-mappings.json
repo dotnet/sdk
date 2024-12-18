@@ -55,11 +55,7 @@
         },
         {
             "name": "aspnetcore",
-            "defaultRemote": "https://github.com/dotnet/aspnetcore",
-            "exclude": [
-                // Non-OSS license - https://github.com/dotnet/source-build/issues/3537
-                "src/Installers/Windows/AspNetCoreModule-Setup/**/*"
-            ]
+            "defaultRemote": "https://github.com/dotnet/aspnetcore"
         },
         {
             "name": "cecil",
@@ -159,8 +155,8 @@
             "defaultRemote": "https://github.com/dotnet/templating"
         },
         {
-            "name": "test-templates",
-            "defaultRemote": "https://github.com/dotnet/test-templates"
+            "name": "testfx",
+            "defaultRemote": "https://github.com/microsoft/testfx"
         },
         {
             "name": "vstest",
@@ -199,11 +195,7 @@
         },
         {
             "name": "wpf",
-            "defaultRemote": "https://github.com/dotnet/wpf",
-            "exclude": [
-                // Non-OSS license - https://github.com/dotnet/source-build/issues/4590
-                "src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/Resources/ColorProfiles/sRGB.icm"
-            ]
+            "defaultRemote": "https://github.com/dotnet/wpf"
         },
         {
             "name": "windowsdesktop",

@@ -40,13 +40,16 @@ namespace Microsoft.DotNet.BuildServer
             execute(_commandFactory.Create("exec", [VBCSCompilerPath, s_shutdownArg]), ref errors);
 
             // Shutdown toolset compilers.
+            Reporter.Verbose.WriteLine($"Shutting down '{s_toolsetPackageName}' compilers.");
             var nuGetPackageRoot = SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(root: null));
             var toolsetPackageDirectory = Path.Join(nuGetPackageRoot, s_toolsetPackageName);
+            Reporter.Verbose.WriteLine($"Enumerating '{toolsetPackageDirectory}'.");
             if (Directory.Exists(toolsetPackageDirectory))
             {
                 foreach (var versionDirectory in Directory.EnumerateDirectories(toolsetPackageDirectory))
                 {
                     var vbcsCompilerPath = Path.Join(versionDirectory, s_vbcsCompilerExeFileName);
+                    Reporter.Verbose.WriteLine($"Found '{vbcsCompilerPath}'.");
                     if (File.Exists(vbcsCompilerPath))
                     {
                         execute(CommandFactoryUsingResolver.Create(vbcsCompilerPath, [s_shutdownArg]), ref errors);

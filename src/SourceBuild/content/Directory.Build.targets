@@ -31,4 +31,35 @@
     </PropertyGroup>
   </Target>
 
+  <ItemGroup>
+    <!-- Binplace all assets and packages to ArtifactsStagingDir. -->
+    <BinPlaceDir Include="$(ArtifactsStagingDir)" Condition="'$(ArtifactsStagingDir)' != ''" />
+  </ItemGroup>
+
+  <Target Name="BinPlaceFiles"
+          AfterTargets="Build"
+          Condition="'@(BinPlaceDir)' != '' and '@(BinPlaceFile)' != ''"
+          Inputs="@(BinPlaceDir);%(BinPlaceDir.Identity)"
+          Outputs="unused">
+    <PropertyGroup>
+      <BinPlaceUseHardlinksIfPossible Condition="'$(BinPlaceUseHardlinksIfPossible)' == ''">true</BinPlaceUseHardlinksIfPossible>
+      <_BinPlaceDir>%(BinPlaceDir.Identity)</_BinPlaceDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BinPlaceFileWithFullTargetPath Include="@(BinPlaceFile)">
+        <TargetPath Condition="'%(BinPlaceFile.TargetPath)' != ''">%(BinPlaceFile.TargetPath)</TargetPath>
+        <TargetPath Condition="'%(BinPlaceFile.TargetPath)' == ''">$([MSBuild]::MakeRelative('$(ArtifactsDir)', '%(BinPlaceFile.Identity)'))</TargetPath>
+      </_BinPlaceFileWithFullTargetPath>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_BinPlaceFileWithFullTargetPath)"
+          DestinationFiles="@(_BinPlaceFileWithFullTargetPath -> '$([MSBuild]::EnsureTrailingSlash('$(_BinPlaceDir)'))%(TargetPath)')"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="$(BinPlaceUseHardlinksIfPossible)" />
+  </Target>
+
 </Project>

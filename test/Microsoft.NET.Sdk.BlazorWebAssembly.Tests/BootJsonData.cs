@@ -240,11 +240,6 @@ namespace Microsoft.NET.Sdk.WebAssembly
         /// Load custom icu file provided by the developer.
         /// </summary>
         Custom = 3,
-
-        /// <summary>
-        /// Use the reduced icudt_hybrid.dat file
-        /// </summary>
-        Hybrid = 4,
     }
 
     [DataContract]

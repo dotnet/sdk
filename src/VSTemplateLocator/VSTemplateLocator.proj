@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <!-- For product build, this project only builds in the second build pass as it depends on assets from other
+         verticals that are built in the first build pass. -->
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
+    <IsPackable Condition="'$(OS)' == 'Windows_NT' and
+                           '$(Architecture)' == 'x64' and
+                           '$(PgoInstrument)' != 'true'">true</IsPackable>
+    <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
+    <PackageId>VS.Redist.Common.Net.Core.SDK.VSTemplateLocator</PackageId>
+    <PackageDescription>MSBuild extensions bundled with .NET Core SDK for internal Visual Studio build consumption</PackageDescription>
+    <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" ExcludeAssets="all" GeneratePathProperty="true" />
+    <ProjectReference Include="$(RepoRoot)src\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\x86\hostfxr.dll" Arch="x86/" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\x64\hostfxr.dll" Arch="x64/" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\arm64\hostfxr.dll" Arch="arm64/" />
+
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\Microsoft.DotNet.NativeWrapper.dll" Arch="" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\Microsoft.DotNet.SdkResolver.dll" Arch="" />
+      <VSTemplateLocatorContent Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\**\Microsoft.DotNet.TemplateLocator*.dll" Arch="" />
+
+      <VSTemplateLocatorContent Include="$(PkgMicrosoft_Deployment_DotNet_Releases)\lib\net452\**\*.dll" Arch="" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="@(VSTemplateLocatorContent)" PackagePath="/VSTemplateLocator/%(Arch)%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

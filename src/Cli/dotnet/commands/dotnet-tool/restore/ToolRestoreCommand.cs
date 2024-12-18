@@ -133,24 +133,24 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                         package.PackageId, verbosity: _verbosity, ToVersionRangeWithOnlyOneVersion(package.Version), targetFramework
                         );
 
-                if (!ManifestCommandMatchesActualInPackage(package.CommandNames, toolPackage.Commands))
+                if (!ManifestCommandMatchesActualInPackage(package.CommandNames, [toolPackage.Command]))
                 {
                     return ToolRestoreResult.Failure(
                         string.Format(LocalizableStrings.CommandsMismatch,
                             JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString())),
                             package.PackageId,
-                            JoinBySpaceWithQuote(toolPackage.Commands.Select(c => c.Name.ToString()))));
+                            toolPackage.Command.Name));
                 }
 
                 return ToolRestoreResult.Success(
-                    saveToCache: toolPackage.Commands.Select(command => (
-                        new RestoredCommandIdentifier(
+                    saveToCache: 
+                        [(new RestoredCommandIdentifier(
                             toolPackage.Id,
                             toolPackage.Version,
                             NuGetFramework.Parse(targetFramework),
                             Constants.AnyRid,
-                            command.Name),
-                        command)).ToArray(),
+                            toolPackage.Command.Name),
+                        toolPackage.Command)],
                     message: string.Format(
                         LocalizableStrings.RestoreSuccessful,
                         package.PackageId,
