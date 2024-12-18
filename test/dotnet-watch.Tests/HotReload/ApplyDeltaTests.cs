@@ -428,6 +428,47 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.Process.ClearOutput();
         }
 
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
+        public async Task MauiBlazor()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
+                .WithSource();
+
+            var workloadInstallCommandSpec = new DotnetCommand(Logger, ["workload", "install", "maui", "--include-previews"])
+            {
+                WorkingDirectory = testAsset.Path,
+            };
+
+            var result = workloadInstallCommandSpec.Execute();
+            Assert.Equal(0, result.ExitCode);
+
+            var platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows10.0.19041.0" : "maccatalyst";
+            var tfm = $"{ToolsetInfo.CurrentTargetFramework}-{platform}";
+            App.Start(testAsset, ["-f", tfm]);
+
+            await App.AssertWaitingForChanges();
+
+            // update code file:
+            var razorPath = Path.Combine(testAsset.Path, "Components", "Pages", "Home.razor");
+            UpdateSourceFile(razorPath, content => content.Replace("Hello, world!", "Updated"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            // TODO: Warning is currently reported because UpdateContent is not recognized
+            // dotnet watch ⚠ [maui-blazor (net9.0-windows10.0.19041.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager
+            App.AssertOutputContains("Expected to find a static method");
+            App.AssertOutputContains("Updates applied: 1 out of 1.");
+
+            // update static asset:
+            var cssPath = Path.Combine(testAsset.Path, "wwwroot", "css", "app.css");
+            UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
+
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            App.AssertOutputContains("No C# changes to apply.");
+        }
+
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
         [CoreMSBuildOnlyFact]
         public async Task HandleMissingAssemblyFailure()
