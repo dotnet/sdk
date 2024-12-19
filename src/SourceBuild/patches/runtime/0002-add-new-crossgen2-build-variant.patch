@@ -622,3 +622,16 @@ index 580023b627f..03b61f277c3 100644
    <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
      <OutputRidOS Condition="$(OutputRID.Contains('-'))">$(OutputRID.Split('-')[0])</OutputRidOS>
      <AdditionalRidParentOS Condition="$(AdditionalRuntimeIdentifierParent.Contains('-'))">$(AdditionalRuntimeIdentifierParent.Split('-')[0])</AdditionalRidParentOS>
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 1afa4131efc..e1c09e470e8 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -74,7 +74,7 @@
+       <ChecksumPath>%(FullPath).sha512</ChecksumPath>
+     </Installers>
+ 
+-    <Artifact Include="@(NuGetPackages);@(Archives);@(WixPacks);@(Installers)"
++    <Artifact Include="@(VerticalVisibilityNuGetPackages);@(NuGetPackages);@(Archives);@(WixPacks);@(Installers)"
+               IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))" />
+   </ItemGroup>
+ 
