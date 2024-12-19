@@ -39,7 +39,7 @@ stages:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
-      helixTargetQueue: windows.amd64.vs2022.pre.open
+      helixTargetQueue: windows.amd64.vs2022.pre.scout.open
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
