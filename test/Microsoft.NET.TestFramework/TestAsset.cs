@@ -89,22 +89,24 @@ namespace Microsoft.NET.TestFramework
                 File.Copy(srcFile, destFile, true);
             }
 
-            string[][] Properties = {
-                new string[] { "TargetFramework", "$(CurrentTargetFramework)", ToolsetInfo.CurrentTargetFramework },
-                new string[] { "CurrentTargetFramework", "$(CurrentTargetFramework)", ToolsetInfo.CurrentTargetFramework },
-                new string[] { "RuntimeIdentifier", "$(LatestWinRuntimeIdentifier)", ToolsetInfo.LatestWinRuntimeIdentifier },
-                new string[] { "RuntimeIdentifier", "$(LatestLinuxRuntimeIdentifier)", ToolsetInfo.LatestLinuxRuntimeIdentifier },
-                new string[] { "RuntimeIdentifier", "$(LatestMacRuntimeIdentifier)", ToolsetInfo.LatestMacRuntimeIdentifier },
-                new string[] { "RuntimeIdentifier", "$(LatestRuntimeIdentifiers)", ToolsetInfo.LatestRuntimeIdentifiers } };
-
-            foreach (string[] property in Properties)
+            var substitutions = new[]
             {
-                UpdateProjProperty(property[0], property[1], property[2]);
+                (propertyName: "TargetFramework", variableName: "CurrentTargetFramework", value: ToolsetInfo.CurrentTargetFramework),
+                (propertyName: "CurrentTargetFramework", variableName: "CurrentTargetFramework", value: ToolsetInfo.CurrentTargetFramework),
+                (propertyName: "RuntimeIdentifier", variableName: "LatestWinRuntimeIdentifier", value: ToolsetInfo.LatestWinRuntimeIdentifier),
+                (propertyName: "RuntimeIdentifier", variableName: "LatestLinuxRuntimeIdentifier", value: ToolsetInfo.LatestLinuxRuntimeIdentifier),
+                (propertyName: "RuntimeIdentifier", variableName: "LatestMacRuntimeIdentifier", value: ToolsetInfo.LatestMacRuntimeIdentifier),
+                (propertyName: "RuntimeIdentifier", variableName: "LatestRuntimeIdentifiers", value: ToolsetInfo.LatestRuntimeIdentifiers)
+            };
+
+            foreach (var (propertyName, variableName, value) in substitutions)
+            {
+                UpdateProjProperty(propertyName, variableName, value);
             }
 
             foreach (var (propertyName, version) in ToolsetInfo.GetPackageVersionProperties())
             {
-                this.ReplacePackageVersionVariable(propertyName, version);
+                ReplacePackageVersionVariable(propertyName, version);
             }
 
             return this;
@@ -120,24 +122,24 @@ namespace Microsoft.NET.TestFramework
                     var ns = p.Root.Name.Namespace;
                     var getNode = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).FirstOrDefault();
                     getNode ??= p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s").FirstOrDefault();
-                    getNode?.SetValue(getNode?.Value.Replace(variableName, targetValue) ?? string.Empty);
+                    getNode?.SetValue(getNode?.Value.Replace($"$({variableName})", targetValue) ?? string.Empty);
                 }
             });
         }
 
         public TestAsset ReplacePackageVersionVariable(string targetName, string targetValue)
         {
-            string[] PropertyNames = new[] { "PackageReference", "Package" };
+            var elementsWithVersionAttribute = new[] { "PackageReference", "Package", "Sdk" };
 
             return WithProjectChanges(project =>
             {
                 if (project.Root is not null)
                 {
                     var ns = project.Root.Name.Namespace;
-                    foreach (var PropertyName in PropertyNames)
+                    foreach (var elementName in elementsWithVersionAttribute)
                     {
                         var packageReferencesToUpdate =
-                            project.Root.Descendants(ns + PropertyName)
+                            project.Root.Descendants(ns + elementName)
                                 .Select(p => p.Attribute("Version"))
                                 .Where(va => va is not null && va.Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
                         foreach (var versionAttribute in packageReferencesToUpdate)

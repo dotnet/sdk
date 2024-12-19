@@ -172,13 +172,19 @@ jobs:
   # We either build the repo directly, or we extract them outside (which is what partners do)
   - ${{ if parameters.buildFromArchive }}:
     - name: sourcesPath
-      value: $(Build.ArtifactStagingDirectory)/dotnet-sources/
+      value: $(Agent.TempDirectory)/dotnet-sources/
   - ${{ else }}:
     - name: sourcesPath
       value: $(vmrPath)
 
   - name: artifactsStagingDir
     value: $(Build.ArtifactStagingDirectory)/artifacts
+
+  # manually disable CodeQL until https://dev.azure.com/mseng/1ES/_workitems/edit/2211548 is implemented
+  # CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary
+  - ${{ if eq(parameters.pool.os, 'macOS') }}:
+    - name: ONEES_ENFORCED_CODEQL_ENABLED
+      value: false
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -194,14 +200,16 @@ jobs:
       path: $(artifactsStagingDir)
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
+      condition: succeededOrFailed()
       sbomEnabled: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
-    - output: buildArtifacts
-      PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
-      ArtifactName: VerticalManifests
-      displayName: Publish Vertical Manifest
-      sbomEnabled: false
+    - ${{ if ne(parameters.buildSourceOnly, true) }}:
+      - output: buildArtifacts
+        PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+        ArtifactName: VerticalManifests
+        displayName: Publish Vertical Manifest
+        sbomEnabled: false
 
   steps:
   - ${{ if not(parameters.isBuiltFromVmr) }}:
@@ -567,11 +575,13 @@ jobs:
     - publish: $(artifactsStagingDir)
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
+      condition: succeededOrFailed()
       continueOnError: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
-        ArtifactName: VerticalManifests
-      displayName: Publish Vertical Manifest
+    - ${{ if ne(parameters.buildSourceOnly, true) }}:
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+          ArtifactName: VerticalManifests
+        displayName: Publish Vertical Manifest
