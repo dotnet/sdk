@@ -74,11 +74,12 @@ namespace Microsoft.DotNet.Cli.Utils
 
             if (CommandLoggingContext.IsVerbose)
             {
+                Debug.Assert(sw is not null);
                 var message = string.Format(
                     LocalizableStrings.ProcessExitedWithCode,
                     FormatProcessInfo(_process.StartInfo),
                     exitCode,
-                    sw?.ElapsedMilliseconds);
+                    sw.ElapsedMilliseconds);
                 if (exitCode == 0)
                 {
                     Reporter.Verbose.WriteLine(message.Green());

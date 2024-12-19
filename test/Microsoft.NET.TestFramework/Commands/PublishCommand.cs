@@ -16,13 +16,13 @@ namespace Microsoft.NET.TestFramework.Commands
         {
         }
 
-        public PublishCommand(TestAsset testAsset, string relativePathToProject = null)
+        public PublishCommand(TestAsset testAsset, string? relativePathToProject = null)
             : base(testAsset, "Publish", relativePathToProject)
         {
 
         }
 
-        public override DirectoryInfo GetOutputDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "", string platformIdentifier = "")
+        public override DirectoryInfo GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = "", string? platformIdentifier = "")
         {
             if (TestAsset != null)
             {

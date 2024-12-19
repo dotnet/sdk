@@ -134,6 +134,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
+            InstallWorkloads(workloadIds, sdkFeatureBand, transactionContext, overwriteExistingPacks: false, offlineCache);
+        }
+
+        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, bool overwriteExistingPacks, DirectoryPath? offlineCache = null)
+        {
             var packInfos = GetPacksInWorkloads(workloadIds);
 
             foreach (var packInfo in packInfos)
@@ -146,7 +151,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 transactionContext.Run(
                     action: () =>
                     {
-                        if (!PackIsInstalled(packInfo))
+                        if (PackIsInstalled(packInfo) && !overwriteExistingPacks)
+                        {
+                            _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
+                        }
+                        else
                         {
                             shouldRollBackPack = true;
                             string packagePath;
@@ -175,22 +184,30 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                             if (IsSingleFilePack(packInfo))
                             {
-                                File.Copy(packagePath, packInfo.Path);
+                                File.Copy(packagePath, packInfo.Path, overwrite: overwriteExistingPacks);
                             }
                             else
                             {
                                 var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{packInfo.ResolvedPackageId}-{packInfo.Version}-extracted");
                                 tempDirsToDelete.Add(tempExtractionDir);
+
+                                // This directory should have been deleted, but remove it just in case
+                                if (overwriteExistingPacks && Directory.Exists(tempExtractionDir))
+                                {
+                                    Directory.Delete(tempExtractionDir, recursive: true);
+                                }
+
                                 Directory.CreateDirectory(tempExtractionDir);
                                 var packFiles = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir)).GetAwaiter().GetResult();
 
+                                if (overwriteExistingPacks && Directory.Exists(packInfo.Path))
+                                {
+                                    Directory.Delete(packInfo.Path, recursive: true);
+                                }
+
                                 FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempExtractionDir, packInfo.Path));
                             }
-                        }
-                        else
-                        {
-                            _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
-                        }
+                        }                        
 
                         WritePackInstallationRecord(packInfo, sdkFeatureBand);
                     },
@@ -237,8 +254,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
         {
-            // TODO: Actually re-extract the packs to fix any corrupted files.
-            CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, offlineCache));
+            CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, overwriteExistingPacks: true, offlineCache));
         }
 
         string GetManifestInstallDirForFeatureBand(string sdkFeatureBand)

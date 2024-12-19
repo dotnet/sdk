@@ -78,9 +78,6 @@
                                       Condition="'$(EnablePoison)' == 'true'">
         <Value>$(PoisonUsageReportFile)</Value>
       </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PrereqsPath">
-        <Value>$(SourceBuildTestsPrereqsPath)</Value>
-      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SdkTarballPath">
         <Value>$(SdkTarballPath)</Value>
       </RuntimeHostConfigurationOption>

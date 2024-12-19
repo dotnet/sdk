@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
+  <PropertyGroup>
+    <!--
+      Disable nullable warnings when targeting anything other than our supported .NET core version(s). 
+      This condition will be evaluated multiple times in multi-targeted projects hence need to be careful
+      to only set in the inner builds, not the outer build where only $(TargetFrameworks) is defined.
+      We still check $(TargetFrameworks) for empty though, because for single-targeted builds we want to
+      allow nullable warnings regardless of target framework.
+    -->
+    <NoWarn Condition="'$(DisableNullableWarnings)' == '' AND  '$(TargetFrameworks)' != '' AND '$(TargetFramework)' != '' AND '$(TargetFrameworkIdentifier)' != '.NETCoreApp'">$(NoWarn);Nullable</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <SupportedPlatform Remove="Android" />

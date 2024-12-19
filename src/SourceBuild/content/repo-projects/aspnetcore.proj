@@ -5,13 +5,16 @@
     <BuildScript>$(ProjectDirectory)eng\build$(ShellExtension)</BuildScript>
 
     <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(FlagParameterPrefix)restore $(FlagParameterPrefix)all $(FlagParameterPrefix)pack $(FlagParameterPrefix)publish</BuildActions>
+    <BuildActions Condition="'$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
     <!-- On windows, native tooling (JDK) is pre-installed on the machine. -->
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) -NativeToolsOnMachine</BuildActions>
     <!-- On non-windows, we don't have the JDK available and don't need to build those projects anyway because they are not consumed downstream. -->
     <BuildActions Condition="'$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)no-build-java</BuildActions>
-    <!-- Enable building installers on Windows. We can't build installers on Linux until https://github.com/dotnet/aspnetcore/pull/58612 as been merged and flows -->
+    <!-- Enable building installers on Windows and Linux. ASP.NET Core doesn't produce installers on Mac -->
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)BuildInstallers</BuildActions>
-    <!-- <BuildActions Condition="'$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)build-installers</BuildActions> -->
+    <BuildActions Condition="'$(BuildOS)' == 'linux'">$(BuildActions) $(FlagParameterPrefix)build-installers</BuildActions>
+    <!-- In a source-only build, we don't pass -all, so we need to explicitly opt-in to managed components here. -->
+    <BuildActions Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(BuildOS)' == 'linux'">$(BuildActions) $(FlagParameterPrefix)build-managed</BuildActions>
 
     <!-- aspnetcore must be built with desktop msbuild but defaults to dotnet build. -->
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) -msbuildEngine vs</BuildArgs>

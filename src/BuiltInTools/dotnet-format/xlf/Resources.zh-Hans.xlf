@@ -377,11 +377,6 @@
         <target state="translated">无法找到 MSBuild。请确保 .NET SDK 是与官方安装程序一起安装的。</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
-        <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
-        <target state="translated">找不到 dotnet CLI。请确保它在路径上。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unable_to_organize_imports_for_0_The_document_is_too_complex">
         <source>Unable to organize imports for '{0}'. The document is too complex.</source>
         <target state="translated">无法整理“{0}”的导入项。文档太复杂。</target>

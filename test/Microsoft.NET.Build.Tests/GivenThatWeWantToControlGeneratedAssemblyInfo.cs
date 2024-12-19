@@ -810,7 +810,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45148")]
         [InlineData("netcoreapp3.1", ".NET Core 3.1")]
         [InlineData("netcoreapp2.1", ".NET Core 2.1")]
         [InlineData("netstandard2.1", ".NET Standard 2.1")]
@@ -855,11 +855,11 @@ class Program
                 .Should()
                 .Pass();
 
-            var result = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name))
-                .Execute();
+            var exePath = Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, testProject.Name + ".dll");
+
+            var result = new DotnetCommand(Log, "exec", exePath).Execute();
             result.Should().Pass();
-            result.StdOut.StripTerminalLoggerProgressIndicators().Should().BeEquivalentTo(expectedFrameworkDisplayName);
+            result.StdOut.Should().BeEquivalentTo(expectedFrameworkDisplayName);
         }
     }
 }

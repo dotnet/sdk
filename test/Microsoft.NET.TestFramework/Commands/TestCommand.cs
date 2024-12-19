@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -14,15 +14,15 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public ITestOutputHelper Log { get; }
 
-        public string WorkingDirectory { get; set; }
+        public string? WorkingDirectory { get; set; }
 
         public List<string> Arguments { get; set; } = new List<string>();
 
         public List<string> EnvironmentToRemove { get; } = new List<string>();
 
         //  These only work via Execute(), not when using GetProcessStartInfo()
-        public Action<string> CommandOutputHandler { get; set; }
-        public Action<Process> ProcessStartedHandler { get; set; }
+        public Action<string>? CommandOutputHandler { get; set; }
+        public Action<Process>? ProcessStartedHandler { get; set; }
 
         protected TestCommand(ITestOutputHelper log)
         {
@@ -120,19 +120,29 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
-            var command = CreateCommandSpec(args)
+            var spec = CreateCommandSpec(args);
+
+            var command = spec
                 .ToCommand(_doNotEscapeArguments)
                 .CaptureStdOut()
                 .CaptureStdErr();
 
-            if (CommandOutputHandler != null)
+            command.OnOutputLine(line =>
             {
-                command.OnOutputLine(CommandOutputHandler);
-            }
+                Log.WriteLine($"》{line}");
+                CommandOutputHandler?.Invoke(line);
+            });
 
+            command.OnErrorLine(line =>
+            {
+                Log.WriteLine($"❌{line}");
+            });
+
+            var display = $"dotnet {string.Join(" ", spec.Arguments)}";
+
+            Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);
-
-            LogCommandResult(Log, result);
+            Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
 
             return result;
         }

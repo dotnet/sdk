@@ -1,0 +1,19 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Projet de test NUnit Playwright",
+  "description": "Un projet qui contient des tests Playwright utilisant le framework de test NUnit, qui peut fonctionner sur .NET sous Windows, Linux et MacOS.",
+  "symbols/TargetFrameworkOverride/description": "Remplace l’infrastructure cible",
+  "symbols/TargetFrameworkOverride/displayName": "Remplacement du cadre cible",
+  "symbols/Framework/description": "Framework cible du projet.",
+  "symbols/Framework/displayName": "Infrastructure",
+  "symbols/Framework/choices/net10.0/description": "net10.0 cible",
+  "symbols/EnablePack/description": "Indique s’il faut activer ou non la création de packages (via « dotnet pack ») pour le projet.",
+  "symbols/EnablePack/displayName": "Activer le pack",
+  "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
+  "symbols/skipRestore/displayName": "Ignorer la restauration",
+  "symbols/langVersion/description": "Définit la propriété LangVersion dans le fichier projet créé",
+  "symbols/langVersion/displayName": "Version du langage",
+  "postActions/restoreNugetPackages/description": "Restaurez les packages NuGet requis par ce projet.",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "Exécutez « dotnet restore »",
+  "postActions/openInEditor/description": "Ouvre Class1.cs dans l’éditeur"
+}

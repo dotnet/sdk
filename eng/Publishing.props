@@ -14,7 +14,6 @@
     <SdkAssetManifestFileName>$(OS)-$(PlatformName)-SdkAssets$(SdkAssetManifestBuildPass).xml</SdkAssetManifestFileName>
     <SdkAssetsManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(SdkAssetManifestFileName)</SdkAssetsManifestFilePath>
 
-    <TempWorkingDirectory>$(ArtifactsDir)\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
     <PublishBinariesAndBadge Condition=" '$(PublishBinariesAndBadge)' == '' ">true</PublishBinariesAndBadge>
 
     <IsStableBuild>false</IsStableBuild>
@@ -102,16 +101,15 @@
       <ItemsToSignPostBuild Include="@(ToolsetAssetsToPublish->'%(Filename)%(Extension)')" />
     </ItemGroup>
 
-    <MakeDir Directories="$(TempWorkingDirectory)" />
-
     <PushToBuildStorage
+      PublishFlatContainer="true"
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
       AzureDevOpsBuildId="$(BUILD_BUILDID)"
       ItemsToPush="@(ToolsetAssetsToPushToBlobFeed)"
       ItemsToSign="@(ItemsToSignPostBuild)"
-      CertificatesSignInfo="@(CertificatesSignInfo)"
       StrongNameSignInfo="@(StrongNameSignInfo)"
+      CertificatesSignInfo="@(CertificatesSignInfo)"
       FileSignInfo="@(FileSignInfo)"
       FileExtensionSignInfo="@(FileExtensionSignInfo)"
       ManifestBuildData="@(ManifestBuildData)"
@@ -119,37 +117,31 @@
       ManifestBranch="$(BUILD_SOURCEBRANCH)"
       ManifestBuildId="$(BUILD_BUILDNUMBER)"
       ManifestCommit="$(BUILD_SOURCEVERSION)"
-      PublishFlatContainer="true"
-      AssetManifestPath="$(SdkAssetsManifestFilePath)"
-      AssetsTemporaryDirectory="$(TempWorkingDirectory)"
+      ManifestRepoOrigin="$(GitHubRepositoryName)"
       IsStableBuild="$(IsStableBuild)"
+      PublishingVersion="$(PublishingVersion)"
+      AssetManifestPath="$(SdkAssetsManifestFilePath)"
+      IsReleaseOnlyPackageVersion="$(IsReleaseOnlyPackageVersion)"
       PushToLocalStorage="$(PushToLocalStorage)"
       AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
       ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
       NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
       AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
-
-    <Copy SourceFiles="$(SdkAssetsManifestFilePath)" DestinationFolder="$(TempWorkingDirectory)\$(SdkAssetManifestFileName)" />
-
-    <Message Text="##vso[artifact.upload containerfolder=AssetManifests;artifactname=AssetManifests]$(TempWorkingDirectory)/$(SdkAssetManifestFileName)" Importance="high" />
   </Target>
 
   <PropertyGroup>
-      <!--
-        Because we may be building in a container, we should use an asset manifest file path that exists in the container. Disambiguate the manifests via available properties.
-        AGENT_OS and SYSTEM_PHASENAME are present on Azure DevOps agents. AssetManifestOS will also be used by arcade to generate the name of the manifest file name for the built in publishing.
-      -->
-      <AssetManifestOS Condition="'$(AGENT_OS)' != ''">$(AGENT_OS)</AssetManifestOS>
-      <AssetManifestOS Condition="'$(AGENT_OS)' == ''">$(OS)</AssetManifestOS>
-      <AssetManifestOS Condition="'$(SYSTEM_PHASENAME)' != ''">$(AssetManifestOS)-$(SYSTEM_PHASENAME)</AssetManifestOS>
-      <BaseAssetManifestFileName>$(AssetManifestOS)</BaseAssetManifestFileName>
-      <BaseAssetManifestFileName Condition="'$(SYSTEM_PHASENAME)' == '' and '$(Architecture)' != ''">$(AssetManifestOS)-$(Architecture)</BaseAssetManifestFileName>
-      <InstallersAssetManifestFileName>$(BaseAssetManifestFileName)-installers$(SdkAssetManifestBuildPass)</InstallersAssetManifestFileName>
-      <!-- Property AssetManifestFilePath would be reassigned by the Arcade SDK, so use a different name (InstallersAssetManifestFilePath) -->
-      <InstallersAssetManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(InstallersAssetManifestFileName).xml</InstallersAssetManifestFilePath>
-
-      <DotnetTempWorkingDirectory>$(ArtifactsDir)..\DotnetAssetsTmpDir\$([System.Guid]::NewGuid())</DotnetTempWorkingDirectory>
-      <ChecksumTempWorkingDirectory>$(ArtifactsDir)..\ChecksumAssetsTmpDir\$([System.Guid]::NewGuid())</ChecksumTempWorkingDirectory>
+    <!--
+      Because we may be building in a container, we should use an asset manifest file path that exists in the container. Disambiguate the manifests via available properties.
+      AGENT_OS and SYSTEM_PHASENAME are present on Azure DevOps agents. AssetManifestOS will also be used by arcade to generate the name of the manifest file name for the built in publishing.
+    -->
+    <AssetManifestOS Condition="'$(AGENT_OS)' != ''">$(AGENT_OS)</AssetManifestOS>
+    <AssetManifestOS Condition="'$(AGENT_OS)' == ''">$(OS)</AssetManifestOS>
+    <AssetManifestOS Condition="'$(SYSTEM_PHASENAME)' != ''">$(AssetManifestOS)-$(SYSTEM_PHASENAME)</AssetManifestOS>
+    <BaseAssetManifestFileName>$(AssetManifestOS)</BaseAssetManifestFileName>
+    <BaseAssetManifestFileName Condition="'$(SYSTEM_PHASENAME)' == '' and '$(Architecture)' != ''">$(AssetManifestOS)-$(Architecture)</BaseAssetManifestFileName>
+    <InstallersAssetManifestFileName>$(BaseAssetManifestFileName)-installers$(SdkAssetManifestBuildPass)</InstallersAssetManifestFileName>
+    <!-- Property AssetManifestFilePath would be reassigned by the Arcade SDK, so use a different name (InstallersAssetManifestFilePath) -->
+    <InstallersAssetManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(InstallersAssetManifestFileName).xml</InstallersAssetManifestFilePath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -222,23 +214,26 @@
     </ItemGroup>
 
     <PushToBuildStorage
+      PublishFlatContainer="true"
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
       AzureDevOpsBuildId="$(BUILD_BUILDID)"
       ItemsToPush="@(SdkAssetsToPushToBlobFeed);@(ChecksumsToPushToBlobFeed)"
       ItemsToSign="@(ItemsToSignPostBuild)"
-      CertificatesSignInfo="@(CertificatesSignInfo)"
       StrongNameSignInfo="@(StrongNameSignInfo)"
+      CertificatesSignInfo="@(CertificatesSignInfo)"
       FileSignInfo="@(FileSignInfo)"
       FileExtensionSignInfo="@(FileExtensionSignInfo)"
       ManifestBuildData="@(ManifestBuildData)"
-      ManifestRepoName="$(BUILD_REPOSITORY_NAME)"
+      ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
       ManifestBranch="$(BUILD_SOURCEBRANCH)"
       ManifestBuildId="$(BUILD_BUILDNUMBER)"
       ManifestCommit="$(BUILD_SOURCEVERSION)"
-      AssetManifestPath="$(InstallersAssetManifestFilePath)"
-      PublishFlatContainer="true"
+      ManifestRepoOrigin="$(GitHubRepositoryName)"
       IsStableBuild="$(IsStableBuild)"
+      PublishingVersion="$(PublishingVersion)"
+      AssetManifestPath="$(InstallersAssetManifestFilePath)"
+      IsReleaseOnlyPackageVersion="$(IsReleaseOnlyPackageVersion)"
       PushToLocalStorage="$(PushToLocalStorage)"
       AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
       ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"

@@ -408,11 +408,7 @@ namespace EndToEnd.Tests
             {
                 // TODO: This block need to be updated when every template updates their default tfm.
                 // Currently winforms updated their default templates target but not others.
-                if (template.StartsWith("mstest")
-                       || template.StartsWith("winforms")
-                       || template.StartsWith("wpf")
-                       || template.StartsWith("nunit")
-                       || template.StartsWith("xunit"))
+                if (template.StartsWith("winforms") || template.StartsWith("wpf"))
                 {
                     return $"net9.0";
                 }
