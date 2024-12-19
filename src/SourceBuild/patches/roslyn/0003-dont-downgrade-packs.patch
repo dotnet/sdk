@@ -1,4 +1,4 @@
-From 6e9b4584bc513903b6a756b957344e19a19a76c6 Mon Sep 17 00:00:00 2001
+From e6247adfdf8d93758970eb3b1ea6a4cc9d2be5df Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 19 Dec 2024 15:02:31 +0100
 Subject: [PATCH] Don't introduce prebuilts for 8.0.10 packs when building
@@ -7,11 +7,11 @@ Subject: [PATCH] Don't introduce prebuilts for 8.0.10 packs when building
 Backport: https://github.com/dotnet/roslyn/pull/76517
 
 ---
- eng/Directory.Packages.props | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ eng/Directory.Packages.props | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/eng/Directory.Packages.props b/eng/Directory.Packages.props
-index 7114e22690f..14c8a39c81b 100644
+index 7114e22690f..fc7cd4cef93 100644
 --- a/eng/Directory.Packages.props
 +++ b/eng/Directory.Packages.props
 @@ -18,8 +18,8 @@
@@ -25,3 +25,20 @@ index 7114e22690f..14c8a39c81b 100644
      <_xunitVersion>2.9.2</_xunitVersion>
      <SqliteVersion>2.1.0</SqliteVersion>
    </PropertyGroup>
+@@ -131,11 +131,11 @@
+       We should try to keep this version in sync with the version of app-local runtime in VS.
+     -->
+ 
+-    <PackageVersion Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="$(MicrosoftNetCoreAppRuntimePackagesVersion)" />
+-    <PackageVersion Include="Microsoft.NETCore.App.Runtime.win-x64" Version="$(MicrosoftNetCoreAppRuntimePackagesVersion)" />
+-    <PackageVersion Include="Microsoft.NETCore.App.crossgen2.win-x64" Version="$(MicrosoftNetCoreAppRuntimePackagesVersion)" />
+-    <PackageVersion Include="Microsoft.WindowsDesktop.App.Runtime.win-arm64" Version="$(MicrosoftWindowsDesktopAppRuntimePackagesVersion)" />
+-    <PackageVersion Include="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="$(MicrosoftWindowsDesktopAppRuntimePackagesVersion)" />
++    <PackageVersion Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="$(MicrosoftNetCoreAppRuntimePackagesVersion)" Condition="'$(MicrosoftNetCoreAppRuntimePackagesVersion)' != ''" />
++    <PackageVersion Include="Microsoft.NETCore.App.Runtime.win-x64" Version="$(MicrosoftNetCoreAppRuntimePackagesVersion)" Condition="'$(MicrosoftNetCoreAppRuntimePackagesVersion)' != ''" />
++    <PackageVersion Include="Microsoft.NETCore.App.crossgen2.win-x64" Version="$(MicrosoftNetCoreAppRuntimePackagesVersion)" Condition="'$(MicrosoftNetCoreAppRuntimePackagesVersion)' != ''" />
++    <PackageVersion Include="Microsoft.WindowsDesktop.App.Runtime.win-arm64" Version="$(MicrosoftWindowsDesktopAppRuntimePackagesVersion)" Condition="'$(MicrosoftWindowsDesktopAppRuntimePackagesVersion)' != ''" />
++    <PackageVersion Include="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="$(MicrosoftWindowsDesktopAppRuntimePackagesVersion)" Condition="'$(MicrosoftWindowsDesktopAppRuntimePackagesVersion)' != ''" />
+ 
+     <!--
+       Language Server
