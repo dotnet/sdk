@@ -2,10 +2,10 @@
   "author": "Microsoft",
   "name": "Soubor řešení",
   "description": "Vytvořit prázdné řešení neobsahující projekty",
-  "symbols/Format/description": "Choose the format for the solution file: sln or slnx.",
-  "symbols/Format/displayName": "Solution file format",
-  "symbols/Format/choices/sln/description": "Solution file",
-  "symbols/Format/choices/sln/displayName": ".sln format",
-  "symbols/Format/choices/slnx/description": "XML Solution file",
-  "symbols/Format/choices/slnx/displayName": ".slnx format"
+  "symbols/Format/description": "Zvolte formát souboru řešení: sln nebo slnx.",
+  "symbols/Format/displayName": "Formát souboru řešení",
+  "symbols/Format/choices/sln/description": "Soubor řešení",
+  "symbols/Format/choices/sln/displayName": "Formát .sln",
+  "symbols/Format/choices/slnx/description": "Soubor řešení XML",
+  "symbols/Format/choices/slnx/displayName": "Formát .slnx"
 }

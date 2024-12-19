@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Zielframeworküberschreibung",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/displayName": "Framework",
-  "symbols/Framework/choices/net10.0/description": "Ziel net10.0",
+  "symbols/Framework/choices/net10.0/description": "Ziel-Net10.0",
   "symbols/EnablePack/description": "Gibt an, ob die Paketerstellung (über \"dotnet pack\") für das Projekt aktiviert werden soll.",
   "symbols/EnablePack/displayName": "Paket aktivieren",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
