@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
-using Xunit.Sdk;
-
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class MsBuildFileSetFactoryTest(ITestOutputHelper output)
     {
@@ -334,7 +330,7 @@ $@"<ItemGroup>
             var output = new List<string>();
             _reporter.OnProcessOutput += line => output.Add(line.Content);
 
-            var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildProperties: [("_DotNetWatchTraceOutput", "true")], options, _reporter);
+            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], options, _reporter);
 
             var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
@@ -395,7 +391,7 @@ $@"<ItemGroup>
             var output = new List<string>();
             _reporter.OnProcessOutput += line => output.Add($"{(line.IsError ? "[stderr]" : "[stdout]")} {line.Content}");
 
-            var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildProperties: [], options, _reporter);
+            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], options, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
@@ -414,7 +410,7 @@ $@"<ItemGroup>
                 MuxerPath: MuxerPath,
                 WorkingDirectory: Path.GetDirectoryName(projectPath)!);
 
-            var factory = new MSBuildFileSetFactory(projectPath, targetFramework: null, buildProperties: [], options, _reporter);
+            var factory = new MSBuildFileSetFactory(projectPath, buildArguments: [], options, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
             return result;

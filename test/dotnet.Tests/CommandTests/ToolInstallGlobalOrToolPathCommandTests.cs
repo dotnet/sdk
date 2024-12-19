@@ -104,7 +104,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
 
-
         [Fact]
         public void WhenDuplicateSourceIsPassedIgnore()
         {

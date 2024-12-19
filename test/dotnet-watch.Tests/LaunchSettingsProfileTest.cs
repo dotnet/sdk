@@ -3,10 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tools;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class LaunchSettingsProfileTest
 {

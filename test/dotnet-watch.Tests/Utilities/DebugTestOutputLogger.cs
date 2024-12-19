@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Watcher.Tests;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class DebugTestOutputLogger(ITestOutputHelper logger) : ITestOutputHelper
 {

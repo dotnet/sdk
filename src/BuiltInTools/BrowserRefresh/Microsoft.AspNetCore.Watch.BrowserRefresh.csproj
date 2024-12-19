@@ -10,17 +10,19 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <EmbeddedResource Include="WebSocketScriptInjection.js" />
+
+    <!-- Back compat only -->
     <EmbeddedResource Include="BlazorHotReload.js" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <!-- Reference 6.0.2 targeting packs in Source Build - this was the earliest version after the API surface stabilized -->
-    <FrameworkReference
-      Update="Microsoft.AspNetCore.App"
-      TargetingPackVersion="6.0.2" />
-    <FrameworkReference
-      Update="Microsoft.NETCore.App"
-      TargetingPackVersion="6.0.2" />
+    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="6.0.2" />
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Watch.BrowserRefresh.Tests" />
   </ItemGroup>
 
 </Project>

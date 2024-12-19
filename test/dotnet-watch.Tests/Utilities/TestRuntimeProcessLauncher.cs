@@ -3,13 +3,13 @@
 
 using Microsoft.Build.Graph;
 
-namespace Microsoft.DotNet.Watcher.Tests;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRuntimeProcessLauncher
 {
     public class Factory(Action<TestRuntimeProcessLauncher>? initialize = null) : IRuntimeProcessLauncherFactory
     {
-        public IRuntimeProcessLauncher TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<(string name, string value)> buildProperties)
+        public IRuntimeProcessLauncher TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<string> buildArguments)
         {
             var service = new TestRuntimeProcessLauncher(projectLauncher);
             initialize?.Invoke(service);

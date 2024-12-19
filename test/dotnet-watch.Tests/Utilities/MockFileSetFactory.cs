@@ -3,14 +3,11 @@
 
 #nullable disable
 
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tools;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal class MockFileSetFactory() : MSBuildFileSetFactory(
     rootProjectFile: "test.csproj",
-    targetFramework: null,
-    buildProperties: [],
+    buildArguments: [],
     new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
     NullReporter.Singleton)
 {

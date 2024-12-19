@@ -812,7 +812,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45148")]
         [InlineData("netcoreapp3.1", ".NET Core 3.1")]
         [InlineData("netcoreapp2.1", ".NET Core 2.1")]
         [InlineData("netstandard2.1", ".NET Standard 2.1")]

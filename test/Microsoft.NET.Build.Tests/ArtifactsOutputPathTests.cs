@@ -96,7 +96,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/45057")]
         public void ItUsesArtifactsOutputPathForPublish()
         {
             var (testProjects, testAsset) = GetTestProjects();

@@ -3,9 +3,7 @@
 
 #nullable disable
 
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class NoRestoreTests
     {

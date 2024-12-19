@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Aspire.AppHost.Sdk" Version="$(AspirePackageVersion)" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,8 +7,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>ad800ccc-954c-40cc-920b-2e09fc9eee7a</UserSecretsId>
-    <!-- workaround -->
-    <AspireHostingSDKVersion>9.0.0</AspireHostingSDKVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="$(MicrosoftNETSdkAspireManifest80100PackageVersion)" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="$(AspirePackageVersion)" />
   </ItemGroup>
 
 </Project>

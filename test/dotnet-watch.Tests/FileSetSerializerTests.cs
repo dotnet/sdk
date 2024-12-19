@@ -3,14 +3,12 @@
 
 #nullable disable
 
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Json;
 using System.Text.Json;
 using DotNetWatchTasks;
-using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.NET.Build.Tasks.UnitTests;
 
-namespace Microsoft.DotNet.Watcher.Tools;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class FileSetSerializerTests(ITestOutputHelper output)
 {

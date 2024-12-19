@@ -23,8 +23,8 @@ internal class ExclusionsHelper
     private readonly string _baselineSubDir;
 
     // Use this to narrow down the scope of exclusions to a specific category.
-    // For instance, setting this to "test-templates" will consider 
-    // "src/test-templates/exclusions.txt" but not "src/arcade/exclusions.txt".
+    // For instance, setting this to "vstest" will consider 
+    // "src/vstest/exclusions.txt" but not "src/arcade/exclusions.txt".
     private readonly Regex? _exclusionRegex;
 
     private readonly Dictionary<string, HashSet<string>> _suffixToExclusions;
