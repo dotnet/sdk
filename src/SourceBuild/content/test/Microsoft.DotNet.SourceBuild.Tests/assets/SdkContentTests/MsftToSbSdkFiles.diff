@@ -14,9 +14,9 @@ index ------------
  ./packs/Microsoft.AspNetCore.App.Ref/
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/
 @@ ------------ @@
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.Cryptography.Xml.xml
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Threading.RateLimiting.dll
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Threading.RateLimiting.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XmlSerializer.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XPath.XDocument.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XPath.xml
 -./packs/Microsoft.NETCore.App.Host.portable-rid/
 -./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/
 -./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/
@@ -44,6 +44,14 @@ index ------------
  ./packs/Microsoft.NETCore.App.Ref/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
+@@ ------------ @@
+ ./sdk-manifests/
+ ./sdk-manifests/x.y.z/
+ ./sdk-manifests/x.y.z/
+-./sdk-manifests/x.y.z/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/
+ ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/WorkloadManifest.Aspire.targets
 @@ ------------ @@
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
