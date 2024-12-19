@@ -570,3 +570,55 @@ index c1ff2d8ba47..f3c1cb5b25a 100644
 -</Project>
 \ No newline at end of file
 +</Project>
+diff --git a/eng/Signing.props b/eng/Signing.props
+index e1c09e470e8..f3c1cb5b25a 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -47,15 +47,13 @@
+ 
+   <ItemGroup Condition="'$(DotNetBuildOrchestrator)' == 'true'">
+     <VerticalVisibilityNuGetPackages Condition="'$(RuntimeFlavor)' != 'Mono' and '$(ShortStack)' != 'true' and '$(OutputRID)' != '$(NETCoreSdkRuntimeIdentifier)'"
+-                                     Include="$(ArtifactsPackagesDir)**\Microsoft.NETCore.App.Crossgen2.$(NETCoreSdkRuntimeIdentifier).*.nupkg" />
++                                     Include="$(ArtifactsPackagesDir)**\Microsoft.NETCore.App.Crossgen2.$(NETCoreSdkRuntimeIdentifier).*.nupkg"
++                                     Visibility="Vertical" />
+   </ItemGroup>
+ 
+   <!-- In build signing and publishing without a join point -->
+   <ItemGroup Condition="'$(DotNetBuild)' == 'true'">
+-    <NuGetPackages Include="@(VerticalVisibilityNuGetPackages)" Visibility="Vertical" />
+-    <NuGetPackages Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="@(NuGetPackages)" />
+-
+-    <NuGetPackages PublishFlatContainer="false" />
++    <NuGetPackages Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="@(VerticalVisibilityNuGetPackages)" />
+ 
+     <Archives Include="$(ArtifactsPackagesDir)**\*.tar.gz;
+                        $(ArtifactsPackagesDir)**\*.zip"
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.props b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.props
+index a400c42adf2..6650cee2f18 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.props
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Crossgen2.props
+@@ -39,6 +39,12 @@
+     </ItemGroup>
+   </Target>
+ 
++  <PropertyGroup>
++    <TargetOSComponent>unix</TargetOSComponent>
++    <TargetOSComponent Condition="'$(TargetOS)' == 'windows'">win</TargetOSComponent>
++    <TargetSpec>$(TargetOSComponent)-$(TargetArchitecture)</TargetSpec>
++  </PropertyGroup>
++
+   <Target Name="AddCrossgen2SymbolFilesToPackage" BeforeTargets="GetFilesToPackage" DependsOnTargets="PublishCrossgen">
+     <ItemGroup>
+       <_Crossgen2SymbolFilesToPackage Include="@(_CrossgenPublishFiles)" Condition="'%(Extension)' == '.pdb'" />
+diff --git a/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj b/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
+index 580023b627f..03b61f277c3 100644
+--- a/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
++++ b/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
+@@ -24,7 +24,6 @@
+     <AdditionalRuntimeIdentifiers Include="$(AdditionalRuntimeIdentifiers)" Imports="$(AdditionalRuntimeIdentifierParent)" />
+   </ItemGroup>
+ 
+-  <!-- Workaround for https://github.com/dotnet/sdk/pull/45566: Ensure that the OS portion of the RID we're building for is part of the RID graph as a separate RID. -->
+   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+     <OutputRidOS Condition="$(OutputRID.Contains('-'))">$(OutputRID.Split('-')[0])</OutputRidOS>
+     <AdditionalRidParentOS Condition="$(AdditionalRuntimeIdentifierParent.Contains('-'))">$(AdditionalRuntimeIdentifierParent.Split('-')[0])</AdditionalRidParentOS>
