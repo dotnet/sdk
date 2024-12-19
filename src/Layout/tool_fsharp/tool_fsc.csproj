@@ -32,7 +32,8 @@
     <PropertyGroup>
         <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'!='release'">Shipping</FSharpCorePath>
         <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
-        <FSharpTfm>$(NetCurrent)</FSharpTfm>
+        <FSharpTfm>net9.0</FSharpTfm>
+        <FSharpTfm Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</FSharpTfm>
     </PropertyGroup>
     <ItemGroup>
         <ResolvedFileToPublish
