@@ -12,12 +12,27 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.get 
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifiers.get -> string![]!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifiers.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.get -> string?
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Cancel() -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.CreateImageIndex() -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Dispose() -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedImageIndex.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedImageIndex.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ImageTags.get -> string![]!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ImageTags.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedContainers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedContainers.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.set -> void
+override Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Execute() -> bool
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
 Microsoft.NET.Build.Containers.ContainerHelpers
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
@@ -196,6 +211,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.get
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerMediaType.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerMediaType.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.get -> string![]!
