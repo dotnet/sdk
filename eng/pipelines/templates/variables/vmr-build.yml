@@ -12,6 +12,9 @@ variables:
   - name: VmrBranch
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
+- name: _TeamName
+  value: DotNetCore
+
 - name: defaultContainerOptions
   value: --privileged
 
