@@ -70,6 +70,8 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     private const string _idAttribute = "Id";
     private const string _visibilityAttribute = "Visibility";
     private const string _externalVisibility = "External";
+    private const string _internalVisibility = "Internal";
+    private const string _verticalVisibility = "Vertical";
     private const string _verticalNameAttribute = "VerticalName";
     private const string _artifactNameSuffix = "_Artifacts";
     private const string _assetsFolderName = "assets";
@@ -295,19 +297,30 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         foreach (XElement artifactElement in verticalManifest.Descendants(elementName))
         {
+            string elementId = artifactElement.Attribute(_idAttribute)?.Value
+                ?? throw new ArgumentException($"Required attribute '{_idAttribute}' not found in {elementName} element.");
+
             // Filter out artifacts that are not "External" visibility.
             // Artifacts of "Vertical" visibility should have been filtered out in each individual vertical,
             // but artifacts of "Internal" visibility would have been included in each vertical's manifest (to enable feeding into join verticals).
             // We need to remove them here so they don't get included in the final merged manifest.
             // As we're in the final join, there should be no jobs after us. Therefore, we can also skip uploading them to the final artifacts folders
             // as no job should run after this job that would consume them.
-            if (artifactElement.Attribute(_visibilityAttribute)?.Value is not (null or "" or _externalVisibility))
+            string? visibility = artifactElement.Attribute(_visibilityAttribute)?.Value;
+            
+            if (visibility == _verticalVisibility)
             {
+                Log.LogError($"Artifact {elementId} has 'Vertical' visibility and should not be present in a vertical manifest.");
+            }
+            else if (visibility == _internalVisibility)
+            {
+                Log.LogMessage(MessageImportance.High, $"Artifact {elementId} has 'Internal' visibility and will not be included in the final merged manifest.");
+            }
+            else if (visibility is not (null or "" or _externalVisibility))
+            {
+                Log.LogError($"Artifact {elementId} has unknown visibility: '{visibility}'");
                 continue;
             }
-
-            string elementId = artifactElement.Attribute(_idAttribute)?.Value
-                ?? throw new ArgumentException($"Required attribute '{_idAttribute}' not found in {elementName} element.");
 
             if (addedArtifacts.TryAdd(elementId, new AddedElement(verticalName, artifactElement)))
             {
