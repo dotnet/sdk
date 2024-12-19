@@ -257,6 +257,11 @@
         <target state="translated">'{0}'은(는) 유효한 컨테이너 이미지 이름이 아닙니다. '{1}'(으)로 정규화되었습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="OciImageMultipleTagsNotSupported">
+        <source>Unable to create tarball for oci image with multiple tags.</source>
+        <target state="new">Unable to create tarball for oci image with multiple tags.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
         <source>CONTAINER2011: {0} '{1}' does not exist</source>
         <target state="needs-review-translation">CONTAINER2011: {0} '{1}'이(가) 존재하지 않습니다.</target>
@@ -376,6 +381,11 @@
         <source>CONTAINER2001: Unrecognized mediaType '{0}'.</source>
         <target state="needs-review-translation">CONTAINER2001: 미디어 유형 '{0}'을(를) 인식할 수 없습니다.</target>
         <note>{StrBegins="CONTAINER2001: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedMediaTypeForTarball">
+        <source>Unable to create tarball for mediaType '{0}'.</source>
+        <target state="new">Unable to create tarball for mediaType '{0}'.</target>
+        <note />
       </trans-unit>
       <trans-unit id="_Test">
         <source>CONTAINER0000: Value for unit test {0}</source>

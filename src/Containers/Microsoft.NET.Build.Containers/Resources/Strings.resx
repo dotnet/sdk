@@ -241,6 +241,12 @@
     <value>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</value>
     <comment>{StrBegins="CONTAINER2004: "}</comment>
   </data>
+  <data name="OciImageMultipleTagsNotSupported" xml:space="preserve">
+    <value>Unable to create tarball for oci image with multiple tags.</value>
+  </data>
+  <data name="UnsupportedMediaTypeForTarball" xml:space="preserve">
+    <value>Unable to create tarball for mediaType '{0}'.</value>
+  </data>
   <data name="MissingPortNumber" xml:space="preserve">
     <value>CONTAINER2016: ContainerPort item '{0}' does not specify the port number. Please ensure the item's Include is a port number, for example '&lt;ContainerPort Include="80" /&gt;'</value>
     <comment>{StrBegins="CONTAINER2016: "}</comment>

@@ -9,7 +9,7 @@ namespace Microsoft.NET.TestFramework
 
         public static readonly string DynamicLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" :
                                                          RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ".dylib" : ".so";
-        public static readonly string UserProfileFolder = Environment.GetEnvironmentVariable(
+        public static readonly string? UserProfileFolder = Environment.GetEnvironmentVariable(
                                                                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                                                                     "USERPROFILE" : "HOME");
     }
