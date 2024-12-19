@@ -698,6 +698,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             try
             {
                 SourceRepository repository = GetSourceRepository(source);
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(), !_restoreActionConfig.Interactive);
                 PackageMetadataResource resource = await repository
                     .GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
 
