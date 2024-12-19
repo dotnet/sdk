@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
@@ -79,6 +80,10 @@ namespace Microsoft.DotNet.Tools.Run
                 var launchSettingsCommand = ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
                 // Ignore Ctrl-C for the remainder of the command's execution
                 Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
+
+                if (launchSettings is not null)
+                    AttemptToLaunchBrowser(launchSettings);
+
                 return launchSettingsCommand.Execute().ExitCode;
             }
             catch (InvalidProjectFileException e)
@@ -86,6 +91,55 @@ namespace Microsoft.DotNet.Tools.Run
                 throw new GracefulException(
                     string.Format(LocalizableStrings.RunCommandSpecifiedFileIsNotAValidProject, ProjectFileFullPath),
                     e);
+            }
+        }
+
+        private static void AttemptToLaunchBrowser(ProjectLaunchSettingsModel launchSettings)
+        {
+            if (launchSettings.LaunchBrowser == false ||
+                string.IsNullOrWhiteSpace(launchSettings.LaunchUrl) ||
+                string.IsNullOrWhiteSpace(launchSettings.ApplicationUrl))
+            {
+                return;
+            }
+
+            string[] launchUrls = launchSettings.ApplicationUrl
+                .Split(';', StringSplitOptions.RemoveEmptyEntries);
+
+            if (!launchUrls.Any())
+            {
+                return;
+            }
+
+            string launchUrl = launchUrls.FirstOrDefault(x =>
+                                        x.StartsWith("https", StringComparison.OrdinalIgnoreCase),
+                                        launchUrls[0]);
+
+            var launchPath = launchSettings.LaunchUrl;
+            var fileName = Uri.TryCreate(launchPath, UriKind.Absolute, out _) ? launchPath : launchUrl + "/" + launchPath;
+
+            var args = string.Empty;
+
+            Reporter.Verbose.WriteLine($"Launching browser: {fileName} {args}");
+
+            var info = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = args,
+                UseShellExecute = true,
+            };
+
+            try
+            {
+                using var browserProcess = Process.Start(info);
+                if (browserProcess is null or { HasExited: true })
+                {
+                    Reporter.Output.WriteLine($"Unable to launch the browser. Navigate to {launchPath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Reporter.Verbose.WriteLine($"An exception occurred when attempting to launch a browser: {ex}");
             }
         }
 
