@@ -17,8 +17,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 {
     internal class AddProjectToSolutionCommand : CommandBase
     {
-        private static string[] _defaultPlatforms = new[] { "Any CPU", "x64", "x86" };
-        private static string[] _defaultBuildTypes = new[] { "Debug", "Release" };
+        private static readonly string[] _defaultPlatforms = ["Any CPU", "x64", "x86"];
+        private static readonly string[] _defaultBuildTypes = ["Debug", "Release"];
         private readonly string _fileOrDirectory;
         private readonly bool _inRoot;
         private readonly IReadOnlyCollection<string> _projects;
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SlnAddParser.ProjectPathArgument) ?? []);
             _inRoot = parseResult.GetValue(SlnAddParser.InRootOption);
             _solutionFolderPath = parseResult.GetValue(SlnAddParser.SolutionFolderOption);
-            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
+            SlnArgumentValidator.ParseAndValidateArguments(_projects, SlnArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
         }
 
         public override int Execute()
