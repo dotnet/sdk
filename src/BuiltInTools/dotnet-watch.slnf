@@ -7,7 +7,7 @@
       "src\\BuiltInTools\\BrowserRefresh\\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj",
       "src\\BuiltInTools\\DotNetDeltaApplier\\Microsoft.Extensions.DotNetDeltaApplier.csproj",
       "src\\BuiltInTools\\DotNetWatchTasks\\DotNetWatchTasks.csproj",
-      "src\\BuiltInTools\\HotReloadAgent.Package\\Microsoft.DotNet.HotReload.Agent.Package.csproj",
+      "src\\BuiltInTools\\HotReloadAgent\\Microsoft.DotNet.HotReload.Agent.Package.csproj",
       "src\\BuiltInTools\\HotReloadAgent\\Microsoft.DotNet.HotReload.Agent.shproj",
       "src\\BuiltInTools\\dotnet-watch\\dotnet-watch.csproj",
       "test\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj",

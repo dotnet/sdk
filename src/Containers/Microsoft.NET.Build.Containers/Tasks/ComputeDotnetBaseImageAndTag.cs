@@ -44,7 +44,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// If this is set to linux-musl-ARCH then we need to use `alpine` for all containers, and tag on `aot` or `extra` as necessary.
     /// </summary>
     [Required]
-    public string TargetRuntimeIdentifier { get; set; }
+    public string[] TargetRuntimeIdentifiers { get; set; }
 
     /// <summary>
     /// If a project is self-contained then it includes a runtime, and so the runtime-deps image should be used.
@@ -84,7 +84,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         FrameworkReferences.Length > 0
         && FrameworkReferences.Any(x => x.ItemSpec.Equals("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase));
 
-    private bool IsMuslRid => TargetRuntimeIdentifier.StartsWith("linux-musl", StringComparison.Ordinal);
+    private bool IsMuslRid;
     private bool IsBundledRuntime => IsSelfContained;
 
     private bool RequiresInference => String.IsNullOrEmpty(UserBaseImage);
@@ -99,7 +99,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         TargetFrameworkVersion = "";
         ContainerFamily = "";
         FrameworkReferences = [];
-        TargetRuntimeIdentifier = "";
+        TargetRuntimeIdentifiers = [];
         UserBaseImage = "";
     }
 
@@ -113,14 +113,37 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         }
         else
         {
-            var defaultRegistry = RegistryConstants.MicrosoftContainerRegistryDomain;
-            if (ComputeRepositoryAndTag(out var repository, out var tag))
+            if (TargetRuntimeIdentiriersAreValid())
             {
-                ComputedContainerBaseImage = $"{defaultRegistry}/{repository}:{tag}";
-                LogInferencePerformedTelemetry($"{defaultRegistry}/{repository}", tag!);
+                var defaultRegistry = RegistryConstants.MicrosoftContainerRegistryDomain;
+                if (ComputeRepositoryAndTag(out var repository, out var tag))
+                {
+                    ComputedContainerBaseImage = $"{defaultRegistry}/{repository}:{tag}";
+                    LogInferencePerformedTelemetry($"{defaultRegistry}/{repository}", tag!);
+                }
             }
             return !Log.HasLoggedErrors;
         }
+    }
+
+    private bool TargetRuntimeIdentiriersAreValid()
+    {
+        // For "linux-musl" RIDs we choose the alpine base image.
+        // And because we compute the base image only once, we need to ensure that all RIDs are "linux-musl" or none of them.
+        var muslRidsCount = TargetRuntimeIdentifiers.Count(rid => rid.StartsWith("linux-musl", StringComparison.Ordinal));
+        if (muslRidsCount > 0)
+        {
+            if (muslRidsCount == TargetRuntimeIdentifiers.Length)
+            {
+                IsMuslRid = true;              
+            }
+            else
+            {
+                Log.LogError(Resources.Strings.InvalidTargetRuntimeIdentifiers);
+                return false;
+            }
+        }
+        return true;
     }
 
     private string UbuntuCodenameForSDKVersion(SemanticVersion version)
@@ -314,14 +337,14 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 containerFamily = ContainerFamily;
             }
         }
-        var telemetryData = new InferenceTelemetryData(InferencePerformed: false, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), userBaseImage, userTag, containerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifier);
+        var telemetryData = new InferenceTelemetryData(InferencePerformed: false, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), userBaseImage, userTag, containerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifiers);
         LogTelemetryData(telemetryData);
     }
 
     private void LogInferencePerformedTelemetry(string imageName, string tag)
     {
         // for all inference use cases we will use .NET's images, so we can safely log name, tag, and family
-        var telemetryData = new InferenceTelemetryData(InferencePerformed: true, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), imageName, tag, String.IsNullOrEmpty(ContainerFamily) ? null : ContainerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifier);
+        var telemetryData = new InferenceTelemetryData(InferencePerformed: true, TargetFramework: ParseSemVerToMajorMinor(TargetFrameworkVersion), imageName, tag, String.IsNullOrEmpty(ContainerFamily) ? null : ContainerFamily, GetTelemetryProjectType(), GetTelemetryPublishMode(), UsesInvariantGlobalization, TargetRuntimeIdentifiers);
         LogTelemetryData(telemetryData);
     }
 
@@ -342,7 +365,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
             { nameof(telemetryData.ProjectType), telemetryData.ProjectType.ToString() },
             { nameof(telemetryData.PublishMode), telemetryData.PublishMode.ToString() },
             { nameof(telemetryData.IsInvariant), telemetryData.IsInvariant.ToString() },
-            { nameof(telemetryData.TargetRuntime), telemetryData.TargetRuntime }
+            { nameof(telemetryData.TargetRuntimes), string.Join(";", telemetryData.TargetRuntimes) }
         };
         Log.LogTelemetry("sdk/container/inference", telemetryProperties);
     }
@@ -359,8 +382,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// <param name="ProjectType">Classifies the project into categories - currently only the broad categories of web/console are known.</param>
     /// <param name="PublishMode">Categorizes the publish mode of the app - FDD, SC, Trimmed, AOT in rough order of complexity/container customization</param>
     /// <param name="IsInvariant">We make inference decisions on the invariant-ness of the project, so it's useful to track how often that is used.</param>
-    /// <param name="TargetRuntime">Different RIDs change the inference calculation, so it's useful to know how different RIDs flow into the results of inference.</param>
-    private record class InferenceTelemetryData(bool InferencePerformed, string TargetFramework, string? BaseImage, string? BaseImageTag, string? ContainerFamily, ProjectType ProjectType, PublishMode PublishMode, bool IsInvariant, string TargetRuntime);
+    /// <param name="TargetRuntimes">Different RIDs change the inference calculation, so it's useful to know how different RIDs flow into the results of inference.</param>
+    private record class InferenceTelemetryData(bool InferencePerformed, string TargetFramework, string? BaseImage, string? BaseImageTag, string? ContainerFamily, ProjectType ProjectType, PublishMode PublishMode, bool IsInvariant, string[] TargetRuntimes);
     private enum ProjectType
     {
         AspNetCore,
