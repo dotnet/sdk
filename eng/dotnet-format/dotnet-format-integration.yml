@@ -64,9 +64,10 @@ parameters:
   type: string
   default: ''
 
+### 📰 DOTNET-FORMAT ###
 jobs:
-- job: Formatting_Check
-  displayName: Run Formatting Check
+- job: dotnet_format_formatting_check
+  displayName: 📰 ✔️
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       name: $(DncEngPublicBuildPool)
@@ -95,7 +96,7 @@ jobs:
 
 - ${{ each testArgs in parameters.TestArguments }}:
   - job: dotnet_format_integration_tests_${{ testArgs.Name }}
-    displayName: 'Dotnet-Format Integration Tests: ${{ testArgs.Name }}'
+    displayName: 📰 🧪 ${{ testArgs.Name }}
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)

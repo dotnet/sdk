@@ -33,46 +33,51 @@ resources:
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
 
 stages:
-############### BUILD STAGE ###############
+############### 🛠️ BUILD STAGE ###############
 - stage: build
-  displayName: Build
+  displayName: 🛠️
   jobs:
-  ############### WINDOWS ###############
+  ############### 🪟 WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
+        emoji: 🪟
       helixTargetQueue: windows.amd64.vs2022.pre.open
 
-  ############### LINUX ###############
+  ############### 🐧 LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals build.ubuntu.2204.amd64.open
         os: linux
+        emoji: 🐧
       helixTargetQueue: ubuntu.2204.amd64.open
 
-  ############### MACOS ###############
+  ############### 🍎 MACOS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
+        emoji: 🍎
       helixTargetQueue: osx.13.amd64.open
-  ### ARM64 ###
+  ### ARM64 🧪 TESTBUILD ###
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
+        emoji: 🍎
       helixTargetQueue: osx.13.arm64.open
       macOSJobParameterSets:
       - categoryName: TestBuild
+        categoryEmoji: 🧪
         buildArchitecture: arm64
         runtimeIdentifier: osx-arm64
 
