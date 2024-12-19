@@ -40,7 +40,7 @@
       <BlazorWasmTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
       <NuGetPackTools>$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\</NuGetPackTools>
       <RazorTasks>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
-      <WindowsDesktopTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net9.0\</WindowsDesktopTools>
+      <WindowsDesktopTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
       <PublishTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
       <WebTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
       <ProjectSystemTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>
