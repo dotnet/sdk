@@ -253,7 +253,8 @@ namespace Microsoft.TemplateEngine.Cli
                 "Microsoft.Common.Console", //console
                 "Microsoft.Common.WPF", //wpf
                 "Microsoft.Common.WinForms", //winforms
-                "Microsoft.Web.Blazor" //blazor
+                "Microsoft.Web.Blazor", //blazor
+                "Microsoft.Test.MSTest" //mstest
             };
 
             IReadOnlyList<ITemplateInfo> templates = await _templatePackageManager.GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
