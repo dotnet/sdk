@@ -311,10 +311,12 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             if (visibility == _verticalVisibility)
             {
                 Log.LogError($"Artifact {elementId} has 'Vertical' visibility and should not be present in a vertical manifest.");
+                continue;
             }
             else if (visibility == _internalVisibility)
             {
                 Log.LogMessage(MessageImportance.High, $"Artifact {elementId} has 'Internal' visibility and will not be included in the final merged manifest.");
+                continue;
             }
             else if (visibility is not (null or "" or _externalVisibility))
             {
