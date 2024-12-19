@@ -1,8 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Aspire.Tools.Service;
@@ -55,7 +58,7 @@ internal class RunSessionRequest
     public EnvVar[] Environment { get; set; } = Array.Empty<EnvVar>();
 
     [JsonPropertyName("args")]
-    public string[] Arguments { get; set; } = Array.Empty<string>();
+    public string[]? Arguments { get; set; }
 
     public ProjectLaunchRequest? ToProjectLaunchInformation()
     {

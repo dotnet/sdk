@@ -4,7 +4,7 @@
   "description": "包含可以在 Windows、Linux 和 MacOS 版的 .NET 上執行、使用 MSTest 測試架構的 Playwright 測試的專案。",
   "symbols/TargetFrameworkOverride/description": "覆寫目標 Framework",
   "symbols/TargetFrameworkOverride/displayName": "目標架構覆寫",
-  "symbols/Framework/description": "專案的目標 Framework。",
+  "symbols/Framework/description": "專案的目標架構。",
   "symbols/Framework/displayName": "架構",
   "symbols/Framework/choices/net10.0/description": ".NET 9",
   "symbols/Framework/choices/net10.0-windows/description": ".NET 9 (僅限 Windows)",

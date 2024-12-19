@@ -34,7 +34,7 @@
   "symbols/TestRunner/choices/MSTest/description": "使用 MSTest 运行器(Microsoft.Testing.Platform)",
   "symbols/TestRunner/choices/VSTest/description": "使用 VSTest 平台",
   "symbols/CoverageTool/description": "要用于项目的覆盖率工具。",
-  "symbols/CoverageTool/displayName": "覆盖率工具",
+  "symbols/CoverageTool/displayName": "覆盖工具",
   "symbols/CoverageTool/choices/Microsoft.CodeCoverage/description": "Microsoft 代码覆盖率",
   "symbols/CoverageTool/choices/coverlet/description": "coverlet",
   "symbols/ExtensionsProfile/description": "使用 MSTest 运行器时选择 SDK 扩展配置文件。有关详细信息，请访问 https://aka.ms/mstest/sdk/extensions-profile",

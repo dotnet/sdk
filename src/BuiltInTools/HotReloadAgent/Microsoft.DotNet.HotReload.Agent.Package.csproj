@@ -22,5 +22,9 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-  <Import Project="..\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems" Label="Shared" />
+
+  <!-- Make sure the shared source files do not require any global usings -->
+  <ItemGroup>
+    <Using Remove="@(Using)" />
+  </ItemGroup>
 </Project>

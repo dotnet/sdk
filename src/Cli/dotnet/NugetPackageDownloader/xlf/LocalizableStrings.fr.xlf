@@ -30,7 +30,7 @@
       <trans-unit id="FailedToValidatePackageSigning">
         <source>Failed to validate package signing.
 {0}</source>
-        <target state="new">Failed to validate package signing.
+        <target state="translated">Nous n’avons pas pu valider la signature de package.
 {0}</target>
         <note />
       </trans-unit>
@@ -41,7 +41,7 @@
       </trans-unit>
       <trans-unit id="NuGetPackageShouldNotBeSigned">
         <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
-        <target state="new">Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</target>
+        <target state="translated">La vérification de signature pour le package NuGet « {0} » est ignorée, car elle provient d’une source qui ne nécessite pas de validation de signature.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
@@ -76,7 +76,7 @@
       </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
-        <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>
+        <target state="translated">Nous avons vérifié que le package NuGet « {0} » a une signature valide.</target>
         <note />
       </trans-unit>
     </body>
