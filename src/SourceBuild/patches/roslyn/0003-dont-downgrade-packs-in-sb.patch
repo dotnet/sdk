@@ -1,8 +1,7 @@
-From e6247adfdf8d93758970eb3b1ea6a4cc9d2be5df Mon Sep 17 00:00:00 2001
+From fee99a41c10b18b66cb74603b9062fef43c20d34 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
-Date: Thu, 19 Dec 2024 15:02:31 +0100
-Subject: [PATCH] Don't introduce prebuilts for 8.0.10 packs when building
- source only
+Date: Thu, 19 Dec 2024 15:36:20 +0100
+Subject: [PATCH] avoid
 
 Backport: https://github.com/dotnet/roslyn/pull/76517
 
@@ -11,7 +10,7 @@ Backport: https://github.com/dotnet/roslyn/pull/76517
  1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/eng/Directory.Packages.props b/eng/Directory.Packages.props
-index 7114e22690f..fc7cd4cef93 100644
+index 265d5e66569..7b3028f6d12 100644
 --- a/eng/Directory.Packages.props
 +++ b/eng/Directory.Packages.props
 @@ -18,8 +18,8 @@
