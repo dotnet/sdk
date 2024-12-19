@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- This source package is used by Visual Studio WebTools -->
-    <TargetFramework>$(VisualStudioServiceTargetFramework)</TargetFramework>
+    <!--
+      Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.
+      At the same time source build requires us to not target 6.0, so we fall back to netstandard.
+    -->
+    <TargetFramework>netstandard2.1</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -19,9 +22,6 @@
     <!-- Remove once https://github.com/NuGet/Home/issues/8583 is fixed -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
 
   <!-- Make sure the shared source files do not require any global usings -->
   <ItemGroup>
