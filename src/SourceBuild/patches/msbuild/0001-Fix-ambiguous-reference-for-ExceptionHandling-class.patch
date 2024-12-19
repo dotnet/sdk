@@ -1,0 +1,35 @@
+From cb75812d7f5c0860824b86f7a22bf99bee564959 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Wed, 18 Dec 2024 15:46:24 -0600
+Subject: [PATCH] Fix ambiguous reference for ExceptionHandling class
+
+Backport: https://github.com/dotnet/msbuild/pull/11173
+---
+ src/Build/BackEnd/BuildManager/BuildManager.cs                   | 1 +
+ src/Build/BackEnd/Components/ProjectCache/ProjectCacheService.cs | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/Build/BackEnd/BuildManager/BuildManager.cs b/src/Build/BackEnd/BuildManager/BuildManager.cs
+index e3aa23a478..c4a13d02dc 100644
+--- a/src/Build/BackEnd/BuildManager/BuildManager.cs
++++ b/src/Build/BackEnd/BuildManager/BuildManager.cs
+@@ -37,6 +37,7 @@ using Microsoft.Build.Logging;
+ using Microsoft.Build.Shared;
+ using Microsoft.Build.Shared.Debugging;
+ using Microsoft.NET.StringTools;
++using ExceptionHandling = Microsoft.Build.Shared.ExceptionHandling;
+ using ForwardingLoggerRecord = Microsoft.Build.Logging.ForwardingLoggerRecord;
+ using LoggerDescription = Microsoft.Build.Logging.LoggerDescription;
+ 
+diff --git a/src/Build/BackEnd/Components/ProjectCache/ProjectCacheService.cs b/src/Build/BackEnd/Components/ProjectCache/ProjectCacheService.cs
+index 446f5ef644..bd1cb0fd8d 100644
+--- a/src/Build/BackEnd/Components/ProjectCache/ProjectCacheService.cs
++++ b/src/Build/BackEnd/Components/ProjectCache/ProjectCacheService.cs
+@@ -22,6 +22,7 @@ using Microsoft.Build.Framework;
+ using Microsoft.Build.Graph;
+ using Microsoft.Build.Internal;
+ using Microsoft.Build.Shared;
++using ExceptionHandling = Microsoft.Build.Shared.ExceptionHandling;
+ 
+ namespace Microsoft.Build.Experimental.ProjectCache
+ {
