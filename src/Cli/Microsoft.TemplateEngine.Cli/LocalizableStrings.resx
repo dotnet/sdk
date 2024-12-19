@@ -531,6 +531,9 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</value>
   <data name="TemplatePackageCoordinator_Install_Error_FoundNoPackagesToInstall" xml:space="preserve">
     <value>Found no template packages to install.</value>
   </data>
+  <data name="Colon_Separator_Deprecated" xml:space="preserve">
+    <value>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</value>
+  </data>
   <data name="TemplatePackageCoordinator_Install_Info_PackagesToBeInstalled" xml:space="preserve">
     <value>The following template packages will be installed:</value>
   </data>
