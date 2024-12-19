@@ -14,8 +14,6 @@ using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-#nullable enable
-
 namespace Microsoft.DotNet.Workloads.Workload.Config
 {
     internal class WorkloadConfigCommand : WorkloadCommandBase
