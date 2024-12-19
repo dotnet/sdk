@@ -1,27 +1,15 @@
+From d37bcaf1cc55f4dd34ddad48ad726fc413c1a25b Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 13 Dec 2024 13:33:17 -0800
+Subject: [PATCH 1/5] In VMR builds, a host-SDK crossgen will always be
+ available.
 
-From d37bcaf1cc55f4dd34ddad48ad726fc413c1a25b Fri Dec 13 13:33:17 2024
-Author: Jeremy Koritzinsky <jekoritz@microsoft.com>
-Date:   Fri Dec 13 13:33:17 2024 -0800
-Subject: [PATCH]  In VMR builds, a host-SDK crossgen will always be available.
+Backport: https://github.com/dotnet/aspnetcore/pull/59551
 
-Backport: TBD
 ---
 
-diff --git a/eng/tools/GenerateFiles/Directory.Build.targets.in b/eng/tools/GenerateFiles/Directory.Build.targets.in
-index 88f09a8c89..66976bd6cd 100644
---- a/eng/tools/GenerateFiles/Directory.Build.targets.in
-+++ b/eng/tools/GenerateFiles/Directory.Build.targets.in
-@@ -108,7 +108,7 @@
-     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2">
-       <Crossgen2PackVersion
-           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</Crossgen2PackVersion>
--      <Crossgen2RuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
-+      <Crossgen2RuntimeIdentifiers Condition="'$(DotNetBuildOrchestrator)' == 'true'">$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
-     </KnownCrossgen2Pack>
- 
-     <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
 diff --git a/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.Composite.sfxproj b/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.Composite.sfxproj
-index 68d2861437..7d75aa7f8c 100644
+index 68d28614376b..7d75aa7f8caf 100644
 --- a/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.Composite.sfxproj
 +++ b/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.Composite.sfxproj
 @@ -15,8 +15,6 @@
@@ -34,7 +22,7 @@ index 68d2861437..7d75aa7f8c 100644
      <!-- Don't use ReadyToRun when explicitly opted out -->
      <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>
 diff --git a/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj b/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj
-index d3160de441..533c6840f9 100644
+index d3160de441ac..533c6840f9e0 100644
 --- a/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj
 +++ b/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj
 @@ -15,8 +15,6 @@
@@ -47,7 +35,7 @@ index d3160de441..533c6840f9 100644
      <!-- Don't use ReadyToRun when explicitly opted out -->
      <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>
 diff --git a/eng/tools/GenerateFiles/Directory.Build.targets.in b/eng/tools/GenerateFiles/Directory.Build.targets.in
-index 66976bd6cd..535ad48b08 100644
+index 66976bd6cd56..535ad48b08f3 100644
 --- a/eng/tools/GenerateFiles/Directory.Build.targets.in
 +++ b/eng/tools/GenerateFiles/Directory.Build.targets.in
 @@ -80,7 +80,8 @@
@@ -60,8 +48,9 @@ index 66976bd6cd..535ad48b08 100644
      </KnownFrameworkReference>
  
      <KnownAppHostPack Update="Microsoft.NETCore.App">
+
 diff --git a/eng/targets/Sfx.Common.targets b/eng/targets/Sfx.Common.targets
-index 5ff818b44f..c587e3760e 100644
+index 5ff818b44f2d..c587e3760e83 100644
 --- a/eng/targets/Sfx.Common.targets
 +++ b/eng/targets/Sfx.Common.targets
 @@ -36,4 +36,13 @@
@@ -74,43 +63,29 @@ index 5ff818b44f..c587e3760e 100644
 +    <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsVersion)]" />
 +  </ItemGroup>
 +
-+  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)')">
-+    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
-+  </PropertyGroup>
- </Project>
-diff --git a/eng/targets/Sfx.Common.targets b/eng/targets/Sfx.Common.targets
-index c587e3760e..f97b379391 100644
---- a/eng/targets/Sfx.Common.targets
-+++ b/eng/targets/Sfx.Common.targets
-@@ -42,7 +42,7 @@
-     <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsVersion)]" />
-   </ItemGroup>
- 
--  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)')">
--    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)Microsoft.NETCore.Platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
 +  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)')">
 +    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
-   </PropertyGroup>
++  </PropertyGroup>
  </Project>
+
 diff --git a/eng/tools/GenerateFiles/Directory.Build.targets.in b/eng/tools/GenerateFiles/Directory.Build.targets.in
-index 4d56e7e3f1..535ad48b08 100644
+index 535ad48b08f3..4d56e7e3f139 100644
 --- a/eng/tools/GenerateFiles/Directory.Build.targets.in
 +++ b/eng/tools/GenerateFiles/Directory.Build.targets.in
 @@ -81,7 +81,7 @@
            '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND
            '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
        <!-- Workaround https://github.com/dotnet/sdk/pull/45487: The .NET SDK requires the crossgen2 host runtime identifier to be in the runtime pack runtime identifiers list. -->
--      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(RuntimePackRuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
-+      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuildOrchestrator)' == 'true'">$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
+-      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuildOrchestrator)' == 'true'">$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
++      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(RuntimePackRuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
      </KnownFrameworkReference>
  
      <KnownAppHostPack Update="Microsoft.NETCore.App">
-@@ -109,7 +109,7 @@
-     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2">
+@@ -110,6 +110,6 @@
        <Crossgen2PackVersion
            Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</Crossgen2PackVersion>
--      <Crossgen2RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(Crossgen2RuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
-+      <Crossgen2RuntimeIdentifiers Condition="'$(DotNetBuildOrchestrator)' == 'true'">$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
+-      <Crossgen2RuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
++      <Crossgen2RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(Crossgen2RuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
      </KnownCrossgen2Pack>
  
      <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
