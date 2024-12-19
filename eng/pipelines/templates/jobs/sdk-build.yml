@@ -7,6 +7,7 @@ parameters:
   container: ''
   helixTargetContainer: ''
   categoryName: Build
+  categoryEmoji: 🛠️
   runTests: true
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
   publishRetryConfig: false
@@ -34,11 +35,11 @@ jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
     ${{ if eq(parameters.container, '') }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }})'
+      name: ${{ parameters.pool.os }}_${{ parameters.categoryName }}_${{ parameters.buildArchitecture }}
+      displayName: ${{ parameters.pool.emoji }} ${{ parameters.categoryEmoji }} ${{ parameters.buildArchitecture }}
     ${{ else }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }}) [${{ parameters.container }}]'
+      name: ${{ parameters.pool.os }}_${{ parameters.categoryName }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
+      displayName: ${{ parameters.pool.emoji }} ${{ parameters.categoryEmoji }} ${{ parameters.buildArchitecture }} ${{ parameters.container }}
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -88,7 +89,7 @@ jobs:
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: Build
+        displayName: Build ${{ parameters.categoryName }}
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
@@ -112,7 +113,7 @@ jobs:
           ${{ parameters.runtimeSourceProperties }} \
           ${{ parameters.officialBuildProperties }} \
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: Build
+        displayName: Build ${{ parameters.categoryName }}
         env:
           BuildConfig: $(buildConfiguration)
 

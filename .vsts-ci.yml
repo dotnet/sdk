@@ -90,17 +90,18 @@ extends:
           ignoreDirectories: artifacts, .packages
 
     stages:
-    ############### BUILD STAGE ###############
+    ############### 🛠️ BUILD STAGE ###############
     - stage: build
-      displayName: Build
+      displayName: 🛠️
       jobs:
-      ############### WINDOWS ###############
+      ############### 🪟 WINDOWS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
           pool:
             name: $(DncEngInternalBuildPool)
             image: windows.vs2022.amd64
             os: windows
+            emoji: 🪟
           helixTargetQueue: windows.amd64.vs2022.pre
           oneESCompat:
             templateFolderName: templates-official
@@ -114,8 +115,9 @@ extends:
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
             windowsJobParameterSets:
-            ### OFFICIAL ###
+            ### ⭐ OFFICIAL ###
             - categoryName: Official
+              categoryEmoji: ⭐
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -125,6 +127,7 @@ extends:
               variables:
                 _SignType: real
             - categoryName: Official
+              categoryEmoji: ⭐
               buildArchitecture: x86
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
@@ -133,6 +136,7 @@ extends:
               variables:
                 _SignType: real
             - categoryName: Official
+              categoryEmoji: ⭐
               buildArchitecture: arm64
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
@@ -140,8 +144,9 @@ extends:
               runTests: false
               variables:
                 _SignType: real
-            ### PGO ###
+            ### 🧭 PGO ###
             - categoryName: PGO
+              categoryEmoji: 🧭
               pgoInstrument: true
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
@@ -150,6 +155,7 @@ extends:
               variables:
                 _SignType: real
             - categoryName: PGO
+              categoryEmoji: 🧭
               pgoInstrument: true
               buildArchitecture: x86
               publishArgument: $(_publishArgument)
@@ -159,6 +165,7 @@ extends:
               variables:
                 _SignType: real
             - categoryName: PGO
+              categoryEmoji: 🧭
               pgoInstrument: true
               buildArchitecture: arm64
               publishArgument: $(_publishArgument)
@@ -168,13 +175,14 @@ extends:
               variables:
                 _SignType: real
 
-      ############### LINUX ###############
+      ############### 🐧 LINUX ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
           pool:
             name: $(DncEngInternalBuildPool)
             image: 1es-ubuntu-2204
             os: linux
+            emoji: 🐧
           helixTargetQueue: ubuntu.2204.amd64
           oneESCompat:
             templateFolderName: templates-official
@@ -183,14 +191,16 @@ extends:
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
             linuxJobParameterSets:
-            ### OFFICIAL ###
+            ### ⭐ OFFICIAL ###
             # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
             - categoryName: Official
+              categoryEmoji: ⭐
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: Official
+              categoryEmoji: ⭐
               buildArchitecture: arm
               runtimeIdentifier: linux-arm
               publishArgument: $(_publishArgument)
@@ -198,20 +208,23 @@ extends:
               osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: Official
+              categoryEmoji: ⭐
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties)
               runTests: false
-            ### PORTABLE ###
+            ### 💼 PORTABLE ###
             - categoryName: Portable
+              categoryEmoji: 💼
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
+              categoryEmoji: 💼
               container: centosStream9
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
@@ -219,6 +232,7 @@ extends:
               osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
             - categoryName: Portable
+              categoryEmoji: 💼
               container: centosStream9
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
@@ -227,8 +241,9 @@ extends:
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
-            ### MUSL ###
+            ### 💪 MUSL ###
             - categoryName: Musl
+              categoryEmoji: 💪
               container: alpine319WithNode
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
@@ -239,6 +254,7 @@ extends:
               enableSbom: false
               runTests: false
             - categoryName: Musl
+              categoryEmoji: 💪
               container: mariner20CrossArm
               buildArchitecture: arm
               runtimeIdentifier: linux-musl-arm
@@ -247,20 +263,23 @@ extends:
               osProperties: /p:OSName=linux-musl
               runTests: false
             - categoryName: Musl
+              categoryEmoji: 💪
               buildArchitecture: arm64
               runtimeIdentifier: linux-musl-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: /p:OSName=linux-musl
               runTests: false
-            ### PGO ###
+            ### 🧭 PGO ###
             - categoryName: PGO
+              categoryEmoji: 🧭
               pgoInstrument: true
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: PGO
+              categoryEmoji: 🧭
               pgoInstrument: true
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
@@ -269,13 +288,14 @@ extends:
               osProperties: $(linuxOsPortableProperties)
               runTests: false
 
-      ############### MACOS ###############
+      ############### 🍎 MACOS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
           pool:
             name: Azure Pipelines
             image: macOS-latest
             os: macOS
+            emoji: 🍎
           helixTargetQueue: osx.13.amd64
           oneESCompat:
             templateFolderName: templates-official
@@ -284,19 +304,21 @@ extends:
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
             macOSJobParameterSets:
-            ### OFFICIAL ###
+            ### ⭐ OFFICIAL ###
             - categoryName: Official
+              categoryEmoji: ⭐
               runtimeIdentifier: osx-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
             - categoryName: Official
+              categoryEmoji: ⭐
               buildArchitecture: arm64
               runtimeIdentifier: osx-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
-      ### ARM64 TESTBUILD ###
+      ### ARM64 🧪 TESTBUILD ###
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
@@ -304,9 +326,11 @@ extends:
               name: Azure Pipelines
               vmImage: macOS-latest
               os: macOS
+              emoji: 🍎
             helixTargetQueue: osx.13.arm64
             macOSJobParameterSets:
             - categoryName: TestBuild
+              categoryEmoji: 🧪
               buildArchitecture: arm64
               runtimeIdentifier: osx-arm64
 

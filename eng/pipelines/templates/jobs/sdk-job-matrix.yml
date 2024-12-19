@@ -2,33 +2,47 @@ parameters:
   oneESCompat:
     templateFolderName: templates
   locBranch: ''
-  ### WINDOWS ###
+  ### LEGEND ###
+  # 🧪 TestBuild
+  # 🖼️ FullFramework
+  # 🪛 TestAsTools
+  # 📦 ContainerBased
+  # 🧩 TemplateEngine
+  # ⏰ AoT
+  ### 🪟 WINDOWS ###
   windowsJobParameterSets:
   - categoryName: TestBuild
+    categoryEmoji: 🧪
     publishRetryConfig: true
   - categoryName: FullFramework
+    categoryEmoji: 🖼️
     testFullMSBuild: true
   - categoryName: TestAsTools
+    categoryEmoji: 🪛
     runTestsAsTool: true
     # This job uses the build step for testing, so the extra test step is not necessary.
     runTests: false
-  # Turn off template engine runs on Windows temporarily until agent images are updated
-  #- categoryName: TemplateEngine
-  #  testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-  #  publishXunitResults: true
+  - categoryName: TemplateEngine
+    categoryEmoji: 🧩
+    testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+    publishXunitResults: true
   - categoryName: AoT
+    categoryEmoji: ⏰
     runAoTTests: true
-  ### LINUX ###
+  ### 🐧 LINUX ###
   linuxJobParameterSets:
   - categoryName: TestBuild
+    categoryEmoji: 🧪
     osProperties: $(linuxOsPortableProperties)
   - categoryName: TestBuild
+    categoryEmoji: 🧪
     buildArchitecture: arm64
     runtimeIdentifier: linux-arm64
     osProperties: $(linuxOsPortableProperties)
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
   - categoryName: ContainerBased
+    categoryEmoji: 📦
     container: ubuntu2204DebPkg
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
     osProperties: $(linuxOsPortableProperties)
@@ -36,6 +50,7 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
+    categoryEmoji: 📦
     container: fedora39
     # No fedora Helix container is available, so use the ubuntu one instead.
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
@@ -44,6 +59,7 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
+    categoryEmoji: 📦
     container: centosStream9
     helixTargetContainer: $(helixTargetContainerPrefix)centos-stream9-helix
     osProperties: /p:OSName=linux
@@ -51,6 +67,7 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
+    categoryEmoji: 📦
     container: debian12Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)debian-11-helix-amd64
     osProperties: /p:OSName=linux /p:BuildSdkDeb=true
@@ -58,6 +75,7 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: ContainerBased
+    categoryEmoji: 📦
     container: alpine319WithNode
     helixTargetContainer: $(helixTargetContainerPrefix)alpine-3.18-helix-amd64
     runtimeIdentifier: linux-musl-x64
@@ -69,16 +87,20 @@ parameters:
     # See: https://github.com/dotnet/sdk/issues/40935
     runTests: false
   - categoryName: TemplateEngine
+    categoryEmoji: 🧩
     osProperties: $(linuxOsPortableProperties)
     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
     publishXunitResults: true
-  ### MACOS ###
+  ### 🍎 MACOS ###
   macOSJobParameterSets:
   - categoryName: TestBuild
+    categoryEmoji: 🧪
   - categoryName: TemplateEngine
+    categoryEmoji: 🧩
     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
     publishXunitResults: true
   - categoryName: AoT
+    categoryEmoji: ⏰
     runAoTTests: true
 
 jobs:
