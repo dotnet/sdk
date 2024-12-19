@@ -276,10 +276,6 @@
     <MicrosoftSourceLinkGitLabVersion>9.0.0-beta.24617.1</MicrosoftSourceLinkGitLabVersion>
     <MicrosoftSourceLinkBitbucketGitVersion>9.0.0-beta.24617.1</MicrosoftSourceLinkBitbucketGitVersion>
   </PropertyGroup>
-  <!-- Get .NET Framework reference assemblies from NuGet packages -->
-  <PropertyGroup>
-    <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
-  </PropertyGroup>
   <!-- Test Dependencies -->
   <PropertyGroup>
     <FluentAssertionsVersion>6.12.0</FluentAssertionsVersion>
