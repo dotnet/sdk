@@ -326,4 +326,7 @@ Examples:
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
     <value>Test application(s) that support VSTest are not supported.</value>
   </data>
+  <data name="CmdUnsupportedTestRunnerDescription" xml:space="preserve">
+    <value>Test runner not supported: {0}.</value>
+  </data>
 </root>
