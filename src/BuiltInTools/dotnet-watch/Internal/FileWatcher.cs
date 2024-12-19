@@ -9,7 +9,9 @@ namespace Microsoft.DotNet.Watch
         private readonly Dictionary<string, IDirectoryWatcher> _watchers = [];
 
         private bool _disposed;
-        public event Action<string, ChangeKind>? OnFileChange;
+        public event Action<ChangedPath>? OnFileChange;
+
+        public bool SuppressEvents { get; set; }
 
         public void Dispose()
         {
@@ -62,6 +64,11 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 var newWatcher = FileWatcherFactory.CreateWatcher(directory);
+                if (newWatcher is EventBasedDirectoryWatcher eventBasedWatcher)
+                {
+                    eventBasedWatcher.Logger = message => reporter.Verbose(message);
+                }
+
                 newWatcher.OnFileChange += WatcherChangedHandler;
                 newWatcher.OnError += WatcherErrorHandler;
                 newWatcher.EnableRaisingEvents = true;
@@ -78,9 +85,12 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private void WatcherChangedHandler(object? sender, (string changedPath, ChangeKind kind) args)
+        private void WatcherChangedHandler(object? sender, ChangedPath change)
         {
-            OnFileChange?.Invoke(args.changedPath, args.kind);
+            if (!SuppressEvents)
+            {
+                OnFileChange?.Invoke(change);
+            }
         }
 
         private void DisposeWatcher(string directory)
@@ -98,45 +108,43 @@ namespace Microsoft.DotNet.Watch
         private static string EnsureTrailingSlash(string path)
             => (path is [.., var last] && last != Path.DirectorySeparatorChar) ? path + Path.DirectorySeparatorChar : path;
 
-        public Task<ChangedFile?> WaitForFileChangeAsync(Action? startedWatching, CancellationToken cancellationToken)
-           => WaitForFileChangeAsync(
-               changeFilter: (path, kind) => new ChangedFile(new FileItem() { FilePath = path, ContainingProjectPaths = [] }, kind),
-               startedWatching,
-               cancellationToken);
-
-        public Task<ChangedFile?> WaitForFileChangeAsync(IReadOnlyDictionary<string, FileItem> fileSet, Action? startedWatching, CancellationToken cancellationToken)
-            => WaitForFileChangeAsync(
-                changeFilter: (path, kind) => fileSet.TryGetValue(path, out var fileItem) ? new ChangedFile(fileItem, kind) : null,
+        public async Task<ChangedFile?> WaitForFileChangeAsync(IReadOnlyDictionary<string, FileItem> fileSet, Action? startedWatching, CancellationToken cancellationToken)
+        {
+            var changedPath = await WaitForFileChangeAsync(
+                acceptChange: change => fileSet.ContainsKey(change.Path),
                 startedWatching,
                 cancellationToken);
 
-        public async Task<ChangedFile?> WaitForFileChangeAsync(Func<string, ChangeKind, ChangedFile?> changeFilter, Action? startedWatching, CancellationToken cancellationToken)
+            return changedPath.HasValue ? new ChangedFile(fileSet[changedPath.Value.Path], changedPath.Value.Kind) : null;
+        }
+
+        public async Task<ChangedPath?> WaitForFileChangeAsync(Predicate<ChangedPath> acceptChange, Action? startedWatching, CancellationToken cancellationToken)
         {
-            var fileChangedSource = new TaskCompletionSource<ChangedFile?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var fileChangedSource = new TaskCompletionSource<ChangedPath?>(TaskCreationOptions.RunContinuationsAsynchronously);
             cancellationToken.Register(() => fileChangedSource.TrySetResult(null));
 
-            void FileChangedCallback(string path, ChangeKind kind)
+            void FileChangedCallback(ChangedPath change)
             {
-                if (changeFilter(path, kind) is { } changedFile)
+                if (acceptChange(change))
                 {
-                    fileChangedSource.TrySetResult(changedFile);
+                    fileChangedSource.TrySetResult(change);
                 }
             }
 
-            ChangedFile? changedFile;
+            ChangedPath? change;
 
             OnFileChange += FileChangedCallback;
             try
             {
                 startedWatching?.Invoke();
-                changedFile = await fileChangedSource.Task;
+                change = await fileChangedSource.Task;
             }
             finally
             {
                 OnFileChange -= FileChangedCallback;
             }
 
-            return changedFile;
+            return change;
         }
 
         public static async ValueTask WaitForFileChangeAsync(string filePath, IReporter reporter, Action? startedWatching, CancellationToken cancellationToken)
@@ -146,7 +154,7 @@ namespace Microsoft.DotNet.Watch
             watcher.WatchDirectories([Path.GetDirectoryName(filePath)!]);
 
             var fileChange = await watcher.WaitForFileChangeAsync(
-                changeFilter: (path, kind) => path == filePath ? new ChangedFile(new FileItem { FilePath = path, ContainingProjectPaths = [] }, kind) : null,
+                acceptChange: change => change.Path == filePath,
                 startedWatching,
                 cancellationToken);
 
