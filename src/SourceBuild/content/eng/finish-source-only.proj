@@ -16,14 +16,14 @@
 
   <!-- After building, generate a prebuilt usage report. -->
   <Target Name="ReportPrebuiltUsage"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           Condition="'$(SkipReportPrebuiltUsage)' != 'true'">
     <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
   </Target>
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WriteSBRPUsageReport" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="ReportSbrpUsage"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           Condition="'$(ReportSbrpUsage)' == 'true'">
     <WriteSbrpUsageReport SbrpRepoSrcPath="$(SbrpRepoSrcDir)"
                           SrcPath="$(SrcDir)"
@@ -59,7 +59,7 @@
 
   <!-- After building, repackage symbols into a single tarball. -->
   <Target Name="RepackageSymbols"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           DependsOnTargets="DetermineSymbolsTargetsInputsAndOutputs"
           Inputs="@(IntermediateSymbol)"
           Outputs="$(UnifiedSymbolsTarball)">
@@ -68,13 +68,18 @@
     <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
           WorkingDirectory="$(IntermediateSymbolsRootDir)" />
 
+    <!-- Mark the artifact so that it gets binplaced. -->
+    <ItemGroup>
+      <BinPlaceFile Include="$(UnifiedSymbolsTarball)" />
+    </ItemGroup>
+
     <Message Importance="High" Text="Packaged all symbols in '$(UnifiedSymbolsTarball)'" />
   </Target>
 
   <!-- After building, create the sdk symbols tarball. -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.CreateSdkSymbolsLayout" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreateSdkSymbolsTarball"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           DependsOnTargets="RepackageSymbols"
           Inputs="@(IntermediateSymbol);$(SdkTarballPath)"
           Outputs="$(SdkSymbolsTarball)">
@@ -89,6 +94,11 @@
 
     <Exec Command="tar --numeric-owner -czf $(SdkSymbolsTarball) *"
           WorkingDirectory="$(IntermediateSdkSymbolsLayout)" />
+
+    <!-- Mark the artifact so that it gets binplaced. -->
+    <ItemGroup>
+      <BinPlaceFile Include="$(SdkSymbolsTarball)" />
+    </ItemGroup>
 
     <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
 
@@ -108,7 +118,7 @@
 
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.CheckForPoison" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" Condition="'$(EnablePoison)' == 'true'" />
   <Target Name="ReportPoisonUsage"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           Condition="'$(EnablePoison)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" >
@@ -157,7 +167,7 @@
   </Target>
 
   <Target Name="CreatePrebuiltsTarball"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           DependsOnTargets="
             CheckIfPrebuiltsExistToPack;
             CreatePrebuiltsTarballIfPrebuiltsExist;
@@ -182,6 +192,11 @@
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(PrebuiltsTarball)'))" />
     <Exec Command="tar --numeric-owner -zcf $(PrebuiltsTarball) -C $(PrebuiltsTarballWorkingDir) ." />
+
+    <!-- Mark the artifact so that it gets binplaced. -->
+    <ItemGroup>
+      <BinPlaceFile Include="$(PrebuiltsTarball)" />
+    </ItemGroup>
 
     <Message Text="Tarball '$(PrebuiltsTarball)' was successfully created from '$(PrebuiltsTarballWorkingDir)'" Importance="High" />
   </Target>
@@ -227,7 +242,7 @@
   <!-- Create the SourceBuilt.Private.Artifacts archive when building source-only. -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreatePrivateSourceBuiltArtifactsArchive"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           DependsOnTargets="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive;GetProducedPackages"
           Inputs="@(ArtifactsPackageToBundle);@(ReferencePackageToBundle);@(MergedAssetManifest)"
           Outputs="$(SourceBuiltTarballName);$(SourceBuiltVersionName);$(AllPackageVersionsPropsName);$(SourceBuiltMergedAssetManifestName)">
@@ -263,7 +278,27 @@
     <Exec Command="tar --numeric-owner -czhf $(SourceBuiltTarballName) $([System.IO.Path]::GetFileName('$(SourceBuiltVersionName)')) *"
           WorkingDirectory="$(SourceBuiltLayoutDir)" />
 
+    <!-- Mark the artifact so that it gets binplaced. -->
+    <ItemGroup>
+      <BinPlaceFile Include="$(SourceBuiltTarballName)" />
+    </ItemGroup>
+
     <Message Importance="High" Text="Packaged source-built artifacts to $(SourceBuiltTarballName)" />
+  </Target>
+
+    <!-- Copy SDK archive to assets root as source-only build partners expect the file to be there. -->
+  <Target Name="CopySdkArchive"
+          BeforeTargets="Build"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+    <Copy SourceFiles="$(SdkTarballPath)"
+          DestinationFolder="$(ArtifactsAssetsDir)"
+          SkipUnchangedFiles="true"
+          UseHardlinksIfPossible="true" />
+    
+    <!-- Mark the artifact so that it gets binplaced. -->
+    <ItemGroup>
+      <BinPlaceFile Include="$(ArtifactsAssetsDir)$([System.IO.Path]::GetFileName('$(SdkTarballPath)'))" />
+    </ItemGroup>
   </Target>
 
 </Project>

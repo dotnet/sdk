@@ -17,8 +17,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             string targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
-            RestoreActionConfig restoreActionConfig = null,
-            bool verifySignatures = true
+            bool verifySignatures = true,
+            RestoreActionConfig restoreActionConfig = null
         );
 
         NuGetVersion GetNuGetVersion(
@@ -26,7 +26,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
-            bool isGlobalTool = false
+            bool isGlobalTool = false,
+            RestoreActionConfig restoreActionConfig = null
         );
     }
 }

@@ -42,6 +42,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? "USERPROFILE"
                 : "HOME")
+            ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
             ?? throw new NotSupportedException("HOME or USERPROFILE environment variable is not defined, the environment is not supported");
 
         private static string GetGlobalSettingsDir(string? settingsLocation)

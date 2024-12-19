@@ -105,14 +105,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds, packageId, source.Source));
             }
 
-            string nupkgPath = downloadFolder == null || !downloadFolder.HasValue
-                ? Path.Combine(_packageInstallDir.Value, packageId.ToString(),
-                    resolvedPackageVersion.ToNormalizedString(),
-                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg")
-                : Path.Combine(downloadFolder.Value.Value,
-                    $"{packageId}.{resolvedPackageVersion.ToNormalizedString()}.nupkg");
-
+            var pathResolver = new VersionFolderPathResolver(downloadFolder == null || !downloadFolder.HasValue ? _packageInstallDir.Value : downloadFolder.Value.Value);
+            string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
             Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
+
             using FileStream destinationStream = File.Create(nupkgPath);
             bool success = await ExponentialRetry.ExecuteWithRetryOnFailure(async () => await resource.CopyNupkgToStreamAsync(
                 packageId.ToString(),
@@ -192,7 +188,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             SourceRepository repository = GetSourceRepository(source);
             if (repository.PackageSource.IsLocal)
             {
-                return Path.Combine(repository.PackageSource.Source, $"{packageId}.{resolvedPackageVersion}.nupkg");
+                return Path.Combine(
+                    repository.PackageSource.Source,
+                    new VersionFolderPathResolver(repository.PackageSource.Source).GetPackageFileName(packageId.ToString(), resolvedPackageVersion)
+                );
             }
 
             ServiceIndexResourceV3 serviceIndexResource = repository.GetResourceAsync<ServiceIndexResourceV3>().Result;
@@ -281,9 +280,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return (source, packageVersion);
         }
 
-        private string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) =>
-            baseUri + id.ToString() + "/" + version.ToNormalizedString() + "/" + id.ToString() +
-            "." + version.ToNormalizedString() + ".nupkg";
+        private string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) => baseUri + id.ToString() + "/" + version.ToNormalizedString() + "/" + id.ToString() +
+            "." + version.ToNormalizedString().ToLowerInvariant() + ".nupkg";
 
         internal IEnumerable<FilePath> FindAllFilesNeedExecutablePermission(IEnumerable<string> files,
             string targetPath)
@@ -405,6 +403,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         continue;
                     }
 
+                    if (defaultSources.Any(defaultSource => defaultSource.SourceUri == packageSource.SourceUri))
+                    {
+                        continue;
+                    }
+
                     defaultSources.Add(packageSource);
                 }
             }
@@ -412,7 +415,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return defaultSources;
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
+        public IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             var sources = (packageSourceLocation?.SourceFeedOverrides.Any() ?? false) ?
                 LoadOverrideSources(packageSourceLocation) :

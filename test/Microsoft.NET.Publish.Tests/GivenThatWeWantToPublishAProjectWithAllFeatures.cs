@@ -61,6 +61,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.ComponentModel.DefaultValueAttribute.IsSupported"": true,
             ""System.ComponentModel.Design.IDesignerHost.IsSupported"": true,
             ""System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"": false,
+            ""System.Data.DataSet.XmlSerializationIsSupported"": true,
             ""System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"": false,
             ""System.Diagnostics.Debugger.IsSupported"": true,
             ""System.Diagnostics.Metrics.Meter.IsSupported"": false,
