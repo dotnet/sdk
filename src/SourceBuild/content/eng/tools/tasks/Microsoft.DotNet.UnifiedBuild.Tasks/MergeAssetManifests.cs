@@ -67,6 +67,10 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             foreach (var assetManifestXml in assetManifestXmls)
             {
+                // We may encounter assets here with "Vertical", "Internal", or "External" visibility here.
+                // We filter out "Vertical" visibility assets here, as they are not needed in the merged manifest.
+                // We leave in "Internal" assets so they can be used in later build passes.
+                // We leave in "External" assets as we will eventually ship them.
                 packageElements.AddRange(assetManifestXml.Descendants("Package").Where(package => package.Attribute("Visibility")?.Value != "Vertical"));
                 blobElements.AddRange(assetManifestXml.Descendants("Blob").Where(blob => blob.Attribute("Visibility")?.Value != "Vertical"));
             }

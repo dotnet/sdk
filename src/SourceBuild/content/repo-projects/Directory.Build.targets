@@ -555,8 +555,8 @@
       </ProducedPackage>
 
       <!--
-        When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages.
-        Don't binplace any packages or blobs with vertical visibility. These are only used for building other repos within this vertical
+        When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages so no need to binplace.
+        In addition, don't binplace any packages or blobs with vertical visibility. These are only used for building other repos within this vertical
         and shouldn't be staged for upload.
       -->
       <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/$(RepositoryName)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true' and '%(Visibility)' != 'Vertical'" />
