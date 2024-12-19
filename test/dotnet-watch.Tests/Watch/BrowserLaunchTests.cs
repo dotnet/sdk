@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task LaunchesBrowserOnStart()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                 .WithSource();
 
             App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task UsesBrowserSpecifiedInEnvironment()
         {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = _testAssetsManager.CopyTestAsset(AppName)
                 .WithSource();
 
             App.EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", "mycustombrowser.bat");
