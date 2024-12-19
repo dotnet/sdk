@@ -82,7 +82,7 @@ jobs:
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: Build
+        displayName: Build ${{ parameters.categoryName }}
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
@@ -106,7 +106,7 @@ jobs:
           ${{ parameters.runtimeSourceProperties }} \
           ${{ parameters.officialBuildProperties }} \
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: Build
+        displayName: Build ${{ parameters.categoryName }}
         env:
           BuildConfig: $(buildConfiguration)
 
@@ -126,7 +126,7 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: Run ${{ parameters.categoryEmoji }} Tests
+          displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
           env:
             # Required by Arcade for running in Helix.
@@ -148,7 +148,7 @@ jobs:
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: Run ${{ parameters.categoryEmoji }} Tests
+          displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
           env:
             # Required by Arcade for running in Helix.
