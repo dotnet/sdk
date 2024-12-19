@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
 
             _arguments = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
 
-            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _arguments, SlnArgumentValidator.CommandType.Remove);
+            SlnArgumentValidator.ParseAndValidateArguments(_arguments, SlnArgumentValidator.CommandType.Remove);
         }
 
         public override int Execute()

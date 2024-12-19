@@ -37,6 +37,8 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand command = new("add", LocalizableStrings.AddAppFullName);
 
+            command.Subcommands.Add(SlnAddFileParser.GetCommand());
+            
             command.Arguments.Add(ProjectPathArgument);
             command.Options.Add(InRootOption);
             command.Options.Add(SolutionFolderOption);

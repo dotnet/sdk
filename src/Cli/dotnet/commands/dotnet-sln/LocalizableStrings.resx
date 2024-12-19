@@ -132,20 +132,44 @@
   <data name="AppHelpText" xml:space="preserve">
     <value>Projects to add or to remove from the solution.</value>
   </data>
+  <data name="CouldNotFindFile" xml:space="preserve">
+    <value>Could not find file `{0}`.</value>
+  </data>
   <data name="AddAppFullName" xml:space="preserve">
     <value>Add one or more projects to a solution file.</value>
+  </data>
+  <data name="AddFileFullName" xml:space="preserve">
+    <value>Add one or more solution items to a solution file.</value>
   </data>
   <data name="AddProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>
+  <data name="ProjectPathArgumentShouldNotBeProvidedForDotnetSlnAddFile" xml:space="preserve">
+    <value>PROJECT_PATH should not be provided for `dotnet sln add file`</value>
+  </data>
   <data name="AddProjectPathArgumentDescription" xml:space="preserve">
     <value>The paths to the projects to add to the solution.</value>
+  </data>
+  <data name="AddFilePathArgumentName" xml:space="preserve">
+    <value>FILE_PATH</value>
+  </data>
+  <data name="AddFilePathArgumentDescription" xml:space="preserve">
+    <value>The paths to the solution items to add to the solution.</value>
   </data>
   <data name="RemoveProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>
   <data name="RemoveProjectPathArgumentDescription" xml:space="preserve">
     <value>The paths to the projects to remove from the solution.</value>
+  </data>
+  <data name="SpecifyAtLeastOneFileToAdd" xml:space="preserve">
+    <value>You must specify at least one file to add.</value>
+  </data>
+  <data name="SolutionAlreadyContainsFile" xml:space="preserve">
+    <value>The solution {0} already contains the solution item `{1}`</value>
+  </data>
+  <data name="SolutionItemAddedToTheSolution" xml:space="preserve">
+    <value>The solution item `{0}` was added to the solution folder `{1}`</value>
   </data>
   <data name="RemoveAppFullName" xml:space="preserve">
     <value>Remove one or more projects from a solution file.</value>
@@ -165,11 +189,29 @@
   <data name="InRoot" xml:space="preserve">
     <value>Place project in root of the solution, rather than creating a solution folder.</value>
   </data>
+  <data name="AddFileInRootArgumentDescription" xml:space="preserve">
+    <value>Place file in root of the solution, rather than creating a solution folder.</value>
+  </data>
+  <data name="SolutionElementType" xml:space="preserve">
+    <value>The type of the solution element to add or remove. Allowed values are project, item, and folder.</value>
+  </data>
   <data name="AddProjectSolutionFolderArgumentDescription" xml:space="preserve">
     <value>The destination solution folder path to add the projects to.</value>
   </data>
+  <data name="AddFileSolutionFolderArgumentDescription" xml:space="preserve">
+    <value>The destination solution folder path to add the files to.</value>
+  </data>
+  <data name="SolutionItemWithTheSameNameExists" xml:space="preserve">
+    <value>There is already an existing solution item '{0}' with the same name in the solution folder '{1}'.</value>
+  </data>
   <data name="SolutionFolderAndInRootMutuallyExclusive" xml:space="preserve">
     <value>The --solution-folder and --in-root options cannot be used together; use only one of the options.</value>
+  </data>
+  <data name="CannotAddTheSameSolutionToItself" xml:space="preserve">
+    <value>Cannot add the same solution to itself.</value>
+  </data>
+  <data name="CannotAddExistingProjectAsSolutionItem" xml:space="preserve">
+    <value>An existing project cannot be added as a solution item.</value>
   </data>
   <data name="ListSolutionFoldersArgumentDescription" xml:space="preserve">
     <value>Display solution folder paths.</value>
