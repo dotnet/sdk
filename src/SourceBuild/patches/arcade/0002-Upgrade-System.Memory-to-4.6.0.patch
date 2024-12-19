@@ -1,0 +1,23 @@
+From e34d52334b4418b2229f631cc525d024e34d3e27 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 19 Dec 2024 08:19:09 -0600
+Subject: [PATCH] Upgrade System.Memory to 4.6.0
+
+Backport: https://github.com/dotnet/arcade/pull/15353
+---
+ eng/Versions.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 7de3fec4c..ddb6a9658 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -18,7 +18,7 @@
+     <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
+     <!-- corefx -->
+     <MicrosoftBclHashCodeVersion>1.1.1</MicrosoftBclHashCodeVersion>
+-    <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
++    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
+     <SystemRuntimeInteropServicesRuntimeInformation>4.3.0</SystemRuntimeInteropServicesRuntimeInformation>
+     <!-- deployment-tools -->
+     <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24305.1</MicrosoftDeploymentDotNetReleasesVersion>

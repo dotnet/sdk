@@ -1,0 +1,33 @@
+From 192a16dca94744c82ca456d6cfb7a2a30be1d84f Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 19 Dec 2024 11:00:01 -0600
+Subject: [PATCH] Upgrade some runtime packages
+
+Backport: https://github.com/dotnet/fsharp/pull/18166
+---
+ eng/Versions.props | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index cd72f8599..1f711df8f 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -76,15 +76,15 @@
+     <!-- If a System.* package is stuck on version 4.3.x, targets .NET Standard 1.x and hasn't been
+     updated in years, you most likely DON'T need it, please exercise caution when adding it to the list. -->
+     <SystemPackageVersionVersion>8.0.0</SystemPackageVersionVersion>
+-    <SystemBuffersVersion>4.5.1</SystemBuffersVersion>
++    <SystemBuffersVersion>4.6.0</SystemBuffersVersion>
+     <SystemCollectionsImmutableVersion>$(SystemPackageVersionVersion)</SystemCollectionsImmutableVersion>
+     <SystemComponentModelCompositionVersion>$(SystemPackageVersionVersion)</SystemComponentModelCompositionVersion>
+     <SystemCompositionVersion>$(SystemPackageVersionVersion)</SystemCompositionVersion>
+     <SystemDiagnosticsDiagnosticSourceVersion>$(SystemPackageVersionVersion)</SystemDiagnosticsDiagnosticSourceVersion>
+-    <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
++    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
+     <SystemReflectionEmitVersion>4.7.0</SystemReflectionEmitVersion>
+     <SystemReflectionMetadataVersion>$(SystemPackageVersionVersion)</SystemReflectionMetadataVersion>
+-    <SystemRuntimeCompilerServicesUnsafeVersion>6.0.0</SystemRuntimeCompilerServicesUnsafeVersion>
++    <SystemRuntimeCompilerServicesUnsafeVersion>6.1.0</SystemRuntimeCompilerServicesUnsafeVersion>
+     <SystemThreadingTasksDataflow>$(SystemPackageVersionVersion)</SystemThreadingTasksDataflow>
+     <SystemValueTupleVersion>4.5.0</SystemValueTupleVersion>
+     <MicrosoftDiaSymReaderPortablePdbVersion>1.6.0</MicrosoftDiaSymReaderPortablePdbVersion>
