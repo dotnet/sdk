@@ -2,7 +2,6 @@
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-    <Nullable>enable</Nullable>
     <OutputType>library</OutputType>
     <RootNamespace>Microsoft.Win32.Msi</RootNamespace>
   </PropertyGroup>
