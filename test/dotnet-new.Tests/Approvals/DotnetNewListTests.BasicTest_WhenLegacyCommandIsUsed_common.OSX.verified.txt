@@ -21,7 +21,5 @@ Protocol
 Razor
 Solution
 Web
-Windows
 Worker
-WPF
 xUnit
