@@ -196,7 +196,9 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string dotnetExe = Path.Combine(dotnetRoot, Constants.DotNetExe);
+                string? dotnetExe = dotnetRoot != null ?
+                    Path.Combine(dotnetRoot, Constants.DotNetExe) :
+                    null;
                 if (File.Exists(dotnetExe))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();

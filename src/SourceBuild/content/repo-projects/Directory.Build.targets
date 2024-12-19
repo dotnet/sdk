@@ -756,6 +756,8 @@
     </Exec>
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)...done" />
+
+    <OnError ExecuteTargets="MoveDotNetBuildLogs" />
   </Target>
 
   <Target Name="Test" DependsOnTargets="RepoTest;MoveDotNetBuildLogs" />
