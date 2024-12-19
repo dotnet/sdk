@@ -209,7 +209,11 @@ namespace Microsoft.TemplateEngine.Cli
             {
                 string[] splitByColons = installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries);
                 string[] splitByAt = installArg.Split('@', StringSplitOptions.RemoveEmptyEntries);
-                string[] split = splitByColons.Length > splitByAt.Length ? splitByColons : splitByAt;
+                string[] split = splitByColons.Length > splitByAt.Length ? splitByColons :
+                                 splitByAt.Length > splitByColons.Length ? splitByAt :
+                                 splitByColons[0].Length < splitByAt[0].Length ? splitByColons :
+                                 splitByAt;
+
                 string identifier = split[0];
                 string? version = split.Length > 1 ? split[1] : null;
 
