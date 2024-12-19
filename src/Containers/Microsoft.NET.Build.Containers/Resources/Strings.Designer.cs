@@ -169,6 +169,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Building image index &apos;{0}&apos; on top of manifests {1}..
+        /// </summary>
+        internal static string BuildingImageIndex {
+            get {
+                return ResourceManager.GetString("BuildingImageIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pushed image &apos;{0}&apos; to {1}..
         /// </summary>
         internal static string ContainerBuilder_ImageUploadedToLocalDaemon {
@@ -340,6 +349,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pushed image index &apos;{0}&apos; to registry &apos;{1}&apos;..
+        /// </summary>
+        internal static string ImageIndexUploadedToRegistry {
+            get {
+                return ResourceManager.GetString("ImageIndexUploadedToRegistry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1009: Failed to load image from local registry. stdout: {0}.
         /// </summary>
         internal static string ImageLoadFailed {
@@ -358,11 +376,29 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create manifest list (image index) because no images were provided..
+        /// </summary>
+        internal static string ImagesEmpty {
+            get {
+                return ResourceManager.GetString("ImagesEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2015: {0}: &apos;{1}&apos; was not a valid Environment Variable. Ignoring..
         /// </summary>
         internal static string InvalidEnvVar {
             get {
                 return ResourceManager.GetString("InvalidEnvVar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create manifest list (image index) because provided images are invalid. Items must have &apos;Config&apos;, &apos;Manifest&apos;, &apos;ManifestMediaType&apos; and &apos;ManifestDigest&apos; metadata..
+        /// </summary>
+        internal static string InvalidImageMetadata {
+            get {
+                return ResourceManager.GetString("InvalidImageMetadata", resourceCulture);
             }
         }
         
@@ -448,6 +484,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid string[] TargetRuntimeIdentifiers. Either all should be &apos;linux-musl&apos; or none..
+        /// </summary>
+        internal static string InvalidTargetRuntimeIdentifiers {
+            get {
+                return ResourceManager.GetString("InvalidTargetRuntimeIdentifiers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1003: Token response had neither token nor access_token..
         /// </summary>
         internal static string InvalidTokenResponse {
@@ -507,6 +552,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string MissingPortNumber {
             get {
                 return ResourceManager.GetString("MissingPortNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;mediaType&apos; of manifests should be the same in manifest list (image index)..
+        /// </summary>
+        internal static string MixedMediaTypes {
+            get {
+                return ResourceManager.GetString("MixedMediaTypes", resourceCulture);
             }
         }
         
@@ -750,6 +804,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string UnrecognizedMediaType {
             get {
                 return ResourceManager.GetString("UnrecognizedMediaType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create manifest list (image index) for the provided &apos;mediaType&apos; = &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnsupportedMediaType {
+            get {
+                return ResourceManager.GetString("UnsupportedMediaType", resourceCulture);
             }
         }
         
