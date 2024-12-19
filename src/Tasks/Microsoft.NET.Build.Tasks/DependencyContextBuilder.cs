@@ -530,8 +530,8 @@ namespace Microsoft.NET.Build.Tasks
             {
                 var fileName = Path.GetFileNameWithoutExtension(library.Path);
                 var assemblyPath = userRuntimeAssemblies?.FirstOrDefault(p => Path.GetFileNameWithoutExtension(p).Equals(fileName));
-                var runtimeFile = !string.IsNullOrWhiteSpace(assemblyPath) ? CreateRuntimeFile(referenceProjectInfo.OutputName, Path.GetFullPath(assemblyPath)) :
-                                  !string.IsNullOrWhiteSpace(library.Path) ? CreateRuntimeFile(referenceProjectInfo.OutputName, Path.GetFullPath(library.Path)) :
+                var runtimeFile = !string.IsNullOrWhiteSpace(assemblyPath) && File.Exists(assemblyPath) ? CreateRuntimeFile(referenceProjectInfo.OutputName, assemblyPath) :
+                                  !string.IsNullOrWhiteSpace(library.Path) && File.Exists(library.Path) ? CreateRuntimeFile(referenceProjectInfo.OutputName, library.Path) :
                                   new RuntimeFile(referenceProjectInfo.OutputName, string.Empty, string.Empty);
                 runtimeAssemblyGroups.Add(new RuntimeAssetGroup(string.Empty, [runtimeFile]));
 
