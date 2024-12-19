@@ -170,8 +170,7 @@
           BeforeTargets="Build"
           DependsOnTargets="
             CheckIfPrebuiltsExistToPack;
-            CreatePrebuiltsTarballIfPrebuiltsExist;
-            ErrorOnPrebuilts"/>
+            CreatePrebuiltsTarballIfPrebuiltsExist"/>
 
   <Target Name="CheckIfPrebuiltsExistToPack">
     <!-- Directory existence doesn't mean there are files inside. Use a pattern to find files. -->
@@ -202,10 +201,11 @@
   </Target>
 
   <Target Name="ErrorOnPrebuilts"
+          DependsOnTargets="CreatePrebuiltsTarball"
+          AfterTargets="BinPlaceFiles;Build"
           Condition="'@(PrebuiltFile)' != '' and '$(SkipErrorOnPrebuilts)' != 'true'">
     <Error Text="@(PrebuiltFile->Count()) Prebuilts Exist" />
   </Target>
-
 
   <Target Name="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive"
           DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion;ResolveProjectReferences">
