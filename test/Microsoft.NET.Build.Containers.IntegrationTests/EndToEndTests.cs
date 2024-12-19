@@ -232,7 +232,7 @@ public class EndToEndTests : IDisposable
         BuiltImage builtImage = imageBuilder.Build();
 
         // Write the image to disk
-        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag, null);
         var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archiveFile), NewImageName(), tags);
 
         return (builtImage, sourceReference, destinationReference);
