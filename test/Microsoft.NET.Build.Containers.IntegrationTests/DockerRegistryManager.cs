@@ -79,7 +79,7 @@ public class DockerRegistryManager
                     string dotnetdll = System.Reflection.Assembly.GetExecutingAssembly().Location;
                     var ridjson = Path.Combine(Path.GetDirectoryName(dotnetdll)!, "RuntimeIdentifierGraph.json");
 
-                    var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(),  CancellationToken.None);
+                    var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(), CancellationToken.None);
                     var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag, null);
                     var dest = new DestinationImageReference(pushRegistry, RuntimeBaseImage, [tag]);
                     logger.LogInformation($"Pushing image for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
