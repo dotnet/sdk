@@ -1,0 +1,22 @@
+From bd21b3e221f2085af2d660e04c6dff186e372454 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Wed, 18 Dec 2024 16:10:00 -0600
+Subject: [PATCH] Target NetCurrent property
+
+Backport: https://github.com/dotnet/symreader/pull/331
+---
+ src/Microsoft.DiaSymReader/Microsoft.DiaSymReader.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DiaSymReader/Microsoft.DiaSymReader.csproj b/src/Microsoft.DiaSymReader/Microsoft.DiaSymReader.csproj
+index c635aee..b920f9c 100644
+--- a/src/Microsoft.DiaSymReader/Microsoft.DiaSymReader.csproj
++++ b/src/Microsoft.DiaSymReader/Microsoft.DiaSymReader.csproj
+@@ -1,6 +1,6 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>netstandard2.0;net9.0</TargetFrameworks>
++    <TargetFrameworks>netstandard2.0;$(NetCurrent)</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+     <IsPackable>true</IsPackable>
