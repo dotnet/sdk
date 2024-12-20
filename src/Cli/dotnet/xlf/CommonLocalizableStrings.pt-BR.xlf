@@ -222,6 +222,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão é 'verdadeiro' se um identificador de tempo de execução for especificado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <note>dotnet workload search version --help should not be localized.</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">Solução</target>
