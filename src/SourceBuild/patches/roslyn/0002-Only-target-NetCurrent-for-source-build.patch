@@ -1,15 +1,14 @@
-From 37a6ada39e591ff0a96e1d3cbd0a5a0b84d56cbe Mon Sep 17 00:00:00 2001
+From d5e9441491ee711dd04add052c7e3e39a3314361 Mon Sep 17 00:00:00 2001
 From: Matt Thalman <mthalman@microsoft.com>
 Date: Wed, 18 Dec 2024 15:57:56 -0600
 Subject: [PATCH] Only target NetCurrent for source build
 
-Backport: https://github.com/dotnet/roslyn/pull/76505
 ---
  eng/targets/TargetFrameworks.props | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/eng/targets/TargetFrameworks.props b/eng/targets/TargetFrameworks.props
-index 728de8b627d..f413faf43c9 100644
+index 2dddaff1560..724f64b50b1 100644
 --- a/eng/targets/TargetFrameworks.props
 +++ b/eng/targets/TargetFrameworks.props
 @@ -40,7 +40,7 @@
@@ -28,5 +27,5 @@ index 728de8b627d..f413faf43c9 100644
 -        <NetRoslynSourceBuild>$(NetCurrent);$(NetPrevious)</NetRoslynSourceBuild>
 +        <NetRoslynSourceBuild>$(NetCurrent)</NetRoslynSourceBuild>
          <NetRoslynAll>$(NetCurrent);$(NetPrevious)</NetRoslynAll>
-         <NetRoslynBuildHostNetCoreVersion>$(NetCurrent)</NetRoslynBuildHostNetCoreVersion>
+         <NetRoslynBuildHostNetCoreVersion>$(NetPrevious)</NetRoslynBuildHostNetCoreVersion>
          <NetRoslynNext>$(NetCurrent)</NetRoslynNext>
