@@ -1,9 +1,10 @@
-From bd21b3e221f2085af2d660e04c6dff186e372454 Mon Sep 17 00:00:00 2001
+From 826f90739ccf6f99d6481253ec2feac07d96f1a4 Mon Sep 17 00:00:00 2001
 From: Matt Thalman <mthalman@microsoft.com>
-Date: Wed, 18 Dec 2024 16:10:00 -0600
-Subject: [PATCH] Target NetCurrent property
+Date: Wed, 18 Dec 2024 16:20:33 -0600
+Subject: [PATCH] Target NetCurrent property (#331)
 
 Backport: https://github.com/dotnet/symreader/pull/331
+
 ---
  src/Microsoft.DiaSymReader/Microsoft.DiaSymReader.csproj | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

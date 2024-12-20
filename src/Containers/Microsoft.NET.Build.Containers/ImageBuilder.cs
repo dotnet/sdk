@@ -50,6 +50,9 @@ internal sealed class ImageBuilder
     /// </summary>
     public bool IsWindows => _baseImageConfig.IsWindows;
 
+    // For tests
+    internal string ManifestConfigDigest => _manifest.Config.digest;
+
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
     /// </summary>
