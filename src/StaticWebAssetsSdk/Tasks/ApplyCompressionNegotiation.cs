@@ -25,13 +25,35 @@ public class ApplyCompressionNegotiation : Task
     {
         var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
 
-        var endpointsByAsset = CandidateEndpoints.Select(StaticWebAssetEndpoint.FromTaskItem)
-            .GroupBy(e => e.AssetFile)
-            .ToDictionary(g => g.Key, g => g.ToList());
+        for (var i = 0; i < CandidateAssets.Length; i++)
+        {
+            var candidate = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
+            if (assetsById.ContainsKey(CandidateAssets[i].ItemSpec))
+            {
+                Log.LogWarning("Detected duplicated asset '{0}'. Skipping the asset because it was already processed.", candidate.Identity);
+                continue;
+            }
 
-        var compressedAssets = assetsById.Values.Where(a => a.AssetTraitName == "Content-Encoding").ToList();
+            assetsById[candidate.Identity] = candidate;
+            if (string.Equals(candidate.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
+            {
+                compressedAssets.Add(candidate);
+            }
+        }
+
+        var endpointsByAsset = new Dictionary<string, List<StaticWebAssetEndpoint>>(CandidateEndpoints.Length, StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < CandidateEndpoints.Length; i++)
+        {
+            var endpoint = StaticWebAssetEndpoint.FromTaskItem(CandidateEndpoints[i]);
+            if (!endpointsByAsset.TryGetValue(endpoint.AssetFile, out var endpoints))
+            {
+                endpoints = [];
+                endpointsByAsset[endpoint.AssetFile] = endpoints;
+            }
+            endpoints.Add(endpoint);
+        }
+
         var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(StaticWebAssetEndpoint.RouteAndAssetComparer);
-
         var preservedEndpoints = new Dictionary<(string, string), StaticWebAssetEndpoint>();
 
         // Add response headers to compressed endpoints
@@ -39,20 +61,20 @@ public class ApplyCompressionNegotiation : Task
         {
             if (!assetsById.TryGetValue(compressedAsset.RelatedAsset, out var relatedAsset))
             {
-                Log.LogWarning("Related asset not found for compressed asset: {0}", compressedAsset.Identity);
-                throw new InvalidOperationException($"Related asset not found for compressed asset: {compressedAsset.Identity}");
+                Log.LogWarning("Related asset '{0}' not found for compressed asset: '{1}'. Skipping asset", compressedAsset.RelatedAsset, compressedAsset.Identity);
+                continue;
             }
 
             if (!endpointsByAsset.TryGetValue(compressedAsset.Identity, out var compressedEndpoints))
             {
-                Log.LogWarning("Endpoints not found for compressed asset: {0} {1}", compressedAsset.RelativePath, compressedAsset.Identity);
-                throw new InvalidOperationException($"Endpoints not found for compressed asset: {compressedAsset.Identity}");
+                Log.LogWarning("Endpoints not found for compressed asset: '{0}' '{1}'. Skipping asset", compressedAsset.RelativePath, compressedAsset.Identity);
+                continue;
             }
 
             if (!endpointsByAsset.TryGetValue(relatedAsset.Identity, out var relatedAssetEndpoints))
             {
-                Log.LogWarning("Endpoints not found for related asset: {0}", relatedAsset.Identity);
-                throw new InvalidOperationException($"Endpoints not found for related asset: {relatedAsset.Identity}");
+                Log.LogWarning("Endpoints not found for related asset: '{0}'. Skipping asset", relatedAsset.Identity);
+                continue;
             }
 
             Log.LogMessage("Processing compressed asset: {0}", compressedAsset.Identity);
