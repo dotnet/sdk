@@ -1,0 +1,28 @@
+From c3e8e58ce8d6aa758835d8d4c25cfa3ff21adad0 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Thu, 12 Dec 2024 18:10:30 +0100
+Subject: [PATCH] Add ProcessFrameworkReferences target to Empty.targets
+
+First of all, I hate this whole filtering model. It's super hacky and constantly causes issues. https://github.com/dotnet/source-build/issues/4047 tracks this.
+
+Here we need to also empty the `ProcessFrameworkReferences` target as it still runs as it has a Before/AfterTargets hook. Keep it running is causing issues when RuntimeIdentifier is set to a custom value even though the project should be excluded.
+
+Unblocks https://github.com/dotnet/sdk/pull/45362
+
+Backport: https://github.com/dotnet/arcade/pull/15333
+
+---
+ src/Microsoft.DotNet.Arcade.Sdk/tools/Empty.targets | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/Empty.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/Empty.targets
+index 2a4227950..fd18c0474 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/Empty.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/Empty.targets
+@@ -22,5 +22,6 @@
+   <Target Name="Test"/>
+   <Target Name="Pack"/>
+   <Target Name="Publish"/>
++  <Target Name="ProcessFrameworkReferences" />
+ 
+ </Project>
