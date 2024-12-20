@@ -9,7 +9,6 @@ schedules:
     include:
     - main
     - release/*.0.1xx-preview*
-    - release/9.0.1xx
     - internal/release/*.0.1xx*
 
 pr: none
@@ -20,7 +19,6 @@ trigger:
     include:
     - main
     - release/*.0.1xx-preview*
-    - release/9.0.1xx
     - internal/release/*.0.1xx*
   paths:
     include:
@@ -133,7 +131,6 @@ extends:
             -flp:LogFile=$(Build.SourcesDirectory)/artifacts/logs/BuildTests_$(date +"%m%d%H%M%S").log
             -clp:v=m
             /p:SourceBuildTestsLicenseScanPath=$(repoPath)
-            /p:SourceBuildTestsWarnOnLicenseScanDiffs=false
             /p:TargetRid=linux-x64
             /p:PortableRid=linux-x64
             /p:SkipPrepareSdkArchive=true

@@ -183,4 +183,10 @@
   <data name="SlnxGenerated" xml:space="preserve">
     <value>.slnx file {0} generated.</value>
   </data>
+  <data name="CannotMigrateSlnx" xml:space="preserve">
+    <value>Only .sln files can be migrated to .slnx format.</value>
+  </data>
+  <data name="SerializerNotFound" xml:space="preserve">
+    <value>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</value>
+  </data>
 </root>

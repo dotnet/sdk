@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class BrowserLaunchTests : DotNetWatchTestBase
     {
@@ -22,8 +20,14 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.Start(testAsset, [], testFlags: TestFlags.MockBrowser);
 
+            // check that all app output is printed out:
+            await App.AssertOutputLine(line => line.Contains("Content root path:"));
+
+            Assert.Contains(App.Process.Output, line => line.Contains("Application started. Press Ctrl+C to shut down."));
+            Assert.Contains(App.Process.Output, line => line.Contains("Hosting environment: Development"));
+
             // Verify we launched the browser.
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Launching browser: https://localhost:5001/");
+            Assert.Contains(App.Process.Output, line => line.Contains("dotnet watch ⌚ Launching browser: https://localhost:5001/"));
         }
 
         [Fact]

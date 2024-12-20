@@ -31,16 +31,6 @@ internal class DotNetHelper
 
         lock (s_lockObj)
         {
-            if (!Directory.Exists(Config.DotNetDirectory))
-            {
-                if (!File.Exists(Config.SdkTarballPath))
-                {
-                    throw new InvalidOperationException($"Tarball path '{Config.SdkTarballPath}' specified in {Config.SdkTarballPath} does not exist.");
-                }
-
-                Directory.CreateDirectory(Config.DotNetDirectory);
-                Utilities.ExtractTarball(Config.SdkTarballPath, Config.DotNetDirectory, outputHelper);
-            }
             IsMonoRuntime = DetermineIsMonoRuntime(Config.DotNetDirectory);
 
             if (!Directory.Exists(ProjectsDirectory))
@@ -58,40 +48,24 @@ internal class DotNetHelper
 
     private static void InitNugetConfig()
     {
-        bool useLocalPackages = !string.IsNullOrEmpty(Config.PrereqsPath);
-        string nugetConfigPrefix = useLocalPackages ? "local" : "online";
+        bool useCustomPackages = !string.IsNullOrEmpty(Config.CustomPackagesPath);
+        string nugetConfigPrefix = useCustomPackages ? "custom" : "default";
         string nugetConfigPath = Path.Combine(ProjectsDirectory, "NuGet.Config");
         File.Copy(
             Path.Combine(BaselineHelper.GetAssetsDirectory(), $"{nugetConfigPrefix}.NuGet.Config"),
             nugetConfigPath);
 
-        if (useLocalPackages)
+        if (useCustomPackages)
         {
-            // When using local packages this feed is always required.  It contains packages that are
-            // not produced by source-build but are required by the various project templates.
-            if (!Directory.Exists(Config.PrereqsPath))
+            // This package feed is optional.  You can use an alternative feed of dependency packages which can be 
+            // required in sandboxed scenarios where public feeds need to be avoided.
+            if (!Directory.Exists(Config.CustomPackagesPath))
             {
-                throw new InvalidOperationException(
-                    $"Prereqs path '{Config.PrereqsPath}' specified via /p:SourceBuildTestsPrereqsPath='...' does not exist.");
+                throw new ArgumentException($"Specified CustomPackagesPath '{Config.CustomPackagesPath}' does not exist.");
             }
 
-            string nugetConfig = File.ReadAllText(nugetConfigPath);
-            nugetConfig = nugetConfig.Replace("SMOKE_TEST_PACKAGE_FEED", Config.PrereqsPath);
-
-            // This package feed is optional.  You can use an additional feed of source-built packages to run the
-            // smoke-tests as offline as possible.
-            if (Config.CustomPackagesPath != null)
-            {
-                if (!Directory.Exists(Config.CustomPackagesPath))
-                {
-                    throw new ArgumentException($"Specified --with-packages {Config.CustomPackagesPath} does not exist.");
-                }
-                nugetConfig = nugetConfig.Replace("CUSTOM_PACKAGE_FEED", Config.CustomPackagesPath);
-            }
-            else
-            {
-                nugetConfig = string.Join(Environment.NewLine, nugetConfig.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Where(s => !s.Contains("CUSTOM_PACKAGE_FEED")).ToArray());
-            }
+            string nugetConfig = File.ReadAllText(nugetConfigPath)
+                .Replace("CUSTOM_PACKAGE_FEED", Config.CustomPackagesPath);
             File.WriteAllText(nugetConfigPath, nugetConfig);
         }
     }

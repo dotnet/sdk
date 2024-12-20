@@ -25,6 +25,6 @@ vmr_branch=$(git -C "$sdk_dir" log --pretty=format:'%D' HEAD^ \
   | sed 's@origin/@@' \
   | sed 's@,.*@@')
 
-"$workspace_dir/synchronize-vmr.sh" --branch "$vmr_branch" --debug
+"$workspace_dir/synchronize-vmr.sh" --branch "$vmr_branch" --ci --debug
 
 cd "$vmr_dir"

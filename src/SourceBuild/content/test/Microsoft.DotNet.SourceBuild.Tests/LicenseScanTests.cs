@@ -177,7 +177,7 @@ public class LicenseScanTests : TestBase
         string actualFilePath = Path.Combine(Config.LogsDirectory, $"Updated{baselineName}");
         File.WriteAllText(actualFilePath, json);
 
-        BaselineHelper.CompareFiles(expectedFilePath, actualFilePath, OutputHelper, Config.WarnOnLicenseScanDiffs);
+        BaselineHelper.CompareFiles(expectedFilePath, actualFilePath, OutputHelper);
     }
 
     private void FilterFiles(ScancodeResults scancodeResults)

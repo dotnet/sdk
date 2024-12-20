@@ -6,9 +6,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Graph;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable
     {
@@ -65,8 +64,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             }
 
-            // Attach trigger to the process that launches browser on URL found in the process output:
-            processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
+            // Attach trigger to the process that launches browser on URL found in the process output.
+            // Only do so for root projects, not for child processes.
+            if (projectOptions.IsRootProject)
+            {
+                processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
+            }
 
             if (server == null)
             {
@@ -100,7 +103,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         /// <summary>
         /// Get process output handler that will be subscribed to the process output event every time the process is launched.
         /// </summary>
-        public DataReceivedEventHandler? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, BrowserRefreshServer? server, CancellationToken cancellationToken)
+        public Action<OutputLine>? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, BrowserRefreshServer? server, CancellationToken cancellationToken)
         {
             if (!CanLaunchBrowser(context, projectNode, projectOptions, out var launchProfile))
             {
@@ -112,20 +115,27 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return null;
             }
 
+            bool matchFound = false;
+
             return handler;
 
-            void handler(object sender, DataReceivedEventArgs eventArgs)
+            void handler(OutputLine line)
             {
                 // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-                Console.WriteLine(eventArgs.Data);
+                (line.IsError ? Console.Error : Console.Out).WriteLine(line.Content);
 
-                var match = s_nowListeningRegex.Match(eventArgs.Data ?? "");
+                if (matchFound)
+                {
+                    return;
+                }
+
+                var match = s_nowListeningRegex.Match(line.Content);
                 if (!match.Success)
                 {
                     return;
                 }
 
-                ((Process)sender).OutputDataReceived -= handler;
+                matchFound = true;
 
                 var projectAddedToAttemptedSet = ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode);
                 if (projectAddedToAttemptedSet)
@@ -138,7 +148,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     // Subsequent iterations (project has been rebuilt and relaunched).
                     // Use refresh server to reload the browser, if available.
                     context.Reporter.Verbose("Reloading browser.");
-                    _ = server.ReloadAsync(cancellationToken);
+                    _ = server.SendReloadMessageAsync(cancellationToken);
                 }
             }
         }
@@ -211,9 +221,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (projectOptions.Command != "run")
+            if (!CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command))
             {
-                reporter.Verbose("Browser refresh is only supported for run commands.");
+                reporter.Verbose($"Command '{projectOptions.Command}' does not support browser refresh.");
                 return false;
             }
 

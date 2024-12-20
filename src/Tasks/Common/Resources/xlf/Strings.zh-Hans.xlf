@@ -72,6 +72,11 @@
         <target state="needs-review-translation">NETSDK1079: 当面向 .NET Core 3.0 或更高版本时，不支持 Microsoft.AspNetCore.All 包。应改为使用 Microsoft.AspNetCore.App 的 FrameworkReference，并且 Microsoft.NET.Sdk.Web 将隐式包含它。</target>
         <note>{StrBegins="NETSDK1079: "}</note>
       </trans-unit>
+      <trans-unit id="AspNetCorePackUnsupportedTargetFramework">
+        <source>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</source>
+        <target state="new">NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</target>
+        <note>{StrBegins="NETSDK1224: "}</note>
+      </trans-unit>
       <trans-unit id="AspNetCoreUsesFrameworkReference">
         <source>NETSDK1080: A PackageReference to Microsoft.AspNetCore.App is not necessary when targeting .NET Core 3.0 or higher. If Microsoft.NET.Sdk.Web is used, the shared framework will be referenced automatically. Otherwise, the PackageReference should be replaced with a FrameworkReference.</source>
         <target state="needs-review-translation">NETSDK1080: 当面向 .NET Core 3.0 或更高版本时，不需要 Microsoft.AspNetCore.App 的 PackageReference。如果使用 Microsoft.NET.Sdk.Web，则将自动引用共享框架。否则，应使用 FrameworkReference 替换 PackageReference。</target>
@@ -641,10 +646,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1115: 未使用 .NET SDK 默认设置的情况下，当前 .NET SDK 不支持 .NET Framework。很可能是因为 C++/CLI 项目的 CLRSupport 属性和 TargetFramework 之间存在不匹配情况。</target>
         <note>{StrBegins="NETSDK1115: "}</note>
       </trans-unit>
-      <trans-unit id="Net8NotCompatibleWithDev177">
-        <source>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</source>
-        <target state="needs-review-translation">NETSDK1213: 不支持在 Visual Studio 2022 17.7 中以 .NET 8.0 或更高版本为目标。</target>
-        <note>{StrBegins="NETSDK1213: "}</note>
+      <trans-unit id="Net9NotCompatibleWithDev1711">
+        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
+        <target state="translated">NETSDK1223: 不支持在 Visual Studio 2022 17.11 中以 .NET 9.0 或更高版本为目标。</target>
+        <note>{StrBegins="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -762,9 +767,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegins="NETSDK1189: "}</note>
       </trans-unit>
       <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
-        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
-        <target state="needs-review-translation">NETSDK1214: PreferNativeArm64 仅适用于 .NET Framework 目标。它不受支持，并且在面向 .NET Core 时不起作用。</target>
-        <note>{StrBegins="NETSDK1214: "}</note>
+        <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="needs-review-translation">NETSDK1222: PreferNativeArm64 仅适用于 .NET Framework 目标。它不受支持，并且在以 .NET Core 为目标时不起作用。</target>
+        <note>{StrBegins="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>

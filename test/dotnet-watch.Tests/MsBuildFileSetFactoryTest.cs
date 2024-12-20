@@ -1,23 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
+#nullable enable
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class MsBuildFileSetFactoryTest
+    public class MsBuildFileSetFactoryTest(ITestOutputHelper output)
     {
-        private readonly IReporter _reporter;
-        private readonly TestAssetsManager _testAssets;
-        private readonly string _muxerPath;
+        private readonly TestReporter _reporter = new(output);
+        private readonly TestAssetsManager _testAssets = new(output);
 
-        public MsBuildFileSetFactoryTest(ITestOutputHelper output)
-        {
-            _reporter = new TestReporter(output);
-            _testAssets = new TestAssetsManager(output);
-            _muxerPath = TestContext.Current.ToolsetUnderTest.DotNetHostPath;
-        }
+        private string MuxerPath
+            => TestContext.Current.ToolsetUnderTest.DotNetHostPath;
 
         private static string InspectPath(string path, string rootDir)
             => path.Substring(rootDir.Length + 1).Replace("\\", "/");
@@ -35,7 +29,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             });
 
-            project.WithProjectChanges(d => d.Root.Add(XElement.Parse(
+            project.WithProjectChanges(d => d.Root!.Add(XElement.Parse(
 @"<ItemGroup>
     <Watch Include=""*.js"" Exclude=""gulpfile.js"" />
 </ItemGroup>")));
@@ -71,7 +65,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 },
             });
 
-            project.WithProjectChanges(d => d.Root.Add(XElement.Parse(
+            project.WithProjectChanges(d => d.Root!.Add(XElement.Parse(
 @"<ItemGroup>
     <EmbeddedResource Include=""*.resx"" Watch=""false"" />
 </ItemGroup>")));
@@ -138,7 +132,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 },
             });
 
-            project.WithProjectChanges(d => d.Root.Add(XElement.Parse(
+            project.WithProjectChanges(d => d.Root!.Add(XElement.Parse(
 $@"<ItemGroup>
     <Compile Include=""Class1.netcore.cs"" Condition=""'$(TargetFramework)'=='{ToolsetInfo.CurrentTargetFramework}'"" />
     <Compile Include=""Class1.desktop.cs"" Condition=""'$(TargetFramework)'=='net462'"" />
@@ -199,28 +193,36 @@ $@"<ItemGroup>
         public async Task IncludesContentFilesFromRCL()
         {
             var testDir = _testAssets.CreateTestDirectory();
-            WriteFile(testDir, Path.Combine("RCL1", "RCL1.csproj"),
-@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
-    <PropertyGroup>
-        <TargetFramework>netcoreapp5.0</TargetFramework>
-    </PropertyGroup>
-</Project>
-");
+            WriteFile(
+                testDir,
+                Path.Combine("RCL1", "RCL1.csproj"),
+                $"""
+                <Project Sdk="Microsoft.NET.Sdk.Razor">
+                    <PropertyGroup>
+                        <TargetFramework>netstandard2.1</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+
             WriteFile(testDir, Path.Combine("RCL1", "wwwroot", "css", "app.css"));
             WriteFile(testDir, Path.Combine("RCL1", "wwwroot", "js", "site.js"));
             WriteFile(testDir, Path.Combine("RCL1", "wwwroot", "favicon.ico"));
 
-            var projectPath = WriteFile(testDir, Path.Combine("Project1", "Project1.csproj"),
-@"<Project Sdk=""Microsoft.NET.Sdk.Web"">
-    <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-    </PropertyGroup>
-    <ItemGroup>
-        <ProjectReference Include=""..\RCL1\RCL1.csproj"" />
-    </ItemGroup>
-</Project>");
-            WriteFile(testDir, Path.Combine("Project1", "Program.cs"));
+            var projectPath = WriteFile(
+                testDir,
+                Path.Combine("Project1", "Project1.csproj"),
+                """
+                <Project Sdk="Microsoft.NET.Sdk.Web">
+                    <PropertyGroup>
+                        <TargetFramework>netstandard2.1</TargetFramework>
+                    </PropertyGroup>
+                    <ItemGroup>
+                        <ProjectReference Include="..\RCL1\RCL1.csproj" />
+                    </ItemGroup>
+                </Project>
+                """);
 
+            WriteFile(testDir, Path.Combine("Project1", "Program.cs"));
 
             var result = await Evaluate(projectPath);
 
@@ -244,7 +246,7 @@ $@"<ItemGroup>
         {
             var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
             {
-                TargetFrameworks = "netstandard2.1",
+                TargetFrameworks = "netstandard2.0",
             });
 
             var project1 = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -273,19 +275,19 @@ $@"<ItemGroup>
         {
             var project3 = _testAssets.CreateTestProject(new TestProject("Project3")
             {
-                TargetFrameworks = "netstandard2.1",
+                TargetFrameworks = "netstandard2.0",
             });
 
             var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
             {
-                TargetFrameworks = "netstandard2.1",
-                ReferencedProjects = { project3.TestProject, },
+                TargetFrameworks = "netstandard2.0",
+                ReferencedProjects = { project3.TestProject },
             });
 
             var project1 = _testAssets.CreateTestProject(new TestProject("Project1")
             {
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
-                ReferencedProjects = { project2.TestProject, },
+                ReferencedProjects = { project2.TestProject },
             });
 
             var result = await Evaluate(project1);
@@ -323,19 +325,17 @@ $@"<ItemGroup>
                 .Path;
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
-            var output = new OutputSink();
             var options = new EnvironmentOptions(
-                MuxerPath: _muxerPath,
+                MuxerPath: MuxerPath,
                 WorkingDirectory: testDirectory);
 
-            var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildProperties: null, options, _reporter, output, trace: true);
+            var output = new List<string>();
+            _reporter.OnProcessOutput += line => output.Add(line.Content);
 
-            var result = await filesetFactory.TryCreateAsync(CancellationToken.None);
+            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], options, _reporter);
+
+            var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
-
-            _reporter.Output(string.Join(
-                Environment.NewLine,
-                output.Current.Lines.Select(l => "Sink output: " + l)));
 
             AssertEx.SequenceEqual(
             [
@@ -357,11 +357,50 @@ $@"<ItemGroup>
             ], Inspect(testDirectory, result.Files));
 
             // ensure each project is only visited once for collecting watch items
-            Assert.All(
-                ["A", "B", "C", "D", "E", "F", "G"],
-                projectName =>
-                    Assert.Single(output.Current.Lines,
-                        line => line.Contains($"Collecting watch items from '{projectName}'")));
+            AssertEx.SequenceEqual(
+                [
+                    "Collecting watch items from 'A'",
+                    "Collecting watch items from 'B'",
+                    "Collecting watch items from 'C'",
+                    "Collecting watch items from 'D'",
+                    "Collecting watch items from 'E'",
+                    "Collecting watch items from 'F'",
+                    "Collecting watch items from 'G'",
+                ],
+                output.Where(l => l.Contains("Collecting watch items from")).Select(l => l.Trim()).Order());
+        }
+
+        [Fact]
+        public async Task MsbuildOutput()
+        {
+            var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
+            {
+                TargetFrameworks = "netstandard2.1",
+            });
+
+            var project1 = _testAssets.CreateTestProject(new TestProject("Project1")
+            {
+                TargetFrameworks = $"net462",
+                ReferencedProjects = { project2.TestProject, },
+            });
+
+            var project1Path = GetTestProjectPath(project1);
+
+            var options = new EnvironmentOptions(
+                MuxerPath: MuxerPath,
+                WorkingDirectory: Path.GetDirectoryName(project1Path)!);
+
+            var output = new List<string>();
+            _reporter.OnProcessOutput += line => output.Add($"{(line.IsError ? "[stderr]" : "[stdout]")} {line.Content}");
+
+            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], options, _reporter);
+            var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
+            Assert.Null(result);
+
+            // note: msbuild prints errors to stdout:
+            AssertEx.Equal(
+                $"[stdout] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
+                output.Single(l => l.Contains("error NU1201")));
         }
 
         private Task<EvaluationResult> Evaluate(TestAsset projectPath)
@@ -370,21 +409,21 @@ $@"<ItemGroup>
         private async Task<EvaluationResult> Evaluate(string projectPath)
         {
             var options = new EnvironmentOptions(
-                MuxerPath: _muxerPath,
-                WorkingDirectory: Path.GetDirectoryName(projectPath));
+                MuxerPath: MuxerPath,
+                WorkingDirectory: Path.GetDirectoryName(projectPath)!);
 
-            var factory = new MSBuildFileSetFactory(projectPath, targetFramework: null, buildProperties: null, options, _reporter, new OutputSink(), trace: false);
-            var result = await factory.TryCreateAsync(CancellationToken.None);
+            var factory = new MSBuildFileSetFactory(projectPath, buildArguments: [], options, _reporter);
+            var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
             return result;
         }
 
-        private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");
+        private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject?.Name + ".csproj");
 
         private static string WriteFile(TestAsset testAsset, string name, string contents = "")
         {
             var path = Path.Combine(GetTestProjectDirectory(testAsset), name);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllText(path, contents);
 
             return path;
@@ -393,13 +432,13 @@ $@"<ItemGroup>
         private static string WriteFile(TestDirectory testAsset, string name, string contents = "")
         {
             var path = Path.Combine(testAsset.Path, name);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllText(path, contents);
 
             return path;
         }
 
         private static string GetTestProjectDirectory(TestAsset testAsset)
-            => Path.Combine(testAsset.Path, testAsset.TestProject.Name);
+            => Path.Combine(testAsset.Path, testAsset.TestProject?.Name ?? string.Empty);
     }
 }

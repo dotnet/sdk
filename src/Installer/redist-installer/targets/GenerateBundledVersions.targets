@@ -85,13 +85,12 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <!-- TODO: Once .NET 9.0.X has released, update these version numbers to 9.0.$(VersionFeature90) -->
-      <_NET90RuntimePackVersion>9.0.0-rc.2.24473.5</_NET90RuntimePackVersion>
-      <_NET90TargetingPackVersion>9.0.0-rc.2.24473.5</_NET90TargetingPackVersion>
-      <_WindowsDesktop90RuntimePackVersion>9.0.0-rc.2.24474.4</_WindowsDesktop90RuntimePackVersion>
-      <_WindowsDesktop90TargetingPackVersion>9.0.0-rc.2.24474.4</_WindowsDesktop90TargetingPackVersion>
-      <_AspNet90RuntimePackVersion>9.0.0-rc.2.24474.3</_AspNet90RuntimePackVersion>
-      <_AspNet90TargetingPackVersion>9.0.0-rc.2.24474.3</_AspNet90TargetingPackVersion>
+      <_NET90RuntimePackVersion>9.0.$(VersionFeature90)</_NET90RuntimePackVersion>
+      <_NET90TargetingPackVersion>9.0.$(VersionFeature90)</_NET90TargetingPackVersion>
+      <_WindowsDesktop90RuntimePackVersion>9.0.$(VersionFeature90)</_WindowsDesktop90RuntimePackVersion>
+      <_WindowsDesktop90TargetingPackVersion>9.0.$(VersionFeature90)</_WindowsDesktop90TargetingPackVersion>
+      <_AspNet90RuntimePackVersion>9.0.$(VersionFeature90)</_AspNet90RuntimePackVersion>
+      <_AspNet90TargetingPackVersion>9.0.$(VersionFeature90)</_AspNet90TargetingPackVersion>
 
       <_NET80RuntimePackVersion>8.0.$(VersionFeature80)</_NET80RuntimePackVersion>
       <_NET80TargetingPackVersion>8.0.$(VersionFeature80)</_NET80TargetingPackVersion>
@@ -155,7 +154,6 @@
         linux-musl-x64;
         linux-x64;
         osx-x64;
-        rhel.6-x64;
         tizen.4.0.0-armel;
         tizen.5.0.0-armel;
         win-arm;
@@ -299,6 +297,7 @@
         @(Net70MonoRuntimePackRids);
         freebsd-x64;
         freebsd-arm64;
+        wasi-wasm;
         " />
 
       <Net80MonoRuntimePackRids Remove="win-arm" />
@@ -440,8 +439,7 @@
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
       <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6;tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('rhel.6-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
       <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
       <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
     </ItemGroup>
@@ -590,6 +588,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net10.0"
                              WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+
+    <KnownAspNetCorePack Include="Microsoft.AspNetCore.App.Internal.Assets"
+                             TargetFramework="net10.0"
+                             AspNetCorePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net10.0"

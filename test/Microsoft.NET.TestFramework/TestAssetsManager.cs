@@ -30,10 +30,10 @@ namespace Microsoft.NET.TestFramework
         public TestAsset CopyTestAsset(
             string testProjectName,
             [CallerMemberName] string callingMethod = "",
-            [CallerFilePath] string callerFilePath = null,
-            string identifier = "",
+            [CallerFilePath] string? callerFilePath = null,
+            string? identifier = "",
             string testAssetSubdirectory = "",
-            string testDestinationDirectory = null,
+            string? testDestinationDirectory = null,
             bool allowCopyIfPresent = false)
         {
             var testProjectDirectory = GetAndValidateTestProjectDirectory(testProjectName, testAssetSubdirectory);
@@ -110,7 +110,7 @@ namespace Microsoft.NET.TestFramework
 
             foreach (var testProject in testProjects)
             {
-                new DotnetCommand(Log, "sln", "add", testProject.Name)
+                new DotnetCommand(Log, "sln", "add", testProject.Name ?? string.Empty)
                     .WithWorkingDirectory(testDestinationDirectory)
                     .Execute()
                     .Should()
@@ -140,7 +140,10 @@ namespace Microsoft.NET.TestFramework
 
                     foreach (var referencedProject in project.ReferencedProjects)
                     {
-                        projectStack.Push(referencedProject);
+                        if(referencedProject is not null)
+                        {
+                            projectStack.Push(referencedProject);
+                        }
                     }
                 }
             }
@@ -148,7 +151,7 @@ namespace Microsoft.NET.TestFramework
             return testAsset;
         }
 
-        public TestDirectory CreateTestDirectory([CallerMemberName] string testName = null, string identifier = null)
+        public TestDirectory CreateTestDirectory([CallerMemberName] string? testName = null, string? identifier = null)
         {
             string dir = GetTestDestinationDirectoryPath(testName, testName, identifier ?? string.Empty);
             return new TestDirectory(dir, TestContext.Current.SdkVersion);
@@ -171,12 +174,12 @@ namespace Microsoft.NET.TestFramework
         }
 
         public static string GetTestDestinationDirectoryPath(
-            string testProjectName,
-            string callingMethodAndFileName,
-            string identifier,
+            string? testProjectName,
+            string? callingMethodAndFileName,
+            string? identifier,
             bool allowCopyIfPresent = false)
         {
-            string baseDirectory = TestContext.Current.TestExecutionDirectory;
+            string? baseDirectory = TestContext.Current.TestExecutionDirectory;
             var directoryName = new StringBuilder(callingMethodAndFileName).Append(identifier);
 
             if (testProjectName != callingMethodAndFileName)
@@ -203,12 +206,16 @@ namespace Microsoft.NET.TestFramework
 #if CI_BUILD
             if (!allowCopyIfPresent && Directory.Exists(directoryPath))
             {
-                //Arcade test retry reuses the machine so the directory might already be present in CI
-                directoryPath = Directory.Exists(directoryPath+"_1") ? directoryPath+"_2" : directoryPath+"_1";
-                if (Directory.Exists(directoryPath))
+                // Arcade test retry reuses the machine so the directory might already be present in CI
+                int suffix = 1;
+                string newDirectoryPath;
+                do
                 {
-                    throw new Exception($"Test dir {directoryPath} already exists");
-                }
+                    newDirectoryPath = $"{directoryPath}_{suffix}";
+                    suffix++;
+                } while (Directory.Exists(newDirectoryPath));
+
+                directoryPath = newDirectoryPath;
             }
 #endif
 

@@ -22,8 +22,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="ProcessFrameworkReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="ResolveAppHosts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
+
+  <!-- Don't add Windows SDK framework reference for C++ by default, as C++ doesn't use it and it would be an unnecessary download for possible
+       transitive framework references. -->
   <Target Name="AddWindowsSdkKnownFrameworkReferences"
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(TargetPlatformIdentifier)' == 'Windows'">
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(TargetPlatformIdentifier)' == 'Windows'
+                     And ('$(Language)' != 'C++' Or '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true')">
 
     <!-- Remove Windows SDK KnownFrameworkReference items from BundledVersions.props (they will eventually be removed, but that is in a different repo so
          we can't do the change atomically). -->
@@ -130,7 +134,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 KnownILCompilerPacks="@(KnownILCompilerPack)"
                                 KnownILLinkPacks="@(KnownILLinkPack)"
                                 KnownWebAssemblySdkPacks="@(KnownWebAssemblySdkPack)"
+                                KnownAspNetCorePacks="@(KnownAspNetCorePack)"
                                 UsingMicrosoftNETSdkWebAssembly="$(UsingMicrosoftNETSdkWebAssembly)"
+                                UsingMicrosoftNETSdkRazor="$(UsingMicrosoftNETSdkRazor)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                 NETCoreSdkPortableRuntimeIdentifier="$(NETCoreSdkPortableRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"

@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.Build.Traversal">
 
   <PropertyGroup>
-    <!-- Temporarily disabled while scenario tests are stil targetin net9 but the SDK has a net10 runtime.
-         See https://github.com/dotnet/sdk/issues/42920. -->
-    <_RunScenarioTests>false</_RunScenarioTests>
+    <_RunScenarioTests>true</_RunScenarioTests>
 
     <!-- Skip scenario tests if the host architecture is different from the target architecture since the tests
         require the ability to execute the built SDK. But the CLI is not capable of running on a host with a
@@ -20,8 +18,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Shared tests - applicable to unified-build and source-build. -->
+    <ProjectReference Include="Microsoft.DotNet.Tests\Microsoft.DotNet.Tests.csproj" />
+    <!-- Source-build specific tests. -->
     <ProjectReference Include="Microsoft.DotNet.SourceBuild.Tests\Microsoft.DotNet.SourceBuild.Tests.csproj"
                       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <!-- Unified-build specific tests. -->
     <ProjectReference Include="Microsoft.DotNet.UnifiedBuild.Tests\Microsoft.DotNet.UnifiedBuild.Tests.csproj"
                       Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" />
   </ItemGroup>

@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// The two required parameters will be automatically created if XUnitProject.Identity is set to the path of the XUnit csproj file
         /// </summary>
         [Required]
-        public ITaskItem[] XUnitProjects { get; set; }
+        public ITaskItem[]? XUnitProjects { get; set; }
 
         /// <summary>
         /// The path to the dotnet executable on the Helix agent. Defaults to "dotnet"
@@ -40,15 +40,15 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// Optional timeout for all created workitems
         /// Defaults to 300s
         /// </summary>
-        public string XUnitWorkItemTimeout { get; set; }
+        public string? XUnitWorkItemTimeout { get; set; }
 
-        public string XUnitArguments { get; set; }
+        public string? XUnitArguments { get; set; }
 
         /// <summary>
         /// An array of ITaskItems of type HelixWorkItem
         /// </summary>
         [Output]
-        public ITaskItem[] XUnitWorkItems { get; set; }
+        public ITaskItem[]? XUnitWorkItems { get; set; }
 
         /// <summary>
         /// The main method of this MSBuild task which calls the asynchronous execution method and
@@ -71,8 +71,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// <returns></returns>
         private async Task ExecuteAsync()
         {
+            if(XUnitProjects is null)
+            {
+                return;
+            }
+
             XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
-                .SelectMany(i => i)
+                .SelectMany(i => i ?? new())
                 .Where(wi => wi != null)
                 .ToArray();
             return;
@@ -83,7 +88,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// </summary>
         /// <param name="publishPath">The non-relative path to the publish directory.</param>
         /// <returns>An ITaskItem instance representing the prepared HelixWorkItem.</returns>
-        private async Task<List<ITaskItem>> PrepareWorkItem(ITaskItem xunitProject)
+        private async Task<List<ITaskItem>?> PrepareWorkItem(ITaskItem xunitProject)
         {
             // Forces this task to run asynchronously
             await Task.Yield();
@@ -121,11 +126,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             // These tests have to be executed slightly differently and we give them a different Identity so ADO can tell them apart
             var runtimeTargetFrameworkParsed = NuGetFramework.Parse(runtimeTargetFramework);
             var testIdentityDifferentiator = "";
-            bool netFramework = false;
             if (runtimeTargetFrameworkParsed.Framework == ".NETFramework")
             {
                 testIdentityDifferentiator = ".netfx";
-                netFramework = true;
             }
             else if (runtimeTargetFrameworkParsed.Framework != ".NETCoreApp")
             {
@@ -134,9 +137,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             // On mac due to https://github.com/dotnet/sdk/issues/3923, we run against workitem directory
             // but on Windows, if we running against working item diretory, we would hit long path.
-            string testExecutionDirectory = netFramework ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%" : IsPosixShell ? "-testExecutionDirectory $TestExecutionDirectory" : "-testExecutionDirectory %TestExecutionDirectory%";
+            string testExecutionDirectory = IsPosixShell ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory" : "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%";
 
-            string msbuildAdditionalSdkResolverFolder = netFramework ? "-e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r" : IsPosixShell ? "" : "-msbuildAdditionalSdkResolverFolder %HELIX_CORRELATION_PAYLOAD%\\r";
+            string msbuildAdditionalSdkResolverFolder = IsPosixShell ? "" : "-e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r";
 
             if (ExcludeAdditionalParameters.Equals("true"))
             {
@@ -145,33 +148,26 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             }
 
             var scheduler = new AssemblyScheduler(methodLimit: !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16);
-            var assemblyPartitionInfos = scheduler.Schedule(targetPath, netFramework: netFramework);
+            var assemblyPartitionInfos = scheduler.Schedule(targetPath);
 
             var partitionedWorkItem = new List<ITaskItem>();
             foreach (var assemblyPartitionInfo in assemblyPartitionInfos)
             {
                 string command;
-                if (netFramework)
-                {
-                    var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
-                    command = $"{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .\\ --logger trx {testFilter}";
-                }
-                else
-                {
-                    command = $"{driver} exec {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
-                              $"{(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
-                }
+
+                var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
+                command = $"{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 15m {testFilter} -- {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 
                 partitionedWorkItem.Add(new Microsoft.Build.Utilities.TaskItem(assemblyPartitionInfo.DisplayName + testIdentityDifferentiator, new Dictionary<string, string>()
-                    {
-                        { "Identity", assemblyPartitionInfo.DisplayName + testIdentityDifferentiator},
-                        { "PayloadDirectory", publishDirectory },
-                        { "Command", command },
-                        { "Timeout", timeout.ToString() },
-                    }));
+                {
+                    { "Identity", assemblyPartitionInfo.DisplayName + testIdentityDifferentiator},
+                    { "PayloadDirectory", publishDirectory },
+                    { "Command", command },
+                    { "Timeout", timeout.ToString() },
+                }));
             }
 
             return partitionedWorkItem;

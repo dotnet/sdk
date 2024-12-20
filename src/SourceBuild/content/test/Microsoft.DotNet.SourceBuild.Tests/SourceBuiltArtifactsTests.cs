@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.SourceBuild.Tests;
 public class SourceBuiltArtifactsTests : SdkTests
 {
     public static bool IncludeSourceBuiltArtifactsTests => !string.IsNullOrWhiteSpace(Config.SourceBuiltArtifactsPath);
-    
+
     public SourceBuiltArtifactsTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
     [ConditionalFact(typeof(SourceBuiltArtifactsTests), nameof(IncludeSourceBuiltArtifactsTests))]
@@ -55,9 +55,8 @@ public class SourceBuiltArtifactsTests : SdkTests
 
             string sdkVersion = versionLines[1];
 
-            // Find the expected SDK version by getting it from the SDK tarball
-            Utilities.ExtractTarball(Config.SdkTarballPath ?? string.Empty, outputDir, "./sdk/*/.version");
-            DirectoryInfo sdkDir = new DirectoryInfo(Path.Combine(outputDir, "sdk"));
+            // Find the expected SDK version by getting it from the source built SDK
+            DirectoryInfo sdkDir = new DirectoryInfo(Path.Combine(Config.DotNetDirectory, "sdk"));
             string sdkVersionPath = sdkDir.GetFiles(".version", SearchOption.AllDirectories).Single().FullName;
             string[] sdkVersionLines = File.ReadAllLines(Path.Combine(outputDir, sdkVersionPath));
             string expectedSdkVersion = sdkVersionLines[3];  // Get the unique, non-stable, SDK version

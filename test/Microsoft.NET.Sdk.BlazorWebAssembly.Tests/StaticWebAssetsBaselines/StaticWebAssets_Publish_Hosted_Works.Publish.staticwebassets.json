@@ -236,27 +236,6 @@
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat"
     },
     {
-      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/blazor.boot.json",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "manifest",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json"
-    },
-    {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\Fake-License.txt.gz",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -3575,6 +3554,27 @@
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\serviceworkers\\my-service-worker.js.gz"
     },
     {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/blazor.boot.json",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "WasmResource",
+      "AssetTraitValue": "manifest",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm.styles.css",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -5467,43 +5467,6 @@
         {
           "Name": "Content-Type",
           "Value": "application/octet-stream"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/blazor.boot.json",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/json"
         },
         {
           "Name": "ETag",
@@ -21544,6 +21507,43 @@
         {
           "Name": "Vary",
           "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/blazor.boot.json",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": [

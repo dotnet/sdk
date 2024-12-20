@@ -52,7 +52,7 @@
         <Value>$(ArtifactsTestResultsDir)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).DotNetDirectory">
-        <Value>$(TargetDir)extracted-sdk</Value>
+        <Value>$(DotNetSdkExtractDir)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TargetRid">
         <Value>$(TargetRid)</Value>
@@ -78,20 +78,11 @@
                                       Condition="'$(EnablePoison)' == 'true'">
         <Value>$(PoisonUsageReportFile)</Value>
       </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PrereqsPath">
-        <Value>$(SourceBuildTestsPrereqsPath)</Value>
-      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SdkTarballPath">
         <Value>$(SdkTarballPath)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SourceBuiltArtifactsPath">
         <Value>$(SourceBuiltArtifactsPath)</Value>
-      </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).WarnOnLicenseScanDiffs">
-        <Value>$(SourceBuildTestsWarnOnLicenseScanDiffs)</Value>
-      </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).WarnOnSdkContentDiffs">
-        <Value>$(SourceBuildTestsWarnOnSdkContentDiffs)</Value>
       </RuntimeHostConfigurationOption>
     </ItemGroup>
   </Target>

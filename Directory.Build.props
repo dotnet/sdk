@@ -34,7 +34,10 @@
     <!-- Default to all packages generating a corresponding symbol package -->
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
-    <SdkTargetFramework>net9.0</SdkTargetFramework>
+    <SdkTargetFramework>net10.0</SdkTargetFramework>
+    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
+    <NetCurrent>net10.0</NetCurrent>
+    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
 

@@ -48,7 +48,7 @@ public class SdkContentTests : SdkTests
         
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
         diff = RemoveDiffMarkers(diff);
-        BaselineHelper.CompareBaselineContents("MsftToSbSdkFiles.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs, BaselineSubDir);
+        BaselineHelper.CompareBaselineContents("MsftToSbSdkFiles.diff", diff, OutputHelper, BaselineSubDir);
     }
 
     [ConditionalFact(typeof(SdkContentTests), nameof(IncludeSdkContentTests))]
@@ -79,7 +79,7 @@ public class SdkContentTests : SdkTests
 
             string diff = BaselineHelper.DiffFiles(MsftVersionsFileName, SbVersionsFileName, OutputHelper);
             diff = RemoveDiffMarkers(diff);
-            BaselineHelper.CompareBaselineContents("MsftToSbSdkAssemblyVersions.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs, BaselineSubDir);
+            BaselineHelper.CompareBaselineContents("MsftToSbSdkAssemblyVersions.diff", diff, OutputHelper, BaselineSubDir);
         }
         finally
         {

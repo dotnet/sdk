@@ -7,6 +7,7 @@
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
+    <BuildActions Condition="'$(BuildOS)' == 'windows' and '$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
@@ -37,9 +38,7 @@
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="roslyn-analyzers" />
-    <!-- Dependency temporarily removed while transitioning to net10.
-         See https://github.com/dotnet/sdk/issues/42920. -->
-    <!-- <RepositoryReference Include="runtime" /> -->
+    <RepositoryReference Include="runtime" />
     <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="source-build-reference-packages" />
     <RepositoryReference Include="symreader" />

@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Text.RegularExpressions;
 using Xunit.Sdk;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal static class AssertEx
     {
@@ -225,13 +226,36 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public static void Contains(string expected, IEnumerable<string> items)
         {
-            if (items.Any(item => item == expected))
+            if (items.Any(item => item.Contains(expected)))
             {
                 return;
             }
 
             var message = new StringBuilder();
-            message.AppendLine($"'{expected}' not found in:");
+            message.AppendLine($"Expected output not found:");
+            message.AppendLine(expected);
+            message.AppendLine();
+            message.AppendLine("Actual output:");
+
+            foreach (var item in items)
+            {
+                message.AppendLine($"'{item}'");
+            }
+
+            Fail(message.ToString());
+        }
+
+        public static void ContainsRegex(string pattern, IEnumerable<string> items)
+        {
+            var regex = new Regex(pattern, RegexOptions.Compiled);
+
+            if (items.Any(item => regex.IsMatch(item)))
+            {
+                return;
+            }
+
+            var message = new StringBuilder();
+            message.AppendLine($"Pattern '{pattern}' not found in:");
 
             foreach (var item in items)
             {

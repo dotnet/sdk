@@ -26,9 +26,11 @@
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.9.0" VersionOverride="9.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.9.0" VersionOverride="9.0.*-*" GeneratePathProperty="true" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -41,9 +43,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
       public const string MicrosoftDotNetCommonProjectTemplates60Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_6_0)"%3B
       public const string MicrosoftDotNetCommonProjectTemplates70Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_7_0)"%3B
       public const string MicrosoftDotNetCommonProjectTemplates80Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_8_0)"%3B
+      public const string MicrosoftDotNetCommonProjectTemplates90Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_9_0)"%3B
       public const string MicrosoftDotNetWebProjectTemplates60Path = @"$(PkgMicrosoft_DotNet_Web_ProjectTemplates_6_0)"%3B
       public const string MicrosoftDotNetWebProjectTemplates70Path = @"$(PkgMicrosoft_DotNet_Web_ProjectTemplates_7_0)"%3B
       public const string MicrosoftDotNetWebProjectTemplates80Path = @"$(PkgMicrosoft_DotNet_Web_ProjectTemplates_8_0)"%3B
+      public const string MicrosoftDotNetWebProjectTemplates90Path = @"$(PkgMicrosoft_DotNet_Web_ProjectTemplates_9_0)"%3B
   }
 
   internal class TemplatePackageVersion
@@ -66,8 +70,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     <WriteLinesToFile Lines="$(GeneratedText)" File="$(GeneratedFilePath)" WriteOnlyWhenDifferent="true" Overwrite="true" />
   </Target>
 
-  <Target Name="CopyDBPToArtifactsTmpDir" AfterTargets="Build">
-    <Copy SourceFiles="TestDirectoryBuildProps/Directory.Build.props" DestinationFolder="$(ArtifactsTmpDir)" />
+  <Target Name="CopyDBFilesToArtifactsTmpDir" AfterTargets="Build">
+    <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.props" DestinationFolder="$(ArtifactsTmpDir)" />
+    <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.targets" DestinationFolder="$(ArtifactsTmpDir)" />
   </Target>
 
   <ItemGroup>
@@ -76,7 +81,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
   <ItemGroup>
     <Content Include="TestTemplates\**\*" Exclude="TestTemplates\**\bin\**;TestTemplates\**\obj\**" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
