@@ -21,7 +21,7 @@ index 86f8ce3b0ff..d4ace3ebb7c 100644
    </Target>
  
 diff --git a/eng/Signing.props b/eng/Signing.props
-index c1ff2d8ba47..1afa4131efc 100644
+index c1ff2d8ba47..83d46fd57a7 100644
 --- a/eng/Signing.props
 +++ b/eng/Signing.props
 @@ -1,6 +1,6 @@
@@ -71,7 +71,7 @@ index c1ff2d8ba47..1afa4131efc 100644
 +    <NuGetPackages Include="@(VerticalVisibilityNuGetPackages)" Visibility="Vertical" />
 +    <NuGetPackages Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="@(NuGetPackages)" />
 +
-+    <NuGetPackages PublishFlatContainer="false" />
++    <NuGetPackages Update="@(NuGetPackages)" PublishFlatContainer="false" />
 +
 +    <Archives Include="$(ArtifactsPackagesDir)**\*.tar.gz;
 +                       $(ArtifactsPackagesDir)**\*.zip"
