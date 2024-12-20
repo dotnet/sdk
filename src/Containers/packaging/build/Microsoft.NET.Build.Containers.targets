@@ -130,6 +130,7 @@
       <Output TaskParameter="ParsedContainerRegistry" PropertyName="ContainerBaseRegistry" />
       <Output TaskParameter="ParsedContainerImage" PropertyName="ContainerBaseName" />
       <Output TaskParameter="ParsedContainerTag" PropertyName="ContainerBaseTag" />
+      <Output TaskParameter="ParsedContainerDigest" PropertyName="ContainerBaseDigest" />
       <Output TaskParameter="NewContainerRegistry" PropertyName="ContainerRegistry" />
       <Output TaskParameter="NewContainerRepository" PropertyName="ContainerRepository" />
       <Output TaskParameter="NewContainerTags" ItemName="ContainerImageTags" />
@@ -254,6 +255,7 @@
                     BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
+                    BaseImageDigest="$(ContainerBaseDigest)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
