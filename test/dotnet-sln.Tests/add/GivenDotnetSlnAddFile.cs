@@ -497,7 +497,7 @@ EndGlobal
             .WithSource()
             .Path;
 
-        var fileToAdd = Path.Combine("Empty", "README");
+        var fileToAdd = Path.Combine("Other", "README");
         var cmd = new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
             .Execute(solutionCommand, "App.sln", "add", "file", fileToAdd);
@@ -560,7 +560,7 @@ EndGlobal
             .WithSource()
             .Path;
 
-        var fileToAdd = Path.Combine("Empty", "README");
+        var fileToAdd = Path.Combine("Other", "README");
         var cmd = new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
             .Execute(solutionCommand, "App.sln", "add", "file", fileToAdd);
