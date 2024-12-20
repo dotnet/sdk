@@ -17,8 +17,8 @@
     "cmake": "latest"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24617.2",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.24617.2",
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24617.3",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.24617.3",
     "Microsoft.Build.NoTargets": "3.7.0",
     "Microsoft.DotNet.CMake.Sdk": "9.0.0-beta.24217.1"
   }
