@@ -255,6 +255,11 @@ Se non esiste, la directory specificata verrà creata.</target>
         <target state="new">Message Request type '{0}' is unsupported.</target>
         <note>{0} - message request type</note>
       </trans-unit>
+      <trans-unit id="CmdUnsupportedTestRunnerDescription">
+        <source>Test runner not supported: {0}.</source>
+        <target state="new">Test runner not supported: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
         <source>Test application(s) that support VSTest are not supported.</source>
         <target state="new">Test application(s) that support VSTest are not supported.</target>

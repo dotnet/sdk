@@ -15,6 +15,11 @@ namespace Microsoft.DotNet.Cli
 
         public const string MSBuildExeName = "MSBuild.dll";
         public const string ParametersSeparator = "--";
+
+        public const string VSTest = "VSTest";
+        public const string MicrosoftTestingPlatform = "MicrosoftTestingPlatform";
+
+        public const string TestSectionKey = "test";
     }
 
     internal static class TestStates
