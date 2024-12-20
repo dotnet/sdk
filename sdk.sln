@@ -514,7 +514,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WebTools.AspireSe
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.DotNet.HotReload.Agent", "src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.shproj", "{418B10BD-CA42-49F3-8F4A-D8CC90C8A17D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Package", "src\BuiltInTools\HotReloadAgent.Package\Microsoft.DotNet.HotReload.Agent.Package.csproj", "{2FF79F82-60C1-349A-4726-7783D5A6D5DF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Package", "src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.Package.csproj", "{2FF79F82-60C1-349A-4726-7783D5A6D5DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1172,7 +1172,6 @@ Global
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{0a3c9afd-f6e6-4a5d-83fb-93bf66732696}*SharedItemsImports = 5
 		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{1bbfa19c-03f0-4d27-9d0d-0f8172642107}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{1f0b4b3c-dc88-4740-b04f-1707102e9930}*SharedItemsImports = 5
-		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{2ff79f82-60c1-349a-4726-7783d5a6d5df}*SharedItemsImports = 5
 		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{418b10bd-ca42-49f3-8f4a-d8cc90c8a17d}*SharedItemsImports = 13
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{445efbd5-6730-4f09-943d-278e77501ffd}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{94c8526e-dcc2-442f-9868-3dd0ba2688be}*SharedItemsImports = 13

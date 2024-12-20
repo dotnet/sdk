@@ -2,10 +2,10 @@
   "author": "Microsoft",
   "name": "Plik rozwiązania",
   "description": "Utwórz puste rozwiązanie niezawierające żadnych projektów",
-  "symbols/Format/description": "Choose the format for the solution file: sln or slnx.",
-  "symbols/Format/displayName": "Solution file format",
-  "symbols/Format/choices/sln/description": "Solution file",
-  "symbols/Format/choices/sln/displayName": ".sln format",
-  "symbols/Format/choices/slnx/description": "XML Solution file",
-  "symbols/Format/choices/slnx/displayName": ".slnx format"
+  "symbols/Format/description": "Wybierz format dla pliku rozwiązania: sln lub slnx.",
+  "symbols/Format/displayName": "Format pliku rozwiązania",
+  "symbols/Format/choices/sln/description": "Plik rozwiązania",
+  "symbols/Format/choices/sln/displayName": "Format .sln",
+  "symbols/Format/choices/slnx/description": "Plik rozwiązania w formacie XML",
+  "symbols/Format/choices/slnx/displayName": "Format .slnx"
 }

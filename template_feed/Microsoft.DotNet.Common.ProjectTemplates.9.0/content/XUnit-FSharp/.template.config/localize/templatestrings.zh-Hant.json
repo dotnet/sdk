@@ -4,7 +4,7 @@
   "description": "包含可以在 Windows、Linux 和 macOS 版的 .NET 上執行的 xUnit.net 測試的專案",
   "symbols/TargetFrameworkOverride/description": "覆寫目標 Framework",
   "symbols/TargetFrameworkOverride/displayName": "目標架構覆寫",
-  "symbols/Framework/description": "專案的目標 Framework。",
+  "symbols/Framework/description": "專案的目標架構。",
   "symbols/Framework/displayName": "架構",
   "symbols/Framework/choices/net9.0/description": "目標 net9.0",
   "symbols/EnablePack/description": "是否要啟用專案的封裝 (透過 \"dotnet pack\")。",
