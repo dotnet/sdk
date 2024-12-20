@@ -240,7 +240,7 @@ public class CreateNewImageTests
 
         BuiltImage builtImage = imageBuilder.Build();
 
-        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8ImageTag);
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8ImageTag, null);
         var destinationReference = new DestinationImageReference(registry, RootlessBase, new[] { "latest" });
 
         await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
