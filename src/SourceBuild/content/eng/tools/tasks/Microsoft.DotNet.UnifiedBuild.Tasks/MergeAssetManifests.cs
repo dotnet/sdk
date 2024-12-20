@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             VerifyAssetManifests(assetManifestXmls);
 
-            XElement mergedManifestRoot = assetManifestXmls.First().Root 
+            XElement mergedManifestRoot = assetManifestXmls.First().Root
                 ?? throw new ArgumentException("The root element of the asset manifest is null.");
 
             // Set the BuildId and AzureDevOpsBuildNumber attributes to the value of VmrBuildNumber
@@ -67,10 +67,14 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
 
             foreach (var assetManifestXml in assetManifestXmls)
             {
-                packageElements.AddRange(assetManifestXml.Descendants("Package"));
-                blobElements.AddRange(assetManifestXml.Descendants("Blob"));
+                // We may encounter assets here with "Vertical", "Internal", or "External" visibility here.
+                // We filter out "Vertical" visibility assets here, as they are not needed in the merged manifest.
+                // We leave in "Internal" assets so they can be used in later build passes.
+                // We leave in "External" assets as we will eventually ship them.
+                packageElements.AddRange(assetManifestXml.Descendants("Package").Where(package => package.Attribute("Visibility")?.Value != "Vertical"));
+                blobElements.AddRange(assetManifestXml.Descendants("Blob").Where(blob => blob.Attribute("Visibility")?.Value != "Vertical"));
             }
-            
+
             packageElements = packageElements.OrderBy(packageElement => packageElement.Attribute("Id")?.Value).ToList();
             blobElements = blobElements.OrderBy(blobElement => blobElement.Attribute("Id")?.Value).ToList();
 
@@ -97,7 +101,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 .Root?
                 .Attributes()
                 .Select(attribute => attribute.ToString())
-                .ToHashSet() 
+                .ToHashSet()
                 ?? throw new ArgumentException("The root element of the asset manifest is null.");
 
             if (assetManifestXmls.Skip(1).Any(manifest => manifest.Root?.Attributes().Count() != rootAttributes.Count))
@@ -105,10 +109,10 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 throw new ArgumentException("The asset manifests do not have the same number of root attributes.");
             }
 
-            if (assetManifestXmls.Skip(1).Any(assetManifestXml => 
+            if (assetManifestXmls.Skip(1).Any(assetManifestXml =>
                     !assetManifestXml.Root?.Attributes().Select(attribute => attribute.ToString())
                         .All(attribute =>
-                            // Ignore BuildId and AzureDevOpsBuildNumber attributes, they're different for different repos, 
+                            // Ignore BuildId and AzureDevOpsBuildNumber attributes, they're different for different repos,
                             // TODO this should be fixed with https://github.com/dotnet/source-build/issues/3934
                             _ignoredAttributes.Any(ignoredAttribute => attribute.StartsWith(ignoredAttribute)) || rootAttributes.Contains(attribute))
                         ?? false))
