@@ -1,24 +1,32 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal enum PayloadType
+    internal interface IRequest
+    {
+        ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken);
+    }
+
+    internal enum RequestType
     {
         ManagedCodeUpdate = 1,
         StaticAssetUpdate = 2,
         InitialUpdatesCompleted = 3,
     }
 
-    internal readonly struct UpdatePayload(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel)
+    internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel) : IRequest
     {
-        public const byte ApplySuccessValue = 0;
-
         private const byte Version = 4;
 
         public IReadOnlyList<UpdateDelta> Deltas { get; } = deltas;
@@ -45,23 +53,9 @@ namespace Microsoft.DotNet.Watch
         }
 
         /// <summary>
-        /// Called by the dotnet-watch.
-        /// </summary>
-        public static async ValueTask WriteLogAsync(Stream stream, IReadOnlyCollection<(string message, AgentMessageSeverity severity)> log, CancellationToken cancellationToken)
-        {
-            await stream.WriteAsync(log.Count, cancellationToken);
-
-            foreach (var (message, severity) in log)
-            {
-                await stream.WriteAsync(message, cancellationToken);
-                await stream.WriteAsync((byte)severity, cancellationToken);
-            }
-        }
-
-        /// <summary>
         /// Called by delta applier.
         /// </summary>
-        public static async ValueTask<UpdatePayload> ReadAsync(Stream stream, CancellationToken cancellationToken)
+        public static async ValueTask<ManagedCodeUpdateRequest> ReadAsync(Stream stream, CancellationToken cancellationToken)
         {
             var version = await stream.ReadByteAsync(cancellationToken);
             if (version != Version)
@@ -84,26 +78,46 @@ namespace Microsoft.DotNet.Watch
             }
 
             var responseLoggingLevel = (ResponseLoggingLevel)await stream.ReadByteAsync(cancellationToken);
-            return new UpdatePayload(deltas, responseLoggingLevel: responseLoggingLevel);
+            return new ManagedCodeUpdateRequest(deltas, responseLoggingLevel: responseLoggingLevel);
+        }
+    }
+
+    internal readonly struct UpdateResponse(IReadOnlyCollection<(string message, AgentMessageSeverity severity)> log, bool success)
+    {
+        public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
+        {
+            await stream.WriteAsync(success, cancellationToken);
+            await stream.WriteAsync(log.Count, cancellationToken);
+
+            foreach (var (message, severity) in log)
+            {
+                await stream.WriteAsync(message, cancellationToken);
+                await stream.WriteAsync((byte)severity, cancellationToken);
+            }
         }
 
-        /// <summary>
-        /// Called by delta applier.
-        /// </summary>
-        public static async IAsyncEnumerable<(string message, AgentMessageSeverity severity)> ReadLogAsync(Stream stream, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public static async ValueTask<(bool success, IAsyncEnumerable<(string message, AgentMessageSeverity severity)>)> ReadAsync(
+            Stream stream, CancellationToken cancellationToken)
         {
-            var entryCount = await stream.ReadInt32Async(cancellationToken);
+            var success = await stream.ReadBooleanAsync(cancellationToken);
+            var log = ReadLogAsync(cancellationToken);
+            return (success, log);
 
-            for (var i = 0; i < entryCount; i++)
+            async IAsyncEnumerable<(string message, AgentMessageSeverity severity)> ReadLogAsync([EnumeratorCancellation] CancellationToken cancellationToken)
             {
-                var message = await stream.ReadStringAsync(cancellationToken);
-                var severity = (AgentMessageSeverity)await stream.ReadByteAsync(cancellationToken);
-                yield return (message, severity);
+                var entryCount = await stream.ReadInt32Async(cancellationToken);
+
+                for (var i = 0; i < entryCount; i++)
+                {
+                    var message = await stream.ReadStringAsync(cancellationToken);
+                    var severity = (AgentMessageSeverity)await stream.ReadByteAsync(cancellationToken);
+                    yield return (message, severity);
+                }
             }
         }
     }
 
-    internal readonly struct ClientInitializationPayload(string capabilities)
+    internal readonly struct ClientInitializationRequest(string capabilities) : IRequest
     {
         private const byte Version = 0;
 
@@ -121,7 +135,7 @@ namespace Microsoft.DotNet.Watch
         /// <summary>
         /// Called by dotnet-watch.
         /// </summary>
-        public static async ValueTask<ClientInitializationPayload> ReadAsync(Stream stream, CancellationToken cancellationToken)
+        public static async ValueTask<ClientInitializationRequest> ReadAsync(Stream stream, CancellationToken cancellationToken)
         {
             var version = await stream.ReadByteAsync(cancellationToken);
             if (version != Version)
@@ -130,15 +144,15 @@ namespace Microsoft.DotNet.Watch
             }
 
             var capabilities = await stream.ReadStringAsync(cancellationToken);
-            return new ClientInitializationPayload(capabilities);
+            return new ClientInitializationRequest(capabilities);
         }
     }
 
-    internal readonly struct StaticAssetPayload(
+    internal readonly struct StaticAssetUpdateRequest(
         string assemblyName,
         string relativePath,
         byte[] contents,
-        bool isApplicationProject)
+        bool isApplicationProject) : IRequest
     {
         private const byte Version = 1;
 
@@ -156,7 +170,7 @@ namespace Microsoft.DotNet.Watch
             await stream.WriteByteArrayAsync(Contents, cancellationToken);
         }
 
-        public static async ValueTask<StaticAssetPayload> ReadAsync(Stream stream, CancellationToken cancellationToken)
+        public static async ValueTask<StaticAssetUpdateRequest> ReadAsync(Stream stream, CancellationToken cancellationToken)
         {
             var version = await stream.ReadByteAsync(cancellationToken);
             if (version != Version)
@@ -169,7 +183,7 @@ namespace Microsoft.DotNet.Watch
             var relativePath = await stream.ReadStringAsync(cancellationToken);
             var contents = await stream.ReadByteArrayAsync(cancellationToken);
 
-            return new StaticAssetPayload(
+            return new StaticAssetUpdateRequest(
                 assemblyName: assemblyName,
                 relativePath: relativePath,
                 contents: contents,
@@ -252,6 +266,10 @@ namespace Microsoft.DotNet.Watch
             await stream.WriteAsync(bytes, cancellationToken);
         }
 
+    #if !NET
+        public static async ValueTask WriteAsync(this Stream stream, byte[] value, CancellationToken cancellationToken)
+            => await stream.WriteAsync(value, offset: 0, count: value.Length, cancellationToken);
+    #endif
         public static async ValueTask Write7BitEncodedIntAsync(this Stream stream, int value, CancellationToken cancellationToken)
         {
             uint uValue = (uint)value;
@@ -274,7 +292,7 @@ namespace Microsoft.DotNet.Watch
             var buffer = ArrayPool<byte>.Shared.Rent(minimumLength: size);
             try
             {
-                await ReadExactlyAsync(stream, buffer.AsMemory(0, size), cancellationToken);
+                await ReadExactlyAsync(stream, buffer, size, cancellationToken);
                 return buffer[0];
             }
             finally
@@ -289,7 +307,7 @@ namespace Microsoft.DotNet.Watch
             var buffer = ArrayPool<byte>.Shared.Rent(minimumLength: size);
             try
             {
-                await ReadExactlyAsync(stream, buffer.AsMemory(0, size), cancellationToken);
+                await ReadExactlyAsync(stream, buffer, size, cancellationToken);
                 return BinaryPrimitives.ReadInt32LittleEndian(buffer);
             }
             finally
@@ -301,16 +319,23 @@ namespace Microsoft.DotNet.Watch
         public static async ValueTask<Guid> ReadGuidAsync(this Stream stream, CancellationToken cancellationToken)
         {
             const int size = 16;
+    #if NET
             var buffer = ArrayPool<byte>.Shared.Rent(minimumLength: size);
+
             try
             {
-                await ReadExactlyAsync(stream, buffer.AsMemory(0, size), cancellationToken);
+                await ReadExactlyAsync(stream, buffer, size, cancellationToken);
                 return new Guid(buffer.AsSpan(0, size));
             }
             finally
             {
                 ArrayPool<byte>.Shared.Return(buffer);
             }
+    #else
+            var buffer = new byte[size];
+            await ReadExactlyAsync(stream, buffer, size, cancellationToken);
+            return new Guid(buffer);
+    #endif
         }
 
         public static async ValueTask<byte[]> ReadByteArrayAsync(this Stream stream, CancellationToken cancellationToken)
@@ -322,7 +347,7 @@ namespace Microsoft.DotNet.Watch
             }
 
             var bytes = new byte[count];
-            await ReadExactlyAsync(stream, bytes, cancellationToken);
+            await ReadExactlyAsync(stream, bytes, count, cancellationToken);
             return bytes;
         }
 
@@ -339,7 +364,7 @@ namespace Microsoft.DotNet.Watch
             var buffer = ArrayPool<byte>.Shared.Rent(minimumLength: size);
             try
             {
-                await ReadExactlyAsync(stream, buffer.AsMemory(0, size), cancellationToken);
+                await ReadExactlyAsync(stream, buffer, size, cancellationToken);
 
                 for (var i = 0; i < count; i++)
                 {
@@ -370,8 +395,8 @@ namespace Microsoft.DotNet.Watch
             var buffer = ArrayPool<byte>.Shared.Rent(minimumLength: size);
             try
             {
-                await ReadExactlyAsync(stream, buffer.AsMemory(0, size), cancellationToken);
-                return Encoding.UTF8.GetString(buffer.AsSpan(0, size));
+                await ReadExactlyAsync(stream, buffer, size, cancellationToken);
+                return Encoding.UTF8.GetString(buffer, 0, size);
             }
             finally
             {
@@ -411,12 +436,12 @@ namespace Microsoft.DotNet.Watch
             return (int)result;
         }
 
-        private static async ValueTask<int> ReadExactlyAsync(this Stream stream, Memory<byte> buffer, CancellationToken cancellationToken)
+        private static async ValueTask<int> ReadExactlyAsync(this Stream stream, byte[] buffer, int size, CancellationToken cancellationToken)
         {
             int totalRead = 0;
             while (totalRead < buffer.Length)
             {
-                int read = await stream.ReadAsync(buffer.Slice(totalRead), cancellationToken).ConfigureAwait(false);
+                int read = await stream.ReadAsync(buffer, offset: totalRead, count: size - totalRead, cancellationToken).ConfigureAwait(false);
                 if (read == 0)
                 {
                     throw new EndOfStreamException();
