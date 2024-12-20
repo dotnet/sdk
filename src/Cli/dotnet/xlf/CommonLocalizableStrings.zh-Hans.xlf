@@ -222,6 +222,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 默认值为 "false"。但目标为 .NET 7 或更低版本时，如果指定了运行时标识符，则默认值为 "true"。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <note>dotnet workload search version --help should not be localized.</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">解决方案</target>
