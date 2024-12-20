@@ -38,7 +38,7 @@ Creating and using a virtual machine (VM) without your credentials is another se
 
 The other disadvantage of this approach is that it can take a lot of time to select appropriate parameters for your VM, start it, connect to it, set it up properly for your scenario, and execute the scenario. Unlike Sandbox, it can retain certain information across restarts, but it may lose active work just as your computer loses active work when you restart it. It's important to keep in mind that many VMs restart automatically at a fixed time every day when not in use to save resources.
 
-That said, this is a secure means for executing a customer's scenario, and it works for any operating system and can even be configured to work for other architectures. Note that it does cost real money to use.
+That said, this is a secure means for executing a customer's scenario, and it works for any operating system and can even be configured to work for other architectures. Note that using a VM in the cloud costs real money, though a local VM (such as using [Hyper-V](https://learn.microsoft.com/windows-server/virtualization/hyper-v/get-started/create-a-virtual-machine-in-hyper-v)) typically does not.
 
 For Microsoft employees, [DevTestLab](https://ms.portal.azure.com/#browse/Microsoft.Compute%2FVirtualMachines) can help you create VMs.
 
