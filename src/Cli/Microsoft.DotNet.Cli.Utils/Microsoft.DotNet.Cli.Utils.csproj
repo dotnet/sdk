@@ -16,7 +16,6 @@
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

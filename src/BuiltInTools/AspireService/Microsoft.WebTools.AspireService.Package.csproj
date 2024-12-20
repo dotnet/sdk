@@ -5,7 +5,6 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
-    <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
 
     <!-- NuGet -->

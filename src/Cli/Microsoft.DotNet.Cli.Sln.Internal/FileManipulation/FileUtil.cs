@@ -26,6 +26,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#nullable disable
+
 namespace Microsoft.DotNet.Cli.Sln.Internal.FileManipulation
 {
     internal static class FileUtil
