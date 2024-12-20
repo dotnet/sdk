@@ -15,6 +15,7 @@
   <ItemGroup>
     <Compile Include="..\dotnet-watch\EnvironmentVariables_StartupHook.cs" Link="EnvironmentVariables_StartupHook.cs" />
     <Compile Include="..\dotnet-watch\HotReload\NamedPipeContract.cs" />
+    <Compile Include="..\dotnet-watch\HotReload\StreamExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
