@@ -1,0 +1,75 @@
+From d37bcaf1cc55f4dd34ddad48ad726fc413c1a25b Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 13 Dec 2024 13:33:17 -0800
+Subject: [PATCH] In VMR builds, a host-SDK crossgen will always be
+ available.
+
+Backport: https://github.com/dotnet/aspnetcore/pull/59551
+---
+diff --git a/eng/targets/Sfx.Common.targets b/eng/targets/Sfx.Common.targets
+index 5ff818b44f..f97b379391 100644
+--- a/eng/targets/Sfx.Common.targets
++++ b/eng/targets/Sfx.Common.targets
+@@ -36,4 +36,13 @@
+       <PublishReadyToRunPgoFiles Include="%(MIBCPackage.PackagePath)/**/*.mibc" />
+     </ItemGroup>
+   </Target>
++
++  <!-- We need to reference the live RID graph to get a graph with any additionally supported RIDs for this build. -->
++  <ItemGroup>
++    <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsVersion)]" />
++  </ItemGroup>
++
++  <PropertyGroup Condition="Exists('$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)')">
++    <RuntimeIdentifierGraphPath>$(NuGetPackageRoot)microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsVersion)/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
++  </PropertyGroup>
+ </Project>
+diff --git a/eng/tools/GenerateFiles/Directory.Build.targets.in b/eng/tools/GenerateFiles/Directory.Build.targets.in
+index 88f09a8c89..4d56e7e3f1 100644
+--- a/eng/tools/GenerateFiles/Directory.Build.targets.in
++++ b/eng/tools/GenerateFiles/Directory.Build.targets.in
+@@ -80,7 +80,8 @@
+       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
+           '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND
+           '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
+-      <RuntimePackRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
++      <!-- Workaround https://github.com/dotnet/sdk/pull/45487: The .NET SDK requires the crossgen2 host runtime identifier to be in the runtime pack runtime identifiers list. -->
++      <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(RuntimePackRuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
+     </KnownFrameworkReference>
+ 
+     <KnownAppHostPack Update="Microsoft.NETCore.App">
+@@ -108,7 +109,7 @@
+     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2">
+       <Crossgen2PackVersion
+           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</Crossgen2PackVersion>
+-      <Crossgen2RuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
++      <Crossgen2RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(Crossgen2RuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
+     </KnownCrossgen2Pack>
+ 
+     <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
+diff --git a/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.Composite.sfxproj b/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.Composite.sfxproj
+index 68d2861437..7d75aa7f8c 100644
+--- a/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.Composite.sfxproj
++++ b/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.Composite.sfxproj
+@@ -15,8 +15,6 @@
+     <RollForward>LatestPatch</RollForward>
+     <!-- Precompile the shared framework with ReadyToRun. ReadyToRun is not currently supported on s390x or ppc64le or armv6 or loongarch64. -->
+     <PublishReadyToRun Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' OR '$(TargetArchitecture)' == 'loongarch64' ">false</PublishReadyToRun>
+-    <!-- VMR doesn't produce valid crossgen for the host/build machine https://github.com/dotnet/source-build/issues/3793 -->
+-    <PublishReadyToRun Condition=" '$(DotNetBuild)' == 'true' AND '$(Crossbuild)' == 'true' ">false</PublishReadyToRun>
+     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
+     <!-- Don't use ReadyToRun when explicitly opted out -->
+     <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>
+diff --git a/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj b/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj
+index d3160de441..533c6840f9 100644
+--- a/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj
++++ b/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj
+@@ -15,8 +15,6 @@
+     <RollForward>LatestPatch</RollForward>
+     <!-- Precompile the shared framework with ReadyToRun. ReadyToRun is not currently supported on s390x or ppc64le or armv6 or loongarch64. -->
+     <PublishReadyToRun Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' OR '$(TargetArchitecture)' == 'loongarch64' ">false</PublishReadyToRun>
+-    <!-- VMR doesn't produce valid crossgen for the host/build machine https://github.com/dotnet/source-build/issues/3793 -->
+-    <PublishReadyToRun Condition=" '$(DotNetBuild)' == 'true' AND '$(Crossbuild)' == 'true' ">false</PublishReadyToRun>
+     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
+     <!-- Don't use ReadyToRun when explicitly opted out -->
+     <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>
