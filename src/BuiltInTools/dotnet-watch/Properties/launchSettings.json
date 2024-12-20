@@ -3,7 +3,7 @@
     "dotnet-watch": {
       "commandName": "Project",
       "commandLineArgs": "--verbose /bl:DotnetRun.binlog",
-      "workingDirectory": "C:\\sdk5\\artifacts\\tmp\\Debug\\Aspire_ApplyD---C6DC4E42\\WatchAspire.AppHost",
+      "workingDirectory": "$(RepoRoot)src\\Assets\\TestProjects\\BlazorWasmWithLibrary\\blazorwasm",
       "environmentVariables": {
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
         "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",
