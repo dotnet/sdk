@@ -174,6 +174,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         GeneratedContainerConfiguration = builtImage.Config;
         GeneratedContainerDigest = builtImage.Manifest.GetDigest();
         GeneratedArchiveOutputPath = ArchiveOutputPath;
+        GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
 
         switch (destinationImageReference.Kind)
@@ -234,6 +235,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             telemetry.LogLocalLoadError();
             Log.LogErrorFromException(dle, showStackTrace: false);
+        }
+        catch (ArgumentException argEx)
+        {
+            Log.LogErrorFromException(argEx, showStackTrace: false);
         }
     }
 

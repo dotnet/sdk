@@ -27,6 +27,8 @@ parameters:
   osProperties: ''
   runtimeSourceProperties: ''
   officialBuildProperties: ''
+  ### ARCADE ###
+  preSteps: []
 
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
@@ -49,6 +51,11 @@ jobs:
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    preSteps: ${{ parameters.preSteps }}
+    templateContext:
+      sdl:
+        binskim:
+          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;
 
     steps:
     ############## PREP ###############

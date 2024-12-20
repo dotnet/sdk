@@ -133,7 +133,17 @@ namespace Microsoft.NET.TestFramework.Commands
                 args = new[] { "/restore" }.Concat(args);
             }
 
-            return base.Execute(args);
+            var command = base.Execute(args);
+
+            var error = command.StdErr?.ToString();
+            var output = command.StdOut?.ToString();
+            if ((!String.IsNullOrEmpty(error) && error.Contains("NU3003")) || (!String.IsNullOrEmpty(output) && output.Contains("NU3003")))
+            {
+                args = args.Concat(new[] { "-v:diag" });
+                command = base.Execute(args);
+            }
+
+            return command;
         }
 
         public CommandResult ExecuteWithoutRestore(IEnumerable<string> args)
