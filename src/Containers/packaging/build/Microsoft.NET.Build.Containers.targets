@@ -34,13 +34,20 @@
   <Target Name="ComputeContainerBaseImage"
           Returns="$(ContainerBaseImage)">
     <PropertyGroup>
+      <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
-      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
-      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
+
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
     </PropertyGroup>
+
+    <ItemGroup>
+      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
+      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifier)" Condition="'$(ContainerRuntimeIdentifiers)' == ''" />
+    </ItemGroup>
 
     <ComputeDotnetBaseImageAndTag
       UserBaseImage="$(ContainerBaseImage)"
@@ -51,10 +58,14 @@
       IsAotPublished="$(PublishAot)"
       IsTrimmed="$(PublishTrimmed)"
       UsesInvariantGlobalization="$(InvariantGlobalization)"
-      TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+      TargetRuntimeIdentifiers="@(_TargetRuntimeIdentifiers)"
       ContainerFamily="$(ContainerFamily)">
         <Output TaskParameter="ComputedContainerBaseImage" PropertyName="ContainerBaseImage" />
     </ComputeDotnetBaseImageAndTag>
+
+    <ItemGroup>
+      <_TargetRuntimeIdentifiers Remove ="$(_TargetRuntimeIdentifiers)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="ComputeContainerConfig" DependsOnTargets="ComputeContainerBaseImage">
@@ -99,9 +110,9 @@
 
     <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
       <!-- For self-contained, invoke the native executable as a single arg -->
-      <ContainerAppCommand Condition="'@(ContainerAppCommand)' == '' and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
       <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
-      <ContainerAppCommand Condition="'@(ContainerAppCommand)' == '' and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
     </ItemGroup>
 
     <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
@@ -229,10 +240,8 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="PublishContainer"
-    DependsOnTargets="$(PublishContainerDependsOn)"
-    Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
-
+  <Target Name="_PublishSingleContainer"
+          Returns="@(GeneratedContainers)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -271,7 +280,133 @@
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
       <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
+      <Output TaskParameter="GeneratedContainerMediaType" PropertyName="GeneratedContainerMediaType" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
     </CreateNewImage>
+
+    <ItemGroup>
+      <GeneratedContainers Include="GeneratedContainer">
+        <Manifest>$(GeneratedContainerManifest)</Manifest>
+        <Configuration>$(GeneratedContainerConfiguration)</Configuration>
+        <ManifestDigest>$(GeneratedContainerDigest)</ManifestDigest>
+        <ManifestMediaType>$(GeneratedContainerMediaType)</ManifestMediaType>
+      </GeneratedContainers>
+    </ItemGroup>
   </Target>
+
+  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
+    <Error Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
+      Condition="'$(ContainerArchiveOutputPath)' != '' and 
+                 !$(ContainerArchiveOutputPath.EndsWith('/')) and 
+                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and 
+                 $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
+
+    <ItemGroup>
+      <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
+      <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
+      <_InnerBuild
+        Include="$(MSBuildProjectFullPath)"
+        AdditionalProperties="
+          ContainerRuntimeIdentifier=%(_rids.Identity);
+          RuntimeIdentifier=%(_rids.Identity);
+          ContainerBaseRegistry=$(ContainerBaseRegistry);
+          ContainerBaseName=$(ContainerBaseName);
+          ContainerBaseTag=$(ContainerBaseTag);
+          ContainerRegistry=$(ContainerRegistry);
+          _ContainerImageTags=@(ContainerImageTags, ';');
+          ContainerRepository=$(ContainerRepository);
+          ContainerWorkingDirectory=$(ContainerWorkingDirectory);
+          _ContainerEntrypoint=@(ContainerEntrypoint, ';');
+          _ContainerEntrypointArgs=@(ContainerEntrypointArgs, ';');
+          _ContainerAppCommand=@(ContainerAppCommand, ';');
+          _ContainerAppCommandArgs=@(ContainerAppCommandArgs, ';');
+          ContainerAppCommandInstruction=$(ContainerAppCommandInstruction);
+          _ContainerDefaultArgs=@(ContainerDefaultArgs, ';');
+          _ContainerLabel=@(ContainerLabel->'%(Identity):%(Value)');
+          _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
+          _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
+          ContainerUser=$(ContainerUser);
+          ContainerGenerateLabels=$(ContainerGenerateLabels);
+          ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest)
+        "/>
+      <_rids Remove ="$(_rids)" />
+    </ItemGroup>
+
+    <MSBuild
+        Projects="@(_InnerBuild)"
+        Targets="Publish;_ParseItemsForPublishingSingleContainer;_PublishSingleContainer"
+        BuildInParallel="true">
+        <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainers" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
+      <_SkipCreateImageIndex Condition="'$(ContainerRegistry)' == ''">true</_SkipCreateImageIndex>
+    </PropertyGroup>
+
+    <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
+                      GeneratedContainers="@(GeneratedContainers)"
+                      OutputRegistry="$(ContainerRegistry)"
+                      Repository="$(ContainerRepository)"
+                      ImageTags="@(ContainerImageTags)">
+      <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
+    </CreateImageIndex>
+  </Target>
+
+  <Target Name="_ParseItemsForPublishingSingleContainer">
+    <ItemGroup>
+      <OriginalImageTags Include="$(_ContainerImageTags)"/>
+      <ContainerImageTags Include="@(OriginalImageTags->'%(Identity)-$(ContainerRuntimeIdentifier)')" />
+      <ContainerEntrypoint Include="$(_ContainerEntrypoint)"/>
+      <ContainerEntrypointArgs Include="$(_ContainerEntrypointArgs)"/>
+      <ContainerAppCommand Include="$(_ContainerAppCommand)"/>
+      <ContainerAppCommandArgs Include="$(_ContainerAppCommandArgs)"/>
+      <ContainerDefaultArgs Include="$(_ContainerDefaultArgs)"/>
+
+      <_ParsedContainerLabel
+        Condition="'$(_ContainerLabel)' != ':'"
+        Include="$(_ContainerLabel)"/>
+      <ContainerLabel
+        Condition="@(_ParsedContainerLabel->Count()) > 0 "
+        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[1])" />
+
+      <_ParsedContainerPort
+        Condition="'$(_ContainerPort)' != ':'"
+        Include="$(_ContainerPort)"/>
+      <ContainerPort
+        Condition="@(_ParsedContainerPort->Count()) > 0 "
+        Include="$([System.String]::Copy('%(_ParsedContainerPort.Identity)').Split(':')[0])"
+        Type="$([System.String]::Copy('%(_ParsedContainerPort.Identity)').Split(':')[1])" />
+
+      <_ParsedContainerEnvironmentVariables
+        Condition="'$(_ContainerEnvironmentVariables)' != ':'"
+        Include="$(_ContainerEnvironmentVariables)"/>
+      <ContainerEnvironmentVariables
+        Condition="@(_ParsedContainerEnvironmentVariables->Count()) > 0 "
+        Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])" />
+    </ItemGroup>
+    <PropertyGroup>
+      <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
+      <ContainerArchiveOutputPath Condition="'$(ContainerArchiveOutputPath)' != ''">$([System.IO.Path]::Combine($(ContainerArchiveOutputPath), $(ContainerRepository)-$(ContainerRuntimeIdentifier).tar.gz))</ContainerArchiveOutputPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PublishContainer"
+  DependsOnTargets="$(PublishContainerDependsOn)"
+  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
+    <PropertyGroup>
+      <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
+      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and (('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == ''))">true</_IsMultiRIDBuild>
+      <_IsSingleRIDBuild Condition="'$(_IsMultiRIDBuild)' == ''">true</_IsSingleRIDBuild>
+    </PropertyGroup>
+
+    <!-- Call _PublishMultiArchContainers if we are in a multi-rid build, and call _PublishSingleContainer if we are in a single-RID build -->
+    <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_PublishMultiArchContainers" />
+    <CallTarget Condition="'$(_IsSingleRIDBuild)' == 'true' " Targets="_PublishSingleContainer" />
+
+    <Error Condition="'$(_IsMultiTFMBuild)' == 'true'" Code="CONTAINERS0666" Text="Containers cannot be published for multiple TargetFrameworks at this time. Please specify a TargetFramework." />
+  </Target>
+
 </Project>

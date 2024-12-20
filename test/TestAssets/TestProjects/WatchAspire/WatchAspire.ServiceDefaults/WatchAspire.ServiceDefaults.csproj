@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="$(MicrosoftNETSdkAspireManifest80100PackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="$(AspirePackageVersion)" />
   </ItemGroup>
 
 </Project>

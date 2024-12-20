@@ -48,7 +48,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Test behavior when implicit version differs for framework-dependent and self-contained apps
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45417")]
         [InlineData("netcoreapp1.0", false, true, "1.0.5")]
         [InlineData("netcoreapp1.0", true, true, "1.0.16")]
         [InlineData("netcoreapp1.0", false, false, "1.0.5")]
@@ -133,7 +133,7 @@ namespace Microsoft.NET.Build.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testIdentifier);
 
-            NuGetConfigWriter.Write(testAsset.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
+            NuGetConfigWriter.Write(testAsset.TestRoot);
 
             var buildCommand = new BuildCommand(testAsset);
 
