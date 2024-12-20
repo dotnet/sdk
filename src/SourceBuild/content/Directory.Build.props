@@ -132,6 +132,7 @@
     <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
     <!-- Don't use Arcade's ExcludeFrom* build infra in the VMR orchestrator. -->
     <DisableArcadeExcludeFromBuildSupport>true</DisableArcadeExcludeFromBuildSupport>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
