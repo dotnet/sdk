@@ -176,6 +176,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageDigest.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Cancel() -> void
@@ -262,6 +264,7 @@ Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParseContainerProp
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerImage.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerTag.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerDigest.get -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Execute() -> bool
 override Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.Execute() -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string! input, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
