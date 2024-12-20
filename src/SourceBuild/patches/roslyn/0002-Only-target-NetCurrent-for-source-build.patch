@@ -1,31 +1,27 @@
-From d5e9441491ee711dd04add052c7e3e39a3314361 Mon Sep 17 00:00:00 2001
+From 3e23c76f9f26e0b559096d9349d0abadb092d704 Mon Sep 17 00:00:00 2001
 From: Matt Thalman <mthalman@microsoft.com>
-Date: Wed, 18 Dec 2024 15:57:56 -0600
+Date: Fri, 20 Dec 2024 08:28:35 -0600
 Subject: [PATCH] Only target NetCurrent for source build
 
+Backport: https://github.com/dotnet/roslyn/pull/76505
 ---
- eng/targets/TargetFrameworks.props | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ eng/targets/TargetFrameworks.props | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/eng/targets/TargetFrameworks.props b/eng/targets/TargetFrameworks.props
-index 2dddaff1560..724f64b50b1 100644
+index 2dddaff1560..04eecc62df9 100644
 --- a/eng/targets/TargetFrameworks.props
 +++ b/eng/targets/TargetFrameworks.props
-@@ -40,7 +40,7 @@
-         <!-- TODO until we figure out what is up with NetPrevious -->
-         <NetPrevious>$(NetMinimum)</NetPrevious>
-         <NetRoslyn>$(NetPrevious)</NetRoslyn>
--        <NetRoslynSourceBuild>$(NetCurrent);$(NetPrevious)</NetRoslynSourceBuild>
-+        <NetRoslynSourceBuild>$(NetCurrent)</NetRoslynSourceBuild>
-         <NetRoslynAll>$(NetCurrent);$(NetPrevious)</NetRoslynAll>
-         <NetRoslynBuildHostNetCoreVersion>$(NetPrevious)</NetRoslynBuildHostNetCoreVersion>
-         <NetRoslynNext>$(NetPrevious)</NetRoslynNext>
-@@ -53,7 +53,7 @@
+@@ -53,9 +53,9 @@
      <When Condition="'$(DotNetBuildSourceOnly)' == 'true' AND '$(DotNetBuildOrchestrator)' == 'true'">
        <PropertyGroup>
          <NetRoslyn>$(NetCurrent)</NetRoslyn>
 -        <NetRoslynSourceBuild>$(NetCurrent);$(NetPrevious)</NetRoslynSourceBuild>
+-        <NetRoslynAll>$(NetCurrent);$(NetPrevious)</NetRoslynAll>
+-        <NetRoslynBuildHostNetCoreVersion>$(NetPrevious)</NetRoslynBuildHostNetCoreVersion>
 +        <NetRoslynSourceBuild>$(NetCurrent)</NetRoslynSourceBuild>
-         <NetRoslynAll>$(NetCurrent);$(NetPrevious)</NetRoslynAll>
-         <NetRoslynBuildHostNetCoreVersion>$(NetPrevious)</NetRoslynBuildHostNetCoreVersion>
++        <NetRoslynAll>$(NetCurrent)</NetRoslynAll>
++        <NetRoslynBuildHostNetCoreVersion>$(NetCurrent)</NetRoslynBuildHostNetCoreVersion>
          <NetRoslynNext>$(NetCurrent)</NetRoslynNext>
+       </PropertyGroup>
+     </When>
