@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests.StaticWebAssets;
@@ -259,7 +258,7 @@ public class FilterStaticWebAssetEndpointsTest
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
     }
 
-    private TaskItem CreateContentMapping(string pattern, string contentType)
+    private static TaskItem CreateContentMapping(string pattern, string contentType)
     {
         return new TaskItem(contentType, new Dictionary<string, string>
         {

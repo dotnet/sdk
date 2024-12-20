@@ -1,9 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Cryptography;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -60,11 +59,14 @@ public class ResolveCompressedAssets : Task
         var includePatterns = SplitPattern(IncludePatterns);
         var excludePatterns = SplitPattern(ExcludePatterns);
 
-        var matcher = new Matcher();
-        matcher.AddIncludePatterns(includePatterns);
-        matcher.AddExcludePatterns(excludePatterns);
+        var matcher = new StaticWebAssetGlobMatcherBuilder()
+            .AddIncludePatterns(includePatterns)
+            .AddExcludePatterns(excludePatterns)
+            .Build();
 
         var matchingCandidateAssets = new List<StaticWebAsset>();
+
+        var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
 
         // Add each candidate asset to each compression configuration with a matching pattern.
         foreach (var asset in candidates)
@@ -80,9 +82,10 @@ public class ResolveCompressedAssets : Task
             }
 
             var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
-            var match = matcher.Match(relativePath);
+            matchContext.SetPathAndReinitialize(relativePath.AsSpan());
+            var match = matcher.Match(matchContext);
 
-            if (!match.HasMatches)
+            if (!match.IsMatch)
             {
                 Log.LogMessage(
                     MessageImportance.Low,
@@ -156,7 +159,7 @@ public class ResolveCompressedAssets : Task
             assetsToCompress.Count,
             matchingCandidateAssets.Count);
 
-        AssetsToCompress = assetsToCompress.ToArray();
+        AssetsToCompress = [.. assetsToCompress];
 
         return !Log.HasLoggedErrors;
     }
@@ -275,7 +278,7 @@ public class ResolveCompressedAssets : Task
             OriginalItemSpec = asset.Identity,
             RelatedAsset = asset.Identity,
             AssetRole = "Alternative",
-            AssetTraitName = "Content-Encoding",            
+            AssetTraitName = "Content-Encoding",
             AssetTraitValue = assetTraitValue,
             ContentRoot = outputPath,
             // Set integrity and fingerprint to null so that they get recalculated for the compressed asset.

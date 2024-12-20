@@ -793,14 +793,6 @@ class C
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("netcoreapp3.0", false, IncludeDefault)]
-        [InlineData("netcoreapp3.0", true, IncludeDefault)]
-        [InlineData("netcoreapp3.0", false, IncludePdb)]
-        [InlineData("netcoreapp3.0", true, IncludePdb)]
-        [InlineData("netcoreapp3.1", false, IncludeDefault)]
-        [InlineData("netcoreapp3.1", true, IncludeDefault)]
-        [InlineData("netcoreapp3.1", false, IncludePdb)]
-        [InlineData("netcoreapp3.1", true, IncludePdb)]
         [InlineData("net6.0", false, IncludeDefault)]
         [InlineData("net6.0", false, IncludeNative)]
         [InlineData("net6.0", false, IncludeAllContent)]

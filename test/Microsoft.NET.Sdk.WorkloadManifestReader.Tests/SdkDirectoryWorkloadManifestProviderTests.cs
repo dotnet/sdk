@@ -10,7 +10,6 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace ManifestReaderTests
 {
-
     public class SdkDirectoryWorkloadManifestProviderTests : SdkTest
     {
         private string? _testDirectory;
@@ -47,7 +46,7 @@ namespace ManifestReaderTests
                 }
             ");
 
-            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand("8.0.400"), Path.GetDirectoryName(_manifestRoot)!);
+            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand("8.0.400"), Path.GetDirectoryName(_manifestRoot));
             var installStateFilePath = Path.Combine(installStateLocation, "default.json");
             var installState = InstallStateContents.FromPath(installStateFilePath);
             installState.UseWorkloadSets = preferWorkloadSet;
@@ -221,7 +220,7 @@ namespace ManifestReaderTests
             Initialize("8.0.200");
 
             var knownWorkloadsFilePath = Path.Combine(_fakeDotnetRootDirectory, "sdk", "8.0.100", "IncludedWorkloadManifests.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath) ?? string.Empty);
             File.WriteAllText(knownWorkloadsFilePath, "android\nios");
 
             CreateMockManifest(_manifestRoot, "8.0.100", "android", "33.0.0", true);
@@ -392,7 +391,7 @@ namespace ManifestReaderTests
             Initialize("8.0.200");
 
             var knownWorkloadsFilePath = Path.Combine(_fakeDotnetRootDirectory, "sdk", "8.0.201", "IncludedWorkloadManifests.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath) ?? string.Empty);
             File.WriteAllText(knownWorkloadsFilePath, "android\nios\nmaui");
 
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
@@ -454,7 +453,7 @@ namespace ManifestReaderTests
             CreateMockManifest(_manifestRoot, "8.0.200", "android", "33.0.2", true);
 
             // To prepare the resolver to work with workload sets, we need to specify 'workload sets' in the install state file.
-            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand("8.0.200"), Path.GetDirectoryName(_manifestRoot)!);
+            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand("8.0.200"), Path.GetDirectoryName(_manifestRoot));
             var installStateFilePath = Path.Combine(installStateLocation, "default.json");
             var installState = InstallStateContents.FromPath(installStateFilePath);
             installState.UseWorkloadSets = true;
@@ -878,7 +877,7 @@ namespace ManifestReaderTests
             Initialize("8.0.200");
 
             var knownWorkloadsFilePath = Path.Combine(_fakeDotnetRootDirectory, "sdk", "8.0.201", "IncludedWorkloadManifests.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath) ?? string.Empty);
             File.WriteAllText(knownWorkloadsFilePath, "android\nios\nmaui");
 
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
@@ -1164,7 +1163,7 @@ namespace ManifestReaderTests
             CreateMockManifest(_manifestRoot, "7.0.100", "iOS", "6");
 
             var knownWorkloadsFilePath = Path.Combine(_fakeDotnetRootDirectory, "sdk", "6.0.100", "IncludedWorkloadManifests.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath) ?? string.Empty);
             File.WriteAllText(knownWorkloadsFilePath, "Android\niOS");
 
             var sdkDirectoryWorkloadManifestProvider
@@ -1195,7 +1194,7 @@ namespace ManifestReaderTests
 
             var prev4Version = "6.0.100-preview.4.12345";
             var knownWorkloadsFilePath = Path.Combine(_fakeDotnetRootDirectory, "sdk", prev4Version, "IncludedWorkloadManifests.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath) ?? string.Empty);
             File.WriteAllText(knownWorkloadsFilePath, "Android\niOS");
 
             var sdkDirectoryWorkloadManifestProvider
@@ -1226,7 +1225,7 @@ namespace ManifestReaderTests
 
             var prev4Version = "6.0.100-preview.4.12345";
             var knownWorkloadsFilePath = Path.Combine(_fakeDotnetRootDirectory, "sdk", prev4Version, "IncludedWorkloadManifests.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath) ?? string.Empty);
             File.WriteAllText(knownWorkloadsFilePath, "Android\niOS");
 
             var sdkDirectoryWorkloadManifestProvider
@@ -1254,7 +1253,7 @@ namespace ManifestReaderTests
             CreateMockManifest(_manifestRoot, currentSdkVersion, "Microsoft.Net.Workload.Emscripten.net7", "5");
 
             var knownWorkloadsFilePath = Path.Combine(_fakeDotnetRootDirectory, "sdk", currentSdkVersion, "IncludedWorkloadManifests.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath) ?? string.Empty);
             File.WriteAllText(knownWorkloadsFilePath, @"
 Microsoft.Net.Workload.Mono.Toolchain.net6
 Microsoft.Net.Workload.Mono.Toolchain.net7
@@ -1297,7 +1296,7 @@ Microsoft.Net.Workload.Emscripten.net7"
         private void CreateMockWorkloadSet(string manifestRoot, string featureBand, string workloadSetVersion, string workloadSetContents)
         {
             // To prepare the resolver to work with workload sets, we need to specify 'workload sets' in the install state file.
-            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand(featureBand), Path.GetDirectoryName(manifestRoot)!);
+            var installStateLocation = WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand(featureBand), Path.GetDirectoryName(manifestRoot));
             var installStateFilePath = Path.Combine(installStateLocation, "default.json");
             var installState = InstallStateContents.FromPath(installStateFilePath);
             installState.UseWorkloadSets = true;
@@ -1314,7 +1313,7 @@ Microsoft.Net.Workload.Emscripten.net7"
 
         private string CreateMockInstallState(string featureBand, string installStateContents)
         {
-            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), featureBand, "InstallState");
+            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory ?? string.Empty, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), featureBand, "InstallState");
             Directory.CreateDirectory(installStateFolder);
 
             string installStatePath = Path.Combine(installStateFolder, "default.json");
@@ -1337,7 +1336,7 @@ Microsoft.Net.Workload.Emscripten.net7"
             File.WriteAllText(Path.Combine(manifestDirectory6, "iOS", "WorkloadManifest.json"), "iOS: iOS-6.0.100");
 
             var knownWorkloadsFilePath = Path.Combine(fakeDotnetRootDirectory, "sdk", "6.0.100", "KnownWorkloadManifests.txt");
-            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(knownWorkloadsFilePath) ?? string.Empty);
             File.WriteAllText(knownWorkloadsFilePath, "Android\niOS");
 
             var sdkDirectoryWorkloadManifestProvider
@@ -1431,7 +1430,7 @@ Microsoft.Net.Workload.Emscripten.net7"
             workloadResolver.GetPacksInWorkload(workloads.Single().Id).Should().BeEquivalentTo(new[] { expectedPackId });
             var packInfo = workloadResolver.TryGetPackInfo(expectedPackId);
             packInfo.Should().NotBeNull();
-            packInfo!.Version.Should().Be("2");
+            packInfo?.Version.Should().Be("2");
 
             workloadResolver.GetInstalledManifests().Count().Should().Be(1);
             var manifestInfo = workloadResolver.GetInstalledManifests().Single();
