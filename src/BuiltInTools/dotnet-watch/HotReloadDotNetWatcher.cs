@@ -121,9 +121,10 @@ namespace Microsoft.DotNet.Watch
                         };
                     }
 
-                    if (!await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken))
+                    var (buildSucceeded, buildOutput, _) = await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
+                    BuildUtilities.ReportBuildOutput(Context.Reporter, buildOutput, buildSucceeded, projectDisplay: rootProjectOptions.ProjectPath);
+                    if (!buildSucceeded)
                     {
-                        // error has been reported:
                         continue;
                     }
 
@@ -334,7 +335,12 @@ namespace Microsoft.DotNet.Watch
                                     var buildResults = await Task.WhenAll(
                                         projectsToRebuild.Values.Select(projectPath => BuildProjectAsync(projectPath, rootProjectOptions.BuildArguments, iterationCancellationToken)));
 
-                                    if (buildResults.All(success => success))
+                                    foreach (var (success, output, projectPath) in buildResults)
+                                    {
+                                        BuildUtilities.ReportBuildOutput(Context.Reporter, output, success, projectPath);
+                                    }
+
+                                    if (buildResults.All(result => result.success))
                                     {
                                         break;
                                     }
@@ -815,7 +821,8 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private async Task<bool> BuildProjectAsync(string projectPath, IReadOnlyList<string> buildArguments, CancellationToken cancellationToken)
+        private async Task<(bool success, ImmutableArray<OutputLine> output, string projectPath)> BuildProjectAsync(
+            string projectPath, IReadOnlyList<string> buildArguments, CancellationToken cancellationToken)
         {
             var buildOutput = new List<OutputLine>();
 
@@ -834,17 +841,10 @@ namespace Microsoft.DotNet.Watch
                 Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
             };
 
-            Context.Reporter.Output($"Building '{projectPath}' ...");
+            Context.Reporter.Output($"Building {projectPath} ...");
 
             var exitCode = await ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
-            BuildUtilities.ReportBuildOutput(Context.Reporter, buildOutput, verboseOutput: exitCode == 0);
-
-            if (exitCode == 0)
-            {
-                Context.Reporter.Output("Build succeeded.");
-            }
-
-            return exitCode == 0;
+            return (exitCode == 0, buildOutput.ToImmutableArray(), projectPath);
         }
 
         private string GetRelativeFilePath(string path)

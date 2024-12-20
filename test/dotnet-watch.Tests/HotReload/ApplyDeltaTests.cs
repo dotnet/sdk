@@ -682,7 +682,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
             }
 
-            App.AssertOutputContains($"dotnet watch ⌚ Building '{serviceProjectPath}' ...");
+            App.AssertOutputContains($"dotnet watch ⌚ Building {serviceProjectPath} ...");
             App.AssertOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
             App.Process.ClearOutput();
 
@@ -693,7 +693,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith($"dotnet watch ⌚ [WatchAspire.ApiService ({tfm})] Capabilities");
 
-            App.AssertOutputContains("dotnet watch ⌚ Build succeeded.");
+            App.AssertOutputContains($"dotnet watch 🔨 Build succeeded: {serviceProjectPath}");
             App.AssertOutputContains("dotnet watch 🔥 Project baselines updated.");
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
 
