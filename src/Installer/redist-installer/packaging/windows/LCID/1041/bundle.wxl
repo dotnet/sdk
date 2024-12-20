@@ -4,14 +4,14 @@
   <String Id="ConfirmCancelMessage">取り消しますか?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
   <String Id="HelpHeader">セットアップのヘルプ</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - バンドルの完全なローカル コピーに対する
-  ディレクトリへのインストール、修復、ディレクトリからのアンインストール、または作成を行います。既定は '/install' です。
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - インストール、修復、アンインストール
+   または、バンドルの完全なローカル コピーをディレクトリに作成します。'/install' が既定値です。
 
-/passive | /quiet -  最小限の UI だけを表示しプロンプトは表示しない、または UI もプロンプトも
-   表示しません。既定では UI とすべてのプロンプトが表示されます。
+/passive | /quiet - 最小限の UI をプロンプトなしで表示するか、UI と
+   プロンプトを表示しません。既定では、UI とすべてのプロンプトが表示されます。
 
-/norestart   - 再起動を抑制します。既定では再起動前に UI が確認ダイアログを表示します。
-/log [\[]"log.txt"[\]] - 特定のファイルにログを記録します。既定ではログ ファイルは %TEMP% に作成されます。</String>
+/norestart - 再起動の試行をすべて抑止します。既定では、再起動の前に UI が表示されます。
+/log [\[]"log.txt"[\]] - 特定のファイルにログを出力します。既定では、ログ ファイルは %TEMP% 内に作成されます。</String>
   <String Id="HelpCloseButton">閉じる(&amp;C)</String>
   <String Id="InstallAcceptCheckbox">ライセンス条項および使用条件に同意する(&amp;A)</String>
   <String Id="InstallOptionsButton">オプション(&amp;O)</String>
@@ -46,25 +46,25 @@
   <String Id="FilesInUseDontCloseRadioButton">アプリケーションを終了させない (コンピューターの再起動が必要になります)(&amp;D)</String>
   <String Id="FilesInUseOkButton">OK(&amp;O)</String>
   <String Id="FilesInUseCancelButton">キャンセル(&amp;C)</String>
-  <String Id="FirstTimeWelcomeMessage">インストールが成功しました。
+  <String Id="FirstTimeWelcomeMessage">正常にインストールされました。
 
-以下の製品がインストールされました
+次の製品がインストールされました:
     • .NET SDK [DOTNETSDKVERSION]
-    • .NET Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Runtime [ASPNETCOREVERSION]
-    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+    • .NET ランタイム [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core ランタイム [ASPNETCOREVERSION]
+    • .NET Windows デスクトップ ランタイム [WINFORMSANDWPFVERSION]
 
-この製品は使用状況データを収集します
-    • 詳細およびオプトアウト https://aka.ms/dotnet-cli-telemetry
+この製品は利用状況データを収集します
+    • 詳細情報とオプトアウト https://aka.ms/dotnet-cli-telemetry
 
 リソース
-    • .NET ドキュメント https://aka.ms/dotnet-docs
+    • .NET Documentation https://aka.ms/dotnet-docs
     • SDK ドキュメント https://aka.ms/dotnet-sdk-docs
-    • リリース ノート  https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • リリース ノート https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • チュートリアル https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    .Net SDK は、.NET アプリケーションをビルド、実行、テストするために使用されます。複数の言語、エディター、開発者ツールから選択し、ライブラリの大規模なエコシステムを利用して、Web、モバイル、デスクトップ、ゲーム、IoT 用のアプリを作成できます。お楽しみいただければ幸いです。</String>
+    .Net SDK は、.NET アプリケーションをビルド、実行、テストするために使用されます。複数の言語、エディター、開発者ツールから選択し、ライブラリの大規模なエコシステムを利用して、Web、モバイル、デスクトップ、ゲーム、IoT 用のアプリを作成できます。ぜひご利用ください。</String>
   <String Id="LearnMoreTitle">.Net の詳細情報</String>
   <String Id="ResourcesHeader">リソース</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET ドキュメント&lt;/A&gt;</String>
@@ -75,7 +75,7 @@
   <String Id="InstallationNoteTitle">インストール メモ</String>
   <String Id="InstallationNote">コマンドはインストール処理中に実行されるので、プロジェクトの復元速度が向上し、オフラインでアクセスできます。完了するまでに最大 1 分かかります。
   </String>
-  <String Id="VisualStudioWarning">.NET [VERSIONMAJOR] を使用する予定の場合。Visual Studio、Visual Studio 2022 [MINIMUMVSVERSION] 以降の [VERSIONMINOR] が必要です。&lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;詳細情報&lt;/A&gt;.
+  <String Id="VisualStudioWarning">.NET [VERSIONMAJOR].[VERSIONMINOR] を Visual Studio と使用する場合は、Visual Studio 2022 [MINIMUMVSVERSION] 以降が必要です。&lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;詳細情報&lt;/A&gt;
   </String>
   <String Id="LicenseAssent">インストール をクリックすると、次の条項に同意したものと見なされます:</String>
   <String Id="InstallPathx64x86">x64 SDK インストールのインストール パス: "[DOTNETHOME_X64]" を x86 SDK インストールの場合と同じにすることはできません: "[DOTNETHOME_X86]"</String>

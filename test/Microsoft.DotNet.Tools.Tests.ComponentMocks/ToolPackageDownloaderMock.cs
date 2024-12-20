@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -97,7 +98,9 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            bool isGlobalToolRollForward = false
+            bool isGlobalToolRollForward = false,
+            bool verifySignatures = false,
+            RestoreActionConfig restoreActionConfig = null
             )
         {
             string rollbackDirectory = null;
@@ -121,7 +124,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         packageId.ToString(),
                         versionRange,
                         packageLocation.NugetConfig,
-                        packageLocation.RootConfigDirectory);
+                        packageLocation.RootConfigDirectory,
+                        packageLocation.SourceFeedOverrides);
 
                     var packageVersion = feedPackage.Version;
                     targetFramework = string.IsNullOrEmpty(targetFramework) ? "targetFramework" : targetFramework;
@@ -221,12 +225,17 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string packageId,
             VersionRange versionRange,
             FilePath? nugetConfig = null,
-            DirectoryPath? rootConfigDirectory = null)
+            DirectoryPath? rootConfigDirectory = null,
+            string[] sourceFeedOverrides = null)
         {
             var allPackages = _feeds
                 .Where(feed =>
                 {
-                    if (nugetConfig == null)
+                    if (sourceFeedOverrides is not null && sourceFeedOverrides.Length > 0)
+                    {
+                        return sourceFeedOverrides.Contains(feed.Uri);
+                    }
+                    else if (nugetConfig == null)
                     {
                         return SimulateNugetSearchNugetConfigAndMatch(
                             rootConfigDirectory,
@@ -304,7 +313,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
-            bool isGlobalTool = false)
+            bool isGlobalTool = false,
+            RestoreActionConfig restoreActionConfig = null)
         {
             versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
 
@@ -317,7 +327,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageId.ToString(),
                 versionRange,
                 packageLocation.NugetConfig,
-                packageLocation.RootConfigDirectory);
+                packageLocation.RootConfigDirectory,
+                packageLocation.SourceFeedOverrides);
 
             return NuGetVersion.Parse(feedPackage.Version);
         }

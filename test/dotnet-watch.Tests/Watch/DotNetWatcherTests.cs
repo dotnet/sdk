@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class DotNetWatcherTests : DotNetWatchTestBase
     {
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
                 .WithSource();
 
             if (!hotReload)
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
                 .WithSource();
 
             if (!hotReload)
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")), "DOTNET_LAUNCH_PROFILE cannot be set already when this test is running");
 
-            var testAsset = TestAssets.CopyTestAsset(AppName)
+            var testAsset = TestAssets.CopyTestAsset(AppName, identifier: hotReload.ToString())
                 .WithSource();
 
             if (!hotReload)
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var value = await App.AssertOutputLineStartsWith(messagePrefix);
             Assert.Equal(1, int.Parse(value, CultureInfo.InvariantCulture));
 
-            await App.AssertWaitingForChanges();
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
             UpdateSourceFile(source);
             await App.AssertStarted();

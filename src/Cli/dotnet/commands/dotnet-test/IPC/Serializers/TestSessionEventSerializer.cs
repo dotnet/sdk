@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tools.Test
 
     internal sealed class TestSessionEventSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 8;
+        public int Id => TestSessionEventFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             for (int i = 0; i < fieldCount; i++)
             {
-                int fieldId = ReadShort(stream);
+                ushort fieldId = ReadShort(stream);
                 int fieldSize = ReadInt(stream);
 
                 switch (fieldId)
@@ -47,11 +47,11 @@ namespace Microsoft.DotNet.Tools.Test
                         break;
 
                     case TestSessionEventFieldsId.SessionUid:
-                        sessionUid = ReadString(stream);
+                        sessionUid = ReadStringValue(stream, fieldSize);
                         break;
 
                     case TestSessionEventFieldsId.ExecutionId:
-                        executionId = ReadString(stream);
+                        executionId = ReadStringValue(stream, fieldSize);
                         break;
 
                     default:

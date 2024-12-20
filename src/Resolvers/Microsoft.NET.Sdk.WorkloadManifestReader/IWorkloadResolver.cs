@@ -1,6 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable IDE0240
+#nullable enable
+#pragma warning restore IDE0240
+
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public interface IWorkloadResolver
@@ -20,7 +24,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         string GetManifestFeatureBand(string manifestId);
         IEnumerable<WorkloadManifestInfo> GetInstalledManifests();
         string GetSdkFeatureBand();
-        WorkloadVersion GetWorkloadVersion();
+        IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion();
         IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads);
         WorkloadManifest GetManifestFromWorkload(WorkloadId workloadId);
 

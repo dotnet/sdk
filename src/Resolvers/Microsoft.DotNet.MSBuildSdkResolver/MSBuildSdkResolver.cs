@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver;
+using static Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.CachingWorkloadResolver;
 
 namespace Microsoft.DotNet.MSBuildSdkResolver
 {
@@ -27,23 +29,28 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
         private readonly Func<string, string?> _getEnvironmentVariable;
         private readonly Func<string>? _getCurrentProcessPath;
+        private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
+
+        private const string DotnetHost = "DOTNET_HOST_PATH";
+        private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
 
         private bool _shouldLog = false;
 
         public DotNetMSBuildSdkResolver()
-            : this(Environment.GetEnvironmentVariable, null, VSSettings.Ambient)
+            : this(Environment.GetEnvironmentVariable, null, GetMSbuildRuntimeVersion, VSSettings.Ambient)
         {
         }
 
         // Test constructor
-        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, VSSettings vsSettings)
+        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, Func<string, string, string?> getMsbuildRuntime, VSSettings vsSettings)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
             _getCurrentProcessPath = getCurrentProcessPath;
             _netCoreSdkResolver = new NETCoreSdkResolver(getEnvironmentVariable, vsSettings);
+            _getMsbuildRuntime = getMsbuildRuntime;
 
             if (_getEnvironmentVariable(EnvironmentVariableNames.DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG) is string val &&
                 (string.Equals(val, "true", StringComparison.OrdinalIgnoreCase) ||
@@ -189,6 +196,32 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
+                string? dotnetExe = dotnetRoot != null ?
+                    Path.Combine(dotnetRoot, Constants.DotNetExe) :
+                    null;
+                if (File.Exists(dotnetExe))
+                {
+                    propertiesToAdd ??= new Dictionary<string, string?>();
+                    propertiesToAdd.Add(DotnetHost, dotnetExe);
+                }
+                else
+                {
+                    logger?.LogMessage($"Could not set '{DotnetHost}' because dotnet executable '{dotnetExe}' does not exist.");
+                }
+
+                string? runtimeVersion = dotnetRoot != null ?
+                    _getMsbuildRuntime(resolverResult.ResolvedSdkDirectory, dotnetRoot) :
+                    null;
+                if (!string.IsNullOrEmpty(runtimeVersion))
+                {
+                    propertiesToAdd ??= new Dictionary<string, string?>();
+                    propertiesToAdd.Add(MSBuildTaskHostRuntimeVersion, runtimeVersion);
+                }
+                else
+                {
+                    logger?.LogMessage($"Could not set '{MSBuildTaskHostRuntimeVersion}' because runtime version could not be determined.");
+                }
+
                 if (resolverResult.FailedToResolveSDKSpecifiedInGlobalJson)
                 {
                     logger?.LogMessage($"Could not resolve SDK specified in '{resolverResult.GlobalJsonPath}'. Ignoring global.json for this resolution.");
@@ -207,10 +240,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         warnings.Add(Strings.GlobalJsonResolutionFailed);
                     }
 
-                    if (propertiesToAdd == null)
-                    {
-                        propertiesToAdd = new Dictionary<string, string?>();
-                    }
+                    propertiesToAdd ??= new Dictionary<string, string?>();
                     propertiesToAdd.Add("SdkResolverHonoredGlobalJson", "false");
                     propertiesToAdd.Add("SdkResolverGlobalJsonPath", resolverResult.GlobalJsonPath);
 
@@ -233,11 +263,15 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
             //  First check if requested SDK resolves to a workload SDK pack
             string? userProfileDir = CliFolderPathCalculatorCore.GetDotnetUserProfileFolderPath();
-            var workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot!, netcoreSdkVersion!, userProfileDir, globalJsonPath);
+            ResolutionResult? workloadResult = null;
+            if (dotnetRoot is not null && netcoreSdkVersion is not null)
+            {
+                workloadResult = workloadResolver.Resolve(sdkReference.Name, dotnetRoot, netcoreSdkVersion, userProfileDir, globalJsonPath);
+            }
 
             if (workloadResult is not CachingWorkloadResolver.NullResolutionResult)
             {
-                return workloadResult.ToSdkResult(sdkReference, factory);
+                return workloadResult?.ToSdkResult(sdkReference, factory);
             }
 
             string msbuildSdkDir = Path.Combine(msbuildSdksDir, sdkReference.Name, "Sdk");
@@ -252,6 +286,28 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
+        }
+
+        private static string? GetMSbuildRuntimeVersion(string sdkDirectory, string dotnetRoot)
+        {
+            // 1. Get the runtime version from the MSBuild.runtimeconfig.json file
+            string runtimeConfigPath = Path.Combine(sdkDirectory, "MSBuild.runtimeconfig.json");
+            if (!File.Exists(runtimeConfigPath)) return null;
+
+            using var stream = File.OpenRead(runtimeConfigPath);
+            using var jsonDoc = JsonDocument.Parse(stream);
+
+            JsonElement root = jsonDoc.RootElement;
+            if (!root.TryGetProperty("runtimeOptions", out JsonElement runtimeOptions) ||
+                !runtimeOptions.TryGetProperty("framework", out JsonElement framework)) return null;
+
+            string? runtimeName = framework.GetProperty("name").GetString();
+            string? runtimeVersion = framework.GetProperty("version").GetString();
+
+            // 2. Check that the runtime version is installed (in shared folder)
+            return (!string.IsNullOrEmpty(runtimeName) && !string.IsNullOrEmpty(runtimeVersion) &&
+                    Directory.Exists(Path.Combine(dotnetRoot, "shared", runtimeName, runtimeVersion)))
+                    ? runtimeVersion : null;
         }
 
         private static SdkResult Failure(SdkResultFactory factory, ResolverLogger? logger, SdkLogger sdkLogger, string format, params object?[] args)
@@ -331,12 +387,14 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             }
 
             if (!FXVersion.TryParse(netcoreSdkVersion, out netCoreSdkFXVersion) ||
-                !FXVersion.TryParse(minimumVersion, out minimumFXVersion))
+                netCoreSdkFXVersion is null ||
+                !FXVersion.TryParse(minimumVersion, out minimumFXVersion) ||
+                minimumFXVersion is null)
             {
                 return true;
             }
 
-            return FXVersion.Compare(netCoreSdkFXVersion!, minimumFXVersion!) < 0;
+            return FXVersion.Compare(netCoreSdkFXVersion, minimumFXVersion) < 0;
         }
 
 

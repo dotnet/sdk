@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.WebTools.AspireServer.UnitTests</RootNamespace>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <EnableDefaultScopedCssItems>false</EnableDefaultScopedCssItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <Import Project="..\..\src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
+
+</Project>

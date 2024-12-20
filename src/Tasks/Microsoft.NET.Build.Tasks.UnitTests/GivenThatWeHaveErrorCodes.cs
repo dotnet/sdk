@@ -35,7 +35,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1182,
             1183,
             1190,
-            1192
+            1192,
+            1213,
+            1214
         };
 
         //ILLink lives in other repos and violated the _info requirement for no error code
@@ -101,13 +103,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 if (name.EndsWith("_Info"))
                 {
-                    comment.Should().NotContain("StrBegin",
+                    comment.Should().NotContain("StrBegins",
                         because: "informational messages should not have error codes.");
                 }
                 else if (!_infoExceptions.Contains(name))
                 {
 
-                    comment.Should().StartWith($@"{{StrBegin=""{prefix} ""}}",
+                    comment.Should().StartWith($@"{{StrBegins=""{prefix} ""}}",
                         because: $"localization instructions should indicate invariant error code as preceding translatable message.");
                 }
             }

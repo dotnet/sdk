@@ -1,13 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class NoDepsAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
         private const string AppName = "WatchNoDepsApp";
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task RestartProcessOnFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)

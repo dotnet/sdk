@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Tools.Run.LaunchSettings
 {
     public class LaunchSettingsApplyResult
     {
-        public LaunchSettingsApplyResult(bool success, string failureReason, ProjectLaunchSettingsModel launchSettings = null)
+        public LaunchSettingsApplyResult(bool success, string? failureReason, ProjectLaunchSettingsModel launchSettings = null)
         {
             Success = success;
             FailureReason = failureReason;

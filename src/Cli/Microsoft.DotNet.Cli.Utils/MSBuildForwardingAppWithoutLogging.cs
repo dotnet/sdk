@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         private static readonly bool AlwaysExecuteMSBuildOutOfProc = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_RUN_MSBUILD_OUTOFPROC");
         private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
-        private static readonly string TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER");
+        private static readonly string? TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER");
 
         public static string MSBuildVersion
         {
@@ -28,12 +28,12 @@ namespace Microsoft.DotNet.Cli.Utils
         private const string SdksDirectoryName = "Sdks";
 
         // Null if we're running MSBuild in-proc.
-        private ForwardingAppImplementation _forwardingApp;
+        private ForwardingAppImplementation? _forwardingApp;
 
         // Command line arguments we're asked to forward to MSBuild.
         private readonly IEnumerable<string> _argsToForward;
 
-        internal static string MSBuildExtensionsPathTestHook = null;
+        internal static string? MSBuildExtensionsPathTestHook = null;
 
         // Path to the MSBuild binary to use.
         public string MSBuildPath { get; }
@@ -52,12 +52,12 @@ namespace Microsoft.DotNet.Cli.Utils
         private readonly List<string> _msbuildRequiredParameters =
             [ "-maxcpucount", "-verbosity:m" ];
 
-        public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
+        public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string? msbuildPath = null, bool includeLogo = false)
         {
             string defaultMSBuildPath = GetMSBuildExePath();
 
             _argsToForward = includeLogo ? argsToForward : ["-nologo", ..argsToForward];
-            string tlpDefault = TerminalLoggerDefault;
+            string? tlpDefault = TerminalLoggerDefault;
             // new for .NET 9 - default TL to auto (aka enable in non-CI scenarios)
             if (string.IsNullOrWhiteSpace(tlpDefault))
             {
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Utils
         public int ExecuteInProc(string[] arguments)
         {
             // Save current environment variables before overwriting them.
-            Dictionary<string, string> savedEnvironmentVariables = new();
+            Dictionary<string, string?> savedEnvironmentVariables = new();
             try
             {
                 foreach (KeyValuePair<string, string> kvp in _msbuildRequiredEnvironmentVariables)
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Utils
             finally
             {
                 // Restore saved environment variables.
-                foreach (KeyValuePair<string, string> kvp in savedEnvironmentVariables)
+                foreach (KeyValuePair<string, string?> kvp in savedEnvironmentVariables)
                 {
                     Environment.SetEnvironmentVariable(kvp.Key, kvp.Value);
                 }

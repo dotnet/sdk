@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="CannotAddGenericConstraint">
         <source>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</source>
-        <target state="new">Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <target state="translated">无法在 "{2}" 的类型参数 "{1}" 上添加约束 "{0}"。</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotAddMemberToInterface">
@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
-        <target state="new">Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <target state="translated">无法移除 "{2}" 的类型参数 "{1}" 上的约束 "{0}"。</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualFromMember">
@@ -129,7 +129,7 @@
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
         <source>Element at index {0} should not be null.</source>
-        <target state="needs-review-translation">元素不应为 null。在索引 {0} 找到 null。</target>
+        <target state="translated">索引 {0} 处的元素不应为 null。</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumTypesMustMatch">
@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
-        <target state="new">The {0} index should be in the range zero through {1} inclusive.</target>
+        <target state="translated">{0} 索引应在 0 到 {1} (含)范围内。</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ShouldBeGreaterThanZero">
         <source>Value of '{0}' should be greater than 0.</source>
-        <target state="new">Value of '{0}' should be greater than 0.</target>
+        <target state="translated">"{0}" 的值应大于 0。</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">

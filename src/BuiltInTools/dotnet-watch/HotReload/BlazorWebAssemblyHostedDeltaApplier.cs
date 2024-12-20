@@ -3,14 +3,14 @@
 
 
 using System.Collections.Immutable;
+using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, Version? targetFrameworkVersion) : DeltaApplier(reporter)
+    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : DeltaApplier(reporter)
     {
-        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer, targetFrameworkVersion);
+        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer, project);
         private readonly DefaultDeltaApplier _hostApplier = new(reporter);
 
         public override void Dispose()
@@ -26,9 +26,9 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         public override Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
-            => Task.WhenAll(
-                _wasmApplier.WaitForProcessRunningAsync(cancellationToken),
-                _hostApplier.WaitForProcessRunningAsync(cancellationToken));
+            // We only need to wait for any of the app processes to start, so wait for the host.
+            // We do not need to wait for the browser connection to be established.
+            => _hostApplier.WaitForProcessRunningAsync(cancellationToken);
 
         public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {

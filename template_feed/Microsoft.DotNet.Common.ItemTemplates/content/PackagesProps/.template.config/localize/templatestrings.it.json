@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": "File MSBuild Directory.Packages.props",
-  "description": "Un file Directory.Packages.props vuoto che può essere utilizzato per specificare centralmente la versione del pacchetto",
+  "name": "File Directory.Packages.props di MSBuild",
+  "description": "Un file Directory.Packages.props vuoto che può essere usato per specificare le versioni dei pacchetti centralmente",
   "symbols/inherit/displayName": "Ereditare",
-  "symbols/inherit/description": "Se True, aggiunge un'importazione di Directory.Packages.props più vicino nella gerarchia delle directory del file system. Directory.Packages.props non eredita per impostazione predefinita. In questo modo è possibile creare un set di personalizzazioni cartella per cartella."
+  "symbols/inherit/description": "Se true, aggiunge un'importazione per il file Directory.Packages.props più vicino nella gerarchia di directory dei file system. Directory.Packages.props non eredita per impostazione predefinita, pertanto in questo modo è possibile creare un set di personalizzazioni cartella per cartella."
 }

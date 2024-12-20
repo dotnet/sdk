@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="SDKOptionsHelpDefinition">
         <source>Show command line help.</source>
-        <target state="new">Show command line help.</target>
+        <target state="translated">명령줄 도움말을 표시합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkDefinition">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
-        <target state="needs-review-translation">명령줄 도움말을 표시합니다.</target>
+        <target state="translated">지정된 명령에 대한 참조 페이지를 브라우저에서 엽니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ListDefinition">
         <source>List packages or references of a .NET project.</source>
-        <target state="needs-review-translation">.NET 프로젝트의 프로젝트 참조를 나열합니다.</target>
+        <target state="translated">.NET 프로젝트의 패키지 또는 참조를 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

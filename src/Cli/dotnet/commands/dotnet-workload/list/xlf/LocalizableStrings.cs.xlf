@@ -13,13 +13,8 @@
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
-        <source>Found workload version {0} pinned in the global.json file at {1}.</source>
-        <target state="translated">V souboru global.json byla v sekci {1} nalezena připnutá verze {0} úlohy.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
-        <source>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</source>
-        <target state="translated">V souboru global.json byla v sekci {1} nalezena připnutá verze {0} úlohy, která však nebyla nainstalována. Problém můžete vyřešit spuštěním příkazu dotnet workload install, dotnet workload update nebo dotnet workload restore.</target>
+        <source>Using workload version {0}, which was specified in the global.json file at {1}.</source>
+        <target state="translated">Používá se verze úlohy {0}, která byla zadána v souboru global.json na {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
@@ -31,6 +26,11 @@
         <source>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
         <target state="translated">Aktualizace jsou k dispozici pro následující úlohy: {0}. Pokud chcete získat nejnovější verzi, spusťte aktualizaci úlohy dotnet (`dotnet workload update`).</target>
         <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(nenainstalováno)</target>
+        <note />
       </trans-unit>
     </body>
   </file>

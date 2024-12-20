@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="CannotCombineSearchStringAndVersion">
+        <source>Cannot specify both the {0} and {1} arguments.</source>
+        <target state="translated">Není možné zadat argumenty {0} a {1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Search for available workloads.</source>
         <target state="translated">Vyhledávejte dostupné úlohy.</target>
@@ -12,9 +17,29 @@
         <target state="translated">Popis</target>
         <note />
       </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
+        <target state="translated">Změní formát výstupních verzí úloh. Může přijmout json nebo list.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadVersionsFound">
+        <source>No workload versions found for SDK feature band {0}.</source>
+        <target state="translated">Nenašly se žádné verze úloh pro pásmo funkcí sady SDK {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PlatformColumnName">
         <source>Platforms</source>
         <target state="translated">Platformy</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrintSetVersionsDescription">
+        <source>Output a list of the latest released workload versions. Takes the --take option to specify how many to provide and --format to alter the format.</source>
+        <target state="translated">Vypsat seznam nejnovějších vydaných verzí úloh. Pomocí možnosti --take určíte, kolik jich má být poskytnuto, a pomocí --format změníte formát.</target>
+        <note>Do not localize --take or --format</note>
+      </trans-unit>
+      <trans-unit id="TakeOptionMustBePositive">
+        <source>The --take option must be positive.</source>
+        <target state="translated">Možnost --take musí být kladná.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdColumnName">
@@ -30,6 +55,26 @@
       <trans-unit id="WorkloadIdStubArgumentName">
         <source>SEARCH_STRING</source>
         <target state="translated">SEARCH_STRING</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestFeatureBandColumn">
+        <source>Manifest feature band</source>
+        <target state="translated">Pásmo funkcí manifestu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadManifestIdColumn">
+        <source>Workload manifest ID</source>
+        <target state="translated">ID manifestu úlohy</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgument">
+        <source>WORKLOAD_VERSION</source>
+        <target state="translated">WORKLOAD_VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionArgumentDescription">
+        <source>Output workload manifest versions associated with the provided workload version.</source>
+        <target state="translated">Verze manifestu výstupní úlohy přidružené k zadané verzi úlohy.</target>
         <note />
       </trans-unit>
     </body>

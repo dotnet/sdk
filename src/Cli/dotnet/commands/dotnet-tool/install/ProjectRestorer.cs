@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         internal static void WriteLine(IReporter reporter, string line, FilePath project)
         {
-            line = line ?? "";
+            line ??= string.Empty;
 
             // Remove the temp project prefix if present
             if (line.StartsWith($"{project.Value} : ", StringComparison.OrdinalIgnoreCase))

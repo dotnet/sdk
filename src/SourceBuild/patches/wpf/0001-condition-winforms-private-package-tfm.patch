@@ -1,0 +1,23 @@
+From 0a9987a2d861e38b3d4505ea62ea634616ad1c29 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Thu, 19 Dec 2024 22:48:00 +0100
+Subject: [PATCH] Fix winforms TFM when building inside the VMR
+
+Backport: https://github.com/dotnet/wpf/pull/10197
+
+---
+ eng/WpfArcadeSdk/tools/SdkReferences.targets | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/eng/WpfArcadeSdk/tools/SdkReferences.targets b/eng/WpfArcadeSdk/tools/SdkReferences.targets
+index 6bbded2bc..64777d4d4 100644
+--- a/eng/WpfArcadeSdk/tools/SdkReferences.targets
++++ b/eng/WpfArcadeSdk/tools/SdkReferences.targets
+@@ -125,6 +125,7 @@
+                  And $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">
+     <PropertyGroup>
+       <!-- Use the current TargetFramework if not otherwise specified for WinForms private package -->
++      <_WinFormsTargetFrameworkVersion Condition="'$(_WinFormsTargetFrameworkVersion)' == '' and '$(DotNetBuildOrchestrator)' == 'true'">$(NetCurrent)</_WinFormsTargetFrameworkVersion>
+       <_WinFormsTargetFrameworkVersion Condition="'$(_WinFormsTargetFrameworkVersion)' == ''">$(_targetFrameworkRoot)</_WinFormsTargetFrameworkVersion>
+     </PropertyGroup>
+     <ItemGroup>

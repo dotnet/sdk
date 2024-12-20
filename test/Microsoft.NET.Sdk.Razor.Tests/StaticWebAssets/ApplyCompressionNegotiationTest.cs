@@ -6,7 +6,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests.StaticWebAssets;
@@ -172,19 +171,7 @@ public class ApplyCompressionNegotiationTest
             BuildEngine = buildEngine.Object,
             CandidateAssets = [.. candidateAssets],
             ExistingEndpoints = [],
-            ContentTypeMappings =
-            [
-                new TaskItem("text/javascript", new Dictionary<string, string>
-                {
-                    { "Pattern", "*.js" },
-                    { "Priority", "0" }
-                }),
-                new TaskItem("text/javascript", new Dictionary<string, string>
-                {
-                    { "Pattern", "*.js.gz" },
-                    { "Priority", "1" }
-                })
-            ]
+            ContentTypeMappings = []
         };
         defineStaticAssetEndpointsTask.Execute().Should().BeTrue();
         var compressed = defineStaticAssetEndpointsTask.Endpoints;
@@ -447,7 +434,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Content-Type",
-                    Value = "application/octet-stream"
+                    Value = "text/javascript"
                 },
                 new ()
                 {
@@ -753,7 +740,7 @@ public class ApplyCompressionNegotiationTest
                 new ()
                 {
                     Name = "Content-Type",
-                    Value = "application/octet-stream"
+                    Value = "text/javascript"
                 },
                 new ()
                 {
@@ -1384,7 +1371,7 @@ public class ApplyCompressionNegotiationTest
         ]);
     }
 
-    private StaticWebAssetEndpointSelector[] CreateContentEcondingSelector(string name, string value)
+    private static StaticWebAssetEndpointSelector[] CreateContentEcondingSelector(string name, string value)
     {
         return
         [
@@ -1397,7 +1384,7 @@ public class ApplyCompressionNegotiationTest
         ];
     }
 
-    private StaticWebAssetEndpointResponseHeader[] CreateHeaders(string contentType, params (string name, string value)[] AdditionalHeaders)
+    private static StaticWebAssetEndpointResponseHeader[] CreateHeaders(string contentType, params (string name, string value)[] AdditionalHeaders)
     {
         return
         [
@@ -1409,7 +1396,7 @@ public class ApplyCompressionNegotiationTest
         ];
     }
 
-    private ITaskItem CreateCandidate(
+    private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
         string sourceType,
@@ -1450,7 +1437,7 @@ public class ApplyCompressionNegotiationTest
         return result.ToTaskItem();
     }
 
-    private ITaskItem CreateCandidateEndpoint(
+    private static ITaskItem CreateCandidateEndpoint(
         string route,
         string assetFile,
         StaticWebAssetEndpointResponseHeader[] responseHeaders = null,

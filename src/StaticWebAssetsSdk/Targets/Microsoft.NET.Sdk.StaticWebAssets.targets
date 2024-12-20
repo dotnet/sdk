@@ -101,7 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.FilterStaticWebAssetEndpoints"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
-  
+
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.UpdateStaticWebAssetEndpoints"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
@@ -285,7 +285,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- For preview only, to ease in the new implementation -->
     <PrepareForRunDependsOn>StaticWebAssetsPrepareForRun;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
 
-    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);ResolveBuildStaticWebAssets;GenerateStaticWebAssetsManifest;CopyStaticWebAssetsToOutputDirectory</StaticWebAssetsPrepareForRunDependsOn>
+    <StaticWebAssetsPrepareForRunDependsOn>$(StaticWebAssetsPrepareForRunDependsOn);ResolveBuildStaticWebAssets;GenerateStaticWebAssetsManifest;CopyStaticWebAssetsToOutputDirectory;</StaticWebAssetsPrepareForRunDependsOn>
+    <StaticWebAssetsPrepareForRunDependsOn Condition="'$(BuildingInsideVisualStudio)' == 'true'">$(StaticWebAssetsPrepareForRunDependsOn);WriteStaticWebAssetsUpToDateCheck;</StaticWebAssetsPrepareForRunDependsOn>
 
     <!-- This is a hook for features like scoped CSS and Blazor can ensure all the assets have been generated -->
     <GenerateComputedBuildStaticWebAssetsDependsOn>ResolveCoreStaticWebAssets;$(GenerateComputedBuildStaticWebAssetsDependsOn)</GenerateComputedBuildStaticWebAssetsDependsOn>
@@ -436,6 +437,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Manifest paths -->
       <_StaticWebAssetsManifestBase Condition="'$(_StaticWebAssetsManifestBase)' == ''">$(IntermediateOutputPath)</_StaticWebAssetsManifestBase>
       <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.json</StaticWebAssetBuildManifestPath>
+      <StaticWebAssetsBuildManifestCacheFilePath>$(StaticWebAssetBuildManifestPath).cache</StaticWebAssetsBuildManifestCacheFilePath>
       <StaticWebAssetPackManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.pack.json</StaticWebAssetPackManifestPath>
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
       <StaticWebAssetEndpointsBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.endpoints.json</StaticWebAssetEndpointsBuildManifestPath>
@@ -456,6 +458,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_StaticWebAssetEndpointsPropsFileImportPath>Microsoft.AspNetCore.StaticWebAssetEndpoints.props</_StaticWebAssetEndpointsPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildPropsFileImportPath>..\build\$(PackageId).props</_StaticWebAssetsGeneratedBuildPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>..\buildMultiTargeting\$(PackageId).props</_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>
+
+      <!-- Design -->
+      <StaticWebAssetUpToDateCheckManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.upToDateCheck.txt</StaticWebAssetUpToDateCheckManifestPath>
+      <StaticWebAssetReferencesUpToDateCheckManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.references.upToDateCheck.txt</StaticWebAssetReferencesUpToDateCheckManifestPath>
+      <StaticWebAssetUpToDateCheckRemovedManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.removed.txt</StaticWebAssetUpToDateCheckRemovedManifestPath>
 
     </PropertyGroup>
 
@@ -528,6 +535,39 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <Target Name="WriteStaticWebAssetsUpToDateCheck" DependsOnTargets="_BuildCopyStaticWebAssetsPreserveNewest;_BuildCopyStaticWebAssetsAlways">
+
+    <ItemGroup>
+      <_UpToDateCheckStaticWebAssetCandidate Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
+    </ItemGroup>
+
+    <ComputeReferenceStaticWebAssetItems
+      Assets="@(_UpToDateCheckStaticWebAssetCandidate)"
+      Patterns="@(DiscoveryPattern)"
+      ProjectMode="$(StaticWebAssetProjectMode)"
+      AssetKind="Build"
+      Source="$(PackageId)"
+    >
+      <Output TaskParameter="StaticWebAssets" ItemName="_UpToDateCheckStaticWebAssetResolved" />
+    </ComputeReferenceStaticWebAssetItems>
+
+    <ItemGroup>
+      <_UpToDateCheckStaticWebAssetResolvedCandidate Include="@(_UpToDateCheckStaticWebAssetResolved->'%(OriginalItemSpec)')" />
+      <_UpToDateCheckStaticWebAsset Include="@(_UpToDateCheckStaticWebAssetResolvedCandidate->Distinct())" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(StaticWebAssetUpToDateCheckManifestPath)"
+      Lines="@(_UpToDateCheckStaticWebAsset)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      Condition="'@(_UpToDateCheckStaticWebAsset)' != ''" />
+
+    <ItemGroup>
+      <FileWrites Include="$(StaticWebAssetUpToDateCheckManifestPath)" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="AddStaticWebAssetsManifest" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
     <ItemGroup>
       <ContentWithTargetPath Condition="Exists('$(StaticWebAssetDevelopmentManifestPath)')"
@@ -581,7 +621,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetBuildManifestPath)"
+      ManifestCacheFilePath="$(StaticWebAssetsBuildManifestCacheFilePath)">
     </GenerateStaticWebAssetsManifest>
 
     <GenerateStaticWebAssetEndpointsManifest
@@ -589,24 +630,33 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestType="Build"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)"
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetEndpointsManifest>
 
     <GenerateStaticWebAssetsDevelopmentManifest
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Source="$(PackageId)"
-      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
+      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)"
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsDevelopmentManifest>
 
     <ItemGroup>
+      <_CachedBuildStaticWebAssets Condition="'@(_CachedBuildStaticWebAssets)' == ''" Include="@(StaticWebAsset)" />
+      <_CachedBuildStaticWebAssetEndpoints Condition="'@(_CachedBuildStaticWebAssetEndpoints)' == ''" Include="@(StaticWebAssetEndpoint)" />
+      <_CachedBuildStaticWebAssetReferencedProjectsConfiguration Condition="'@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)' == ''" Include="@(StaticWebAssetProjectConfiguration)" />
+      <_CachedBuildStaticWebAssetDiscoveryPatterns Condition="'@(_CachedBuildStaticWebAssetDiscoveryPatterns)' == ''" Include="@(StaticWebAssetDiscoveryPattern)" />
+    </ItemGroup>
+
+    <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
+      <FileWrites Include="$(StaticWebAssetsBuildManifestCacheFilePath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
       <FileWrites Include="$(StaticWebAssetEndpointsBuildManifestPath)" />
     </ItemGroup>
 
   </Target>
-
 
   <Target Name="ResolveCoreStaticWebAssets" DependsOnTargets="$(ResolveCoreStaticWebAssetsDependsOn)" />
 
@@ -632,11 +682,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+        <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
+        <Output TaskParameter="AssetDetails" ItemName="_ResolveProjectStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(StaticWebAsset)"
-      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      CandidateAssets="@(_CurrentProjectStaticWebAsset)"
+      AssetFileDetails="@(_ResolveProjectStaticWebAssetsDetails)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
@@ -671,6 +723,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Publish.targets" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.References.targets" />
+
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Design.targets" Condition="'$(DesignTimeBuild)' == 'true' and '$(BuildingInsideVisualStudio)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.EmbeddedAssets.targets" />
 

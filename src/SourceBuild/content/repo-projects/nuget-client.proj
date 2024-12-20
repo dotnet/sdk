@@ -20,6 +20,7 @@
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="runtime" />
     <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="xdt" />
   </ItemGroup>

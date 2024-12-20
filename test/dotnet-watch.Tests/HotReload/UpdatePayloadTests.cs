@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.HotReload;
+using Microsoft.DotNet.HotReload;
 
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class UpdatePayloadTests
     {
@@ -11,19 +11,21 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task UpdatePayload_CanRoundTrip()
         {
             var initial = new UpdatePayload(
-                new[]
-                {
+                [
                     new UpdateDelta(
                         moduleId: Guid.NewGuid(),
-                        ilDelta: new byte[] { 0, 0, 1 },
-                        metadataDelta: new byte[] { 0, 1, 1 },
-                        updatedTypes: Array.Empty<int>()),
+                        ilDelta: [0, 0, 1],
+                        metadataDelta: [0, 1, 1],
+                        pdbDelta: [2, 3],
+                        updatedTypes: [5, 4]),
                     new UpdateDelta(
                         moduleId: Guid.NewGuid(),
-                        ilDelta: new byte[] { 1, 0, 0 },
-                        metadataDelta: new byte[] { 1, 0, 1 },
-                        updatedTypes: Array.Empty<int>())
-                });
+                        ilDelta: [1, 0, 0],
+                        metadataDelta: [1, 0, 1],
+                        pdbDelta: [7, 8],
+                        updatedTypes: [9])
+                ],
+                responseLoggingLevel: ResponseLoggingLevel.Verbose);
 
             using var stream = new MemoryStream();
             await initial.WriteAsync(stream, default);
@@ -38,19 +40,21 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task UpdatePayload_CanRoundTripUpdatedTypes()
         {
             var initial = new UpdatePayload(
-                new[]
-                {
+                [
                     new UpdateDelta(
                         moduleId: Guid.NewGuid(),
-                        ilDelta: new byte[] { 0, 0, 1 },
-                        metadataDelta: new byte[] { 0, 1, 1 },
-                        updatedTypes: new int[] { 60, 74, 22323 }),
+                        ilDelta: [0, 0, 1],
+                        metadataDelta: [0, 1, 1],
+                        pdbDelta: [],
+                        updatedTypes: [60, 74, 22323]),
                     new UpdateDelta(
                         moduleId: Guid.NewGuid(),
-                        ilDelta: new byte[] { 1, 0, 0 },
-                        metadataDelta: new byte[] { 1, 0, 1 },
-                        updatedTypes: new int[] { -18 })
-                });
+                        ilDelta: [1, 0, 0],
+                        metadataDelta: [1, 0, 1],
+                        pdbDelta: [],
+                        updatedTypes: [-18])
+                ],
+                responseLoggingLevel: ResponseLoggingLevel.WarningsAndErrors);
 
             using var stream = new MemoryStream();
             await initial.WriteAsync(stream, default);
@@ -65,14 +69,15 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task UpdatePayload_WithLargeDeltas_CanRoundtrip()
         {
             var initial = new UpdatePayload(
-                new[]
-                {
+                [
                     new UpdateDelta(
                         moduleId: Guid.NewGuid(),
-                        ilDelta: Enumerable.Range(0, 68200).Select(c => (byte)(c%2)).ToArray(),
-                        metadataDelta: new byte[] { 0, 1, 1 },
+                        ilDelta: Enumerable.Range(0, 68200).Select(c => (byte)(c % 2)).ToArray(),
+                        metadataDelta: [0, 1, 1],
+                        pdbDelta: [],
                         updatedTypes: Array.Empty<int>())
-                });
+                ],
+                responseLoggingLevel: ResponseLoggingLevel.Verbose);
 
             using var stream = new MemoryStream();
             await initial.WriteAsync(stream, default);
@@ -104,6 +109,8 @@ namespace Microsoft.DotNet.Watcher.Tests
                     Assert.Equal(e.UpdatedTypes, a.UpdatedTypes);
                 }
             }
+
+            Assert.Equal(initial.ResponseLoggingLevel, read.ResponseLoggingLevel);
         }
     }
 }

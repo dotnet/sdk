@@ -1,20 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.HotReload
+using Microsoft.DotNet.HotReload;
+
+namespace Microsoft.DotNet.Watch
 {
-    internal readonly struct UpdatePayload
+    internal readonly struct UpdatePayload(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel)
     {
         public const byte ApplySuccessValue = 0;
 
-        private static readonly byte Version = 1;
+        private const byte Version = 2;
 
-        public IReadOnlyList<UpdateDelta> Deltas { get; }
-
-        public UpdatePayload(IReadOnlyList<UpdateDelta> deltas)
-        {
-            Deltas = deltas;
-        }
+        public IReadOnlyList<UpdateDelta> Deltas { get; } = deltas;
+        public ResponseLoggingLevel ResponseLoggingLevel { get; } = responseLoggingLevel;
 
         /// <summary>
         /// Called by the dotnet-watch.
@@ -31,8 +29,11 @@ namespace Microsoft.Extensions.HotReload
                 binaryWriter.Write(delta.ModuleId.ToString());
                 await WriteBytesAsync(binaryWriter, delta.MetadataDelta, cancellationToken);
                 await WriteBytesAsync(binaryWriter, delta.ILDelta, cancellationToken);
+                await WriteBytesAsync(binaryWriter, delta.PdbDelta, cancellationToken);
                 WriteIntArray(binaryWriter, delta.UpdatedTypes);
             }
+
+            binaryWriter.Write((byte)ResponseLoggingLevel);
 
             static ValueTask WriteBytesAsync(BinaryWriter binaryWriter, byte[] bytes, CancellationToken cancellationToken)
             {
@@ -58,6 +59,22 @@ namespace Microsoft.Extensions.HotReload
         }
 
         /// <summary>
+        /// Called by the dotnet-watch.
+        /// </summary>
+        public static void WriteLog(Stream stream, IReadOnlyCollection<(string message, AgentMessageSeverity severity)> log)
+        {
+            using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
+
+            writer.Write(log.Count);
+
+            foreach (var (message, severity) in log)
+            {
+                writer.Write(message);
+                writer.Write((byte)severity);
+            }
+        }
+
+        /// <summary>
         /// Called by delta applier.
         /// </summary>
         public static async ValueTask<UpdatePayload> ReadAsync(Stream stream, CancellationToken cancellationToken)
@@ -77,12 +94,15 @@ namespace Microsoft.Extensions.HotReload
                 var moduleId = Guid.Parse(binaryReader.ReadString());
                 var metadataDelta = await ReadBytesAsync(binaryReader, cancellationToken);
                 var ilDelta = await ReadBytesAsync(binaryReader, cancellationToken);
+                var pdbDelta = await ReadBytesAsync(binaryReader, cancellationToken);
                 var updatedTypes = ReadIntArray(binaryReader);
 
-                deltas[i] = new UpdateDelta(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, updatedTypes);
+                deltas[i] = new UpdateDelta(moduleId, metadataDelta: metadataDelta, ilDelta: ilDelta, pdbDelta: pdbDelta, updatedTypes);
             }
 
-            return new UpdatePayload(deltas);
+            var responseLoggingLevel = (ResponseLoggingLevel)binaryReader.ReadByte();
+
+            return new UpdatePayload(deltas, responseLoggingLevel: responseLoggingLevel);
 
             static async ValueTask<byte[]> ReadBytesAsync(BinaryReader binaryReader, CancellationToken cancellationToken)
             {
@@ -117,21 +137,20 @@ namespace Microsoft.Extensions.HotReload
                 return values;
             }
         }
-    }
 
-    internal readonly struct UpdateDelta
-    {
-        public Guid ModuleId { get; }
-        public byte[] MetadataDelta { get; }
-        public byte[] ILDelta { get; }
-        public int[] UpdatedTypes { get; }
-
-        public UpdateDelta(Guid moduleId, byte[] metadataDelta, byte[] ilDelta, int[] updatedTypes)
+        /// <summary>
+        /// Called by delta applier.
+        /// </summary>
+        public static IEnumerable<(string message, AgentMessageSeverity severity)> ReadLog(Stream stream)
         {
-            ModuleId = moduleId;
-            MetadataDelta = metadataDelta;
-            ILDelta = ilDelta;
-            UpdatedTypes = updatedTypes;
+            using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
+
+            var entryCount = reader.ReadInt32();
+
+            for (var i = 0; i < entryCount; i++)
+            {
+                yield return (reader.ReadString(), (AgentMessageSeverity)reader.ReadByte());
+            }
         }
     }
 

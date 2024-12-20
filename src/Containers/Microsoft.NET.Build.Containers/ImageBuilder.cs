@@ -19,6 +19,7 @@ internal sealed class ImageBuilder
 
     // the mutable internal manifest that we're building by modifying the base and applying customizations
     private readonly ManifestV2 _manifest;
+    private readonly string _manifestMediaType;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
 
@@ -33,12 +34,13 @@ internal sealed class ImageBuilder
     /// <summary>
     /// MediaType of the output manifest.
     /// </summary>
-    public string ManifestMediaType => _manifest.MediaType; // output the same media type as the base image manifest.
+    public string ManifestMediaType => _manifestMediaType; // output the same media type as the base image manifest.
 
-    internal ImageBuilder(ManifestV2 manifest, ImageConfig baseImageConfig, ILogger logger)
+    internal ImageBuilder(ManifestV2 manifest, string manifestMediaType, ImageConfig baseImageConfig, ILogger logger)
     {
         _baseImageManifest = manifest;
         _manifest = new ManifestV2() { SchemaVersion = manifest.SchemaVersion, Config = manifest.Config, Layers = new(manifest.Layers), MediaType = manifest.MediaType };
+        _manifestMediaType = manifestMediaType;
         _baseImageConfig = baseImageConfig;
         _logger = logger;
     }
@@ -47,6 +49,9 @@ internal sealed class ImageBuilder
     /// Gets a value indicating whether the base image is has a Windows operating system.
     /// </summary>
     public bool IsWindows => _baseImageConfig.IsWindows;
+
+    // For tests
+    internal string ManifestConfigDigest => _manifest.Config.digest;
 
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
@@ -83,6 +88,7 @@ internal sealed class ImageBuilder
             ImageSha = imageSha,
             ImageSize = imageSize,
             Manifest = newManifest,
+            ManifestMediaType = ManifestMediaType
         };
     }
 

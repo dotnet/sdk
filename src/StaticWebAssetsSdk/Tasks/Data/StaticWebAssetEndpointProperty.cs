@@ -1,37 +1,31 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 
 using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpointProperty : IComparable<StaticWebAssetEndpointProperty>, IEquatable<StaticWebAssetEndpointProperty>
 {
+    private static readonly JsonTypeInfo<StaticWebAssetEndpointProperty[]> _jsonTypeInfo =
+        StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointPropertyArray;
+
     public string Name { get; set; }
 
     public string Value { get; set; }
 
-    internal static StaticWebAssetEndpointProperty[] FromMetadataValue(string value)
-    {
-        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize<StaticWebAssetEndpointProperty[]>(value);
-    }
+    internal static StaticWebAssetEndpointProperty[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
-    internal static string ToMetadataValue(StaticWebAssetEndpointProperty[] responseHeaders)
-    {
-        return JsonSerializer.Serialize(responseHeaders ?? []);
-    }
+    internal static string ToMetadataValue(StaticWebAssetEndpointProperty[] responseHeaders) => JsonSerializer.Serialize(responseHeaders ?? []);
 
-    public int CompareTo(StaticWebAssetEndpointProperty other)
+    public int CompareTo(StaticWebAssetEndpointProperty other) => string.Compare(Name, other.Name, StringComparison.Ordinal) switch
     {
-        return string.Compare(Name, other.Name, StringComparison.Ordinal) switch
-        {
-            0 => string.Compare(Value, other.Value, StringComparison.Ordinal),
-            int result => result
-        };
-    }
+        0 => string.Compare(Value, other.Value, StringComparison.Ordinal),
+        int result => result
+    };
 
     public override bool Equals(object obj) => Equals(obj as StaticWebAssetEndpointProperty);
 

@@ -57,6 +57,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents);
 
         void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode);
+
+        void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion);
     }
 
     // Interface to pass to workload manifest updater

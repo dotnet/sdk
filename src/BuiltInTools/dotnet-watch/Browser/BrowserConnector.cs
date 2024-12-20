@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Graph;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable
     {
@@ -51,9 +51,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             ProjectOptions projectOptions,
             CancellationToken cancellationToken)
         {
-            // Attach trigger to the process that launches browser on URL found in the process output:
-            processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, cancellationToken);
-
             BrowserRefreshServer? server;
             bool hasExistingServer;
 
@@ -65,6 +62,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                     server = IsServerSupported(projectNode) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
                     _servers.Add(projectNode, server);
                 }
+            }
+
+            // Attach trigger to the process that launches browser on URL found in the process output.
+            // Only do so for root projects, not for child processes.
+            if (projectOptions.IsRootProject)
+            {
+                processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
             }
 
             if (server == null)
@@ -99,11 +103,11 @@ namespace Microsoft.DotNet.Watcher.Tools
         /// <summary>
         /// Get process output handler that will be subscribed to the process output event every time the process is launched.
         /// </summary>
-        public DataReceivedEventHandler? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, CancellationToken cancellationToken)
+        public Action<OutputLine>? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, BrowserRefreshServer? server, CancellationToken cancellationToken)
         {
             if (!CanLaunchBrowser(context, projectNode, projectOptions, out var launchProfile))
             {
-                if (context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.BrowserRequired))
+                if (context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
                 {
                     context.Reporter.Error("Test requires browser to launch");
                 }
@@ -111,38 +115,45 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return null;
             }
 
+            bool matchFound = false;
+
             return handler;
 
-            void handler(object sender, DataReceivedEventArgs eventArgs)
+            void handler(OutputLine line)
             {
                 // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-                Console.WriteLine(eventArgs.Data);
+                (line.IsError ? Console.Error : Console.Out).WriteLine(line.Content);
 
-                var match = s_nowListeningRegex.Match(eventArgs.Data ?? "");
+                if (matchFound)
+                {
+                    return;
+                }
+
+                var match = s_nowListeningRegex.Match(line.Content);
                 if (!match.Success)
                 {
                     return;
                 }
 
-                ((Process)sender).OutputDataReceived -= handler;
+                matchFound = true;
 
                 var projectAddedToAttemptedSet = ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode);
                 if (projectAddedToAttemptedSet)
                 {
                     // first iteration:
-                    LaunchBrowser(launchProfile, match.Groups["url"].Value);
+                    LaunchBrowser(launchProfile, match.Groups["url"].Value, server);
                 }
-                else if (TryGetRefreshServer(projectNode, out var server))
+                else if (server != null)
                 {
                     // Subsequent iterations (project has been rebuilt and relaunched).
                     // Use refresh server to reload the browser, if available.
                     context.Reporter.Verbose("Reloading browser.");
-                    _ = server.ReloadAsync(cancellationToken);
+                    _ = server.SendReloadMessageAsync(cancellationToken);
                 }
             }
         }
 
-        private void LaunchBrowser(LaunchSettingsProfile launchProfile, string launchUrl)
+        private void LaunchBrowser(LaunchSettingsProfile launchProfile, string launchUrl, BrowserRefreshServer? server)
         {
             var launchPath = launchProfile.LaunchUrl;
             var fileName = Uri.TryCreate(launchPath, UriKind.Absolute, out _) ? launchPath : launchUrl + "/" + launchPath;
@@ -158,6 +169,12 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             if (context.EnvironmentOptions.TestFlags != TestFlags.None)
             {
+                if (context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
+                {
+                    Debug.Assert(server != null);
+                    server.EmulateClientConnected();
+                }
+
                 return;
             }
 
@@ -204,9 +221,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (projectOptions.Command != "run")
+            if (!CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command))
             {
-                reporter.Verbose("Browser refresh is only supported for run commands.");
+                reporter.Verbose($"Command '{projectOptions.Command}' does not support browser refresh.");
                 return false;
             }
 
@@ -217,7 +234,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            reporter.Verbose("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.");
+            reporter.Report(MessageDescriptor.ConfiguredToLaunchBrowser);
             return true;
         }
 
@@ -243,8 +260,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            context.Reporter.Verbose("Configuring the app to use browser-refresh middleware.");
-
+            context.Reporter.Report(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             return true;
         }
 

@@ -3,7 +3,8 @@
 
 #pragma warning disable IDE0240 // Remove redundant nullable directive
 #nullable enable
-#pragma warning restore IDE0240 // Remove redundant nullable directivee
+#pragma warning restore IDE0240 // Remove redundant nullable directive
+
 namespace Microsoft.DotNet.MSBuildSdkResolver
 {
     // Note: This is SemVer 2.0.0 https://semver.org/spec/v2.0.0.html
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
             // First character of pre is '-' when it is not empty
 
-            // First idenitifier starts at position 1
+            // First identifier starts at position 1
             int idStart = 1;
             for (int i = idStart; true; ++i)
             {

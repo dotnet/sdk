@@ -13,13 +13,8 @@
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
-        <source>Found workload version {0} pinned in the global.json file at {1}.</source>
-        <target state="translated">Encontrada a versão {0} da carga de trabalho fixada no arquivo global.json em {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
-        <source>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</source>
-        <target state="translated">Encontramos a versão da carga de trabalho {0} fixada no arquivo global.json em {1}, mas ela não foi instalada. A execução de `dotnet workload install`, `dotnet workload update` ou `dotnet workload restore` pode corrigir o problema.</target>
+        <source>Using workload version {0}, which was specified in the global.json file at {1}.</source>
+        <target state="translated">Usando a versão {0} da carga de trabalho, que foi especificada no arquivo global.json em {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
@@ -31,6 +26,11 @@
         <source>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
         <target state="translated">As atualizações estão disponíveis para as seguintes cargas de trabalho(s): {0}. Execute `dotnet workload update` para obter o mais recente.</target>
         <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(não instalado)</target>
+        <note />
       </trans-unit>
     </body>
   </file>

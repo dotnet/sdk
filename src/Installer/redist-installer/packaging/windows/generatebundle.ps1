@@ -2,9 +2,10 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 param(
+    [Parameter(Mandatory=$true)][string]$UpgradePoliciesWxsFile,
     [Parameter(Mandatory=$true)][string]$WorkloadManifestWxsFile,
     [Parameter(Mandatory=$true)][string]$CLISDKMSIFile,
-    [Parameter(Mandatory=$true)][string]$ASPNETRuntimeWixLibFile,
+    [Parameter(Mandatory=$true)][string]$ASPNETRuntimeMSIFile,
     [Parameter(Mandatory=$true)][string]$SharedFxMSIFile,
     [Parameter(Mandatory=$true)][string]$HostFxrMSIFile,
     [Parameter(Mandatory=$true)][string]$SharedHostMSIFile,
@@ -53,13 +54,16 @@ function RunCandleForBundle
         -dSDKProductBandVersion="$SDKProductBandVersion" `
         -dNugetVersion="$DotnetCLINugetVersion" `
         -dVersionMajor="$VersionMajor" `
+        -dMajorVersion="$VersionMajor" `
         -dVersionMinor="$VersionMinor" `
+        -dMinorVersion="$VersionMinor" `
         -dCLISDKMsiSourcePath="$CLISDKMSIFile" `
         -dDependencyKeyName="$DependencyKeyName" `
         -dUpgradeCode="$UpgradeCode" `
         -dSharedFXMsiSourcePath="$SharedFxMSIFile" `
         -dHostFXRMsiSourcePath="$HostFxrMSIFile" `
         -dSharedHostMsiSourcePath="$SharedHostMSIFile" `
+        -dASPNETRuntimeMsiSourcePath="$ASPNETRuntimeMSIFile" `
         -dWinFormsAndWpfMsiSourcePath="$WinFormsAndWpfMSIFile" `
         -dNetCoreAppTargetingPackMsiSourcePath="$NetCoreAppTargetingPackMSIFile" `
         -dNetCoreAppHostPackMsiSourcePath="$NetCoreAppHostPackMSIFile" `
@@ -82,7 +86,7 @@ function RunCandleForBundle
         -ext WixBalExtension.dll `
         -ext WixUtilExtension.dll `
         -ext WixTagExtension.dll `
-        "$AuthWsxRoot\bundle.wxs" "$WorkloadManifestWxsFile"
+        "$AuthWsxRoot\bundle.wxs" "$WorkloadManifestWxsFile" "$UpgradePoliciesWxsFile"
 
     Write-Information "Candle output: $candleOutput"
 
@@ -102,6 +106,7 @@ function RunLightForBundle
     pushd "$WixRoot"
 
     $WorkloadManifestWixobjFile = [System.IO.Path]::GetFileNameWithoutExtension($WorkloadManifestWxsFile) + ".wixobj"
+    $UpgradePoliciesWixobjFile = [System.IO.Path]::GetFileNameWithoutExtension($UpgradePoliciesWxsFile) + ".wixobj"
 
     Write-Information "Running light for bundle.."
 
@@ -109,7 +114,7 @@ function RunLightForBundle
         -cultures:en-us `
         bundle.wixobj `
         $WorkloadManifestWixobjFile `
-        $ASPNETRuntimeWixlibFile `
+        $UpgradePoliciesWixobjFile `
         -ext WixBalExtension.dll `
         -ext WixUtilExtension.dll `
         -ext WixTagExtension.dll `
@@ -132,11 +137,6 @@ function RunLightForBundle
 if(!(Test-Path $CLISDKMSIFile))
 {
     throw "$CLISDKMSIFile not found"
-}
-
-if(!(Test-Path $ASPNETRuntimeWixLibFile))
-{
-    throw "$ASPNETRuntimeWixLibFile not found"
 }
 
 if([string]::IsNullOrEmpty($WixRoot))

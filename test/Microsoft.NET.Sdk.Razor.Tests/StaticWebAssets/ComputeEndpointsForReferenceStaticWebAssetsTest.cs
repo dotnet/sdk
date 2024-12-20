@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
@@ -63,7 +63,7 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
     }
 
-    private ITaskItem CreateCandidate(
+    private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
         string sourceType,
@@ -99,7 +99,7 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         return result.ToTaskItem();
     }
 
-    private ITaskItem CreateCandidateEndpoint(string route, string assetFile)
+    private static TaskItem CreateCandidateEndpoint(string route, string assetFile)
     {
         return new StaticWebAssetEndpoint
         {

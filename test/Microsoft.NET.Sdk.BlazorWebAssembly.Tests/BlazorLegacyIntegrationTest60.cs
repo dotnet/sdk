@@ -44,7 +44,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [WindowsOnlyRequiresMSBuildVersionFact("17.13", Reason = "Needs System.Text.Json 8.0.5")] // https://github.com/dotnet/sdk/issues/44886
         [SkipOnPlatform(TestPlatforms.Linux | TestPlatforms.OSX, "https://github.com/dotnet/sdk/issues/42145")]
         public void Publish60Hosted_Works()
         {
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = CreatePublishCommand(ProjectDirectory, "Server");
-            ExecuteCommand(publish)
+            ExecuteCommand(publish, "/p:BuildWithNetFrameworkHostedCompiler=true")
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("warning IL");

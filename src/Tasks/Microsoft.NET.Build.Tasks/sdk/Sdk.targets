@@ -54,14 +54,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(NuGetBuildTasksPackTargets)"
           Condition="Exists('$(NuGetBuildTasksPackTargets)') AND '$(ImportNuGetBuildTasksPackTargetsFromSdk)' == 'true'"/>
 
-  <!-- Import targets from Microdoft.NET.Build.Container.targets -->
+  <!-- Import targets from Microsoft.NET.Build.Container.targets -->
   <PropertyGroup>
-    <_ContainersTargetsDir Condition=" '$(_ContainersTargetsDir)'=='' ">$(MSBuildThisFileDirectory)..\..\..\Containers\build\</_ContainersTargetsDir>
+    <_IsNotSetContainersTargetsDir>false</_IsNotSetContainersTargetsDir>
+    <_IsNotSetContainersTargetsDir Condition=" '$(_ContainersTargetsDir)'=='' ">true</_IsNotSetContainersTargetsDir>
+    <_ContainersTargetsDir Condition="$(_IsNotSetContainersTargetsDir)">$(MSBuildThisFileDirectory)..\..\..\Containers\build\</_ContainersTargetsDir>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props"
           Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props')" />
 
   <Import Project="$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets"
-    Condition="Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets') AND '$(TargetFramework)' != ''" />
+    Condition="$(_IsNotSetContainersTargetsDir) AND Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets') AND '$(TargetFramework)' != ''" />
 </Project>

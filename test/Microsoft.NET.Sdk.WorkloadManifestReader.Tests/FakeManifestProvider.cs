@@ -40,11 +40,7 @@ namespace ManifestReaderTests
 
         public string GetSdkFeatureBand() => "8.0.100";
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
-        public WorkloadVersion GetWorkloadVersion() => new WorkloadVersion
-                                                           {
-                                                               Version = "8.0.100.2",
-                                                               WorkloadInstallType = WorkloadVersion.Type.LooseManifest
-                                                           };
+        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo("8.0.100.2");
     }
 
     internal class InMemoryFakeManifestProvider : IWorkloadManifestProvider, IEnumerable<(string id, string content)>
@@ -71,10 +67,6 @@ namespace ManifestReaderTests
         IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
         public string GetSdkFeatureBand() => "8.0.100";
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
-        public WorkloadVersion GetWorkloadVersion() => new WorkloadVersion
-        {
-            Version = "8.0.100.2",
-            WorkloadInstallType = WorkloadVersion.Type.LooseManifest
-        };
+        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo("8.0.100.2");
     }
 }

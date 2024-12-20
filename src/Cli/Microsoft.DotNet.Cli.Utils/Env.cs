@@ -15,17 +15,17 @@ namespace Microsoft.DotNet.Cli.Utils
             }
         }
 
-        public static string GetCommandPath(string commandName, params string[] extensions)
+        public static string? GetCommandPath(string commandName, params string[] extensions)
         {
             return _environment.GetCommandPath(commandName, extensions);
         }
 
-        public static string GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
+        public static string? GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
         {
             return _environment.GetCommandPathFromRootPath(rootPath, commandName, extensions);
         }
 
-        public static string GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
+        public static string? GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
         {
             return _environment.GetCommandPathFromRootPath(rootPath, commandName, extensions);
         }
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return _environment.GetEnvironmentVariableAsNullableInt(name);
         }
 
-        public static string GetEnvironmentVariable(string name)
+        public static string? GetEnvironmentVariable(string name)
         {
             return _environment.GetEnvironmentVariable(name);
         }

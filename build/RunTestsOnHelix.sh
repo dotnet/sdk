@@ -9,8 +9,7 @@ export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildE
 export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
 export PATH=$DOTNET_ROOT:$PATH
 
-export TestExecutionDirectory=$(pwd)/testExecutionDirectory
-mkdir $TestExecutionDirectory
+export TestExecutionDirectory=$(realpath "$(mktemp -d "${TMPDIR:-/tmp}"/dotnetSdkTests.XXXXXXXX)")
 export DOTNET_CLI_HOME=$TestExecutionDirectory/.dotnet
 cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionDirectory/
 
@@ -24,6 +23,7 @@ dotnet new --debug:ephemeral-hive
 # We downloaded a special zip of files to the .nuget folder so add that as a source
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
 #Remove feeds not needed for tests
 dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/NuGet.config

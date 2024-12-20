@@ -31,14 +31,13 @@ namespace Microsoft.NET.Build.Tasks
 
             // Find any RuntimeFrameworks that matches with FrameworkReferences, so that we can apply that RuntimeFrameworks profile to the corresponding RuntimePack.
             // This is done in 2 parts, First part (see comments for 2nd part further below), we match the RuntimeFramework with the FrameworkReference by using the following metadata.
-            // RuntimeFrameworks.GetMetadata("FrameworkName")==FrameworkReferences.ItemSpec AND RuntimeFrameworks.GetMetadata("Profile") is not empty
+            // RuntimeFrameworks.GetMetadata("FrameworkName")==FrameworkReferences.ItemSpec
             // For example, A WinForms app that uses useWindowsForms (and useWPF will be set to false) has the following values that will result in a match of the below RuntimeFramework.
             // FrameworkReferences with an ItemSpec "Microsoft.WindowsDesktop.App.WindowsForms" will match with 
             // RuntimeFramework with an ItemSpec => "Microsoft.WindowsDesktop.App", GetMetadata("FrameworkName") => "Microsoft.WindowsDesktop.App.WindowsForms", GetMetadata("Profile") => "WindowsForms"
             List<ITaskItem> matchingRuntimeFrameworks = RuntimeFrameworks != null ? FrameworkReferences
                     .SelectMany(fxReference => RuntimeFrameworks.Where(rtFx =>
-                        fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase) &&
-                        !string.IsNullOrEmpty(rtFx.GetMetadata("Profile"))))
+                        fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase)))
                         .ToList() : null;
 
             HashSet<string> frameworkReferenceNames = new(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
@@ -76,7 +75,29 @@ namespace Microsoft.NET.Build.Tasks
                 // matchingRTReference.GetMetadata("Profile") will be "WindowsForms". 'Profile' will be an empty string if no matching RuntimeFramework is found
                 HashSet<string> profiles = matchingRuntimeFrameworks?
                     .Where(matchingRTReference => runtimePack.GetMetadata("FrameworkName").Equals(matchingRTReference.ItemSpec))
-                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile")).ToHashSet() ?? []; 
+                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile")).ToHashSet() ?? [];
+
+                // Special case the Windows SDK projections. Normally the Profile information flows through the RuntimeFramework items,
+                // but those aren't created for RuntimePackAlwaysCopyLocal references. This logic could be revisited later to be generalized in some way.
+                if (runtimePack.GetMetadata(MetadataKeys.FrameworkName) == "Microsoft.Windows.SDK.NET.Ref")
+                {
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Windows") == true)
+                    {
+                        profiles.Add("Windows");
+                    }
+                    
+                    if (FrameworkReferences?.Any(fxReference => fxReference.ItemSpec == "Microsoft.Windows.SDK.NET.Ref.Xaml") == true)
+                    {
+                        profiles.Add("Xaml");
+                    }
+                }
+
+                //  If we have a runtime framework with an empty profile, it means that we should use all of the contents of the runtime pack,
+                //  so we can clear the profile list
+                if (profiles.Contains(string.Empty))
+                {
+                    profiles.Clear();
+                }
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);
 
@@ -139,7 +160,10 @@ namespace Microsoft.NET.Build.Tasks
                 string[] parts = targetFrameworkVersion.Split('.');
                 if (parts.Length > 0 && int.TryParse(parts[0], out int versionNumber))
                 {
-                    if (versionNumber >= 9)
+                    // The Windows SDK projections use profiles and need to be supported on .NET 8 as well.
+                    // No other packages are supported using profiles below .NET 9, so we can special case.
+                    if (versionNumber >= 9 ||
+                        (versionNumber >= 8 && frameworkListDoc.Root.Attribute("FrameworkName")?.Value == "Microsoft.Windows.SDK.NET.Ref"))
                     {
                         profileSupported = true;
                     }

@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-install" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-tool-install" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet tool install
 .PP
@@ -28,7 +28,7 @@ dotnet-tool-install - Installs the specified .NET tool on your machine.
 .nf
 \f[C]
 dotnet tool install <PACKAGE_NAME> -g|--global
-    [-a|--arch <ARCHITECTURE>]
+    [--allow-downgrade] [-a|--arch <ARCHITECTURE>]
     [--add-source <SOURCE>] [--configfile <FILE>] [--disable-parallel]
     [--framework <FRAMEWORK>] [--ignore-failed-sources] [--interactive]
     [--no-cache] [--prerelease]
@@ -36,7 +36,7 @@ dotnet tool install <PACKAGE_NAME> -g|--global
     [--version <VERSION_NUMBER>]
 
 dotnet tool install <PACKAGE_NAME> --tool-path <PATH>
-    [-a|--arch <ARCHITECTURE>]
+    [--allow-downgrade] [-a|--arch <ARCHITECTURE>]
     [--add-source <SOURCE>] [--configfile <FILE>] [--disable-parallel]
     [--framework <FRAMEWORK>] [--ignore-failed-sources] [--interactive]
     [--no-cache] [--prerelease]
@@ -44,7 +44,7 @@ dotnet tool install <PACKAGE_NAME> --tool-path <PATH>
     [--version <VERSION_NUMBER>]
 
 dotnet tool install <PACKAGE_NAME> [--local]
-    [-a|--arch <ARCHITECTURE>]
+    [--allow-downgrade] [-a|--arch <ARCHITECTURE>]
     [--add-source <SOURCE>] [--configfile <FILE>]
     [--create-manifest-if-needed] [--disable-parallel]
     [--framework <FRAMEWORK>] [--ignore-failed-sources] [--interactive]
@@ -92,9 +92,16 @@ T}
 .TE
 .PP
 Executables are generated in these folders for each globally installed tool, although the actual tool binaries are nested deep into the sibling \f[V].store\f[R] directory.
+.RS
+.PP
+On Linux after installing a command-line tool with \f[V]dotnet tool\f[R], the tool can be executed only from the \f[V]$HOME/.dotnet/tools\f[R] path.
+To make the tool executable from any directory, update the \f[V]PATH\f[R] environment variable.
+To make the updated \f[V]PATH\f[R] environment variable permanent in your shell, update your shell settings.
+For \f[V]Bash\f[R], this is the \f[V]$HOME/.bashrc\f[R] file.
+.RE
 .SS \f[V]--tool-path\f[R] tools
 .PP
-Local tools with explicit tool paths are stored wherever you specified the \f[V]--tool-path\f[R] parameter to point to.
+Tools with explicit tool paths are stored wherever you specified the \f[V]--tool-path\f[R] parameter to point to.
 They\[cq]re stored in the same way as global tools: an executable binary with the actual binaries in a sibling \f[V].store\f[R] directory.
 .SS Local tools
 .PP
@@ -119,6 +126,13 @@ For more information, see Install a local tool.
 Name/ID of the NuGet package that contains the .NET tool to install.
 .RE
 .SH OPTIONS
+.IP \[bu] 2
+\f[B]\f[VB]--allow-downgrade\f[B]\f[R]
+.RS 2
+.PP
+Allow package downgrade when installing or updating a .NET tool package.
+Suppresses the warning, \[lq]The requested version x.x.x is lower than existing version x.x.x.\[rq]
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
 .RS 2
@@ -150,6 +164,7 @@ For more information, see Common NuGet Configurations.
 .RS 2
 .PP
 Applies to local tools.
+Available starting with .NET 8 SDK.
 To find a manifest, the search algorithm searches up the directory tree for \f[V]dotnet-tools.json\f[R] or a \f[V].config\f[R] folder that contains a \f[V]dotnet-tools.json\f[R] file.
 .PP
 If a tool-manifest can\[cq]t be found and the \f[V]--create-manifest-if-needed\f[R] option is set to false, the \f[V]CannotFindAManifestFile\f[R] error occurs.
@@ -160,10 +175,12 @@ It chooses a folder for the manifest as follows:
 Walk up the directory tree searching for a directory that has a \f[V].git\f[R] subfolder.
 If one is found, create the manifest in that directory.
 .IP \[bu] 2
-If the previous step doesn\[cq]t find a directory, walk up the directory tree searching for a directory that has a \f[V].sln/git\f[R] file.
+If the previous step doesn\[cq]t find a directory, walk up the directory tree searching for a directory that has a \f[V].sln\f[R] or \f[V].git\f[R] file.
 If one is found, create the manifest in that directory.
 .IP \[bu] 2
 If neither of the previous two steps finds a directory, create the manifest in the current working directory.
+.PP
+For more information on how manifests are located, see Install a local tool.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--disable-parallel\f[B]\f[R]
@@ -254,6 +271,9 @@ For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 The version of the tool to install.
 By default, the latest stable package version is installed.
 Use this option to install preview or older versions of the tool.
+.PP
+Starting with .NET 8.0, \f[V]--version Major.Minor.Patch\f[R] refers to a specific major/minor/patch version, including unlisted versions.
+To get the latest version of a certain major/minor version instead, use \f[V]--version Major.Minor.*\f[R].
 .RE
 .SH EXAMPLES
 .IP \[bu] 2
@@ -285,6 +305,13 @@ Installs version 2.0.0 of dotnetsay (https://www.nuget.org/packages/dotnetsay/) 
 .RS 2
 .PP
 Installs dotnetsay (https://www.nuget.org/packages/dotnetsay/) as a local tool for the current directory.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]dotnet tool install -g --verbosity minimal\f[B]\f[R]
+.RS 2
+.PP
+Installs dotnetsay (https://www.nuget.org/packages/dotnetsay/) as a global tool with the verbosity of minimal.
+The default verbosity for global tool is quiet.
 .RE
 .SH SEE ALSO
 .IP \[bu] 2

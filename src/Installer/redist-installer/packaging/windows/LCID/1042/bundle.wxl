@@ -4,14 +4,14 @@
   <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>
   <String Id="HelpHeader">설치 도움말</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 디렉터리에 번들의 전체 로컬 복사본을 설치, 복구, 제거
-   또는 작성합니다. '/install'이 기본값입니다.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - 설치, 복구, 제거
+   또는 디렉터리에 번들의 전체 로컬 복사본을 만듭니다. '/install'이 기본값입니다.
 
 /passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및
-   프롬프트를 표시하지 않습니다. 기본적으로 UI와 모든 프롬프트가 표시됩니다.
+   프롬프트를 표시하지 않습니다. 기본적으로 UI 및 모든 프롬프트가 표시됩니다.
 
-/norestart   - 다시 시작하지 않게 합니다. 기본적으로 UI에서는 다시 시작하기 전에 묻는 메시지를 표시합니다.
-/log [\[]"log.txt"[\]] - 특정 파일에 기록합니다. 기본적으로 로그 파일은 %TEMP%에 만들어집니다.</String>
+/norestart - 다시 시작 시도를 중지합니다. 기본적으로 UI는 다시 시작하기 전에 메시지를 표시합니다.
+/log [\[]"log.txt"[\]] - 특정 파일에 로그합니다. 기본적으로 로그 파일은 %TEMP%에 만들어집니다.</String>
   <String Id="HelpCloseButton">닫기(&amp;C)</String>
   <String Id="InstallAcceptCheckbox">동의함(&amp;A)</String>
   <String Id="InstallOptionsButton">옵션(&amp;O)</String>
@@ -58,8 +58,8 @@
     • 추가 정보 및 옵트아웃 https://aka.ms/dotnet-cli-telemetry
 
 리소스
-    • .NET 설명서 https://aka.ms/dotnet-docs
-    • SDK 설명서 https://aka.ms/dotnet-sdk-docs
+    • .NET 문서 https://aka.ms/dotnet-docs
+    • SDK 문서 https://aka.ms/dotnet-sdk-docs
     • 릴리스 정보 https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
     • 자습서 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
@@ -75,7 +75,7 @@
   <String Id="InstallationNoteTitle">설치 정보</String>
   <String Id="InstallationNote">프로젝트 복원 속도를 향상하고 오프라인 액세스를 사용할 수 있도록 하는 설치 프로세스 중 명령이 실행됩니다. 완료하는 데 최대 1분이 걸립니다.
   </String>
-  <String Id="VisualStudioWarning">Visual Studio에서 .NET [VERSIONMAJOR].[VERSIONMINOR]를 사용하려는 경우 Visual Studio 2022 [MINIMUMVSVERSION] 이상이 필요합니다. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Learn more&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Visual Studio에서 .NET [VERSIONMAJOR].[VERSIONMINOR]을(를) 사용하려는 경우 Visual Studio 2022 [MINIMUMVSVERSION] 이상이 필요합니다. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;자세히 알아보기&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">설치를 클릭하면 다음 사용 약관에 동의하는 것입니다.</String>
   <String Id="InstallPathx64x86">x64 SDK 설치의 설치 경로: " [DOTNETHOME_x64]" x86 SDK 설치의 경우와 같을 수 없습니다. " [DOTNETHOME_X86]"</String>

@@ -7,6 +7,9 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Threading;
+using System.Threading.Tasks;
+
+// <metadata update handler placeholder>
 
 var assembly = typeof(C).Assembly;
 
@@ -21,15 +24,10 @@ Console.WriteLine($"Version = {assembly.GetCustomAttributes<AssemblyVersionAttri
 Console.WriteLine($"TFM = {assembly.GetCustomAttributes<TargetFrameworkAttribute>().FirstOrDefault()?.FrameworkName ?? "<unspecified>"}");
 Console.WriteLine($"Configuration = {assembly.GetCustomAttributes<AssemblyConfigurationAttribute>().FirstOrDefault()?.Configuration ?? "<unspecified>"}");
 
-Loop();
-
-static void Loop()
+while (true)
 {
-    while (true)
-    {
-        Console.WriteLine(".");
-        Thread.Sleep(1000);
-    }
+    Console.WriteLine(".");
+    await Task.Delay(1000);
 }
 
 class C { }

@@ -4,14 +4,14 @@
   <String Id="ConfirmCancelMessage">Voulez-vous vraiment annuler ?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Version précédente</String>
   <String Id="HelpHeader">Aide du programme d'installation</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"répertoire"[\]] - installe, répare, désinstalle
-   ou crée une copie locale complète de l’offre groupée dans le répertoire. "/install" est l’option par défaut.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] : installe, répare, désinstalle
+   ou crée une copie locale complète de l’offre groupée dans le répertoire. '/install' est la valeur par défaut.
 
-/passive | /quiet -  affiche une interface utilisateur minimale, sans invite, ou n’affiche
-   ni interface utilisateur, ni invite. Par défaut, l’interface utilisateur et toutes les invites sont affichées.
+/passive | /quiet – affiche une interface utilisateur minimale sans invites ou n’affiche ni interface utilisateur et 
+   aucune invite. Par défaut, l’interface utilisateur et toutes les invites sont affichées.
 
-/norestart   - supprime toutes les tentatives de redémarrage. Par défaut, l’interface utilisateur affiche une invite avant le redémarrage.
-/log [\[]"log.txt"[\]] - journalise dans un fichier spécifique. Par défaut, un fichier journal est créé dans %TEMP%.</String>
+/norestart : supprime toutes les tentatives de redémarrage. Par défaut, l’interface utilisateur vous invite à redémarrer.
+/log [\[]"log.txt"[\]] : journalise un fichier spécifique. Par défaut, un fichier journal est créé dans %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Fermer</String>
   <String Id="InstallAcceptCheckbox">J'&amp;accepte les conditions générales de la licence</String>
   <String Id="InstallOptionsButton">&amp;Options</String>
@@ -64,7 +64,7 @@ Ressources
     • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">Kit de développement logiciel (SDK) .NET</String>
   <String Id="WelcomeDescription">
-    Le Kit de développement logiciel (SDK) .NET permet de générer, d’exécuter et de tester des applications .NET. Vous pouvez choisir parmi plusieurs langages, éditeurs et outils de développement. De plus, vous pouvez bénéficier d’un vaste écosystème de bibliothèques afin de générer des applications pour le web, les appareils mobiles, les ordinateurs de bureau, les jeux et l’IoT. Nous espérons que vous l’apprécierez !</String>
+    Le Kit de développement logiciel (SDK) .NET est utilisé pour générer, exécuter et tester des applications .NET. Vous pouvez choisir parmi plusieurs langages, éditeurs et outils de développement, et tirer parti d’un vaste écosystème de bibliothèques pour créer des applications pour le web, les appareils mobiles, les ordinateurs de bureau, les jeux et l’IoT. Nous espérons que vous l’apprécierez !</String>
   <String Id="LearnMoreTitle">En savoir plus sur .NET</String>
   <String Id="ResourcesHeader">Ressources</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentation .NET&lt;/A&gt;</String>
