@@ -4,6 +4,7 @@
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
     <RootRepo>dotnet</RootRepo>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Label="CalculateTargetOS">
