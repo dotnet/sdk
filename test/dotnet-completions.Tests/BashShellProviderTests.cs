@@ -8,7 +8,7 @@ using Microsoft.DotNet.Cli.MSBuild.Tests;
 using System.CommandLine;
 using System.CommandLine.Help;
 
-public class HelpExtensionsTests
+public class BashShellProviderTests
 {
     [Fact]
     public void BashProviderShould()
