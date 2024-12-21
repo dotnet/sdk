@@ -364,7 +364,21 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await TestOperation(
                 dir,
-                expectedChanges: usePolling || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
+                [
+                    new(subdir, ChangeKind.Add),
+                    new(subdir, ChangeKind.Delete),
+                    new(f1, ChangeKind.Update),
+                    new(f1, ChangeKind.Add),
+                    new(f1, ChangeKind.Delete),
+                    new(f2, ChangeKind.Update),
+                    new(f2, ChangeKind.Add),
+                    new(f2, ChangeKind.Delete),
+                    new(f3, ChangeKind.Update),
+                    new(f3, ChangeKind.Add),
+                    new(f3, ChangeKind.Delete),
+                ]
+                : usePolling || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 [
                     new(subdir, ChangeKind.Delete),
                     new(f1, ChangeKind.Delete),
