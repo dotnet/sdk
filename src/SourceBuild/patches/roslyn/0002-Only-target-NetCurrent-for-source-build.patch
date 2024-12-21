@@ -1,0 +1,27 @@
+From 3e23c76f9f26e0b559096d9349d0abadb092d704 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Fri, 20 Dec 2024 08:28:35 -0600
+Subject: [PATCH] Only target NetCurrent for source build
+
+Backport: https://github.com/dotnet/roslyn/pull/76505
+---
+ eng/targets/TargetFrameworks.props | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/eng/targets/TargetFrameworks.props b/eng/targets/TargetFrameworks.props
+index 2dddaff1560..04eecc62df9 100644
+--- a/eng/targets/TargetFrameworks.props
++++ b/eng/targets/TargetFrameworks.props
+@@ -53,9 +53,9 @@
+     <When Condition="'$(DotNetBuildSourceOnly)' == 'true' AND '$(DotNetBuildOrchestrator)' == 'true'">
+       <PropertyGroup>
+         <NetRoslyn>$(NetCurrent)</NetRoslyn>
+-        <NetRoslynSourceBuild>$(NetCurrent);$(NetPrevious)</NetRoslynSourceBuild>
+-        <NetRoslynAll>$(NetCurrent);$(NetPrevious)</NetRoslynAll>
+-        <NetRoslynBuildHostNetCoreVersion>$(NetPrevious)</NetRoslynBuildHostNetCoreVersion>
++        <NetRoslynSourceBuild>$(NetCurrent)</NetRoslynSourceBuild>
++        <NetRoslynAll>$(NetCurrent)</NetRoslynAll>
++        <NetRoslynBuildHostNetCoreVersion>$(NetCurrent)</NetRoslynBuildHostNetCoreVersion>
+         <NetRoslynNext>$(NetCurrent)</NetRoslynNext>
+       </PropertyGroup>
+     </When>
