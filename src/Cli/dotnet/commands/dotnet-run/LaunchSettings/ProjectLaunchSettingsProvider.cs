@@ -80,6 +80,15 @@ namespace Microsoft.DotNet.Tools.Run.LaunchSettings
                         }
                     }
                 }
+                else if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.WorkingDirectory), StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!TryGetStringValue(property.Value, out var workingDirectory))
+                    {
+                        return new LaunchSettingsApplyResult(false, string.Format(LocalizableStrings.CouldNotConvertToString, property.Name));
+                    }
+
+                    config.WorkingDirectory = workingDirectory;
+                }
             }
 
             return new LaunchSettingsApplyResult(true, null, config);
