@@ -32,7 +32,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         {
             if (!ShutdownSource.IsCancellationRequested)
             {
-                Test.Log("Shutting down");
+                Test.LogMessage("Shutting down");
                 ShutdownSource.Cancel();
             }
 
@@ -94,8 +94,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
     private RunningWatcher StartWatcher(TestAsset testAsset, string[] args, string workingDirectory, string projectPath, SemaphoreSlim? fileChangesCompleted = null)
     {
-        var console = new TestConsole(Logger);
-        var reporter = new TestReporter(Logger);
+        var console = new TestConsole(Log);
+        var reporter = new TestReporter(Log);
 
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args, "--project", projectPath]),
@@ -591,7 +591,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
         var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoHotReloadChangesToApply);
 
-        Log("Waiting for changes...");
+        LogMessage("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
         
         UpdateSourceFile(path, "class C { int F() => 2; }");
@@ -599,27 +599,27 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         switch ((isExisting, isIncluded, directoryKind))
         {
             case (isExisting: true, isIncluded: true, directoryKind: _):
-                Log("Waiting for changed handled ...");
+                LogMessage("Waiting for changed handled ...");
                 await changeHandled.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: true, isIncluded: false, directoryKind: DirectoryKind.Ordinary):
-                Log("Waiting for no hot reload changes to apply ...");
+                LogMessage("Waiting for no hot reload changes to apply ...");
                 await noHotReloadChangesToApply.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: false, isIncluded: _, directoryKind: DirectoryKind.Ordinary):
-                Log("Waiting for file addition re-evalutation ...");
+                LogMessage("Waiting for file addition re-evalutation ...");
                 await fileAdditionTriggeredReEvaluation.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Hidden):
-                Log("Waiting for ignored change in hidden dir ...");
+                LogMessage("Waiting for ignored change in hidden dir ...");
                 await ignoringChangeInHiddenDirectory.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Bin or DirectoryKind.Obj):
-                Log("Waiting for ignored change in output dir ...");
+                LogMessage("Waiting for ignored change in output dir ...");
                 await ignoringChangeInOutputDirectory.WaitAsync(w.ShutdownSource.Token);
                 break;
 

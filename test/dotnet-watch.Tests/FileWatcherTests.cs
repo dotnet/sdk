@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 if (!seenBarrier)
                 {
-                    seenBarrier = f.kind == ChangeKind.Add && f.path == barrierDir;
+                    seenBarrier = f.Kind == ChangeKind.Add && f.Path == barrierDir;
                 }
                 else
                 {
@@ -373,11 +373,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 ]
                 :
                 [
-                    (subdir, ChangeKind.Update),
-                    (subdir, ChangeKind.Delete),
-                    (f1, ChangeKind.Delete),
-                    (f2, ChangeKind.Delete),
-                    (f3, ChangeKind.Delete),
+                    new(subdir, ChangeKind.Update),
+                    new(subdir, ChangeKind.Delete),
+                    new(f1, ChangeKind.Delete),
+                    new(f2, ChangeKind.Delete),
+                    new(f3, ChangeKind.Delete),
                 ],
                 usePolling,
                 () => Directory.Delete(subdir, recursive: true));
