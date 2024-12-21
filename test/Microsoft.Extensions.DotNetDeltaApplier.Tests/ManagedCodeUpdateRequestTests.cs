@@ -5,12 +5,12 @@ using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class UpdatePayloadTests
+public class ManagedCodeUpdateRequestTests
 {
     [Fact]
     public async Task Roundtrip()
     {
-        var initial = new UpdatePayload(
+        var initial = new ManagedCodeUpdateRequest(
             [
                 new UpdateDelta(
                     moduleId: Guid.NewGuid(),
@@ -31,7 +31,7 @@ public class UpdatePayloadTests
         await initial.WriteAsync(stream, CancellationToken.None);
 
         stream.Position = 0;
-        var read = await UpdatePayload.ReadAsync(stream, CancellationToken.None);
+        var read = await ManagedCodeUpdateRequest.ReadAsync(stream, CancellationToken.None);
 
         AssertEqual(initial, read);
     }
@@ -39,7 +39,7 @@ public class UpdatePayloadTests
     [Fact]
     public async Task WithLargeDeltas()
     {
-        var initial = new UpdatePayload(
+        var initial = new ManagedCodeUpdateRequest(
             [
                 new UpdateDelta(
                     moduleId: Guid.NewGuid(),
@@ -54,12 +54,12 @@ public class UpdatePayloadTests
         await initial.WriteAsync(stream, CancellationToken.None);
 
         stream.Position = 0;
-        var read = await UpdatePayload.ReadAsync(stream, CancellationToken.None);
+        var read = await ManagedCodeUpdateRequest.ReadAsync(stream, CancellationToken.None);
 
         AssertEqual(initial, read);
     }
 
-    private static void AssertEqual(UpdatePayload initial, UpdatePayload read)
+    private static void AssertEqual(ManagedCodeUpdateRequest initial, ManagedCodeUpdateRequest read)
     {
         Assert.Equal(initial.Deltas.Count, read.Deltas.Count);
 

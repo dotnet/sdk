@@ -79,5 +79,8 @@ namespace Microsoft.DotNet.Watch
                 }
             }
         }
+
+        public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
+            => _hostApplier.InitialUpdatesApplied(cancellationToken);
     }
 }
