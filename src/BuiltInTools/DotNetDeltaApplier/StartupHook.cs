@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Pipes;
-using Microsoft.DotNet.Watch;
 using Microsoft.DotNet.HotReload;
 using System.Diagnostics;
 
@@ -83,15 +82,11 @@ internal sealed class StartupHook
     {
         agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
 
-        var initPayload = new ClientInitializationRequest(agent.Capabilities);
+        var initPayload = new ClientInitializationResponse(agent.Capabilities);
         await initPayload.WriteAsync(pipeClient, cancellationToken);
 
         // Apply updates made before this process was launched to avoid executing unupdated versions of the affected modules.
-        // The debugger takes care of this when launching process with the debugger attached.
-        if (!Debugger.IsAttached)
-        {
-            await ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: true, cancellationToken);
-        }
+        await ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: true, cancellationToken);
     }
 
     private static async Task ReceiveAndApplyUpdatesAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, bool initialUpdates, CancellationToken cancellationToken)
@@ -100,18 +95,21 @@ internal sealed class StartupHook
         {
             while (pipeClient.IsConnected)
             {
-                var payloadType = (PayloadType)await pipeClient.ReadByteAsync(cancellationToken);
+                var payloadType = (RequestType)await pipeClient.ReadByteAsync(cancellationToken);
                 switch (payloadType)
                 {
-                    case PayloadType.ManagedCodeUpdate:
-                        await ReadAndApplyManagedUpdateAsync(pipeClient, agent, cancellationToken);
+                    case RequestType.ManagedCodeUpdate:
+                        // Shouldn't get initial managed code updates when the debugger is attached.
+                        // The debugger itself applies these updates when launching process with the debugger attached.
+                        Debug.Assert(!Debugger.IsAttached);
+                        await ReadAndApplyManagedCodeUpdateAsync(pipeClient, agent, cancellationToken);
                         break;
 
-                    case PayloadType.StaticAssetUpdate when !initialUpdates:
+                    case RequestType.StaticAssetUpdate:
                         await ReadAndApplyStaticAssetUpdateAsync(pipeClient, agent, cancellationToken);
                         break;
 
-                    case PayloadType.InitialUpdatesCompleted when initialUpdates:
+                    case RequestType.InitialUpdatesCompleted when initialUpdates:
                         return;
 
                     default:
@@ -134,46 +132,49 @@ internal sealed class StartupHook
         }
     }
 
-    private static async Task ReadAndApplyManagedUpdateAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)
+    private static async ValueTask ReadAndApplyManagedCodeUpdateAsync(
+        NamedPipeClientStream pipeClient,
+        HotReloadAgent agent,
+        CancellationToken cancellationToken)
     {
-        var update = await UpdatePayload.ReadAsync(pipeClient, cancellationToken);
+        var request = await ManagedCodeUpdateRequest.ReadAsync(pipeClient, cancellationToken);
 
+        bool success;
         try
         {
-            agent.ApplyDeltas(update.Deltas);
+            agent.ApplyDeltas(request.Deltas);
+            success = true;
         }
         catch (Exception e)
         {
-            agent.Reporter.Report(e.ToString(), AgentMessageSeverity.Error);
+            agent.Reporter.Report($"The runtime failed to applying the change: {e.Message}", AgentMessageSeverity.Error);
+            agent.Reporter.Report("Further changes won't be applied to this process.", AgentMessageSeverity.Warning);
+            success = false;
         }
 
-        var logEntries = agent.GetAndClearLogEntries(update.ResponseLoggingLevel);
+        var logEntries = agent.GetAndClearLogEntries(request.ResponseLoggingLevel);
 
-        // response:
-        pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
-        await UpdatePayload.WriteLogAsync(pipeClient, logEntries, cancellationToken);
+        var response = new UpdateResponse(logEntries, success);
+        await response.WriteAsync(pipeClient, cancellationToken);
     }
 
-    private static async ValueTask ReadAndApplyStaticAssetUpdateAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)
+    private static async ValueTask ReadAndApplyStaticAssetUpdateAsync(
+        NamedPipeClientStream pipeClient,
+        HotReloadAgent agent,
+        CancellationToken cancellationToken)
     {
-        var payload = await StaticAssetPayload.ReadAsync(pipeClient, default);
-        try
-        {
-            //Log($"Attempting to apply static asset update for {update.RelativePath}.");
+        var request = await StaticAssetUpdateRequest.ReadAsync(pipeClient, cancellationToken);
 
-            agent.ApplyStaticAsset(payload.Update);
+        agent.ApplyStaticAssetUpdate(new StaticAssetUpdate(request.AssemblyName, request.RelativePath, request.Contents, request.IsApplicationProject));
 
-            ApplyResponsePayload result = new ApplyResponsePayload { ApplySucceeded = true };
-            result.Write(pipeClient);
-        }
-        catch// (Exception ex)
-        {
-            // TODO:
-            //var errMessage = ex.GetMessageFromException();
-            //Log($"Update failed: {errMessage}");
-            //    ApplyResponsePayload result = new ApplyResponsePayload { ApplySucceeded = false, ErrorString = errMessage };
-            //    result.Write(pipeClient);
-        }
+        var logEntries = agent.GetAndClearLogEntries(request.ResponseLoggingLevel);
+
+        // Updating static asset only invokes ContentUpdate metadata update handlers.
+        // Failures of these handlers are reported to the log and ignored.
+        // Therefore, this request always succeeds.
+        var response = new UpdateResponse(logEntries, success: true);
+
+        await response.WriteAsync(pipeClient, cancellationToken);
     }
 
     public static bool IsMatchingProcess(string processPath, string targetProcessPath)

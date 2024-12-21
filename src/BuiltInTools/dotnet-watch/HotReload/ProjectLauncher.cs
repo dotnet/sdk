@@ -59,7 +59,7 @@ internal sealed class ProjectLauncher(
         };
 
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
-        var namedPipeName = AgentEnvironmentVariables.GenerateNamedPipeName();
+        var namedPipeName = Guid.NewGuid().ToString();
 
         // Directives:
 

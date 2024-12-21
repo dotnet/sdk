@@ -202,7 +202,7 @@ internal sealed class HotReloadAgent : IDisposable
     /// <summary>
     /// Applies the content update.
     /// </summary>
-    public void ApplyStaticAsset(StaticAssetUpdate update)
+    public void ApplyStaticAssetUpdate(StaticAssetUpdate update)
     {
         _metadataUpdateHandlerInvoker.ContentUpdated(update);
     }
