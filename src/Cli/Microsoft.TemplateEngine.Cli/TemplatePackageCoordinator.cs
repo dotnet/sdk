@@ -207,12 +207,7 @@ namespace Microsoft.TemplateEngine.Cli
 
             foreach (string installArg in args.TemplatePackages)
             {
-                string[] splitByColons = installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries);
-                string[] splitByAt = installArg.Split('@', StringSplitOptions.RemoveEmptyEntries);
-                string[] split = splitByColons.Length > splitByAt.Length ? splitByColons :
-                                 splitByAt.Length > splitByColons.Length ? splitByAt :
-                                 splitByColons[0].Length < splitByAt[0].Length ? splitByColons :
-                                 splitByAt;
+                string[] split = installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries).SelectMany(arg => arg.Split('@', StringSplitOptions.RemoveEmptyEntries)).ToArray();
                 string identifier = split[0];
                 string? version = split.Length > 1 ? split[1] : null;
                 foreach (string expandedIdentifier in InstallRequestPathResolution.ExpandMaskedPath(identifier, _engineEnvironmentSettings))
