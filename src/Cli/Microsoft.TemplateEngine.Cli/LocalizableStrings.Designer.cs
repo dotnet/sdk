@@ -1870,21 +1870,35 @@ namespace Microsoft.TemplateEngine.Cli {
                 return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_OverrideNotice", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The following template package(s) are already available:.
-        /// </summary>
-        internal static string TemplatePackageCoordinator_Install_Info_PackageIsAvailable {
-            get {
-                return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_PackageIsAvailable", resourceCulture);
-            }
-        }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The following template packages will be installed:.
         /// </summary>
-        internal static string TemplatePackageCoordinator_Install_Info_PackagesToBeInstalled {
+        internal static string TemplatePackageCoordinator_Install_Info_PackageIsAvailable
+        {
+            get
+            {
+                return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_PackageIsAvailable ", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string indicating that :: as a separator is deprecated in favor of @.
+        /// </summary>
+        internal static string Colon_Separator_Deprecated
+        {
             get {
+                return ResourceManager.GetString("Colon_Separator_Deprecated", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The following template packages will be installed:.
+        /// </summary>
+        internal static string TemplatePackageCoordinator_Install_Info_PackagesToBeInstalled
+        {
+            get
+            {
                 return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_PackagesToBeInstalled", resourceCulture);
             }
         }
