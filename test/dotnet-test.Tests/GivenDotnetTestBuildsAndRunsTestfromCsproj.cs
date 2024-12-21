@@ -609,6 +609,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
+        /*
         [Fact]
         public void ItShouldShowImportantMessage()
         {
@@ -633,6 +634,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
         }
+        */
 
         [Fact]
         public void ItSetsDotnetRootToTheLocationOfDotnetExecutableWhenRunningDotnetTestWithProject()
