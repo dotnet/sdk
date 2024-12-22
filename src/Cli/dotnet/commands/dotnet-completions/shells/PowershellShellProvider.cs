@@ -3,24 +3,230 @@
 
 namespace Microsoft.DotNet.Cli.Completions.Shells;
 
+using System;
+using System.CodeDom.Compiler;
+using System.CommandLine;
+using System.CommandLine.Completions;
+
+#nullable enable
+
 public class PowershellShellProvider : IShellProvider
 {
     public static string PowerShell => "pwsh";
 
     public string ArgumentName => PowershellShellProvider.PowerShell;
 
-    private static readonly string _dynamicCompletionScript =
-        """
-        # PowerShell parameter completion shim for the dotnet CLI
-        # Add this to your $PROFILE to enable completion
+    public string GenerateCompletions(CliCommand command)
+    {
+        var binaryName = command.Name;
 
-        Register-ArgumentCompleter -Native -CommandName dotnet -ScriptBlock {
-            param($wordToComplete, $commandAst, $cursorPosition)
-                dotnet complete --position $cursorPosition "$commandAst" | ForEach-Object {
-                    [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-                }
+        using var textWriter = new StringWriter { NewLine = "\n" };
+        using var writer = new IndentedTextWriter(textWriter);
+        writer.WriteLine(
+$$$"""
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
+
+Function Call-DotnetComplete {
+    param($cursorPosition, $commandAst)
+
+    #TODO: get descriptions and labels and stuff from dynamic completions
+    $dynamicCompletions = @(
+        dotnet complete --position $cursorPosition $commandAst.ToString() | Foreach-Object {
+            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
         }
-        """;
+    )
+    return $dynamicCompletions
+}
 
-    public string GenerateCompletions(System.CommandLine.CliCommand command) => _dynamicCompletionScript;
+Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    $commandElements = $commandAst.CommandElements
+    $command = @(
+        '{{{binaryName}}}'
+        for ($i = 1; $i -lt $commandElements.Count; $i++) {
+        $element = $commandElements[$i]
+            if ($element -isnot [StringConstantExpressionAst] -or
+                $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                $element.Value.StartsWith('-') -or
+                $element.Value -eq $wordToComplete) {
+                break
+            }
+            $element.Value
+        }) -join ';'
+""");
+        writer.WriteLine();
+        writer.Indent++;
+
+        writer.WriteLine("$completions = @(switch($command){");
+
+        writer.Indent++;
+        GenerateSubcommandCompletions([], writer, command);
+
+        writer.Indent--;
+        writer.WriteLine("})");
+
+        // spacing is critical here - the open brace { must be directly adjacent to the Where member name, or else it's a pwsh syntax error
+        writer.WriteLine("$completions.Where{ $_.CompletionText -like \"$wordToComplete*\" } | Sort-Object -Property ListItemText");
+
+        writer.Indent--;
+        writer.WriteLine("}");
+        writer.Flush();
+        return textWriter.ToString();
+    }
+
+    private static string CompletionResult(string name, string value, string type, string? helpText)
+    {
+        if (helpText is null)
+        {
+            return $"[CompletionResult]::new('{value}', '{name}', [CompletionResultType]::{type}, \"{value}\")";
+        }
+        else
+        {
+            return $"[CompletionResult]::new('{value}', '{name}', [CompletionResultType]::{type}, \"{helpText}\")";
+        };
+    }
+
+    private static string ParameterNameResult(string name, string value, string? helpText) => CompletionResult(name, value, "ParameterName", helpText);
+
+    private static string ParameterValueResult(string name, string value, string? helpText) => CompletionResult(name, value, "ParameterValue", helpText);
+
+    private static string? SanitizeHelpDescription(CliSymbol s) => s.Description?.Replace('\n', ' ').Replace("`", "``").Replace("'", "`'").Replace("\"", "`\"").Replace("$", "`$");
+
+    /// <summary>
+    /// Generations completion-list items for the names of the given option. Typically used by commands/subcommands for static lookup lists.
+    /// </summary>
+    /// <param name="o"></param>
+    /// <returns></returns>
+    private static IEnumerable<string> GenerateOptionNameCompletions(CliOption o)
+    {
+        if (o.Hidden)
+        {
+            yield break;
+        }
+
+        var verboseName = o.Name;
+        var names = o.Names();
+        var helpText = SanitizeHelpDescription(o);
+
+        // generate a completion recognizer for each alias, but have it's 'commit' value
+        // be the longest/most verbose for clarity
+        foreach (var name in names)
+        {
+            // differentiate casing for single character flags because powershell doesn't do case-sensitivity
+            var completionValue = name.IsUpperCaseSingleCharacterFlag() ? $"{verboseName} " : verboseName;
+            yield return ParameterNameResult(name, completionValue, helpText);
+        }
+    }
+
+    /// <summary>
+    /// Generate completions for the statically-known arguments
+    /// </summary>
+    /// <param name="argument"></param>
+    /// <returns></returns>
+    private static IEnumerable<string> GenerateArgumentCompletions(CliArgument argument)
+    {
+        if (argument.Hidden)
+        {
+            yield break;
+        }
+
+        if (argument.GetType().GetGenericTypeDefinition() == typeof(DynamicArgument<int>).GetGenericTypeDefinition())
+        {
+            // if the argument is a not-static-friendly argument, we need to call into the app for completions
+            // TODO: not yet supported for powershell
+            yield break;
+        }
+        var argCompletions = argument.GetCompletions(CompletionContext.Empty).ToArray();
+        if (argCompletions is not null && argCompletions.Length > 0)
+        {
+            foreach (var completion in argCompletions)
+            {
+                yield return ParameterValueResult(completion.Label, completion.InsertText ?? completion.Label, completion.Documentation ?? completion.Detail ?? completion.Label);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Generate completions for the subcommands of a given command. Each subcommand generates a list of switches for the staticly-known flags and arguments.
+    /// </summary>
+    /// <param name="parentCommandNames"></param>
+    /// <param name="writer"></param>
+    /// <param name="command"></param>
+    /// <remarks>Dynamically-generated completions are not yet supported</remarks>
+    internal static void GenerateSubcommandCompletions(string[] parentCommandNames, IndentedTextWriter writer, CliCommand command)
+    {
+        string[] commandNameList = parentCommandNames switch
+        {
+            null => [command.Name],
+            [] => [command.Name],
+            var names => [.. names, command.Name]
+        };
+
+        GenerateStaticCompletionsForCommand(commandNameList, command, writer);
+        GenerateDynamicCompletionsForOptions(commandNameList, command.Options, writer);
+        GenerateDynamicCompletionsForArguments(commandNameList, command.Arguments, writer);
+
+        foreach (var subcommand in command.Subcommands)
+        {
+            if (subcommand.Hidden)
+            {
+                continue;
+            }
+            GenerateSubcommandCompletions(commandNameList, writer, subcommand);
+        }
+
+    }
+
+    /// <summary>
+    /// Generate completions for the statically-known options, arguments, and subcommands of a given command.
+    /// </summary>
+    private static void GenerateStaticCompletionsForCommand(string[] commandPath, CliCommand command, IndentedTextWriter writer)
+    {
+        List<string> completions = new();
+
+        foreach (var option in command.HeirarchicalOptions())
+        {
+            completions.AddRange(GenerateOptionNameCompletions(option));
+        }
+
+        foreach (var argument in command.Arguments)
+        {
+            completions.AddRange(GenerateArgumentCompletions(argument));
+        }
+
+        foreach (var subcommand in command.Subcommands)
+        {
+            if (subcommand.Hidden)
+            {
+                continue;
+            }
+            var longName = subcommand.Name;
+            var description = SanitizeHelpDescription(subcommand);
+            foreach (var subcommandName in subcommand.Names())
+            {
+                completions.Add(ParameterValueResult(subcommandName, longName, description));
+            }
+        }
+
+        writer.WriteLine($"'{string.Join(";", commandPath)}' {{");
+        writer.Indent++;
+        foreach (var completion in completions)
+        {
+            writer.WriteLine(completion);
+        }
+        writer.WriteLine("break");
+        writer.Indent--;
+        writer.WriteLine("}");
+    }
+
+    private static void GenerateDynamicCompletionsForArguments(string[] commandNameList, IList<CliArgument> arguments, IndentedTextWriter writer)
+    {
+
+    }
+    private static void GenerateDynamicCompletionsForOptions(string[] commandNameList, IList<CliOption> options, IndentedTextWriter writer)
+    {
+
+    }
 }
