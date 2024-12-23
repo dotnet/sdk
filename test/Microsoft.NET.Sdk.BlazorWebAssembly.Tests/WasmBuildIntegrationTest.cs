@@ -11,14 +11,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         private static string customIcuFilename = "icudt_custom.dat";
         private static string fullIcuFilename = "icudt.dat";
-        private static string hybridIcuFilename = "icudt_hybrid.dat";
         private static string[] icuShardFilenames = new string[] {
             "icudt_EFIGS.dat",
             "icudt_CJK.dat",
             "icudt_no_CJK.dat"
         };
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void BuildMinimal_Works()
         {
             // Arrange
@@ -49,7 +48,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm-minimal.wasm")).Should().Exist();
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         [InlineData("blazor")]
         [InlineData("blazor spaces")]
         public void Build_Works(string identifier)
@@ -86,7 +85,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_Works_WithLibraryUsingHintPath()
         {
             // Arrange
@@ -138,7 +137,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_InRelease_Works()
         {
             // Arrange
@@ -176,7 +175,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
@@ -223,7 +222,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_InRelease_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
@@ -267,7 +266,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.resources.satelliteResources.Should().BeNull();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithBlazorEnableTimeZoneSupportDisabled_DoesNotCopyTimeZoneInfo()
         {
             // Arrange
@@ -299,7 +298,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.timezones.blat")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
         {
             // Arrange
@@ -337,7 +336,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
         {
             // Arrange
@@ -375,7 +374,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithBlazorWebAssemblyLoadCustomGlobalizationData_SetsGlobalizationMode()
         {
             // Arrange
@@ -419,7 +418,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithBlazorWebAssemblyLoadCustomGlobalizationData_SetsGlobalizationMode()
         {
             var testAppName = "BlazorHosted";
@@ -462,7 +461,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithBlazorWebAssemblyLoadAllGlobalizationData_SetsICUDataMode()
         {
             // Arrange
@@ -491,7 +490,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
             bootJsonData.resources.icu.Should().ContainKey(fullIcuFilename);
-            bootJsonData.resources.icu.Should().NotContainKey(hybridIcuFilename);
             foreach (var shardFilename in icuShardFilenames)
             {
                 bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
@@ -499,14 +497,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", hybridIcuFilename)).Should().NotExist();
             foreach (var shardFilename in icuShardFilenames)
             {
                 new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithBlazorWebAssemblyLoadAllGlobalizationData_SetsGlobalizationMode()
         {
             // Arrange
@@ -535,7 +532,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
             bootJsonData.resources.icu.Should().ContainKey(fullIcuFilename);
-            bootJsonData.resources.icu.Should().NotContainKey(hybridIcuFilename);
             foreach (var shardFilename in icuShardFilenames)
             {
                 bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
@@ -543,14 +539,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", hybridIcuFilename)).Should().NotExist();
             foreach (var shardFilename in icuShardFilenames)
             {
                 new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_Hosted_Works()
         {
             // Arrange
@@ -622,7 +617,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonPath.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithCustomOutputPath_Works()
         {
             var testAppName = "BlazorWasmWithLibrary";
@@ -644,7 +639,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ExecuteCommand(buildCommand).Should().Pass();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithTransitiveReference_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
@@ -700,7 +695,7 @@ public class TestReference
             fileInWwwroot.Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithReference_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
@@ -763,14 +758,14 @@ public class TestReference
             fileInWwwroot.Should().Exist();
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         [InlineData(true)]
         [InlineData(false)]
         [InlineData(null)]
         public void Build_WithStartupMemoryCache(bool? value)
             => BuildWasmMinimalAndValidateBootConfig(new[] { ("BlazorWebAssemblyStartupMemoryCache", value?.ToString()) }, b => b.startupMemoryCache.Should().Be(value));
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         [InlineData(true)]
         [InlineData(false)]
         [InlineData(null)]
@@ -788,7 +783,7 @@ public class TestReference
                 }
             });
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_WithJiterpreter_Advanced()
             => BuildWasmMinimalAndValidateBootConfig(new[] { ("BlazorWebAssemblyJiterpreter", "true"), ("BlazorWebAssemblyRuntimeOptions", "--no-jiterpreter-interp-entry-enabled") }, b =>
             {

@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             return (log, validator);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void CompatibleFrameworksInPackage()
         {
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
@@ -67,7 +67,7 @@ namespace PackageValidationTests
             Assert.Contains($"CP0002 Member 'void PackageValidationTests.First.test(string)' exists on lib/netstandard2.0/{assemblyName} but not on lib/{ToolsetInfo.CurrentTargetFramework}/{assemblyName}", log.errors);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void MultipleCompatibleFrameworksInPackage()
         {
             string name = Path.GetFileNameWithoutExtension(Path.GetTempFileName());

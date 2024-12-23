@@ -692,7 +692,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             // Second build
             var secondBuild = CreateBuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            secondBuild.Execute("/p:BuildProjectReferences=false").Should().Pass();
+            ExecuteCommand(secondBuild,"/p:BuildProjectReferences=false").Should().Pass();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
             new FileInfo(path).Should().Exist();

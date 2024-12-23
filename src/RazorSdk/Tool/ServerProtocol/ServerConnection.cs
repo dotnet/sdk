@@ -77,7 +77,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 }
             }
 
-            var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             if (Path.IsPathRooted(userProfile))
             {
                 return userProfile;

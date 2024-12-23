@@ -19,15 +19,15 @@
     </ItemGroup>
   </Target>
 
-  <ItemGroup Label=".NET 9.0 templates">
-    <Bundled90Templates Include="Microsoft.DotNet.Web.ItemTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" />
-    <Bundled90Templates Include="Microsoft.DotNet.Web.ProjectTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" UseVersionForTemplateInstallPath="true" />
-    <Bundled90Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <Bundled90Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+  <ItemGroup Label=".NET 10.0 templates">
+    <Bundled100Templates Include="Microsoft.DotNet.Web.ItemTemplates.10.0" PackageVersion="$(AspNetCorePackageVersionFor100Templates)" />
+    <Bundled100Templates Include="Microsoft.DotNet.Web.ProjectTemplates.10.0" PackageVersion="$(AspNetCorePackageVersionFor100Templates)" UseVersionForTemplateInstallPath="true" />
+    <Bundled100Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates100PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <Bundled100Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates100PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
-    <CurrentVersionBundledTemplates Include="@(Bundled90Templates)" TemplateFrameworkVersion="9.0" />
+    <CurrentVersionBundledTemplates Include="@(Bundled100Templates)" TemplateFrameworkVersion="10.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,7 +45,7 @@
     <CollatePackageDownloads Packages="@(BundledTemplates)">
       <Output TaskParameter="PackageDownloads" ItemName="BundledTemplatePackageDownload" />
     </CollatePackageDownloads>
-    <!-- Create a separate project to for template PackageDownloads, as we want to use a task in core-sdk-tasks to collate them, but we
+    <!-- Create a separate project to for template PackageDownloads, as we want to use a task in sdk-tasks to collate them, but we
        can't use those tasks before normal NuGet restore -->
     <PropertyGroup>
       <TemplatePackageDownloadProjectContent>
@@ -94,11 +94,11 @@
 
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
           DestinationFolder="$(RedistLayoutPath)templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
-          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'" />
+          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'" />
 
     <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
     <PropertyGroup>
-      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
+      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
     </PropertyGroup>
 
     <Copy SourceFiles="@(RepoTemplate)"
@@ -111,7 +111,7 @@
 
     <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
     <PropertyGroup>
-      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
+      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
       <CurrentTemplateFrameworkVersion>%(CurrentVersionBundledTemplates.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
     </PropertyGroup>
     <Copy SourceFiles="@(RepoTemplate)"

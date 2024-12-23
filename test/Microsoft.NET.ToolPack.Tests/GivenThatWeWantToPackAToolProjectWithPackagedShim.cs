@@ -283,8 +283,6 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_produces_valid_shims(bool multiTarget, string targetFramework)
@@ -300,8 +298,6 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void It_produces_valid_shims_when_the_first_build_is_wrong(bool multiTarget, string targetFramework)
@@ -335,8 +331,6 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void When_version_and_packageVersion_is_different_It_produces_valid_shims(bool multiTarget, string targetFramework)
@@ -359,8 +353,6 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData(true, "netcoreapp2.1")]
-        [InlineData(false, "netcoreapp2.1")]
         [InlineData(true, ToolsetInfo.CurrentTargetFramework)]
         [InlineData(false, ToolsetInfo.CurrentTargetFramework)]
         public void When_version_and_packageVersion_is_different_It_produces_valid_shims2(bool multiTarget, string targetFramework)

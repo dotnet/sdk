@@ -157,7 +157,10 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFrameworkVersion)]
-        [RequiresMSBuildVersionTheory("16.8")]
+        // Fixing this test requires bumping _LatestAnalysisLevel and _PreviewAnalysisLevel
+        // Bumping will cause It_maps_analysis_properties_to_globalconfig to fail which requires changes in dotnet/roslyn-analyzers repo.
+        // See instructions in the comment in It_maps_analysis_properties_to_globalconfig
+        [RequiresMSBuildVersionTheory("16.8", Skip = "https://github.com/dotnet/sdk/issues/45299")]
         public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
         {
             var testProject = new TestProject

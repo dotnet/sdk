@@ -5,7 +5,7 @@
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
     <UBTestsWarnOnContentDiffs>true</UBTestsWarnOnContentDiffs>
     <VSTestLogger>console%3bverbosity=diagnostic;trx%3bverbosity=diagnostic%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
-    <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotnetTool)</VSTestCLIRunSettings>
+    <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotNetTool)</VSTestCLIRunSettings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +40,7 @@
         <Value>$(UBTestsWarnOnContentDiffs)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).AssetManifestPath">
-        <Value>$(ArtifactsDir)VerticalManifest.xml</Value>
+        <Value>$(MergedAssetManifestOutputPath)</Value>
       </RuntimeHostConfigurationOption>
 
       <!-- SDK archive test configs -->

@@ -27,6 +27,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <!-- MSBuild Task DLLs need to be versioned with every build -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -49,11 +50,6 @@
     <PackageReference Include="NETStandard.Library.NETFramework" ExcludeAssets="All" NoWarn="NU1701" />
     <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- don't reference MS.NET.Build.Tasks, but make sure it builds before this project -->
-    <ProjectReference Include="..\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

@@ -269,11 +269,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' == 'true' and !($(MSBuildProjectFile.EndsWith('_wpftmp.csproj')) or $(MSBuildProjectFile.EndsWith('_wpftmp.vbproj')))" />
   </Target>
 
-  <!-- TODO: this target should not check GeneratePackageOnBuild.
-             remove when https://github.com/NuGet/Home/issues/7801 is fixed.
-    -->
   <Target Name="_CheckForBuildWithNoBuild"
-          Condition="'$(NoBuild)' == 'true' and '$(GeneratePackageOnBuild)' != 'true'">
+          Condition="'$(NoBuild)' == 'true'">
     <NETSdkError ResourceName="NoBuildRequested" />
   </Target>
 
@@ -552,6 +549,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"
                                     Condition="'$(_ComObjectDescriptorSupport)' != ''"
                                     Value="$(_ComObjectDescriptorSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Data.DataSet.XmlSerializationIsSupported"
+                                    Condition="'$(_DataSetXmlSerializationSupport)' != ''"
+                                    Value="$(_DataSetXmlSerializationSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"

@@ -106,8 +106,9 @@
 /test/dotnet-format.Tests @dotnet/roslyn-ide
 
 # Area: VMR & SourceBuild
-/.devcontainer/ @dotnet/source-build
+/.devcontainer/ @dotnet/source-build @dotnet/product-construction
 /eng/pipelines/ @dotnet/source-build @dotnet/product-construction
+/eng/DotNetBuild.props @dotnet/source-build @dotnet/product-construction
 /eng/SourceBuild* @dotnet/source-build
 /src/SourceBuild/ @dotnet/source-build @dotnet/product-construction
 /src/VirtualMonoRepo/ @dotnet/product-construction

@@ -8,6 +8,7 @@ In order to build and test the .NET Core Command-line Interface (CLI), you need 
 ### For Windows
 
 1. git (available from the [Git Website](http://www.git-scm.com/)) on the PATH.
+2. MSVC, C++ CMake Tools, and C++ ATL through the Visual Studio Installer.
 
 ### For Linux
 
@@ -15,7 +16,7 @@ In order to build and test the .NET Core Command-line Interface (CLI), you need 
 
 ### For macOS
 
-1. git (available from [Homebrew](https://www.google.com/search?client=firefox-b-1-d&q=homebrew) or the [Git Website](http://www.git-scm.com/)) on the PATH.
+1. git (available from [Homebrew](https://brew.sh) or the [Git Website](http://www.git-scm.com/)) on the PATH.
 
 ## Building
 
@@ -165,7 +166,7 @@ This should print `Hello World!`.
 
 ## Locked files
 
-If you see error like ` error MSB3021: Unable to copy file "toolset-tasks.dll" to "toolset-tasks.dll". The process cannot access the file 'toolset-tasks.dll' because it is being used by another process.`
+If you see error like ` error MSB3021: Unable to copy file "sdk-tasks.dll" to "sdk-tasks.dll". The process cannot access the file 'sdk-tasks.dll' because it is being used by another process.`
 
 You could run the following to stop all dotnet related processes
 
