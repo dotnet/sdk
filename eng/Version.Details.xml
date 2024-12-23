@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.24622.1">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.24622.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>3d78d072165f447b2205b4423deb184423e1c23b</Sha>
+      <Sha>eb374a75184688f1aac820f88f5a5be4f8c5288c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.24622.1">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.24622.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>3d78d072165f447b2205b4423deb184423e1c23b</Sha>
+      <Sha>eb374a75184688f1aac820f88f5a5be4f8c5288c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.24622.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.24622.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>3d78d072165f447b2205b4423deb184423e1c23b</Sha>
+      <Sha>eb374a75184688f1aac820f88f5a5be4f8c5288c</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.24620.10">
@@ -404,7 +404,7 @@
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
          one under source build. -->
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.DiaSymReader" Version="2.2.0-beta.24619.2">
+    <Dependency Name="Microsoft.DiaSymReader" Version="2.2.0-beta.24622.1">
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>ff1852196a042a124267a6e599d12da20d7ff65a</Sha>
     </Dependency>
@@ -467,7 +467,7 @@
       <SourceBuild RepoName="deployment-tools" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.2.0-beta.24619.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.2.0-beta.24622.1">
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>ff1852196a042a124267a6e599d12da20d7ff65a</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
