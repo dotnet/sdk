@@ -4,9 +4,9 @@
 
 When customers discover issues with the .NET SDK, we often need more information to see how exactly their scenarios differ from the (presumably working) mainline scenarios. This additional information often takes the form of a 'repro' or set of steps by which we can see the error ourselves and walk through what is happening as their scenario plays out and how it ultimately diverged from our expectations.
 
-Blindly executing unvetted customer code can be a security hazard, however, not just for the machine executing the code but for any machine on the same network and any service accessible using credentials they can access through those machines. In this way, a malicious actor can exfiltrate sensitive Microsoft data, including information about other Microsoft employees, proprietary code, or private customer data. They may even be able to take down a service or introduce further security bugs in shipping products. Indeed, the most common vector hackers use to gain access is through compromising one or more individual users with employee credentials. At Microsoft where security is paramount, we want to prevent such hacks.
+Blindly executing, or even just opening in an IDE like Visual Studio without intending to build, unvetted customer code can be a security hazard, however, not just for the machine executing the code but for any machine on the same network and any service accessible using credentials they can access through those machines. In this way, a malicious actor can exfiltrate sensitive Microsoft data, including information about other Microsoft employees, proprietary code, or private customer data. They may even be able to take down a service or introduce further security bugs in shipping products. Indeed, the most common vector hackers use to gain access is through compromising one or more individual users with employee credentials. At Microsoft where security is paramount, we want to prevent such hacks.
 
-This document contains recommended best practices on how to securely test users' code. They are arranged in order or security with the most secure at the top. This should also be the priority you should use to stay secure when executing code.
+This document contains recommended best practices on how to securely test users' code. They are arranged in order of security with the most secure at the top. This should also be the priority you should use to stay secure when executing code.
 
 ## Strategies for Staying Secure
 
@@ -17,7 +17,7 @@ MSBuild binary logs (binlogs) are structured data covering what happened during 
 To provide information to customers about collecting binlogs, direct them to:
 https://aka.ms/msbuild/binlog
 
-It is important to note, however, that binlogs often collect secrets as part of the information relevant to the build. A binlog of a simplified repro can work as well, but it may be difficult to create a simple repro. Customers are sometimes concerned (with good reason) about sharing binlogs of their real (or simplified) builds. If that is the case, or if the reported issue does not involve MSBuild, another option may be more relevant.
+It is important to note, however, that binlogs often collect secrets as part of the information relevant to the build. A binlog of a simplified repro can work as well, but it may be difficult to create a simple repro. Customers are sometimes concerned (with good reason) about sharing binlogs of their real (or simplified) builds. If so, they can attempt to redact secrets from their binlog, either via the [MSBuild Structured Log Viewer](https://msbuildlog.com/#redaction) or with [binlogtool](https://www.nuget.org/packages/binlogtool). If that isn't sufficient, or if the reported issue does not involve MSBuild, another option may be more relevant.
 
 ### Windows Sandbox
 
@@ -42,9 +42,16 @@ That said, this is a secure means for executing a customer's scenario, and it wo
 
 For Microsoft employees, [DevTestLab](https://ms.portal.azure.com/#browse/Microsoft.Compute%2FVirtualMachines) can help you create VMs.
 
+#### Docker
+
+As a corollary to using VMs to hide your machine from others, containers (notably Docker containers) are intended to create a small, self-contained environment in which to operate. They're cheaper to create than full VMs, though with more stringent resource limitations and some missing or altered functionality, they may not work for some scenarios. Even so, if they work, they can be a safe and cheaper option than creating a VM. Make sure to follow general best practices such as running in rootless mode if possible and avoiding signing in using your credentials.
+
 ### Read Code
 
-If none of the above methods work, it may be viable to read all customer code carefully to ensure that no part of it is risky or malicious.
+If none of the above methods work, it may be viable to read all customer code carefully to ensure that no part of it is risky or malicious. Many IDEs such as Visual Studio automatically run design-time builds when code is open. As a result, even just opening a malicious code base in Visual Studio can lead to exploits. Prefer an IDE that does not run design-time builds. Some examples include:
+1. Visual Studio Code (if no addons are installed)
+2. Notepad
+3. Emacs/Vim
 
 Some examples of specific patterns to watch out for that can cause issues include:
 1. PackageReferences. These download code from the internet and permit its execution locally. If you are unfamiliar with any package in a PackageReference, this is insecure.
@@ -64,8 +71,9 @@ If you discover that a customer provided a malicious project or solution, there 
 1. Most importantly, do not keep any vestige of the repro on your machine. Do not follow their steps.
 2. Add a note to the issue that it was malicious. Include this information in the title if possible.
 3. Delete the contents of the repro steps. (On GitHub, it can still be found by looking at your edit.)
-4. Report your finding to your manager and your security team.
-5. Depending on the severity of the issue, consider banning the user from GitHub.
+4. Report the infraction using https://aka.ms/reportitnow
+5. Report your finding to your manager and your security team.
+6. Depending on the severity of the issue, consider banning the user from GitHub.
 
 If you are external, you may not be able to follow all of these steps. Reach out to someone from our team to help facilitate doing all these.
 
