@@ -27,18 +27,6 @@ $$$"""
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-Function Call-DotnetComplete {
-    param($cursorPosition, $commandAst)
-
-    #TODO: get descriptions and labels and stuff from dynamic completions
-    $dynamicCompletions = @(
-        dotnet complete --position $cursorPosition $commandAst.ToString() | Foreach-Object {
-            [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-        }
-    )
-    return $dynamicCompletions
-}
-
 Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
@@ -59,13 +47,13 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
         writer.WriteLine();
         writer.Indent++;
 
-        writer.WriteLine("$completions = @(switch($command){");
-
+        writer.WriteLine("$completions = @()");
+        writer.WriteLine("switch ($command) {");
         writer.Indent++;
         GenerateSubcommandCompletions([], writer, command);
 
         writer.Indent--;
-        writer.WriteLine("})");
+        writer.WriteLine("}");
 
         // spacing is critical here - the open brace { must be directly adjacent to the Where member name, or else it's a pwsh syntax error
         writer.WriteLine("$completions.Where{ $_.CompletionText -like \"$wordToComplete*\" } | Sort-Object -Property ListItemText");
@@ -132,7 +120,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
             yield break;
         }
 
-        if (argument.GetType().GetGenericTypeDefinition() == typeof(DynamicArgument<int>).GetGenericTypeDefinition())
+        if (argument.GetType().IsGenericType && argument.GetType().GetGenericTypeDefinition() == typeof(DynamicArgument<int>).GetGenericTypeDefinition())
         {
             // if the argument is a not-static-friendly argument, we need to call into the app for completions
             // TODO: not yet supported for powershell
@@ -212,10 +200,26 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
 
         writer.WriteLine($"'{string.Join(";", commandPath)}' {{");
         writer.Indent++;
+        writer.WriteLine("$staticCompletions = @(");
+        writer.Indent++;
         foreach (var completion in completions)
         {
             writer.WriteLine(completion);
         }
+        writer.Indent--;
+        writer.WriteLine(")");
+
+        writer.WriteLine("$completions += $staticCompletions");
+
+        if (command.Arguments.Any(argument => argument.GetType().IsGenericType && argument.GetType().GetGenericTypeDefinition() == typeof(DynamicArgument<int>).GetGenericTypeDefinition()))
+        {
+            // generate a call into `dotnet complete` for dynamic argument completions
+            writer.WriteLine("$text = $commandAst.ToString()");
+            writer.WriteLine("$dotnetCompleteResults = @(dotnet complete --position $cursorPosition \"$text\") | Where-Object { $_ -NotMatch \"^-|^/\" }");
+            writer.WriteLine("$dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }");
+            writer.WriteLine("$completions += $dynamicCompletions");
+        }
+
         writer.WriteLine("break");
         writer.Indent--;
         writer.WriteLine("}");
