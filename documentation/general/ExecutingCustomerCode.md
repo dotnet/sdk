@@ -44,7 +44,7 @@ For Microsoft employees, [DevTestLab](https://ms.portal.azure.com/#browse/Micros
 
 #### Docker
 
-As a corollary to using VMs to hide your machine from others, containers (notably Docker containers) are intended to create a small, self-contained environment in which to operate. They're cheaper to create than full VMs, though with more stringent resource limitations and some missing or altered functionality, they may not work for some scenarios. Even so, if they work, they can be a safe and cheaper option than creating a VM. Make sure to follow general best practices such as running in rootless mode if possible and avoiding signing in using your credentials.
+As a corollary to using VMs to sequester the customer's scenario away from sensitive parts of your machine, containers (notably Docker containers) are intended to create a small, self-contained environment in which to operate. They're cheaper to create than full VMs, though with more stringent resource limitations and some missing or altered functionality, they may not work for some scenarios. Even so, if they work, they can be a safer and cheaper option than creating a VM. Make sure to follow general best practices such as running in rootless mode if possible and avoiding signing in using your credentials.
 
 ### Read Code
 
