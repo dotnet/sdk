@@ -207,13 +207,11 @@ namespace Microsoft.TemplateEngine.Cli
 
             foreach (string installArg in args.TemplatePackages)
             {
-                string[] splitByColons = installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries);
-                string[] splitByAt = installArg.Split('@', StringSplitOptions.RemoveEmptyEntries);
-                string[] split = splitByColons.Length > splitByAt.Length ? splitByColons : splitByAt;
+                string[] split = installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries).SelectMany(arg => arg.Split('@', StringSplitOptions.RemoveEmptyEntries)).ToArray();
                 string identifier = split[0];
                 string? version = split.Length > 1 ? split[1] : null;
 
-                if (splitByColons.Length > splitByAt.Length)
+                if (installArg.Contains("::"))
                 {
                     Reporter.Output.WriteLine(string.Format(LocalizableStrings.Colon_Separator_Deprecated, split[0], split[1]).Yellow());
                 }
