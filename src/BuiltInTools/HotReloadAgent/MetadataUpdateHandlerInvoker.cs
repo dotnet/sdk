@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.HotReload;
 
@@ -18,34 +19,71 @@ namespace Microsoft.DotNet.HotReload;
 #endif
 internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 {
-    internal sealed class RegisteredActions(IReadOnlyList<Action<Type[]?>> clearCache, IReadOnlyList<Action<Type[]?>> updateApplication)
+    internal delegate void ContentUpdateAction(StaticAssetUpdate update);
+    internal delegate void MetadataUpdateAction(Type[]? updatedTypes);
+
+    internal readonly struct UpdateHandler<TAction>(TAction action, MethodInfo method)
+        where TAction : Delegate
     {
-        public void Invoke(Type[] updatedTypes)
+        public TAction Action { get; } = action;
+        public MethodInfo Method { get; } = method;
+
+        public void ReportInvocation(AgentReporter reporter)
+            => reporter.Report(GetHandlerDisplayString(Method), AgentMessageSeverity.Verbose);
+    }
+
+    internal sealed class RegisteredActions(
+        IReadOnlyList<UpdateHandler<MetadataUpdateAction>> clearCacheHandlers,
+        IReadOnlyList<UpdateHandler<MetadataUpdateAction>> updateApplicationHandlers,
+        List<UpdateHandler<ContentUpdateAction>> updateContentHandlers)
+    {
+        public void MetadataUpdated(AgentReporter reporter, Type[] updatedTypes)
         {
-            foreach (var action in clearCache)
+            foreach (var handler in clearCacheHandlers)
             {
-                action(updatedTypes);
+                handler.ReportInvocation(reporter);
+                handler.Action(updatedTypes);
             }
 
-            foreach (var action in updateApplication)
+            foreach (var handler in updateApplicationHandlers)
             {
-                action(updatedTypes);
+                handler.ReportInvocation(reporter);
+                handler.Action(updatedTypes);
+            }
+        }
+
+        public void UpdateContent(AgentReporter reporter, StaticAssetUpdate update)
+        {
+            foreach (var handler in updateContentHandlers)
+            {
+                handler.ReportInvocation(reporter);
+                handler.Action(update);
             }
         }
 
         /// <summary>
         /// For testing.
         /// </summary>
-        internal IEnumerable<Action<Type[]?>> ClearCache => clearCache;
+        internal IEnumerable<UpdateHandler<MetadataUpdateAction>> ClearCacheHandlers => clearCacheHandlers;
 
         /// <summary>
         /// For testing.
         /// </summary>
-        internal IEnumerable<Action<Type[]?>> UpdateApplication => updateApplication;
+        internal IEnumerable<UpdateHandler<MetadataUpdateAction>> UpdateApplicationHandlers => updateApplicationHandlers;
+
+        /// <summary>
+        /// For testing.
+        /// </summary>
+        internal IEnumerable<UpdateHandler<ContentUpdateAction>> UpdateContentHandlers => updateContentHandlers;
     }
 
     private const string ClearCacheHandlerName = "ClearCache";
     private const string UpdateApplicationHandlerName = "UpdateApplication";
+    private const string UpdateContentHandlerName = "UpdateContent";
+    private const BindingFlags HandlerMethodBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+
+    private static readonly Type[] s_contentUpdateSignature = [typeof(string), typeof(bool), typeof(string), typeof(byte[])];
+    private static readonly Type[] s_metadataUpdateSignature = [typeof(Type[])];
 
     private RegisteredActions? _actions;
 
@@ -55,27 +93,47 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
     internal void Clear()
         => Interlocked.Exchange(ref _actions, null);
 
+    private RegisteredActions GetActions()
+    {
+        // Defer discovering metadata updata handlers until after hot reload deltas have been applied.
+        // This should give enough opportunity for AppDomain.GetAssemblies() to be sufficiently populated.
+        var actions = _actions;
+        if (actions == null)
+        {
+            Interlocked.CompareExchange(ref _actions, GetUpdateHandlerActions(), null);
+            actions = _actions;
+        }
+
+        return actions;
+    }
+
     /// <summary>
-    /// Invokes all registerd handlers.
+    /// Invokes all registered mtadata update handlers.
     /// </summary>
-    internal void Invoke(Type[] updatedTypes)
+    internal void MetadataUpdated(Type[] updatedTypes)
     {
         try
         {
-            // Defer discovering metadata updata handlers until after hot reload deltas have been applied.
-            // This should give enough opportunity for AppDomain.GetAssemblies() to be sufficiently populated.
-            var actions = _actions;
-            if (actions == null)
-            {
-                Interlocked.CompareExchange(ref _actions, GetMetadataUpdateHandlerActions(), null);
-                actions = _actions;
-            }
-
             reporter.Report("Invoking metadata update handlers.", AgentMessageSeverity.Verbose);
 
-            actions.Invoke(updatedTypes);
+            GetActions().MetadataUpdated(reporter, updatedTypes);
+        }
+        catch (Exception e)
+        {
+            reporter.Report(e.ToString(), AgentMessageSeverity.Warning);
+        }
+    }
 
-            reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);
+    /// <summary>
+    /// Invokes all registered content update handlers.
+    /// </summary>
+    internal void ContentUpdated(StaticAssetUpdate update)
+    {
+        try
+        {
+            reporter.Report("Invoking content update handlers.", AgentMessageSeverity.Verbose);
+
+            GetActions().UpdateContent(reporter, update);
         }
         catch (Exception e)
         {
@@ -116,67 +174,111 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
         }
     }
 
-    public RegisteredActions GetMetadataUpdateHandlerActions()
-        => GetMetadataUpdateHandlerActions(GetHandlerTypes());
+    public RegisteredActions GetUpdateHandlerActions()
+        => GetUpdateHandlerActions(GetHandlerTypes());
 
     /// <summary>
     /// Internal for testing.
     /// </summary>
-    internal RegisteredActions GetMetadataUpdateHandlerActions(IEnumerable<Type> handlerTypes)
+    internal RegisteredActions GetUpdateHandlerActions(IEnumerable<Type> handlerTypes)
     {
-        var clearCacheActions = new List<Action<Type[]?>>();
-        var updateApplicationActions = new List<Action<Type[]?>>();
+        var clearCacheHandlers = new List<UpdateHandler<MetadataUpdateAction>>();
+        var applicationUpdateHandlers = new List<UpdateHandler<MetadataUpdateAction>>();
+        var contentUpdateHandlers = new List<UpdateHandler<ContentUpdateAction>>();
 
         foreach (var handlerType in handlerTypes)
         {
             bool methodFound = false;
 
-            if (GetUpdateMethod(handlerType, ClearCacheHandlerName) is MethodInfo clearCache)
+            if (GetMetadataUpdateMethod(handlerType, ClearCacheHandlerName) is MethodInfo clearCache)
             {
-                clearCacheActions.Add(CreateAction(clearCache));
+                clearCacheHandlers.Add(CreateMetadataUpdateAction(clearCache));
                 methodFound = true;
             }
 
-            if (GetUpdateMethod(handlerType, UpdateApplicationHandlerName) is MethodInfo updateApplication)
+            if (GetMetadataUpdateMethod(handlerType, UpdateApplicationHandlerName) is MethodInfo updateApplication)
             {
-                updateApplicationActions.Add(CreateAction(updateApplication));
+                applicationUpdateHandlers.Add(CreateMetadataUpdateAction(updateApplication));
+                methodFound = true;
+            }
+
+            if (GetContentUpdateMethod(handlerType, UpdateContentHandlerName) is MethodInfo updateContent)
+            {
+                contentUpdateHandlers.Add(CreateContentUpdateAction(updateContent));
                 methodFound = true;
             }
 
             if (!methodFound)
             {
                 reporter.Report(
-                    $"Expected to find a static method '{ClearCacheHandlerName}' or '{UpdateApplicationHandlerName}' on type '{handlerType.AssemblyQualifiedName}' but neither exists.",
+                    $"Expected to find a static method '{ClearCacheHandlerName}', '{UpdateApplicationHandlerName}' or '{UpdateContentHandlerName}' on type '{handlerType.AssemblyQualifiedName}' but neither exists.",
                     AgentMessageSeverity.Warning);
             }
         }
 
-        return new RegisteredActions(clearCacheActions, updateApplicationActions);
+        return new RegisteredActions(clearCacheHandlers, applicationUpdateHandlers, contentUpdateHandlers);
 
-        Action<Type[]?> CreateAction(MethodInfo update)
+        UpdateHandler<MetadataUpdateAction> CreateMetadataUpdateAction(MethodInfo method)
         {
-            var action = (Action<Type[]?>)update.CreateDelegate(typeof(Action<Type[]?>));
-            return types =>
+            var action = (MetadataUpdateAction)method.CreateDelegate(typeof(MetadataUpdateAction));
+            return new(types =>
             {
                 try
                 {
                     action(types);
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    reporter.Report($"Exception from '{action}': {ex}", AgentMessageSeverity.Warning);
+                    ReportException(e, method);
                 }
-            };
+            }, method);
         }
 
-        MethodInfo? GetUpdateMethod(Type handlerType, string name)
+        UpdateHandler<ContentUpdateAction> CreateContentUpdateAction(MethodInfo method)
         {
-            if (handlerType.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, binder: null, [typeof(Type[])], modifiers: null) is MethodInfo updateMethod &&
+            var action = (Action<string, bool, string, byte[]>)method.CreateDelegate(typeof(Action<string, bool, string, byte[]>));
+            return new(update =>
+            {
+                try
+                {
+                    action(update.AssemblyName, update.IsApplicationProject, update.RelativePath, update.Contents);
+                }
+                catch (Exception e)
+                {
+                    ReportException(e, method);
+                }
+            }, method);
+        }
+
+        void ReportException(Exception e, MethodInfo method)
+            => reporter.Report($"Exception from '{GetHandlerDisplayString(method)}': {e}", AgentMessageSeverity.Warning);
+
+        MethodInfo? GetMetadataUpdateMethod(Type handlerType, string name)
+        {
+            if (handlerType.GetMethod(name, HandlerMethodBindingFlags, binder: null, s_metadataUpdateSignature, modifiers: null) is MethodInfo updateMethod &&
                 updateMethod.ReturnType == typeof(void))
             {
                 return updateMethod;
             }
 
+            ReportSignatureMismatch(handlerType, name);
+            return null;
+        }
+
+        MethodInfo? GetContentUpdateMethod(Type handlerType, string name)
+        {
+            if (handlerType.GetMethod(name, HandlerMethodBindingFlags, binder: null, s_contentUpdateSignature, modifiers: null) is MethodInfo updateMethod &&
+                updateMethod.ReturnType == typeof(void))
+            {
+                return updateMethod;
+            }
+
+            ReportSignatureMismatch(handlerType, name);
+            return null;
+        }
+
+        void ReportSignatureMismatch(Type handlerType, string name)
+        {
             foreach (MethodInfo method in handlerType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
             {
                 if (method.Name == name)
@@ -185,10 +287,11 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
                     break;
                 }
             }
-
-            return null;
         }
     }
+
+    private static string GetHandlerDisplayString(MethodInfo method)
+        => $"{method.DeclaringType!.FullName}.{method.Name}";
 
     private IList<CustomAttributeData> TryGetCustomAttributesData(Assembly assembly)
     {

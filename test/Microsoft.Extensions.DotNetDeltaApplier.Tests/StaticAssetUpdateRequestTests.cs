@@ -5,27 +5,28 @@ using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class StaticAssetPayloadTests
+public class StaticAssetUpdateRequestTests
 {
     [Fact]
     public async Task Roundtrip()
     {
-        var initial = new StaticAssetPayload(
+        var initial = new StaticAssetUpdateRequest(
             assemblyName: "assembly name",
             relativePath: "some path",
             [1, 2, 3],
-            isApplicationProject: true);
+            isApplicationProject: true,
+            responseLoggingLevel: ResponseLoggingLevel.WarningsAndErrors);
 
         using var stream = new MemoryStream();
         await initial.WriteAsync(stream, CancellationToken.None);
 
         stream.Position = 0;
-        var read = await StaticAssetPayload.ReadAsync(stream, CancellationToken.None);
+        var read = await StaticAssetUpdateRequest.ReadAsync(stream, CancellationToken.None);
 
         AssertEqual(initial, read);
     }
 
-    private static void AssertEqual(StaticAssetPayload initial, StaticAssetPayload read)
+    private static void AssertEqual(StaticAssetUpdateRequest initial, StaticAssetUpdateRequest read)
     {
         Assert.Equal(initial.AssemblyName, read.AssemblyName);
         Assert.Equal(initial.RelativePath, read.RelativePath);
