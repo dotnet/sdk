@@ -530,40 +530,40 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public ITemporaryDirectory CreateTemporaryDirectory()
             {
-                TemporaryDirectoryMock temporaryDirectoryMock = new(_files?.TemporaryFolder);
+                TemporaryDirectoryMock temporaryDirectoryMock = new(_files?.TemporaryFolder ?? string.Empty);
                 CreateDirectory(temporaryDirectoryMock.DirectoryPath);
                 return temporaryDirectoryMock;
             }
 
-            public IEnumerable<string>? EnumerateDirectories(string path)
+            public IEnumerable<string> EnumerateDirectories(string path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
                 return _files?.EnumerateDirectory(path,
                     subs => subs.Where(s => s.Value is DirectoryNode)
-                        .Select(s => Path.Combine(path, s.Key)));
+                        .Select(s => Path.Combine(path, s.Key))) ?? Enumerable.Empty<string>();
             }
 
-            public IEnumerable<string>? EnumerateFiles(string path)
+            public IEnumerable<string> EnumerateFiles(string path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
                 return _files?.EnumerateDirectory(path,
                     subs => subs.Where(s => s.Value is FileNode)
-                        .Select(s => Path.Combine(path, s.Key)));
+                        .Select(s => Path.Combine(path, s.Key))) ?? Enumerable.Empty<string>();
             }
 
-            public IEnumerable<string>? EnumerateFileSystemEntries(string path)
+            public IEnumerable<string> EnumerateFileSystemEntries(string path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
                 return _files?.EnumerateDirectory(path,
-                    subs => subs.Select(s => Path.Combine(path, s.Key)));
+                    subs => subs.Select(s => Path.Combine(path, s.Key))) ?? Enumerable.Empty<string>();
             }
 
-            public string? GetCurrentDirectory()
+            public string GetCurrentDirectory()
             {
-                return _files?.WorkingDirectory;
+                return _files?.WorkingDirectory ?? string.Empty;
             }
 
             public void CreateDirectory(string? path)
@@ -673,14 +673,14 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class TemporaryDirectoryMock : ITemporaryDirectoryMock
         {
-            public TemporaryDirectoryMock(string? temporaryDirectory)
+            public TemporaryDirectoryMock(string temporaryDirectory)
             {
                 DirectoryPath = temporaryDirectory;
             }
 
             public bool DisposedTemporaryDirectory { get; private set; }
 
-            public string? DirectoryPath { get; }
+            public string DirectoryPath { get; }
 
             public void Dispose()
             {
