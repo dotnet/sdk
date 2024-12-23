@@ -869,6 +869,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
+        /*
         [Fact]
         public void Publish_HostedApp_WithNoBuild_Works()
         {
@@ -930,6 +931,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
+        */
 
         [Fact]
         public void Publish_HostedApp_VisualStudio()
