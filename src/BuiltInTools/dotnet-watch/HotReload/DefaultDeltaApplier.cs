@@ -7,6 +7,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -35,9 +36,9 @@ namespace Microsoft.DotNet.Watch
 
                     // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
 
-                    var capabilities = ClientInitializationPayload.Read(_pipe).Capabilities;
+                    var capabilities = (await ClientInitializationPayload.ReadAsync(_pipe, cancellationToken)).Capabilities;
                     Reporter.Verbose($"Capabilities: '{capabilities}'");
-                    return capabilities.Split(' ').ToImmutableArray();
+                    return [.. capabilities.Split(' ')];
                 }
                 catch (EndOfStreamException)
                 {
@@ -148,7 +149,11 @@ namespace Microsoft.DotNet.Watch
                     return false;
                 }
 
-                ReportLog(Reporter, UpdatePayload.ReadLog(_pipe));
+                await foreach (var (message, severity) in UpdatePayload.ReadLogAsync(_pipe, cancellationToken))
+                {
+                    ReportLogEntry(Reporter, message, severity);
+                }
+
                 return true;
             }
             finally

@@ -3,6 +3,7 @@
 
 using System.IO.Pipes;
 using Microsoft.DotNet.Watch;
+using Microsoft.DotNet.HotReload;
 
 /// <summary>
 /// The runtime startup hook looks for top-level type named "StartupHook".
@@ -58,7 +59,7 @@ internal sealed class StartupHook
                 agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
 
                 var initPayload = new ClientInitializationPayload(agent.Capabilities);
-                initPayload.Write(pipeClient);
+                await initPayload.WriteAsync(pipeClient, CancellationToken.None);
 
                 while (pipeClient.IsConnected)
                 {
@@ -70,8 +71,8 @@ internal sealed class StartupHook
                     var logEntries = agent.GetAndClearLogEntries(update.ResponseLoggingLevel);
 
                     // response:
-                    pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
-                    UpdatePayload.WriteLog(pipeClient, logEntries);
+                    await pipeClient.WriteAsync((byte)UpdatePayload.ApplySuccessValue, CancellationToken.None);
+                    await UpdatePayload.WriteLogAsync(pipeClient, logEntries, CancellationToken.None);
                 }
             }
             catch (Exception ex)

@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -27,24 +28,21 @@ namespace Microsoft.DotNet.Watch
 
         public abstract void Dispose();
 
-        public static void ReportLog(IReporter reporter, IEnumerable<(string message, AgentMessageSeverity severity)> log)
+        public static void ReportLogEntry(IReporter reporter, string message, AgentMessageSeverity severity)
         {
-            foreach (var (message, severity) in log)
+            switch (severity)
             {
-                switch (severity)
-                {
-                    case AgentMessageSeverity.Error:
-                        reporter.Error(message);
-                        break;
+                case AgentMessageSeverity.Error:
+                    reporter.Error(message);
+                    break;
 
-                    case AgentMessageSeverity.Warning:
-                        reporter.Warn(message, emoji: "⚠");
-                        break;
+                case AgentMessageSeverity.Warning:
+                    reporter.Warn(message, emoji: "⚠");
+                    break;
 
-                    default:
-                        reporter.Verbose(message, emoji: "🕵️");
-                        break;
-                }
+                default:
+                    reporter.Verbose(message, emoji: "🕵️");
+                    break;
             }
         }
     }

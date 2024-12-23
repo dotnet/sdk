@@ -3,18 +3,27 @@
 
 using System.Buffers;
 using System.Collections.Immutable;
+using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, Version? targetFrameworkVersion) : SingleProcessDeltaApplier(reporter)
+    internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : SingleProcessDeltaApplier(reporter)
     {
-        private const string DefaultCapabilities60 = "Baseline";
-        private const string DefaultCapabilities70 = "Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes";
-        private const string DefaultCapabilities80 = "Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType";
+        private static readonly ImmutableArray<string> s_defaultCapabilities60 =
+            ["Baseline"];
 
-        private ImmutableArray<string> _cachedCapabilities;
-        private readonly SemaphoreSlim _capabilityRetrievalSemaphore = new(initialCount: 1);
+        private static readonly ImmutableArray<string> s_defaultCapabilities70 =
+            ["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "NewTypeDefinition", "ChangeCustomAttributes"];
+
+        private static readonly ImmutableArray<string> s_defaultCapabilities80 =
+            ["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "NewTypeDefinition", "ChangeCustomAttributes",
+             "AddInstanceFieldToExistingType", "GenericAddMethodToExistingType", "GenericUpdateMethod", "UpdateParameters", "GenericAddFieldToExistingType"];
+
+        private static readonly ImmutableArray<string> s_defaultCapabilities90 =
+            s_defaultCapabilities80;
+
         private int _updateId;
 
         public override void Dispose()
@@ -31,109 +40,31 @@ namespace Microsoft.DotNet.Watch
             // Alternatively, we could inject agent into blazor-devserver.dll and establish a connection on the named pipe.
             => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
 
-        public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
+        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
-            var cachedCapabilities = _cachedCapabilities;
-            if (!cachedCapabilities.IsDefault)
+            var capabilities = project.GetWebAssemblyCapabilities();
+
+            if (capabilities.IsEmpty)
             {
-                return cachedCapabilities;
-            }
+                var targetFramework = project.GetTargetFrameworkVersion();
 
-            await _capabilityRetrievalSemaphore.WaitAsync(cancellationToken);
-            try
-            {
-                if (_cachedCapabilities.IsDefault)
+                Reporter.Verbose($"Using capabilities based on target framework: '{targetFramework}'.");
+
+                capabilities = targetFramework?.Major switch
                 {
-                    _cachedCapabilities = await RetrieveAsync(cancellationToken);
-                }
-            }
-            finally
-            {
-                _capabilityRetrievalSemaphore.Release();
-            }
-
-            return _cachedCapabilities;
-
-            async Task<ImmutableArray<string>> RetrieveAsync(CancellationToken cancellationToken)
-            {
-                var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
-
-                try
-                {
-                    Reporter.Verbose("Connecting to the browser.");
-
-                    await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
-
-                    string capabilities;
-                    if (browserRefreshServer.Options.TestFlags.HasFlag(TestFlags.MockBrowser))
-                    {
-                        // When testing return default capabilities without connecting to an actual browser.
-                        capabilities = GetDefaultCapabilities(targetFrameworkVersion);
-                    }
-                    else
-                    {
-                        string? capabilityString = null;
-
-                        await browserRefreshServer.SendAndReceiveAsync(
-                            request: _ => default(JsonGetApplyUpdateCapabilitiesRequest),
-                            response: (value, reporter) =>
-                            {
-                                var str = Encoding.UTF8.GetString(value);
-                                if (str.StartsWith('!'))
-                                {
-                                    reporter.Verbose($"Exception while reading WASM runtime capabilities: {str[1..]}");
-                                }
-                                else if (str.Length == 0)
-                                {
-                                    reporter.Verbose($"Unable to read WASM runtime capabilities");
-                                }
-                                else if (capabilityString == null)
-                                {
-                                    capabilityString = str;
-                                }
-                                else if (capabilityString != str)
-                                {
-                                    reporter.Verbose($"Received different capabilities from different browsers:{Environment.NewLine}'{str}'{Environment.NewLine}'{capabilityString}'");
-                                }
-                            },
-                            cancellationToken);
-
-                        if (capabilityString != null)
-                        {
-                            capabilities = capabilityString;
-                        }
-                        else
-                        {
-                            capabilities = GetDefaultCapabilities(targetFrameworkVersion);
-                            Reporter.Verbose($"Falling back to default WASM capabilities: '{capabilities}'");
-                        }
-                    }
-
-                    // Capabilities are expressed a space-separated string.
-                    // e.g. https://github.com/dotnet/runtime/blob/14343bdc281102bf6fffa1ecdd920221d46761bc/src/coreclr/System.Private.CoreLib/src/System/Reflection/Metadata/AssemblyExtensions.cs#L87
-                    return capabilities.Split(' ').ToImmutableArray();
-                }
-                catch (Exception e) when (!cancellationToken.IsCancellationRequested)
-                {
-                    Reporter.Error($"Failed to read capabilities: {e.Message}");
-
-                    // Do not attempt to retrieve capabilities again if it fails once, unless the operation is canceled.
-                    return [];
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer);
-                }
-            }
-
-            static string GetDefaultCapabilities(Version? targetFrameworkVersion)
-                => targetFrameworkVersion?.Major switch
-                {
-                    >= 8 => DefaultCapabilities80,
-                    >= 7 => DefaultCapabilities70,
-                    >= 6 => DefaultCapabilities60,
-                    _ => string.Empty,
+                    9 => s_defaultCapabilities90,
+                    8 => s_defaultCapabilities80,
+                    7 => s_defaultCapabilities70,
+                    6 => s_defaultCapabilities60,
+                    _ => [],
                 };
+            }
+            else
+            {
+                Reporter.Verbose($"Project specifies capabilities.");
+            }
+
+            return Task.FromResult(capabilities);
         }
 
         public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
@@ -188,7 +119,10 @@ namespace Microsoft.DotNet.Watch
                         anyFailure = true;
                     }
 
-                    ReportLog(reporter, data.Log.Select(entry => (entry.Message, (AgentMessageSeverity)entry.Severity)));
+                    foreach (var entry in data.Log)
+                    {
+                        ReportLogEntry(reporter, entry.Message, (AgentMessageSeverity)entry.Severity);
+                    }
                 },
                 cancellationToken);
 

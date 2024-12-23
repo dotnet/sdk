@@ -3,14 +3,13 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.Watch
 {
     internal sealed partial class HotReloadDotNetWatcher : Watcher
     {
-        private static readonly DateTime s_fileNotExistFileTime = DateTime.FromFileTime(0);
-
         private readonly IConsole _console;
         private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
         private readonly RestartPrompt? _rudeEditRestartPrompt;
@@ -76,7 +75,7 @@ namespace Microsoft.DotNet.Watch
                 Task<ImmutableList<ChangedFile>>? fileWatcherTask = null;
                 IRuntimeProcessLauncher? runtimeProcessLauncher = null;
                 CompilationHandler? compilationHandler = null;
-                Action<string, ChangeKind>? fileChangedCallback = null;
+                Action<ChangedPath>? fileChangedCallback = null;
 
                 try
                 {
@@ -99,13 +98,16 @@ namespace Microsoft.DotNet.Watch
                         runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
                         Context.Reporter.Verbose("Using Aspire process launcher.");
                     }
-                    
+
                     await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
                     compilationHandler = new CompilationHandler(Context.Reporter);
                     var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
+                    var outputDirectories = GetProjectOutputDirectories(evaluationResult.ProjectGraph);
+                    ReportOutputDirectories(outputDirectories);
+                    var changeFilter = new Predicate<ChangedPath>(change => AcceptChange(change, evaluationResult, outputDirectories));
 
                     var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
@@ -122,8 +124,7 @@ namespace Microsoft.DotNet.Watch
                     if (!await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken))
                     {
                         // error has been reported:
-                        waitForFileChangeBeforeRestarting = false;
-                        return;
+                        continue;
                     }
 
                     rootRunningProject = await projectLauncher.TryLaunchProcessAsync(
@@ -167,7 +168,6 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    var buildCompletionTime = DateTime.UtcNow;
                     await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
 
                     // Solution must be initialized after we load the solution but before we start watching for file changes to avoid race condition
@@ -183,17 +183,14 @@ namespace Microsoft.DotNet.Watch
 
                     fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
 
-                    var changedFilesAccumulator = ImmutableList<ChangedFile>.Empty;
+                    var changedFilesAccumulator = ImmutableList<ChangedPath>.Empty;
 
-                    void FileChangedCallback(string path, ChangeKind kind)
+                    void FileChangedCallback(ChangedPath change)
                     {
-                        if (TryGetChangedFile(evaluationResult.Files, buildCompletionTime, path, kind) is { } changedFile)
+                        if (changeFilter(change))
                         {
-                            ImmutableInterlocked.Update(ref changedFilesAccumulator, changedFiles => changedFiles.Add(changedFile));
-                        }
-                        else
-                        {
-                            Context.Reporter.Verbose($"Change ignored: {kind} '{path}'.");
+                            Context.Reporter.Verbose($"File change: {change.Kind} '{change.Path}'.");
+                            ImmutableInterlocked.Update(ref changedFilesAccumulator, changedPaths => changedPaths.Add(change));
                         }
                     }
 
@@ -202,13 +199,14 @@ namespace Microsoft.DotNet.Watch
                     ReportWatchingForChanges();
 
                     // Hot Reload loop - exits when the root process needs to be restarted.
+                    bool extendTimeout = false;
                     while (true)
                     {
                         try
                         {
                             // Use timeout to batch file changes. If the process doesn't exit within the given timespan we'll check
                             // for accumulated file changes. If there are any we attempt Hot Reload. Otherwise we come back here to wait again.
-                            _ = await rootRunningProject.RunningProcess.WaitAsync(TimeSpan.FromMilliseconds(50), iterationCancellationToken);
+                            _ = await rootRunningProject.RunningProcess.WaitAsync(TimeSpan.FromMilliseconds(extendTimeout ? 200 : 50), iterationCancellationToken);
 
                             // Process exited: cancel the iteration, but wait for a file change before starting a new one
                             waitForFileChangeBeforeRestarting = true;
@@ -225,6 +223,16 @@ namespace Microsoft.DotNet.Watch
                             waitForFileChangeBeforeRestarting = false;
                             break;
                         }
+
+                        // If the changes include addition/deletion wait a little bit more for possible matching deletion/addition.
+                        // This eliminates reevaluations caused by teared add + delete of a temp file or a move of a file.
+                        if (!extendTimeout && changedFilesAccumulator.Any(change => change.Kind is ChangeKind.Add or ChangeKind.Delete))
+                        {
+                            extendTimeout = true;
+                            continue;
+                        }
+
+                        extendTimeout = false;
 
                         var changedFiles = await CaptureChangedFilesSnapshot(rebuiltProjects: null);
                         if (changedFiles is [])
@@ -320,7 +328,7 @@ namespace Microsoft.DotNet.Watch
                                 iterationCancellationToken.ThrowIfCancellationRequested();
 
                                 // pause accumulating file changes during build:
-                                fileWatcher.OnFileChange -= fileChangedCallback;
+                                fileWatcher.SuppressEvents = true;
                                 try
                                 {
                                     var buildResults = await Task.WhenAll(
@@ -333,18 +341,16 @@ namespace Microsoft.DotNet.Watch
                                 }
                                 finally
                                 {
-                                    fileWatcher.OnFileChange += fileChangedCallback;
+                                    fileWatcher.SuppressEvents = false;
                                 }
 
                                 iterationCancellationToken.ThrowIfCancellationRequested();
 
                                 _ = await fileWatcher.WaitForFileChangeAsync(
+                                    changeFilter,
                                     startedWatching: () => Context.Reporter.Report(MessageDescriptor.FixBuildError),
                                     shutdownCancellationToken);
                             }
-
-                            // Update build completion time, so that file changes caused by the rebuild do not affect our file watcher:
-                            buildCompletionTime = DateTime.UtcNow;
 
                             // Changes made since last snapshot of the accumulator shouldn't be included in next Hot Reload update.
                             // Apply them to the workspace.
@@ -379,20 +385,44 @@ namespace Microsoft.DotNet.Watch
 
                         async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableDictionary<ProjectId, string>? rebuiltProjects)
                         {
-                            var changedFiles = Interlocked.Exchange(ref changedFilesAccumulator, []);
-                            if (changedFiles is [])
+                            var changedPaths = Interlocked.Exchange(ref changedFilesAccumulator, []);
+                            if (changedPaths is [])
                             {
                                 return [];
                             }
 
+                            // Note:
+                            // It is possible that we could have received multiple changes for a file that should cancel each other (such as Delete + Add),
+                            // but they end up split into two snapshots and we will interpret them as two separate Delete and Add changes that trigger
+                            // two sets of Hot Reload updates. Hence the normalization is best effort as we can't predict future.
+
+                            var changedFiles = NormalizePathChanges(changedPaths)
+                                .Select(changedPath =>
+                                {
+                                    if (evaluationResult.Files.TryGetValue(changedPath.Path, out var existingFileItem))
+                                    {
+                                        // On macOS may report Update followed by Add when a new file is created or just updated.
+                                        // We normalize Update + Add to just Add above.
+                                        // To distinguish between an addition and an update we check if the file exists.
+                                        var changeKind = changedPath.Kind == ChangeKind.Add ? ChangeKind.Update : changedPath.Kind;
+
+                                        return new ChangedFile(existingFileItem, changeKind);
+                                    }
+
+                                    return new ChangedFile(
+                                        new FileItem() { FilePath = changedPath.Path, ContainingProjectPaths = [] },
+                                        ChangeKind.Add);
+                                })
+                                .ToImmutableList();
+
                             // When a new file is added we need to run design-time build to find out
                             // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
                             // We don't need to rebuild and restart the application though.
-                            var hasAddedFile = changedFiles.Any(f => f.Change is ChangeKind.Add);
+                            var hasAddedFile = changedFiles.Any(f => f.Kind is ChangeKind.Add);
 
                             if (hasAddedFile)
                             {
-                                Context.Reporter.Verbose("File addition triggered re-evaluation.");
+                                Context.Reporter.Report(MessageDescriptor.FileAdditionTriggeredReEvaluation);
 
                                 evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
 
@@ -420,7 +450,7 @@ namespace Microsoft.DotNet.Watch
                                 // and be included in the next Hot Reload change set.
                                 var rebuiltProjectPaths = rebuiltProjects.Values.ToHashSet();
 
-                                var newAccumulator = ImmutableList<ChangedFile>.Empty;
+                                var newAccumulator = ImmutableList<ChangedPath>.Empty;
                                 var newChangedFiles = ImmutableList<ChangedFile>.Empty;
 
                                 foreach (var file in changedFiles)
@@ -431,7 +461,7 @@ namespace Microsoft.DotNet.Watch
                                     }
                                     else
                                     {
-                                        newAccumulator = newAccumulator.Add(file);
+                                        newAccumulator = newAccumulator.Add(new ChangedPath(file.Item.FilePath, file.Kind));
                                     }
                                 }
 
@@ -454,6 +484,11 @@ namespace Microsoft.DotNet.Watch
                 catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
                 {
                     // start next iteration unless shutdown is requested
+                }
+                catch (Exception) when ((waitForFileChangeBeforeRestarting = false) == true)
+                {
+                    // unreachable
+                    throw new InvalidOperationException();
                 }
                 finally
                 {
@@ -533,77 +568,181 @@ namespace Microsoft.DotNet.Watch
                 fileWatcher.WatchContainingDirectories([RootFileSetFactory.RootProjectFile]);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
+                    acceptChange: change => AcceptChange(change),
                     startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                     cancellationToken);
             }
         }
 
-        private ChangedFile? TryGetChangedFile(IReadOnlyDictionary<string, FileItem> fileSet, DateTime buildCompletionTime, string path, ChangeKind kind)
+        private bool AcceptChange(ChangedPath change, EvaluationResult evaluationResult, IReadOnlySet<string> outputDirectories)
         {
+            var (path, kind) = change;
+
+            // Handle changes to files that are known to be project build inputs from its evaluation.
+            if (evaluationResult.Files.ContainsKey(path))
+            {
+                return true;
+            }
+
+            // Ignore other changes to output and intermediate output directories.
+            //
+            // Unsupported scenario:
+            // - msbuild target adds source files to intermediate output directory and Compile items
+            //   based on the content of non-source file.
+            //
+            // On the other hand, changes to source files produced by source generators will be registered
+            // since the changes to additional file will trigger workspace update, which will trigger the source generator.
+            if (PathUtilities.ContainsPath(outputDirectories, path))
+            {
+                Context.Reporter.Report(MessageDescriptor.IgnoringChangeInOutputDirectory, kind, path);
+                return false;
+            }
+
+            return AcceptChange(change);
+        }
+
+        private bool AcceptChange(ChangedPath change)
+        {
+            var (path, kind) = change;
+
             // only handle file changes:
             if (Directory.Exists(path))
             {
-                return null;
+                return false;
             }
 
-            if (kind != ChangeKind.Delete)
+            if (PathUtilities.GetContainingDirectories(path).FirstOrDefault(IsHiddenDirectory) is { } containingHiddenDir)
+            {
+                Context.Reporter.Report(MessageDescriptor.IgnoringChangeInHiddenDirectory, containingHiddenDir, kind, path);
+                return false;
+            }
+
+            return true;
+        }
+
+        // Directory name starts with '.' on Unix is considered hidden.
+        // Apply the same convention on Windows as well (instead of checking for hidden attribute).
+        // This is consistent with SDK rules for default item exclusions:
+        // https://github.com/dotnet/sdk/blob/124be385f90f2c305dde2b817cb470e4d11d2d6b/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.DefaultItems.targets#L42
+        private static bool IsHiddenDirectory(string dir)
+            => Path.GetFileName(dir).StartsWith('.');
+
+        private static IReadOnlySet<string> GetProjectOutputDirectories(ProjectGraph projectGraph)
+        {
+            // TODO: https://github.com/dotnet/sdk/issues/45539
+            // Consider evaluating DefaultItemExcludes and DefaultExcludesInProjectFolder msbuild properties using
+            // https://github.com/dotnet/msbuild/blob/37eb419ad2c986ac5530292e6ee08e962390249e/src/Build/Globbing/MSBuildGlob.cs
+            // to determine which directories should be excluded.
+
+            var projectOutputDirectories = new HashSet<string>(PathUtilities.OSSpecificPathComparer);
+
+            foreach (var projectNode in projectGraph.ProjectNodes)
+            {
+                TryAdd(projectNode.GetOutputDirectory());
+                TryAdd(projectNode.GetIntermediateOutputDirectory());
+            }
+
+            return projectOutputDirectories;
+
+            void TryAdd(string? dir)
             {
                 try
                 {
-                    // Do not report changes to files that happened during build:
-                    var creationTime = File.GetCreationTimeUtc(path);
-                    var writeTime = File.GetLastWriteTimeUtc(path);
+                    if (dir != null)
+                    {
+                        // msbuild properties may use '\' as a directory separator even on Unix.
+                        // GetFullPath does not normalize '\' to '/' on Unix.
+                        if (Path.DirectorySeparatorChar == '/')
+                        {
+                            dir = dir.Replace('\\', '/');
+                        }
 
-                    if (creationTime == s_fileNotExistFileTime || writeTime == s_fileNotExistFileTime)
-                    {
-                        // file might have been deleted since we received the event
-                        kind = ChangeKind.Delete;
-                    }
-                    else if (creationTime.Ticks < buildCompletionTime.Ticks && writeTime.Ticks < buildCompletionTime.Ticks)
-                    {
-                        Context.Reporter.Verbose(
-                            $"Ignoring file change during build: {kind} '{path}' " +
-                            $"(created {FormatTimestamp(creationTime)} and written {FormatTimestamp(writeTime)} before {FormatTimestamp(buildCompletionTime)}).");
-
-                        return null;
-                    }
-                    else if (writeTime > creationTime)
-                    {
-                        Context.Reporter.Verbose($"File change: {kind} '{path}' (written {FormatTimestamp(writeTime)} after {FormatTimestamp(buildCompletionTime)}).");
-                    }
-                    else
-                    {
-                        Context.Reporter.Verbose($"File change: {kind} '{path}' (created {FormatTimestamp(creationTime)} after {FormatTimestamp(buildCompletionTime)}).");
+                        projectOutputDirectories.Add(Path.TrimEndingDirectorySeparator(Path.GetFullPath(dir)));
                     }
                 }
-                catch (Exception e)
+                catch
                 {
-                    Context.Reporter.Verbose($"Ignoring file '{path}' due to access error: {e.Message}.");
-                    return null;
+                    // ignore
                 }
             }
-
-            if (kind == ChangeKind.Delete)
-            {
-                Context.Reporter.Verbose($"File '{path}' deleted after {FormatTimestamp(buildCompletionTime)}.");
-            }
-
-            if (fileSet.TryGetValue(path, out var fileItem))
-            {
-                // For some reason we are sometimes seeing Add events raised whan an existing file is updated:
-                return new ChangedFile(fileItem, (kind == ChangeKind.Add) ? ChangeKind.Update : kind);
-            }
-
-            if (kind == ChangeKind.Add)
-            {
-                return new ChangedFile(new FileItem { FilePath = path, ContainingProjectPaths = [] }, kind);
-            }
-
-            return null;
         }
 
-        internal static string FormatTimestamp(DateTime time)
-            => time.ToString("HH:mm:ss.fffffff");
+        private void ReportOutputDirectories(IReadOnlySet<string> directories)
+        {
+            foreach (var dir in directories)
+            {
+                Context.Reporter.Verbose($"Output directory: '{dir}'");
+            }
+        }
+
+        internal static IEnumerable<ChangedPath> NormalizePathChanges(IEnumerable<ChangedPath> changes)
+            => changes
+                .GroupBy(keySelector: change => change.Path)
+                .Select(group =>
+                {
+                    ChangedPath? lastUpdate = null;
+                    ChangedPath? lastDelete = null;
+                    ChangedPath? lastAdd = null;
+                    ChangedPath? previous = null;
+
+                    foreach (var item in group)
+                    {
+                        // eliminate repeated changes:
+                        if (item.Kind == previous?.Kind)
+                        {
+                            continue;
+                        }
+
+                        previous = item;
+
+                        if (item.Kind == ChangeKind.Add)
+                        {
+                            // eliminate delete-(update)*-add:
+                            if (lastDelete.HasValue)
+                            {
+                                lastDelete = null;
+                                lastAdd = null;
+                                lastUpdate ??= item with { Kind = ChangeKind.Update };
+                            }
+                            else
+                            {
+                                lastAdd = item;
+                            }
+                        }
+                        else if (item.Kind == ChangeKind.Delete)
+                        {
+                            // eliminate add-delete:
+                            if (lastAdd.HasValue)
+                            {
+                                lastDelete = null;
+                                lastAdd = null;
+                            }
+                            else
+                            {
+                                lastDelete = item;
+
+                                // eliminate previous update:
+                                lastUpdate = null;
+                            }
+                        }
+                        else if (item.Kind == ChangeKind.Update)
+                        {
+                            // ignore updates after add:
+                            if (!lastAdd.HasValue)
+                            {
+                                lastUpdate = item;
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Unexpected change kind: {item.Kind}");
+                        }
+                    }
+
+                    return lastDelete ?? lastAdd ?? lastUpdate;
+                })
+                .Where(item => item != null)
+                .Select(item => item!.Value);
 
         private void ReportWatchingForChanges()
         {
@@ -624,7 +763,7 @@ namespace Microsoft.DotNet.Watch
 
             void Report(ChangeKind kind)
             {
-                var items = changedFiles.Where(item => item.Change == kind).ToArray();
+                var items = changedFiles.Where(item => item.Kind == kind).ToArray();
                 if (items is not [])
                 {
                     Context.Reporter.Output(GetMessage(items, kind));

@@ -38,6 +38,10 @@
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
+
+    <Compile Include="..\HotReloadAgent\AgentMessageSeverity.cs" LinkBase="AgentContracts" />
+    <Compile Include="..\HotReloadAgent\ResponseLoggingLevel.cs" LinkBase="AgentContracts" />
+    <Compile Include="..\HotReloadAgent\UpdateDelta.cs" LinkBase="AgentContracts" />
   </ItemGroup>
 
   <ItemGroup>

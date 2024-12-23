@@ -103,11 +103,11 @@ namespace Microsoft.DotNet.Watch
             _reporter.Report(MessageDescriptor.HotReloadSessionStarted);
         }
 
-        private static DeltaApplier CreateDeltaApplier(HotReloadProfile profile, Version? targetFramework, BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
+        private static DeltaApplier CreateDeltaApplier(HotReloadProfile profile, ProjectGraphNode project, BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
             => profile switch
             {
-                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer!, targetFramework),
-                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer!, targetFramework),
+                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer!, project),
+                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer!, project),
                 _ => new DefaultDeltaApplier(processReporter),
             };
 
@@ -125,8 +125,7 @@ namespace Microsoft.DotNet.Watch
         {
             var projectPath = projectNode.ProjectInstance.FullPath;
 
-            var targetFramework = projectNode.GetTargetFrameworkVersion();
-            var deltaApplier = CreateDeltaApplier(profile, targetFramework, browserRefreshServer, processReporter);
+            var deltaApplier = CreateDeltaApplier(profile, projectNode, browserRefreshServer, processReporter);
             var processExitedSource = new CancellationTokenSource();
             var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(processExitedSource.Token, cancellationToken);
 
@@ -365,7 +364,7 @@ namespace Microsoft.DotNet.Watch
             switch (updates.Status)
             {
                 case ModuleUpdateStatus.None:
-                    _reporter.Output("No hot reload changes to apply.");
+                    _reporter.Report(MessageDescriptor.NoHotReloadChangesToApply);
                     break;
 
                 case ModuleUpdateStatus.Ready:
