@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using Microsoft.Build.Framework;
 using System;
 using System.Collections.Generic;
@@ -68,6 +66,10 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     private const string _packageElementName = "Package";
     private const string _blobElementName = "Blob";
     private const string _idAttribute = "Id";
+    private const string _visibilityAttribute = "Visibility";
+    private const string _externalVisibility = "External";
+    private const string _internalVisibility = "Internal";
+    private const string _verticalVisibility = "Vertical";
     private const string _verticalNameAttribute = "VerticalName";
     private const string _artifactNameSuffix = "_Artifacts";
     private const string _assetsFolderName = "assets";
@@ -110,7 +112,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         using var clientThrottle = new SemaphoreSlim(16, 16);
         List<Task> downloadTasks = new();
-        
+
         foreach (XDocument verticalManifest in verticalManifests)
         {
             string verticalName = GetRequiredRootAttribute(verticalManifest, _verticalNameAttribute);
@@ -188,28 +190,28 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         await Task.WhenAll(fileNamesToDownload.Select(async fileName =>
             await DownloadFileFromArtifact(
-                filesInformation, 
-                artifactName, 
-                azureDevOpsClient, 
-                buildId, 
-                fileName, 
-                outputDirectory, 
+                filesInformation,
+                artifactName,
+                azureDevOpsClient,
+                buildId,
+                fileName,
+                outputDirectory,
                 clientThrottle)));
     }
 
     private async Task DownloadFileFromArtifact(
-        ArtifactFiles artifactFilesMetadata, 
-        string azureDevOpsArtifact, 
-        AzureDevOpsClient azureDevOpsClient, 
-        string buildId, 
-        string manifestFile, 
+        ArtifactFiles artifactFilesMetadata,
+        string azureDevOpsArtifact,
+        AzureDevOpsClient azureDevOpsClient,
+        string buildId,
+        string manifestFile,
         string destinationDirectory,
         SemaphoreSlim clientThrottle)
     {
         try
         {
             await clientThrottle.WaitAsync();
-            
+
             ArtifactItem fileItem;
 
             var matchingFilePaths = artifactFilesMetadata.Items.Where(f => Path.GetFileName(f.Path) == Path.GetFileName(manifestFile));
@@ -260,7 +262,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     }
 
     /// <summary>
-    /// Copy all files from the source directory to the destination directory, 
+    /// Copy all files from the source directory to the destination directory,
     /// in a flat layout
     /// </summary>
     private void CopyMainVerticalAssets(string sourceDirectory, string destinationDirectory)
@@ -272,7 +274,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             Directory.CreateDirectory(destinationDirectory);
         }
 
-        foreach (var sourceFile in sourceFiles) 
+        foreach (var sourceFile in sourceFiles)
         {
             string destinationFilePath = Path.Combine(destinationDirectory, Path.GetFileName(sourceFile));
 
@@ -291,10 +293,34 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         string verticalName = verticalManifest.Root!.Attribute(_verticalNameAttribute)!.Value;
 
-        foreach (XElement artifactElement in verticalManifest.Descendants(elementName)) 
+        foreach (XElement artifactElement in verticalManifest.Descendants(elementName))
         {
-            string elementId = artifactElement.Attribute(_idAttribute)?.Value 
+            string elementId = artifactElement.Attribute(_idAttribute)?.Value
                 ?? throw new ArgumentException($"Required attribute '{_idAttribute}' not found in {elementName} element.");
+
+            // Filter out artifacts that are not "External" visibility.
+            // Artifacts of "Vertical" visibility should have been filtered out in each individual vertical,
+            // but artifacts of "Internal" visibility would have been included in each vertical's manifest (to enable feeding into join verticals).
+            // We need to remove them here so they don't get included in the final merged manifest.
+            // As we're in the final join, there should be no jobs after us. Therefore, we can also skip uploading them to the final artifacts folders
+            // as no job should run after this job that would consume them.
+            string? visibility = artifactElement.Attribute(_visibilityAttribute)?.Value;
+            
+            if (visibility == _verticalVisibility)
+            {
+                Log.LogError($"Artifact {elementId} has 'Vertical' visibility and should not be present in a vertical manifest.");
+                continue;
+            }
+            else if (visibility == _internalVisibility)
+            {
+                Log.LogMessage(MessageImportance.High, $"Artifact {elementId} has 'Internal' visibility and will not be included in the final merged manifest.");
+                continue;
+            }
+            else if (visibility is not (null or "" or _externalVisibility))
+            {
+                Log.LogError($"Artifact {elementId} has unknown visibility: '{visibility}'");
+                continue;
+            }
 
             if (addedArtifacts.TryAdd(elementId, new AddedElement(verticalName, artifactElement)))
             {
@@ -327,7 +353,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
     private static string GetRequiredRootAttribute(XDocument document, string attributeName)
     {
-        return document.Root?.Attribute(attributeName)?.Value 
+        return document.Root?.Attribute(attributeName)?.Value
             ?? throw new ArgumentException($"Required attribute '{attributeName}' not found in root element.");
     }
 
