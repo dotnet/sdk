@@ -19,18 +19,22 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
         private readonly string _fileOrDirectory;
         private readonly IReadOnlyCollection<string> _projects;
 
-        private int CountNonFolderDescendants(SolutionModel solution, SolutionFolderModel item, Dictionary<SolutionFolderModel, int> cached)
+        private int CountNonFolderDescendants(
+            SolutionModel solution,
+            SolutionFolderModel item,
+            Dictionary<SolutionFolderModel, SolutionItemModel[]> solutionItemsGroupedByParent,
+            Dictionary<SolutionFolderModel, int> cached)
         {
             if (cached.ContainsKey(item))
             {
                 return cached[item];
             }
             int count = item.Files?.Count ?? 0;
-            var children = solution.SolutionItems.Where(i => i.Parent == item);
+            var children = solutionItemsGroupedByParent.TryGetValue(item, out var items) ? items : Array.Empty<SolutionItemModel>();
             foreach (var child in children)
             {
                 count += child is SolutionFolderModel folderModel
-                    ? CountNonFolderDescendants(solution, folderModel, cached)
+                    ? CountNonFolderDescendants(solution, folderModel, solutionItemsGroupedByParent, cached)
                     : 1;
             }
             cached.Add(item, count);
@@ -111,10 +115,15 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 }
             }
 
+            Dictionary<SolutionFolderModel, SolutionItemModel[]> solutionItemsGroupedByParent = solution.SolutionItems
+                .Where(i => i.Parent != null)
+                .GroupBy(i => i.Parent)
+                .ToDictionary(g => g.Key, g => g.ToArray());
+
             Dictionary<SolutionFolderModel, int> nonFolderDescendantsCount = new();
             foreach (var item in solution.SolutionFolders)
             {
-                CountNonFolderDescendants(solution, item, nonFolderDescendantsCount);
+                CountNonFolderDescendants(solution, item, solutionItemsGroupedByParent, nonFolderDescendantsCount);
             }
 
             var emptyFolders = nonFolderDescendantsCount.Where(i => i.Value == 0).Select(i => i.Key);
