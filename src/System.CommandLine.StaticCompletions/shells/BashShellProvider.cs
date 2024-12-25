@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli.Completions.Shells;
-
-#nullable enable
+namespace System.CommandLine.StaticCompletions.Shells;
 
 using System.CodeDom.Compiler;
 using System.CommandLine;
@@ -127,7 +125,7 @@ public class BashShellProvider : IShellProvider
         var completions = new List<string>();
         foreach (var argument in arguments)
         {
-            if (argument.GetType().GetGenericTypeDefinition() == typeof(DynamicArgument<int>).GetGenericTypeDefinition())
+            if (argument.IsDynamic())
             {
                 // if the argument is a not-static-friendly argument, we need to call into the app for completions
                 completions.Add($"$({GenerateDynamicCall()})");
@@ -145,9 +143,10 @@ public class BashShellProvider : IShellProvider
     }
 
     /// <summary>
-    /// Generates a call to `dotnet complete <string> --position <int>` for dynamic completions where necessary, but in a more generic way
+    /// Generates a call to <code>dotnet complete &lt;string&gt; --position &lt;int&gt;</code> for dynamic completions where necessary, but in a more generic way
     /// </summary>
     /// <returns></returns>
+    /// <remarks>TODO: this is currently bound to the .NET CLI's 'dotnet complete' command - this should be definable/injectable per-host instead.</remarks>
     internal static string GenerateDynamicCall()
     {
         return $$"""${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' '""";
@@ -186,9 +185,7 @@ public class BashShellProvider : IShellProvider
         // this ensures if the user manually enters an alias we can support that usage.
         var optionNames = string.Join('|', option.Names());
         string completionCommand;
-        if (option.GetType().IsGenericType &&
-            (option.GetType().GetGenericTypeDefinition() == typeof(DynamicOption<int>).GetGenericTypeDefinition()
-             || option.GetType().GetGenericTypeDefinition() == typeof(DynamicForwardedOption<string>).GetGenericTypeDefinition()))
+        if (option.IsDynamic())
         {
             // dynamic options require a call into the app for completions
             completionCommand = GenerateChoicesPrompt($"({GenerateDynamicCall()})");
