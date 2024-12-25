@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli.Completions.Shells;
+namespace System.CommandLine.StaticCompletions.Shells;
 
-using System;
 using System.CodeDom.Compiler;
 using System.CommandLine;
 using System.CommandLine.Completions;
-
-#nullable enable
 
 public class PowershellShellProvider : IShellProvider
 {
@@ -120,7 +117,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
             yield break;
         }
 
-        if (argument.GetType().IsGenericType && argument.GetType().GetGenericTypeDefinition() == typeof(DynamicArgument<int>).GetGenericTypeDefinition())
+        if (argument.IsDynamic())
         {
             // if the argument is a not-static-friendly argument, we need to call into the app for completions
             // TODO: not yet supported for powershell
@@ -211,19 +208,28 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
 
         writer.WriteLine("$completions += $staticCompletions");
 
-        if (command.Arguments.Any(argument => argument.GetType().IsGenericType && argument.GetType().GetGenericTypeDefinition() == typeof(DynamicArgument<int>).GetGenericTypeDefinition()))
+        if (command.Arguments.Any(argument => argument.IsDynamic()))
         {
-            // generate a call into `dotnet complete` for dynamic argument completions
-            writer.WriteLine("$text = $commandAst.ToString()");
-            writer.WriteLine("$dotnetCompleteResults = @(dotnet complete --position $cursorPosition \"$text\") | Where-Object { $_ -NotMatch \"^-|^/\" }");
-            writer.WriteLine("$dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }");
-            writer.WriteLine("$completions += $dynamicCompletions");
+            GenerateDynamicCompletionsCall(writer);
         }
 
         writer.WriteLine("break");
         writer.Indent--;
         writer.WriteLine("}");
     }
+
+    /// <summary>
+    /// Generate a call into `dotnet complete` for dynamic argument completions, then binds the returned values as CompletionResults.
+    /// </summary>
+    /// <remarks>TODO: this is currently bound to the .NET CLI's 'dotnet complete' command - this should be definable/injectable per-host instead.</remarks>
+    private static void GenerateDynamicCompletionsCall(IndentedTextWriter writer)
+    {
+        writer.WriteLine("$text = $commandAst.ToString()");
+        writer.WriteLine("$dotnetCompleteResults = @(dotnet complete --position $cursorPosition \"$text\") | Where-Object { $_ -NotMatch \"^-|^/\" }");
+        writer.WriteLine("$dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }");
+        writer.WriteLine("$completions += $dynamicCompletions");
+    }
+
 
     private static void GenerateDynamicCompletionsForArguments(string[] commandNameList, IList<CliArgument> arguments, IndentedTextWriter writer)
     {
