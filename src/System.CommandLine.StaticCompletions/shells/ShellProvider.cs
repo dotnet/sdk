@@ -1,11 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli.Completions.Shells;
+namespace System.CommandLine.StaticCompletions.Shells;
 
 /// <summary>
 /// Provides and manages completions scripts for a specific shell.
-/// When creating new derived types of this interface, make sure to add them to <see cref="CompletionsCommand._knownShells"/>.
 /// </summary>
 public interface IShellProvider
 {

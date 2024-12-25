@@ -1,4 +1,7 @@
-namespace Microsoft.DotNet.Cli.Completions;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace System.CommandLine.StaticCompletions;
 
 using System.CommandLine;
 
@@ -100,4 +103,7 @@ public static class HelpExtensions
     }
 
     public static bool IsUpperCaseSingleCharacterFlag(this string name) => name.Length == 2 && char.IsUpper(name[1]);
+
+    public static bool IsDynamic(this CliOption option) => option.GetType().GetInterface(nameof(IDynamicOption)) is not null;
+    public static bool IsDynamic(this CliArgument argument) => argument.GetType().GetInterface(nameof(IDynamicArgument)) is not null;
 }
