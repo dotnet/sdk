@@ -4,34 +4,13 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
+using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Cli
 {
-    /// <summary>
-    /// Represents an Option whose completions are dynamically generated and so should not be emitted in static completion scripts.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    internal class DynamicOption<T> : CliOption<T>
-    {
-        public DynamicOption(string name, params string[] aliases) : base(name, aliases)
-        {
-        }
-    }
-
-    /// <summary>
-    /// Represents an Argument whose completions are dynamically generated and so should not be emitted in static completion scripts.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    internal class DynamicArgument<T> : CliArgument<T>
-    {
-        public DynamicArgument(string name) : base(name)
-        {
-        }
-    }
-
     internal static class CommonOptions
     {
         public static CliOption<string[]> PropertiesOption =
@@ -366,5 +345,15 @@ namespace Microsoft.DotNet.Cli
         d,
         diagnostic,
         diag
+    }
+
+    public class DynamicOption<T> : CliOption<T>, IDynamicOption
+    {
+        public DynamicOption(string name, params string[] aliases) : base(name, aliases) { }
+    }
+
+    public class DynamicArgument<T> : CliArgument<T>, IDynamicArgument
+    {
+        public DynamicArgument(string name) : base(name) { }
     }
 }

@@ -29,7 +29,6 @@
     <Compile Include="..\dotnet-build.Tests\**\*.cs" LinkBase="dotnet-build" />
     <Compile Include="..\dotnet-clean.Tests\**\*.cs" LinkBase="dotnet-clean" />
     <Compile Include="..\dotnet-complete.Tests\**\*.cs" LinkBase="dotnet-complete" />
-    <Compile Include="..\dotnet-completions.Tests\**\*.cs" LinkBase="dotnet-completions" />
     <Compile Include="..\dotnet-format.Tests\*.cs" LinkBase="dotnet-format" />
     <Compile Include="..\dotnet-fsi.Tests\**\*.cs" LinkBase="dotnet-fsi" />
     <Compile Include="..\dotnet-help.Tests\**\*.cs" LinkBase="dotnet-help" />
