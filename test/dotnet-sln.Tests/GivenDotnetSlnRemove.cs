@@ -230,7 +230,7 @@ Options:
 
             var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
             SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
 
             solution.SolutionProjects.Count.Should().Be(2);
@@ -285,7 +285,7 @@ Options:
                 .Path;
 
             var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
             SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(3);
 
@@ -318,7 +318,7 @@ Options:
 
             var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
             SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
 
             solution.SolutionProjects.Count.Should().Be(2);
@@ -354,7 +354,7 @@ Options:
 
             var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
             SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
 
             solution.SolutionProjects.Count.Should().Be(2);
@@ -384,7 +384,7 @@ Options:
 
             var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
             SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
 
             solution.SolutionProjects.Count.Should().Be(2);
@@ -461,7 +461,7 @@ Options:
 
             var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
             SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
 
             solution.SolutionProjects.Count.Should().Be(2);
@@ -535,7 +535,7 @@ Options:
 
             var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
             SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(2);
 
