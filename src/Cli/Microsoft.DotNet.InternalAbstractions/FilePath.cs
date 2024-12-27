@@ -21,11 +21,6 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
             Value = value;
         }
 
-        public string ToQuotedString()
-        {
-            return $"\"{Value}\"";
-        }
-
         public override string ToString()
         {
             return Value;
@@ -33,7 +28,7 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
 
         public DirectoryPath GetDirectoryPath()
         {
-            return new DirectoryPath(Path.GetDirectoryName(Value));
+            return new DirectoryPath(Path.GetDirectoryName(Value)!);
         }
     }
 }
