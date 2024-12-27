@@ -75,23 +75,33 @@ namespace Microsoft.DotNet.NativeWrapper
                 {
                     // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
                     // resolve it to get the actual path to the binary
-                    dotnetExeFromPath = GetRealPath(dotnetExeFromPath) ?? dotnetExeFromPath;
+                    dotnetExeFromPath = GetRealPath(dotnetExeFromPath);
 
-                    static string? GetRealPath(string path)
+                    static string GetRealPath(string path)
                     {
-                        string fullPath = Path.GetFullPath(path);
-                        if (!File.Exists(fullPath))
-                            return null;
-
-                        FileInfo info = new(fullPath);
-                        if (info.LinkTarget != null)
+                        FileInfo fileInfo = new(path);
+                        if (fileInfo.LinkTarget != null)
                         {
-                            var resolvedTarget = info.ResolveLinkTarget(returnFinalTarget: true);
-                            if (resolvedTarget != null)
-                                return resolvedTarget.FullName;
+                            var resolved = fileInfo.ResolveLinkTarget(true);
+                            return resolved?.Exists is true ? resolved.FullName : path;
                         }
-
-                        return fullPath;
+                
+                        string invariantPart = string.Empty;
+                        DirectoryInfo? parentDirectory = fileInfo.Directory;
+                        while (parentDirectory is not null)
+                        {
+                            invariantPart = path[parentDirectory.FullName.Length..];
+                            if (parentDirectory.LinkTarget != null)
+                            {
+                                var resolved = parentDirectory.ResolveLinkTarget(true);
+                                if (resolved?.Exists is true)
+                                    return Path.Join(resolved.FullName, invariantPart);
+                            }
+                
+                            parentDirectory = parentDirectory.Parent;
+                        }
+                
+                        return path;
                     }
                 }
 #endif
