@@ -15,7 +15,8 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly CliArgument<string> CmdPackageArgument = new DynamicArgument<string>(LocalizableStrings.CmdPackage)
         {
-            Description = LocalizableStrings.CmdPackageDescription
+            Description = LocalizableStrings.CmdPackageDescription,
+            Arity = ArgumentArity.ExactlyOne
         }.AddCompletions((context) =>
         {
             // we should take --prerelease flags into account for version completion
@@ -23,7 +24,7 @@ namespace Microsoft.DotNet.Cli
             return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
         });
 
-        public static readonly CliOption<string> VersionOption = new ForwardedOption<string>("--version", "-v")
+        public static readonly CliOption<string> VersionOption = new DynamicForwardedOption<string>("--version", "-v")
         {
             Description = LocalizableStrings.CmdVersionDescription,
             HelpName = LocalizableStrings.CmdVersion

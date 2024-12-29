@@ -82,7 +82,7 @@ public static class HelpExtensions
         }
         else
         {
-            return c.Parents.OfType<CliCommand>().SelectMany(OptionsForParent).Concat(myOptions);
+            return myOptions.Concat(c.Parents.OfType<CliCommand>().SelectMany(OptionsForParent));
         }
 
     }
