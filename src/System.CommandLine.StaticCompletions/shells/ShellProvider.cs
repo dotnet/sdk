@@ -14,6 +14,11 @@ public interface IShellProvider
     string ArgumentName { get; }
 
     /// <summary>
+    /// The file extension typically used for this shell's completions scripts (sans period).
+    /// </summary>
+    string Extension { get; }
+
+    /// <summary>
     /// Generates a shell-specific completions script for the given command tree.
     /// </summary>
     /// <param name="rootCommand"></param>

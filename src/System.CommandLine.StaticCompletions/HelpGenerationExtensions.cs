@@ -36,17 +36,23 @@ public static class HelpExtensions
     /// <returns></returns>
     public static string[] Names(this CliOption option)
     {
+        var (primary, aliases) = PrimaryNameAndAliases(option);
+        return aliases is null ? [primary] : [primary, .. aliases];
+    }
+
+    public static (string primary, string[]? aliases) PrimaryNameAndAliases(this CliOption option)
+    {
         if (option.Aliases.Count == 0)
         {
-            return [option.Name];
+            return (option.Name, null);
         }
         else if (option is System.CommandLine.Help.HelpOption) // some of the help aliases are truly horrible
         {
-            return ["--help", "-h"];
+            return ("--help", ["-h"]);
         }
         else
         {
-            return [option.Name, .. option.Aliases];
+            return (option.Name, [.. option.Aliases]);
         }
     }
 
@@ -104,6 +110,11 @@ public static class HelpExtensions
 
     public static bool IsUpperCaseSingleCharacterFlag(this string name) => name.Length == 2 && char.IsUpper(name[1]);
 
+    public static bool IsLongAlias(this string name) => name.Length > 2 && name[0] == '-' && name[1] == '-';
+    public static bool IsShortAlias(this string name) => name.Length == 2 && name[0] == '-' && char.IsAsciiLetter(name[1]);
+
     public static bool IsDynamic(this CliOption option) => option.GetType().GetInterface(nameof(IDynamicOption)) is not null;
     public static bool IsDynamic(this CliArgument argument) => argument.GetType().GetInterface(nameof(IDynamicArgument)) is not null;
+
+    public static bool IsFlag(this CliOption option) => option.Arity.Equals(ArgumentArity.Zero);
 }

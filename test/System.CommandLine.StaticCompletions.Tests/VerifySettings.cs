@@ -1,3 +1,5 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace System.CommandLine.StaticCompletions.Tests;
 
@@ -9,6 +11,6 @@ public static class VerifyConfiguration
     public static void Initialize()
     {
         VerifyDiffPlex.Initialize();
-        Verifier.UseProjectRelativeDirectory("snapshots");
+        EmptyFiles.FileExtensions.AddTextExtension("ps1");
     }
 }
