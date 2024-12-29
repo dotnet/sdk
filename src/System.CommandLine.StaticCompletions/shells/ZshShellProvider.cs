@@ -1,34 +1,302 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CodeDom.Compiler;
+using Microsoft.VisualBasic;
+
 namespace System.CommandLine.StaticCompletions.Shells;
 
 public class ZshShellProvider : IShellProvider
 {
     public string ArgumentName => "zsh";
 
-    private static readonly string _dynamicCompletionScript =
-        """
-        # zsh parameter completion for the dotnet CLI
-        # add this to your .zshrc file to enable completion
+    public string Extension => "zsh";
 
-        _dotnet_zsh_complete()
+    public string GenerateCompletions(CliCommand command)
+    {
+        var binaryName = command.Name;
+        using var textWriter = new StringWriter { NewLine = "\n" };
+        using var writer = new IndentedTextWriter(textWriter);
+
+
+        writer.WriteLine($"#compdef {binaryName}");
+        writer.WriteLine();
+        writer.WriteLine("autoload -U is-at-least");
+        writer.WriteLine();
+        // TODO: if the CLI grammar doesn't support option bundling, remove -s from these options. -s is the bundling option for _arguments
+        writer.WriteLine($$"""
+_{{binaryName}}() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+""");
+
+        writer.Indent++;
+        writer.WriteLine(ArgumentsHandler());
+        writer.Indent++;
+        GenerateOptionsAndArgumentsForCommand([], command, writer);
+        GenerateSubcommandList([], command, writer);
+        writer.Indent--;
+        writer.WriteLine("}");
+        writer.WriteLine();
+
+        GenerateSubcommandHandlers([], command, writer);
+        writer.WriteLine();
+
+        writer.WriteLine($$"""
+if [ \"$funcstack[1]\" = \"_{{binaryName}}\" ]; then
+    _{{binaryName}} \"$@\"
+else
+    compdef _{{binaryName}} {{binaryName}}
+fi
+""");
+        writer.WriteLine();
+        writer.Flush();
+        return textWriter.ToString();
+    }
+
+    private static void GenerateOptionsAndArgumentsForCommand(string[] commandPath, CliCommand command, IndentedTextWriter writer)
+    {
+        foreach (var option in command.HeirarchicalOptions())
         {
-        local completions=("$(dotnet complete "$words")")
-
-        # If the completion list is empty, just continue with filename selection
-        if [ -z "$completions" ]
-        then
-            _arguments '*::arguments: _normal'
-            return
-        fi
-
-        # This is not a variable assignment, don't remove spaces!
-        _values = "${(ps:\n:)completions}"
+            var multiplicity = option.Arity.MaximumNumberOfValues > 1 ? "*" : "";
+            var helpText = SanitizeHelp(option.Description);
+            if (option.IsFlag())
+            {
+                foreach (var name in option.Names())
+                {
+                    writer.WriteLine($"'{multiplicity}{name}:[{helpText}]' \\");
+                }
+            }
+            else
+            {
+                var argumentName = option.HelpName ?? " ";
+                var argumentValues = ZshValueExpression(option);
+                foreach (var name in option.Names())
+                {
+                    writer.Write($"'{multiplicity}{name}=[{helpText}]:{argumentName}");
+                    WriteValueExpression(writer, argumentValues);
+                }
+            }
         }
 
-        compdef _dotnet_zsh_complete dotnet
-        """;
+        var catch_all_emitted = false;
+        foreach (var arg in command.Arguments.Where(c => !c.Hidden))
+        {
+            var isMultiValued = arg.Arity.MaximumNumberOfValues > 1;
+            if (catch_all_emitted && isMultiValued)
+            {
+                continue;
+            }
 
-    public string GenerateCompletions(System.CommandLine.CliCommand command) => _dynamicCompletionScript;
+            string cardinality = "";
+            if (isMultiValued && command.Subcommands.Count == 0)
+            {
+                catch_all_emitted = true;
+                cardinality = "*:";
+            }
+            else if (arg.Arity.MinimumNumberOfValues == 0)
+            {
+                cardinality = ":";
+            }
+
+            var helpText = SanitizeHelp(arg.Description is string d ? " -- " + d : "");
+            var completions = ZshValueExpression(arg);
+            writer.Write($"'{cardinality}:{arg.Name}{helpText}'");
+            WriteValueExpression(writer, completions);
+        }
+
+        if (command.Subcommands.Any(c => !c.Hidden))
+        {
+            var parentSubcommandHandlerName = string.Join("__", commandPath);
+            writer.WriteLine($"\":: :_{parentSubcommandHandlerName}_commands\" \\");
+            writer.WriteLine($"\"*::: :->{command.Name}\" \\");
+        }
+
+        writer.WriteLine("&& ret=0");
+
+        static void WriteValueExpression(IndentedTextWriter writer, string[]? argumentValues)
+        {
+            if (argumentValues is null || argumentValues.Length == 0)
+            {
+                writer.Write($": ");
+            }
+            else if (argumentValues.Length == 1)
+            {
+                writer.Write($":{argumentValues[0]} ");
+            }
+            else
+            {
+                writer.Write(':');
+                writer.Write(argumentValues[0]);
+                foreach (var line in argumentValues[1..^1])
+                {
+                    writer.Write(line);
+                    writer.Write(" ");
+                }
+                writer.Write(argumentValues[^1]);
+            }
+            writer.WriteLine("' \\");
+        }
+    }
+
+    private static void GenerateSubcommandList(string[] parentCommandNames, CliCommand command, IndentedTextWriter writer)
+    {
+        if (command.Subcommands.Count == 0)
+        {
+            return;
+        }
+
+        writer.WriteLine();
+        writer.WriteLine("case $state in");
+        writer.Indent++;
+        writer.WriteLine($"({command.Name})");
+        writer.Indent++;
+        var pos = command.Arguments.Count + 1;
+        writer.WriteLine($$"""words=($line[{{pos}}] "${words[@]}")""");
+        writer.WriteLine("(( CURRENT += 1 ))");
+        writer.WriteLine($"curcontext=\"${{curcontext%:*:*}}:{string.Join('-', parentCommandNames)}-command-$line[{pos}]:\"");
+        writer.WriteLine($"case $line[{pos}] in");
+        writer.Indent++;
+        foreach (var subcommand in command.Subcommands.Where(c => !c.Hidden))
+        {
+            // generate help stubs for this subcommand
+            writer.WriteLine($"({subcommand.Name})");
+            writer.Indent++;
+            writer.WriteLine(ArgumentsHandler());
+            GenerateOptionsAndArgumentsForCommand(parentCommandNames, subcommand, writer);
+            GenerateSubcommandList([.. parentCommandNames, command.Name], subcommand, writer);
+            writer.Indent--;
+        }
+        writer.Indent--;
+        writer.WriteLine("esac");
+        writer.Indent--;
+        writer.WriteLine(";;");
+        writer.Indent--;
+        writer.WriteLine("esac");
+    }
+
+    // TODO:_ this function is almost entirely wrong - we're generating the wrong tree of completions here, it's way too big.
+    private static void GenerateSubcommandHandlers(string[] commandPath, CliCommand command, IndentedTextWriter writer)
+    {
+
+        string[] commandNameList = commandPath switch
+        {
+        [] => [command.Name],
+            var names => [.. names, command.Name]
+        };
+
+        var unique_command_name = string.Join("__", commandNameList);
+
+        writer.WriteLine("\\");
+        writer.WriteLine($"(( $+functions[_{unique_command_name}_commands] )) ||");
+        writer.WriteLine($"_{unique_command_name}_commands() {{");
+        writer.Indent++;
+        writer.WriteLine("local commands");
+        writer.Write("commands=(");
+        GenerateSubcommandList(commandPath, command, writer);
+        writer.WriteLine(")");
+        writer.WriteLine($"_describe -t commands '{unique_command_name} commands' commands \"$@\"");
+        writer.Indent--;
+        writer.WriteLine("}");
+        writer.WriteLine();
+
+
+        foreach (var subcommand in command.Subcommands.Where(c => !c.Hidden))
+        {
+            GenerateSubcommandHandlers(commandNameList, subcommand, writer);
+        }
+    }
+
+    private static string SanitizeHelp(string? s) =>
+        s?
+            .Replace("\"", "\\\"")
+            .Replace("\'", "'\\''")
+            .Replace("[", "\\[")
+            .Replace("]", "\\]")
+            .Replace(":", "\\:")
+            .Replace("$", "\\$")
+            .Replace("`", "\\`")
+            .Replace("\r\n", " ")
+            .Replace('\n', ' ')
+            ?? "";
+
+    private static string SanitizeValue(string? s) =>
+        s?
+            .Replace("\\", "\\\\")
+            .Replace("\'", "'\\''")
+            .Replace("[", "\\[")
+            .Replace("]", "\\]")
+            .Replace(":", "\\:")
+            .Replace("$", "\\$")
+            .Replace("`", "\\`")
+            .Replace("(", "\\(")
+            .Replace(")", "\\)")
+            .Replace(" ", "\\ ")
+        ?? "";
+
+    private static string[]? ZshValueExpression(CliOption option)
+    {
+        if (option is IDynamicOption _dynamicOption)
+        {
+            return null; // don't know how to do this in zsh yet
+        }
+        else
+        {
+            return ZshValueExpression(option as CliSymbol);
+        }
+    }
+
+    private static string[]? ZshValueExpression(CliArgument arg)
+    {
+        if (arg is IDynamicArgument _dynamicArg)
+        {
+            return null; // don't know how to do this in zsh yet
+        }
+        else
+        {
+            return ZshValueExpression(arg as CliSymbol);
+        }
+    }
+
+    private static string[]? ZshValueExpression(CliSymbol sym)
+    {
+        var staticCompletions = sym.GetCompletions(Completions.CompletionContext.Empty).ToArray();
+        if (staticCompletions.Length == 0)
+        {
+            //TODO: attempt to do zsh helpers here
+            return null;
+        }
+        else
+        {
+            if (staticCompletions.Any(c => c.InsertText is not null || c.Detail is not null || c.Documentation is not null))
+            {
+                // since any item had 'help', we use the help form of value completions
+                var lines = new List<string>(staticCompletions.Length + 2) { "(" };
+                foreach (var completion in staticCompletions)
+                {
+                    var insertText = completion.InsertText ?? completion.Label;
+                    var documentation = completion.Documentation ?? completion.Detail ?? completion.Label;
+                    lines.Add($"\"{SanitizeValue(insertText)}\\:\"{SanitizeHelp(documentation)}\"");
+                }
+                lines.Add(")");
+                return lines.ToArray();
+            }
+            else
+            {
+                // since none have help, we use the raw form
+                return [$"({string.Join(" ", staticCompletions.Select(c => SanitizeValue(c.InsertText ?? c.Label)))})"];
+            }
+        }
+    }
+
+    private static string ArgumentsHandler() => "_arguments \"${_arguments_options[@]}\" : \\";
 }
