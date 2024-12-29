@@ -13,6 +13,8 @@ public class PowershellShellProvider : IShellProvider
 
     public string ArgumentName => PowershellShellProvider.PowerShell;
 
+    public string Extension => "ps1";
+
     public string GenerateCompletions(CliCommand command)
     {
         var binaryName = command.Name;

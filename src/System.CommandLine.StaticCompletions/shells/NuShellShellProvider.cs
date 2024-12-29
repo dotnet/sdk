@@ -7,6 +7,8 @@ public class NushellShellProvider : IShellProvider
 {
     public string ArgumentName => "nushell";
 
+    public string Extension => "nu";
+
     private static readonly string _dynamicCompletionScript =
         """
         # Add the following content to your config.nu file:
