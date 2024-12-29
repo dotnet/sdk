@@ -7,6 +7,8 @@ public class FishShellProvider : IShellProvider
 {
     public string ArgumentName => "fish";
 
+    public string Extension => "fish";
+
     private static readonly string _dynamicCompletionScript =
         """
         # fish parameter completion for the dotnet CLI

@@ -9,55 +9,36 @@ using Xunit;
 
 public class PowershellProviderTests
 {
-    private readonly VerifySettings _settings;
-    public PowershellProviderTests()
-    {
-        _settings = new VerifySettings();
-        _settings.UseDirectory("snapshots/pwsh");
-        FileExtensions.AddTextExtension("ps1");
-
-
-    }
     [Fact]
     public async Task GenericCompletions()
     {
-        var provider = new PowershellShellProvider();
-        var completions = provider.GenerateCompletions(new("mycommand"));
-        await Verify(target: completions, extension: "ps1", settings: _settings);
+        await VerifyExtensions.Verify(new("mycommand"), new PowershellShellProvider());
     }
 
     [Fact]
     public async Task SimpleOptionCompletion()
     {
-        var provider = new PowershellShellProvider();
-        var completions = provider.GenerateCompletions(new("mycommand") {
+        await VerifyExtensions.Verify(new("mycommand") {
             new CliOption<string>("--name")
-        });
-        await Verify(target: completions, extension: "ps1", settings: _settings);
+        }, new PowershellShellProvider());
     }
 
     [Fact]
     public async Task SubcommandAndOptionInTopLevelList()
     {
-        var provider = new PowershellShellProvider();
-        var completions = provider.GenerateCompletions(
-            new("mycommand") {
+        await VerifyExtensions.Verify(new("mycommand") {
                 new CliOption<string>("--name"),
                 new CliCommand("subcommand")
-            }
-        );
-        await Verify(target: completions, extension: "ps1", settings: _settings);
+            }, new PowershellShellProvider());
     }
 
     [Fact]
     public async Task NestedSubcommandCompletion()
     {
-        var provider = new PowershellShellProvider();
-        var completions = provider.GenerateCompletions(new("mycommand") {
+        await VerifyExtensions.Verify(new("mycommand") {
             new CliCommand("subcommand") {
                 new CliCommand("nested")
             }
-        });
-        await Verify(target: completions, extension: "ps1", settings: _settings);
+        }, new PowershellShellProvider());
     }
 }

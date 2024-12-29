@@ -12,6 +12,8 @@ public class BashShellProvider : IShellProvider
 {
     public string ArgumentName => "bash";
 
+    public string Extension => "sh";
+
     public string GenerateCompletions(CliCommand command)
     {
         var initialFunctionName = command.FunctionName().MakeSafeFunctionName();
