@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CodeDom.Compiler;
-using Microsoft.VisualBasic;
 
 namespace System.CommandLine.StaticCompletions.Shells;
 
@@ -17,6 +16,7 @@ public class ZshShellProvider : IShellProvider
         var binaryName = command.Name;
         using var textWriter = new StringWriter { NewLine = "\n" };
         using var writer = new IndentedTextWriter(textWriter);
+        string[] pathToCurrentCommand = [command.Name];
 
 
         writer.WriteLine($"#compdef {binaryName}");
@@ -42,28 +42,30 @@ _{{binaryName}}() {
         writer.Indent++;
         writer.WriteLine(ArgumentsHandler());
         writer.Indent++;
-        GenerateOptionsAndArgumentsForCommand([], command, writer);
-        GenerateSubcommandList([], command, writer);
+        GenerateOptionsAndArgumentsForCommand(pathToCurrentCommand, command, writer);
+        writer.Indent--;
+        writer.Indent--;
+        writer.WriteLine();
+        writer.Indent++;
+        GenerateSubcommandList(pathToCurrentCommand, command, writer);
         writer.Indent--;
         writer.WriteLine("}");
         writer.WriteLine();
 
-        GenerateSubcommandHandlers([], command, writer);
-        writer.WriteLine();
-
+        GenerateSubcommandHandlers(pathToCurrentCommand, command, writer);
+        writer.Indent--;
         writer.WriteLine($$"""
-if [ \"$funcstack[1]\" = \"_{{binaryName}}\" ]; then
-    _{{binaryName}} \"$@\"
+if [ "$funcstack[1]" = "_{{binaryName}}" ]; then
+    _{{binaryName}} "$@"
 else
     compdef _{{binaryName}} {{binaryName}}
 fi
 """);
-        writer.WriteLine();
         writer.Flush();
         return textWriter.ToString();
     }
 
-    private static void GenerateOptionsAndArgumentsForCommand(string[] commandPath, CliCommand command, IndentedTextWriter writer)
+    private static void GenerateOptionsAndArgumentsForCommand(string[] commandPathForThisCommand, CliCommand command, IndentedTextWriter writer)
     {
         foreach (var option in command.HeirarchicalOptions())
         {
@@ -73,7 +75,7 @@ fi
             {
                 foreach (var name in option.Names())
                 {
-                    writer.WriteLine($"'{multiplicity}{name}:[{helpText}]' \\");
+                    writer.WriteLine($"'{multiplicity}{name}[{helpText}]' \\");
                 }
             }
             else
@@ -110,18 +112,22 @@ fi
 
             var helpText = SanitizeHelp(arg.Description is string d ? " -- " + d : "");
             var completions = ZshValueExpression(arg);
-            writer.Write($"'{cardinality}:{arg.Name}{helpText}'");
+            writer.Write($"'{cardinality}:{arg.Name}{helpText}");
             WriteValueExpression(writer, completions);
         }
 
         if (command.Subcommands.Any(c => !c.Hidden))
         {
-            var parentSubcommandHandlerName = string.Join("__", commandPath);
+            var parentSubcommandHandlerName = string.Join("__", commandPathForThisCommand);
             writer.WriteLine($"\":: :_{parentSubcommandHandlerName}_commands\" \\");
             writer.WriteLine($"\"*::: :->{command.Name}\" \\");
         }
 
         writer.WriteLine("&& ret=0");
+        var curIndent = writer.Indent;
+        writer.Indent = 0;
+        writer.WriteLine();
+        writer.Indent = curIndent;
 
         static void WriteValueExpression(IndentedTextWriter writer, string[]? argumentValues)
         {
@@ -148,33 +154,39 @@ fi
         }
     }
 
-    private static void GenerateSubcommandList(string[] parentCommandNames, CliCommand command, IndentedTextWriter writer)
+    private static void GenerateSubcommandList(string[] pathToCurrentCommand, CliCommand command, IndentedTextWriter writer)
     {
         if (command.Subcommands.Count == 0)
         {
             return;
         }
 
-        writer.WriteLine();
         writer.WriteLine("case $state in");
         writer.Indent++;
         writer.WriteLine($"({command.Name})");
         writer.Indent++;
-        var pos = command.Arguments.Count + 1;
+        // the 'dotnet' CLI has a hidden subcommand argument that I've tried to get rid of (https://github.com/dotnet/sdk/blob/663b9f78e4c79ce6693368865ee50b3f4c297589/src/Cli/dotnet/Parser.cs#L83)
+        // but it's load-bearing and I haven't been able to rip it out yet. No where else seems to have this hidden argument, so for tracking purposes
+        // we can skip it here.
+        var pos = command.Arguments.Where(a => !a.Hidden).Count() + 1;
         writer.WriteLine($$"""words=($line[{{pos}}] "${words[@]}")""");
         writer.WriteLine("(( CURRENT += 1 ))");
-        writer.WriteLine($"curcontext=\"${{curcontext%:*:*}}:{string.Join('-', parentCommandNames)}-command-$line[{pos}]:\"");
+        writer.WriteLine($"curcontext=\"${{curcontext%:*:*}}:{string.Join('-', pathToCurrentCommand)}-command-$line[{pos}]:\"");
         writer.WriteLine($"case $line[{pos}] in");
         writer.Indent++;
         foreach (var subcommand in command.Subcommands.Where(c => !c.Hidden))
         {
+            var pathToSubcommand = AppendCommandToPath(pathToCurrentCommand, subcommand);
             // generate help stubs for this subcommand
             writer.WriteLine($"({subcommand.Name})");
             writer.Indent++;
             writer.WriteLine(ArgumentsHandler());
-            GenerateOptionsAndArgumentsForCommand(parentCommandNames, subcommand, writer);
-            GenerateSubcommandList([.. parentCommandNames, command.Name], subcommand, writer);
+            writer.Indent++;
+            GenerateOptionsAndArgumentsForCommand(pathToSubcommand, subcommand, writer);
+            GenerateSubcommandList(pathToSubcommand, subcommand, writer);
             writer.Indent--;
+            writer.Indent--;
+            writer.WriteLine(";;");
         }
         writer.Indent--;
         writer.WriteLine("esac");
@@ -185,26 +197,31 @@ fi
     }
 
     // TODO:_ this function is almost entirely wrong - we're generating the wrong tree of completions here, it's way too big.
-    private static void GenerateSubcommandHandlers(string[] commandPath, CliCommand command, IndentedTextWriter writer)
+    private static void GenerateSubcommandHandlers(string[] pathToThisCommand, CliCommand command, IndentedTextWriter writer)
     {
 
-        string[] commandNameList = commandPath switch
-        {
-        [] => [command.Name],
-            var names => [.. names, command.Name]
-        };
+        var unique_command_name = string.Join("__", pathToThisCommand);
 
-        var unique_command_name = string.Join("__", commandNameList);
-
-        writer.WriteLine("\\");
         writer.WriteLine($"(( $+functions[_{unique_command_name}_commands] )) ||");
         writer.WriteLine($"_{unique_command_name}_commands() {{");
         writer.Indent++;
-        writer.WriteLine("local commands");
-        writer.Write("commands=(");
-        GenerateSubcommandList(commandPath, command, writer);
-        writer.WriteLine(")");
-        writer.WriteLine($"_describe -t commands '{unique_command_name} commands' commands \"$@\"");
+        writer.Write("local commands; ");
+        if (command.Subcommands.Where(s => !s.Hidden).Count() > 0)
+        {
+            writer.WriteLine("commands=(");
+            writer.Indent++;
+            foreach (var subcommand in command.Subcommands.Where(s => !s.Hidden))
+            {
+                writer.WriteLine($"'{subcommand.Name}:{SanitizeHelp(subcommand.Description)}' \\");
+            }
+            writer.Indent--;
+            writer.WriteLine(")");
+        }
+        else
+        {
+            writer.WriteLine("commands=()");
+        }
+        writer.WriteLine($"_describe -t commands '{string.Join(' ', pathToThisCommand)} commands' commands \"$@\"");
         writer.Indent--;
         writer.WriteLine("}");
         writer.WriteLine();
@@ -212,7 +229,8 @@ fi
 
         foreach (var subcommand in command.Subcommands.Where(c => !c.Hidden))
         {
-            GenerateSubcommandHandlers(commandNameList, subcommand, writer);
+            var pathToSubcommand = AppendCommandToPath(pathToThisCommand, subcommand);
+            GenerateSubcommandHandlers(pathToSubcommand, subcommand, writer);
         }
     }
 
@@ -299,4 +317,7 @@ fi
     }
 
     private static string ArgumentsHandler() => "_arguments \"${_arguments_options[@]}\" : \\";
+
+    private static string[] AppendCommandToPath(string[] path, CliCommand command) =>
+        path.Length == 0 ? [command.Name] : [.. path, command.Name];
 }
