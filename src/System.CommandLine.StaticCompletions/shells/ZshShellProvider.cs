@@ -36,7 +36,7 @@ _{{binaryName}}() {
         _arguments_options=(-s -C)
     fi
 
-    local context curcontext="$curcontext" state line
+    local context curcontext="$curcontext" state state_descr line
 """);
 
         writer.Indent++;
@@ -44,8 +44,12 @@ _{{binaryName}}() {
         writer.Indent++;
         GenerateOptionsAndArgumentsForCommand(pathToCurrentCommand, command, writer);
         writer.Indent--;
+
+        // tiny hack here - for dynamic completions we need to know what the entire command line is,
+        // so we stash it in a variable and then use it in the dynamic completion handlers
+        writer.WriteLine($$"""local original_args="{{binaryName}} ${line[@]}" """);
+
         writer.Indent--;
-        writer.WriteLine();
         writer.Indent++;
         GenerateSubcommandList(pathToCurrentCommand, command, writer);
         writer.Indent--;
@@ -67,6 +71,7 @@ fi
 
     private static void GenerateOptionsAndArgumentsForCommand(string[] commandPathForThisCommand, CliCommand command, IndentedTextWriter writer)
     {
+        var shouldWriteDynamicCompleter = false;
         foreach (var option in command.HeirarchicalOptions())
         {
             var multiplicity = option.Arity.MaximumNumberOfValues > 1 ? "*" : "";
@@ -80,6 +85,10 @@ fi
             }
             else
             {
+                if (option is IDynamicOption)
+                {
+                    shouldWriteDynamicCompleter = true;
+                }
                 var argumentName = option.HelpName ?? " ";
                 var argumentValues = ZshValueExpression(option);
                 foreach (var name in option.Names())
@@ -110,6 +119,10 @@ fi
                 cardinality = ":";
             }
 
+            if (arg is IDynamicArgument)
+            {
+                shouldWriteDynamicCompleter = true;
+            }
             var helpText = SanitizeHelp(arg.Description is string d ? " -- " + d : "");
             var completions = ZshValueExpression(arg);
             writer.Write($"'{cardinality}:{arg.Name}{helpText}");
@@ -124,10 +137,15 @@ fi
         }
 
         writer.WriteLine("&& ret=0");
-        var curIndent = writer.Indent;
-        writer.Indent = 0;
-        writer.WriteLine();
-        writer.Indent = curIndent;
+
+        if (shouldWriteDynamicCompleter)
+        {
+            writer.WriteLine("case $state in");
+            writer.Indent++;
+            GenerateDynamicCompleter(writer);
+            writer.Indent--;
+            writer.WriteLine("esac");
+        }
 
         static void WriteValueExpression(IndentedTextWriter writer, string[]? argumentValues)
         {
@@ -137,7 +155,7 @@ fi
             }
             else if (argumentValues.Length == 1)
             {
-                writer.Write($":{argumentValues[0]} ");
+                writer.Write($":{argumentValues[0]}");
             }
             else
             {
@@ -174,6 +192,7 @@ fi
         writer.WriteLine($"curcontext=\"${{curcontext%:*:*}}:{string.Join('-', pathToCurrentCommand)}-command-$line[{pos}]:\"");
         writer.WriteLine($"case $line[{pos}] in");
         writer.Indent++;
+
         foreach (var subcommand in command.Subcommands.Where(c => !c.Hidden))
         {
             var pathToSubcommand = AppendCommandToPath(pathToCurrentCommand, subcommand);
@@ -185,8 +204,8 @@ fi
             GenerateOptionsAndArgumentsForCommand(pathToSubcommand, subcommand, writer);
             GenerateSubcommandList(pathToSubcommand, subcommand, writer);
             writer.Indent--;
-            writer.Indent--;
             writer.WriteLine(";;");
+            writer.Indent--;
         }
         writer.Indent--;
         writer.WriteLine("esac");
@@ -196,7 +215,23 @@ fi
         writer.WriteLine("esac");
     }
 
-    // TODO:_ this function is almost entirely wrong - we're generating the wrong tree of completions here, it's way too big.
+    private static void GenerateDynamicCompleter(IndentedTextWriter writer)
+    {
+        writer.WriteLine("(dotnet_dynamic_complete)");
+        writer.Indent++;
+        writer.WriteLine("local completions=()");
+        // TODO: we're directly calling dotnet complete here - we need something pluggable.
+        writer.WriteLine("local result=$(dotnet complete -- \"${original_args[@]}\")");
+        writer.WriteLine("for line in ${(f)result}; do");
+        writer.Indent++;
+        writer.WriteLine("completions+=(${(q)line})");
+        writer.Indent--;
+        writer.WriteLine("done");
+        writer.WriteLine("_describe 'completions' $completions && ret=0");
+        writer.Indent--;
+        writer.WriteLine(";;");
+    }
+
     private static void GenerateSubcommandHandlers(string[] pathToThisCommand, CliCommand command, IndentedTextWriter writer)
     {
 
@@ -263,9 +298,9 @@ fi
 
     private static string[]? ZshValueExpression(CliOption option)
     {
-        if (option is IDynamicOption _dynamicOption)
+        if (option is IDynamicOption)
         {
-            return null; // don't know how to do this in zsh yet
+            return ["->dotnet_dynamic_complete"];
         }
         else
         {
@@ -275,9 +310,9 @@ fi
 
     private static string[]? ZshValueExpression(CliArgument arg)
     {
-        if (arg is IDynamicArgument _dynamicArg)
+        if (arg is IDynamicArgument)
         {
-            return null; // don't know how to do this in zsh yet
+            return ["->dotnet_dynamic_complete"];
         }
         else
         {

@@ -13,7 +13,7 @@ _my-app() {
         _arguments_options=(-s -C)
     fi
 
-    local context curcontext="$curcontext" state line
+    local context curcontext="$curcontext" state state_descr line
     _arguments "${_arguments_options[@]}" : \
         '-c[]' \
         '-v[]' \
@@ -22,8 +22,7 @@ _my-app() {
         ":: :_my-app_commands" \
         "*::: :->my-app" \
         && ret=0
-
-
+    local original_args="my-app ${line[@]}"
     case $state in
         (my-app)
             words=($line[1] "${words[@]}")
@@ -38,8 +37,7 @@ _my-app() {
                         '--help[Show help and usage information]' \
                         '-h[Show help and usage information]' \
                         && ret=0
-
-                ;;
+                    ;;
                 (help)
                     _arguments "${_arguments_options[@]}" : \
                         '-c[]' \
@@ -48,7 +46,6 @@ _my-app() {
                         ":: :_my-app__help_commands" \
                         "*::: :->help" \
                         && ret=0
-
                         case $state in
                             (help)
                                 words=($line[1] "${words[@]}")
@@ -61,12 +58,11 @@ _my-app() {
                                             '--help[Show help and usage information]' \
                                             '-h[Show help and usage information]' \
                                             && ret=0
-
-                                    ;;
+                                        ;;
                                 esac
                             ;;
                         esac
-                ;;
+                    ;;
             esac
         ;;
     esac
@@ -74,8 +70,7 @@ _my-app() {
 
 (( $+functions[_my-app_commands] )) ||
 _my-app_commands() {
-    local commands
-    commands=(
+    local commands; commands=(
         'test:Subcommand with a second line' \
         'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -84,15 +79,13 @@ _my-app_commands() {
 
 (( $+functions[_my-app__test_commands] )) ||
 _my-app__test_commands() {
-    local commands
-    commands=()
+    local commands; commands=()
     _describe -t commands 'my-app test commands' commands "$@"
 }
 
 (( $+functions[_my-app__help_commands] )) ||
 _my-app__help_commands() {
-    local commands
-    commands=(
+    local commands; commands=(
         'test:' \
     )
     _describe -t commands 'my-app help commands' commands "$@"
@@ -100,8 +93,7 @@ _my-app__help_commands() {
 
 (( $+functions[_my-app__help__test_commands] )) ||
 _my-app__help__test_commands() {
-    local commands
-    commands=()
+    local commands; commands=()
     _describe -t commands 'my-app help test commands' commands "$@"
 }
 

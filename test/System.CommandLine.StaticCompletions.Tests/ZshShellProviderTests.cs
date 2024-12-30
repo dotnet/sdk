@@ -36,4 +36,48 @@ public class ZshShellProviderTests
         };
         await VerifyExtensions.Verify(command, _provider);
     }
+
+    [Fact]
+    public async Task DynamicCompletionsGeneration()
+    {
+        var staticOption = new DynamicOption<int>("--static");
+        staticOption.AcceptOnlyFromAmong("1", "2", "3");
+        var dynamicArg = new DynamicArgument<int>("--dynamic");
+        dynamicArg.CompletionSources.Add((context) =>
+        {
+            return [
+                new ("4"),
+                new ("5"),
+                new ("6")
+            ];
+        });
+        CliCommand command = new CliCommand("my-app")
+        {
+            staticOption,
+            dynamicArg
+        };
+        await VerifyExtensions.Verify(command, _provider);
+    }
+
+    [Fact]
+    public async Task CustomStaticCompletionsGeneration()
+    {
+        var staticOption = new CliOption<int>("--static");
+        staticOption.AcceptOnlyFromAmong("1", "2", "3");
+        var dynamicArg = new CliArgument<int>("--dynamic");
+        dynamicArg.CompletionSources.Add((context) =>
+        {
+            return [
+                new ("4"),
+                new ("5"),
+                new ("6")
+            ];
+        });
+        CliCommand command = new CliCommand("my-app")
+        {
+            staticOption,
+            dynamicArg
+        };
+        await VerifyExtensions.Verify(command, _provider);
+    }
 }
