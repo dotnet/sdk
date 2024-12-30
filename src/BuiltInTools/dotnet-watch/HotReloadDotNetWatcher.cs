@@ -250,16 +250,6 @@ namespace Microsoft.DotNet.Watch
                             break;
                         }
 
-                        if (!rootProjectCapabilities.Contains("SupportsHotReload"))
-                        {
-                            Context.Reporter.Warn($"Project '{rootProjectNode.GetDisplayName()}' does not support Hot Reload and must be rebuilt.");
-
-                            // file change already detected
-                            waitForFileChangeBeforeRestarting = false;
-                            iterationCancellationSource.Cancel();
-                            break;
-                        }
-
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.Main);
                         var stopwatch = Stopwatch.StartNew();
 
