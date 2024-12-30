@@ -291,21 +291,32 @@ fi
         if (staticCompletions.Length == 0)
         {
             //TODO: attempt to do zsh helpers here
+            if (sym is CliOption<FileInfo> || sym is CliArgument<FileInfo>)
+            {
+                return ["_files"];
+            }
+            else if (sym is CliOption<Uri> || sym is CliArgument<Uri>)
+            {
+                return ["_urls"];
+            }
+
             return null;
         }
         else
         {
             if (staticCompletions.Any(c => c.InsertText is not null || c.Detail is not null || c.Documentation is not null))
             {
-                // since any item had 'help', we use the help form of value completions
-                var lines = new List<string>(staticCompletions.Length + 2) { "(" };
+                // since any item had 'help', we use the help form of value completions.
+                // note the double parens - this ensures that the descriptions are parsed and not treated as part of the value
+                var lines = new List<string>(staticCompletions.Length + 2) { "((" };
                 foreach (var completion in staticCompletions)
                 {
                     var insertText = completion.InsertText ?? completion.Label;
                     var documentation = completion.Documentation ?? completion.Detail ?? completion.Label;
-                    lines.Add($"\"{SanitizeValue(insertText)}\\:\"{SanitizeHelp(documentation)}\"");
+                    // syntax here is value\:"helptext"
+                    lines.Add($"{SanitizeValue(insertText)}\\:\"{SanitizeHelp(documentation)}\"");
                 }
-                lines.Add(")");
+                lines.Add("))");
                 return lines.ToArray();
             }
             else
