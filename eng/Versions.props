@@ -83,7 +83,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/winforms -->
-    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>10.0.0-alpha.1.24617.1</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
+    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>10.0.0-alpha.1.24628.1</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
@@ -136,9 +136,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24627.1</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24627.1</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24627.1</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-alpha.1.24630.1</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-alpha.1.24630.1</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-alpha.1.24630.1</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
@@ -242,8 +242,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.0-alpha.1.24623.1</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>10.0.0-alpha.1.24623.1</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.0-alpha.1.24630.2</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>10.0.0-alpha.1.24630.2</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Template versions">
     <!-- 10.0 Template versions -->
