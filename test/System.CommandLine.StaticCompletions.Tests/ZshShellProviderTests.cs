@@ -10,6 +10,7 @@ using Xunit;
 public class ZshShellProviderTests
 {
     private IShellProvider _provider = new ZshShellProvider();
+
     [Fact]
     public async Task GenericCompletions()
     {
