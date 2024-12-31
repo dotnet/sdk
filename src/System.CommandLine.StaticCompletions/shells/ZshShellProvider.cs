@@ -72,7 +72,7 @@ fi
     private static void GenerateOptionsAndArgumentsForCommand(string[] commandPathForThisCommand, CliCommand command, IndentedTextWriter writer)
     {
         var shouldWriteDynamicCompleter = false;
-        foreach (var option in command.HeirarchicalOptions())
+        foreach (var option in command.HierarchicalOptions())
         {
             var multiplicity = option.Arity.MaximumNumberOfValues > 1 ? "*" : "";
             var helpText = SanitizeHelp(option.Description);
