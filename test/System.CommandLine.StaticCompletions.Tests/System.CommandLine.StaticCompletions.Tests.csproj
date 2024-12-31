@@ -13,12 +13,12 @@
          I don't want that. This should be able to stand alone. -->
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.24528.1"/>
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
-    <PackageReference Include="XUnit" Version="2.9.0" />
+    <PackageReference Include="XUnit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0-preview-24610-01" />
     <PackageReference Include="Microsoft.TestPlatform" Version="17.13.0-preview-24610-01" />
-    <PackageReference Include="Verify.Xunit" Version="25.0.2" />
-    <PackageReference Include="Verify.DiffPlex" Version="3.0.0" />
+    <PackageReference Include="Verify.Xunit" Version="28.7.0" />
+    <PackageReference Include="Verify.DiffPlex" Version="3.1.2" />
   </ItemGroup>
 
   <ItemGroup>
