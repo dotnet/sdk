@@ -186,7 +186,9 @@ fi
         // the 'dotnet' CLI has a hidden subcommand argument that I've tried to get rid of (https://github.com/dotnet/sdk/blob/663b9f78e4c79ce6693368865ee50b3f4c297589/src/Cli/dotnet/Parser.cs#L83)
         // but it's load-bearing and I haven't been able to rip it out yet. No where else seems to have this hidden argument, so for tracking purposes
         // we can skip it here.
-        var pos = command.Arguments.Where(a => !a.Hidden).Count() + 1;
+        // in addition, optional arguments interfere with position counting, so we need to skip them as well.
+        var parentArguments = command.Parents.OfType<CliCommand>().SelectMany(parent => parent.Arguments).Select(arg => arg.Name).ToHashSet();
+        var pos = command.Arguments.Where(a => !parentArguments.Contains(a.Name) && !a.Hidden).Count() + 1;
         writer.WriteLine($$"""words=($line[{{pos}}] "${words[@]}")""");
         writer.WriteLine("(( CURRENT += 1 ))");
         writer.WriteLine($"curcontext=\"${{curcontext%:*:*}}:{string.Join('-', pathToCurrentCommand)}-command-$line[{pos}]:\"");
