@@ -14,8 +14,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CommonLocalizableStrings.ProjectArgumentName)
         {
-            Description = CommonLocalizableStrings.ProjectArgumentDescription,
-            Hidden = true
+            Description = CommonLocalizableStrings.ProjectArgumentDescription
         }.DefaultToCurrentDirectory();
 
         private static readonly CliCommand Command = ConstructCommand();

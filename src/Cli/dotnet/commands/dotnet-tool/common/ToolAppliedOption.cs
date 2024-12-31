@@ -28,10 +28,7 @@ namespace Microsoft.DotNet.Tools.Tool.Common
 
         public static readonly CliOption<string> VersionOption
             = ToolInstallCommandParser.VersionOption
-              ?? new("--version")
-              {
-                  Arity = ArgumentArity.Zero
-              }; // Workaround for Mono runtime (https://github.com/dotnet/sdk/issues/41672)
+              ?? new("--version"); // Workaround for Mono runtime (https://github.com/dotnet/sdk/issues/41672)
 
         public static CliOption<string> ToolPathOption = new("--tool-path")
         {
