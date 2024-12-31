@@ -14,12 +14,6 @@ namespace Microsoft.DotNet.Cli
             HelpName = "command"
         };
 
-        public static readonly CliOption<bool> Detailed = new("--detailed")
-        {
-            Hidden = true,
-            Description = "Show detailed completion information"
-        };
-
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
