@@ -22,7 +22,7 @@ _my-app() {
         ":: :_my-app_commands" \
         "*::: :->my-app" \
         && ret=0
-    local original_args="my-app ${line[@]}"
+    local original_args="my-app ${line[@]}" 
     case $state in
         (my-app)
             words=($line[1] "${words[@]}")
