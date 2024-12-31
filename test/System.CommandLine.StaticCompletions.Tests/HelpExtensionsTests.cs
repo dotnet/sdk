@@ -42,6 +42,6 @@ public class HelpExtensionsTests
         childCommand.Options.Add(new CliOption<string>("--child-hidden") { Hidden = true });
 
         // note: no parent-local or parent-global-but-hidden options, and no locally hidden options
-        childCommand.HierarchicalOptions().Select(c => c.Name).Should().Equal(["--parent-global", "--child-local"]);
+        childCommand.HierarchicalOptions().Select(c => c.Name).Should().Equal(["--child-local", "--parent-global"]);
     }
 }
