@@ -70,8 +70,6 @@ public class CompletionsCommand : CliCommand
             {
                 throw new InvalidOperationException($"Shell '{shellPath}' is not supported");
             }
-
-            return shellProvider;
         }
     }
 }

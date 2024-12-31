@@ -173,7 +173,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     {
         List<string> completions = new();
 
-        foreach (var option in command.HeirarchicalOptions())
+        foreach (var option in command.HierarchicalOptions())
         {
             completions.AddRange(GenerateOptionNameCompletions(option));
         }

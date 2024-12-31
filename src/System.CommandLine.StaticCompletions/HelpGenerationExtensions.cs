@@ -23,7 +23,7 @@ public static class HelpExtensions
     };
 
     /// <summary>
-    /// sanitizes a function name to be safe for bash
+    /// Sanitizes a function name to be safe for bash
     /// </summary>
     /// <param name="functionName"></param>
     /// <returns></returns>
@@ -73,7 +73,7 @@ public static class HelpExtensions
         }
     }
 
-    public static IEnumerable<CliOption> HeirarchicalOptions(this CliCommand c)
+    public static IEnumerable<CliOption> HierarchicalOptions(this CliCommand c)
     {
         var myOptions = c.Options.Where(o => !o.Hidden);
         if (c.Parents.Count() == 0)

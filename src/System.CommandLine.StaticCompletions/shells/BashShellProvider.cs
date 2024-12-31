@@ -36,7 +36,7 @@ public class BashShellProvider : IShellProvider
         // generate the words for options and subcommands
         var visibleSubcommands = command.Subcommands.Where(c => !c.Hidden).ToArray();
         // notably, do not generate completions for all option aliases - since a user is tab-completing we can use the longest forms
-        var completionOptions = command.HeirarchicalOptions().Where(o => !o.Hidden).Select(o => o.Name).ToArray();
+        var completionOptions = command.HierarchicalOptions().Where(o => !o.Hidden).Select(o => o.Name).ToArray();
         var completionSubcommands = visibleSubcommands.Select(x => x.Name).ToArray();
         string[] completionWords = [.. completionSubcommands, .. completionOptions];
 
