@@ -12,7 +12,7 @@ public static class VerifyConfiguration
     {
         VerifyDiffPlex.Initialize(VerifyTests.DiffPlex.OutputType.Compact);
         // prevent CI systems from trying to make a snapshot directory, maybe?
-        DerivePathInfo((_, _, _, _) => new("snapshots"));
+        DerivePathInfo((_sourceFile, projectDir, type, method) => new(directory: Path.Combine(projectDir, "snapshots"), typeName: type.Name, methodName: method.Name));
         EmptyFiles.FileExtensions.AddTextExtension("ps1");
         EmptyFiles.FileExtensions.AddTextExtension("nu");
     }
