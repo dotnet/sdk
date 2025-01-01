@@ -19,7 +19,7 @@ public class BashShellProvider : IShellProvider
         var initialFunctionName = command.FunctionName().MakeSafeFunctionName();
         return
             $"""
-            #! /bin/bash
+            #!/usr/bin/env bash
             {GenerateCommandsCompletions([], command, isNestedCommand: false)}
 
             complete -F {initialFunctionName} {command.Name}
