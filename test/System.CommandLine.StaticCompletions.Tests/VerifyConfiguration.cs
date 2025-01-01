@@ -14,5 +14,6 @@ public static class VerifyConfiguration
         // prevent CI systems from trying to make a snapshot directory, maybe?
         DerivePathInfo((_, _, _, _) => new("snapshots"));
         EmptyFiles.FileExtensions.AddTextExtension("ps1");
+        EmptyFiles.FileExtensions.AddTextExtension("nu");
     }
 }
