@@ -1,4 +1,4 @@
-﻿#! /bin/bash
+﻿#!/usr/bin/env bash
 _mycommand() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
