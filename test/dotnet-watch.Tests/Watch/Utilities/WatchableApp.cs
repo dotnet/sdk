@@ -42,6 +42,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             if (!Process.Output.Any(line => line.Contains(message)))
             {
+                Logger.WriteLine($"[TEST] Test waiting for output: '{message}'");
                 _ = await AssertOutputLine(line => line.Contains(message));
             }
         }

@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 line = line.StripTerminalLoggerProgressIndicators();
             }
 
-            WriteTestOutput($"{DateTime.Now}: post: '{line}'");
+            WriteTestOutput(line);
             _source.Post(line);
         }
 
