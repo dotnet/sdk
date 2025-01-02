@@ -52,21 +52,7 @@ namespace Microsoft.NET.Build.Tasks
             _runtimePack = GetNETCoreAppRuntimePack();
             _targetRuntimeIdentifier = _runtimePack?.GetMetadata(MetadataKeys.RuntimeIdentifier);
 
-            // Get the list of runtime identifiers that we support and can target
-            ITaskItem targetingPack = GetNETCoreAppTargetingPack();
-            string supportedRuntimeIdentifiers = targetingPack?.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers);
-
-            var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
-            var supportedRIDsList = supportedRuntimeIdentifiers == null ? Array.Empty<string>() : supportedRuntimeIdentifiers.Split(';');
-
-            // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
-            _hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(
-                runtimeGraph,
-                NETCoreSdkRuntimeIdentifier,
-                supportedRIDsList,
-                out _);
-
-            if (_hostRuntimeIdentifier == null || _targetRuntimeIdentifier == null)
+            if (_targetRuntimeIdentifier == null)
             {
                 Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                 return;
@@ -96,6 +82,13 @@ namespace Microsoft.NET.Build.Tasks
 
         private bool ValidateCrossgenSupport()
         {
+            _hostRuntimeIdentifier = GetHostRuntimeIdentifierForCrossgen();
+            if (_hostRuntimeIdentifier == null)
+            {
+                Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
+                return false;
+            }
+
             _crossgenTool.PackagePath = _runtimePack?.GetMetadata(MetadataKeys.PackageDirectory);
             if (_crossgenTool.PackagePath == null)
             {
@@ -121,12 +114,39 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             return true;
+
+            string GetHostRuntimeIdentifierForCrossgen()
+            {
+                // Crossgen's host RID comes from the runtime pack that Crossgen will be loaded from.
+
+                // Get the list of runtime identifiers that we support and can target
+                ITaskItem targetingPack = GetNETCoreAppTargetingPack();
+                string supportedRuntimeIdentifiers = targetingPack?.GetMetadata(MetadataKeys.RuntimePackRuntimeIdentifiers);
+
+                var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
+                var supportedRIDsList = supportedRuntimeIdentifiers == null ? Array.Empty<string>() : supportedRuntimeIdentifiers.Split(';');
+
+                // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
+                return NuGetUtils.GetBestMatchingRid(
+                    runtimeGraph,
+                    NETCoreSdkRuntimeIdentifier,
+                    supportedRIDsList,
+                    out _);
+            }
         }
 
         private bool ValidateCrossgen2Support()
         {
             ITaskItem crossgen2Pack = Crossgen2Packs?.FirstOrDefault();
-            _crossgen2Tool.PackagePath = crossgen2Pack?.GetMetadata(MetadataKeys.PackageDirectory);
+
+            _hostRuntimeIdentifier = crossgen2Pack?.GetMetadata(MetadataKeys.RuntimeIdentifier);
+            if (_hostRuntimeIdentifier == null)
+            {
+                Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
+                return false;
+            }
+
+            _crossgen2Tool.PackagePath = crossgen2Pack.GetMetadata(MetadataKeys.PackageDirectory);
 
             if (string.IsNullOrEmpty(_crossgen2Tool.PackagePath) ||
                 !NuGetVersion.TryParse(crossgen2Pack.GetMetadata(MetadataKeys.NuGetPackageVersion), out NuGetVersion crossgen2PackVersion))
