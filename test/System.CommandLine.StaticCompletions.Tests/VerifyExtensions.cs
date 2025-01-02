@@ -11,7 +11,7 @@ public static class VerifyExtensions
     {
         var completions = provider.GenerateCompletions(command);
         var settings = new VerifySettings();
-        settings.UseDirectory($"snapshots/{provider.ArgumentName}");
+        settings.UseDirectory(Path.Combine("snapshots", provider.ArgumentName));
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings);
     }
 }
