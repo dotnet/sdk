@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "First":{
+      "commandName": "Project"
+    },
+    "Second":{
+      "commandName": "Project",
+      "workingDirectory": "launchSubfolder"
+    }
+  }
+}

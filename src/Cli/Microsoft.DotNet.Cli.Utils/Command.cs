@@ -187,6 +187,8 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public string CommandArgs => _process.StartInfo.Arguments;
 
+        public string CommandWorkingDirectory => _process.StartInfo.WorkingDirectory;
+
         public ICommand SetCommandArgs(string commandArgs)
         {
             _process.StartInfo.Arguments = commandArgs;
