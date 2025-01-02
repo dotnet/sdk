@@ -5,7 +5,7 @@
   "symbols/TargetFrameworkOverride/description": "Invalida la plataforma de destino",
   "symbols/TargetFrameworkOverride/displayName": "Invalidación de la plataforma de destino",
   "symbols/Framework/description": "Marco de destino del proyecto.",
-  "symbols/Framework/displayName": "Marco",
+  "symbols/Framework/displayName": "Plataforma",
   "symbols/Framework/choices/net9.0/description": "Net9.0 de destino",
   "symbols/EnablePack/description": "Indica si se va a habilitar o no el empaquetado (a través de \"dotnet pack\") para el proyecto.",
   "symbols/EnablePack/displayName": "Habilitar paquete",

@@ -5,7 +5,9 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using CommandLocalizableStrings = Microsoft.DotNet.Tools.CommonLocalizableStrings;
 
 namespace Microsoft.DotNet.Tools.Sln.List
 {
@@ -23,25 +25,36 @@ namespace Microsoft.DotNet.Tools.Sln.List
 
         public override int Execute()
         {
-            var slnFile = SlnFileFactory.CreateFromFileOrDirectory(_fileOrDirectory);
+            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
+            try
+            {
+                ListAllProjectsAsync(solutionFileFullPath, CancellationToken.None).Wait();
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                throw new GracefulException(CommandLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+            }
+        }
 
+        private async Task ListAllProjectsAsync(string solutionFileFullPath, CancellationToken cancellationToken)
+        {
+            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
+            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
             string[] paths;
-
             if (_displaySolutionFolders)
             {
-                paths = slnFile.Projects
-                    .GetProjectsByType(ProjectTypeGuids.SolutionFolderGuid)
-                    .Select(folder => folder.GetFullSolutionFolderPath())
+                paths = solution.SolutionFolders
+                    // VS-SolutionPersistence does not return a path object, so there might be issues with forward/backward slashes on different platforms
+                    .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')))
                     .ToArray();
             }
             else
             {
-                paths = slnFile.Projects
-                    .GetProjectsNotOfType(ProjectTypeGuids.SolutionFolderGuid)
+                paths = solution.SolutionProjects
                     .Select(project => project.FilePath)
                     .ToArray();
             }
-
             if (paths.Length == 0)
             {
                 Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
@@ -51,14 +64,14 @@ namespace Microsoft.DotNet.Tools.Sln.List
                 Array.Sort(paths);
 
                 string header = _displaySolutionFolders ? LocalizableStrings.SolutionFolderHeader : LocalizableStrings.ProjectsHeader;
-                Reporter.Output.WriteLine($"{header}");
+                Reporter.Output.WriteLine(header);
                 Reporter.Output.WriteLine(new string('-', header.Length));
                 foreach (string slnProject in paths)
                 {
                     Reporter.Output.WriteLine(slnProject);
                 }
             }
-            return 0;
+
         }
     }
 }

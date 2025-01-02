@@ -201,42 +201,19 @@ namespace Microsoft.NET.Build.Tasks
 
             // Determine targetOS based on target rid.
             // Use the runtime graph to support non-portable target rids.
+            // Use the full target rid instead of just the target OS as the runtime graph
+            // may only have the full target rid and not an OS-only rid for non-portable target rids
+            // added by our source-build partners.
             var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
-                    _targetPlatform,
-                    new[] { "linux", "linux-musl", "osx", "win", "freebsd", "illumos" },
+                    _targetRuntimeIdentifier,
+                    new[] { "linux", "osx", "win", "freebsd", "illumos" },
                     out _);
-
-            // For source-build, allow the bootstrap SDK rid to be unknown to the runtime repo graph.
-            if (portablePlatform == null && _targetRuntimeIdentifier == _hostRuntimeIdentifier)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    portablePlatform = "win";
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    portablePlatform = "linux";
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("FREEBSD")))
-                {
-                    portablePlatform = "freebsd";
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("ILLUMOS")))
-                {
-                    portablePlatform = "illumos";
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    portablePlatform = "osx";
-                }
-            }
 
             targetOS = portablePlatform switch
             {
                 "linux" => "linux",
-                "linux-musl" => "linux",
                 "osx" => "osx",
                 "win" => "windows",
                 "freebsd" => "freebsd",

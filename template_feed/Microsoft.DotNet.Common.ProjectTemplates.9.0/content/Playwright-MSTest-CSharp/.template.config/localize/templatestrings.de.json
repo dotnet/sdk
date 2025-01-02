@@ -3,7 +3,7 @@
   "name": "MSTest Playwright-Testprojekt",
   "description": "Ein Projekt, das Playwright-Tests mit MSTest-Testframework enthält, das unter .NET unter Windows, Linux und MacOS ausgeführt werden kann.",
   "symbols/TargetFrameworkOverride/description": "Überschreibt das Zielframework",
-  "symbols/TargetFrameworkOverride/displayName": "Überschreibung des Zielframeworks",
+  "symbols/TargetFrameworkOverride/displayName": "Zielframeworküberschreibung",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/displayName": "Framework",
   "symbols/Framework/choices/net9.0/description": ".NET 9",
