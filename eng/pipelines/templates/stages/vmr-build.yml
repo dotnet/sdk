@@ -436,7 +436,6 @@ stages:
         buildName: Windows_BuildTests
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        architecture: x64
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
