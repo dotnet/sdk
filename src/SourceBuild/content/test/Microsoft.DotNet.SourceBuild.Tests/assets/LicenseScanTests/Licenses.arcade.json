@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "path": "src/Microsoft.DotNet.Build.Tasks.Installers/build/wix/bundle/bundle.wxs",
+      "detected_license_expression": "unknown-license-reference"
+    }
+  ]
+}
