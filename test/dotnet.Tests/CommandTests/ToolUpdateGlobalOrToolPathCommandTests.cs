@@ -14,7 +14,6 @@ using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.DotNet.Tools.Tool.Uninstall;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -383,7 +382,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Clear();
 
             ParseResult result = Parser.Instance.Parse("dotnet tool update " + $"-g {_packageId}");
-            
+
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
                 (location, forwardArguments, currentWorkingDirectory) => (_store, _store,
@@ -421,7 +420,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             string options = $"-g {_packageId}";
             ParseResult result = Parser.Instance.Parse("dotnet tool update " + options);
-            
+
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
                 (_, _, _) => (_store, _store, new ToolPackageDownloaderMock(
