@@ -150,6 +150,7 @@ namespace Microsoft.DotNet.Cli
         {
             _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
             _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
+
             string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
             string targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
             string targetPath = project.GetPropertyValue(ProjectProperties.TargetPath);
