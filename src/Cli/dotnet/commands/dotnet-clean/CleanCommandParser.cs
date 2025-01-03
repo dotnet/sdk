@@ -53,6 +53,8 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(OutputOption);
             command.Options.Add(CommonOptions.ArtifactsPathOption);
             command.Options.Add(NoLogoOption);
+            command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
 
             command.SetAction(CleanCommand.Run);
