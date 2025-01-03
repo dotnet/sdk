@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
@@ -33,6 +34,9 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<EventArgs> Run;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
+        private const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
+        private const string DLLExtension = "dll";
+
         public Module Module => _module;
 
         public TestApplication(Module module, List<string> args)
@@ -55,7 +59,7 @@ namespace Microsoft.DotNet.Cli
                 return 1;
             }
 
-            bool isDll = _module.DllOrExePath.EndsWith(".dll");
+            bool isDll = _module.DllOrExePath.HasExtension(DLLExtension);
 
             ProcessStartInfo processStartInfo = new()
             {
@@ -67,7 +71,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
             {
-                processStartInfo.EnvironmentVariables.Add("TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE", _module.RunSettingsFilePath);
+                processStartInfo.EnvironmentVariables.Add(TestingPlatformVsTestBridgeRunSettingsFileEnvVar, _module.RunSettingsFilePath);
             }
 
             _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
@@ -81,7 +85,7 @@ namespace Microsoft.DotNet.Cli
         private void WaitOnTestApplicationPipeConnectionLoop()
         {
             _cancellationToken.Cancel();
-            _testAppPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+            _testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
