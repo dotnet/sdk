@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli.Sln.Remove.Tests
 {
@@ -21,221 +23,6 @@ Arguments:
 
 Options:
   -?, -h, --help    Show command line help.";
-
-        private const string ExpectedSlnContentsAfterRemove = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App\App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
-	EndGlobalSection
-EndGlobal
-";
-
-        private const string ExpectedSlnContentsAfterRemoveAllProjects = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Global
-EndGlobal
-";
-
-        private const string ExpectedSlnContentsAfterRemoveNestedProj = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
-EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""src"", ""src"", ""{7B86CE74-F620-4B32-99FE-82D40F8D6BF2}""
-EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""Lib"", ""Lib"", ""{EAB71280-AF32-4531-8703-43CDBA261AA3}""
-EndProject
-Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""Lib"", ""src\Lib\Lib.csproj"", ""{84A45D44-B677-492D-A6DA-B3A71135AB8E}""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x64.ActiveCfg = Debug|x64
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x64.Build.0 = Debug|x64
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x86.ActiveCfg = Debug|x86
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Debug|x86.Build.0 = Debug|x86
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x64.ActiveCfg = Release|x64
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x64.Build.0 = Release|x64
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x86.ActiveCfg = Release|x86
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E}.Release|x86.Build.0 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{EAB71280-AF32-4531-8703-43CDBA261AA3} = {7B86CE74-F620-4B32-99FE-82D40F8D6BF2}
-		{84A45D44-B677-492D-A6DA-B3A71135AB8E} = {EAB71280-AF32-4531-8703-43CDBA261AA3}
-	EndGlobalSection
-EndGlobal
-";
-
-        private const string ExpectedSlnContentsAfterRemoveLastNestedProj = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26006.2
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{9A19103F-16F7-4668-BE54-9A1E7A4F7556}"") = ""App"", ""App.csproj"", ""{7072A694-548F-4CAE-A58F-12D257D5F486}""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.ActiveCfg = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x64.Build.0 = Debug|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.ActiveCfg = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Debug|x86.Build.0 = Debug|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.ActiveCfg = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x64.Build.0 = Release|x64
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.ActiveCfg = Release|x86
-		{7072A694-548F-4CAE-A58F-12D257D5F486}.Release|x86.Build.0 = Release|x86
-	EndGlobalSection
-EndGlobal
-";
-
-        private const string ExpectedSlnContentsAfterRemoveProjectWithDependencies = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27110.0
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""App"", ""App\App.csproj"", ""{BB02B949-F6BD-4872-95CB-96A05B1FE026}""
-	ProjectSection(ProjectDependencies) = postProject
-		{D53E177A-8ECF-43D5-A01E-98B884D53CA6} = {D53E177A-8ECF-43D5-A01E-98B884D53CA6}
-	EndProjectSection
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""First"", ""First\First.csproj"", ""{D53E177A-8ECF-43D5-A01E-98B884D53CA6}""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BB02B949-F6BD-4872-95CB-96A05B1FE026}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BB02B949-F6BD-4872-95CB-96A05B1FE026}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BB02B949-F6BD-4872-95CB-96A05B1FE026}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BB02B949-F6BD-4872-95CB-96A05B1FE026}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D53E177A-8ECF-43D5-A01E-98B884D53CA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D53E177A-8ECF-43D5-A01E-98B884D53CA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D53E177A-8ECF-43D5-A01E-98B884D53CA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D53E177A-8ECF-43D5-A01E-98B884D53CA6}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {F6D9A973-1CFD-41C9-84F2-1471C0FE67DF}
-	EndGlobalSection
-EndGlobal
-";
-
-        private const string ExpectedSlnContentsAfterRemoveProjectInSolutionWithNestedSolutionItems = @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.705
-MinimumVisualStudioVersion = 10.0.40219.1
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NewFolder1"", ""NewFolder1"", ""{F39E429A-F91C-44F9-9025-EA6E41C99637}""
-EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NewFolder2"", ""NewFolder2"", ""{1B19AA22-7DB3-4A0F-8B89-2B80040B2BF0}""
-	ProjectSection(SolutionItems) = preProject
-		TextFile1.txt = TextFile1.txt
-	EndProjectSection
-EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NestedSolution"", ""NestedSolution"", ""{2128FC1C-7B60-4BC4-9010-D7A97E1805EA}""
-EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NestedFolder"", ""NestedFolder"", ""{7BC6A99C-7321-47A2-8CA5-B394195BD2B8}""
-EndProject
-Project(""{2150E333-8FDC-42A3-9474-1A3956D46DE8}"") = ""NestedFolder"", ""NestedFolder"", ""{F6B0D958-42FF-4123-9668-A77A4ABFE5BA}""
-EndProject
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""ConsoleApp2"", ""ConsoleApp2\ConsoleApp2.csproj"", ""{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}""
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{1B19AA22-7DB3-4A0F-8B89-2B80040B2BF0} = {F39E429A-F91C-44F9-9025-EA6E41C99637}
-		{7BC6A99C-7321-47A2-8CA5-B394195BD2B8} = {2128FC1C-7B60-4BC4-9010-D7A97E1805EA}
-		{F6B0D958-42FF-4123-9668-A77A4ABFE5BA} = {7BC6A99C-7321-47A2-8CA5-B394195BD2B8}
-		{A264F7DB-E1EF-4F99-96BE-C08F29CA494F} = {F6B0D958-42FF-4123-9668-A77A4ABFE5BA}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {D36A0DD6-BD9C-4B57-9441-693B33DB7C2D}
-	EndGlobalSection
-EndGlobal
-";
 
         public GivenDotnetSlnRemove(ITestOutputHelper log) : base(log)
         {
@@ -260,10 +47,10 @@ EndGlobal
         public void WhenTooManyArgumentsArePassedItPrintsError(string solutionCommand)
         {
             var cmd = new DotnetCommand(Log)
-                .Execute(solutionCommand, "one.sln", "two.sln", "three.sln", "remove");
+                .Execute(solutionCommand, "one.sln", "two.sln", "three.slnx", "remove");
             cmd.Should().Fail();
             cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
-{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three.sln")}");
+{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
         }
 
         [Theory]
@@ -281,11 +68,13 @@ EndGlobal
 
         [Theory]
         [InlineData("sln", "idontexist.sln")]
+        [InlineData("sln", "idontexist.slnx")]
         [InlineData("sln", "ihave?invalidcharacters")]
         [InlineData("sln", "ihaveinv@lidcharacters")]
         [InlineData("sln", "ihaveinvalid/characters")]
         [InlineData("sln", "ihaveinvalidchar\\acters")]
         [InlineData("solution", "idontexist.sln")]
+        [InlineData("solution", "idontexist.slnx")]
         [InlineData("solution", "ihave?invalidcharacters")]
         [InlineData("solution", "ihaveinv@lidcharacters")]
         [InlineData("solution", "ihaveinvalid/characters")]
@@ -300,9 +89,11 @@ EndGlobal
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenInvalidSolutionIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
@@ -312,36 +103,44 @@ EndGlobal
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "InvalidSolution.sln", "remove", projectToRemove);
+                .Execute(solutionCommand, $"InvalidSolution{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, "InvalidSolution.sln", LocalizableStrings.FileHeaderMissingError));
+            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}"), "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenInvalidSolutionIsFoundRemovePrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
-            var projectDirectory = _testAssetsManager
+            var projectDirectoryRoot = _testAssetsManager
                 .CopyTestAsset("InvalidSolution", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "InvalidSolution.sln");
+            var projectDirectory = solutionExtension == ".sln"
+                ? Path.Join(projectDirectoryRoot, "Sln")
+                : Path.Join(projectDirectoryRoot, "Slnx");
+
+            var solutionPath = Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}");
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, LocalizableStrings.FileHeaderMissingError));
+            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenNoProjectIsPassedItPrintsErrorAndUsage(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenNoProjectIsPassedItPrintsErrorAndUsage(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}GivenDotnetSlnRemove")
@@ -350,7 +149,7 @@ EndGlobal
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "App.sln", "remove");
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove");
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
@@ -395,20 +194,22 @@ EndGlobal
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenPassedAReferenceNotInSlnItPrintsStatus(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenPassedAReferenceNotInSlnItPrintsStatus(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
             var contentBefore = File.ReadAllText(solutionPath);
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", "referenceDoesNotExistInSln.csproj");
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", "referenceDoesNotExistInSln.csproj");
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "referenceDoesNotExistInSln.csproj"));
             File.ReadAllText(solutionPath)
@@ -416,61 +217,67 @@ EndGlobal
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenPassedAReferenceItRemovesTheReferenceButNotOtherReferences(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenPassedAReferenceItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(2);
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
 
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
 
-            slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(1);
-            slnFile.Projects[0].FilePath.Should().Be(Path.Combine("App", "App.csproj"));
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenSolutionItemsExistInFolderParentFoldersAreNotRemoved(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenSolutionItemsExistInFolderParentFoldersAreNotRemoved(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: $"{solutionCommand}")
+                .CopyTestAsset("SlnFileWithSolutionItemsInNestedFolders", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
             var projectToRemove = Path.Combine("ConsoleApp1", "ConsoleApp1.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
 
-            slnFile = SlnFile.Read(solutionPath);
+            var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveProjectInSolutionWithNestedSolutionItems{solutionExtension}");
             File.ReadAllText(solutionPath)
                 .Should()
-                .BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveProjectInSolutionWithNestedSolutionItems);
+                .BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory]
+        [Theory(Skip = "vs-solutionpersistence does not allow duplicate references.")]
         [InlineData("sln")]
         [InlineData("solution")]
-        public void WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)
+        public async Task WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndDuplicateProjectReferences", identifier: $"{solutionCommand}")
@@ -478,42 +285,48 @@ EndGlobal
                 .Path;
 
             var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(3);
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(3);
 
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
             string outputText = string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove);
             outputText += Environment.NewLine + outputText;
             cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
 
-            slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(1);
-            slnFile.Projects[0].FilePath.Should().Be(Path.Combine("App", "App.csproj"));
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenPassedMultipleReferencesAndOneOfThemDoesNotExistItRemovesTheOneThatExists(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenPassedMultipleReferencesAndOneOfThemDoesNotExistItRemovesTheOneThatExists(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(2);
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
 
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", "idontexist.csproj", projectToRemove, "idontexisteither.csproj");
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", "idontexist.csproj", projectToRemove, "idontexisteither.csproj");
             cmd.Should().Pass();
 
             string outputText = $@"{string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "idontexist.csproj")}
@@ -522,62 +335,76 @@ EndGlobal
 
             cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
 
-            slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(1);
-            slnFile.Projects[0].FilePath.Should().Be(Path.Combine("App", "App.csproj"));
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenReferenceIsRemovedBuildConfigsAreAlsoRemoved(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenReferenceIsRemovedBuildConfigsAreAlsoRemoved(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(2);
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
 
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
 
+            var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemove{solutionExtension}");
             File.ReadAllText(solutionPath)
-                .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemove);
+                .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenDirectoryContainingProjectIsGivenProjectIsRemoved(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenDirectoryContainingProjectIsGivenProjectIsRemoved(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(2);
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", "Lib");
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", "Lib");
             cmd.Should().Pass();
 
+            var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemove{solutionExtension}");
             File.ReadAllText(solutionPath)
-                .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemove);
+                .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
@@ -587,7 +414,7 @@ EndGlobal
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", directoryToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", directoryToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(
                 string.Format(
@@ -597,9 +424,11 @@ EndGlobal
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenDirectoryContainsMultipleProjectsItCancelsWholeOperation(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
@@ -609,7 +438,7 @@ EndGlobal
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", directoryToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", directoryToRemove);
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(
                 string.Format(
@@ -619,33 +448,38 @@ EndGlobal
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenReferenceIsRemovedSlnBuilds(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenReferenceIsRemovedSlnBuilds(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
+                .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(2);
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
 
             var projectToRemove = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
 
             new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute($"restore", "App.sln")
+                .Execute($"restore", $"App{solutionExtension}")
                 .Should().Pass();
 
             new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("build", "App.sln", "--configuration", "Release", "/p:ProduceReferenceAssembly=false")
+                .Execute("build", $"App{solutionExtension}", "--configuration", "Release", "/p:ProduceReferenceAssembly=false")
                 .Should().Pass();
 
             var reasonString = "should be built in release mode, otherwise it means build configurations are missing from the sln file";
@@ -688,95 +522,108 @@ EndGlobal
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenFinalReferenceIsRemovedEmptySectionsAreRemoved(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenFinalReferenceIsRemovedEmptySectionsAreRemoved(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
-            SlnFile slnFile = SlnFile.Read(solutionPath);
-            slnFile.Projects.Count.Should().Be(2);
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(2);
 
             var appPath = Path.Combine("App", "App.csproj");
             var libPath = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", libPath, appPath);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", libPath, appPath);
             cmd.Should().Pass();
 
             var solutionContents = File.ReadAllText(solutionPath);
-
-            solutionContents.Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveAllProjects);
+            var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveAllProjects{solutionExtension}");
+            solutionContents.Should().BeVisuallyEquivalentTo(templateContents);
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenNestedProjectIsRemovedItsSolutionFoldersAreRemoved(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenNestedProjectIsRemovedItsSolutionFoldersAreRemoved(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
             var projectToRemove = Path.Combine("src", "NotLastProjInSrc", "NotLastProjInSrc.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
 
+            var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveNestedProj{solutionExtension}");
             File.ReadAllText(solutionPath)
-                .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveNestedProj);
+                .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenFinalNestedProjectIsRemovedSolutionFoldersAreRemoved(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenFinalNestedProjectIsRemovedSolutionFoldersAreRemoved(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndLastCsprojInSubDirToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
             var projectToRemove = Path.Combine("src", "Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
 
+            var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveLastNestedProj{solutionExtension}");
             File.ReadAllText(solutionPath)
-                .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveLastNestedProj);
+                .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenProjectIsRemovedThenDependenciesOnProjectAreAlsoRemoved(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenProjectIsRemovedThenDependenciesOnProjectAreAlsoRemoved(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnProjectDependencyToRemove", identifier: $"{solutionCommand}")
                 .WithSource()
                 .Path;
 
-            var solutionPath = Path.Combine(projectDirectory, "App.sln");
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
 
             var projectToRemove = Path.Combine("Second", "Second.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", projectToRemove);
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
 
+            var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveProjectWithDependencies{solutionExtension}");
             File.ReadAllText(solutionPath)
-                .Should().BeVisuallyEquivalentTo(ExpectedSlnContentsAfterRemoveProjectWithDependencies);
+                .Should().BeVisuallyEquivalentTo(templateContents);
         }
 
         [Theory]
@@ -800,6 +647,15 @@ EndGlobal
                  + $"  dotnet solution App.sln remove {projectArg}"
             );
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
+        }
+
+        private string GetSolutionFileTemplateContents(string templateFileName)
+        {
+            var templateContentDirectory = _testAssetsManager
+                .CopyTestAsset("SolutionFilesTemplates", identifier: "SolutionFilesTemplates")
+                .WithSource()
+                .Path;
+            return File.ReadAllText(Path.Join(templateContentDirectory, templateFileName));
         }
     }
 }
