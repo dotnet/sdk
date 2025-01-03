@@ -10,13 +10,20 @@ namespace Microsoft.DotNet.Tools.Tool.Common
 {
     internal class ToolAppliedOption
     {
-        public static CliOption<bool> GlobalOption = new("--global", "-g");
+        public static CliOption<bool> GlobalOption = new("--global", "-g")
+        {
+            Arity = ArgumentArity.Zero
+        };
 
-        public static CliOption<bool> LocalOption = new("--local");
+        public static CliOption<bool> LocalOption = new("--local")
+        {
+            Arity = ArgumentArity.Zero
+        };
 
         public static CliOption<bool> UpdateAllOption = new("--all")
         {
-            Description = UpdateToolsLocalizableStrings.UpdateAllOptionDescription
+            Description = UpdateToolsLocalizableStrings.UpdateAllOptionDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<string> VersionOption

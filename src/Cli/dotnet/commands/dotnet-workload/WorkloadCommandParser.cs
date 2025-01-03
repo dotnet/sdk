@@ -20,12 +20,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> InfoOption = new("--info")
         {
-            Description = CommonStrings.WorkloadInfoDescription
+            Description = CommonStrings.WorkloadInfoDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> VersionOption = new("--version")
         {
-            Description = CommonStrings.WorkloadVersionDescription
+            Description = CommonStrings.WorkloadVersionDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static CliCommand GetCommand()
