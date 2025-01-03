@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsTestProject>true</IsTestProject>
+
+		<GenerateProgramFile>false</GenerateProgramFile>
+		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformPackageVersion)" />
+	</ItemGroup>
+</Project>

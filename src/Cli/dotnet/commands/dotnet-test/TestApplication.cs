@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (VSTestTrace.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+                VSTestTrace.SafeWriteTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
             }
 
             var process = Process.Start(processStartInfo);

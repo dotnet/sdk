@@ -1,0 +1,11 @@
+<Project Sdk="MSTest.Sdk/$(MSTestVersion)">
+
+	<PropertyGroup>
+		<TargetFramework>net8</TargetFramework>
+		<GenerateTestingPlatformEntryPoint>False</GenerateTestingPlatformEntryPoint>
+		<MicrosoftTestingExtensionsCodeCoverageVersion>17.12.6</MicrosoftTestingExtensionsCodeCoverageVersion>
+	</PropertyGroup>
+
+	<!-- references to the code to test -->
+
+</Project>
