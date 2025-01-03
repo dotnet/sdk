@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 extern alias sdkResolver;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
@@ -202,8 +204,16 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
-            result.PropertiesToAdd.Count.Should().Be(2);
-            result.PropertiesToAdd.Should().ContainKey(DotnetHost);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // DotnetHost is the path to dotnet.exe. Can be only on Windows.
+                result.PropertiesToAdd.Count.Should().Be(2);
+                result.PropertiesToAdd.Should().ContainKey(DotnetHost);          
+            }
+            else
+            {
+                result.PropertiesToAdd.Count.Should().Be(1);
+            }
             result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
             result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
             result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
@@ -279,8 +289,16 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
-            result.PropertiesToAdd.Count.Should().Be(4);
-            result.PropertiesToAdd.Should().ContainKey(DotnetHost);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // DotnetHost is the path to dotnet.exe. Can be only on Windows.
+                result.PropertiesToAdd.Count.Should().Be(4);
+                result.PropertiesToAdd.Should().ContainKey(DotnetHost);
+            }
+            else
+            {
+                result.PropertiesToAdd.Count.Should().Be(3);
+            }
             result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
             result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
             result.PropertiesToAdd.Should().ContainKey("SdkResolverHonoredGlobalJson");

@@ -803,7 +803,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
     <PropertyGroup>
       <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and
                                       ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
       <_UseSingleFileHostForPublish Condition="'$(PublishSingleFile)' == 'true' and
                                                '$(SelfContained)' == 'true' and
