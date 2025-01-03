@@ -1235,6 +1235,8 @@ Copyright (c) .NET Foundation. All rights reserved.
          NoStandardLib="$(NoCompilerStandardLib)"
          Optimize="$(Optimize)"
          PublicSign="$(PublicSign)"
+         PathMap="$(PathMap)"
+         Features="$(Features)"
          DelaySign="$(DelaySign)"
          Deterministic="$(Deterministic)"
          DisabledWarnings="$(DisabledWarnings)"
