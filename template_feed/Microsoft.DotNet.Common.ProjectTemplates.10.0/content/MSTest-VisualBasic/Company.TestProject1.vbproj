@@ -1,5 +1,5 @@
 <!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/3.6.3">
+<Project Sdk="MSTest.Sdk/3.6.4">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net10.0</TargetFramework>
@@ -61,7 +61,7 @@
 <!--#endif-->
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.4.3" />
 <!--#endif-->
-    <PackageReference Include="MSTest" Version="3.6.3" />
+    <PackageReference Include="MSTest" Version="3.6.4" />
   </ItemGroup>
 
   <ItemGroup>

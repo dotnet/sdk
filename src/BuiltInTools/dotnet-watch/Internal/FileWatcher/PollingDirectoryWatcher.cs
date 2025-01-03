@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watch
 
         private volatile bool _disposed;
 
-        public event EventHandler<(string filePath, ChangeKind kind)>? OnFileChange;
+        public event EventHandler<ChangedPath>? OnFileChange;
 
 #pragma warning disable CS0067 // not used
         public event EventHandler<Exception>? OnError;
@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.Watch
                     break;
                 }
 
-                OnFileChange?.Invoke(this, (path, kind));
+                OnFileChange?.Invoke(this, new ChangedPath(path, kind));
             }
         }
 

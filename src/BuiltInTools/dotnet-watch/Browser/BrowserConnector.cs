@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Watch
         {
             lock (_serversGuard)
             {
-                return _servers.TryGetValue(projectNode, out server);
+                return _servers.TryGetValue(projectNode, out server) && server != null;
             }
         }
 
