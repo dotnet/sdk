@@ -5,10 +5,9 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class MsBuildFileSetFactoryTest(ITestOutputHelper output)
+    public class MsBuildFileSetFactoryTest(ITestOutputHelper output) : SdkTest(output)
     {
         private readonly TestReporter _reporter = new(output);
-        private readonly TestAssetsManager _testAssets = new(output);
 
         private string MuxerPath
             => TestContext.Current.ToolsetUnderTest.DotNetHostPath;
@@ -24,7 +23,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task FindsCustomWatchItems()
         {
-            var project = _testAssets.CreateTestProject(new TestProject("Project1")
+            var project = _testAssetsManager.CreateTestProject(new TestProject("Project1")
             {
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             });
@@ -56,7 +55,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task ExcludesDefaultItemsWithWatchFalseMetadata()
         {
-            var project = _testAssets.CreateTestProject(new TestProject("Project1")
+            var project = _testAssetsManager.CreateTestProject(new TestProject("Project1")
             {
                 TargetFrameworks = "net40",
                 AdditionalProperties =
@@ -90,7 +89,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task SingleTfm()
         {
-            var project = _testAssets.CreateTestProject(new TestProject("Project1")
+            var project = _testAssetsManager.CreateTestProject(new TestProject("Project1")
             {
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 AdditionalProperties =
@@ -123,7 +122,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task MultiTfm()
         {
-            var project = _testAssets.CreateTestProject(new TestProject("Project1")
+            var project = _testAssetsManager.CreateTestProject(new TestProject("Project1")
             {
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 AdditionalProperties =
@@ -159,7 +158,7 @@ $@"<ItemGroup>
         [Fact]
         public async Task IncludesContentFiles()
         {
-            var testDir = _testAssets.CreateTestDirectory();
+            var testDir = _testAssetsManager.CreateTestDirectory();
 
             var project = WriteFile(testDir, Path.Combine("Project1.csproj"),
 @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
@@ -192,7 +191,7 @@ $@"<ItemGroup>
         [Fact]
         public async Task IncludesContentFilesFromRCL()
         {
-            var testDir = _testAssets.CreateTestDirectory();
+            var testDir = _testAssetsManager.CreateTestDirectory();
             WriteFile(
                 testDir,
                 Path.Combine("RCL1", "RCL1.csproj"),
@@ -244,12 +243,12 @@ $@"<ItemGroup>
         [Fact]
         public async Task ProjectReferences_OneLevel()
         {
-            var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
+            var project2 = _testAssetsManager.CreateTestProject(new TestProject("Project2")
             {
                 TargetFrameworks = "netstandard2.0",
             });
 
-            var project1 = _testAssets.CreateTestProject(new TestProject("Project1")
+            var project1 = _testAssetsManager.CreateTestProject(new TestProject("Project1")
             {
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 ReferencedProjects = { project2.TestProject, },
@@ -273,18 +272,18 @@ $@"<ItemGroup>
         [Fact]
         public async Task TransitiveProjectReferences_TwoLevels()
         {
-            var project3 = _testAssets.CreateTestProject(new TestProject("Project3")
+            var project3 = _testAssetsManager.CreateTestProject(new TestProject("Project3")
             {
                 TargetFrameworks = "netstandard2.0",
             });
 
-            var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
+            var project2 = _testAssetsManager.CreateTestProject(new TestProject("Project2")
             {
                 TargetFrameworks = "netstandard2.0",
                 ReferencedProjects = { project3.TestProject },
             });
 
-            var project1 = _testAssets.CreateTestProject(new TestProject("Project1")
+            var project1 = _testAssetsManager.CreateTestProject(new TestProject("Project1")
             {
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net462",
                 ReferencedProjects = { project2.TestProject },
@@ -320,7 +319,7 @@ $@"<ItemGroup>
             // G->E
             // W->U
             // Y->B,F,Z
-            var testDirectory = _testAssets.CopyTestAsset("ProjectReferences_Graph")
+            var testDirectory = _testAssetsManager.CopyTestAsset("ProjectReferences_Graph")
                 .WithSource()
                 .Path;
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
@@ -373,12 +372,12 @@ $@"<ItemGroup>
         [Fact]
         public async Task MsbuildOutput()
         {
-            var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
+            var project2 = _testAssetsManager.CreateTestProject(new TestProject("Project2")
             {
                 TargetFrameworks = "netstandard2.1",
             });
 
-            var project1 = _testAssets.CreateTestProject(new TestProject("Project1")
+            var project1 = _testAssetsManager.CreateTestProject(new TestProject("Project1")
             {
                 TargetFrameworks = $"net462",
                 ReferencedProjects = { project2.TestProject, },
