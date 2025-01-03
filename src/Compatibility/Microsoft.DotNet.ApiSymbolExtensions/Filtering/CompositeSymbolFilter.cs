@@ -9,12 +9,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// Implements the composite pattern, group the list of <see cref="ISymbol"/> and interact with them
     /// the same way as a single instance of a <see cref="ISymbol"/> object.
     /// </summary>
-    public sealed class CompositeSymbolFilter : ISymbolFilter
+    public sealed class CompositeSymbolFilter(params IEnumerable<ISymbolFilter> filters) : ISymbolFilter
     {
         /// <summary>
         /// List on inner filters.
         /// </summary>
-        public List<ISymbolFilter> Filters { get; } = [];
+        public List<ISymbolFilter> Filters { get; } = new(filters);
 
         /// <summary>
         /// Determines whether the <see cref="ISymbol"/> should be included.
