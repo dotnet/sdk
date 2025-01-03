@@ -194,6 +194,7 @@ namespace EndToEnd.Tests
 [\w \.\(\)]+blazor\s+\[C#\][\w\ \/]+
 [\w \.\(\)]+classlib\s+\[C#\],F#,VB[\w\ \/]+
 [\w \.\(\)]+console\s+\[C#\],F#,VB[\w\ \/]+
+[\w \.\(\)]+mstest\s+\[C#\],F#,VB[\w\ \/]+
 ";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
