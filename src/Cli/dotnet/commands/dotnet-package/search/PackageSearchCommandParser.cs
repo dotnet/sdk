@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
