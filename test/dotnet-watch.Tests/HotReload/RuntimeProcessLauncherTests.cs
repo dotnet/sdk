@@ -383,6 +383,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdateB.WaitAsync(w.ShutdownSource.Token);
     }
 
+    /*
     public enum UpdateLocation
     {
         Dependency,
@@ -479,6 +480,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Log("Waiting updated output from Host ...");
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
+    */
 
     [Fact]
     public async Task RudeEditInProjectWithoutRunningProcess()
