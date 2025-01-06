@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Cli
         private static string[] GetSolutionFilePaths(string directory)
         {
             var solutionFiles = Directory.GetFiles(directory, "*.sln*", SearchOption.TopDirectoryOnly)
-                                                    .Where(f => Regex.IsMatch(f, @"\.(sln|slnx)$")).ToArray();
+                .Where(f => Regex.IsMatch(f, @"\.(sln|slnx)$")).ToArray();
 
             return solutionFiles;
         }
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli
         private static string[] GetProjectFilePaths(string directory)
         {
             var projectFiles = Directory.GetFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
-                                        .Where(f => Regex.IsMatch(f, @"\.(csproj|vbproj|fsproj)$")).ToArray();
+                .Where(f => Regex.IsMatch(f, @"\.(csproj|vbproj|fsproj)$")).ToArray();
 
             return projectFiles;
         }
