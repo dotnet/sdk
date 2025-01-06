@@ -65,6 +65,7 @@ namespace Microsoft.DotNet.Cli
                 else // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
                 {
                     _areTestingPlatformApplications = false;
+                    return;
                 }
             }
         }
