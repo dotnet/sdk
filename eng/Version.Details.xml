@@ -254,22 +254,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>efdd29953304f1fc494bb45c5785d37961c4a14b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25056.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25056.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>59a4c7c3b37f716cd5e6c25a3d4b316b5eeae962</Sha>
+      <Sha>2648b6bb9c89a0b2f3f0d281562bae96b7e1f639</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25056.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25056.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>59a4c7c3b37f716cd5e6c25a3d4b316b5eeae962</Sha>
+      <Sha>2648b6bb9c89a0b2f3f0d281562bae96b7e1f639</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25056.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25056.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>59a4c7c3b37f716cd5e6c25a3d4b316b5eeae962</Sha>
+      <Sha>2648b6bb9c89a0b2f3f0d281562bae96b7e1f639</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25056.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25056.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>59a4c7c3b37f716cd5e6c25a3d4b316b5eeae962</Sha>
+      <Sha>2648b6bb9c89a0b2f3f0d281562bae96b7e1f639</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.25056.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
