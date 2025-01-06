@@ -21,11 +21,12 @@ public class CompletionsCommand : CliCommand
     /// Creates a new Completions command exclusively with the provided supported shells. If no shells are provided, the <see cref="DefaultShells"/> are used.
     /// </summary>
     /// <param name="supportedShells">The shells to support in the completions command. If null, <see cref="DefaultShells"/> will be used.</param>
-    public CompletionsCommand(IEnumerable<IShellProvider>? supportedShells = null) : this((supportedShells ?? DefaultShells).ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase))
+    /// <param name="commandName">The name of the completions command. Default is "completions". This value is what users will type to activate the command on the command line.</param>
+    /// <param name="commandDescription">The description of the completions command. Default is "Commands for generating and registering completions for supported shells".</param>
+    public CompletionsCommand(IEnumerable<IShellProvider>? supportedShells = null, string commandName = "completions", string commandDescription = "Commands for generating and registering completions for supported shells") : this((supportedShells ?? DefaultShells).ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase), commandName, commandDescription)
     { }
 
-    private CompletionsCommand(Dictionary<string, IShellProvider> shellMap)
-        : base("completions", "Commands for generating and registering completions for supported shells")
+    private CompletionsCommand(Dictionary<string, IShellProvider> shellMap, string commandName, string commandDescription) : base(commandName, commandDescription)
     {
         var shellArg = new CliArgument<IShellProvider>("shell")
         {
