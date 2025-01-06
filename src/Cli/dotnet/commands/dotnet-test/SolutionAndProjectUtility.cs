@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
 using Microsoft.Build.Construction;
 using Microsoft.DotNet.Tools.Test;
 
@@ -55,17 +54,34 @@ namespace Microsoft.DotNet.Cli
         private static string[] GetSolutionFilePaths(string directory)
         {
             var solutionFiles = Directory.GetFiles(directory, "*.sln*", SearchOption.TopDirectoryOnly)
-                .Where(f => Regex.IsMatch(f, @"\.(sln|slnx)$")).ToArray();
+                .Where(f => IsSolutionFile(f))
+                .ToArray();
 
             return solutionFiles;
+        }
+
+        private static bool IsSolutionFile(string filePath)
+        {
+            var extension = Path.GetExtension(filePath);
+            return extension.Equals(".sln", StringComparison.OrdinalIgnoreCase) || extension.Equals(".slnx", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string[] GetProjectFilePaths(string directory)
         {
             var projectFiles = Directory.GetFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
-                .Where(f => Regex.IsMatch(f, @"\.(csproj|vbproj|fsproj)$")).ToArray();
+                .Where(f => IsProjectFile(f))
+                .ToArray();
 
             return projectFiles;
+        }
+
+        private static bool IsProjectFile(string filePath)
+        {
+            var extension = Path.GetExtension(filePath);
+            return extension.Equals(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                   extension.Equals(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                   extension.Equals(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+                   extension.Equals(".proj", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

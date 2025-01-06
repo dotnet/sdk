@@ -118,6 +118,11 @@ Examples:
         <target state="new">Invalid test message state '{0}'</target>
         <note>{0} - test message state</note>
       </trans-unit>
+      <trans-unit id="CmdMSBuildProjectsPropertiesErrorMessage">
+        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
+        <target state="new">Get projects properties with MSBuild didn't execute properly with exit code: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">병렬로 실행할 수 있는 최대 테스트 모듈 수입니다.</target>

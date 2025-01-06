@@ -338,4 +338,7 @@ Examples:
   <data name="CmdNoProjectOrSolutionFileErrorMessage" xml:space="preserve">
     <value>Specify a project or solution file. The current working directory does not contain a project or solution file.</value>
   </data>
+  <data name="CmdMSBuildProjectsPropertiesErrorMessage" xml:space="preserve">
+    <value>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</value>
+  </data>
 </root>
