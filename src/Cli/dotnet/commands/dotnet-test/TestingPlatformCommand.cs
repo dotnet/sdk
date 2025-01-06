@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    bool allowBinLog = BinLogEnabled(_args);
+                    bool allowBinLog = IsBinLogEnabled(_args);
                     if (!RunMSBuild(parseResult, allowBinLog))
                     {
                         return ExitCodes.GenericFailure;
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private static bool BinLogEnabled(List<string> args)
+        private static bool IsBinLogEnabled(List<string> args)
         {
             var binLog = args.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase));
 
