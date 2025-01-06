@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tools.Common
 
                 slnFile = serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
             }
-            catch (InvalidSolutionFormatException e)
+            catch (SolutionException e)
             {
                 throw new GracefulException(
                     CommonLocalizableStrings.InvalidSolutionFormatString,
