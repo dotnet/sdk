@@ -437,7 +437,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Currently only works on Windows.
         /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/40006")]
         public async Task MauiBlazor()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
