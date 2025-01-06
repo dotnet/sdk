@@ -34,14 +34,14 @@ namespace Microsoft.DotNet.Cli
 
             if (!solutionOrProjectFileFound)
             {
-                return 1;
+                return ExitCodes.GenericFailure;
             }
 
             (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(filePath, isSolution, allowBinLog);
 
             InitializeTestApplications(modules);
 
-            return restored ? 0 : 1;
+            return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
         public int RunWithMSBuild(string filePath, bool allowBinLog)
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli
 
             InitializeTestApplications(modules);
 
-            return restored ? 0 : 1;
+            return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
         private void InitializeTestApplications(IEnumerable<Module> modules)
