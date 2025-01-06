@@ -14,8 +14,8 @@
 
 # False positive
 src/arcade/Documentation/UnifiedBuild/VMR-Permissible-Sources.md|free-unknown
-src/arcade/src/Microsoft.DotNet.XUnitAssert/src/README.md|free-unknown
 src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix/bundle/bundle.wxs|unknown-license-reference
+src/arcade/src/Microsoft.DotNet.XUnitAssert/src/README.md|free-unknown
 
 # Doesn't apply to code
 src/arcade/eng/xcopy-msbuild/msbuild.nuspec|ms-visual-2015-sdk
