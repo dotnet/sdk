@@ -5,7 +5,6 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(ToolsetTargetFramework)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
