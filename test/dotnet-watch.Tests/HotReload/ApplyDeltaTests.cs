@@ -387,7 +387,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/45299")]
+        [Fact]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -415,8 +415,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
             App.AssertOutputContains($"dotnet watch ⌚ Handling file change event for scoped css file {scopedCssPath}.");
-            App.AssertOutputContains($"dotnet watch ⌚ [RazorClassLibrary (net9.0)] No refresh server.");
-            App.AssertOutputContains($"dotnet watch ⌚ [RazorApp (net9.0)] Refreshing browser.");
+            App.AssertOutputContains($"dotnet watch ⌚ [RazorClassLibrary ({ToolsetInfo.CurrentTargetFramework})] No refresh server.");
+            App.AssertOutputContains($"dotnet watch ⌚ [RazorApp ({ToolsetInfo.CurrentTargetFramework})] Refreshing browser.");
             App.AssertOutputContains($"dotnet watch 🔥 Hot reload of scoped css succeeded.");
             App.AssertOutputContains($"dotnet watch ⌚ No C# changes to apply.");
             App.Process.ClearOutput();
@@ -427,7 +427,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
             App.AssertOutputContains($"dotnet watch ⌚ Sending static file update request for asset 'app.css'.");
-            App.AssertOutputContains($"dotnet watch ⌚ [RazorApp (net9.0)] Refreshing browser.");
+            App.AssertOutputContains($"dotnet watch ⌚ [RazorApp ({ToolsetInfo.CurrentTargetFramework})] Refreshing browser.");
             App.AssertOutputContains($"dotnet watch 🔥 Hot Reload of static files succeeded.");
             App.AssertOutputContains($"dotnet watch ⌚ No C# changes to apply.");
             App.Process.ClearOutput();
@@ -577,7 +577,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        [Fact]
         public async Task Aspire()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAspire")
@@ -632,13 +632,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                App.AssertOutputContains("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code -1");
+                App.AssertOutputContains($"dotnet watch ❌ [WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})] Exited with error code -1");
             }
             else
             {
                 // Unix process may return exit code = 128 + SIGTERM
-                // dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code 143
-                App.AssertOutputContains("[WatchAspire.ApiService (net9.0)] Exited");
+                // dotnet watch ❌ [WatchAspire.ApiService (net10.0)] Exited with error code 143
+                App.AssertOutputContains($"[WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})] Exited");
             }
 
             App.AssertOutputContains($"dotnet watch ⌚ Building '{serviceProjectPath}' ...");
@@ -650,7 +650,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 serviceSourcePath,
                 originalSource.Replace("WeatherForecast", "WeatherForecast2"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ [WatchAspire.ApiService (net9.0)] Capabilities");
+            await App.AssertOutputLineStartsWith($"dotnet watch ⌚ [WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})] Capabilities");
 
             App.AssertOutputContains("dotnet watch ⌚ Build succeeded.");
             App.AssertOutputContains("dotnet watch 🔥 Project baselines updated.");
@@ -663,15 +663,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code -1");
-                await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.AppHost (net9.0)] Exited with error code -1");
+                await App.AssertOutputLineStartsWith($"dotnet watch ❌ [WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})] Exited with error code -1");
+                await App.AssertOutputLineStartsWith($"dotnet watch ❌ [WatchAspire.AppHost ({ToolsetInfo.CurrentTargetFramework})] Exited with error code -1");
             }
             else
             {
                 // Unix process may return exit code = 128 + SIGTERM
-                // dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code 143
-                await App.AssertOutputLine(line => line.Contains("[WatchAspire.ApiService (net9.0)] Exited"), failure: _ => false);
-                await App.AssertOutputLine(line => line.Contains("[WatchAspire.AppHost (net9.0)] Exited"), failure: _ => false);
+                // dotnet watch ❌ [WatchAspire.ApiService (net10.0)] Exited with error code 143
+                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})] Exited"), failure: _ => false);
+                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.AppHost ({ToolsetInfo.CurrentTargetFramework})] Exited"), failure: _ => false);
             }
 
             await App.AssertOutputLineStartsWith("dotnet watch ⭐ Waiting for server to shutdown ...");
