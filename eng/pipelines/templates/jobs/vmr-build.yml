@@ -161,17 +161,9 @@ jobs:
   - name: runTestsTimeout
     value: 30
 
-  - ${{ if or(eq(parameters.useDevVersions, 'True'), eq(variables['System.TeamProject'], 'public')) }}:
+  - ${{ if or(eq(parameters.useDevVersions, 'True'), eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
     - name: _SignType
       value: ''
-  - ${{ elseif in(variables['Build.Reason'], 'PullRequest') }}:
-    - ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
-      - name: _SignType
-        value: test
-    - ${{ else }}:
-      # Test signing is not supported on non-Windows platforms
-      - name: _SignType
-        value: ''
   - ${{ else }}:
     - name: _SignType
       value: real
@@ -310,7 +302,7 @@ jobs:
         fi
       displayName: Setup Previously Source-Built SDK
 
-  - ${{ if and(eq(parameters.sign, 'True'), ne(parameters.buildSourceOnly, 'True')) }}:
+  - ${{ if and(eq(parameters.sign, 'True'), ne(parameters.buildSourceOnly, 'True'), eq(variables['System.TeamProject'], 'internal')) }}:
     - template: ${{ variables['Build.SourcesDirectory'] }}/eng/common/core-templates/steps/install-microbuild.yml
       parameters:
         enableMicrobuild: true
@@ -543,7 +535,7 @@ jobs:
         displayName: Run Tests
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
-  - ${{ if and(eq(parameters.sign, 'True'), ne(parameters.buildSourceOnly, 'True')) }}:
+  - ${{ if and(eq(parameters.sign, 'True'), ne(parameters.buildSourceOnly, 'True'), eq(variables['System.TeamProject'], 'internal')) }}:
     - template: ${{ variables['Build.SourcesDirectory'] }}/eng/common/core-templates/steps/cleanup-microbuild.yml
       parameters:
         enableMicrobuild: true
