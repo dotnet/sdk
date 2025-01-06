@@ -34,6 +34,11 @@ internal readonly struct BuiltImage
     internal required ManifestV2 Manifest { get; init; }
 
     /// <summary>
+    /// Gets manifest mediaType.
+    /// </summary>
+    internal required string ManifestMediaType { get; init; }
+
+    /// <summary>
     /// Gets layers descriptors.
     /// </summary>
     internal IEnumerable<Descriptor> LayerDescriptors

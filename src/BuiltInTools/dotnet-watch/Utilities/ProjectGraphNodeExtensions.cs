@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.Cli;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal static class ProjectGraphNodeExtensions
 {
@@ -16,6 +17,9 @@ internal static class ProjectGraphNodeExtensions
 
     public static Version? GetTargetFrameworkVersion(this ProjectGraphNode projectNode)
         => EnvironmentVariableNames.TryParseTargetFrameworkVersion(projectNode.ProjectInstance.GetPropertyValue("TargetFrameworkVersion"));
+
+    public static ImmutableArray<string> GetWebAssemblyCapabilities(this ProjectGraphNode projectNode)
+        => [.. projectNode.ProjectInstance.GetPropertyValue("WebAssemblyHotReloadCapabilities").Split(';').Select(static c => c.Trim()).Where(static c => c != "")];
 
     public static bool IsTargetFrameworkVersionOrNewer(this ProjectGraphNode projectNode, Version minVersion)
         => GetTargetFrameworkVersion(projectNode) is { } version && version >= minVersion;
@@ -31,4 +35,28 @@ internal static class ProjectGraphNodeExtensions
 
     public static IEnumerable<string> GetCapabilities(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetItems("ProjectCapability").Select(item => item.EvaluatedInclude);
+
+    public static IEnumerable<ProjectGraphNode> GetTransitivelyReferencingProjects(this IEnumerable<ProjectGraphNode> projects)
+    {
+        var visited = new HashSet<ProjectGraphNode>();
+        var queue = new Queue<ProjectGraphNode>();
+        foreach (var project in projects)
+        {
+            queue.Enqueue(project);
+        }
+
+        while (queue.Count > 0)
+        {
+            var project = queue.Dequeue();
+            if (visited.Add(project))
+            {
+                foreach (var referencingProject in project.ReferencingProjects)
+                {
+                    queue.Enqueue(referencingProject);
+                }
+            }
+        }
+
+        return visited;
+    }
 }

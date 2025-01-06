@@ -47,28 +47,28 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<CommandResultAssertions> HaveStdOut(string expectedOutput)
         {
-            Execute.Assertion.ForCondition(_commandResult.StdOut.Equals(expectedOutput, StringComparison.Ordinal))
+            Execute.Assertion.ForCondition(_commandResult.StdOut is not null &&_commandResult.StdOut.Equals(expectedOutput, StringComparison.Ordinal))
                 .FailWith(AppendDiagnosticsTo($"Command did not output with Expected Output. Expected: {expectedOutput}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         public AndConstraint<CommandResultAssertions> HaveStdOutContaining(string pattern)
         {
-            Execute.Assertion.ForCondition(_commandResult.StdOut.Contains(pattern))
+            Execute.Assertion.ForCondition(_commandResult.StdOut is not null && _commandResult.StdOut.Contains(pattern))
                 .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> HaveStdOutContaining(Func<string, bool> predicate, string description = "")
+        public AndConstraint<CommandResultAssertions> HaveStdOutContaining(Func<string?, bool> predicate, string description = "")
         {
             Execute.Assertion.ForCondition(predicate(_commandResult.StdOut))
                 .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result: {description} {Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
-        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern, string[] ignoredPatterns = null)
+        public AndConstraint<CommandResultAssertions> NotHaveStdOutContaining(string pattern, string[]? ignoredPatterns = null)
         {
-            string filteredStdOut = _commandResult.StdOut;
+            string filteredStdOut = _commandResult.StdOut ?? string.Empty;
             if (ignoredPatterns != null && ignoredPatterns.Length > 0)
             {
                 foreach (var ignoredPattern in ignoredPatterns)
@@ -88,7 +88,7 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<CommandResultAssertions> HaveStdOutContainingIgnoreSpaces(string pattern)
         {
-            string commandResultNoSpaces = _commandResult.StdOut.Replace(" ", "");
+            string commandResultNoSpaces = _commandResult.StdOut?.Replace(" ", "") ?? string.Empty;
 
             Execute.Assertion
                 .ForCondition(commandResultNoSpaces.Contains(pattern))
@@ -99,21 +99,21 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<CommandResultAssertions> HaveStdOutContainingIgnoreCase(string pattern)
         {
-            Execute.Assertion.ForCondition(_commandResult.StdOut.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
+            Execute.Assertion.ForCondition(_commandResult.StdOut is not null && _commandResult.StdOut.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0)
                 .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result (ignoring case): {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         public AndConstraint<CommandResultAssertions> HaveStdOutMatching(string pattern, RegexOptions options = RegexOptions.None)
         {
-            Execute.Assertion.ForCondition(Regex.Match(_commandResult.StdOut, pattern, options).Success)
+            Execute.Assertion.ForCondition(Regex.Match(_commandResult.StdOut ?? string.Empty, pattern, options).Success)
                 .FailWith(AppendDiagnosticsTo($"Matching the command output failed. Pattern: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         public AndConstraint<CommandResultAssertions> NotHaveStdOutMatching(string pattern, RegexOptions options = RegexOptions.None)
         {
-            Execute.Assertion.ForCondition(!Regex.Match(_commandResult.StdOut, pattern, options).Success)
+            Execute.Assertion.ForCondition(!Regex.Match(_commandResult.StdOut ?? string.Empty, pattern, options).Success)
                 .FailWith(AppendDiagnosticsTo($"The command output matched a pattern it should not have. Pattern: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
@@ -127,22 +127,22 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<CommandResultAssertions> HaveStdErr(string expectedOutput)
         {
-            Execute.Assertion.ForCondition(_commandResult.StdErr.Equals(expectedOutput, StringComparison.Ordinal))
+            Execute.Assertion.ForCondition(_commandResult.StdErr is not null && _commandResult.StdErr.Equals(expectedOutput, StringComparison.Ordinal))
                 .FailWith(AppendDiagnosticsTo($"Command did not output the expected output to StdErr.{Environment.NewLine}Expected: {expectedOutput}{Environment.NewLine}Actual:   {_commandResult.StdErr}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         public AndConstraint<CommandResultAssertions> HaveStdErrContaining(string pattern)
         {
-            Execute.Assertion.ForCondition(_commandResult.StdErr.Contains(pattern))
+            Execute.Assertion.ForCondition(_commandResult.StdErr is not null && _commandResult.StdErr.Contains(pattern))
                 .FailWith(AppendDiagnosticsTo($"The command error output did not contain expected result: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         public AndConstraint<CommandResultAssertions> HaveStdErrContainingOnce(string pattern)
         {
-            var lines = _commandResult.StdErr.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            var matchingLines = lines.Where(line => line.Contains(pattern)).Count();
+            var lines = _commandResult.StdErr?.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var matchingLines = lines?.Where(line => line.Contains(pattern)).Count();
             Execute.Assertion.ForCondition(matchingLines == 0)
                 .FailWith(AppendDiagnosticsTo($"The command error output did not contain expected result: {pattern}{Environment.NewLine}"));
             Execute.Assertion.ForCondition(matchingLines != 1)
@@ -152,14 +152,14 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<CommandResultAssertions> NotHaveStdErrContaining(string pattern)
         {
-            Execute.Assertion.ForCondition(!_commandResult.StdErr.Contains(pattern))
+            Execute.Assertion.ForCondition(_commandResult.StdErr is not null && !_commandResult.StdErr.Contains(pattern))
                 .FailWith(AppendDiagnosticsTo($"The command error output contained a result it should not have contained: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         public AndConstraint<CommandResultAssertions> HaveStdErrMatching(string pattern, RegexOptions options = RegexOptions.None)
         {
-            Execute.Assertion.ForCondition(Regex.Match(_commandResult.StdErr, pattern, options).Success)
+            Execute.Assertion.ForCondition(Regex.Match(_commandResult.StdErr ?? string.Empty, pattern, options).Success)
                 .FailWith(AppendDiagnosticsTo($"Matching the command error output failed. Pattern: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
@@ -222,7 +222,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             foreach (var pattern in filePatterns)
             {
                 var directory = Path.GetDirectoryName(pattern);
-                var path = Path.Combine(unzipped, directory);
+                var path = Path.Combine(unzipped, directory ?? string.Empty);
                 var searchPattern = Path.GetFileName(pattern);
 
                 var condition = Directory.GetFiles(path, searchPattern).Length < 1;
@@ -240,7 +240,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             foreach (var pattern in filePatterns)
             {
                 var directory = Path.GetDirectoryName(pattern);
-                var path = Path.Combine(unzipped, directory);
+                var path = Path.Combine(unzipped, directory ?? string.Empty);
                 var searchPattern = Path.GetFileName(pattern);
 
                 var condition = Directory.Exists(path) && Directory.GetFiles(path, searchPattern).Length > 0;

@@ -1,11 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.CompilerServices;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
+#nullable disable
 
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal sealed class WatchableApp(ITestOutputHelper logger) : IDisposable
     {
@@ -17,6 +15,8 @@ namespace Microsoft.DotNet.Watcher.Tests
 
         private const string WatchErrorOutputEmoji = "❌";
         private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
+
+        public TestFlags TestFlags { get; private set; }
 
         public ITestOutputHelper Logger => logger;
 
@@ -33,6 +33,9 @@ namespace Microsoft.DotNet.Watcher.Tests
 
         public void AssertOutputContains(string message)
             => AssertEx.Contains(message, Process.Output);
+
+        public void AssertOutputDoesNotContain(string message)
+            => AssertEx.DoesNotContain(message, Process.Output);
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
             => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
@@ -53,7 +56,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         /// </summary>
         public async Task<string> AssertOutputLineStartsWith(string expectedPrefix, Predicate<string> failure = null)
         {
-            Logger.WriteLine($"Test waiting for output: '{expectedPrefix}'");
+            Logger.WriteLine($"[TEST] Test waiting for output: '{expectedPrefix}'");
 
             var line = await Process.GetOutputLineAsync(
                 success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
@@ -114,15 +117,19 @@ namespace Microsoft.DotNet.Watcher.Tests
                 WorkingDirectory = workingDirectory ?? projectDirectory,
             };
 
+            var testOutputPath = asset.GetWatchTestOutputPath();
+            Directory.CreateDirectory(testOutputPath);
+
             commandSpec.WithEnvironmentVariable("HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES", "1");
             commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
+            commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
+            commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
 
-            var encLogPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot
-                ? Path.Combine(ciOutputRoot, ".hotreload", asset.Name)
-                : asset.Path + ".hotreload";
-
-            commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", encLogPath);
+            // suppress all DCP timeouts:
+            commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
+            commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
+            commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
 
             foreach (var env in EnvironmentVariables)
             {
@@ -131,11 +138,27 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             Process = new AwaitableProcess(commandSpec, Logger);
             Process.Start();
+
+            TestFlags = testFlags;
         }
 
         public void Dispose()
         {
             Process?.Dispose();
+        }
+
+        public void SendControlC()
+            => SendKey(PhysicalConsole.CtrlC);
+
+        public void SendControlR()
+            => SendKey(PhysicalConsole.CtrlR);
+
+        public void SendKey(char c)
+        {
+            Assert.True(TestFlags.HasFlag(TestFlags.ReadKeyFromStdin));
+
+            Process.Process.StandardInput.Write(c);
+            Process.Process.StandardInput.Flush();
         }
     }
 }

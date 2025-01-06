@@ -131,7 +131,7 @@ jobs:
     ${{ if ne(parameters.container.image, '') }}:
       container:
         image: ${{ parameters.container.image }}
-        options: --privileged
+        options: $(defaultContainerOptions)
 
   # Currently, CodeQL slows the build down too much
   # https://github.com/dotnet/source-build/issues/4276
@@ -172,13 +172,19 @@ jobs:
   # We either build the repo directly, or we extract them outside (which is what partners do)
   - ${{ if parameters.buildFromArchive }}:
     - name: sourcesPath
-      value: $(Build.ArtifactStagingDirectory)/dotnet-sources/
+      value: $(Agent.TempDirectory)/dotnet-sources/
   - ${{ else }}:
     - name: sourcesPath
       value: $(vmrPath)
 
   - name: artifactsStagingDir
     value: $(Build.ArtifactStagingDirectory)/artifacts
+
+  # manually disable CodeQL until https://dev.azure.com/mseng/1ES/_workitems/edit/2211548 is implemented
+  # CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary
+  - ${{ if eq(parameters.pool.os, 'macOS') }}:
+    - name: ONEES_ENFORCED_CODEQL_ENABLED
+      value: false
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -194,14 +200,16 @@ jobs:
       path: $(artifactsStagingDir)
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
+      condition: succeededOrFailed()
       sbomEnabled: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
-    - output: buildArtifacts
-      PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
-      ArtifactName: VerticalManifests
-      displayName: Publish Vertical Manifest
-      sbomEnabled: false
+    - ${{ if ne(parameters.buildSourceOnly, true) }}:
+      - output: buildArtifacts
+        PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+        ArtifactName: VerticalManifests
+        displayName: Publish Vertical Manifest
+        sbomEnabled: false
 
   steps:
   - ${{ if not(parameters.isBuiltFromVmr) }}:
@@ -276,7 +284,7 @@ jobs:
 
         if [[ $archiveVersionLine =~ $versionPattern ]]; then
           archiveVersion="${BASH_REMATCH[1]}"
-          archiveUrl="https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-$archiveVersion-${{ parameters.artifactsRid }}.tar.gz"
+          archiveUrl="https://builds.dotnet.microsoft.com/source-built-artifacts/sdks/dotnet-sdk-$archiveVersion-${{ parameters.artifactsRid }}.tar.gz"
           downloadDir="$(sourcesPath)/prereqs/packages/archive/"
 
           echo "Downloading source-built SDK from $archiveUrl..."
@@ -432,6 +440,13 @@ jobs:
       displayName: Build
       workingDirectory: $(sourcesPath)
 
+    - ${{ if ne(parameters.runOnline, 'True' )}}:
+      - script: |
+          set -ex
+          # Update the owner of the staging directory to the current user
+          sudo chown -R $(whoami) $(artifactsStagingDir)
+        displayName: Update owner of artifacts staging directory
+
     # Only run tests if enabled
     - ${{ if eq(parameters.runTests, 'True') }}:
       # Setup the NuGet sources used by the tests to use private feeds. This is necessary when testing internal-only product
@@ -496,70 +511,30 @@ jobs:
         displayName: Run Tests
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
-  - ${{ if eq(parameters.targetOS, 'windows') }}:
+  - task: CopyFiles@2
+    displayName: Prepare BuildLogs staging directory
+    inputs:
+      SourceFolder: '$(sourcesPath)'
+      Contents: |
+        artifacts/log/**
+        artifacts/scenario-tests/**/*.binlog
+        artifacts/TestResults/**/*.binlog
+        artifacts/TestResults/**/*.diff
+        artifacts/TestResults/**/Updated*.txt
+        artifacts/TestResults/**/*.trx
+        artifacts/TestResults/**/*.xml
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/BuildLogs'
+      CleanTargetFolder: true
+    continueOnError: true
+    condition: succeededOrFailed()
 
-    # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
-    - powershell: |
-        function CopyWithRelativeFolders($sourcePath, $targetFolder, $filter) {
-          Get-ChildItem -Path $sourcePath -Filter $filter -Recurse | ForEach-Object {
-            $targetPath = Join-Path $targetFolder (Resolve-Path -Relative $_.FullName)
-            New-Item -ItemType Directory -Path (Split-Path -Parent $targetPath) -Force | Out-Null
-            Copy-Item $_.FullName -Destination $targetPath -Force
-            Write-Host "Copied $_ to $targetPath"
-          }
-        }
-
-        $targetFolder = "$(Build.ArtifactStagingDirectory)/BuildLogs/"
-        New-Item -ItemType Directory -Path $targetFolder -Force | Out-Null
-
-        cd "$(sourcesPath)"
-
-        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*"
-
-        if (Test-Path "artifacts/scenario-tests/") {
-            CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
-            echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
-        }
-
-        if (Test-Path "artifacts/TestResults/*") {
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.binlog"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.diff"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "Updated*.txt"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.trx"
-        }
-      displayName: Prepare BuildLogs staging directory and check assets
-      continueOnError: true
-      condition: succeededOrFailed()
-
-  - ${{ else }}:
-
-    # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
-    - script: |
-        set -ex
-
-        targetFolder=$(Build.ArtifactStagingDirectory)/BuildLogs/
-        mkdir -p ${targetFolder}
-
-        cd "$(sourcesPath)"
-
-        find artifacts/log/ -exec cp --parents {} ${targetFolder} \;
-
-        if [ -d "artifacts/scenario-tests/" ]; then
-          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec cp --parents {} ${targetFolder} \;
-          echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
-        fi
-
-        if [ -d "artifacts/TestResults/" ]; then
-          find artifacts/TestResults/ -type f -name "*.binlog" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.diff" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec cp --parents {} ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.trx" -exec cp --parents {} ${targetFolder} \;
-        fi
-
-        if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
-          find artifacts/prebuilt-report/ -exec cp --parents {} ${targetFolder} \;
-        fi
-      displayName: Prepare BuildLogs staging directory and check assets
+  - ${{ if eq(parameters.buildSourceOnly, 'True') }}:
+    - task: CopyFiles@2
+      displayName: Copy prebuilt-report to BuildLogs
+      inputs:
+        SourceFolder: '$(sourcesPath)'
+        Contents: artifacts/prebuilt-report/**
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/BuildLogs'
       continueOnError: true
       condition: succeededOrFailed()
 
@@ -600,11 +575,13 @@ jobs:
     - publish: $(artifactsStagingDir)
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
+      condition: succeededOrFailed()
       continueOnError: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
-        ArtifactName: VerticalManifests
-      displayName: Publish Vertical Manifest
+    - ${{ if ne(parameters.buildSourceOnly, true) }}:
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+          ArtifactName: VerticalManifests
+        displayName: Publish Vertical Manifest
