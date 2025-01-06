@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Cli
 
             if (msbuildResult != 0)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Get projects properties with msbuild  didn't execute properly with exit code: {msbuildResult}.");
+                VSTestTrace.SafeWriteTrace(() => $"Get projects properties with MSBuild didn't execute properly with exit code: {msbuildResult}.");
                 return false;
             }
 
