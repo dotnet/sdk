@@ -7,6 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions
 {
@@ -277,6 +278,40 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             }
 
             return matchingAssemblies;
+        }
+
+        /// <inheritdoc />
+        public void LogAllDiagnostics(ILog logger, string? customMessage = null)
+        {
+            if (HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
+            {
+                if (!string.IsNullOrEmpty(customMessage))
+                {
+                    logger.LogWarning(customMessage!);
+                }
+
+                foreach (Diagnostic warning in roslynDiagnostics)
+                {
+                    logger.LogWarning(warning.Id, warning.ToString());
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public void LogAllWarnings(ILog logger, string? customMessage = null)
+        {
+            if (HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
+            {
+                if (!string.IsNullOrEmpty(customMessage))
+                {
+                    logger.LogWarning(customMessage!);
+                }
+
+                foreach (AssemblyLoadWarning warning in loadWarnings)
+                {
+                    logger.LogWarning(warning.DiagnosticId, warning.Message);
+                }
+            }
         }
 
         /// <inheritdoc />

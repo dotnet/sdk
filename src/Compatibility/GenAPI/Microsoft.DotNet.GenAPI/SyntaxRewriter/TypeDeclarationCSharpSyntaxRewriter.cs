@@ -17,6 +17,14 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// </summary>
     public class TypeDeclarationCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
+        private readonly bool _addPartialModifier;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeDeclarationCSharpSyntaxRewriter"/> class, and optionally allows deciding whether to insert the partial modifier for types or not.
+        /// </summary>
+        /// <param name="addPartialModifier">Determines whether to insert the partial modifier for types or not.</param>
+        public TypeDeclarationCSharpSyntaxRewriter(bool addPartialModifier = true) => _addPartialModifier = addPartialModifier;
+
         /// <inheritdoc />
         public override SyntaxNode? VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
         {
@@ -83,7 +91,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
             }
         }
 
-        private static T? VisitCommonTypeDeclaration<T>(T? node) where T : TypeDeclarationSyntax
+        private T? VisitCommonTypeDeclaration<T>(T? node) where T : TypeDeclarationSyntax
         {
             if (node == null)
             {
@@ -91,7 +99,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
             }
 
             node = RemoveBaseType(node, "global::System.Object");
-            return AddPartialModifier(node);
+            return _addPartialModifier ?  AddPartialModifier(node) : node;
         }
 
         private static T? AddPartialModifier<T>(T? node) where T : TypeDeclarationSyntax =>

@@ -19,6 +19,9 @@ using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI;
 
+/// <summary>
+/// A class that visits a collection of specified assemblies and generates the corresponding C# document and syntax trees.
+/// </summary>
 public class CSharpAssemblyVisitor : IAssemblyVisitor
 {
     private readonly ILog _logger;
@@ -30,14 +33,30 @@ public class CSharpAssemblyVisitor : IAssemblyVisitor
     private readonly AdhocWorkspace _adhocWorkspace;
     private readonly SyntaxGenerator _syntaxGenerator;
     private readonly IEnumerable<MetadataReference>? _metadataReferences;
+    private readonly bool _addPartialModifier;
+    private readonly bool _hideImplicitDefaultConstructors;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CSharpAssemblyVisitor"/> class.
+    /// </summary>
+    /// <param name="logger">The logger to use.</param>
+    /// <param name="loader">The assembly symbol loader to use.</param>
+    /// <param name="symbolFilter">The symbol filter to use.</param>
+    /// <param name="attributeDataSymbolFilter">The attribute data symbol filter to use.</param>
+    /// <param name="exceptionMessage">The optional exception message to use.</param>
+    /// <param name="includeAssemblyAttributes">Whether to include assembly attributes or not.</param>
+    /// <param name="metadataReferences">The metadata references to use. The default value is <see langword="null"/>.</param>
+    /// <param name="addPartialModifier">Whether to add the partial modifier or not. The default value is <see langword="true"/>.</param>
+    /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors or not. The default value is <see langword="true"/>.</param>
     public CSharpAssemblyVisitor(ILog logger,
                                  IAssemblySymbolLoader loader,
                                  ISymbolFilter symbolFilter,
                                  ISymbolFilter attributeDataSymbolFilter,
                                  string? exceptionMessage,
                                  bool includeAssemblyAttributes,
-                                 IEnumerable<MetadataReference>? metadataReferences = null)
+                                 IEnumerable<MetadataReference>? metadataReferences = null,
+                                 bool addPartialModifier = true,
+                                 bool hideImplicitDefaultConstructors = true)
     {
         _logger = logger;
         _loader = loader;
@@ -48,6 +67,8 @@ public class CSharpAssemblyVisitor : IAssemblyVisitor
         _adhocWorkspace = new AdhocWorkspace();
         _syntaxGenerator = SyntaxGenerator.GetGenerator(_adhocWorkspace, LanguageNames.CSharp);
         _metadataReferences = metadataReferences;
+        _addPartialModifier = addPartialModifier;
+        _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
     }
 
     /// <inheritdoc />
@@ -75,7 +96,7 @@ public class CSharpAssemblyVisitor : IAssemblyVisitor
 
         SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes)
             .WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
-            .Rewrite(new TypeDeclarationCSharpSyntaxRewriter())
+            .Rewrite(new TypeDeclarationCSharpSyntaxRewriter(_addPartialModifier))
             .Rewrite(new BodyBlockCSharpSyntaxRewriter(_exceptionMessage));
 
         if (_includeAssemblyAttributes)
@@ -192,7 +213,7 @@ public class CSharpAssemblyVisitor : IAssemblyVisitor
                 }
 
                 // Filter out default constructors since these will be added automatically
-                if (method.IsImplicitDefaultConstructor(_symbolFilter))
+                if (_hideImplicitDefaultConstructors && method.IsImplicitDefaultConstructor(_symbolFilter))
                 {
                     continue;
                 }

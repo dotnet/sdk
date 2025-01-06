@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions
 {
@@ -89,6 +90,20 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <param name="warnOnMissingAssemblies">Indicates if a warning should be added to the warning list when a matching assembly is not found.</param>
         /// <returns>The list of matching assemblies represented as <see cref="IAssemblySymbol"/>.</returns>
         IEnumerable<IAssemblySymbol> LoadMatchingAssemblies(IEnumerable<IAssemblySymbol> fromAssemblies, IEnumerable<string> searchPaths, bool validateMatchingIdentity = true, bool warnOnMissingAssemblies = true);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="customMessage"></param>
+        void LogAllDiagnostics(ILog logger, string? customMessage = null);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="customMessage"></param>
+        void LogAllWarnings(ILog logger, string? customMessage = null);
 
         /// <summary>
         /// The list of metadata references represented as <see cref="MetadataReference" />.

@@ -46,21 +46,8 @@ namespace Microsoft.DotNet.GenAPI
                 writer.WriteAssembly(kvp.Value);
             }
 
-            if (loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
-            {
-                foreach (Diagnostic warning in roslynDiagnostics)
-                {
-                    logger.LogWarning(warning.Id, warning.ToString());
-                }
-            }
-
-            if (loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
-            {
-                foreach (AssemblyLoadWarning warning in loadWarnings)
-                {
-                    logger.LogWarning(warning.DiagnosticId, warning.Message);
-                }
-            }
+            loader.LogAllDiagnostics(logger);
+            loader.LogAllWarnings(logger);
         }
 
         // Creates a TextWriter capable of writing into Console or a cs file.
