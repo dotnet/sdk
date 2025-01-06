@@ -11,33 +11,37 @@ namespace Microsoft.DotNet.Cli
     {
         public static bool TryGetSolutionOrProjectFilePath(string directory, out string solutionOrProjectFilePath, out bool isSolution)
         {
-            var solutionFiles = GetSolutionFilePaths(directory);
-            var projectFiles = GetProjectFilePaths(directory);
-
             solutionOrProjectFilePath = string.Empty;
             isSolution = false;
 
+            // Get all solution files in the specified directory
+            var solutionFiles = GetSolutionFilePaths(directory);
+            // Get all project files in the specified directory
+            var projectFiles = GetProjectFilePaths(directory);
+
+            // If both solution files and project files are found, return false
             if (solutionFiles.Length > 0 && projectFiles.Length > 0)
             {
                 VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
                 return false;
             }
 
+            // If exactly one solution file is found, return the solution file path
             if (solutionFiles.Length == 1)
             {
                 solutionOrProjectFilePath = solutionFiles[0];
                 isSolution = true;
-
                 return true;
             }
 
+            // If exactly one project file is found, return the project file path
             if (projectFiles.Length == 1)
             {
                 solutionOrProjectFilePath = projectFiles[0];
-
                 return true;
             }
 
+            // If no solution or project files are found, return false
             VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorMessage);
             return false;
         }
