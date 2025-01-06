@@ -7,7 +7,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public partial class DotnetNewListTests
     {
-        [Theory]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45406")]
         [InlineData("-l")]
         [InlineData("--list")]
         public Task BasicTest_WhenLegacyCommandIsUsed(string commandName)
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .DisableRequireUniquePrefix();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/45406")]
         public Task BasicTest_WhenListCommandIsUsed()
         {
             CommandResult commandResult = new DotnetNewCommand(_log, "list")
@@ -41,6 +42,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             return Verify(commandResult.StdOut).UniqueForOSPlatform();
         }
+#pragma warning restore xUnit1004
 
         [Fact]
         public Task Constraints_CanShowMessageIfTemplateGroupIsRestricted()

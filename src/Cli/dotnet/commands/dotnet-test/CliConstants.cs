@@ -20,6 +20,8 @@ namespace Microsoft.DotNet.Cli
         public const string MicrosoftTestingPlatform = "MicrosoftTestingPlatform";
 
         public const string TestSectionKey = "test";
+
+        public const string RestoreCommand = "restore";
     }
 
     internal static class TestStates
@@ -54,5 +56,16 @@ namespace Microsoft.DotNet.Cli
     internal static class ProtocolConstants
     {
         internal const string Version = "1.0.0";
+    }
+
+    internal static class ProjectProperties
+    {
+        internal const string IsTestingPlatformApplication = "IsTestingPlatformApplication";
+        internal const string IsTestProject = "IsTestProject";
+        internal const string TargetFramework = "TargetFramework";
+        internal const string TargetFrameworks = "TargetFrameworks";
+        internal const string TargetPath = "TargetPath";
+        internal const string ProjectFullPath = "MSBuildProjectFullPath";
+        internal const string RunSettingsFilePath = "RunSettingsFilePath";
     }
 }

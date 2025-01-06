@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should().Pass();
 
             var binDirectory = new FileInfo($"{testInstance.Path}/bin").Directory;
-            var binDirectoryLastWriteTime = binDirectory.LastWriteTime;
+            var binDirectoryLastWriteTime = binDirectory?.LastWriteTime;
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that the bin folder hasn't been modified
-            Assert.Equal(binDirectoryLastWriteTime, binDirectory.LastWriteTime);
+            Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
 
             if (!TestContext.IsLocalized())
             {
@@ -71,8 +71,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
 
-            var testAppArgs = Regex.Matches(result.StdOut, TestApplicationArgsPattern);
-            Assert.Contains($"exec {testInstance.TestRoot}\\bin\\Debug\\net8.0\\TestProject.dll", testAppArgs.FirstOrDefault().Value);
+            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern);
+            Assert.Contains($"exec {testInstance.TestRoot}\\bin\\Debug\\net8.0\\TestProject.dll", testAppArgs.FirstOrDefault()?.Value);
 
             if (!TestContext.IsLocalized())
             {

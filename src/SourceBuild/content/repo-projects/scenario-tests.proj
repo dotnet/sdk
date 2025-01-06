@@ -8,6 +8,10 @@
     <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
     <NuGetConfigInputForScenarioTests>$([MSBuild]::NormalizePath('$(SrcDir)', 'sdk', 'NuGet.config'))</NuGetConfigInputForScenarioTests>
     <NuGetConfigOutputForScenarioTests>$(ScenarioTestsArtifactsDir)NuGet.config</NuGetConfigOutputForScenarioTests>
+
+    <!-- TODO: Remove when source-build uses an Arcade SDK with an updated NetCurrent property. -->
+    <BuildArgs>$(BuildArgs) /p:NetCurrent=$(NetCurrent)</BuildArgs>
+    <TestCommand>$(TestCommand) /p:NetCurrent=$(NetCurrent)</TestCommand>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,7 +33,7 @@
 
   <Target Name="PrepareScenarioTestsInputs"
           DependsOnTargets="SetupNuGetConfig;DetermineSourceBuiltSdkVersion"
-          BeforeTargets="Test">
+          BeforeTargets="RepoTest">
     <PropertyGroup>
       <_CurrentDateTime>$([System.DateTime]::Now.ToString("yyyy-MM-dd_HH_mm_ss"))</_CurrentDateTime>
       <_TestXmlOutputPath>$(ScenarioTestsResultsDir)$(_CurrentDateTime).xml</_TestXmlOutputPath>
@@ -55,6 +59,12 @@
         DotNetTool=$(_DotNetTool);
         _InitializeDotNetCli=$(DotNetSdkExtractDir.TrimEnd('/\'))" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="SetAzureDevOpsVariableForScenarioTests"
+          Condition="'$(ContinuousIntegrationBuild)' == 'true'"
+          BeforeTargets="Test">
+    <Message Importance="High" Text="##vso[task.setvariable variable=hasScenarioTestResults]true" />
   </Target>
 
 </Project>
