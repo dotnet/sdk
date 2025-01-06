@@ -114,19 +114,27 @@ namespace Microsoft.DotNet.Cli
         {
             bool allProjectsRestored = true;
 
-            Parallel.ForEach(projects, new ParallelOptions { MaxDegreeOfParallelism = _degreeOfParallelism }, project =>
-            {
-                var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog);
-                foreach (var relatedProject in relatedProjects)
+            Parallel.ForEach(
+                projects,
+                new ParallelOptions { MaxDegreeOfParallelism = _degreeOfParallelism },
+                () => true,
+                (project, state, localRestored) =>
                 {
-                    allProjects.Add(relatedProject);
-                }
+                    var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog);
+                    foreach (var relatedProject in relatedProjects)
+                    {
+                        allProjects.Add(relatedProject);
+                    }
 
-                if (!isRestored)
+                    return localRestored && isRestored;
+                },
+                localRestored =>
                 {
-                    allProjectsRestored = false;
-                }
-            });
+                    if (!localRestored)
+                    {
+                        allProjectsRestored = false;
+                    }
+                });
 
             restored = allProjectsRestored;
         }
