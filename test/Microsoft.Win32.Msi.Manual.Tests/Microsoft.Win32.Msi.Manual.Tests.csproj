@@ -8,7 +8,6 @@
     <IsTestProject>false</IsTestProject>
     <IsUnitTestProject>false</IsUnitTestProject>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

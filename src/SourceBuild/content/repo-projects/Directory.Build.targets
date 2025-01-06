@@ -300,7 +300,7 @@
 
     <!-- Get the previously-built-source-built package information from the manifest from that build. -->
     <ItemGroup>
-      <_PrebuiltSourceBuiltAssetManifests Include="$(PrebuiltSourceBuiltPackagesPath)VerticalManifest.xml" />
+      <_PrebuiltSourceBuiltAssetManifests Include="$(PrebuiltSourceBuiltPackagesPath)*.xml" />
     </ItemGroup>
 
     <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)" Condition="Exists(@(_PrebuiltSourceBuiltAssetManifests))">
@@ -554,9 +554,13 @@
         <ShippingFolder Condition="%(ProducedPackage.NonShipping) != 'true'">Shipping</ShippingFolder>
       </ProducedPackage>
 
-      <!-- When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages. -->
-      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/$(RepositoryName)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-      <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" />
+      <!--
+        When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages so no need to binplace.
+        In addition, don't binplace any packages or blobs with vertical visibility. These are only used for building other repos within this vertical
+        and shouldn't be staged for upload.
+      -->
+      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/$(RepositoryName)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true' and '%(Visibility)' != 'Vertical'" />
+      <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" Condition="'%(Visibility)' != 'Vertical'"/>
     </ItemGroup>
 
     <!-- Add manifests from dependent verticals. -->
@@ -756,6 +760,8 @@
     </Exec>
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)...done" />
+
+    <OnError ExecuteTargets="MoveDotNetBuildLogs" />
   </Target>
 
   <Target Name="Test" DependsOnTargets="RepoTest;MoveDotNetBuildLogs" />
