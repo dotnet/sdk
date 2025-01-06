@@ -166,27 +166,30 @@ namespace Microsoft.DotNet.Cli
 
             string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
 
-            if (!string.IsNullOrEmpty(globalJsonPath))
+            if (string.IsNullOrEmpty(globalJsonPath))
             {
-                JsonNode globalJson = JsonObject.Parse(File.ReadAllText(globalJsonPath));
-                JsonNode? testSection = globalJson[CliConstants.TestSectionKey];
-
-                if (testSection is null)
-                {
-                    return defaultTestRunnerName;
-                }
-
-                JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                };
-                var testSettings = JsonSerializer.Deserialize<TestSettings>(testSection, JsonSerializerOptions);
-
-                if (testSettings?.Runner?.Name is not null)
-                {
-                    return testSettings.Runner.Name;
-                }
+                return defaultTestRunnerName;
             }
+
+            JsonNode globalJson = JsonObject.Parse(File.ReadAllText(globalJsonPath));
+            JsonNode? testSection = globalJson[CliConstants.TestSectionKey];
+
+            if (testSection is null)
+            {
+                return defaultTestRunnerName;
+            }
+
+            JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+            var testSettings = JsonSerializer.Deserialize<TestSettings>(testSection, JsonSerializerOptions);
+
+            if (testSettings?.Runner?.Name is not null)
+            {
+                return testSettings.Runner.Name;
+            }
+
             return defaultTestRunnerName;
         }
 

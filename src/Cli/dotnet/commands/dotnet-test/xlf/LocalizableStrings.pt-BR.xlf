@@ -256,8 +256,8 @@ O diretório especificado será criado se ele ainda não existir.</target>
         <note>{0} - message request type</note>
       </trans-unit>
       <trans-unit id="CmdUnsupportedTestRunnerDescription">
-        <source>Test runner not supported: {0}.</source>
-        <target state="new">Test runner not supported: {0}.</target>
+        <source>Test runner '{0}' is not supported</source>
+        <target state="new">Test runner '{0}' is not supported</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
