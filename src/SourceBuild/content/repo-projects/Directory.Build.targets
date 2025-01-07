@@ -37,8 +37,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
-
     <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console.
          Enable it by default as with prallel repository builds the log becomes non-readable. -->
     <RepoConsoleLogFile>$(ArtifactsLogRepoDir)$(RepositoryName).log</RepoConsoleLogFile>
@@ -449,6 +447,18 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="SetBuildProperties"
+          DependsOnTargets="GetTransitiveRepositoryReferences">
+    <PropertyGroup>
+      <!-- Infer the projects runtime identifier as the vertical's RID when doing a vertical build
+           and filter down RID lists to the target RID in such a scenario. This is necessary when
+           referencing live runtime to restore the correct rid assets. -->
+      <BuildArgs Condition="'@(TransitiveRepositoryReference->AnyHaveMetadataValue('Identity', 'runtime'))' == 'true'">$(BuildArgs) /p:DotNetBuildTargetRidOnly=true</BuildArgs>
+
+      <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="RepoBuild"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)Build.complete"
@@ -460,7 +470,8 @@
                             UpdateEngCommonFiles;
                             CreateBuildInputProps;
                             DiscoverBuiltSdkOverrides;
-                            SetSourceBuiltSdkOverrides">
+                            SetSourceBuiltSdkOverrides;
+                            SetBuildProperties">
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
     <Message Importance="High" Text="  $(BuildCommand)" />
@@ -734,6 +745,7 @@
   <Target Name="Build"
           DependsOnTargets="
     BuildRepoReferences;
+    SetBuildProperties;
     RepoBuild;
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
