@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -137,7 +139,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()} --ignore-failed-sources");
             var command = new ToolUpdateLocalCommand(parseResult);
-            command._toolInstallLocalCommand.Value._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            command._toolInstallLocalCommand.Value.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]

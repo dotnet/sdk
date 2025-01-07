@@ -17,6 +17,11 @@
         <target state="translated">Os parâmetros msbuild adicionais a serem aprovados.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdArchitectureDescription">
+        <source>The target architecture '{0}' on which tests will run.</source>
+        <target state="new">The target architecture '{0}' on which tests will run.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Habilita a coleta de despejo de memória nas saídas esperada e inesperada do host de teste.</target>
@@ -73,6 +78,11 @@ Quando usado junto com testes controlados por dados, o comportamento do tempo li
 Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdConfigurationDescription">
+        <source>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</source>
+        <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -103,6 +113,11 @@ Exemplos:
         <target state="translated">NAME="VALUE"</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdInvalidTestMessageStateException">
+        <source>Invalid test message state '{0}'</source>
+        <target state="new">Invalid test message state '{0}'</target>
+        <note>{0} - test message state</note>
+      </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">O número máximo de módulos de teste que podem ser executados em paralelo.</target>
@@ -111,6 +126,16 @@ Exemplos:
       <trans-unit id="CmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Executar testes, sem exibir a faixa do Microsoft Testplatform</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not execute an implicit restore.</source>
+        <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectDescription">
+        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSettingsFile">
@@ -213,6 +238,26 @@ O diretório especificado será criado se ele ainda não existir.</target>
       <trans-unit id="CmdPathToResultsDirectory">
         <source>RESULTS_DIR</source>
         <target state="translated">RESULTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesDescription">
+        <source>Run tests for the specified test modules.</source>
+        <target state="new">Run tests for the specified test modules.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryDescription">
+        <source>The test modules have the specified root directory.</source>
+        <target state="new">The test modules have the specified root directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedMessageRequestTypeException">
+        <source>Message Request type '{0}' is unsupported.</source>
+        <target state="new">Message Request type '{0}' is unsupported.</target>
+        <note>{0} - message request type</note>
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
+        <source>Test application(s) that support VSTest are not supported.</source>
+        <target state="new">Test application(s) that support VSTest are not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">

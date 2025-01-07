@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Cli
                     var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
                     return QueryVersionsForPackage(packageId, context.WordToComplete, allowPrerelease, CancellationToken.None)
                         .Result
-                        .Select(version => new CompletionItem(version.ToNormalizedString()));
+                        .Select(version => new CompletionItem(version.ToNormalizedString().ToLowerInvariant()));
                 }
                 else
                 {

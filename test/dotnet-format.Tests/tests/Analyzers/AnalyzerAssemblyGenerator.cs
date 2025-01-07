@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+#nullable disable
+
 using System.Collections.Immutable;
 using System.Composition;
 using System.Reflection;
-
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -32,15 +33,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             };
 
             // Resolve the targeting pack and the target framework used to compile the test assembly.
-            var netCurrentTargetingPackVersion = (string)AppContext.GetData("ReferenceAssemblies.NetCurrent.TargetingPackVersion")!;
-            var netCurrentTargetFramework = (string)AppContext.GetData("ReferenceAssemblies.NetCurrent.TargetFramework")!;
+            var sdkTargetFrameworkTargetingPackVersion = (string)AppContext.GetData("ReferenceAssemblies.SdkTargetFramework.TargetingPackVersion")!;
+            var sdkTargetFrameworkTargetFramework = (string)AppContext.GetData("ReferenceAssemblies.SdkTargetFramework.TargetFramework")!;
             var nugetConfigPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config");
-            ReferenceAssemblies netCurrentReferenceAssemblies = new(netCurrentTargetFramework,
-                new PackageIdentity("Microsoft.NETCore.App.Ref", netCurrentTargetingPackVersion),
-                Path.Combine("ref", netCurrentTargetFramework));
-            netCurrentReferenceAssemblies = netCurrentReferenceAssemblies.WithNuGetConfigFilePath(nugetConfigPath);
+            ReferenceAssemblies sdkTargetFrameworkReferenceAssemblies = new(sdkTargetFrameworkTargetFramework,
+                new PackageIdentity("Microsoft.NETCore.App.Ref", sdkTargetFrameworkTargetingPackVersion),
+                Path.Combine("ref", sdkTargetFrameworkTargetFramework));
+            sdkTargetFrameworkReferenceAssemblies = sdkTargetFrameworkReferenceAssemblies.WithNuGetConfigFilePath(nugetConfigPath);
 
-            var netcoreMetadataReferences = await netCurrentReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
+            var netcoreMetadataReferences = await sdkTargetFrameworkReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
             references.AddRange(netcoreMetadataReferences.Where(reference => Path.GetFileName(reference.Display) != "System.Collections.Immutable.dll"));
 
             s_references = references;

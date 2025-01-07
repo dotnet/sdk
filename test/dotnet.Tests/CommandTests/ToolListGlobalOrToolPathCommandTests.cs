@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -111,9 +113,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -134,23 +134,17 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "another.tool",
                         "2.7.3",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "some.tool",
                         "1.0.0",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -172,16 +166,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "another.tool",
                         "2.7.3",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -216,12 +206,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool")),
-                            new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool")),
-                            new RestoredCommand(new ToolCommandName("baz"), "dotnet", new FilePath("tool"))
-                        }
-                    )
+                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool")))
                 });
 
             var command = CreateCommand(store.Object, "-g");
@@ -241,17 +226,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockBrokenPackage("another.tool", "2.7.3"),
                     CreateMockToolPackage(
                         "some.tool",
                         "1.0.0",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -267,13 +248,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         "broken").Yellow()));
         }
 
-        private IToolPackage CreateMockToolPackage(string id, string version, IReadOnlyList<RestoredCommand> commands)
+        private IToolPackage CreateMockToolPackage(string id, string version, RestoredCommand command)
         {
             var package = new Mock<IToolPackage>(MockBehavior.Strict);
 
             package.SetupGet(p => p.Id).Returns(new PackageId(id));
             package.SetupGet(p => p.Version).Returns(NuGetVersion.Parse(version));
-            package.SetupGet(p => p.Commands).Returns(commands);
+            package.SetupGet(p => p.Command).Returns(command);
             return package.Object;
         }
 
@@ -287,23 +268,17 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                      CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "another.tool",
                         "2.7.3",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
                     ),
                     CreateMockToolPackage(
                         "some.tool",
                         "1.0.0",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("fancy-foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -324,9 +299,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     CreateMockToolPackage(
                         "test.tool",
                         "1.3.5-preview",
-                        new[] {
-                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
-                        }
+                        new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
                     )
                 });
 
@@ -343,7 +316,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             package.SetupGet(p => p.Id).Returns(new PackageId(id));
             package.SetupGet(p => p.Version).Returns(NuGetVersion.Parse(version));
-            package.SetupGet(p => p.Commands).Throws(new ToolConfigurationException("broken"));
+            package.SetupGet(p => p.Command).Throws(new ToolConfigurationException("broken"));
             return package.Object;
         }
 
@@ -371,13 +344,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private IEnumerable<string> EnumerateExpectedTableLines(IToolPackageStoreQuery store, PackageId? targetPackageId = null)
         {
-            static string GetCommandsString(IToolPackage package)
-            {
-                return string.Join(ToolListGlobalOrToolPathCommand.CommandDelimiter, package.Commands.Select(c => c.Name));
-            }
+            static string GetCommandString(IToolPackage package) => package.Command.Name.ToString();
 
             var packages = store.EnumeratePackages().Where(
-                (p) => PackageHasCommands(p) && ToolListGlobalOrToolPathCommand.PackageIdMatches(p, targetPackageId)
+                (p) => PackageHasCommand(p) && ToolListGlobalOrToolPathCommand.PackageIdMatches(p, targetPackageId)
                 ).OrderBy(package => package.Id);
             var columnDelimiter = PrintableTable<IToolPackageStoreQuery>.ColumnDelimiter;
 
@@ -388,7 +358,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             {
                 packageIdColumnWidth = Math.Max(packageIdColumnWidth, package.Id.ToString().Length);
                 versionColumnWidth = Math.Max(versionColumnWidth, package.Version.ToNormalizedString().Length);
-                commandsColumnWidth = Math.Max(commandsColumnWidth, GetCommandsString(package).Length);
+                commandsColumnWidth = Math.Max(commandsColumnWidth, GetCommandString(package).Length);
             }
 
             yield return string.Format(
@@ -411,15 +381,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     columnDelimiter,
                     package.Version.ToNormalizedString().PadRight(versionColumnWidth),
                     columnDelimiter,
-                    GetCommandsString(package).PadRight(commandsColumnWidth));
+                    GetCommandString(package).PadRight(commandsColumnWidth));
             }
         }
 
-        private static bool PackageHasCommands(IToolPackage package)
+        private static bool PackageHasCommand(IToolPackage package)
         {
             try
             {
-                return package.Commands.Count >= 0;
+                return package.Command is not null;
             }
             catch (Exception ex) when (ex is ToolConfigurationException)
             {

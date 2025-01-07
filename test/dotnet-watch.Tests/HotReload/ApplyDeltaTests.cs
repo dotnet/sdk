@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
@@ -300,7 +302,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45299")]
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
@@ -382,7 +384,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/45299")]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -432,7 +434,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Currently only works on Windows.
         /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/40006")]
         public async Task MauiBlazor()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
@@ -617,7 +619,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
         public async Task Aspire()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;

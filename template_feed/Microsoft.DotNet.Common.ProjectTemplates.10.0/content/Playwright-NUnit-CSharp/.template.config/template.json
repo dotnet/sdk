@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Test", "NUnit", "Playwright", "Desktop", "Web" ],
+  "name": "NUnit Playwright Test Project",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project that contains Playwright tests using NUnit test framework, that can run on .NET on Windows, Linux and MacOS.",
+  "groupIdentity": "Microsoft.Test.Playwright.NUnit",
+  "precedence": "12000",
+  "identity": "Microsoft.Test.Playwright.NUnit.CSharp.10.0",
+  "shortName": "nunit-playwright",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Company.TestProject1",
+  "preferNameDirectory": true,
+  "symbols": {
+    "TargetFrameworkOverride": {
+      "type": "parameter",
+      "description": "Overrides the target framework",
+      "displayName": "Target framework override",
+      "replaces": "TargetFrameworkOverride",
+      "datatype": "string",
+      "defaultValue": ""
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "displayName": "Framework",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net10.0",
+          "description": "Target net10.0"
+        }
+      ],
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
+    },
+    "EnablePack": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether or not to enable packaging (via \"dotnet pack\") for the project.",
+      "displayName": "Enable pack"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "host:HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "displayName": "Skip restore",
+      "defaultValue": "false"
+    },
+    "langVersion": {
+      "type": "parameter",
+      "datatype": "text",
+      "description": "Sets the LangVersion property in the created project file",
+      "defaultValue": "latest",
+      "replaces": "$(ProjectLanguageVersion)",
+      "displayName": "Language version"
+    }
+  },
+  "primaryOutputs": [
+    { "path": "Company.TestProject1.csproj" },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "UnitTest1.cs"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "GlobalUsings.cs"
+    }
+  ],
+  "defaultName": "TestProject1",
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [ { "text": "Run 'dotnet restore'" } ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "id": "restoreNugetPackages",
+      "continueOnError": true
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens Class1.cs in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "id": "openInEditor",
+      "args": {
+        "files": "1"
+      },
+      "continueOnError": true
+    }
+  ]
+}

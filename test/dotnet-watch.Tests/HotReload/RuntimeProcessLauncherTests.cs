@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
@@ -133,7 +131,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -293,7 +291,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     }
 
     [Theory]
-    [CombinatorialData] 
+    [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc", sharedOutput);
@@ -390,7 +388,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory]
+    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {

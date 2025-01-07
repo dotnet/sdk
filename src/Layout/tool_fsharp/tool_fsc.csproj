@@ -5,6 +5,16 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
 
+  <!-- MIBC, PGO -->
+  <Import Project="..\redist\targets\GetRuntimeInformation.targets" /> <!-- Rid is set here -->
+  <PropertyGroup>
+    <MibcPath>$(PkgMicrosoft_FSharp_Compiler)/contentFiles/mibc</MibcPath>
+    <MibcRid>$(Rid)</MibcRid>  
+    <MibcRid Condition="$(MibcRid.Contains('musl-'))">$(MibcRid.Replace('musl-', ''))</MibcRid>
+    <MibcFile>$(MibcPath)/optimization.$(MibcRid).mibc.runtime/DotNet_FSharp.mibc</MibcFile>
+    <ReadyToRunOptimizationData>$(MibcFile)</ReadyToRunOptimizationData>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="contentFiles" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.Framework" />
@@ -12,12 +22,18 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
   </ItemGroup>
 
+  <!-- MIBC don't work for SB yet: https://github.com/dotnet/source-build/issues/247 -->
+  <Target Name="ValidateMibcFile" AfterTargets="_ResolvePublishNuGetPackagePdbsAndXml" Condition="'$(DotNetBuildSourceOnly)' != 'true' AND '$(SelfContained)' == 'true'">
+    <Error Condition="!Exists('$(MibcFile)')" Text="MIBC file '$(MibcFile)' does not exist." />
+  </Target>
+
    <Target Name="_ResolvePublishNuGetPackagePdbsAndXml"
         AfterTargets="_ResolveCopyLocalAssetsForPublish">
     <PropertyGroup>
         <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'!='release'">Shipping</FSharpCorePath>
         <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
         <FSharpTfm>net9.0</FSharpTfm>
+        <FSharpTfm Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildOrchestrator)' == 'true'">$(NetCurrent)</FSharpTfm>
     </PropertyGroup>
     <ItemGroup>
         <ResolvedFileToPublish
@@ -29,6 +45,7 @@
         <FilesToCopyFromFSharpCompilerPackage Include="$(PkgMicrosoft_FSharp_Compiler)/contentFiles/$(FSharpCorePath)/FSharp.Core.*.nupkg" SubDir="library-packs\"/>
         <FilesToCopyFromFSharpCompilerPackage Include="$(PkgMicrosoft_FSharp_Compiler)/contentFiles/$(FSharpCorePath)/Microsoft.FSharp.Core.NetSdk.props" SubDir="" />
         <FilesToCopyFromFSharpCompilerPackage Include="$(PkgMicrosoft_FSharp_Compiler)/contentFiles/any/any/*" Exclude="$(PkgMicrosoft_FSharp_Compiler)/contentFiles/any/any/Microsoft.FSharp.Core.NetSdk.props" SubDir="" />
+        <FilesToCopyFromFSharpCompilerPackage Include="$(MibcPath)/*" SubDir="" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     </ItemGroup>
     <ItemGroup>
         <ResolvedFileToPublish

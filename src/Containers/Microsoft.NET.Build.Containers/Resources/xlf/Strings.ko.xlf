@@ -4,23 +4,23 @@
     <body>
       <trans-unit id="AmazonRegistryFailed">
         <source>CONTAINER1002: Request to Amazon Elastic Container Registry failed prematurely. This is often caused when the target repository does not exist in the registry.</source>
-        <target state="translated">CONTAINER1002: Amazon Elastic Container Registry에 대한 요청이 조기에 실패했습니다. 대상 리포지토리가 레지스트리에 존재하지 않을 때 종종 발생합니다.</target>
-        <note>{StrBegin="CONTAINER1002: "}</note>
+        <target state="needs-review-translation">CONTAINER1002: Amazon Elastic Container Registry에 대한 요청이 조기에 실패했습니다. 대상 리포지토리가 레지스트리에 존재하지 않을 때 종종 발생합니다.</target>
+        <note>{StrBegins="CONTAINER1002: "}</note>
       </trans-unit>
       <trans-unit id="AmbiguousTags">
         <source>CONTAINER2008: Both {0} and {1} were provided, but only one or the other is allowed.</source>
-        <target state="translated">CONTAINER2008: {0} 및 {1}이(가) 모두 제공되었지만 둘 중 하나만 허용됩니다.</target>
-        <note>{StrBegin="CONTAINER2008: "}</note>
+        <target state="needs-review-translation">CONTAINER2008: {0} 및 {1}이(가) 모두 제공되었지만 둘 중 하나만 허용됩니다.</target>
+        <note>{StrBegins="CONTAINER2008: "}</note>
       </trans-unit>
       <trans-unit id="AppCommandArgsSetNoAppCommand">
         <source>CONTAINER2025: ContainerAppCommandArgs are provided without specifying a ContainerAppCommand.</source>
-        <target state="translated">CONTAINER2025: ContainerAppCommandArgs는 ContainerAppCommand를 지정하지 않고 제공됩니다.</target>
-        <note>{StrBegin="CONTAINER2025: "}</note>
+        <target state="needs-review-translation">CONTAINER2025: ContainerAppCommandArgs는 ContainerAppCommand를 지정하지 않고 제공됩니다.</target>
+        <note>{StrBegins="CONTAINER2025: "}</note>
       </trans-unit>
       <trans-unit id="AppCommandSetNotUsed">
         <source>CONTAINER2026: ContainerAppCommand and ContainerAppCommandArgs must be empty when ContainerAppCommandInstruction is '{0}'.</source>
-        <target state="translated">CONTAINER2026: ContainerAppCommandInstruction이 '{0}'인 경우 ContainerAppCommand 및 ContainerAppCommandArgs가 비어 있어야 합니다.</target>
-        <note>{StrBegin="CONTAINER2026: "}</note>
+        <target state="needs-review-translation">CONTAINER2026: ContainerAppCommandInstruction이 '{0}'인 경우 ContainerAppCommand 및 ContainerAppCommandArgs가 비어 있어야 합니다.</target>
+        <note>{StrBegins="CONTAINER2026: "}</note>
       </trans-unit>
       <trans-unit id="ArchiveRegistry_PushInfo">
         <source>local archive at '{0}'</source>
@@ -29,33 +29,33 @@
       </trans-unit>
       <trans-unit id="BaseEntrypointOverwritten">
         <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>
-        <target state="translated">CONTAINER2022: 기본 이미지에 응용 프로그램을 시작하기 위해 덮어쓸 진입점이 있습니다. 필요한 경우 ContainerAppCommandInstruction을 'Entrypoint'로 설정합니다. 기본 이미지 진입점을 유지하려면 ContainerAppCommandInstruction을 'DefaultArgs'로 설정하세요.</target>
-        <note>{StrBegin="CONTAINER2022: "}</note>
+        <target state="needs-review-translation">CONTAINER2022: 기본 이미지에 응용 프로그램을 시작하기 위해 덮어쓸 진입점이 있습니다. 필요한 경우 ContainerAppCommandInstruction을 'Entrypoint'로 설정합니다. 기본 이미지 진입점을 유지하려면 ContainerAppCommandInstruction을 'DefaultArgs'로 설정하세요.</target>
+        <note>{StrBegins="CONTAINER2022: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNameParsingFailed">
         <source>CONTAINER2009: Could not parse {0}: {1}</source>
-        <target state="translated">CONTAINER2009: {0}을(를) 구문 분석할 수 없습니다: {1}</target>
-        <note>{StrBegin="CONTAINER2009: "}</note>
+        <target state="needs-review-translation">CONTAINER2009: {0}을(를) 구문 분석할 수 없습니다: {1}</target>
+        <note>{StrBegins="CONTAINER2009: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNameRegistryFallback">
         <source>CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</source>
-        <target state="translated">CONTAINER2020: {0}은(는) 레지스트리를 지정하지 않으며 Docker Hub에서 끌어오게 됩니다. 이름 앞에 이미지 레지스트리를 추가하세요(예: '{1}/&lt;image&gt;').</target>
-        <note>{StrBegin="CONTAINER2020: "}</note>
+        <target state="needs-review-translation">CONTAINER2020: {0}은(는) 레지스트리를 지정하지 않으며 Docker Hub에서 끌어오게 됩니다. 이름 앞에 이미지 레지스트리를 추가하세요(예: '{1}/&lt;image&gt;').</target>
+        <note>{StrBegins="CONTAINER2020: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNameWithSpaces">
         <source>CONTAINER2013: {0} had spaces in it, replacing with dashes.</source>
-        <target state="translated">CONTAINER2013: {0}에 공백이 있었고 대시로 대체되었습니다.</target>
-        <note>{StrBegin="CONTAINER2013: "}</note>
+        <target state="needs-review-translation">CONTAINER2013: {0}에 공백이 있었고 대시로 대체되었습니다.</target>
+        <note>{StrBegins="CONTAINER2013: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNotFound">
         <source>CONTAINER1011: Couldn't find matching base image for {0} that matches RuntimeIdentifier {1}.</source>
-        <target state="translated">CONTAINER1011: RuntimeIdentifier {1}과(와) 일치하는 {0}에 대해 일치하는 기본 이미지를 찾을 수 없습니다.</target>
-        <note>{StrBegin="CONTAINER1011: "}</note>
+        <target state="needs-review-translation">CONTAINER1011: RuntimeIdentifier {1}과(와) 일치하는 {0}에 대해 일치하는 기본 이미지를 찾을 수 없습니다.</target>
+        <note>{StrBegins="CONTAINER1011: "}</note>
       </trans-unit>
       <trans-unit id="BlobUploadFailed">
         <source>CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</source>
-        <target state="translated">CONTAINER1001: {0}을(를) 사용하여 Blob을 업로드하지 못했습니다. '{1}' 상태 코드를 수신했습니다.</target>
-        <note>{StrBegin="CONTAINER1001: "}</note>
+        <target state="needs-review-translation">CONTAINER1001: {0}을(를) 사용하여 Blob을 업로드하지 못했습니다. '{1}' 상태 코드를 수신했습니다.</target>
+        <note>{StrBegins="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
         <source>Building image index '{0}' on top of manifests {1}.</source>
@@ -81,13 +81,13 @@
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
         <source>CONTAINER1007: Could not deserialize token from JSON.</source>
-        <target state="translated">CONTAINER1007: JSON에서 토큰을 역직렬화할 수 없습니다.</target>
-        <note>{StrBegin="CONTAINER1007: "}</note>
+        <target state="needs-review-translation">CONTAINER1007: JSON에서 토큰을 역직렬화할 수 없습니다.</target>
+        <note>{StrBegins="CONTAINER1007: "}</note>
       </trans-unit>
       <trans-unit id="CouldntRecognizeRegistry">
         <source>CONTAINER2012: Could not recognize registry '{0}'.</source>
-        <target state="translated">CONTAINER2012: 레지스트리 '{0}'을(를) 인식할 수 없습니다.</target>
-        <note>{StrBegin="CONTAINER2012: "}</note>
+        <target state="needs-review-translation">CONTAINER2012: 레지스트리 '{0}'을(를) 인식할 수 없습니다.</target>
+        <note>{StrBegins="CONTAINER2012: "}</note>
       </trans-unit>
       <trans-unit id="DockerCli_PushInfo">
         <source>local registry via '{0}'</source>
@@ -96,13 +96,13 @@
       </trans-unit>
       <trans-unit id="DockerInfoFailed">
         <source>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</source>
-        <target state="translated">CONTAINER3002: 도커 정보({0})를 가져오지 못했습니다.\n{1}\n{2}</target>
-        <note>{StrBegin="CONTAINER3002: "}</note>
+        <target state="needs-review-translation">CONTAINER3002: 도커 정보({0})를 가져오지 못했습니다.\n{1}\n{2}</target>
+        <note>{StrBegins="CONTAINER3002: "}</note>
       </trans-unit>
       <trans-unit id="DockerInfoFailed_Ex">
         <source>CONTAINER3002: Failed to get docker info: {0}</source>
-        <target state="translated">CONTAINER3002: 도커 정보를 가져오지 못했습니다: {0}</target>
-        <note>{StrBegin="CONTAINER3002: "}</note>
+        <target state="needs-review-translation">CONTAINER3002: 도커 정보를 가져오지 못했습니다: {0}</target>
+        <note>{StrBegins="CONTAINER3002: "}</note>
       </trans-unit>
       <trans-unit id="ContainerRuntimeProcessCreationFailed">
         <source>CONTAINER3001: Failed creating {0} process.</source>
@@ -111,48 +111,48 @@
       </trans-unit>
       <trans-unit id="EmptyOrWhitespacePropertyIgnored">
         <source>CONTAINER4006: Property '{0}' is empty or contains whitespace and will be ignored.</source>
-        <target state="translated">CONTAINER4006: 속성 '{0}'이(가) 비어 있거나 공백이 포함되어 있으므로 무시됩니다.</target>
-        <note>{StrBegin="CONTAINER4006: "}</note>
+        <target state="needs-review-translation">CONTAINER4006: 속성 '{0}'이(가) 비어 있거나 공백이 포함되어 있으므로 무시됩니다.</target>
+        <note>{StrBegins="CONTAINER4006: "}</note>
       </trans-unit>
       <trans-unit id="EmptyValuesIgnored">
         <source>CONTAINER4004: Items '{0}' contain empty item(s) which will be ignored.</source>
-        <target state="translated">CONTAINER4004: 항목 '{0}'에는 무시될 빈 항목이 포함되어 있습니다.</target>
-        <note>{StrBegin="CONTAINER4004: "}</note>
+        <target state="needs-review-translation">CONTAINER4004: 항목 '{0}'에는 무시될 빈 항목이 포함되어 있습니다.</target>
+        <note>{StrBegins="CONTAINER4004: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointAndAppCommandArgsSetNoAppCommandInstruction">
         <source>CONTAINER2023: A ContainerEntrypoint and ContainerAppCommandArgs are provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</source>
-        <target state="translated">CONTAINER2023: ContainerEntrypoint 및 ContainerAppCommandArgs가 제공되었습니다. 애플리케이션 시작 방법을 구성하려면 ContainerAppInstruction을 설정해야 합니다. 올바른 지침은 {0}입니다.</target>
-        <note>{StrBegin="CONTAINER2023: "}</note>
+        <target state="needs-review-translation">CONTAINER2023: ContainerEntrypoint 및 ContainerAppCommandArgs가 제공되었습니다. 애플리케이션 시작 방법을 구성하려면 ContainerAppInstruction을 설정해야 합니다. 올바른 지침은 {0}입니다.</target>
+        <note>{StrBegins="CONTAINER2023: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointSetNoAppCommandInstruction">
         <source>CONTAINER2027: A ContainerEntrypoint is provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</source>
-        <target state="translated">CONTAINER2027: ContainerEntrypoint가 제공됩니다. 애플리케이션 시작 방법을 구성하려면 ContainerAppInstruction을 설정해야 합니다. 유효한 지침은 {0}입니다.</target>
-        <note>{StrBegin="CONTAINER2027: "}</note>
+        <target state="needs-review-translation">CONTAINER2027: ContainerEntrypoint가 제공됩니다. 애플리케이션 시작 방법을 구성하려면 ContainerAppInstruction을 설정해야 합니다. 유효한 지침은 {0}입니다.</target>
+        <note>{StrBegins="CONTAINER2027: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointArgsSetNoEntrypoint">
         <source>CONTAINER2024: ContainerEntrypointArgs are provided without specifying a ContainerEntrypoint.</source>
-        <target state="translated">CONTAINER2024: ContainerEntrypointArgs는 ContainerEntrypoint를 지정하지 않고 제공됩니다.</target>
-        <note>{StrBegin="CONTAINER2024: "}</note>
+        <target state="needs-review-translation">CONTAINER2024: ContainerEntrypointArgs는 ContainerEntrypoint를 지정하지 않고 제공됩니다.</target>
+        <note>{StrBegins="CONTAINER2024: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointArgsSetPreferAppCommandArgs">
         <source>CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</source>
-        <target state="translated">CONTAINER2029: ContainerEntrypointArgsSet이 제공되었습니다. 항상 설정해야 하는 인수에 ContainerAppCommandArgs를 사용하도록 변경하거나 컨테이너를 만들 때 재정의할 수 있는 인수에 ContainerDefaultArgs를 사용하도록 변경합니다.</target>
-        <note>{StrBegin="CONTAINER2029: "}</note>
+        <target state="needs-review-translation">CONTAINER2029: ContainerEntrypointArgsSet이 제공되었습니다. 항상 설정해야 하는 인수에 ContainerAppCommandArgs를 사용하도록 변경하거나 컨테이너를 만들 때 재정의할 수 있는 인수에 ContainerDefaultArgs를 사용하도록 변경합니다.</target>
+        <note>{StrBegins="CONTAINER2029: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointConflictAppCommand">
         <source>CONTAINER2028: ContainerEntrypoint can not be combined with ContainerAppCommandInstruction '{0}'.</source>
-        <target state="translated">CONTAINER2028: ContainerEntrypoint는 '{0}' ContainerAppCommandInstruction과 함께 사용할 수 없습니다.</target>
-        <note>{StrBegin="CONTAINER2028: "}</note>
+        <target state="needs-review-translation">CONTAINER2028: ContainerEntrypoint는 '{0}' ContainerAppCommandInstruction과 함께 사용할 수 없습니다.</target>
+        <note>{StrBegins="CONTAINER2028: "}</note>
       </trans-unit>
       <trans-unit id="FailedRetrievingCredentials">
         <source>CONTAINER1008: Failed retrieving credentials for "{0}": {1}</source>
-        <target state="translated">CONTAINER1008: "{0}"에 대한 자격 증명 검색 실패: {1}</target>
-        <note>{StrBegin="CONTAINER1008: "}</note>
+        <target state="needs-review-translation">CONTAINER1008: "{0}"에 대한 자격 증명 검색 실패: {1}</target>
+        <note>{StrBegins="CONTAINER1008: "}</note>
       </trans-unit>
       <trans-unit id="GenerateDigestLabelWithoutGenerateLabels">
         <source>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</source>
-        <target state="translated">CONTAINER2030: GenerateLabels를 사용하지 않도록 설정했지만 GenerateDigestLabel을 사용하도록 설정했습니다. 다이제스트 레이블이 만들어지지 않습니다.</target>
-        <note>{StrBegin="CONTAINER2030: "}</note>
+        <target state="needs-review-translation">CONTAINER2030: GenerateLabels를 사용하지 않도록 설정했지만 GenerateDigestLabel을 사용하도록 설정했습니다. 다이제스트 레이블이 만들어지지 않습니다.</target>
+        <note>{StrBegins="CONTAINER2030: "}</note>
       </trans-unit>
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
@@ -166,13 +166,13 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
-        <target state="translated">CONTAINER1009: 로컬 레지스트리에서 이미지를 로드하지 못했습니다. stdout: {0}</target>
-        <note>{StrBegin="CONTAINER1009: "}</note>
+        <target state="needs-review-translation">CONTAINER1009: 로컬 레지스트리에서 이미지를 로드하지 못했습니다. stdout: {0}</target>
+        <note>{StrBegins="CONTAINER1009: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
-        <target state="translated">CONTAINER1010: 로컬 레지스트리에서 이미지 끌어오기가 지원되지 않습니다.</target>
-        <note>{StrBegin="CONTAINER1010: "}</note>
+        <target state="needs-review-translation">CONTAINER1010: 로컬 레지스트리에서 이미지 끌어오기가 지원되지 않습니다.</target>
+        <note>{StrBegins="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="ImagesEmpty">
         <source>Cannot create manifest list (image index) because no images were provided.</source>
@@ -181,8 +181,8 @@
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
-        <target state="translated">CONTAINER2015: {0}: '{1}'은(는) 유효한 환경 변수가 아닙니다. 무시 중.</target>
-        <note>{StrBegin="CONTAINER2015: "}</note>
+        <target state="needs-review-translation">CONTAINER2015: {0}: '{1}'은(는) 유효한 환경 변수가 아닙니다. 무시 중.</target>
+        <note>{StrBegins="CONTAINER2015: "}</note>
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
         <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
@@ -191,48 +191,48 @@
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
         <source>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</source>
-        <target state="translated">CONTAINER2005: 유추된 이미지 이름 '{0}'에 완전히 잘못된 문자가 포함되어 있습니다. 이미지 이름의 유효한 문자는 영숫자, -, /또는 _이며 이미지 이름은 영숫자 문자로 시작해야 합니다.</target>
-        <note>{StrBegin="CONTAINER2005: "}</note>
+        <target state="needs-review-translation">CONTAINER2005: 유추된 이미지 이름 '{0}'에 완전히 잘못된 문자가 포함되어 있습니다. 이미지 이름의 유효한 문자는 영숫자, -, /또는 _이며 이미지 이름은 영숫자 문자로 시작해야 합니다.</target>
+        <note>{StrBegins="CONTAINER2005: "}</note>
       </trans-unit>
       <trans-unit id="InvalidImageName_NonAlphanumericStartCharacter">
         <source>CONTAINER2005: The first character of the image name '{0}' must be a lowercase letter or a digit and all characters in the name must be an alphanumeric character, -, /, or _.</source>
-        <target state="translated">CONTAINER2005: 이미지 이름 '{0}'의 첫 번째 문자는 소문자 또는 숫자여야 하며 이름의 모든 문자는 영숫자, -, /또는 _여야 합니다.</target>
-        <note>{StrBegin="CONTAINER2005: "}</note>
+        <target state="needs-review-translation">CONTAINER2005: 이미지 이름 '{0}'의 첫 번째 문자는 소문자 또는 숫자여야 하며 이름의 모든 문자는 영숫자, -, /또는 _여야 합니다.</target>
+        <note>{StrBegins="CONTAINER2005: "}</note>
       </trans-unit>
       <trans-unit id="InvalidPort_Number">
         <source>CONTAINER2017: A ContainerPort item was provided with an invalid port number '{0}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</source>
-        <target state="translated">CONTAINER2017: ContainerPort 항목에 잘못된 포트 번호 '{0}'이(가) 제공되었습니다. ContainerPort 항목에는 정수인 Include 값과 'tcp' 또는 'udp'인 Type 값이 있어야 합니다.</target>
-        <note>{StrBegin="CONTAINER2017: "}</note>
+        <target state="needs-review-translation">CONTAINER2017: ContainerPort 항목에 잘못된 포트 번호 '{0}'이(가) 제공되었습니다. ContainerPort 항목에는 정수인 Include 값과 'tcp' 또는 'udp'인 Type 값이 있어야 합니다.</target>
+        <note>{StrBegins="CONTAINER2017: "}</note>
       </trans-unit>
       <trans-unit id="InvalidPort_NumberAndType">
         <source>CONTAINER2017: A ContainerPort item was provided with an invalid port number '{0}' and an invalid port type '{1}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</source>
-        <target state="translated">CONTAINER2017: 잘못된 포트 번호 '{0}' 및 잘못된 포트 유형 '{1}'과(와) 함께 ContainerPort 항목이 제공되었습니다. ContainerPort 항목에는 정수인 Include 값과 'tcp' 또는 'udp'인 Type 값이 있어야 합니다.</target>
-        <note>{StrBegin="CONTAINER2017: "}</note>
+        <target state="needs-review-translation">CONTAINER2017: 잘못된 포트 번호 '{0}' 및 잘못된 포트 유형 '{1}'과(와) 함께 ContainerPort 항목이 제공되었습니다. ContainerPort 항목에는 정수인 Include 값과 'tcp' 또는 'udp'인 Type 값이 있어야 합니다.</target>
+        <note>{StrBegins="CONTAINER2017: "}</note>
       </trans-unit>
       <trans-unit id="InvalidPort_Type">
         <source>CONTAINER2017: A ContainerPort item was provided with an invalid port type '{0}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</source>
-        <target state="translated">CONTAINER2017: 잘못된 포트 유형 '{0}'과(와) 함께 ContainerPort 항목이 제공되었습니다. ContainerPort 항목에는 정수인 Include 값과 'tcp' 또는 'udp'인 Type 값이 있어야 합니다.</target>
-        <note>{StrBegin="CONTAINER2017: "}</note>
+        <target state="needs-review-translation">CONTAINER2017: 잘못된 포트 유형 '{0}'과(와) 함께 ContainerPort 항목이 제공되었습니다. ContainerPort 항목에는 정수인 Include 값과 'tcp' 또는 'udp'인 Type 값이 있어야 합니다.</target>
+        <note>{StrBegins="CONTAINER2017: "}</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
         <source>CONTAINER2018: Invalid SDK prerelease version '{0}' - only 'rc' and 'preview' are supported.</source>
-        <target state="translated">CONTAINER2018: 잘못된 SDK 시험판 버전 '{0}' - 'rc' 및 'preview'만 지원됩니다.</target>
-        <note>{StrBegin="CONTAINER2018: "}</note>
+        <target state="needs-review-translation">CONTAINER2018: 잘못된 SDK 시험판 버전 '{0}' - 'rc' 및 'preview'만 지원됩니다.</target>
+        <note>{StrBegins="CONTAINER2018: "}</note>
       </trans-unit>
       <trans-unit id="InvalidSdkVersion">
         <source>CONTAINER2019: Invalid SDK semantic version '{0}'.</source>
-        <target state="translated">CONTAINER2019: 잘못된 SDK 의미 체계 버전 '{0}'입니다.</target>
-        <note>{StrBegin="CONTAINER2019: "}</note>
+        <target state="needs-review-translation">CONTAINER2019: 잘못된 SDK 의미 체계 버전 '{0}'입니다.</target>
+        <note>{StrBegins="CONTAINER2019: "}</note>
       </trans-unit>
       <trans-unit id="InvalidTag">
         <source>CONTAINER2007: Invalid {0} provided: {1}. Image tags must be alphanumeric, underscore, hyphen, or period.</source>
-        <target state="translated">CONTAINER2007: 잘못된 {0}이(가) 제공됨: {1}. 이미지 태그는 영숫자, 밑줄, 하이픈 또는 마침표여야 합니다.</target>
-        <note>{StrBegin="CONTAINER2007: "}</note>
+        <target state="needs-review-translation">CONTAINER2007: 잘못된 {0}이(가) 제공됨: {1}. 이미지 태그는 영숫자, 밑줄, 하이픈 또는 마침표여야 합니다.</target>
+        <note>{StrBegins="CONTAINER2007: "}</note>
       </trans-unit>
       <trans-unit id="InvalidTags">
         <source>CONTAINER2010: Invalid {0} provided: {1}. {0} must be a semicolon-delimited list of valid image tags. Image tags must be alphanumeric, underscore, hyphen, or period.</source>
-        <target state="translated">CONTAINER2010: 잘못된 {0}이(가) 제공됨: {1}. {0}은(는) 세미콜론으로 구분된 유효한 이미지 태그 목록이어야 합니다. 이미지 태그는 영숫자, 밑줄, 하이픈 또는 마침표여야 합니다.</target>
-        <note>{StrBegin="CONTAINER2010: "}</note>
+        <target state="needs-review-translation">CONTAINER2010: 잘못된 {0}이(가) 제공됨: {1}. {0}은(는) 세미콜론으로 구분된 유효한 이미지 태그 목록이어야 합니다. 이미지 태그는 영숫자, 밑줄, 하이픈 또는 마침표여야 합니다.</target>
+        <note>{StrBegins="CONTAINER2010: "}</note>
       </trans-unit>
       <trans-unit id="InvalidTargetRuntimeIdentifiers">
         <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
@@ -241,18 +241,18 @@
       </trans-unit>
       <trans-unit id="InvalidTokenResponse">
         <source>CONTAINER1003: Token response had neither token nor access_token.</source>
-        <target state="translated">CONTAINER1003: 토큰 응답에 토큰이나 access_token이 없습니다.</target>
-        <note>{StrBegin="CONTAINER1003: "}</note>
+        <target state="needs-review-translation">CONTAINER1003: 토큰 응답에 토큰이나 access_token이 없습니다.</target>
+        <note>{StrBegins="CONTAINER1003: "}</note>
       </trans-unit>
       <trans-unit id="ItemsWithoutMetadata">
         <source>CONTAINER4005: Item '{0}' contains items without metadata 'Value', and they will be ignored.</source>
-        <target state="translated">CONTAINER4005: 항목 '{0}'에는 메타데이터 '값'이 없는 항목이 포함되어 있으며 무시됩니다.</target>
-        <note>{StrBegin="CONTAINER4005: "}</note>
+        <target state="needs-review-translation">CONTAINER4005: 항목 '{0}'에는 메타데이터 '값'이 없는 항목이 포함되어 있으며 무시됩니다.</target>
+        <note>{StrBegins="CONTAINER4005: "}</note>
       </trans-unit>
       <trans-unit id="LocalRegistryNotAvailable">
         <source>CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</source>
-        <target state="translated">CONTAINER1012: 로컬 레지스트리를 사용할 수 없는데 로컬 레지스트리로 푸시가 요청되었습니다.</target>
-        <note>{StrBegin="CONTAINER1012: "}</note>
+        <target state="needs-review-translation">CONTAINER1012: 로컬 레지스트리를 사용할 수 없는데 로컬 레지스트리로 푸시가 요청되었습니다.</target>
+        <note>{StrBegins="CONTAINER1012: "}</note>
       </trans-unit>
       <trans-unit id="LocalDocker_FailedToGetConfig">
         <source>Error while reading daemon config: {0}</source>
@@ -266,13 +266,13 @@
       </trans-unit>
       <trans-unit id="MissingLinkToRegistry">
         <source>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</source>
-        <target state="translated">CONTAINER2004: '{1}' 레지스트리에서 설명자가 '{0}'인 레이어가 존재하지 않기 때문에 다운로드할 수 없습니다.</target>
-        <note>{StrBegin="CONTAINER2004: "}</note>
+        <target state="needs-review-translation">CONTAINER2004: '{1}' 레지스트리에서 설명자가 '{0}'인 레이어가 존재하지 않기 때문에 다운로드할 수 없습니다.</target>
+        <note>{StrBegins="CONTAINER2004: "}</note>
       </trans-unit>
       <trans-unit id="MissingPortNumber">
         <source>CONTAINER2016: ContainerPort item '{0}' does not specify the port number. Please ensure the item's Include is a port number, for example '&lt;ContainerPort Include="80" /&gt;'</source>
-        <target state="translated">CONTAINER2016: ContainerPort 항목 '{0}'이(가) 포트 번호를 지정하지 않습니다. 항목의 포함이 포트 번호인지 확인하세요(예: '&lt;ContainerPort Include="80" /&gt;').</target>
-        <note>{StrBegin="CONTAINER2016: "}</note>
+        <target state="needs-review-translation">CONTAINER2016: ContainerPort 항목 '{0}'이(가) 포트 번호를 지정하지 않습니다. 항목의 포함이 포트 번호인지 확인하세요(예: '&lt;ContainerPort Include="80" /&gt;').</target>
+        <note>{StrBegins="CONTAINER2016: "}</note>
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
         <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
@@ -281,8 +281,8 @@
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
         <source>CONTAINER1004: No RequestUri specified.</source>
-        <target state="translated">CONTAINER1004: RequestUri가 지정되지 않았습니다.</target>
-        <note>{StrBegin="CONTAINER1004: "}</note>
+        <target state="needs-review-translation">CONTAINER1004: RequestUri가 지정되지 않았습니다.</target>
+        <note>{StrBegins="CONTAINER1004: "}</note>
       </trans-unit>
       <trans-unit id="NormalizedContainerName">
         <source>'{0}' was not a valid container image name, it was normalized to '{1}'</source>
@@ -296,28 +296,28 @@
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
         <source>CONTAINER2011: {0} '{1}' does not exist</source>
-        <target state="translated">CONTAINER2011: {0} '{1}'이(가) 존재하지 않습니다.</target>
-        <note>{StrBegin="CONTAINER2011: "}</note>
+        <target state="needs-review-translation">CONTAINER2011: {0} '{1}'이(가) 존재하지 않습니다.</target>
+        <note>{StrBegins="CONTAINER2011: "}</note>
       </trans-unit>
       <trans-unit id="RegistryOperationFailed">
         <source>CONTAINER1017: Unable to communicate with the registry '{0}'.</source>
-        <target state="translated">CONTAINER1017: '{0}' 레지스트리와 통신할 수 없습니다.</target>
-        <note>{StrBegin="CONTAINER1017:" }</note>
+        <target state="needs-review-translation">CONTAINER1017: '{0}' 레지스트리와 통신할 수 없습니다.</target>
+        <note>{StrBegins="CONTAINER1017:" }</note>
       </trans-unit>
       <trans-unit id="RegistryOutputPushFailed">
         <source>CONTAINER1013: Failed to push to the output registry: {0}</source>
-        <target state="translated">CONTAINER1013: 출력 레지스트리로 푸시하지 못했습니다: {0}</target>
-        <note>{StrBegin="CONTAINER1013: "}</note>
+        <target state="needs-review-translation">CONTAINER1013: 출력 레지스트리로 푸시하지 못했습니다: {0}</target>
+        <note>{StrBegins="CONTAINER1013: "}</note>
       </trans-unit>
       <trans-unit id="RegistryPullFailed">
         <source>CONTAINER1014: Manifest pull failed.</source>
-        <target state="translated">CONTAINER1014: 매니페스트를 끌어오지 못했습니다.</target>
-        <note>{StrBegin="CONTAINER1014: "}</note>
+        <target state="needs-review-translation">CONTAINER1014: 매니페스트를 끌어오지 못했습니다.</target>
+        <note>{StrBegins="CONTAINER1014: "}</note>
       </trans-unit>
       <trans-unit id="RegistryPushFailed">
         <source>CONTAINER1005: Registry push failed; received status code '{0}'.</source>
-        <target state="translated">CONTAINER1005: 레지스트리 푸시에 실패했습니다. 상태 코드 '{0}'을(를) 받았습니다.</target>
-        <note>{StrBegin="CONTAINER1005: "}</note>
+        <target state="needs-review-translation">CONTAINER1005: 레지스트리 푸시에 실패했습니다. 상태 코드 '{0}'을(를) 받았습니다.</target>
+        <note>{StrBegins="CONTAINER1005: "}</note>
       </trans-unit>
       <trans-unit id="Registry_ConfigUploadStarted">
         <source>Uploading config to registry at blob '{0}',</source>
@@ -366,53 +366,53 @@
       </trans-unit>
       <trans-unit id="RepositoryNotFound">
         <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
-        <target state="translated">CONTAINER1015: '{2}' 레지스트리의 '{1}' 태그에서 '{0}' 리포지토리에 액세스할 수 없습니다. 이 이름 및 태그가 레지스트리에 있는지 확인하세요.</target>
-        <note>{StrBegin="CONTAINER1015: "}</note>
+        <target state="needs-review-translation">CONTAINER1015: '{2}' 레지스트리의 '{1}' 태그에서 '{0}' 리포지토리에 액세스할 수 없습니다. 이 이름 및 태그가 레지스트리에 있는지 확인하세요.</target>
+        <note>{StrBegins="CONTAINER1015: "}</note>
       </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
         <source>CONTAINER4003: Required '{0}' items contain empty items.</source>
-        <target state="translated">CONTAINER4003: 필수 '{0}' 항목에 빈 항목이 있습니다.</target>
-        <note>{StrBegin="CONTAINER4003: "}</note>
+        <target state="needs-review-translation">CONTAINER4003: 필수 '{0}' 항목에 빈 항목이 있습니다.</target>
+        <note>{StrBegins="CONTAINER4003: "}</note>
       </trans-unit>
       <trans-unit id="RequiredItemsNotSet">
         <source>CONTAINER4002: Required '{0}' items were not set.</source>
-        <target state="translated">CONTAINER4002: 필수 '{0}' 항목이 설정되지 않았습니다.</target>
-        <note>{StrBegin="CONTAINER4002: "}</note>
+        <target state="needs-review-translation">CONTAINER4002: 필수 '{0}' 항목이 설정되지 않았습니다.</target>
+        <note>{StrBegins="CONTAINER4002: "}</note>
       </trans-unit>
       <trans-unit id="RequiredPropertyNotSetOrEmpty">
         <source>CONTAINER4001: Required property '{0}' was not set or empty.</source>
-        <target state="translated">CONTAINER4001: 필수 속성 '{0}'이(가) 설정되지 않았거나 비어 있습니다.</target>
-        <note>{StrBegin="CONTAINER4001: "}</note>
+        <target state="needs-review-translation">CONTAINER4001: 필수 속성 '{0}'이(가) 설정되지 않았거나 비어 있습니다.</target>
+        <note>{StrBegins="CONTAINER4001: "}</note>
       </trans-unit>
       <trans-unit id="TooManyRetries">
         <source>CONTAINER1006: Too many retries, stopping.</source>
-        <target state="translated">CONTAINER1006: 다시 시도가 너무 많아 중지 중입니다.</target>
-        <note>{StrBegin="CONTAINER1006: "}</note>
+        <target state="needs-review-translation">CONTAINER1006: 다시 시도가 너무 많아 중지 중입니다.</target>
+        <note>{StrBegins="CONTAINER1006: "}</note>
       </trans-unit>
       <trans-unit id="UnableToAccessRepository">
         <source>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</source>
-        <target state="translated">CONTAINER1016: '{1}' 레지스트리의 '{0}' 리포지토리에 액세스할 수 없습니다. 자격 증명이 올바르고 이 리포지토리 및 레지스트리에 액세스할 수 있는지 확인하세요.</target>
-        <note>{StrBegin="CONTAINER1016:" }</note>
+        <target state="needs-review-translation">CONTAINER1016: '{1}' 레지스트리의 '{0}' 리포지토리에 액세스할 수 없습니다. 자격 증명이 올바르고 이 리포지토리 및 레지스트리에 액세스할 수 있는지 확인하세요.</target>
+        <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
-        <target state="translated">CONTAINER2021: 알 수 없는 AppCommandInstruction '{0}'. 올바른 지침은 {1}입니다.</target>
-        <note>{StrBegin="CONTAINER2021: "}</note>
+        <target state="needs-review-translation">CONTAINER2021: 알 수 없는 AppCommandInstruction '{0}'. 올바른 지침은 {1}입니다.</target>
+        <note>{StrBegins="CONTAINER2021: "}</note>
       </trans-unit>
       <trans-unit id="UnknownLocalRegistryType">
         <source>CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</source>
-        <target state="translated">CONTAINER2002: 알 수 없는 로컬 레지스트리 유형 '{0}'. 유효한 로컬 컨테이너 레지스트리 유형은 {1}입니다.</target>
-        <note>{StrBegin="CONTAINER2002: "}</note>
+        <target state="needs-review-translation">CONTAINER2002: 알 수 없는 로컬 레지스트리 유형 '{0}'. 유효한 로컬 컨테이너 레지스트리 유형은 {1}입니다.</target>
+        <note>{StrBegins="CONTAINER2002: "}</note>
       </trans-unit>
       <trans-unit id="UnknownMediaType">
         <source>CONTAINER2003: The manifest for {0}:{1} from registry {2} was an unknown type: {3}. Please raise an issue at https://github.com/dotnet/sdk-container-builds/issues with this message.</source>
-        <target state="translated">CONTAINER2003: 레지스트리 {2}의 {0}:{1}에 대한 매니페스트가 알 수 없는 유형입니다: {3}. https://github.com/dotnet/sdk-container-builds/issues에서 이 메시지와 함께 문제를 제기하세요.</target>
-        <note>{StrBegin="CONTAINER2003: "}</note>
+        <target state="needs-review-translation">CONTAINER2003: 레지스트리 {2}의 {0}:{1}에 대한 매니페스트가 알 수 없는 유형입니다: {3}. https://github.com/dotnet/sdk-container-builds/issues에서 이 메시지와 함께 문제를 제기하세요.</target>
+        <note>{StrBegins="CONTAINER2003: "}</note>
       </trans-unit>
       <trans-unit id="UnrecognizedMediaType">
         <source>CONTAINER2001: Unrecognized mediaType '{0}'.</source>
-        <target state="translated">CONTAINER2001: 미디어 유형 '{0}'을(를) 인식할 수 없습니다.</target>
-        <note>{StrBegin="CONTAINER2001: "}</note>
+        <target state="needs-review-translation">CONTAINER2001: 미디어 유형 '{0}'을(를) 인식할 수 없습니다.</target>
+        <note>{StrBegins="CONTAINER2001: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
         <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
