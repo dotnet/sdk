@@ -27,7 +27,6 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <!-- MSBuild Task DLLs need to be versioned with every build -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <PropertyGroup>
