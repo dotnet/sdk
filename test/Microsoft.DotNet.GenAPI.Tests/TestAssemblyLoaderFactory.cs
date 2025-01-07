@@ -4,20 +4,21 @@
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.GenAPI.Tests;
 
 public class TestAssemblyLoaderFactory
 {
-    public static (IAssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromTexts((string, string)[] assemblyTexts, bool respectInternals = false, bool allowUnsafe = false)
+    public static (IAssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromTexts(ILog logger, (string, string)[] assemblyTexts, bool respectInternals = false, bool allowUnsafe = false)
     {
         if (assemblyTexts.Length == 0)
         {
-            return AssemblyLoaderFactory.CreateWithNoAssemblies(respectInternals);
+            return (new AssemblySymbolLoader(logger, resolveAssemblyReferences: true, includeInternalSymbols: respectInternals), new Dictionary<string, IAssemblySymbol>());
         }
 
-        AssemblySymbolLoader loader = new(resolveAssemblyReferences: true, includeInternalSymbols: respectInternals);
+        AssemblySymbolLoader loader = new(logger, resolveAssemblyReferences: true, includeInternalSymbols: respectInternals);
         loader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
         loader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
 

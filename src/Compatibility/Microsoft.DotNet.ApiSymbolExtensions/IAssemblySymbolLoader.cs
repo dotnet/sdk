@@ -92,18 +92,16 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         IEnumerable<IAssemblySymbol> LoadMatchingAssemblies(IEnumerable<IAssemblySymbol> fromAssemblies, IEnumerable<string> searchPaths, bool validateMatchingIdentity = true, bool warnOnMissingAssemblies = true);
 
         /// <summary>
-        ///
+        /// Logs all diagnostics that were emitted during the loading of the assemblies.
         /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="customMessage"></param>
-        void LogAllDiagnostics(ILog logger, string? customMessage = null);
+        /// <param name="headerMessage">Optional custom message to prepend to the diagnostics.</param>
+        void LogAllDiagnostics(string? headerMessage = null);
 
         /// <summary>
-        ///
+        /// Logs all warnings that were emitted during the loading of the assemblies.
         /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="customMessage"></param>
-        void LogAllWarnings(ILog logger, string? customMessage = null);
+        /// <param name="headerMessage">Optional custom message to prepend to the warnings.</param>
+        void LogAllWarnings(string? headerMessage = null);
 
         /// <summary>
         /// The list of metadata references represented as <see cref="MetadataReference" />.

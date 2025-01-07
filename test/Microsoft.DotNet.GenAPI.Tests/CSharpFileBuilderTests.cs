@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
 {
     public class CSharpFileBuilderTests
     {
+        private readonly ILog _logger = new ConsoleLog(MessageImportance.High);
+
         class AllowAllFilter : ISymbolFilter
         {
             public bool Include(ISymbol symbol) => true;
@@ -36,7 +38,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             using StringWriter stringWriter = new();
 
             (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
-                .CreateFromTexts(assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe);
+                .CreateFromTexts(_logger, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe);
 
             IAssemblySymbolWriter writer = new CSharpFileBuilder(
                 new ConsoleLog(MessageImportance.Low),

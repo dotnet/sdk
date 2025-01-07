@@ -101,12 +101,15 @@ namespace Microsoft.DotNet.GenAPI.Tool
             {
                 bool respectInternals = parseResult.GetValue(respectInternalsOption);
 
-                (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblyLoaderFactory.CreateFromFiles(
+                ILog logger = new ConsoleLog(MessageImportance.Normal);
+
+                (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
+                    logger,
                     assembliesPaths: parseResult.GetValue(assembliesOption) ?? throw new NullReferenceException("No assemblies provided."),
                     assemblyReferencesPaths: parseResult.GetValue(assemblyReferencesOption),
                     respectInternals);
 
-                GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal),
+                GenAPIApp.Run(logger,
                     loader,
                     assemblySymbols,
                     parseResult.GetValue(outputPathOption),

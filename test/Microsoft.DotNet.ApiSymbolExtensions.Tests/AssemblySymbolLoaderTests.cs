@@ -6,12 +6,15 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
 {
     public class AssemblySymbolLoaderTests : SdkTest
     {
+        private ILog _logger = new ConsoleLog(MessageImportance.High);
+
         public AssemblySymbolLoaderTests(ITestOutputHelper log) : base(log) { }
 
         private const string SimpleAssemblySourceContents = @"
@@ -89,14 +92,14 @@ namespace MyNamespace
         [Fact]
         public void LoadAssembly_Throws()
         {
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             Assert.Throws<FileNotFoundException>(() => loader.LoadAssembly(Guid.NewGuid().ToString("N").Substring(0, 8)));
         }
 
         [Fact]
         public void LoadAssemblyFromSourceFiles_Throws()
         {
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             IEnumerable<string> paths = new[] { Guid.NewGuid().ToString("N") };
             Assert.Throws<FileNotFoundException>(() => loader.LoadAssemblyFromSourceFiles(paths, "assembly1", Array.Empty<string>()));
             Assert.Throws<ArgumentNullException>("filePaths", () => loader.LoadAssemblyFromSourceFiles(Array.Empty<string>(), "assembly1", Array.Empty<string>()));
@@ -106,7 +109,7 @@ namespace MyNamespace
         [Fact]
         public void LoadMatchingAssemblies_Throws()
         {
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             IEnumerable<string> paths = new[] { Guid.NewGuid().ToString("N") };
             IAssemblySymbol assembly = SymbolFactory.GetAssemblyFromSyntax("namespace MyNamespace { class Foo { } }");
 
@@ -119,7 +122,7 @@ namespace MyNamespace
             IAssemblySymbol assembly = SymbolFactory.GetAssemblyFromSyntax("namespace MyNamespace { class Foo { } }");
             IEnumerable<string> paths = new[] { AppContext.BaseDirectory };
 
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             IEnumerable<IAssemblySymbol> symbols = loader.LoadMatchingAssemblies(new[] { assembly }, paths);
             Assert.Empty(symbols);
             Assert.True(loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings));
@@ -152,7 +155,7 @@ namespace MyNamespace
                 .Should()
                 .Pass();
 
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             IEnumerable<IAssemblySymbol> matchingAssemblies = loader.LoadMatchingAssemblies(new[] { fromAssembly }, new[] { outputDirectory });
 
             Assert.Single(matchingAssemblies);
@@ -167,7 +170,7 @@ namespace MyNamespace
             var assetInfo = GetSimpleTestAsset();
             IAssemblySymbol fromAssembly = SymbolFactory.GetAssemblyFromSyntax(SimpleAssemblySourceContents, assemblyName: assetInfo.TestAsset.TestProject.Name);
 
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             IEnumerable<IAssemblySymbol> matchingAssemblies = loader.LoadMatchingAssemblies(new[] { fromAssembly }, new[] { assetInfo.OutputDirectory }, validateMatchingIdentity: validateIdentities);
 
             if (validateIdentities)
@@ -194,7 +197,7 @@ namespace MyNamespace
         public void LoadsSimpleAssemblyFromDirectory()
         {
             var assetInfo = GetSimpleTestAsset();
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             IEnumerable<IAssemblySymbol> symbols = loader.LoadAssemblies(assetInfo.OutputDirectory);
             Assert.Single(symbols);
 
@@ -212,7 +215,7 @@ namespace MyNamespace
         public void LoadSimpleAssemblyFullPath()
         {
             var assetInfo = GetSimpleTestAsset();
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             IAssemblySymbol symbol = loader.LoadAssembly(Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll"));
 
             IEnumerable<ITypeSymbol> types = symbol.GlobalNamespace
@@ -246,7 +249,7 @@ namespace MyNamespace
                 .Should()
                 .Pass();
 
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             IEnumerable<IAssemblySymbol> symbols = loader.LoadAssemblies(outputDirectory);
 
             Assert.Equal(2, symbols.Count());
@@ -263,7 +266,7 @@ namespace MyNamespace
         public void LoadAssemblyResolveReferences_WarnsWhenEnabled(bool resolveReferences)
         {
             var assetInfo = GetSimpleTestAsset();
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences: resolveReferences);
+            AssemblySymbolLoader loader = new(_logger, resolveAssemblyReferences: resolveReferences);
             loader.LoadAssembly(Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll"));
 
             if (resolveReferences)
@@ -295,7 +298,7 @@ namespace MyNamespace
         public void LoadAssembliesShouldResolveReferencesNoWarnings()
         {
             var assetInfo = GetSimpleTestAsset();
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences: true);
+            AssemblySymbolLoader loader = new(_logger, resolveAssemblyReferences: true);
             // AddReferenceSearchDirectories should be able to handle directories as well as full path to assemblies.
             loader.AddReferenceSearchPaths(Path.GetDirectoryName(typeof(string).Assembly.Location));
             loader.AddReferenceSearchPaths(Path.GetFullPath(typeof(string).Assembly.Location));
@@ -314,7 +317,7 @@ namespace MyNamespace
         {
             var assetInfo = GetSimpleTestAsset();
             TestProject testProject = assetInfo.TestAsset.TestProject;
-            AssemblySymbolLoader loader = new();
+            AssemblySymbolLoader loader = new(_logger);
             using FileStream stream = File.OpenRead(Path.Combine(assetInfo.OutputDirectory, testProject.Name + ".dll"));
             IAssemblySymbol symbol = loader.LoadAssembly(testProject.Name, stream);
 

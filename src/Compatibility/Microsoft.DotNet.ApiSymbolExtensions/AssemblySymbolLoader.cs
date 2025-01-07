@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public class AssemblySymbolLoader : IAssemblySymbolLoader
     {
+        private readonly ILog _logger;
         // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and
         // value are the containing folder.
         private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
@@ -36,12 +37,40 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         public const string AssemblyReferenceNotFoundErrorCode = "CP1002";
 
         /// <summary>
+        /// Creates an assembly symbol loader and its corresponding assembly symbols from the given DLL files in the filesystem.
+        /// </summary>
+        /// <param name="logger">The logger instance to use for message logging.</param>
+        /// <param name="assembliesPaths">A collection of paths where the assembly DLLs should be searched.</param>
+        /// <param name="assemblyReferencesPaths">An optional collection of paths where the assembly references should be searched.</param>
+        /// <param name="respectInternals">Whether to include internal symbols or not.</param>
+        /// <returns>A tuple containing an assembly symbol loader and its corresponding dictionary of assembly symbols.</returns>
+        public static (AssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromFiles(ILog logger, string[] assembliesPaths, string[]? assemblyReferencesPaths, bool respectInternals = false)
+        {
+            if (assembliesPaths.Length == 0)
+            {
+                return (new AssemblySymbolLoader(logger, resolveAssemblyReferences: true, includeInternalSymbols: respectInternals), new Dictionary<string, IAssemblySymbol>());
+            }
+
+            bool atLeastOneReferencePath = assemblyReferencesPaths?.Count() > 0;
+            AssemblySymbolLoader loader = new(logger, resolveAssemblyReferences: atLeastOneReferencePath, respectInternals);
+            if (atLeastOneReferencePath)
+            {
+                loader.AddReferenceSearchPaths(assemblyReferencesPaths!);
+            }
+            Dictionary<string, IAssemblySymbol>  dictionary = new(loader.LoadAssembliesAsDictionary(assembliesPaths));
+
+            return (loader, dictionary);
+        }
+
+        /// <summary>
         /// Creates a new instance of the <see cref="AssemblySymbolLoader"/> class.
         /// </summary>
+        /// <param name="logger">The logger instance to use for message logging.</param>
         /// <param name="resolveAssemblyReferences">True to attempt to load references for loaded assemblies from the locations specified with <see cref="AddReferenceSearchPaths(string[])"/>. Default is false.</param>
         /// <param name="includeInternalSymbols">True to include all internal metadata for assemblies loaded. Default is false which only includes public and some internal metadata. <seealso cref="MetadataImportOptions"/></param>
-        public AssemblySymbolLoader(bool resolveAssemblyReferences = false, bool includeInternalSymbols = false)
+        public AssemblySymbolLoader(ILog logger, bool resolveAssemblyReferences = false, bool includeInternalSymbols = false)
         {
+            _logger = logger;
             _loadedAssemblies = [];
             CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable,
                 metadataImportOptions: includeInternalSymbols ? MetadataImportOptions.Internal : MetadataImportOptions.Public);
@@ -281,35 +310,35 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         }
 
         /// <inheritdoc />
-        public void LogAllDiagnostics(ILog logger, string? customMessage = null)
+        public void LogAllDiagnostics(string? headerMessage = null)
         {
             if (HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
             {
-                if (!string.IsNullOrEmpty(customMessage))
+                if (!string.IsNullOrEmpty(headerMessage))
                 {
-                    logger.LogWarning(customMessage!);
+                    _logger.LogWarning(headerMessage!);
                 }
 
                 foreach (Diagnostic warning in roslynDiagnostics)
                 {
-                    logger.LogWarning(warning.Id, warning.ToString());
+                    _logger.LogWarning(warning.Id, warning.ToString());
                 }
             }
         }
 
         /// <inheritdoc />
-        public void LogAllWarnings(ILog logger, string? customMessage = null)
+        public void LogAllWarnings(string? headerMessage = null)
         {
             if (HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
             {
-                if (!string.IsNullOrEmpty(customMessage))
+                if (!string.IsNullOrEmpty(headerMessage))
                 {
-                    logger.LogWarning(customMessage!);
+                    _logger.LogWarning(headerMessage!);
                 }
 
                 foreach (AssemblyLoadWarning warning in loadWarnings)
                 {
-                    logger.LogWarning(warning.DiagnosticId, warning.Message);
+                    _logger.LogWarning(warning.DiagnosticId, warning.Message);
                 }
             }
         }

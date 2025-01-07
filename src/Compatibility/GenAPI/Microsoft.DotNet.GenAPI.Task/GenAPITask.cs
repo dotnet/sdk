@@ -64,12 +64,14 @@ namespace Microsoft.DotNet.GenAPI.Task
         /// <inheritdoc />
         protected override void ExecuteCore()
         {
-            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblyLoaderFactory.CreateFromFiles(
+            ILog logger = new MSBuildLog(Log);
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
+                logger,
                 assembliesPaths: Assemblies ?? throw new NullReferenceException("Assemblies cannot be null."),
                 assemblyReferencesPaths: AssemblyReferences,
                 RespectInternals);
 
-            GenAPIApp.Run(new MSBuildLog(Log),
+            GenAPIApp.Run(logger,
                           loader,
                           assemblySymbols,
                           OutputPath,
