@@ -6,7 +6,7 @@
     <VersionMajor>9</VersionMajor>
     <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>1</VersionSDKMinor>
-    <VersionFeature>02</VersionFeature>
+    <VersionFeature>03</VersionFeature>
     <!-- This property powers the SdkAnalysisLevel property in end-user MSBuild code.
          It should always be the hundreds-value of the current SDK version, never any
          preview version components or anything else. E.g. 8.0.100, 9.0.300, etc. -->
