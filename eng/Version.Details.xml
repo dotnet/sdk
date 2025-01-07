@@ -254,26 +254,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>efdd29953304f1fc494bb45c5785d37961c4a14b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25054.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25056.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>79e959f4a3cbb5f6a1142a8a9a826e2deb7e3632</Sha>
+      <Sha>2648b6bb9c89a0b2f3f0d281562bae96b7e1f639</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25054.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25056.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>79e959f4a3cbb5f6a1142a8a9a826e2deb7e3632</Sha>
+      <Sha>2648b6bb9c89a0b2f3f0d281562bae96b7e1f639</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25054.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25056.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>79e959f4a3cbb5f6a1142a8a9a826e2deb7e3632</Sha>
+      <Sha>2648b6bb9c89a0b2f3f0d281562bae96b7e1f639</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25054.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25056.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>79e959f4a3cbb5f6a1142a8a9a826e2deb7e3632</Sha>
+      <Sha>2648b6bb9c89a0b2f3f0d281562bae96b7e1f639</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.25054.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.25056.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>ccd4a801b55f52ec4e480d50f820425bdd425c6d</Sha>
+      <Sha>78cce9d0faebba12b58429646c35b9cb69e1ee8c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="10.0.0-alpha.2.25056.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -360,13 +360,13 @@
       <Sha>7ba02e8ac71eeba562476953d5ff6030b8eda765</Sha>
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-alpha.1.24631.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-alpha.1.25054.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>9007f330c114fc307cac86be2f4c2dd575687106</Sha>
+      <Sha>aaac41d3a384bbe04372a38e7ddcc02e1808ee60</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-alpha.1.25054.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-alpha.1.25056.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>ccd4a801b55f52ec4e480d50f820425bdd425c6d</Sha>
+      <Sha>78cce9d0faebba12b58429646c35b9cb69e1ee8c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="10.0.0-preview.24609.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
