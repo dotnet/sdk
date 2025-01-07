@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Cli
         private void WaitOnTestApplicationPipeConnectionLoop()
         {
             _cancellationToken.Cancel();
-            _testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+            _testAppPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
