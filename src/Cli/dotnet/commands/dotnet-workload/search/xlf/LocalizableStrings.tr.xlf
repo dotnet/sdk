@@ -64,7 +64,7 @@
            9.0.201
     </source>
         <target state="needs-review-translation">En son yayınlanan iş yükü sürümlerinin listesinin çıkışını görüntüler. Sağlanacak sayıyı belirtmek için --take seçeneğini, biçimi değiştirmek için ise --format seçeneğini alır.</target>
-        <note>Do not localize --take or --format</note>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
         <source>The --take option must be positive.</source>

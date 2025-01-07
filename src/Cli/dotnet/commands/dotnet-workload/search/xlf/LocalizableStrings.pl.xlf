@@ -64,7 +64,7 @@
            9.0.201
     </source>
         <target state="needs-review-translation">Wyświetl listę najnowszych wydanych wersji obciążenia. Przyjmuje opcję --take, aby określić, ile elementów należy podać, i polecenie --format, aby zmienić format.</target>
-        <note>Do not localize --take or --format</note>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
         <source>The --take option must be positive.</source>

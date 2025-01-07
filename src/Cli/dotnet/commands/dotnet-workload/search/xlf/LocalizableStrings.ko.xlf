@@ -64,7 +64,7 @@
            9.0.201
     </source>
         <target state="needs-review-translation">릴리스된 최신 워크로드 버전 목록을 출력합니다. --take 옵션을 사용하여 얼마나 제공할지 지정하고 --format을 사용하여 형식을 변경합니다.</target>
-        <note>Do not localize --take or --format</note>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
         <source>The --take option must be positive.</source>

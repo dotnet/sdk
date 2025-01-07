@@ -225,7 +225,7 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziele
       <trans-unit id="ShortWorkloadSearchVersionDescription">
         <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
         <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
-        <note>dotnet workload search version --help should not be localized.</note>
+        <note>{Locked="dotnet workload search version --help"}</note>
       </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>

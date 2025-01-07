@@ -717,7 +717,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   </data>
   <data name="ShortWorkloadSearchVersionDescription" xml:space="preserve">
     <value>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</value>
-    <comment>dotnet workload search version --help should not be localized.</comment>
+    <comment>{Locked="dotnet workload search version --help"}</comment>
   </data>
   <data name="CorruptSolutionProjectFolderStructure" xml:space="preserve">
     <value>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</value>

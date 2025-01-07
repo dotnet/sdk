@@ -64,7 +64,7 @@
            9.0.201
     </source>
         <target state="needs-review-translation">輸出最新發行的工作負載版本的清單。使用 --take 選項來指定要提供多少個，以及使用 --format 來變更格式。</target>
-        <note>Do not localize --take or --format</note>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
         <source>The --take option must be positive.</source>

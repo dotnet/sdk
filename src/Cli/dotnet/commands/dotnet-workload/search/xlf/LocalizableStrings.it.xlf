@@ -64,7 +64,7 @@
            9.0.201
     </source>
         <target state="needs-review-translation">Restituisce un elenco delle ultime versioni del carico di lavoro rilasciate. Accetta l'opzione --take per specificare quanti fornirne e --format per modificare il formato.</target>
-        <note>Do not localize --take or --format</note>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
         <source>The --take option must be positive.</source>

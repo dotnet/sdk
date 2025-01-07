@@ -166,7 +166,7 @@
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </value>
-    <comment>Do not localize --take or --format</comment>
+    <comment>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</comment>
   </data>
   <data name="FormatOptionDescription" xml:space="preserve">
     <value>Changes the format of outputted workload versions. Can take 'json' or 'list'</value>

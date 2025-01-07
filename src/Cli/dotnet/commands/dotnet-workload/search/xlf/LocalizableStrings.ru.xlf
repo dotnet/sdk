@@ -64,7 +64,7 @@
            9.0.201
     </source>
         <target state="needs-review-translation">Вывод списка последних выпущенных версий рабочей нагрузки. Принимает параметр --take для указания количества и --format для изменения формата.</target>
-        <note>Do not localize --take or --format</note>
+        <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
         <source>The --take option must be positive.</source>

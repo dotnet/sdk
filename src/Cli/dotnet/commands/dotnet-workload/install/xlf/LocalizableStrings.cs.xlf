@@ -30,7 +30,7 @@
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
         <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
-        <note>--version should not be translated.</note>
+        <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
@@ -39,8 +39,8 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="translated">Možnost {0} se nedá použít, pokud je v global.json zadaná verze úlohy.  Odeberte možnost {0} nebo odeberte element workloadVersion z {1}.</target>
-        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+        <target state="needs-review-translation">Možnost {0} se nedá použít, pokud je v global.json zadaná verze úlohy.  Odeberte možnost {0} nebo odeberte element workloadVersion z {1}.</target>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
