@@ -1,19 +1,19 @@
-From beddab7e3e7d299c4b08d9f1fece97fb29acac17 Mon Sep 17 00:00:00 2001
+From faa695199c8b8886c0d923f25a57c9728afeafbf Mon Sep 17 00:00:00 2001
 From: Matt Thalman <mthalman@microsoft.com>
 Date: Tue, 7 Jan 2025 14:48:06 -0600
 Subject: [PATCH] Remove unused fields
 
 Backport: https://github.com/dotnet/razor/pull/11358
 ---
- .../Microsoft.AspNetCore.Razor.LanguageServer/LspServices.cs  | 4 ----
+ .../Microsoft.AspNetCore.Razor.LanguageServer/LspServices.cs  | 4 +---
  .../AutoInsert/RemoteAutoInsertService.cs                     | 1 -
- 2 files changed, 5 deletions(-)
+ 2 files changed, 1 insertion(+), 4 deletions(-)
 
 diff --git a/src/Razor/src/Microsoft.AspNetCore.Razor.LanguageServer/LspServices.cs b/src/Razor/src/Microsoft.AspNetCore.Razor.LanguageServer/LspServices.cs
-index 43a17a0402..27a35007e3 100644
+index 43a17a0402..01bf4ada70 100644
 --- a/src/Razor/src/Microsoft.AspNetCore.Razor.LanguageServer/LspServices.cs
 +++ b/src/Razor/src/Microsoft.AspNetCore.Razor.LanguageServer/LspServices.cs
-@@ -14,16 +14,12 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer;
+@@ -14,16 +14,14 @@ namespace Microsoft.AspNetCore.Razor.LanguageServer;
  internal class LspServices : ILspServices
  {
      private readonly IServiceProvider _serviceProvider;
@@ -25,8 +25,9 @@ index 43a17a0402..27a35007e3 100644
          serviceCollection.AddSingleton<ILspServices>(this);
          _serviceProvider = serviceCollection.BuildServiceProvider();
 -
--        // Create all startup services
+         // Create all startup services
 -        _startupServices = _serviceProvider.GetServices<IRazorStartupService>();
++        _serviceProvider.GetServices<IRazorStartupService>();
      }
  
      public ImmutableArray<Type> GetRegisteredServices()
