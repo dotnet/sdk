@@ -451,9 +451,11 @@
           DependsOnTargets="GetTransitiveRepositoryReferences">
     <PropertyGroup>
       <!-- Infer the projects runtime identifier as the vertical's RID when doing a vertical build
-           and filter down RID lists to the target RID in such a scenario. This is necessary when
-           referencing live runtime to restore the correct rid assets. -->
-      <BuildArgs Condition="'@(TransitiveRepositoryReference->AnyHaveMetadataValue('Identity', 'runtime'))' == 'true'">$(BuildArgs) /p:DotNetBuildTargetRidOnly=true</BuildArgs>
+           and filter down RID lists to the target RID in such a scenario. This is necessary when the host (SDK) rid
+           is different from the target rid, i.e. when building win-x86 with a win-x64 SDK but only when consuming
+           live runtime. Exclude from source-only builds which don't use the portable RID format which causes the
+           ProcessFrameworkReferences not be able to restore for the given RID.  -->
+      <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true' and '@(TransitiveRepositoryReference->AnyHaveMetadataValue('Identity', 'runtime'))' == 'true'">$(BuildArgs) /p:DotNetBuildTargetRidOnly=true</BuildArgs>
 
       <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
     </PropertyGroup>
