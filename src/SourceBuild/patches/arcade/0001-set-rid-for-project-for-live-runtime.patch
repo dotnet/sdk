@@ -1,11 +1,11 @@
-From 900ca947aa1aaa2c0d5f1b01fbe43fd212fbdeff Mon Sep 17 00:00:00 2001
+From 15baa0ae30a0fd2b3d2baad1ebbf2d79ef08281a Mon Sep 17 00:00:00 2001
 From: Jeremy Koritzinsky <jekoritz@microsoft.com>
 Date: Thu, 2 Jan 2025 12:19:02 -0800
 Subject: [PATCH] Infer the projects runtime identifier as the vertical's RID
  when doing a vertical build and filter down RID lists to the target RID in
  such a scenario.
 
-Backport: https://github.com/dotnet/arcade/pull/15371
+ Backport: https://github.com/dotnet/arcade/pull/15371
 
 ---
  .../UnifiedBuild/Unified-Build-Controls.md    |  1 +
