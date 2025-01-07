@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Numerics;
 using System.Security.Cryptography;
 using Microsoft.Build.Framework;
@@ -28,7 +30,7 @@ public class ComputeCssScope : Task
             var input = ScopedCssInput[i];
             var relativePath = input.ItemSpec.ToLowerInvariant().Replace("\\", "//");
             var scope = input.GetMetadata("CssScope");
-            scope = !string.IsNullOrEmpty(scope) ? scope : ComputeCssScope.GenerateScope(TargetName, relativePath);
+            scope = !string.IsNullOrEmpty(scope) ? scope : GenerateScope(TargetName, relativePath);
 
             var outputItem = new TaskItem(input);
             outputItem.SetMetadata("CssScope", scope);

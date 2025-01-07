@@ -14,9 +14,9 @@ index ------------
  ./packs/Microsoft.AspNetCore.App.Ref/
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/
 @@ ------------ @@
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.Cryptography.Xml.xml
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Threading.RateLimiting.dll
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Threading.RateLimiting.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XmlSerializer.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XPath.XDocument.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XPath.xml
 -./packs/Microsoft.NETCore.App.Host.portable-rid/
 -./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/
 -./packs/Microsoft.NETCore.App.Host.portable-rid/x.y.z/runtimes/
@@ -53,62 +53,6 @@ index ------------
  ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/
  ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/WorkloadManifest.Aspire.targets
 @@ ------------ @@
- ./sdk/x.y.z/Containers/tasks/netx.y/ja/Microsoft.NET.Build.Containers.resources.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/ko/
- ./sdk/x.y.z/Containers/tasks/netx.y/ko/Microsoft.NET.Build.Containers.resources.dll
-+./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Bcl.AsyncInterfaces.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.deps.json
- ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/pl/
-@@ ------------ @@
- ./sdk/x.y.z/Containers/tasks/netx.y/pt-BR/Microsoft.NET.Build.Containers.resources.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/ru/
- ./sdk/x.y.z/Containers/tasks/netx.y/ru/Microsoft.NET.Build.Containers.resources.dll
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/browser/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/browser/lib/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/browser/lib/netx.y/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/
--./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/System.IO.Pipelines.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/tr/
-@@ ------------ @@
- ./sdk/x.y.z/FSharp/ko/FSharp.DependencyManager.Nuget.resources.dll
- ./sdk/x.y.z/FSharp/library-packs/
- ./sdk/x.y.z/FSharp/library-packs/FSharp.Core.x.y.z.nupkg
-+./sdk/x.y.z/FSharp/Microsoft.Bcl.Cryptography.dll
- ./sdk/x.y.z/FSharp/Microsoft.Build.Framework.dll
- ./sdk/x.y.z/FSharp/Microsoft.Build.Tasks.Core.dll
- ./sdk/x.y.z/FSharp/Microsoft.Build.Utilities.Core.dll
-@@ ------------ @@
- ./sdk/x.y.z/FSharp/ru/FSharp.Compiler.Service.resources.dll
- ./sdk/x.y.z/FSharp/ru/FSharp.Core.resources.dll
- ./sdk/x.y.z/FSharp/ru/FSharp.DependencyManager.Nuget.resources.dll
--./sdk/x.y.z/FSharp/runtimes/
--./sdk/x.y.z/FSharp/runtimes/win/
--./sdk/x.y.z/FSharp/runtimes/win/lib/
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
--./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
- ./sdk/x.y.z/FSharp/System.CodeDom.dll
- ./sdk/x.y.z/FSharp/System.Configuration.ConfigurationManager.dll
--./sdk/x.y.z/FSharp/System.Diagnostics.EventLog.dll
- ./sdk/x.y.z/FSharp/System.Formats.Asn1.dll
- ./sdk/x.y.z/FSharp/System.Formats.Nrbf.dll
- ./sdk/x.y.z/FSharp/System.Resources.Extensions.dll
-@@ ------------ @@
- ./sdk/x.y.z/ko/vstest.console.resources.dll
- ./sdk/x.y.z/Microsoft.ApplicationInsights.dll
- ./sdk/x.y.z/Microsoft.AspNetCore.DeveloperCertificates.XPlat.dll
-+./sdk/x.y.z/Microsoft.Bcl.AsyncInterfaces.dll
-+./sdk/x.y.z/Microsoft.Bcl.Cryptography.dll
- ./sdk/x.y.z/Microsoft.Build.dll
- ./sdk/x.y.z/Microsoft.Build.Framework.dll
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
  ./sdk/x.y.z/Microsoft.Build.Utilities.Core.dll
@@ -116,47 +60,3 @@ index ------------
  ./sdk/x.y.z/Microsoft.Common.CrossTargeting.targets
  ./sdk/x.y.z/Microsoft.Common.CurrentVersion.targets
  ./sdk/x.y.z/Microsoft.Common.overridetasks
-@@ ------------ @@
- ./sdk/x.y.z/runtimes/any/native/NuGet.props
- ./sdk/x.y.z/runtimes/any/native/NuGet.RestoreEx.targets
- ./sdk/x.y.z/runtimes/any/native/NuGet.targets
--./sdk/x.y.z/runtimes/browser/
--./sdk/x.y.z/runtimes/browser/lib/
--./sdk/x.y.z/runtimes/browser/lib/netx.y/
--./sdk/x.y.z/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
--./sdk/x.y.z/runtimes/win/
--./sdk/x.y.z/runtimes/win/lib/
--./sdk/x.y.z/runtimes/win/lib/netx.y/
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.ServiceProcess.ServiceController.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll
--./sdk/x.y.z/runtimes/win/lib/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/SdkResolvers/
- ./sdk/x.y.z/SdkResolvers/Microsoft.Build.NuGetSdkResolver/
- ./sdk/x.y.z/SdkResolvers/Microsoft.Build.NuGetSdkResolver/Microsoft.Build.NuGetSdkResolver.xml
-@@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.deps.json
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.runtimeconfig.json
-+./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/System.Collections.Immutable.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/Sdk/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/Sdk/Sdk.props
-@@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/ru/Microsoft.DotNet.ApiSymbolExtensions.resources.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/ru/Microsoft.DotNet.PackageValidation.resources.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/ru/Microsoft.NET.Build.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/browser/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/browser/lib/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/browser/lib/netx.y/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/win/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/win/lib/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/win/lib/netx.y/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/runtimes/win/lib/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.IO.Hashing.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.IO.Pipelines.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Text.Encodings.Web.dll

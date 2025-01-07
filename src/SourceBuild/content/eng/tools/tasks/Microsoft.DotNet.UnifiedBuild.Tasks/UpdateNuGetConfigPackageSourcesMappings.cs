@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable disable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -314,6 +316,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 }
 
                 string[] packages = Directory.GetFiles(path, "*.nupkg", SearchOption.AllDirectories);
+                Array.Sort(packages);
                 foreach (string package in packages)
                 {
                     NupkgInfo info = GetNupkgInfo(package);
@@ -358,6 +361,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             }
 
             string[] nuspecFiles = Directory.GetFiles(SbrpRepoSrcPath, "*.nuspec", SearchOption.AllDirectories);
+            Array.Sort(nuspecFiles);
             foreach (string nuspecFile in nuspecFiles)
             {
                 try

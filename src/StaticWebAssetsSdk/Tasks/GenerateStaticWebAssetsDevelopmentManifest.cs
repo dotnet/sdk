@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
@@ -91,7 +93,7 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
             return 0;
         });
 
-        var manifest = GenerateStaticWebAssetsDevelopmentManifest.CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
+        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
         return manifest;
     }
 

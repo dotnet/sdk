@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -44,7 +46,7 @@ public class FilterStaticWebAssetEndpoints : Task
                 continue;
             }
 
-            if (FilterStaticWebAssetEndpoints.MeetsAllCriteria(endpoint, asset, filterCriteria, out var failingCriteria))
+            if (MeetsAllCriteria(endpoint, asset, filterCriteria, out var failingCriteria))
             {
                 if (asset != null && !endpointFoundMatchingAsset.ContainsKey(asset.Identity))
                 {

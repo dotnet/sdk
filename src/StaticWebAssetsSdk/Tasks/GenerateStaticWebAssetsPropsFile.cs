@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Security.Cryptography;
 using System.Xml;
 using Microsoft.Build.Framework;
@@ -211,7 +213,7 @@ public class GenerateStaticWebAssetsPropsFile : Task
     private bool EnsureRequiredMetadata(ITaskItem item, string metadataName, bool allowEmpty = false)
     {
         var value = item.GetMetadata(metadataName);
-        var isInvalidValue = allowEmpty ? !GenerateStaticWebAssetsPropsFile.HasMetadata(item, metadataName) : string.IsNullOrEmpty(value);
+        var isInvalidValue = allowEmpty ? !HasMetadata(item, metadataName) : string.IsNullOrEmpty(value);
 
         if (isInvalidValue)
         {

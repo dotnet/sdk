@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
@@ -918,7 +920,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var pattern = StaticWebAssetPathPattern.Parse(relativePath, Identity);
         var resolver = StaticWebAssetTokenResolver.Instance;
         pattern.EmbedTokens(this, resolver);
-        return pattern.RawPattern;
+        return pattern.RawPattern.ToString();
     }
 
     internal FileInfo ResolveFile() => ResolveFile(Identity, OriginalItemSpec);

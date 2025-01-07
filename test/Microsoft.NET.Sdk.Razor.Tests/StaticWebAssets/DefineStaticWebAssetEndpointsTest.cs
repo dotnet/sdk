@@ -1,10 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Diagnostics.Metrics;
+using System.Diagnostics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
+using NuGet.Packaging.Core;
+using System.Net;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 
@@ -372,6 +378,110 @@ public class DefineStaticWebAssetEndpointsTest
         result.Should().Be(true);
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
         endpoints.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ResolvesContentType_ForCompressedAssets()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [
+            new TaskItem(
+                Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed", "rdfmaxp4ta-43emfwee4b.gz"),
+                new Dictionary<string, string>
+                {
+                    ["RelativePath"] = "_framework/dotnet.timezones.blat.gz",
+                    ["BasePath"] = "/",
+                    ["AssetMode"] = "All",
+                    ["AssetKind"] = "Build",
+                    ["SourceId"] = "BlazorWasmHosted60.Client",
+                    ["CopyToOutputDirectory"] = "PreserveNewest",
+                    ["Fingerprint"] = "3ji2l2o1xa",
+                    ["RelatedAsset"] = Path.Combine(AppContext.BaseDirectory, "Client", "bin", "Debug", "net6.0", "wwwroot", "_framework", "dotnet.timezones.blat"),
+                    ["ContentRoot"] = Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed"),
+                    ["SourceType"] = "Computed",
+                    ["Integrity"] = "TwfyUDDMyF5dWUB2oRhrZaTk8sEa9o8ezAlKdxypsX4=",
+                    ["AssetRole"] = "Alternative",
+                    ["AssetTraitValue"] = "gzip",
+                    ["AssetTraitName"] = "Content-Encoding",
+                    ["OriginalItemSpec"] = Path.Combine("D:", "work", "dotnet-sdk", "artifacts", "tmp", "Release", "Publish60Host---0200F604", "Client", "bin", "Debug", "net6.0", "wwwroot", "_framework", "dotnet.timezones.blat"),
+                    ["CopyToPublishDirectory"] = "Never"
+                })
+            ],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [],
+            TestLengthResolver = asset => asset.EndsWith(".gz") ? 10 : throw new InvalidOperationException(),
+            TestLastWriteResolver = asset => asset.EndsWith(".gz") ? lastWrite : throw new InvalidOperationException(),
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        endpoints.Length.Should().Be(1);
+        var endpoint = endpoints[0];
+        endpoint.ResponseHeaders.Should().ContainSingle(h => h.Name == "Content-Type" && h.Value == "application/x-gzip");
+    }
+
+    [Fact]
+    public void ResolvesContentType_ForFingerprintedAssets()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
+
+        var task = new DefineStaticWebAssetEndpoints
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [
+                new TaskItem(
+                    Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed", "rdfmaxp4ta-43emfwee4b.gz"),
+                    new Dictionary<string, string>
+                    {
+                        ["RelativePath"] = "RazorPackageLibraryDirectDependency.iiugt355ct.bundle.scp.css.gz",
+                        ["BasePath"] = "_content/RazorPackageLibraryDirectDependency",
+                        ["AssetMode"] = "Reference",
+                        ["AssetKind"] = "All",
+                        ["SourceId"] = "RazorPackageLibraryDirectDependency",
+                        ["CopyToOutputDirectory"] = "Never",
+                        ["Fingerprint"] = "olx7vzw7zz",
+                        ["RelatedAsset"] = Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed", "RazorPackageLibraryDirectDependency.iiugt355ct.bundle.scp.css"),
+                        ["ContentRoot"] = Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed"),
+                        ["SourceType"] = "Package",
+                        ["Integrity"] = "JK/W3g5zqZGxAM7zbv/pJ3ngpJheT01SXQ+NofKgQcc=",
+                        ["AssetRole"] = "Alternative",
+                        ["AssetTraitValue"] = "gzip",
+                        ["AssetTraitName"] = "Content-Encoding",
+                        ["OriginalItemSpec"] = Path.Combine(AppContext.BaseDirectory, "Client", "obj", "Debug", "net6.0", "compressed", "RazorPackageLibraryDirectDependency.iiugt355ct.bundle.scp.css"),
+                        ["CopyToPublishDirectory"] = "PreserveNewest"
+                    })
+            ],
+            ExistingEndpoints = [],
+            ContentTypeMappings = [],
+            TestLengthResolver = asset => asset.EndsWith(".gz") ? 10 : throw new InvalidOperationException(),
+            TestLastWriteResolver = asset => asset.EndsWith(".gz") ? lastWrite : throw new InvalidOperationException(),
+        };
+
+        // Act
+        var result = task.Execute();
+        result.Should().Be(true);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
+        endpoints.Length.Should().Be(1);
+        var endpoint = endpoints[0];
+        endpoint.ResponseHeaders.Should().ContainSingle(h => h.Name == "Content-Type" && h.Value == "text/css");
     }
 
     [Fact]

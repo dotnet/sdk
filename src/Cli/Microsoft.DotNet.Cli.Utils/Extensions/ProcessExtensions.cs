@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// </summary>
         /// <param name="process">The process component.</param>
         /// <returns>The parent process or <see langword="null"/> if the parent process cannot be found.</returns>
-        public static Process GetParentProcess(this Process process)
+        public static Process? GetParentProcess(this Process process)
         {
             int ppid = process.GetParentProcessId();
 

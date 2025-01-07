@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 using Microsoft.Build.Framework;
 
@@ -44,7 +46,7 @@ public class ComputeReferenceStaticWebAssetItems : Task
             var resultAssets = new List<StaticWebAsset>();
             foreach (var (key, group) in existingAssets)
             {
-                if (!ComputeReferenceStaticWebAssetItems.TryGetUniqueAsset(group, out var selected))
+                if (!TryGetUniqueAsset(group, out var selected))
                 {
                     if (selected == null)
                     {

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
@@ -65,7 +67,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
                     for (var j = 0; j < endpoints.Length; j++)
                     {
                         var endpoint = endpoints[j];
-                        if (ResolveFingerprintedStaticWebAssetEndpointsForAssets.HasFingerprint(endpoint))
+                        if (HasFingerprint(endpoint))
                         {
                             foundFingerprintedEndpoint = true;
                             var route = asset.ReplaceTokens(endpoint.Route, StaticWebAssetTokenResolver.Instance);

@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using Microsoft.Build.Framework;
 
@@ -36,7 +38,7 @@ public class ComputeStaticWebAssetsForCurrentProject : Task
             var resultAssets = new List<StaticWebAsset>();
             foreach (var (key, group) in currentProjectAssets)
             {
-                if (!ComputeStaticWebAssetsForCurrentProject.TryGetUniqueAsset(group, out var selected))
+                if (!TryGetUniqueAsset(group, out var selected))
                 {
                     if (selected == null)
                     {

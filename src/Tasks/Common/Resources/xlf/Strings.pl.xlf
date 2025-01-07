@@ -72,6 +72,11 @@
         <target state="needs-review-translation">NETSDK1079: Pakiet Microsoft.AspNetCore.All nie jest obsługiwany w przypadku ukierunkowania na program .NET Core w wersji 3.0 lub wyższej. Zamiast tego powinien zostać użyty element FrameworkReference dla pakietu Microsoft.AspNetCore.App, który zostanie niejawnie uwzględniony przez pakiet Microsoft.NET.Sdk.Web.</target>
         <note>{StrBegins="NETSDK1079: "}</note>
       </trans-unit>
+      <trans-unit id="AspNetCorePackUnsupportedTargetFramework">
+        <source>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</source>
+        <target state="new">NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</target>
+        <note>{StrBegins="NETSDK1224: "}</note>
+      </trans-unit>
       <trans-unit id="AspNetCoreUsesFrameworkReference">
         <source>NETSDK1080: A PackageReference to Microsoft.AspNetCore.App is not necessary when targeting .NET Core 3.0 or higher. If Microsoft.NET.Sdk.Web is used, the shared framework will be referenced automatically. Otherwise, the PackageReference should be replaced with a FrameworkReference.</source>
         <target state="needs-review-translation">NETSDK1080: Element PackageReference dla pakietu Microsoft.AspNetCore.App nie jest konieczny w przypadku ukierunkowania na program .NET Core w wersji 3.0 lub wyższej. Jeśli używany jest pakiet Microsoft.NET.Sdk.Web, odwołanie do udostępnionej struktury zostanie utworzone automatycznie. W przeciwnym razie element PackageReference powinien zostać zastąpiony elementem FrameworkReference.</target>
@@ -641,10 +646,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1115: Bieżący zestaw .NET SDK nie obsługuje programu .NET Framework bez użycia wartości domyślnych zestawu .NET SDK. Prawdopodobna przyczyna to niezgodność między właściwością CLRSupport projektu C++/CLI i elementu TargetFramework.</target>
         <note>{StrBegins="NETSDK1115: "}</note>
       </trans-unit>
-      <trans-unit id="Net8NotCompatibleWithDev177">
-        <source>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</source>
-        <target state="needs-review-translation">NETSDK1213: platforma docelowa .NET 8.0 lub nowsza w programie Visual Studio 2022 17.7 nie jest obsługiwana.</target>
-        <note>{StrBegins="NETSDK1213: "}</note>
+      <trans-unit id="Net9NotCompatibleWithDev1711">
+        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
+        <target state="translated">NETSDK1223: platforma docelowa .NET 9.0 lub nowsza w programie Visual Studio 2022 17.11 nie jest obsługiwana.</target>
+        <note>{StrBegins="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -762,9 +767,9 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegins="NETSDK1189: "}</note>
       </trans-unit>
       <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
-        <source>NETSDK1214: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
-        <target state="needs-review-translation">NETSDK1214: element PreferNativeArm64 ma zastosowanie tylko do elementów docelowych programu .NET Framework. Nie jest ona obsługiwana i nie ma żadnego efektu w przypadku określania wartości docelowej platformy .NET Core.</target>
-        <note>{StrBegins="NETSDK1214: "}</note>
+        <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="needs-review-translation">NETSDK1222: element PreferNativeArm64 ma zastosowanie tylko do elementów docelowych programu .NET Framework. Nie jest ona obsługiwana i nie ma żadnego efektu w przypadku określania wartości docelowej platformy .NET Core.</target>
+        <note>{StrBegins="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>

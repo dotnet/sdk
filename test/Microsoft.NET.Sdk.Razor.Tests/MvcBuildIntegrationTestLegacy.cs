@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -113,9 +115,18 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             depsFile.Should().Exist();
             var dependencyContext = ReadDependencyContext(depsFile.FullName);
 
-            // Ensure some compile references exist
-            var packageReference = dependencyContext.CompileLibraries.First(l => l.Name == "System.Runtime.CompilerServices.Unsafe");
-            packageReference.Assemblies.Should().NotBeEmpty();
+            if (TargetFramework.Equals("netcoreapp2.2"))
+            {
+                // Ensure compile references from a PrivateAssets="all" PackageReference don't exist
+                var packageReference = dependencyContext.CompileLibraries.FirstOrDefault(l => l.Name == "System.Runtime.CompilerServices.Unsafe", defaultValue: null);
+                packageReference.Should().BeNull();
+            }
+            else
+            {
+                // Ensure some compile references exist
+                var packageReference = dependencyContext.CompileLibraries.First(l => l.Name == "System.Runtime.CompilerServices.Unsafe");
+                packageReference.Assemblies.Should().NotBeEmpty();
+            }
 
             var projectReference = dependencyContext.CompileLibraries.First(l => l.Name == TestProjectName);
             projectReference.Assemblies.Should().NotBeEmpty();

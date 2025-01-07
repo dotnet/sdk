@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 #if NET9_0_OR_GREATER
 using System.Globalization;
 #endif
@@ -58,15 +60,15 @@ public class ConcatenateCssFiles50 : Task
             // If we were to produce "/_content/library/bundle.bdl.scp.css" it would fail to accoutn for "subdir"
             // We could produce shorter paths if we detected common segments between the final bundle base path and the imported bundle
             // base paths, but its more work and it will not have a significant impact on the bundle size size.
-            var normalizedBasePath = ConcatenateCssFiles50.NormalizePath(ScopedCssBundleBasePath);
+            var normalizedBasePath = NormalizePath(ScopedCssBundleBasePath);
             var currentBasePathSegments = normalizedBasePath.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
             var prefix = string.Join("/", Enumerable.Repeat("..", currentBasePathSegments.Length));
             for (var i = 0; i < ProjectBundles.Length; i++)
             {
                 var bundle = ProjectBundles[i];
-                var bundleBasePath = ConcatenateCssFiles50.NormalizePath(bundle.GetMetadata("BasePath"));
-                var relativePath = ConcatenateCssFiles50.NormalizePath(bundle.GetMetadata("RelativePath"));
-                var importPath = ConcatenateCssFiles50.NormalizePath(Path.Combine(prefix, bundleBasePath, relativePath));
+                var bundleBasePath = NormalizePath(bundle.GetMetadata("BasePath"));
+                var relativePath = NormalizePath(bundle.GetMetadata("RelativePath"));
+                var importPath = NormalizePath(Path.Combine(prefix, bundleBasePath, relativePath));
 
 #if !NET9_0_OR_GREATER
                 builder.AppendLine($"@import '{importPath}';");
@@ -94,7 +96,7 @@ public class ConcatenateCssFiles50 : Task
 
         var content = builder.ToString();
 
-        if (!File.Exists(OutputFile) || !ConcatenateCssFiles50.SameContent(content, OutputFile))
+        if (!File.Exists(OutputFile) || !SameContent(content, OutputFile))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
             File.WriteAllText(OutputFile, content);

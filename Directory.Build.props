@@ -16,6 +16,7 @@
       Note: The redist-installer project does use Architecture. The Arcade SDK does not use either BuildArchitecture or Architecture.
     -->
     <Platform Condition="'$(SetPlatformFromArchitecture)' == 'true' And ('$(Platform)' == '' Or '$(Platform)' == 'AnyCPU')">$(Architecture)</Platform>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
@@ -37,6 +38,7 @@
     <SdkTargetFramework>net10.0</SdkTargetFramework>
     <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
     <NetCurrent>net10.0</NetCurrent>
+    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
     <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
 

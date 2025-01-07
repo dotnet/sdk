@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -171,7 +173,7 @@ public class RewriteCss : Task
             var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
             if (lastSimpleSelector != null)
             {
-                Edits.Add(new InsertSelectorScopeEdit { Position = FindScopeInsertionEdits.FindPositionToInsertInSelector(lastSimpleSelector) });
+                Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionToInsertInSelector(lastSimpleSelector) });
             }
             else if (firstDeepCombinator != null)
             {
