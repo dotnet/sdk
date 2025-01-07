@@ -327,17 +327,17 @@
 
     <!-- Install Dependencies and SDK Packages -->
     <Exec Command="sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc" />
-    <Exec Command="sudo rpm -Uv $(DownloadedRuntimeDepsInstallerFile)" />
-    <Exec Command="sudo rpm -Uv $(DownloadedNetCoreAppHostPackInstallerFile)" />
-    <Exec Command="sudo rpm -Uv $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
-    <Exec Command="sudo rpm -Uv $(DownloadedNetStandardTargetingPackInstallerFile)" />
-    <Exec Command="sudo rpm -Uv $(DownloadedAspNetTargetingPackInstallerFile)" />
-    <Exec Command="sudo rpm -Uv $(DownloadedSharedHostInstallerFile)" />
-    <Exec Command="sudo rpm -Uv $(DownloadedHostFxrInstallerFile)" />
-    <Exec Command="sudo rpm -Uv $(DownloadedSharedFrameworkInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedRuntimeDepsInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppHostPackInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedNetStandardTargetingPackInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedAspNetTargetingPackInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedSharedHostInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedHostFxrInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(DownloadedSharedFrameworkInstallerFile)" />
     <!-- Ignore dependencies, which may have an incoherent dependency on dotnet-runtime -->
-    <Exec Command="sudo rpm -Uv --nodeps $(DownloadedAspNetCoreSharedFxInstallerFile)" />
-    <Exec Command="sudo rpm -Uv $(SdkRPMInstallerFile)" />
+    <Exec Command="sudo rpm -iv --nodeps $(DownloadedAspNetCoreSharedFxInstallerFile)" />
+    <Exec Command="sudo rpm -iv $(SdkRPMInstallerFile)" />
 
     <!-- Run End-2-end Tests https://github.com/dotnet/core-sdk/issues/1174
     <DotNetRestore ProjectPath="$(EndToEndTestProject)"
