@@ -24,7 +24,7 @@
       are not necessary, and this property is removed from the file.
     -->
     <PrivateSourceBuiltSdkVersion>10.0.100-alpha.1.25057.1</PrivateSourceBuiltSdkVersion>
-    <PrivateSourceBuiltArtifactsVersion>10.0.100-alpha.1.25057.1</PrivateSourceBuiltArtifactsVersion>
+    <PrivateSourceBuiltArtifactsVersion>10.0.100-alpha.1.25057.1-2</PrivateSourceBuiltArtifactsVersion>
     <PrivateSourceBuiltPrebuiltsVersion>0.1.0-10.0.100-7</PrivateSourceBuiltPrebuiltsVersion>
     <!-- command-line-api dependencies -->
     <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
