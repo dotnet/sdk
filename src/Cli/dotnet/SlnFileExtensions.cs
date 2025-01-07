@@ -88,30 +88,6 @@ namespace Microsoft.DotNet.Tools.Common
             }
         }
 
-        public static string GetSlnFileFullPath(string slnFileOrDirectory)
-        {
-            if (File.Exists(slnFileOrDirectory))
-            {
-                return Path.GetFullPath(slnFileOrDirectory);
-            }
-            if (Directory.Exists(slnFileOrDirectory))
-            {
-                string[] files = [
-                    ..Directory.GetFiles(slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly),
-                    ..Directory.GetFiles(slnFileOrDirectory, "*.slnx", SearchOption.TopDirectoryOnly)];
-                if (files.Length == 0)
-                {
-                    throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, slnFileOrDirectory);
-                }
-                if (files.Length > 1)
-                {
-                    throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, slnFileOrDirectory);
-                }
-                return Path.GetFullPath(files.Single());
-            }
-            throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, slnFileOrDirectory);
-        }
-
         private static bool AreBuildConfigurationsApplicable(string projectTypeGuid)
         {
             return !projectTypeGuid.Equals(ProjectTypeGuids.SharedProjectGuid, StringComparison.OrdinalIgnoreCase);

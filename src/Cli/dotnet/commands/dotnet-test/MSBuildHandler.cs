@@ -31,14 +31,14 @@ namespace Microsoft.DotNet.Cli
 
         public async Task<int> RunWithMSBuild(bool allowBinLog)
         {
-            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetSolutionOrProjectFilePath(Directory.GetCurrentDirectory(), out string filePath, out bool isSolution);
+            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(Directory.GetCurrentDirectory(), out string projectOrSolutionFilePath, out bool isSolution);
 
             if (!solutionOrProjectFileFound)
             {
                 return ExitCodes.GenericFailure;
             }
 
-            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution, allowBinLog);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(projectOrSolutionFilePath, isSolution, allowBinLog);
 
             InitializeTestApplications(modules);
 
