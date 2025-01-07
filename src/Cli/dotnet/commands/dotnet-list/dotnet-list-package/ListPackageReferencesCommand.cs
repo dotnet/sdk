@@ -71,7 +71,10 @@ namespace Microsoft.DotNet.Tools.List.PackageReferences
 
             if (Directory.Exists(resultPath))
             {
-                var possibleSolutionPath = Directory.GetFiles(resultPath, "*.sln", SearchOption.TopDirectoryOnly);
+                string[] possibleSolutionPath = [
+                    ..Directory.GetFiles(resultPath, "*.sln", SearchOption.TopDirectoryOnly),
+                    ..Directory.GetFiles(resultPath, "*.slnx", SearchOption.TopDirectoryOnly)
+                ];
 
                 //If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
                 if (possibleSolutionPath.Count() > 1)

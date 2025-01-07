@@ -131,7 +131,10 @@ namespace Microsoft.DotNet.Cli
                     }
                     catch (GracefulException)  // Fall back to looking for a solution if multiple project files are found, or there's no project in the directory.
                     {
-                        string? potentialSln = Directory.GetFiles(arg, "*.sln", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                        string? potentialSln = ((string[])[
+                            ..Directory.GetFiles(arg, "*.sln", SearchOption.TopDirectoryOnly),
+                            ..Directory.GetFiles(arg, "*.slnx", SearchOption.TopDirectoryOnly),
+                        ]).FirstOrDefault();
 
                         if (!string.IsNullOrEmpty(potentialSln))
                         {

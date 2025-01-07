@@ -122,7 +122,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             var projectFiles = new List<string>();
             if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
             {
-                slnFiles = Directory.GetFiles(currentDirectory, "*.sln").ToList();
+                slnFiles = ((string[])[
+                    ..Directory.GetFiles(currentDirectory, "*.sln"),
+                    ..Directory.GetFiles(currentDirectory, "*.slnx")
+                ]).ToList();
                 projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
             }
             else
