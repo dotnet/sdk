@@ -51,7 +51,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return await startOp(cancellationToken);
     }
 
-    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
+    [Theory]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -382,7 +382,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory(Skip="https://github.com/dotnet/sdk/issues/42850")]
+    [Theory]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
