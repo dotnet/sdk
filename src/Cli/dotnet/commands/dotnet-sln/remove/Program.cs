@@ -72,13 +72,12 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).Wait();
                 return 0;
             }
-            catch (Exception ex) when (ex is not GracefulException)
+            catch (Exception ex) when (ex is not GracefulException && ex.InnerException is not GracefulException)
             {
                 if (ex is SolutionException || ex.InnerException is SolutionException)
                 {
                     throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
                 }
-                // TODO: Check
                 if (ex.InnerException is GracefulException)
                 {
                     throw ex.InnerException;
