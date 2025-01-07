@@ -87,6 +87,15 @@ namespace Microsoft.DotNet.Watch
                 try
                 {
                     await process.WaitForExitAsync(processTerminationToken);
+
+                    // ensures that all process output has been reported:
+                    try
+                    {
+                        process.WaitForExit();
+                    }
+                    catch
+                    {
+                    }
                 }
                 catch (OperationCanceledException)
                 {
