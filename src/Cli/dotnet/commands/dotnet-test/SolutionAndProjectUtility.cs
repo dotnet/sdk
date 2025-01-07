@@ -53,17 +53,11 @@ namespace Microsoft.DotNet.Cli
 
         private static string[] GetSolutionFilePaths(string directory)
         {
-            var solutionFiles = Directory.GetFiles(directory, "*.sln*", SearchOption.TopDirectoryOnly)
-                .Where(f => IsSolutionFile(f))
+            var solutionFiles = Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly)
+                .Concat(Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly))
                 .ToArray();
 
             return solutionFiles;
-        }
-
-        private static bool IsSolutionFile(string filePath)
-        {
-            var extension = Path.GetExtension(filePath);
-            return extension.Equals(".sln", StringComparison.OrdinalIgnoreCase) || extension.Equals(".slnx", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string[] GetProjectFilePaths(string directory)
