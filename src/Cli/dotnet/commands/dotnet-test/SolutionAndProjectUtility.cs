@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
@@ -106,14 +107,9 @@ namespace Microsoft.DotNet.Cli
 
             try
             {
-                using var stream = new FileStream(solutionFilePath, FileMode.Open, FileAccess.Read);
-                string extension = Path.GetExtension(solutionFilePath);
-
-                solution = extension.Equals(".sln", StringComparison.OrdinalIgnoreCase)
-                    ? await SolutionSerializers.SlnFileV12.OpenAsync(stream, CancellationToken.None)
-                    : extension.Equals(".slnx", StringComparison.OrdinalIgnoreCase)
-                        ? await SolutionSerializers.SlnXml.OpenAsync(stream, CancellationToken.None)
-                        : null;
+                solution = SolutionSerializers.GetSerializerByMoniker(solutionFilePath) is ISolutionSerializer serializer
+                    ? await serializer.OpenAsync(solutionFilePath, CancellationToken.None)
+                    : null;
             }
             catch (Exception ex)
             {
