@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Tools.ProjectExtensions;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
@@ -14,35 +16,35 @@ namespace Microsoft.DotNet.Cli
             solutionOrProjectFilePath = string.Empty;
             isSolution = false;
 
-            // Get all solution files in the specified directory
-            var solutionFiles = GetSolutionFilePaths(directory);
-            // Get all project files in the specified directory
-            var projectFiles = GetProjectFilePaths(directory);
+            // Get solution file in the specified directory
+            var solutionFile = SlnFileExtensions.GetSlnFileFullPath(directory);
+            // Get project file in the specified directory
+            var projectFile = ProjectExtensions.GetProjectFileFullPath(directory);
 
-            // If both solution files and project files are found, return false
-            if (solutionFiles.Length > 0 && projectFiles.Length > 0)
+            if (string.IsNullOrEmpty(solutionFile) && string.IsNullOrEmpty(projectFile))
             {
-                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
+                // If no solution or project files are found, return false
+                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorMessage);
                 return false;
             }
 
-            // If exactly one solution file is found, return the solution file path
-            if (solutionFiles.Length == 1)
+            // If the solution file is found, return the solution file path
+            if (!string.IsNullOrEmpty(solutionFile))
             {
-                solutionOrProjectFilePath = solutionFiles[0];
+                solutionOrProjectFilePath = solutionFile;
                 isSolution = true;
                 return true;
             }
 
-            // If exactly one project file is found, return the project file path
-            if (projectFiles.Length == 1)
+            // If the project file is found, return the project file path
+            if (projectFile.Length == 1)
             {
-                solutionOrProjectFilePath = projectFiles[0];
+                solutionOrProjectFilePath = projectFile;
                 return true;
             }
 
-            // If no solution or project files are found, return false
-            VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorMessage);
+            // If both solution file and project file are found, return false
+            VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
             return false;
         }
 
@@ -76,37 +78,10 @@ namespace Microsoft.DotNet.Cli
 
             if (solution is not null)
             {
-                projectsPaths = [.. solution.SolutionProjects.Select(project => project.FilePath)];
+                projectsPaths = [.. solution.SolutionProjects.Select(project => Path.GetFullPath(project.FilePath))];
             }
 
             return projectsPaths;
-        }
-
-        private static string[] GetSolutionFilePaths(string directory)
-        {
-            string[] solutionFiles = [
-                    ..Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly),
-                    ..Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly)];
-
-            return solutionFiles;
-        }
-
-        private static string[] GetProjectFilePaths(string directory)
-        {
-            var projectFiles = Directory.GetFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
-                .Where(f => IsProjectFile(f))
-                .ToArray();
-
-            return projectFiles;
-        }
-
-        private static bool IsProjectFile(string filePath)
-        {
-            var extension = Path.GetExtension(filePath);
-            return extension.Equals(".csproj", StringComparison.OrdinalIgnoreCase) ||
-                   extension.Equals(".vbproj", StringComparison.OrdinalIgnoreCase) ||
-                   extension.Equals(".fsproj", StringComparison.OrdinalIgnoreCase) ||
-                   extension.Equals(".proj", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

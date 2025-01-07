@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Tools.ProjectExtensions
@@ -41,6 +42,33 @@ namespace Microsoft.DotNet.Tools.ProjectExtensions
                 .Split(';')
                 .Select((value) => value.Trim())
                 .Where((value) => !string.IsNullOrEmpty(value));
+        }
+
+        public static string GetProjectFileFullPath(string projectFileOrDirectory)
+        {
+            if (File.Exists(projectFileOrDirectory))
+            {
+                return Path.GetFullPath(projectFileOrDirectory);
+            }
+            if (Directory.Exists(projectFileOrDirectory))
+            {
+                string[] files = [
+                    ..Directory.GetFiles(projectFileOrDirectory, "*.csproj", SearchOption.TopDirectoryOnly),
+                    ..Directory.GetFiles(projectFileOrDirectory, "*.vbproj", SearchOption.TopDirectoryOnly),
+                    ..Directory.GetFiles(projectFileOrDirectory, "*.fsproj", SearchOption.TopDirectoryOnly),
+                    ..Directory.GetFiles(projectFileOrDirectory, "*.proj", SearchOption.TopDirectoryOnly)];
+
+                if (files.Length == 0)
+                {
+                    throw new GracefulException(CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory, projectFileOrDirectory);
+                }
+                if (files.Length > 1)
+                {
+                    throw new GracefulException(CommonLocalizableStrings.MoreThanOneProjectInDirectory, projectFileOrDirectory);
+                }
+                return Path.GetFullPath(files.Single());
+            }
+            throw new GracefulException(CommonLocalizableStrings.CouldNotFindProjectOrDirectory, projectFileOrDirectory);
         }
     }
 }

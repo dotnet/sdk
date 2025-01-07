@@ -6,7 +6,6 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
-using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -87,6 +86,30 @@ namespace Microsoft.DotNet.Tools.Common
                 Reporter.Output.WriteLine(
                     string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, relativeProjectPath));
             }
+        }
+
+        public static string GetSlnFileFullPath(string slnFileOrDirectory)
+        {
+            if (File.Exists(slnFileOrDirectory))
+            {
+                return Path.GetFullPath(slnFileOrDirectory);
+            }
+            if (Directory.Exists(slnFileOrDirectory))
+            {
+                string[] files = [
+                    ..Directory.GetFiles(slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly),
+                    ..Directory.GetFiles(slnFileOrDirectory, "*.slnx", SearchOption.TopDirectoryOnly)];
+                if (files.Length == 0)
+                {
+                    throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, slnFileOrDirectory);
+                }
+                if (files.Length > 1)
+                {
+                    throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, slnFileOrDirectory);
+                }
+                return Path.GetFullPath(files.Single());
+            }
+            throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, slnFileOrDirectory);
         }
 
         private static bool AreBuildConfigurationsApplicable(string projectTypeGuid)
@@ -271,7 +294,7 @@ namespace Microsoft.DotNet.Tools.Common
                     else
                     {
 
-                        if(HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, dir, parentDirGuid, slnFile.Projects))
+                        if (HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, dir, parentDirGuid, slnFile.Projects))
                         {
                             throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, slnFile.Projects.FirstOrDefault(p => p.Id == parentDirGuid).Name);
                         }
