@@ -1,4 +1,14 @@
-# Torn .NET SDK
+# Decoulping the .NET SDK and Visual Studio
+
+## Goals
+
+Visual Studio and the .NET SDK are separate products, but their experiences are tightly coupled. Changes to the .NET SDK version can influence Visual Studio's design-time behavior, while updating Visual Studio can impact command-line builds for .NET SDK projects. When the products are in sync these interactions are benign, but when they are not, they can cause compatibility and reliability issues. This document proposes a design to decouple these products, allowing each to provide a more defined and independent experience.
+
+Design Goals:
+
+1. **Consistent Build Experiences**: The `msbuild` and `dotnet msbuild` command line build experience for a solution should be functionally equivalent.
+2. **Independent Design Time Behavior**: Visual Studio's design-time experience should be independent of the .NET SDK used by the solution.
+3. **Clear Handling of Divergence**: To make explicit that it is okay, and even expected, that the design time and command line build experiences can differ when the two products are not in sync.
 
 ## Terminology
 
@@ -6,7 +16,7 @@
 - **dotnet msbuild**: refers to the .NET Core based msbuild included with the .NET SDK.
 - **analyzers**: this document will use analyzers to refer to both analyzers and generators.
 
-## Summary
+## Motivations
 
 Visual Studio and .NET SDK are separate products but they are intertwined in command line and design time build scenarios as different components are loaded from each product. This table represents how the products currently function:
 
@@ -60,14 +70,6 @@ This means that CI systems are updated to the latest .NET SDK virtually as soon 
 Another reason is that teams use older Visual Studio versions due to internal constraints: like an organizational policy. At the same time they install the latest .NET SDK which puts them into a torn state.
 
 This also hits any customer that uses a preview version of .NET SDK. These inherently represent a torn SDK state because they almost never match the compiler in Visual Studio. This results in blockers for big teams like Bing from testing out our previews.
-
-## Goals
-
-This design has a number of goals:
-
-1. The `msbuild` and `dotnet msbuild` build experience should be equivalent.
-1. The Visual Studio Design time experience is independent of the .NET SDK installed.
-1. To make explicit that it is okay, and even expected, that the design time and command line build experiences can differ when the SDK is in a torn state.
 
 ## MSBuild using .NET SDK Compiler
 
