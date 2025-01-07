@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli
             TreatUnmatchedTokensAsErrors = false;
         }
 
-        public int Run(ParseResult parseResult)
+        public async Task<int> Run(ParseResult parseResult)
         {
             bool hasFailed = false;
             try
@@ -90,7 +90,8 @@ namespace Microsoft.DotNet.Cli
                 else
                 {
                     bool allowBinLog = IsBinLogEnabled(_args);
-                    if (!RunMSBuild(parseResult, allowBinLog))
+
+                    if (!await RunMSBuild(parseResult, allowBinLog))
                     {
                         return ExitCodes.GenericFailure;
                     }
@@ -116,9 +117,9 @@ namespace Microsoft.DotNet.Cli
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
-        private bool RunMSBuild(ParseResult parseResult, bool allowBinLog)
+        private async Task<bool> RunMSBuild(ParseResult parseResult, bool allowBinLog)
         {
-            int msbuildResult;
+            int msbuildExitCode;
 
             if (parseResult.HasOption(TestingPlatformOptions.ProjectOption))
             {
@@ -126,22 +127,22 @@ namespace Microsoft.DotNet.Cli
 
                 if (!File.Exists(filePath))
                 {
-                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNonExistentProjectFilePathDescription);
+                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentProjectFilePathDescription, filePath));
                     return false;
                 }
 
-                msbuildResult = _msBuildConnectionHandler.RunWithMSBuild(filePath, allowBinLog);
+                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(filePath, allowBinLog);
             }
             else
             {
                 // If no filter was provided neither the project using --project,
                 // MSBuild will get the test project paths in the current directory
-                msbuildResult = _msBuildConnectionHandler.RunWithMSBuild(allowBinLog);
+                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(allowBinLog);
             }
 
-            if (msbuildResult != 0)
+            if (msbuildExitCode != ExitCodes.Success)
             {
-                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMSBuildProjectsPropertiesErrorMessage);
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorMessage, msbuildExitCode));
                 return false;
             }
 
@@ -272,7 +273,7 @@ namespace Microsoft.DotNet.Cli
                 return;
             }
 
-            if (args.ExitCode != 0)
+            if (args.ExitCode != ExitCodes.Success)
             {
                 VSTestTrace.SafeWriteTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
             }

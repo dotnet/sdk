@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Cli
         private bool _areTestingPlatformApplications = true;
 
         private const string BinLogFileName = "msbuild.binlog";
+        private const string Separator = ";";
         private static readonly object s_buildLock = new();
 
         public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, int degreeOfParallelism)
@@ -28,7 +29,7 @@ namespace Microsoft.DotNet.Cli
             _degreeOfParallelism = degreeOfParallelism;
         }
 
-        public int RunWithMSBuild(bool allowBinLog)
+        public async Task<int> RunWithMSBuild(bool allowBinLog)
         {
             bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetSolutionOrProjectFilePath(Directory.GetCurrentDirectory(), out string filePath, out bool isSolution);
 
@@ -37,16 +38,16 @@ namespace Microsoft.DotNet.Cli
                 return ExitCodes.GenericFailure;
             }
 
-            (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(filePath, isSolution, allowBinLog);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution, allowBinLog);
 
             InitializeTestApplications(modules);
 
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
-        public int RunWithMSBuild(string filePath, bool allowBinLog)
+        public async Task<int> RunWithMSBuild(string filePath, bool allowBinLog)
         {
-            (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(filePath, false, allowBinLog);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, false, allowBinLog);
 
             InitializeTestApplications(modules);
 
@@ -84,14 +85,14 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private (IEnumerable<Module>, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, bool allowBinLog)
+        private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, bool allowBinLog)
         {
             var allProjects = new ConcurrentBag<Module>();
             bool restored = true;
 
             if (isSolution)
             {
-                var projects = SolutionAndProjectUtility.GetProjectsFromSolutionFile(solutionOrProjectFilePath);
+                var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath);
                 ProcessProjectsInParallel(projects, allowBinLog, allProjects, ref restored);
             }
             else
@@ -174,7 +175,7 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                var frameworks = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                var frameworks = targetFrameworks.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var framework in frameworks)
                 {
                     project.SetProperty(ProjectProperties.TargetFramework, framework);

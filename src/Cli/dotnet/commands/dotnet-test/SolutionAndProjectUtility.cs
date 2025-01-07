@@ -1,8 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Construction;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -45,17 +46,47 @@ namespace Microsoft.DotNet.Cli
             return false;
         }
 
-        public static IEnumerable<string> GetProjectsFromSolutionFile(string solutionFilePath)
+        public static async Task<IEnumerable<string>> ParseSolution(string solutionFilePath)
         {
-            var solutionFile = SolutionFile.Parse(solutionFilePath);
-            return solutionFile.ProjectsInOrder.Select(project => project.AbsolutePath);
+            if (string.IsNullOrEmpty(solutionFilePath))
+            {
+                VSTestTrace.SafeWriteTrace(() => $"Solution file path cannot be null or empty: {solutionFilePath}");
+                return [];
+            }
+
+            var projectsPaths = new List<string>();
+            SolutionModel solution = null;
+
+            try
+            {
+                using var stream = new FileStream(solutionFilePath, FileMode.Open, FileAccess.Read);
+                string extension = Path.GetExtension(solutionFilePath);
+
+                solution = extension.Equals(".sln", StringComparison.OrdinalIgnoreCase)
+                    ? await SolutionSerializers.SlnFileV12.OpenAsync(stream, CancellationToken.None)
+                    : extension.Equals(".slnx", StringComparison.OrdinalIgnoreCase)
+                        ? await SolutionSerializers.SlnXml.OpenAsync(stream, CancellationToken.None)
+                        : null;
+            }
+            catch (Exception ex)
+            {
+                VSTestTrace.SafeWriteTrace(() => $"Failed to parse solution file '{solutionFilePath}': {ex.Message}");
+                return [];
+            }
+
+            if (solution is not null)
+            {
+                projectsPaths = [.. solution.SolutionProjects.Select(project => project.FilePath)];
+            }
+
+            return projectsPaths;
         }
 
         private static string[] GetSolutionFilePaths(string directory)
         {
-            var solutionFiles = Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly)
-                .Concat(Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly))
-                .ToArray();
+            string[] solutionFiles = [
+                    ..Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly),
+                    ..Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly)];
 
             return solutionFiles;
         }
