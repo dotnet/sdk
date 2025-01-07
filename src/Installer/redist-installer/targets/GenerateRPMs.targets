@@ -11,8 +11,10 @@
           DependsOnTargets="GetCurrentRuntimeInformation;
                             GenerateRpmsInner" />
 
+  <!-- Removed TestSdkRpm. SDK RPMS should be tested in a separate container to avoid polluting or relying on the
+       build environment. https://github.com/dotnet/sdk/issues/41910 -->
   <Target Name="GenerateRpmsInner"
-          DependsOnTargets="TestFPMTool;BuildRpms;TestSdkRpm"
+          DependsOnTargets="TestFPMTool;BuildRpms"
           Condition=" '$(IsRPMBasedDistro)' == 'True' "
           Outputs="@(GeneratedInstallers)" />
 
@@ -148,16 +150,6 @@
       <SDKTokenValue Include="%SDK_RPM_NETSTANDARD_TARGETINGPACK_DEPENDENCY%">
         <ReplacementString></ReplacementString>
       </SDKTokenValue>
-    </ItemGroup>
-
-    <ItemGroup>
-      <TestSdkRpmTaskEnvironmentVariables Include="PATH=$(RpmInstalledDirectory)$(PathListSeparator)$(PATH)" />
-      <TestSdkRpmTaskEnvironmentVariables Include="TEST_ARTIFACTS=$(TestArtifactsDir)" />
-      <TestSdkRpmTaskEnvironmentVariables Include="TEST_PACKAGES=$(TestPackagesDir)" />
-      <TestSdkRpmTaskEnvironmentVariables Include="PreviousStageProps=$(NextStagePropsPath)" />
-
-      <!-- Consumed By Publish -->
-      <!--<GeneratedInstallers Include="$(SdkRPMInstallerFile)" />-->
     </ItemGroup>
 
     <ReplaceFileContents InputFiles="$(AfterInstallHostScriptTemplateFile)"
@@ -308,55 +300,6 @@
     <Message Condition=" '$(FPMPresent)' != 'True' "
              Text="FPM tool Not found, RPM packages will not be built."
              Importance="High" />
-  </Target>
-
-  <Target Name="TestSdkRpm"
-          Condition="  '$(CLIBUILD_SKIP_TESTS)' != 'true' and '$(IsRPMBasedDistro)' == 'True' and '$(FPMPresent)' == 'True' "
-          Inputs="$(DownloadedNetCoreAppTargetingPackInstallerFile);
-                  $(DownloadedNetStandardTargetingPackInstallerFile);
-                  $(DownloadedNetCoreAppHostPackInstallerFile);
-                  $(DownloadedAspNetTargetingPackInstallerFile);
-                  $(DownloadedRuntimeDepsInstallerFile);
-                  $(DownloadedSharedHostInstallerFile);
-                  $(DownloadedHostFxrInstallerFile);
-                  $(DownloadedSharedFrameworkInstallerFile);
-                  $(DownloadedAspNetCoreSharedFxInstallerFile);
-                  $(SdkRPMInstallerFile);
-                  $(RpmTestResultsXmlFile);"
-          Outputs="$(RpmTestResultsXmlFile)">
-
-    <!-- Install Dependencies and SDK Packages -->
-    <Exec Command="sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc" />
-    <Exec Command="sudo rpm -iv $(DownloadedRuntimeDepsInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppHostPackInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(DownloadedNetStandardTargetingPackInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(DownloadedAspNetTargetingPackInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(DownloadedSharedHostInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(DownloadedHostFxrInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(DownloadedSharedFrameworkInstallerFile)" />
-    <!-- Ignore dependencies, which may have an incoherent dependency on dotnet-runtime -->
-    <Exec Command="sudo rpm -iv --nodeps $(DownloadedAspNetCoreSharedFxInstallerFile)" />
-    <Exec Command="sudo rpm -iv $(SdkRPMInstallerFile)" />
-
-    <!-- Run End-2-end Tests https://github.com/dotnet/core-sdk/issues/1174
-    <DotNetRestore ProjectPath="$(EndToEndTestProject)"
-                   ToolPath="$(RpmInstalledDirectory)" />
-    <DotNetTest ProjectPath="$(EndToEndTestProject)"
-                EnvironmentVariables="@(TestSdkRpmTaskEnvironmentVariables)"
-                ToolPath="$(RpmInstalledDirectory)" />-->
-    
-    <!-- Clean up Packages -->
-    <Exec Command="sudo rpm -ev --nodeps $(SdkRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(AspNetCoreSharedFxRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(SharedFxRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(HostFxrRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(SharedHostRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(AspNetTargetingPackRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(NetStandardTargetingPackRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(NetCoreAppTargetingPackRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(NetCoreAppHostPackRpmPackageName)" />
-    <Exec Command="sudo rpm -ev --nodeps $(RuntimeDepsPackageName)" />
   </Target>
 
 </Project>
