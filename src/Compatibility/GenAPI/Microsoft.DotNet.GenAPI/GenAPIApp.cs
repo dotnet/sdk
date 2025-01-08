@@ -81,7 +81,8 @@ namespace Microsoft.DotNet.GenAPI
                     textWriter,
                     exceptionMessage,
                     includeAssemblyAttributes,
-                    loader.MetadataReferences);
+                    loader.MetadataReferences,
+                    addPartialModifier: true);
 
                 fileBuilder.WriteAssembly(assemblySymbol);
             }
