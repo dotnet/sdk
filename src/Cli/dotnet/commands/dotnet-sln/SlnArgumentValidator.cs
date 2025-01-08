@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Tools.Sln
                 {
                     string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, slnFile),
                     CommonLocalizableStrings.DidYouMean,
-                    $"  dotnet sln {slnFile} {command} {args}{projectArgs}"
+                    $"  dotnet solution {slnFile} {command} {args}{projectArgs}"
                 });
             }
         }
