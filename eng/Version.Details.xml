@@ -254,22 +254,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>efdd29953304f1fc494bb45c5785d37961c4a14b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25057.15">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25057.19">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>2e5f1f84d94c144d951cbf70a36110aa90fb6178</Sha>
+      <Sha>2a1ab5ee5ba03ae2910a4851d512da45dda5e731</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25057.15">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25057.19">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>2e5f1f84d94c144d951cbf70a36110aa90fb6178</Sha>
+      <Sha>2a1ab5ee5ba03ae2910a4851d512da45dda5e731</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25057.15">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25057.19">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>2e5f1f84d94c144d951cbf70a36110aa90fb6178</Sha>
+      <Sha>2a1ab5ee5ba03ae2910a4851d512da45dda5e731</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25057.15">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25057.19">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>2e5f1f84d94c144d951cbf70a36110aa90fb6178</Sha>
+      <Sha>2a1ab5ee5ba03ae2910a4851d512da45dda5e731</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.25057.4" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
