@@ -239,6 +239,7 @@ namespace Microsoft.DotNet.Cli
                 var testApp = (TestApplication)sender;
                 var appInfo = _executions[testApp];
                 _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                    testResult.Uid,
                     testResult.DisplayName,
                     ToOutcome(testResult.State),
                     TimeSpan.FromTicks(testResult.Duration ?? 0),
@@ -256,6 +257,7 @@ namespace Microsoft.DotNet.Cli
                 // TODO: actual
                 var appInfo = _executions[testApp];
                 _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                    testResult.Uid,
                     testResult.DisplayName,
                     ToOutcome(testResult.State),
                     TimeSpan.FromTicks(testResult.Duration ?? 0),
