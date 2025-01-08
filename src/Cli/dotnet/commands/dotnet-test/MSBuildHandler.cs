@@ -228,7 +228,6 @@ namespace Microsoft.DotNet.Cli
             binLogFileName = BinLogFileName;
 
             var binLogArgs = new List<string>();
-            var otherArgs = new List<string>();
 
             foreach (var arg in args)
             {
@@ -238,10 +237,6 @@ namespace Microsoft.DotNet.Cli
                 {
                     binLogArgs.Add(arg);
 
-                }
-                else
-                {
-                    otherArgs.Add(arg);
                 }
             }
 
