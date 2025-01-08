@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
                     ..Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly)];
 
                 // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
-                if (possibleSolutionPaths.Count() > 1)
+                if (possibleSolutionPaths.Length > 1)
                 {
                     VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
                     return false;
