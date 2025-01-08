@@ -7,7 +7,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="ProjectWithMatchingConfigs/ProjectWithMatchingConfigs.csproj"  Id="c9601ca2-db64-4fb6-b463-368c7764bf0d">
+  <Project Path="ProjectWithMatchingConfigs/ProjectWithMatchingConfigs.csproj">
     <BuildType Solution="Foo Bar|*" Project="FooBar" />
     <Platform Solution="*|x64" Project="x64" />
     <Platform Solution="*|x86" Project="x86" />

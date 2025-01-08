@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Reflection;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
@@ -480,7 +478,9 @@ namespace Microsoft.DotNet.Tools.Run
         static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
         {
             var msbuildVerbosity = ToLoggerVerbosity(verbosity);
-            var thing = Assembly.Load("MSBuild").GetType("Microsoft.Build.Logging.TerminalLogger.TerminalLogger")!.GetConstructor([typeof(LoggerVerbosity)])!.Invoke([msbuildVerbosity]) as ILogger;
+
+            // Temporary fix for 9.0.1xx. 9.0.2xx will use the TerminalLogger in the safe way.
+            var thing = new ConsoleLogger(msbuildVerbosity);
             return thing!;
         }
 

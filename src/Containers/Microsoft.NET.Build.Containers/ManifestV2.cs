@@ -30,7 +30,7 @@ public class ManifestV2
     /// When used, this field MUST contain the media type application/vnd.oci.image.manifest.v1+json. This field usage differs from the descriptor use of mediaType.
     /// </summary>
     [JsonPropertyName("mediaType")]
-    public required string MediaType { get; init; }
+    public string? MediaType { get; init; }
 
     /// <summary>
     /// This REQUIRED property references a configuration object for a container, by digest.

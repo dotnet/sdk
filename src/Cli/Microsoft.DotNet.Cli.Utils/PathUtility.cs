@@ -2,11 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
+using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Tools.Common
 {
     public static class PathUtility
     {
+        public static bool CheckForNuGetInNuGetConfig()
+        {
+            var otherFiles = SettingsUtility.GetEnabledSources(Settings.LoadDefaultSettings(Directory.GetCurrentDirectory()));
+            return otherFiles.Any(source => source.SourceUri.Equals("https://api.nuget.org/v3/index.json"));
+        }
+
         public static bool IsPlaceholderFile(string path)
         {
             return string.Equals(Path.GetFileName(path), "_._", StringComparison.Ordinal);
@@ -70,14 +77,13 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static void EnsureParentDirectoryExists(string filePath)
         {
-            string directory = Path.GetDirectoryName(filePath);
-
+            string? directory = Path.GetDirectoryName(filePath);
             EnsureDirectoryExists(directory);
         }
 
-        public static void EnsureDirectoryExists(string directoryPath)
+        public static void EnsureDirectoryExists(string? directoryPath)
         {
-            if (!Directory.Exists(directoryPath))
+            if (directoryPath is not null && !Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
@@ -88,7 +94,6 @@ namespace Microsoft.DotNet.Tools.Common
             try
             {
                 Directory.Delete(directoryPath, true);
-
                 return true;
             }
             catch
@@ -114,7 +119,7 @@ namespace Microsoft.DotNet.Tools.Common
 
             int directoriesDeleted = 0;
 
-            while (!Directory.EnumerateFileSystemEntries(dir).Any() &&
+            while (dir is not null && !Directory.EnumerateFileSystemEntries(dir).Any() &&
                 directoriesDeleted < maxDirectoriesToDelete)
             {
                 Directory.Delete(dir);
@@ -265,7 +270,7 @@ namespace Microsoft.DotNet.Tools.Common
         public static string GetDirectoryName(string path)
         {
             path = path.TrimEnd(Path.DirectorySeparatorChar);
-            return path.Substring(Path.GetDirectoryName(path).Length).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            return path.Substring(Path.GetDirectoryName(path)?.Length ?? 0).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
         public static string GetPathWithForwardSlashes(string path)

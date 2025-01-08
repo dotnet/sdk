@@ -5,7 +5,6 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <Nullable>Enable</Nullable>
     <NoWarn>$(NoWarn);8002</NoWarn>
     <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
     <RollForward>LatestMajor</RollForward>

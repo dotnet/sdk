@@ -1,23 +1,9 @@
 # Source Build Smoke Tests
 
-Run these tests via `build.sh --test`
+Run these tests via `build.sh -sb --test`
 
-The following properties are automatically available during test execution but can be overwritten:
-
-- PoisonUsageReportFile
-- SdkTarballPath
-- SourceBuiltArtifactsPath
-
-Optional msbuild properties:
-
-- MsftSdkTarballPath
-- SourceBuildTestsConsoleVerbosity
-- SourceBuildTestsCustomSourceBuiltPackagesPath
-- SourceBuildTestsExcludeOmniSharpTests
-- SourceBuildTestsLicenseScanPath
-- SourceBuildTestsPrereqsPath
-
-Make sure to rebuild the test project when changing one of those values.
+See the [Microsoft.DotNet.SourceBuild.Tests.csproj](Microsoft.DotNet.SourceBuild.Tests.csproj) for the available
+RuntimeHostConfigurationOptions that can be used to configure the tests.
 
 ## Dependencies
 
@@ -31,5 +17,5 @@ The following programs are used by some tests:
 ## Prereq Packages
 
 Some prerelease scenarios, usually security updates, require non-source-built packages which are not publicly available.
-Specify the directory where these packages can be found via the `SourceBuildTestsPrereqsPath` msbuild property when running tests via `build.sh ---test` e.g.
-`/p:SourceBuildTestsPrereqsPath=prereqs/packages/smoke-test-prereqs`.
+You can specify a custom nuget feed for where these packages can be loaded from via the `SourceBuildTestsCustomSourceBuiltPackagesPath`
+ msbuild property when running tests via `build.sh ---test` e.g. `/p:SourceBuildTestsCustomSourceBuiltPackagesPath=<FEED URL OR LOCAL PATH>`.

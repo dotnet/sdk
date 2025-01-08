@@ -130,9 +130,6 @@ src/symreader/src/PdbTestResources/Resources/*
 # templating
 src/templating/test/Microsoft.TemplateEngine.TestTemplates/nupkg_templates/*.nupkg
 
-# test-templates
-src/test-templates/Templates/**/*.nupkg
-
 # vstest
 src/vstest/samples/Microsoft.TestPlatform.*/Adapter/Microsoft.VisualStudio.TestPlatform.*.dll
 src/vstest/temp/cpp/**/*.dll

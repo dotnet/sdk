@@ -103,6 +103,7 @@
     <PackageReference Include="Microsoft.Testing.Platform" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.ApplicationInsights" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
@@ -128,6 +129,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="SDDLTests" />
+    <InternalsVisibleTo Include="dotnet-watch" />
+    <InternalsVisibleTo Include="dotnet-watch.Tests" />
   </ItemGroup>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">
