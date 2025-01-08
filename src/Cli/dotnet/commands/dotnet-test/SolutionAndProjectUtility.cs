@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli
                     return false;
                 }
                 // If a single solution is found, use it.
-                else if (possibleSolutionPaths.Count() == 1)
+                else if (possibleSolutionPaths.Length == 1)
                 {
                     // Get project file paths to check if there are any projects in the directory
                     string[] possibleProjectPaths = GetProjectFilePaths(directory);
