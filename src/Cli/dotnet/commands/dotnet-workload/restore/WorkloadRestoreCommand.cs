@@ -8,6 +8,7 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -122,10 +123,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             var projectFiles = new List<string>();
             if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
             {
-                slnFiles = ((string[])[
-                    ..Directory.GetFiles(currentDirectory, "*.sln"),
-                    ..Directory.GetFiles(currentDirectory, "*.slnx")
-                ]).ToList();
+                slnFiles = SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory).ToList();
                 projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
             }
             else
