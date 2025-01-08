@@ -1,0 +1,35 @@
+From fc1c96573ef2767614466dd78f35e5f34eef775c Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Wed, 8 Jan 2025 07:20:08 -0600
+Subject: [PATCH] Fix code analysis issues
+
+Backport: TODO
+---
+ .../src/System/Collections/Generic/CollectionExtensions.cs      | 2 +-
+ src/System.Private.Windows.GdiPlus/System/Drawing/IIcon.cs      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/System.Private.Windows.Core/src/System/Collections/Generic/CollectionExtensions.cs b/src/System.Private.Windows.Core/src/System/Collections/Generic/CollectionExtensions.cs
+index 15dd20bbf..eb0852ff0 100644
+--- a/src/System.Private.Windows.Core/src/System/Collections/Generic/CollectionExtensions.cs
++++ b/src/System.Private.Windows.Core/src/System/Collections/Generic/CollectionExtensions.cs
+@@ -25,7 +25,7 @@ internal static class CollectionExtensions
+         }
+ 
+         // Fall back to just setting the count (by removing).
+-        List<T> list = new(readOnlyList);
++        List<T> list = [..readOnlyList];
+         list.RemoveRange(count, list.Count - count);
+         return list;
+     }
+diff --git a/src/System.Private.Windows.GdiPlus/System/Drawing/IIcon.cs b/src/System.Private.Windows.GdiPlus/System/Drawing/IIcon.cs
+index 7b53bdaf0..5eed2338f 100644
+--- a/src/System.Private.Windows.GdiPlus/System/Drawing/IIcon.cs
++++ b/src/System.Private.Windows.GdiPlus/System/Drawing/IIcon.cs
+@@ -5,5 +5,5 @@ namespace System.Drawing;
+ 
+ internal interface IIcon : IHandle<HICON>
+ {
+-    public Size Size { get; }
++    Size Size { get; }
+ }
