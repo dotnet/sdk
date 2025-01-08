@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.ApiCompat
                 }
             }
 
-            return new string[] { path };
+            return [path];
         }
     }
 }
