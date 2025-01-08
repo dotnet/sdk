@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli
     {
         private readonly ConcurrentBag<TestApplication> _testApplications = [];
 
-        private MSBuildHandler _msBuildConnectionHandler;
+        private MSBuildHandler _msBuildHandler;
         private TestModulesFilterHandler _testModulesFilterHandler;
         private TestApplicationActionQueue _actionQueue;
         private List<string> _args;
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli
                 }
 
                 _args = [.. parseResult.UnmatchedTokens];
-                _msBuildConnectionHandler = new(_args, _actionQueue, degreeOfParallelism);
+                _msBuildHandler = new(_args, _actionQueue, degreeOfParallelism);
                 _testModulesFilterHandler = new(_args, _actionQueue);
 
                 if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli
                     }
 
                     // If not all test projects have IsTestProject and IsTestingPlatformApplication properties set to true, we will simply return
-                    if (!_msBuildConnectionHandler.EnqueueTestApplications())
+                    if (!_msBuildHandler.EnqueueTestApplications())
                     {
                         VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
                         return ExitCodes.GenericFailure;
@@ -131,13 +131,13 @@ namespace Microsoft.DotNet.Cli
                     return false;
                 }
 
-                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(filePath, allowBinLog);
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(filePath, allowBinLog);
             }
             else
             {
                 // If no filter was provided neither the project using --project,
                 // MSBuild will get the test project paths in the current directory
-                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(allowBinLog);
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(allowBinLog);
             }
 
             if (msbuildExitCode != ExitCodes.Success)
@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Cli
 
         private void CleanUp()
         {
-            _msBuildConnectionHandler.Dispose();
+            _msBuildHandler.Dispose();
             foreach (var testApplication in _testApplications)
             {
                 testApplication.Dispose();
