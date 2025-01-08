@@ -698,6 +698,22 @@ setx PATH "%PATH%;{0}"
   <data name="CannotSpecifyBothRuntimeAndOsOptions" xml:space="preserve">
     <value>Specifying both the `-r|--runtime` and `-os` options is not supported.</value>
   </data>
+  <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
+    <value>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</value>
+  </data>
+  <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
+    <value>NAME="VALUE"</value>
+  </data>
   <data name="SelfContainedOptionDescription" xml:space="preserve">
     <value>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
 The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</value>

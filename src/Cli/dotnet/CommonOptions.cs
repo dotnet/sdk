@@ -174,6 +174,12 @@ namespace Microsoft.DotNet.Cli
             // Flip the argument so that if this option is specified we get selfcontained=false
             .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
 
+        public static readonly CliOption<IEnumerable<string>> EnvOption = new CliOption<IEnumerable<string>>("--environment", "-e")
+        {
+            Description = CommonLocalizableStrings.CmdEnvironmentVariableDescription,
+            HelpName = CommonLocalizableStrings.CmdEnvironmentVariableExpression
+        }.AllowSingleArgPerToken();
+
         public static readonly CliOption<string> TestPlatformOption = new("--Platform");
 
         public static readonly CliOption<string> TestFrameworkOption = new("--Framework");
@@ -258,13 +264,6 @@ namespace Microsoft.DotNet.Cli
             IEnumerable<string> selfContainedProperties = new string[] { $"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
             return selfContainedProperties;
         }
-
-        private static bool UserSpecifiedRidOption(ParseResult parseResult) =>
-            (parseResult.GetResult(RuntimeOption) ??
-            parseResult.GetResult(LongFormRuntimeOption) ??
-            parseResult.GetResult(ArchitectureOption) ??
-            parseResult.GetResult(LongFormArchitectureOption) ??
-            parseResult.GetResult(OperatingSystemOption)) is not null;
 
         internal static CliOption<T> AddCompletions<T>(this CliOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
         {
