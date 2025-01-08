@@ -10,10 +10,10 @@ Backport: https://github.com/dotnet/razor/pull/11361
  1 file changed, 1 deletion(-)
 
 diff --git a/src/Razor/src/Microsoft.VisualStudio.LanguageServices.Razor/LanguageClient/RazorContentTypeChangeListener.cs b/src/Razor/src/Microsoft.VisualStudio.LanguageServices.Razor/LanguageClient/RazorContentTypeChangeListener.cs
-index 13fb4b06969..535223227b5 100644
+index 13fb4b0696..535223227b 100644
 --- a/src/Razor/src/Microsoft.VisualStudio.LanguageServices.Razor/LanguageClient/RazorContentTypeChangeListener.cs
 +++ b/src/Razor/src/Microsoft.VisualStudio.LanguageServices.Razor/LanguageClient/RazorContentTypeChangeListener.cs
-@@ -5,7 +5,6 @@
+@@ -5,7 +5,6 @@ using System;
  using System.ComponentModel.Composition;
  using Microsoft.VisualStudio.LanguageServer.ContainedLanguage;
  using Microsoft.VisualStudio.Text;
