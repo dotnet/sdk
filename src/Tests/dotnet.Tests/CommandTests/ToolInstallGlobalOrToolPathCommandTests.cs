@@ -1,21 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
+using System.Text.Json;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.ShellShim;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using CreateShellShimRepository = Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using System.Text.Json;
-using System.CommandLine;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.NET.TestFramework;
-using Microsoft.DotNet.Cli.ToolPackage;
+
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -24,8 +26,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
         private readonly IToolPackageStoreQuery _toolPackageStoreQuery;
+        private readonly ToolPackageUninstallerMock _toolPackageUninstallerMock;
         private readonly CreateShellShimRepository _createShellShimRepository;
-        private readonly CreateToolPackageStoresAndDownloader _createToolPackageStoresAndDownloader;
+        private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
+        private readonly string _toolsDirectory;
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
@@ -34,6 +38,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _pathToPlacePackages;
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
+        private const string HigherPackageVersion = "2.0.0";
+        private const string LowerPackageVersion = "1.0.0";
         private const string ToolCommandName = "SimulatorCommand";
         private readonly string UnlistedPackageId = "elemental.sysinfotool";
 
@@ -42,6 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            _toolsDirectory = Path.Combine(_temporaryDirectory, "tools");
             _pathToPlaceShim = Path.Combine(_temporaryDirectory, "pathToPlace");
             _fileSystem.Directory.CreateDirectory(_pathToPlaceShim);
             _pathToPlacePackages = _pathToPlaceShim + "Packages";
@@ -57,7 +64,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     filePermissionSetter: new NoOpFilePermissionSetter());
             _environmentPathInstructionMock =
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim);
-            _createToolPackageStoresAndDownloader = (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, CreateToolPackageDownloader());
+            var store = new ToolPackageStoreMock(
+                    new DirectoryPath(_toolsDirectory),
+                    _fileSystem);
+            _toolPackageUninstallerMock = new ToolPackageUninstallerMock(_fileSystem, store);
+            _createToolPackageStoreDownloaderUninstaller = (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, CreateToolPackageDownloader(), _toolPackageUninstallerMock);
 
 
             _parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId}");
@@ -75,10 +86,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
-
+            var parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources");
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
-                _parseResult,
-                _createToolPackageStoresAndDownloader,
+                parseResult,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -92,7 +103,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -112,7 +123,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -152,7 +163,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader),
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -173,7 +184,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -199,7 +210,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
-                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader),
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader, _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -221,7 +232,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
-                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader),
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader, _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -244,7 +255,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -268,7 +279,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
-                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader),
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolPackageDownloader, _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -289,7 +300,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
@@ -307,6 +318,29 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunWithPackageIdWithQuietItShouldShowNoSuccessMessage()
+        {
+            var parseResultQuiet = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --verbosity quiet");
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                parseResultQuiet,
+                _createToolPackageStoreDownloaderUninstaller,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .NotContain(string.Format(
+                    LocalizableStrings.InstallationSucceeded,
+                    ToolCommandName,
+                    PackageId,
+                    PackageVersion).Green());
+        }
+
+        [Fact]
         public void WhenRunWithInvalidVersionItShouldThrow()
         {
             const string invalidVersion = "!NotValidVersion!";
@@ -314,7 +348,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
@@ -335,7 +369,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
@@ -353,13 +387,178 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenInstallTheSameVersionTwiceItShouldSucceed()
+        {
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                result,
+                _createToolPackageStoreDownloaderUninstaller,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .Equal(string.Format(
+                    LocalizableStrings.InstallationSucceeded,
+                    ToolCommandName,
+                    PackageId,
+                    PackageVersion).Green());
+            _reporter.Clear();
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .Equal(string.Format(
+                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.UpdateSucceededStableVersionNoChange,
+                    PackageId,
+                    PackageVersion).Green());
+        }
+
+        [Fact]
+        public void WhenInstallWithHigherVersionItShouldUpdate()
+        {
+            IToolPackageDownloader toolToolPackageDownloader = GetToolPackageDownloaderWithHigherVersionInFeed();
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                result,
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .Equal(string.Format(
+                    LocalizableStrings.InstallationSucceeded,
+                    ToolCommandName,
+                    PackageId,
+                    PackageVersion).Green());
+            _reporter.Clear();
+
+            ParseResult result2 = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {HigherPackageVersion}");
+
+            var toolInstallGlobalOrToolPathCommand2 = new ToolInstallGlobalOrToolPathCommand(
+                result2,
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand2.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .Equal(string.Format(
+                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.UpdateSucceeded,
+                    PackageId,
+                    PackageVersion,
+                    HigherPackageVersion).Green());
+        }
+
+        [Fact]
+        public void WhenInstallWithLowerVersionWithAllowDowngradeOptionItShouldDowngrade()
+        {
+            IToolPackageDownloader toolToolPackageDownloader = GetToolPackageDownloaderWithLowerVersionInFeed();
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                result,
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .Equal(string.Format(
+                    LocalizableStrings.InstallationSucceeded,
+                    ToolCommandName,
+                    PackageId,
+                    PackageVersion).Green());
+            _reporter.Clear();
+
+            ParseResult result2 = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {LowerPackageVersion} --allow-downgrade");
+
+            var toolInstallGlobalOrToolPathCommand2 = new ToolInstallGlobalOrToolPathCommand(
+                result2,
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand2.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .Equal(string.Format(
+                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.UpdateSucceeded,
+                    PackageId,
+                    PackageVersion,
+                    LowerPackageVersion).Green());
+        }
+
+        [Fact]
+        public void WhenInstallWithLowerVersionItShouldFail()
+        {
+            IToolPackageDownloader toolToolPackageDownloader = GetToolPackageDownloaderWithLowerVersionInFeed();
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                result,
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .Equal(string.Format(
+                    LocalizableStrings.InstallationSucceeded,
+                    ToolCommandName,
+                    PackageId,
+                    PackageVersion).Green());
+            _reporter.Clear();
+
+            ParseResult result2 = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version {LowerPackageVersion}");
+
+            var toolInstallGlobalOrToolPathCommand2 = new ToolInstallGlobalOrToolPathCommand(
+                result2,
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            Action a = () => toolInstallGlobalOrToolPathCommand2.Execute();
+            a.Should().Throw<GracefulException>();
+        }
+
+        [Fact]
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version [1.0,2.0]");
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
@@ -432,7 +631,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader),
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -458,7 +657,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader),
+                (location, forwardArguments) => (_toolPackageStore, _toolPackageStoreQuery, toolToolPackageDownloader, _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -495,6 +694,62 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             return toolToolPackageDownloader;
         }
 
+        private IToolPackageDownloader GetToolPackageDownloaderWithLowerVersionInFeed()
+        {
+            var toolToolPackageDownloader = CreateToolPackageDownloader(
+                feeds: new List<MockFeed>
+                {
+                    new MockFeed
+                    {
+                        Type = MockFeedType.ImplicitAdditionalFeed,
+                        Packages = new List<MockFeedPackage>
+                        {
+                            new MockFeedPackage
+                            {
+                                PackageId = PackageId,
+                                Version = "1.0.4",
+                                ToolCommandName = "SimulatorCommand"
+                            },
+                            new MockFeedPackage
+                            {
+                                PackageId = PackageId,
+                                Version = "1.0.0",
+                                ToolCommandName = "SimulatorCommand"
+                            }
+                        }
+                    }
+                });
+            return toolToolPackageDownloader;
+        }
+
+        private IToolPackageDownloader GetToolPackageDownloaderWithHigherVersionInFeed()
+        {
+            var toolToolPackageDownloader = CreateToolPackageDownloader(
+                feeds: new List<MockFeed>
+                {
+                    new MockFeed
+                    {
+                        Type = MockFeedType.ImplicitAdditionalFeed,
+                        Packages = new List<MockFeedPackage>
+                        {
+                            new MockFeedPackage
+                            {
+                                PackageId = PackageId,
+                                Version = "1.0.4",
+                                ToolCommandName = "SimulatorCommand"
+                            },
+                            new MockFeedPackage
+                            {
+                                PackageId = PackageId,
+                                Version = "2.0.0",
+                                ToolCommandName = "SimulatorCommand"
+                            }
+                        }
+                    }
+                });
+            return toolToolPackageDownloader;
+        }
+
         [Fact]
         public void WhenRunWithoutAMatchingRangeItShouldFail()
         {
@@ -502,7 +757,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
@@ -524,7 +779,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
@@ -548,7 +803,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim),
                 _reporter);
@@ -579,7 +834,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     store: _toolPackageStore,
                     packagedShimsMap: packagedShimsMap,
-                    reporter: _reporter)),
+                    reporter: _reporter), _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim),
                 _reporter);
@@ -597,7 +852,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId} -a invalid");
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 parseResult,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter);
@@ -613,7 +868,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId} -a arm64");
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 parseResult,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 _environmentPathInstructionMock,
                 _reporter,

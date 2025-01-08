@@ -146,6 +146,21 @@ partial class CreateNewImage
     /// </summary>
     public string ContainerUser { get; set; }
 
+    /// <summary>
+    /// If true, the tooling may create labels on the generated images.
+    /// </summary>
+    [Required]
+    public bool GenerateLabels { get; set; }
+
+    /// <summary>
+    /// If true, the tooling will generate an <c>org.opencontainers.image.base.digest</c> label on the generated images containing the digest of the chosen base image.
+    /// </summary>
+    /// <remarks>
+    /// Normally this would have been handled in the container targets, but we do not currently _fetch_ the digest of the base image in pure MSBuild, so we do it during generation-time.
+    /// </remarks>
+    [Required]
+    public bool GenerateDigestLabel { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
@@ -190,6 +205,9 @@ partial class CreateNewImage
         GeneratedContainerManifest = "";
         GeneratedContainerDigest = "";
         GeneratedArchiveOutputPath = "";
+
+        GenerateLabels = false;
+        GenerateDigestLabel = false;
 
         TaskResources = Resource.Manager;
     }

@@ -42,24 +42,24 @@
         <target state="translated">Средство "{0}" обновлено (версия "{1}", файл манифеста {2}).</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">Запрошенная версия {0} ниже существующей версии {1} (файл манифеста {2}).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">Средство "{0}" обновлено с версии "{1}" до версии "{2}" (файл манифеста {3}).</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
+        <target state="translated">Запрошенная версия {0} ниже существующей версии {1} (файл манифеста {2}). Чтобы разрешить это обновление, используйте параметр --allow-downgrade.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest prerelease version (version '{1}').</source>
-        <target state="translated">Инструмент "{0}" был переустановлен с последней предварительной версией (версией "{1}").</target>
+        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
+        <target state="translated">Инструмент "{0}" был переустановлен. Установлена предварительная версия (версия "{1}").</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">Инструмент "{0}" был переустановлен с последней стабильной версией (версией "{1}").</target>
+        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
+        <target state="translated">Инструмент "{0}" был переустановлен. Установлена стабильная версия (версия "{1}").</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

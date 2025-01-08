@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
 
         private void ExecuteGarbageCollection()
         {
-            _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+            _workloadInstaller.GarbageCollect(workloadVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadVersion),
                 cleanAllPacks: _cleanAll);
 
             DisplayUninstallableVSWorkloads();
