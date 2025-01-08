@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli
                     string[] possibleProjectPath = GetProjectFilePaths(directory);
 
                     // No projects found throws an error that no sln nor projects were found
-                    if (possibleProjectPath.Count() == 0)
+                    if (possibleProjectPath.Length == 0)
                     {
                         VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorMessage);
                         return false;
