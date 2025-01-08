@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -60,6 +61,10 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
             }
 
+            var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.DotnetPath), "default.json")).UseWorkloadSets;
+            var workloadSetsString = useWorkloadSets == true ? "workload sets" : "loose manifests";
+            reporter.WriteLine(string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
+
             if (installedWorkloads.Count == 0)
             {
                 reporter.WriteLine(CommonStrings.NoWorkloadsInstalledInfoWarning);
@@ -81,7 +86,7 @@ namespace Microsoft.DotNet.Cli
                 reporter.Write($"{separator}{CommonStrings.WorkloadSourceColumn}:");
                 reporter.WriteLine($" {workload.Value,align}");
 
-                reporter.Write($"{separator}{CommonStrings.WorkloadManfiestVersionColumn}:");
+                reporter.Write($"{separator}{CommonStrings.WorkloadManifestVersionColumn}:");
                 reporter.WriteLine($"    {workloadManifest.Version + '/' + workloadFeatureBand,align}");
 
                 reporter.Write($"{separator}{CommonStrings.WorkloadManifestPathColumn}:");
