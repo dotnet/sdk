@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli
                     // Get project file paths to check if there are any projects in the directory
                     string[] possibleProjectPaths = GetProjectFilePaths(directory);
 
-                    if (possibleProjectPaths.Count() == 0)
+                    if (possibleProjectPaths.Length == 0)
                     {
                         projectOrSolutionFilePath = possibleSolutionPaths[0];
                         isSolution = true;
