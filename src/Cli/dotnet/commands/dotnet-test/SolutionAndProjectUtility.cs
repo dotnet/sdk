@@ -78,8 +78,8 @@ namespace Microsoft.DotNet.Cli
 
         private static string[] GetProjectFilePaths(string directory)
         {
-            var projectFiles = Directory.GetFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
-                .Where(f => IsProjectFile(f))
+            var projectFiles = Directory.EnumerateFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
+                .Where(IsProjectFile)
                 .ToArray();
 
             return projectFiles;
