@@ -276,6 +276,31 @@ namespace Microsoft.DotNet.Cli
             argument.CompletionSources.Add(completionSource);
             return argument;
         }
+
+        internal static IEnumerable<(string name, string value)> GetEnvironmentVariables(ParseResult parseResult)
+        {
+            CliOption<IEnumerable<string>> option = EnvOption;
+
+            if (parseResult.GetResult(option) is null)
+            {
+                yield break;
+            }
+
+            foreach (string env in parseResult.GetValue(option))
+            {
+                string name = env;
+                string value = string.Empty;
+
+                int equalsIndex = env.IndexOf('=');
+                if (equalsIndex > 0)
+                {
+                    name = env.Substring(0, equalsIndex);
+                    value = env.Substring(equalsIndex + 1);
+                }
+
+                yield return (name, value);
+            }
+        }
     }
 
     public enum VerbosityOptions

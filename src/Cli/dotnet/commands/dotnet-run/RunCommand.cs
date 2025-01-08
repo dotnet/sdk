@@ -28,6 +28,11 @@ namespace Microsoft.DotNet.Tools.Run
         public bool Interactive { get; private set; }
         public string[] RestoreArgs { get; private set; }
 
+        /// <summary>
+        /// Environment variables specified on command line via -e option, in the listed order.
+        /// </summary>
+        public IReadOnlyList<(string name, string value)> EnvironmentVariables { get; private set; }
+
         private bool ShouldBuild => !NoBuild;
 
         public string LaunchProfile { get; private set; }
@@ -43,7 +48,8 @@ namespace Microsoft.DotNet.Tools.Run
             bool interactive,
             VerbosityOptions? verbosity,
             string[] restoreArgs,
-            string[] args)
+            string[] args,
+            IReadOnlyList<(string name, string value)> environmentVariables)
         {
             NoBuild = noBuild;
             ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory);
@@ -54,6 +60,7 @@ namespace Microsoft.DotNet.Tools.Run
             NoRestore = noRestore;
             Verbosity = verbosity;
             RestoreArgs = GetRestoreArguments(restoreArgs);
+            EnvironmentVariables = environmentVariables;
         }
 
         public int Execute()
@@ -76,10 +83,18 @@ namespace Microsoft.DotNet.Tools.Run
             try
             {
                 ICommand targetCommand = GetTargetCommand();
-                var launchSettingsCommand = ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
+                ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
+
+                // Env variables specified on command line override those specified in launch profile:
+                foreach (var (name, value) in EnvironmentVariables)
+                {
+                    targetCommand.EnvironmentVariable(name, value);
+                }
+
                 // Ignore Ctrl-C for the remainder of the command's execution
                 Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-                return launchSettingsCommand.Execute().ExitCode;
+
+                return targetCommand.Execute().ExitCode;
             }
             catch (InvalidProjectFileException e)
             {
@@ -89,29 +104,31 @@ namespace Microsoft.DotNet.Tools.Run
             }
         }
 
-        private ICommand ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+        private void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
         {
-            if (launchSettings != null)
+            if (launchSettings == null)
             {
-                if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
-                {
-                    targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
-                }
-
-                targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
-
-                foreach (var entry in launchSettings.EnvironmentVariables)
-                {
-                    string value = Environment.ExpandEnvironmentVariables(entry.Value);
-                    //NOTE: MSBuild variables are not expanded like they are in VS
-                    targetCommand.EnvironmentVariable(entry.Key, value);
-                }
-                if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
-                {
-                    targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
-                }
+                return;
             }
-            return targetCommand;
+
+            if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
+            {
+                targetCommand.EnvironmentVariable("ASPNETCORE_URLS", launchSettings.ApplicationUrl);
+            }
+
+            targetCommand.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
+
+            foreach (var entry in launchSettings.EnvironmentVariables)
+            {
+                string value = Environment.ExpandEnvironmentVariables(entry.Value);
+                //NOTE: MSBuild variables are not expanded like they are in VS
+                targetCommand.EnvironmentVariable(entry.Key, value);
+            }
+
+            if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
+            {
+                targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
+            }
         }
 
         private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)

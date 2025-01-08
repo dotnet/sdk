@@ -61,8 +61,9 @@ namespace Microsoft.DotNet.Tools.Run
                 noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
                 interactive: parseResult.HasOption(RunCommandParser.InteractiveOption),
                 verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
-                restoreArgs: restoreArgs.ToArray(),
-                args: nonBinLogArgs.ToArray()
+                restoreArgs: [.. restoreArgs],
+                args: [.. nonBinLogArgs],
+                environmentVariables: [.. CommonOptions.GetEnvironmentVariables(parseResult)]
             );
 
             return command;

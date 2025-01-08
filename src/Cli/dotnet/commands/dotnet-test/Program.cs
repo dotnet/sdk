@@ -228,8 +228,11 @@ namespace Microsoft.DotNet.Tools.Test
                 noRestore,
                 msbuildPath);
 
-            // Apply environment variables provided by the user via --environment (-e) parameter, if present
-            SetEnvironmentVariablesFromParameters(testCommand, result);
+            // Apply environment variables provided by the user via --environment (-e) option, if present
+            foreach (var (name, value) in CommonOptions.GetEnvironmentVariables(result))
+            {
+                testCommand.EnvironmentVariable(name, value);
+            }
 
             // Set DOTNET_PATH if it isn't already set in the environment as it is required
             // by the testhost which uses the apphost feature (Windows only).
@@ -301,31 +304,6 @@ namespace Microsoft.DotNet.Tools.Test
             }
 
             return false;
-        }
-
-        private static void SetEnvironmentVariablesFromParameters(TestCommand testCommand, ParseResult parseResult)
-        {
-            CliOption<IEnumerable<string>> option = CommonOptions.EnvOption;
-
-            if (parseResult.GetResult(option) is null)
-            {
-                return;
-            }
-
-            foreach (string env in parseResult.GetValue(option))
-            {
-                string name = env;
-                string value = string.Empty;
-
-                int equalsIndex = env.IndexOf('=');
-                if (equalsIndex > 0)
-                {
-                    name = env.Substring(0, equalsIndex);
-                    value = env.Substring(equalsIndex + 1);
-                }
-
-                testCommand.EnvironmentVariable(name, value);
-            }
         }
 
         /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>

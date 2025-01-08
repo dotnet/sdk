@@ -81,6 +81,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
             command.Options.Add(CommonOptions.ArtifactsPathOption);
+            command.Options.Add(CommonOptions.EnvOption);
 
             command.Arguments.Add(ApplicationArguments);
 
