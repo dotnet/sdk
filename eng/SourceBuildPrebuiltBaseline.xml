@@ -1,4 +1,4 @@
-<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+<!-- When altering this file or making other Source Build related changes, include @dotnet/source-build as a reviewer. -->
 <!-- See aka.ms/dotnet/prebuilts for guidance on what pre-builts are and how to eliminate them. -->
 
 <UsageData>
@@ -45,17 +45,12 @@
     <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyInjection/8.0.0" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.Options/8.0.0" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.Primitives/8.0.0" />
-    <UsagePattern IdentityGlob="System.Buffers/4.6.0" />
-    <UsagePattern IdentityGlob="System.Memory/4.6.0" />
-    <UsagePattern IdentityGlob="System.Numerics.Vectors/4.6.0" />
-    <UsagePattern IdentityGlob="System.Runtime.CompilerServices.Unsafe/6.1.0" />
-    <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/4.6.0" />
 
     <!-- Used only for publishing -->
     <UsagePattern IdentityGlob="Microsoft.Net.Compilers.Toolset.Framework/*" />
 
     <!-- These are coming in via runtime but the source-build infra isn't able to automatically pick up the right intermediate. -->
-    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*9.0.*" />
+    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Crossgen2.linux-x64/*10.0.*" />
 
     <UsagePattern IdentityGlob="System.IO.Pipelines/*8.0.0*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Dataflow/*8.0.0*" />

@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
             var appRoot = Path.Combine(root, "App");
 
-            string msg1 = "Unhandled Exception: AppThrowing.MyException: "
+            string msg1 = "Unhandled exception. AppThrowing.MyException: "
                 + "Exception of type 'AppThrowing.MyException' was thrown.";
             string msg2 = "at AppThrowing.MyException.Main(String[] args)";
             new DotnetCommand(Log)
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .Execute()
                 .Should().Pass();
 
-            string msg1 = "Unhandled Exception: AppThrowing.MyException: "
+            string msg1 = "Unhandled exception. AppThrowing.MyException: "
                 + "Exception of type 'AppThrowing.MyException' was thrown.";
             string msg2 = "at AppThrowing.MyException.Main(String[] args)";
             new DotnetCommand(Log)

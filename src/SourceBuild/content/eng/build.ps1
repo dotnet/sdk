@@ -7,6 +7,7 @@ Param(
 
   # Actions
   [switch]$clean,
+  [switch]$sign,
   [switch][Alias('h')]$help,
   [switch][Alias('t')]$test,
 
@@ -29,6 +30,7 @@ function Get-Usage() {
 
   Write-Host "Actions:"
   Write-Host "  -clean                  Clean the solution"
+  Write-Host "  -sign                   Sign the build."
   Write-Host "  -help                   Print help and exit (short: -h)"
   Write-Host "  -test                   Run tests (repo tests omitted by default) (short: -t)"
   Write-Host ""
@@ -62,6 +64,10 @@ if ($test) {
   $targets += ";VSTest"
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"
+}
+
+if ($sign) {
+  $arguments += "/p:Sign=true"
 }
 
 if ($buildRepoTests) {

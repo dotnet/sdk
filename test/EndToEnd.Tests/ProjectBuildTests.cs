@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable disable
+
 using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests
@@ -403,10 +405,15 @@ namespace EndToEnd.Tests
         {
             string dotnetFolder = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
-
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 9)
+            if (latestMajorVersion == 10)
             {
+                // TODO: This block need to be updated when every template updates their default tfm.
+                // Currently winforms updated their default templates target but not others.
+                if (template.StartsWith("winforms") || template.StartsWith("wpf"))
+                {
+                    return $"net9.0";
+                }
                 return $"net{latestMajorVersion}.0";
             }
 

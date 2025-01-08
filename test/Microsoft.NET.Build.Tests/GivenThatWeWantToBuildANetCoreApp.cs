@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.NET.Build.Tasks;
@@ -133,7 +135,7 @@ namespace Microsoft.NET.Build.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testIdentifier);
 
-            NuGetConfigWriter.Write(testAsset.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
+            NuGetConfigWriter.Write(testAsset.TestRoot);
 
             var buildCommand = new BuildCommand(testAsset);
 

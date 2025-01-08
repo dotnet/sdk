@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -491,14 +493,16 @@ for path 'candidate.js'");
             get
             {
                 var currentPath = Path.GetFullPath(".");
-                var result = new TheoryData<string, string>();
-                result.Add("wwwroot", Path.GetFullPath("wwwroot") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir" + Path.DirectorySeparatorChar, Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir" + Path.AltDirectorySeparatorChar, Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.AltDirectorySeparatorChar + "wwwroot" + Path.AltDirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.AltDirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.AltDirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
+                var result = new TheoryData<string, string>
+                {
+                    { "wwwroot", Path.GetFullPath("wwwroot") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir" + Path.DirectorySeparatorChar, Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir" + Path.AltDirectorySeparatorChar, Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.AltDirectorySeparatorChar + "wwwroot" + Path.AltDirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.AltDirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.AltDirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar }
+                };
                 return result;
             }
         }
@@ -538,7 +542,7 @@ for path 'candidate.js'");
         }
 
 
-        private ITaskItem CreateCandidate(
+        private static ITaskItem CreateCandidate(
             string itemSpec,
             string relativePath = null,
             string targetPath = null,

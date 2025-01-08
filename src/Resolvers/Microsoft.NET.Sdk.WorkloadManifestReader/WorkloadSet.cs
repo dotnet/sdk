@@ -1,12 +1,10 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
 using System.Text.Json;
-using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {

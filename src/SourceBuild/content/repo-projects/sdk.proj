@@ -26,11 +26,13 @@
     <BuildArgs>$(BuildArgs) /p:DOTNET_INSTALL_DIR=$(DotNetRoot)</BuildArgs>
 
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(TargetRid)</BuildArgs>
-    <!-- sdk always wants to build portable on FreeBSD -->
-    <BuildArgs Condition="'$(TargetOS)' == 'freebsd' and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
+    <!-- sdk always wants to build portable on FreeBSD etc. -->
+    <BuildArgs Condition="('$(TargetOS)' == 'freebsd' or '$(TargetOS)' == 'solaris') and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:NetRuntimeRid=$(TargetRid)</BuildArgs>
-    <!-- https://github.com/dotnet/source-build/issues/4138 -->
-    <BuildArgs Condition="'$(TargetOS)' != 'windows' and '$(TargetOS)' != 'osx'">$(BuildArgs) /p:SkipBuildingInstallers=true</BuildArgs>
+
+    <BuildArgs Condition="'$(TargetRid)' == 'linux-x64' or '$(TargetRid)' == 'linux-arm64' ">$(BuildArgs) /p:BuildSdkDeb=true /p:BuildSdkRpm=true</BuildArgs>
+    <!-- https://github.com/dotnet/source-build/issues/4693 -->
+    <BuildArgs Condition="'$(TargetOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'true'">$(BuildArgs) /p:SkipBuildingInstallers=true /p:SkipBuildingSdkBundle=true</BuildArgs>
 
     <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
     <!-- In non-source-only scenarios, currently consume aspnetcore from the normal public base url -->
@@ -58,7 +60,6 @@
     <RepositoryReference Include="sourcelink" />
     <RepositoryReference Include="symreader" />
     <RepositoryReference Include="templating" />
-    <RepositoryReference Include="test-templates" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
     <RepositoryReference Include="xdt" />
@@ -83,15 +84,5 @@
     <!-- https://github.com/dotnet/source-build/issues/4115. -->
     <EnvironmentVariables Include="PublishWindowsPdb=false" />
   </ItemGroup>
-
-  <!-- Copy SDK archive to assets root. -->
-  <Target Name="CopySdkArchive"
-          AfterTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion">
-    <Copy SourceFiles="$(SdkTarballPath)"
-          DestinationFolder="$(ArtifactsAssetsDir)"
-          SkipUnchangedFiles="true"
-          UseHardlinksIfPossible="true" />
-  </Target>
 
 </Project>

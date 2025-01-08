@@ -14,12 +14,12 @@ namespace Microsoft.NET.TestFramework.Commands
     {
         private const string PublishSubfolderName = "packages";
 
-        public ComposeStoreCommand(ITestOutputHelper log, string projectPath, string relativePathToProject = null)
+        public ComposeStoreCommand(ITestOutputHelper log, string projectPath, string? relativePathToProject = null)
             : base(log, "ComposeStore", projectPath, relativePathToProject)
         {
         }
 
-        public override DirectoryInfo GetOutputDirectory(string targetFramework = "netcoreapp1.0", string configuration = "Debug", string runtimeIdentifier = "", string platformIdentifier = "")
+        public override DirectoryInfo GetOutputDirectory(string? targetFramework = "netcoreapp1.0", string? configuration = "Debug", string? runtimeIdentifier = "", string? platformIdentifier = "")
         {
             string output = Path.Combine(ProjectRootPath, "bin", BuildRelativeOutputPath(targetFramework, configuration, runtimeIdentifier, platformIdentifier));
             return new DirectoryInfo(output);
@@ -30,14 +30,15 @@ namespace Microsoft.NET.TestFramework.Commands
             return Path.Combine(GetOutputDirectory().FullName, $"{appName}.dll");
         }
 
-        private string BuildRelativeOutputPath(string targetFramework, string configuration, string runtimeIdentifier, string platformIdentifier)
+        private string BuildRelativeOutputPath(string? targetFramework, string? configuration, string? runtimeIdentifier, string? platformIdentifier)
         {
-            if (runtimeIdentifier.Length == 0)
+            if (runtimeIdentifier?.Length == 0)
             {
                 runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
             }
-            string arch = runtimeIdentifier.Substring(runtimeIdentifier.LastIndexOf("-") + 1);
-            return Path.Combine(platformIdentifier, configuration, arch, targetFramework, PublishSubfolderName);
+
+            string arch = runtimeIdentifier?.Substring(runtimeIdentifier.LastIndexOf("-") + 1) ?? string.Empty;
+            return Path.Combine(platformIdentifier ?? string.Empty, configuration ?? string.Empty, arch, targetFramework ?? string.Empty, PublishSubfolderName);
         }
     }
 }

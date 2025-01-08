@@ -14,8 +14,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     {
         public const string WorkloadSetsFolderName = "workloadsets";
 
-        private readonly string _sdkRootPath;
-        private readonly string _sdkOrUserLocalPath;
+        private readonly string? _sdkRootPath;
+        private readonly string? _sdkOrUserLocalPath;
         private readonly SdkFeatureBand _sdkVersionBand;
         private readonly string[] _manifestRoots;
         private static HashSet<string> _outdatedManifestIds = new(StringComparer.OrdinalIgnoreCase) { "microsoft.net.workload.android", "microsoft.net.workload.blazorwebassembly", "microsoft.net.workload.ios",
@@ -36,7 +36,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private Exception? _exceptionToThrow = null;
         string? _globalJsonWorkloadSetVersion;
 
-        public SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, string? userProfileDir, string? globalJsonPath)
+        public SdkDirectoryWorkloadManifestProvider(string? sdkRootPath, string? sdkVersion, string? userProfileDir, string? globalJsonPath)
             : this(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath)
         {
         }
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return new SdkDirectoryWorkloadManifestProvider(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath: null, workloadSetVersion);
         }
 
-        internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
+        internal SdkDirectoryWorkloadManifestProvider(string? sdkRootPath, string? sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
         {
             if (string.IsNullOrWhiteSpace(sdkVersion))
             {

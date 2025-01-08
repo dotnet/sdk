@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable disable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -62,6 +64,9 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         private Dictionary<string, List<string>> allSourcesPackages = [];
         private Dictionary<string, List<string>> oldSourceMappingPatterns = [];
 
+        // allOldSourceMappingPatterns is a union of all patterns from oldSourceMappingPatterns
+        List<string> allOldSourceMappingPatterns = [];
+
         // All other dictionaries are: 'package id', 'list of package versions'
         private Dictionary<string, List<string>> currentPackages = [];
         private Dictionary<string, List<string>> referencePackages = [];
@@ -115,7 +120,11 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 // Skip sources with zero package patterns
                 if (allSourcesPackages[packageSource]?.Count > 0)
                 {
-                    pkgSrcMappingClearElement.AddAfterSelf(GetPackageMappingsElementForSource(packageSource));
+                    var pkgSrc = GetPackageMappingsElementForSource(packageSource);
+                    if (pkgSrc.Elements().Any())
+                    {
+                        pkgSrcMappingClearElement.AddAfterSelf(pkgSrc);
+                    }
                 }
             }
 
@@ -132,14 +141,17 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                     }
                 }
 
-                // Union all package sources to get the distinct list. These will get added to
+                // Union all package sources to get the distinct list. Remove all original patterns
+                // from online feeds that were unique to those feeds.
+                //
+                // These will get added to
                 // all custom sources and all online sources based on the following logic:
                 // If there were existing mappings for online feeds, add cummulative mappings
                 // from all feeds to these two.
                 // If there were no existing mappings, add default mappings for all online feeds.
                 List<string> packagePatterns = pkgSrcMappingElement.Descendants()
                     .Where(e => e.Name == "packageSource")
-                    .SelectMany(e => e.Descendants().Where(e => e.Name == "package"))
+                    .SelectMany(e => e.Descendants().Where(e => e.Name == "package" && !allOldSourceMappingPatterns.Contains(e.Attribute("pattern").Value)))
                     .Select(e => e.Attribute("pattern").Value)
                     .Distinct()
                     .ToList();
@@ -150,11 +162,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 }
 
                 AddMappingsForCustomSources(pkgSrcMappingElement, pkgSourcesElement, packagePatterns);
-
-                if (oldSourceMappingPatterns.Count == 0)
-                {
-                    AddMappingsForOnlineSources(pkgSrcMappingElement, pkgSourcesElement, packagePatterns);
-                }
+                AddMappingsForOnlineSources(pkgSrcMappingElement, pkgSourcesElement, packagePatterns);
             }
 
             using (var writer = XmlWriter.Create(NuGetConfigFile, new XmlWriterSettings { NewLineChars = newLineChars, Indent = true }))
@@ -176,27 +184,44 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             {
                 if (null != GetElement(pkgSourcesElement, "add", sourceName))
                 {
-                    ReplaceSourceMappings(pkgSrcMappingElement, sourceName, packagePatterns);
+                    AddSourceMappings(pkgSrcMappingElement, sourceName, packagePatterns);
+
+                    // Add all old source mapping patterns for custom sources.
+                    // Unlike local sources, custom sources cannot be enumerated.
+                    XElement pkgSrcElement = GetElement(pkgSrcMappingElement, "packageSource", sourceName);
+                    if (pkgSrcElement != null)
+                    {
+                        foreach (string pattern in allOldSourceMappingPatterns)
+                        {
+                            pkgSrcElement.Add(new XElement("package", new XAttribute("pattern", pattern)));
+                        }
+                    }
                 }
             }
         }
 
-        private void ReplaceSourceMappings(XElement pkgSrcMappingElement, string sourceName, List<string> packagePatterns)
+        private void AddSourceMappings(XElement pkgSrcMappingElement, string sourceName, List<string> packagePatterns)
         {
-            XElement pkgSrc = new XElement("packageSource", new XAttribute("key", sourceName));
-            foreach (string packagePattern in packagePatterns)
-            {
-                pkgSrc.Add(new XElement("package", new XAttribute("pattern", packagePattern)));
-            }
+            XElement pkgSrc;
 
             XElement existingPkgSrcElement = GetElement(pkgSrcMappingElement, "packageSource", sourceName);
             if (existingPkgSrcElement != null)
             {
-                existingPkgSrcElement.ReplaceWith(pkgSrc);
+                pkgSrc = existingPkgSrcElement;
+            }
+            else if (packagePatterns.Count > 0)
+            {
+                pkgSrc = new XElement("packageSource", new XAttribute("key", sourceName));
+                pkgSrcMappingElement.Add(pkgSrc);
             }
             else
             {
-                pkgSrcMappingElement.Add(pkgSrc);
+                return;
+            }
+
+            foreach (string packagePattern in packagePatterns)
+            {
+                pkgSrc.Add(new XElement("package", new XAttribute("pattern", packagePattern)));
             }
         }
 
@@ -211,7 +236,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 .Select(e => e.Attribute("key").Value)
                 .Distinct())
             {
-                ReplaceSourceMappings(pkgSrcMappingElement, sourceName, packagePatterns);
+                AddSourceMappings(pkgSrcMappingElement, sourceName, packagePatterns);
             }
         }
 
@@ -291,6 +316,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 }
 
                 string[] packages = Directory.GetFiles(path, "*.nupkg", SearchOption.AllDirectories);
+                Array.Sort(packages);
                 foreach (string package in packages)
                 {
                     NupkgInfo info = GetNupkgInfo(package);
@@ -335,6 +361,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             }
 
             string[] nuspecFiles = Directory.GetFiles(SbrpRepoSrcPath, "*.nuspec", SearchOption.AllDirectories);
+            Array.Sort(nuspecFiles);
             foreach (string nuspecFile in nuspecFiles)
             {
                 try
@@ -373,6 +400,10 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                         !prebuiltPackages.ContainsKey(pattern))
                     {
                         filteredPatterns.Add(pattern);
+                        if (!allOldSourceMappingPatterns.Contains(pattern))
+                        {
+                            allOldSourceMappingPatterns.Add(pattern);
+                        }
                     }
                 }
 

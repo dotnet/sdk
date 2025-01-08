@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 using Microsoft.DotNet.Cli.Utils;
-
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 
@@ -28,6 +29,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
+            toolProject.AdditionalProperties.Add("RollForward", "LatestMajor");
 
             GenerateDepsAndRunTool(toolProject)
                 .Should()
@@ -47,6 +49,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             toolProject.AdditionalProperties.Add("PackageType", "DotnetCliTool");
+            toolProject.AdditionalProperties.Add("RollForward", "LatestMajor");
 
             toolProject.PackageReferences.Add(new TestPackageReference("Microsoft.Extensions.DependencyModel", "1.1.0", null));
 
@@ -54,7 +57,6 @@ namespace Microsoft.NET.Build.Tests
 using System;
 using System.Linq;
 using Microsoft.Extensions.DependencyModel;
-
 class Program
 {
     static void Main(string[] args)
@@ -86,7 +88,7 @@ class Program
 
             var toolProjectInstance = _testAssetsManager.CreateTestProject(toolProject, callingMethod, identifier: toolProject.Name);
 
-            NuGetConfigWriter.Write(toolProjectInstance.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
+            NuGetConfigWriter.Write(toolProjectInstance.TestRoot);
 
             // Workaround https://github.com/dotnet/cli/issues/9701
             var useBundledNETCoreAppPackage = "/p:UseBundledNETCoreAppPackageVersionAsDefaultNetCorePatchVersion=true";
@@ -109,16 +111,14 @@ class Program
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
-
                     var itemGroup = new XElement(ns + "ItemGroup");
                     project.Root.Add(itemGroup);
-
                     itemGroup.Add(new XElement(ns + "DotNetCliToolReference",
                         new XAttribute("Include", toolProject.Name),
                         new XAttribute("Version", "1.0.0")));
                 });
 
-            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed };
+            List<string> sources = new();
             sources.Add(nupkgPath);
 
             NuGetConfigWriter.Write(toolReferencerInstance.TestRoot, sources);
@@ -220,6 +220,7 @@ class Program
                 Arguments = dotnetArgs
             };
             TestContext.Current.AddTestEnvironmentVariables(toolCommandSpec.Environment);
+            toolCommandSpec.Environment.Add("DOTNET_ROLL_FORWARD","LatestMajor");
 
             ICommand toolCommand = toolCommandSpec.ToCommand().CaptureStdOut();
 

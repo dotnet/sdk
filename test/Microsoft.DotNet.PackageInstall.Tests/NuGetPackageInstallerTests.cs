@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -266,30 +268,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
             bufferedReporter.Lines.Should().BeEmpty();
-            File.Exists(packagePath).Should().BeTrue();
-        }
-
-        [UnixOnlyFact]
-        public async Task GivenANonWindowsMachineItShouldPrintMessageOnce()
-        {
-            BufferedReporter bufferedReporter = new();
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
-            await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
-
-            // download 2 packages should only print the message once
-            string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
-
-            bufferedReporter.Lines.Should()
-                .ContainSingle(
-                    Cli.NuGetPackageDownloader.LocalizableStrings.SkipNuGetpackageSigningValidationmacOSLinux);
             File.Exists(packagePath).Should().BeTrue();
         }
 
