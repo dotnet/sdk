@@ -258,7 +258,7 @@ internal static class StreamExtesions
     private static async ValueTask<int> ReadExactlyAsync(this Stream stream, byte[] buffer, int size, CancellationToken cancellationToken)
     {
         int totalRead = 0;
-        while (totalRead < buffer.Length)
+        while (totalRead < size)
         {
             int read = await stream.ReadAsync(buffer, offset: totalRead, count: size - totalRead, cancellationToken).ConfigureAwait(false);
             if (read == 0)
