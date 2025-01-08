@@ -14,11 +14,11 @@ Generators                            Type                                      
 The 'dotnet new' command creates a .NET project based on a template.
 
 Common templates are:
-Template Name        Short Name  Language    Tags                  
+Template Name        Short Name  Language    Tags                   
 %TABLE HEADER DELIMITER%
 Blazor Web App       blazor      [C#]        Web/Blazor/WebAssembly
-Class Library        classlib    [C#],F#,VB  Common/Library        
-Console App          console     [C#],F#,VB  Common/Console        
+Class Library        classlib    [C#],F#,VB  Common/Library         
+Console App          console     [C#],F#,VB  Common/Console         
 MSTest Test Project  mstest      [C#],F#,VB  Test/MSTest/Desktop/Web
 
 An example would be:
