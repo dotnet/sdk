@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.102">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.103">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>b1003b44bf4f77613101b9d31a55bb307515bb6d</Sha>
+      <Sha>cdb776d3a6988a56a69e9ceb669bf250f51919ee</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.102-servicing.24576.5">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.103-servicing.25057.4">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>b1003b44bf4f77613101b9d31a55bb307515bb6d</Sha>
+      <Sha>cdb776d3a6988a56a69e9ceb669bf250f51919ee</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.102-servicing.24576.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.103-servicing.25057.4">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>b1003b44bf4f77613101b9d31a55bb307515bb6d</Sha>
+      <Sha>cdb776d3a6988a56a69e9ceb669bf250f51919ee</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0">
@@ -379,14 +379,14 @@
       <Uri>https://github.com/dotnet/test-templates</Uri>
       <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rtm.24605.1">
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rtm.24606.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>22f4800ed2fe5dbca64c982aa15fd6838016328e</Sha>
+      <Sha>8d99bca98e3fd0c8f4e10eb200aed20d9665de0e</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rtm.24605.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rtm.24606.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>22f4800ed2fe5dbca64c982aa15fd6838016328e</Sha>
+      <Sha>8d99bca98e3fd0c8f4e10eb200aed20d9665de0e</Sha>
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
@@ -398,14 +398,14 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
       <Sha>a04736acb8edb533756131d3d5fc55f15cd03d6a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24522.2">
+    <Dependency Name="Microsoft.Web.Xdt" Version="10.0.0-preview.24609.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>1a54480f52703fb45fac2a6b955247d33758383e</Sha>
+      <Sha>63ae81154c50a1cf9287cc47d8351d55b4289e6d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24522.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="10.0.0-preview.24609.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>1a54480f52703fb45fac2a6b955247d33758383e</Sha>
+      <Sha>63ae81154c50a1cf9287cc47d8351d55b4289e6d</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24629.2">
