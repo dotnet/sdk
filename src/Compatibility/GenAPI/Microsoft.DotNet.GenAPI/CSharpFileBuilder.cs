@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.GenAPI
     {
         private readonly TextWriter _textWriter;
         private readonly string? _header;
-        private readonly IAssemblyVisitor _assemblyVisitor;
+        private readonly CSharpAssemblyDocumentGenerator _docGenerator;
 
         public CSharpFileBuilder(ILog logger,
                                  TextWriter textWriter,
@@ -32,15 +32,15 @@ namespace Microsoft.DotNet.GenAPI
         {
             _textWriter = textWriter;
             _header = header;
-            _assemblyVisitor = new CSharpAssemblyVisitor(logger, loader, symbolFilter, attributeDataSymbolFilter, exceptionMessage, includeAssemblyAttributes, metadataReferences);
+            _docGenerator = new CSharpAssemblyDocumentGenerator(logger, loader, symbolFilter, attributeDataSymbolFilter, exceptionMessage, includeAssemblyAttributes, metadataReferences);
         }
 
         /// <inheritdoc />
         public void WriteAssembly(IAssemblySymbol assemblySymbol)
         {
             _textWriter.Write(GetFormattedHeader(_header));
-            Document document = _assemblyVisitor.GetDocumentForAssembly(assemblySymbol);
-            _assemblyVisitor.GetFormattedRootNodeForDocument(document).WriteTo(_textWriter);
+            Document document = _docGenerator.GetDocumentForAssembly(assemblySymbol);
+            _docGenerator.GetFormattedRootNodeForDocument(document).WriteTo(_textWriter);
         }
 
         private static string GetFormattedHeader(string? customHeader)

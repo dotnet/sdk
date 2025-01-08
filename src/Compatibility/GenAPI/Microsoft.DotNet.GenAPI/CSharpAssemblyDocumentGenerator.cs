@@ -20,9 +20,9 @@ using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 namespace Microsoft.DotNet.GenAPI;
 
 /// <summary>
-/// A class that visits a collection of specified assemblies and generates the corresponding C# document and syntax trees.
+/// A class that generates the C# document and syntax trees of a specified collection of assemblies.
 /// </summary>
-public class CSharpAssemblyVisitor : IAssemblyVisitor
+public sealed class CSharpAssemblyDocumentGenerator
 {
     private readonly ILog _logger;
     private readonly IAssemblySymbolLoader _loader;
@@ -37,7 +37,7 @@ public class CSharpAssemblyVisitor : IAssemblyVisitor
     private readonly bool _hideImplicitDefaultConstructors;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CSharpAssemblyVisitor"/> class.
+    /// Initializes a new instance of the <see cref="CSharpAssemblyDocumentGenerator"/> class.
     /// </summary>
     /// <param name="logger">The logger to use.</param>
     /// <param name="loader">The assembly symbol loader to use.</param>
@@ -48,7 +48,7 @@ public class CSharpAssemblyVisitor : IAssemblyVisitor
     /// <param name="metadataReferences">The metadata references to use. The default value is <see langword="null"/>.</param>
     /// <param name="addPartialModifier">Whether to add the partial modifier or not. The default value is <see langword="true"/>.</param>
     /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors or not. The default value is <see langword="true"/>.</param>
-    public CSharpAssemblyVisitor(ILog logger,
+    public CSharpAssemblyDocumentGenerator(ILog logger,
                                  IAssemblySymbolLoader loader,
                                  ISymbolFilter symbolFilter,
                                  ISymbolFilter attributeDataSymbolFilter,
@@ -71,7 +71,11 @@ public class CSharpAssemblyVisitor : IAssemblyVisitor
         _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns the configured source code document for the specified assembly symbol.
+    /// </summary>
+    /// <param name="assemblySymbol">The assembly symbol that represents the loaded assembly.</param>
+    /// <returns>The source code document instance of the specified assembly symbol.</returns>
     public Document GetDocumentForAssembly(IAssemblySymbol assemblySymbol)
     {
         CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary,
@@ -114,7 +118,11 @@ public class CSharpAssemblyVisitor : IAssemblyVisitor
         return document;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns the formatted root syntax node for the specified document.
+    /// </summary>
+    /// <param name="document">A source code document instance.</param>
+    /// <returns>The root syntax node of the specified document.</returns>
     public SyntaxNode GetFormattedRootNodeForDocument(Document document) => document.GetSyntaxRootAsync().Result!.Rewrite(new SingleLineStatementCSharpSyntaxRewriter());
 
     private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 #endif
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI
@@ -38,8 +39,8 @@ namespace Microsoft.DotNet.GenAPI
                 CSharpFileBuilder writer = new(logger,
                                                textWriter,
                                                loader,
-                                               SymbolFilterFactory.GetSymbolFilterFromFiles(excludeApiFiles, respectInternals),
-                                               SymbolFilterFactory.GetAttributeFilterFromPaths(excludeAttributesFiles, respectInternals),
+                                               CompositeSymbolFilter.GetSymbolFilterFromFiles(excludeApiFiles, respectInternals),
+                                               CompositeSymbolFilter.GetAttributeFilterFromPaths(excludeAttributesFiles, respectInternals),
                                                headerFile,
                                                exceptionMessage,
                                                includeAssemblyAttributes);
