@@ -4,6 +4,7 @@
 namespace Microsoft.NET.Sdk.BlazorWebAssembly
 {
 #pragma warning disable IDE1006 // Naming Styles
+    // Only used in legacy builds (5.0 and earlier)
     public class AssetsManifestFile
     {
         /// <summary>
