@@ -110,8 +110,8 @@
 
     <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
       <!-- For self-contained, invoke the native executable as a single arg -->
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and '$(UseAppHost)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)" />
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and '$(UseAppHost)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and '$(_ContainerIsSelfContained)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)" />
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and '$(_ContainerIsSelfContained)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
       <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
       <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0" Include="dotnet;$(TargetFileName)" />
     </ItemGroup>
