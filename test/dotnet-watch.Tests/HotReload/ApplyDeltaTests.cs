@@ -384,7 +384,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/45299")]
+        [Fact]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -619,7 +619,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        [Fact]
         public async Task Aspire()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
