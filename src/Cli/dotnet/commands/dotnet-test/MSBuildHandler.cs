@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli
 
         private const string BinLogFileName = "msbuild.binlog";
         private const string Separator = ";";
-        private static readonly object s_buildLock = new();
+        private static readonly Lock buildLock = new();
 
         public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, int degreeOfParallelism)
         {
@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.Cli
 
             var buildRequestData = new BuildRequestData(projectFilePath, new Dictionary<string, string>(), null, [CliConstants.RestoreCommand], null);
             BuildResult buildResult;
-            lock (s_buildLock)
+            lock (buildLock)
             {
                 buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
             }
