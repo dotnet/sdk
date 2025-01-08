@@ -1,14 +1,28 @@
-From fc1c96573ef2767614466dd78f35e5f34eef775c Mon Sep 17 00:00:00 2001
+From 6524a92048350453584b60d53d22778143393319 Mon Sep 17 00:00:00 2001
 From: Matt Thalman <mthalman@microsoft.com>
 Date: Wed, 8 Jan 2025 07:20:08 -0600
 Subject: [PATCH] Fix code analysis issues
 
 Backport: TODO
 ---
+ .../System/Drawing/Printing/PrinterSettings.StringCollection.cs | 2 +-
  .../src/System/Collections/Generic/CollectionExtensions.cs      | 2 +-
  src/System.Private.Windows.GdiPlus/System/Drawing/IIcon.cs      | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/src/System.Drawing.Common/src/System/Drawing/Printing/PrinterSettings.StringCollection.cs b/src/System.Drawing.Common/src/System/Drawing/Printing/PrinterSettings.StringCollection.cs
+index 15dc585aa..d063cdd21 100644
+--- a/src/System.Drawing.Common/src/System/Drawing/Printing/PrinterSettings.StringCollection.cs
++++ b/src/System.Drawing.Common/src/System/Drawing/Printing/PrinterSettings.StringCollection.cs
+@@ -15,7 +15,7 @@ public partial class PrinterSettings
+         /// <summary>
+         ///  Initializes a new instance of the <see cref='StringCollection'/> class.
+         /// </summary>
+-        public StringCollection(string[] array) => _list = new(array);
++        public StringCollection(string[] array) => _list = [..array];
+ 
+         /// <summary>
+         ///  Gets a value indicating the number of strings.
 diff --git a/src/System.Private.Windows.Core/src/System/Collections/Generic/CollectionExtensions.cs b/src/System.Private.Windows.Core/src/System/Collections/Generic/CollectionExtensions.cs
 index 15dd20bbf..eb0852ff0 100644
 --- a/src/System.Private.Windows.Core/src/System/Collections/Generic/CollectionExtensions.cs
