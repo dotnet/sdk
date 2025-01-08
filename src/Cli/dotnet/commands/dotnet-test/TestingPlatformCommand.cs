@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli
                         return ExitCodes.GenericFailure;
                     }
 
-                    // If not all test projects have IsTestProject and IsTestingPlatformApplication proprties set to true, we will simply return
+                    // If not all test projects have IsTestProject and IsTestingPlatformApplication properties set to true, we will simply return
                     if (!_msBuildConnectionHandler.EnqueueTestApplications())
                     {
                         VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
