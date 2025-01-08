@@ -82,34 +82,34 @@
       <Sha>86f5186deeea364bd8541d51657e52a54b2a96b2</Sha>
       <SourceBuild RepoName="format" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.10.0-3.24574.6">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.10.0-3.25056.12">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>64e323ff5a3f88b1eae1c6d728441e73a38a9daa</Sha>
+      <Sha>3bdcd8b471bef9a522c16a0ada911eb9890b1a6c</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.10.0-3.24574.6">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.10.0-3.25056.12">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>64e323ff5a3f88b1eae1c6d728441e73a38a9daa</Sha>
+      <Sha>3bdcd8b471bef9a522c16a0ada911eb9890b1a6c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.10.0-3.24574.6">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.10.0-3.25056.12">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>64e323ff5a3f88b1eae1c6d728441e73a38a9daa</Sha>
+      <Sha>3bdcd8b471bef9a522c16a0ada911eb9890b1a6c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.10.0-3.24574.6">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.10.0-3.25056.12">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>64e323ff5a3f88b1eae1c6d728441e73a38a9daa</Sha>
+      <Sha>3bdcd8b471bef9a522c16a0ada911eb9890b1a6c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.10.0-3.24574.6">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.10.0-3.25056.12">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>64e323ff5a3f88b1eae1c6d728441e73a38a9daa</Sha>
+      <Sha>3bdcd8b471bef9a522c16a0ada911eb9890b1a6c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.10.0-3.24574.6">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.10.0-3.25056.12">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>64e323ff5a3f88b1eae1c6d728441e73a38a9daa</Sha>
+      <Sha>3bdcd8b471bef9a522c16a0ada911eb9890b1a6c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.10.0-3.24574.6">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.10.0-3.25056.12">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>64e323ff5a3f88b1eae1c6d728441e73a38a9daa</Sha>
+      <Sha>3bdcd8b471bef9a522c16a0ada911eb9890b1a6c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="8.0.12-servicing.24603.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
@@ -293,16 +293,16 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>31d685b2d9a86ca1243014d175a3da813f78e428</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.24612.2">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.24629.2">
       <Uri>https://github.com/dotnet/razor</Uri>
       <Sha>47a3872a73899ff683dc9593e587e539a1264233</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.24612.2">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.24629.2">
       <Uri>https://github.com/dotnet/razor</Uri>
       <Sha>47a3872a73899ff683dc9593e587e539a1264233</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.24612.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.24629.2">
       <Uri>https://github.com/dotnet/razor</Uri>
       <Sha>47a3872a73899ff683dc9593e587e539a1264233</Sha>
     </Dependency>
