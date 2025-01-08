@@ -5,6 +5,7 @@
 using System.Collections;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -52,41 +53,61 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             }
 
-            var logger = reporter.IsVerbose ? new[] { new Build.Logging.ConsoleLogger() } : null;
-
-            var tasks = projectsToRefresh.Select(async projectNode =>
+            if (!hasApplicableFiles)
             {
-                if (!projectNode.ProjectInstance.DeepCopy().Build(BuildTargetName, logger))
+                return;
+            }
+
+            var logger = reporter.IsVerbose ? new[] { new Build.Logging.ConsoleLogger(LoggerVerbosity.Minimal) } : null;
+
+            var buildTasks = projectsToRefresh.Select(projectNode => Task.Run(() =>
+            {
+                try
                 {
-                    return false;
+                    if (!projectNode.ProjectInstance.DeepCopy().Build(BuildTargetName, logger))
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    reporter.Error($"[{projectNode.GetDisplayName()}] Target {BuildTargetName} failed to build: {e}");
+                    return null;
                 }
 
+                return projectNode;
+            }));
+
+            var buildResults = await Task.WhenAll(buildTasks).WaitAsync(cancellationToken);
+
+            var browserRefreshTasks = buildResults.Where(p => p != null)!.GetTransitivelyReferencingProjects().Select(async projectNode =>
+            {
                 if (browserConnector.TryGetRefreshServer(projectNode, out var browserRefreshServer))
                 {
+                    reporter.Verbose($"[{projectNode.GetDisplayName()}] Refreshing browser.");
                     await HandleBrowserRefresh(browserRefreshServer, projectNode.ProjectInstance.FullPath, cancellationToken);
-                }
-
-                return true;
-            });
-
-            var results = await Task.WhenAll(tasks).WaitAsync(cancellationToken);
-
-            if (hasApplicableFiles)
-            {
-                var successfulCount = results.Sum(r => r ? 1 : 0);
-
-                if (successfulCount == results.Length)
-                {
-                    reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
-                }
-                else if (successfulCount > 0)
-                {
-                    reporter.Output($"Hot reload of scoped css partially succeeded: {successfulCount} project(s) out of {results.Length} were updated.", emoji: "🔥");
                 }
                 else
                 {
-                    reporter.Output("Hot reload of scoped css failed.", emoji: "🔥");
+                    reporter.Verbose($"[{projectNode.GetDisplayName()}] No refresh server.");
                 }
+            });
+
+            await Task.WhenAll(browserRefreshTasks).WaitAsync(cancellationToken);
+
+            var successfulCount = buildResults.Sum(r => r != null ? 1 : 0);
+
+            if (successfulCount == buildResults.Length)
+            {
+                reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
+            }
+            else if (successfulCount > 0)
+            {
+                reporter.Output($"Hot reload of scoped css partially succeeded: {successfulCount} project(s) out of {buildResults.Length} were updated.", emoji: "🔥");
+            }
+            else
+            {
+                reporter.Output("Hot reload of scoped css failed.", emoji: "🔥");
             }
         }
 
