@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli
             _degreeOfParallelism = degreeOfParallelism;
         }
 
-        public async Task<int> RunWithMSBuild(bool allowBinLog)
+        public async Task<int> RunWithMSBuild()
         {
             bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(Directory.GetCurrentDirectory(), out string projectOrSolutionFilePath, out bool isSolution);
 
@@ -38,16 +38,16 @@ namespace Microsoft.DotNet.Cli
                 return ExitCodes.GenericFailure;
             }
 
-            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(projectOrSolutionFilePath, isSolution, allowBinLog);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(projectOrSolutionFilePath, isSolution);
 
             InitializeTestApplications(modules);
 
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
-        public async Task<int> RunWithMSBuild(string filePath, bool allowBinLog)
+        public async Task<int> RunWithMSBuild(string filePath)
         {
-            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, false, allowBinLog);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, false);
 
             InitializeTestApplications(modules);
 
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, bool allowBinLog)
+        private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
         {
             var allProjects = new ConcurrentBag<Module>();
             bool restored = true;
@@ -93,11 +93,13 @@ namespace Microsoft.DotNet.Cli
             if (isSolution)
             {
                 var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath);
-                ProcessProjectsInParallel(projects, allowBinLog, allProjects, ref restored);
+                ProcessProjectsInParallel(projects, allProjects, ref restored);
             }
             else
             {
-                var (relatedProjects, isProjectBuilt) = GetProjectPropertiesInternal(solutionOrProjectFilePath, allowBinLog);
+                bool allowBinLog = IsBinaryLoggerEnabled(_args, out string binLogFileName);
+
+                var (relatedProjects, isProjectBuilt) = GetProjectPropertiesInternal(solutionOrProjectFilePath, allowBinLog, binLogFileName);
                 foreach (var relatedProject in relatedProjects)
                 {
                     allProjects.Add(relatedProject);
@@ -111,9 +113,10 @@ namespace Microsoft.DotNet.Cli
             return (allProjects, restored);
         }
 
-        private void ProcessProjectsInParallel(IEnumerable<string> projects, bool allowBinLog, ConcurrentBag<Module> allProjects, ref bool restored)
+        private void ProcessProjectsInParallel(IEnumerable<string> projects, ConcurrentBag<Module> allProjects, ref bool restored)
         {
             bool allProjectsRestored = true;
+            bool allowBinLog = IsBinaryLoggerEnabled(_args, out string binLogFileName);
 
             Parallel.ForEach(
                 projects,
@@ -121,7 +124,7 @@ namespace Microsoft.DotNet.Cli
                 () => true,
                 (project, state, localRestored) =>
                 {
-                    var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog);
+                    var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog, binLogFileName);
                     foreach (var relatedProject in relatedProjects)
                     {
                         allProjects.Add(relatedProject);
@@ -140,11 +143,11 @@ namespace Microsoft.DotNet.Cli
             restored = allProjectsRestored;
         }
 
-        private static (IEnumerable<Module> Modules, bool Restored) GetProjectPropertiesInternal(string projectFilePath, bool allowBinLog)
+        private static (IEnumerable<Module> Modules, bool Restored) GetProjectPropertiesInternal(string projectFilePath, bool allowBinLog, string binLogFileName)
         {
             var projectCollection = new ProjectCollection();
             var project = projectCollection.LoadProject(projectFilePath);
-            var buildResult = RestoreProject(projectFilePath, allowBinLog, projectCollection);
+            var buildResult = RestoreProject(projectFilePath, projectCollection, allowBinLog, binLogFileName);
 
             bool restored = buildResult.OverallResult == BuildResultCode.Success;
 
@@ -193,7 +196,7 @@ namespace Microsoft.DotNet.Cli
             return projects;
         }
 
-        private static BuildResult RestoreProject(string projectFilePath, bool allowBinLog, ProjectCollection projectCollection)
+        private static BuildResult RestoreProject(string projectFilePath, ProjectCollection projectCollection, bool allowBinLog, string binLogFileName)
         {
             BuildParameters parameters = new(projectCollection)
             {
@@ -205,7 +208,7 @@ namespace Microsoft.DotNet.Cli
                 parameters.Loggers = parameters.Loggers.Concat([
                     new BinaryLogger
                     {
-                        Parameters = BinLogFileName
+                        Parameters = binLogFileName
                     }
                 ]);
             }
@@ -218,6 +221,46 @@ namespace Microsoft.DotNet.Cli
             }
 
             return buildResult;
+        }
+
+        private static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
+        {
+            binLogFileName = BinLogFileName;
+
+            var binLogArgs = new List<string>();
+            var otherArgs = new List<string>();
+
+            foreach (var arg in args)
+            {
+                if (arg.StartsWith("/bl:") || arg.Equals("/bl")
+                    || arg.StartsWith("--binaryLogger:") || arg.Equals("--binaryLogger")
+                    || arg.StartsWith("-bl:") || arg.Equals("-bl"))
+                {
+                    binLogArgs.Add(arg);
+
+                }
+                else
+                {
+                    otherArgs.Add(arg);
+                }
+            }
+
+            if (binLogArgs.Count > 0)
+            {
+                // Remove all BinLog args from the list of args
+                args.RemoveAll(arg => binLogArgs.Contains(arg));
+
+                // Get BinLog filename
+                var binLogArg = binLogArgs.LastOrDefault();
+
+                if (binLogArg.Contains(':'))
+                {
+                    binLogFileName = binLogArg.Split(':')[1];
+                }
+                return true;
+            }
+
+            return false;
         }
 
         public void Dispose()

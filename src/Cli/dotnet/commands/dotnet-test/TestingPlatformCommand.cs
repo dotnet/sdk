@@ -89,9 +89,7 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    bool allowBinLog = IsBinLogEnabled(_args);
-
-                    if (!await RunMSBuild(parseResult, allowBinLog))
+                    if (!await RunMSBuild(parseResult))
                     {
                         return ExitCodes.GenericFailure;
                     }
@@ -117,7 +115,7 @@ namespace Microsoft.DotNet.Cli
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
-        private async Task<bool> RunMSBuild(ParseResult parseResult, bool allowBinLog)
+        private async Task<bool> RunMSBuild(ParseResult parseResult)
         {
             int msbuildExitCode;
 
@@ -131,13 +129,13 @@ namespace Microsoft.DotNet.Cli
                     return false;
                 }
 
-                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(filePath, allowBinLog);
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(filePath);
             }
             else
             {
                 // If no filter was provided neither the project using --project,
                 // MSBuild will get the test project paths in the current directory
-                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(allowBinLog);
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild();
             }
 
             if (msbuildExitCode != ExitCodes.Success)
@@ -147,21 +145,6 @@ namespace Microsoft.DotNet.Cli
             }
 
             return true;
-        }
-
-        private static bool IsBinLogEnabled(List<string> args)
-        {
-            var binLog = args.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase));
-
-            if (!string.IsNullOrEmpty(binLog))
-            {
-                // We remove it from the args list so that it is not passed to the test application
-                args.Remove(binLog);
-
-                return true;
-            }
-
-            return false;
         }
 
         private void CleanUp()
