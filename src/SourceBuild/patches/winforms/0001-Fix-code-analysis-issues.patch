@@ -1,21 +1,21 @@
-From 4c00486cbca37b9640d9243c2e83e598ced2976b Mon Sep 17 00:00:00 2001
+From 7eb859cd771d1efe4e955b7d44a12af3667ee65f Mon Sep 17 00:00:00 2001
 From: Matt Thalman <mthalman@microsoft.com>
 Date: Wed, 8 Jan 2025 07:20:08 -0600
 Subject: [PATCH] Fix code analysis issues
 
-Backport: TODO
+Backport: https://github.com/dotnet/winforms/pull/12735
 ---
- .../Drawing/Printing/PrinterSettings.StringCollection.cs    | 2 +-
- .../src/System/Collections/Generic/CollectionExtensions.cs  | 2 +-
- src/System.Private.Windows.GdiPlus/System/Drawing/IIcon.cs  | 2 +-
- .../Windows/Forms/ActiveX/AxHost.AxPropertyDescriptor.cs    | 2 +-
- .../ComponentModel/COM2Interop/COM2PropertyDescriptor.cs    | 2 +-
- .../COM2Interop/ICom2ExtendedBrowsingHandler.cs             | 4 ++--
- .../src/System/Windows/Forms/Controls/ComboBox/ComboBox.cs  | 2 +-
- .../System/Windows/Forms/Controls/ToolStrips/ToolStrip.cs   | 2 +-
- .../Windows/Forms/Controls/ToolStrips/ToolStripDropDown.cs  | 2 +-
- .../Windows/Forms/Dialogs/TaskDialog/TaskDialogPage.cs      | 6 +++---
- 10 files changed, 13 insertions(+), 13 deletions(-)
+ .../Drawing/Printing/PrinterSettings.StringCollection.cs  | 2 +-
+ .../System/Collections/Generic/CollectionExtensions.cs    | 2 +-
+ .../System/Drawing/IIcon.cs                               | 2 +-
+ .../Windows/Forms/ActiveX/AxHost.AxPropertyDescriptor.cs  | 2 +-
+ .../ComponentModel/COM2Interop/COM2PropertyDescriptor.cs  | 2 +-
+ .../COM2Interop/ICom2ExtendedBrowsingHandler.cs           | 4 ++--
+ .../System/Windows/Forms/Controls/ComboBox/ComboBox.cs    | 2 +-
+ .../System/Windows/Forms/Controls/ToolStrips/ToolStrip.cs | 2 +-
+ .../Forms/Controls/ToolStrips/ToolStripDropDown.cs        | 2 +-
+ .../Windows/Forms/Dialogs/TaskDialog/TaskDialogPage.cs    | 8 ++++----
+ 10 files changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/src/System.Drawing.Common/src/System/Drawing/Printing/PrinterSettings.StringCollection.cs b/src/System.Drawing.Common/src/System/Drawing/Printing/PrinterSettings.StringCollection.cs
 index 15dc585aa..d063cdd21 100644
@@ -138,7 +138,7 @@ index 83777ba57..573607e61 100644
              // We can't iterate through the active dropdown collection
              // here as changing visibility changes the collection.
 diff --git a/src/System.Windows.Forms/src/System/Windows/Forms/Dialogs/TaskDialog/TaskDialogPage.cs b/src/System.Windows.Forms/src/System/Windows/Forms/Dialogs/TaskDialog/TaskDialogPage.cs
-index 40be8a27f..d0ce8db76 100644
+index 40be8a27f..f8b6f7f43 100644
 --- a/src/System.Windows.Forms/src/System/Windows/Forms/Dialogs/TaskDialog/TaskDialogPage.cs
 +++ b/src/System.Windows.Forms/src/System/Windows/Forms/Dialogs/TaskDialog/TaskDialogPage.cs
 @@ -868,10 +868,10 @@ public class TaskDialogPage
@@ -147,11 +147,12 @@ index 40be8a27f..d0ce8db76 100644
          // Sort the buttons.
 -        _boundCustomButtons = buttons.Where(e => !e.IsStandardButton).ToArray();
 -        _boundStandardButtonsByID = new Dictionary<int, TaskDialogButton>(
-+        _boundCustomButtons = [..buttons.Where(e => !e.IsStandardButton)];
-+        _boundStandardButtonsByID = [..
-             buttons.Where(e => e.IsStandardButton)
+-            buttons.Where(e => e.IsStandardButton)
 -            .Select(e => new KeyValuePair<int, TaskDialogButton>(e.ButtonID, e)));
-+            .Select(e => new KeyValuePair<int, TaskDialogButton>(e.ButtonID, e))];
++        _boundCustomButtons = [..buttons.Where(e => !e.IsStandardButton)];
++        _boundStandardButtonsByID = buttons
++            .Where(e => e.IsStandardButton)
++            .ToDictionary(e => e.ButtonID);
  
          // Assign IDs to the buttons based on their index.
          defaultButtonID = 0;
