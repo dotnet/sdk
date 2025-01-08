@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -101,7 +103,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
-
 
         [Fact]
         public void WhenDuplicateSourceIsPassedIgnore()

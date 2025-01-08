@@ -4,6 +4,7 @@
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
     <RootRepo>dotnet</RootRepo>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Label="CalculateTargetOS">
@@ -131,6 +132,7 @@
     <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
     <!-- Don't use Arcade's ExcludeFrom* build infra in the VMR orchestrator. -->
     <DisableArcadeExcludeFromBuildSupport>true</DisableArcadeExcludeFromBuildSupport>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -162,8 +164,11 @@
 
     <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
     <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
-    <AssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'manifests'))</AssetManifestsDir>
+    
+    <ArtifactsAssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'manifests', '$(Configuration)'))</ArtifactsAssetManifestsDir>
+    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'manifests', '$(Configuration)'))</AssetManifestsIntermediateDir>
     <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
+    
     <DotNetSdkExtractDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'extracted-dotnet-sdk'))</DotNetSdkExtractDir>
 
     <PrebuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'prebuilt'))</PrebuiltPackagesPath>
@@ -197,7 +202,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MergedAssetManifestOutputPath>$(AssetManifestsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
+    <!-- Respect the VerticalName property which is set to a unique identifier in CI.
+         Don't use that when building source-only to allow the build to find the previously built manifest file regardless of the vertical name.
+         Default to VerticalManifest.xml. -->
+    <MergedAssetManifestName Condition="'$(VerticalName)' != ''">$(VerticalName).xml</MergedAssetManifestName>
+    <MergedAssetManifestName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(MergedAssetManifestName)' == ''">VerticalManifest.xml</MergedAssetManifestName>
+    <MergedAssetManifestOutputPath>$(ArtifactsAssetManifestsDir)$(MergedAssetManifestName)</MergedAssetManifestOutputPath>
   </PropertyGroup>
 
 </Project>

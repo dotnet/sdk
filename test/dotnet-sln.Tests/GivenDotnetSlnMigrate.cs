@@ -6,7 +6,7 @@ using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using CommandLocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli.Sln.List.Tests
+namespace Microsoft.DotNet.Cli.Sln.Migrate.Tests
 {
     public class GivenDotnetSlnMigrate : SdkTest
     {
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Sln.List.Tests
             var slnFileName = Path.Combine(projectDirectory, "App.sln");
             var slnMigrateCommand = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "migrate");
+                .Execute(solutionCommand, "App.sln", "migrate");
             slnMigrateCommand.Should().Pass();
 
             var slnxFileName = Path.ChangeExtension(slnFileName, ".slnx");

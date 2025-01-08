@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -1660,49 +1662,6 @@ namespace Microsoft.NET.Publish.Tests
 
             publishCommand.Execute("/p:PublishTrimmed=true", $"/p:RuntimeIdentifier={rid}")
                 .Should().Pass().And.NotHaveStdErrContaining("This process might take a while");
-        }
-
-        [Fact()]
-        public void ILLink_and_crossgen_process_razor_assembly()
-        {
-            var targetFramework = "netcoreapp3.0";
-            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
-
-            var testProject = new TestProject
-            {
-                Name = "TestWeb",
-                IsExe = true,
-                ProjectSdk = "Microsoft.NET.Sdk.Web",
-                TargetFrameworks = targetFramework,
-                SourceFiles =
-                {
-                    ["Program.cs"] = @"
-                        class Program
-                        {
-                            static void Main() {}
-                        }",
-                    ["Test.cshtml"] = @"
-                        @page
-                        @{
-                            System.IO.Compression.ZipFile.OpenRead(""test.zip"");
-                        }
-                    ",
-                },
-                AdditionalProperties =
-                {
-                    ["RuntimeIdentifier"] = rid,
-                    ["PublishTrimmed"] = "true",
-                    ["PublishReadyToRun"] = "true",
-                }
-            };
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-            var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute().Should().Pass();
-
-            var publishDir = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid);
-            publishDir.Should().HaveFile("System.IO.Compression.ZipFile.dll");
-            GivenThatWeWantToPublishReadyToRun.DoesImageHaveR2RInfo(publishDir.File("TestWeb.Views.dll").FullName);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]

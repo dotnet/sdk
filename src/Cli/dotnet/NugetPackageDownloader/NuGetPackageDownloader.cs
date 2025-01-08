@@ -348,7 +348,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
             List<PackageSource> defaultSources = new();
-            string currentDirectory = Directory.GetCurrentDirectory();
+            string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
             {
@@ -698,6 +698,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             try
             {
                 SourceRepository repository = GetSourceRepository(source);
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(), !_restoreActionConfig.Interactive);
                 PackageMetadataResource resource = await repository
                     .GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
 
