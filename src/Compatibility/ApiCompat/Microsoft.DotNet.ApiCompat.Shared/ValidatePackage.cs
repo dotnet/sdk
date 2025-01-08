@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.ApiCompat
 {
     internal static class ValidatePackage
     {
-        public static void Run(Func<ISuppressionEngine, ISuppressibleLog> logFactory,
+        public static int Run(Func<ISuppressionEngine, ISuppressibleLog> logFactory,
             bool generateSuppressionFile,
             bool preserveUnnecessarySuppressions,
             bool permitUnnecessarySuppressions,
@@ -96,6 +96,8 @@ namespace Microsoft.DotNet.ApiCompat
             {
                 SuppressionFileHelper.ValidateUnnecessarySuppressions(serviceProvider.SuppressionEngine, serviceProvider.SuppressibleLog);
             }
+
+            return serviceProvider.SuppressibleLog.HasLoggedErrorSuppressions ? 1 : 0;
         }
     }
 }

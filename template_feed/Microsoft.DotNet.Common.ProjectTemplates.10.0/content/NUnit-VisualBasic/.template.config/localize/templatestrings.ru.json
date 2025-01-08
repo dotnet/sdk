@@ -9,7 +9,7 @@
   "symbols/Framework/choices/net10.0/description": "Целевая среда net10.0",
   "symbols/EnablePack/description": "Следует ли включить упаковку (через \"dotnet pack\") для проекта.",
   "symbols/EnablePack/displayName": "Включить пакет",
-  "symbols/skipRestore/description": "Позволяет пропускать автоматическое восстановление проекта при создании.",
+  "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
   "symbols/skipRestore/displayName": "Пропустить восстановление",
   "symbols/langVersion/description": "Задает свойство LangVersion в создаваемом файле проекта.",
   "symbols/langVersion/displayName": "Версия языка",
