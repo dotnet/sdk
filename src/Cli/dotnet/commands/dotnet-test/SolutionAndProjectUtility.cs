@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli
                         return false;
                     }
                     // A single project found, use it
-                    else if (possibleProjectPath.Count() == 1)
+                    else if (possibleProjectPath.Length == 1)
                     {
                         projectOrSolutionFilePath = possibleProjectPath[0];
                         return true;
