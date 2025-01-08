@@ -48,13 +48,13 @@ internal class IncrementalMSBuildWorkspace : Workspace
             projectInfos = [];
         }
 
-        var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => p.FilePath!, elementSelector: static p => p.Id);
+        var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => (p.FilePath!, p.Name), elementSelector: static p => p.Id);
 
-        // Map new project id to the corresponding old one based on file path, if it exists, and null for added projects.
+        // Map new project id to the corresponding old one based on file path and project name (includes TFM), if it exists, and null for added projects.
         // Deleted projects won't be included in this map.
         var projectIdMap = projectInfos.ToDictionary(
             keySelector: static info => info.Id,
-            elementSelector: info => oldProjectIdsByPath.TryGetValue(info.FilePath!, out var oldProjectId) ? oldProjectId : null);
+            elementSelector: info => oldProjectIdsByPath.TryGetValue((info.FilePath!, info.Name), out var oldProjectId) ? oldProjectId : null);
 
         var newSolution = oldSolution;
 

@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
-            var targetFramework = "net9.0";
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var testInstance = CreateAspNetSdkTestAsset(testAsset)
                 .WithProjectChanges((p, doc) =>
                 {

@@ -120,9 +120,13 @@ namespace Microsoft.NET.TestFramework
                 if (p.Root is not null)
                 {
                     var ns = p.Root.Name.Namespace;
-                    var getNode = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).FirstOrDefault();
-                    getNode ??= p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s").FirstOrDefault();
-                    getNode?.SetValue(getNode?.Value.Replace($"$({variableName})", targetValue) ?? string.Empty);
+                    var nodes = p.Root.Elements(ns + "PropertyGroup").Elements(ns + propertyName).Concat(
+                                p.Root.Elements(ns + "PropertyGroup").Elements(ns + $"{propertyName}s"));
+
+                    foreach (var node in nodes)
+                    {
+                        node.SetValue(node.Value.Replace($"$({variableName})", targetValue));
+                    }
                 }
             });
         }
