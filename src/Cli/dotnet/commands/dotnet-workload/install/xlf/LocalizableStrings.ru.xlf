@@ -27,6 +27,11 @@
         <target state="translated">Невозможно использовать параметры {0} и {1} одновременно.  Удалите один из параметров.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <note>{Locked="--version"}</note>
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">Невозможно указать конкретную версию рабочей нагрузки в командной строке с помощью --version или --from-history, если в файле global.json уже указана версия {0}. Чтобы обновить глобально установленную версию рабочей нагрузки, выполните команду вне пути, содержащего этот файл global.json, либо измените версию в файле global.json и выполните команду "dotnet workload update".</target>
@@ -35,7 +40,7 @@
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
         <target state="translated">Невозможно использовать параметр {0}, если версия рабочей нагрузки указана в файле global.json.  Удалите параметр {0} или удалите элемент "workloadVersion" из {1}.</target>
-        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
@@ -393,8 +398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload version.</source>
-        <target state="translated">Обновление до указанной версии рабочей нагрузки.</target>
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="new">A workload version to display or one or more workloads and their versions joined by the '@' character.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
