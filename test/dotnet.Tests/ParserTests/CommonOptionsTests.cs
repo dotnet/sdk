@@ -25,6 +25,33 @@ public class CommonOptionsTests
     }
 
     [Fact]
+    public void Duplicates_CasingDifference()
+    {
+        var command = new CliRootCommand();
+        command.Options.Add(CommonOptions.EnvOption);
+
+        var result = command.Parse(["-e", "A=1", "-e", "a=2"]);
+
+        var expected = new Dictionary<string, string>();
+        
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            expected.Add("A", "2");
+        }
+        else
+        {
+            expected.Add("A", "1");
+            expected.Add("a", "2");
+        }
+
+        result.GetValue(CommonOptions.EnvOption)
+            .Should()
+            .BeEquivalentTo(expected);
+
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
     public void MultiplePerToken()
     {
         var command = new CliRootCommand();
@@ -40,6 +67,21 @@ public class CommonOptionsTests
                 ["B"] = "=Y=",
                 ["C;"] = ";"
             });
+
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void NoValue()
+    {
+        var command = new CliRootCommand();
+        command.Options.Add(CommonOptions.EnvOption);
+
+        var result = command.Parse(["-e", "A"]);
+
+        result.GetValue(CommonOptions.EnvOption)
+            .Should()
+            .BeEquivalentTo(new Dictionary<string, string> { ["A"] = "" });
 
         result.Errors.Should().BeEmpty();
     }
@@ -61,7 +103,6 @@ public class CommonOptionsTests
 
     [Theory]
     [InlineData("")]
-    [InlineData("X")]
     [InlineData("=")]
     [InlineData("= X")]
     [InlineData("  \u2002 = X")]
@@ -74,7 +115,7 @@ public class CommonOptionsTests
 
         result.Errors.Select(e => e.Message).Should().BeEquivalentTo(
         [
-            string.Format(CommonLocalizableStrings.IncorrectlyFormattedEnvironmentVariables, token)
+            string.Format(CommonLocalizableStrings.IncorrectlyFormattedEnvironmentVariables, $"'{token}'")
         ]);
     }
 }

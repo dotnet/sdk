@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
@@ -186,15 +187,23 @@ namespace Microsoft.DotNet.Cli
 
         private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
         {
-            Dictionary<string, string> result = [];
+            var result = new Dictionary<string, string>(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+
             List<CliToken>? invalid = null;
 
             foreach (var token in argumentResult.Tokens)
             {
-                if (token.Value.IndexOf('=') is var index and > 0 &&
-                    token.Value[0..index].Trim() is var name and not "")
+                var separator = token.Value.IndexOf('=');
+                var (name, value) = (separator >= 0)
+                    ? (token.Value[0..separator], token.Value[(separator + 1)..])
+                    : (token.Value, "");
+
+                name = name.Trim();
+
+                if (name != "")
                 {
-                    result[name] = token.Value[(index + 1)..];
+                    result[name] = value;
                 }
                 else
                 {
