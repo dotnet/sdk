@@ -688,6 +688,39 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
+    [DockerAvailableFact]
+    public void EndToEnd_SingleArch_NoRid()
+    {
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+
+        // Run PublishContainer for multi-arch
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/t:PublishContainer",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+        commandResult.Should().Pass();
+
+        // Check that the containers can be run
+        CommandResult processResultX64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-singlearch-norid",
+            $"{imageName}:{imageTag}")
+        .Execute();
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
+    }
+
     [DockerIsAvailableAndSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_LocalRegistry()
     {
