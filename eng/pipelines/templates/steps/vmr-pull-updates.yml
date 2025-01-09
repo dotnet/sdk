@@ -1,0 +1,99 @@
+### These steps synchronize new code from product repositories into the VMR (https://github.com/dotnet/dotnet).
+### They initialize the darc CLI and pull the new updates.
+### Changes are applied locally onto the already cloned VMR (located in $vmrPath).
+
+parameters:
+- name: vmrBranch
+  displayName: dotnet/dotnet branch to use
+  type: string
+
+- name: targetRef
+  displayName: Target revision in dotnet/sdk to synchronize
+  type: string
+  default: $(Build.SourceVersion)
+
+- name: vmrPath
+  displayName: Path where the dotnet/dotnet is checked out to
+  type: string
+  default: $(Agent.BuildDirectory)/vmr
+
+steps:
+- checkout: self
+  displayName: Clone dotnet/sdk
+  path: sdk
+
+# This step is needed so that when we get a detached HEAD / shallow clone,
+# we still pull the commit into the temporary sdk clone to use it during the sync.
+- script: |
+    git branch sdk-head
+    git rev-parse HEAD
+  displayName: Label PR commit
+  workingDirectory: $(Agent.BuildDirectory)/sdk
+
+- script: |
+    git checkout -B ${{ parameters.vmrBranch }}
+    echo "##vso[task.setvariable variable=vmrBranch]${{ parameters.vmrBranch }}"
+  displayName: Prepare branch ${{ parameters.vmrBranch }}
+  workingDirectory: ${{ parameters.vmrPath }}
+
+- script: |
+    git config --global user.name "dotnet-maestro[bot]"
+    git config --global user.email "dotnet-maestro[bot]@users.noreply.github.com"
+  displayName: Set git author to dotnet-maestro[bot]
+  workingDirectory: ${{ parameters.vmrPath }}
+
+- script: |
+    echo '**/*' > .artifactignore
+    echo '!./*.patch' >> .artifactignore
+  displayName: Prepare .artifactignore
+  workingDirectory: $(Agent.TempDirectory)
+
+- script: >
+    ./eng/vmr-sync.sh
+    --vmr ${{ parameters.vmrPath }}
+    --tmp $(Agent.TempDirectory)
+    --azdev-pat '$(dn-bot-all-orgs-code-r)'
+    --branch ${{ parameters.vmrBranch }}
+    --repository "sdk:${{ parameters.targetRef }}"
+    --recursive
+    --remote "sdk:$(Agent.BuildDirectory)/sdk"
+    --component-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md
+    --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
+    --debug
+    ||
+    (echo "##vso[task.logissue type=error]Failed to synchronize the VMR" && exit 1)
+  displayName: Synchronize dotnet/dotnet (Unix)
+  condition: ne(variables['Agent.OS'], 'Windows_NT')
+  workingDirectory: $(Agent.BuildDirectory)/sdk
+
+- script: git config --global diff.astextplain.textconv echo
+  displayName: Disable astextplain in git diff (Windows)
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
+
+- powershell: >
+    ./eng/vmr-sync.ps1 `
+    -vmr ${{ parameters.vmrPath }} `
+    -tmp $(Agent.TempDirectory) `
+    -azdevPat '$(dn-bot-all-orgs-code-r)' `
+    -branch ${{ parameters.vmrBranch }} `
+    -repository "sdk:${{ parameters.targetRef }}" `
+    -recursive `
+    # passing remote fails for some reason, but it is the default anyway
+    # -remote "sdk:$(Agent.BuildDirectory)/sdk"
+    -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
+    -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
+    -debugOutput
+
+    if ($LASTEXITCODE -ne 0) {
+      echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
+      exit 1
+    }
+  displayName: Synchronize dotnet/dotnet (Windows)
+  condition: eq(variables['Agent.OS'], 'Windows_NT')
+  workingDirectory: $(Agent.BuildDirectory)/sdk
+
+- ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+  - publish: $(Agent.TempDirectory)
+    artifact: $(System.JobDisplayName)_FailedPatches
+    displayName: Upload failed patches
+    condition: failed()

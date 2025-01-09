@@ -52,6 +52,11 @@
         <target state="translated">워크로드 팩 {0} 버전 {1} 제거 중...</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">워크로드 버전 {0}을(를) 삭제하는 중입니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">디렉터리</target>
