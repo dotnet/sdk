@@ -161,8 +161,8 @@ export PATH="$PATH:{0}"
         <note />
       </trans-unit>
       <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
-        <source>Incorrectly formatted environment variables: '{0}'</source>
-        <target state="new">Incorrectly formatted environment variables: '{0}'</target>
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="new">Incorrectly formatted environment variables: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">

@@ -175,12 +175,14 @@ namespace Microsoft.DotNet.Cli
             // Flip the argument so that if this option is specified we get selfcontained=false
             .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
 
-        public static readonly CliOption<IReadOnlyDictionary<string, string>> EnvOption = new CliOption<IReadOnlyDictionary<string, string>>("--environment", "-e")
+        public static readonly CliOption<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
         {
             Description = CommonLocalizableStrings.CmdEnvironmentVariableDescription,
             HelpName = CommonLocalizableStrings.CmdEnvironmentVariableExpression,
             CustomParser = ParseEnvironmentVariables,
-        }.AllowSingleArgPerToken();
+            // Can't allow multiple arguments because the separator needs to be parsed as part of the environment variable value.
+            AllowMultipleArgumentsPerToken = false
+        };
 
         private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
         {
@@ -205,7 +207,7 @@ namespace Microsoft.DotNet.Cli
             {
                 argumentResult.AddError(string.Format(
                     CommonLocalizableStrings.IncorrectlyFormattedEnvironmentVariables,
-                    string.Join(";", invalid.Select(x => x.Value))));
+                    string.Join(", ", invalid.Select(x => $"'{x.Value}'"))));
             }
 
             return result;

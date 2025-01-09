@@ -15,11 +15,31 @@ public class CommonOptionsTests
         var command = new CliRootCommand();
         command.Options.Add(CommonOptions.EnvOption);
 
-        var result = command.Parse(["-e", "A=1;A=2", "-e", "A=3"]);
+        var result = command.Parse(["-e", "A=1", "-e", "A=2"]);
 
         result.GetValue(CommonOptions.EnvOption)
             .Should()
-            .BeEquivalentTo(new Dictionary<string, string> { ["A"] = "3" });
+            .BeEquivalentTo(new Dictionary<string, string> { ["A"] = "2" });
+
+        result.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void MultiplePerToken()
+    {
+        var command = new CliRootCommand();
+        command.Options.Add(CommonOptions.EnvOption);
+
+        var result = command.Parse(["-e", "A=1;B=2,C=3 D=4", "-e", "B==Y=", "-e", "C;=;"]);
+
+        result.GetValue(CommonOptions.EnvOption)
+            .Should()
+            .BeEquivalentTo(new Dictionary<string, string>
+            {
+                ["A"] = "1;B=2,C=3 D=4",
+                ["B"] = "=Y=",
+                ["C;"] = ";"
+            });
 
         result.Errors.Should().BeEmpty();
     }
