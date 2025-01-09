@@ -14,12 +14,6 @@ internal static partial class EnvironmentVariables
         public const string DotnetWatchHotReloadNamedPipeName = "DOTNET_WATCH_HOTRELOAD_NAMEDPIPE_NAME";
 
         /// <summary>
-        /// The full path to the process being launched by dotnet run.
-        /// Workaround for https://github.com/dotnet/sdk/issues/40484
-        /// </summary>
-        public const string DotnetWatchHotReloadTargetProcessPath = "DOTNET_WATCH_HOTRELOAD_TARGET_PROCESS_PATH";
-
-        /// <summary>
         /// Enables logging from the client delta applier agent.
         /// </summary>
         public const string HotReloadDeltaClientLogMessages = "HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES";

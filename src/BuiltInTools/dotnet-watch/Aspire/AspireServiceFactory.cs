@@ -30,7 +30,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 
         private readonly ProjectLauncher _projectLauncher;
         private readonly AspireServerService _service;
-        private readonly IReadOnlyList<string> _buildArguments;
+        private readonly ProjectOptions _hostProjectOptions;
 
         /// <summary>
         /// Lock to access:
@@ -43,10 +43,10 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         private int _sessionIdDispenser;
         private volatile bool _isDisposed;
 
-        public SessionManager(ProjectLauncher projectLauncher, IReadOnlyList<string> buildArguments)
+        public SessionManager(ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
         {
             _projectLauncher = projectLauncher;
-            _buildArguments = buildArguments;
+            _hostProjectOptions = hostProjectOptions;
 
             _service = new AspireServerService(
                 this,
@@ -209,38 +209,56 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             {
                 "--project",
                 projectLaunchInfo.ProjectPath,
-                // TODO: https://github.com/dotnet/sdk/issues/43946
-                // Need to suppress launch profile for now, otherwise it would override the port set via env variable.
-                "--no-launch-profile",
             };
 
-            //if (projectLaunchInfo.DisableLaunchProfile)
-            //{
-            //    arguments.Add("--no-launch-profile");
-            //}
-            //else if (!string.IsNullOrEmpty(projectLaunchInfo.LaunchProfile))
-            //{
-            //    arguments.Add("--launch-profile");
-            //    arguments.Add(projectLaunchInfo.LaunchProfile);
-            //}
+            // Implements https://github.com/dotnet/aspire/blob/main/docs/specs/IDE-execution.md#launch-profile-processing-project-launch-configuration
+
+            if (projectLaunchInfo.DisableLaunchProfile)
+            {
+                arguments.Add("--no-launch-profile");
+            }
+            else if (!string.IsNullOrEmpty(projectLaunchInfo.LaunchProfile))
+            {
+                arguments.Add("--launch-profile");
+                arguments.Add(projectLaunchInfo.LaunchProfile);
+            }
+            else if (!_hostProjectOptions.NoLaunchProfile && _hostProjectOptions.LaunchProfileName != null)
+            {
+                arguments.Add("--launch-profile");
+                arguments.Add(_hostProjectOptions.LaunchProfileName);
+            }
 
             if (projectLaunchInfo.Arguments != null)
             {
-                arguments.AddRange(projectLaunchInfo.Arguments);
+                if (projectLaunchInfo.Arguments.Any())
+                {
+                    arguments.AddRange(projectLaunchInfo.Arguments);
+                }
+                else
+                {
+                    // indicate that no arguments should be used even if launch profile specifies some:
+                    arguments.Add("--no-launch-profile-arguments");
+                }
+            }
+
+            foreach (var (name, value) in projectLaunchInfo.Environment ?? [])
+            {
+                arguments.Add("-e");
+                arguments.Add($"{name}={value}");
             }
 
             return new()
             {
                 IsRootProject = false,
                 ProjectPath = projectLaunchInfo.ProjectPath,
-                WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory, // TODO: Should DCP protocol specify?
-                BuildArguments = _buildArguments, // TODO: Should DCP protocol specify?
+                WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory,
+                BuildArguments = _hostProjectOptions.BuildArguments,
                 Command = "run",
                 CommandArguments = arguments,
-                LaunchEnvironmentVariables = projectLaunchInfo.Environment?.Select(kvp => (kvp.Key, kvp.Value)).ToArray() ?? [],
+                LaunchEnvironmentVariables = [],
                 LaunchProfileName = projectLaunchInfo.LaunchProfile,
                 NoLaunchProfile = projectLaunchInfo.DisableLaunchProfile,
-                TargetFramework = null, // TODO: Should DCP protocol specify?
+                TargetFramework = _hostProjectOptions.TargetFramework,
             };
         }
     }
@@ -250,8 +268,8 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
     public static readonly AspireServiceFactory Instance = new();
     public const string AppHostProjectCapability = "Aspire";
 
-    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<string> buildArguments)
+    public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
         => projectNode.GetCapabilities().Contains(AppHostProjectCapability)
-            ? new SessionManager(projectLauncher, buildArguments)
+            ? new SessionManager(projectLauncher, hostProjectOptions)
             : null;
 }
