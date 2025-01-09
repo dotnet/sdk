@@ -15,7 +15,15 @@ static class PathUtilities
         if (OperatingSystem.IsWindows())
             Directory.CreateDirectory(path);
         else
-            Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        {
+            UnixFileMode desiredMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+
+            do 
+            {
+                path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                Directory.CreateDirectory(path, desiredMode);
+            } while (File.GetUnixFileMode(path) != desiredMode);
+        }
 #endif
 
         return path;
