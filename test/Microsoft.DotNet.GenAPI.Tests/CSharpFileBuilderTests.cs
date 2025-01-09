@@ -10,7 +10,6 @@ using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
-using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
