@@ -113,6 +113,16 @@ Przykłady:
         <target state="translated">NAZWA="WARTOŚĆ"</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdInvalidProjectFileExtensionDescription">
+        <source>The provided project file has an invalid extension: {0}.</source>
+        <target state="new">The provided project file has an invalid extension: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdInvalidSolutionFileExtensionDescription">
+        <source>The provided solution file has an invalid extension: {0}.</source>
+        <target state="new">The provided solution file has an invalid extension: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdInvalidTestMessageStateException">
         <source>Invalid test message state '{0}'</source>
         <target state="new">Invalid test message state '{0}'</target>
@@ -153,6 +163,11 @@ Przykłady:
         <target state="new">The provided project file path does not exist: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNonExistentSolutionFilePathDescription">
+        <source>The provided solution file path does not exist: {0}.</source>
+        <target state="new">The provided solution file path does not exist: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdProjectDescription">
         <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
         <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
@@ -171,6 +186,11 @@ Przykłady:
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests.</source>
         <target state="translated">Wyświetl listę odnalezionych testów zamiast uruchamiać testy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionDescription">
+        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestCaseFilterExpression">

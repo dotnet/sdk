@@ -16,69 +16,69 @@ namespace Microsoft.DotNet.Cli
             projectOrSolutionFilePath = string.Empty;
             isSolution = false;
 
-            if (Directory.Exists(directory))
+            if (!Directory.Exists(directory))
             {
-                string[] possibleSolutionPaths = [
-                    ..Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly),
+                return false;
+            }
+
+            string[] possibleSolutionPaths = [
+                ..Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly),
                     ..Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly)];
 
                 // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
-                if (possibleSolutionPaths.Count() > 1)
+                if (possibleSolutionPaths.Length > 1)
                 {
                     VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
                     return false;
                 }
                 // If a single solution is found, use it.
-                else if (possibleSolutionPaths.Count() == 1)
+                else if (possibleSolutionPaths.Length == 1)
                 {
                     // Get project file paths to check if there are any projects in the directory
                     string[] possibleProjectPaths = GetProjectFilePaths(directory);
 
-                    if (possibleProjectPaths.Count() == 0)
-                    {
-                        projectOrSolutionFilePath = possibleSolutionPaths[0];
-                        isSolution = true;
-                        return true;
-                    }
-                    else // If both solution and project files are found, return false
-                    {
-                        VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
-                        return false;
-                    }
-                }
-                // If no solutions are found, look for a project file
-                else
+                if (possibleProjectPaths.Length == 0)
                 {
-                    string[] possibleProjectPath = GetProjectFilePaths(directory);
-
-                    // No projects found throws an error that no sln nor projects were found
-                    if (possibleProjectPath.Count() == 0)
-                    {
-                        VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorMessage);
-                        return false;
-                    }
-                    // A single project found, use it
-                    else if (possibleProjectPath.Count() == 1)
-                    {
-                        projectOrSolutionFilePath = possibleProjectPath[0];
-                        return true;
-                    }
-                    // More than one project found. Not sure which one to choose
-                    else
-                    {
-                        VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, directory));
-                        return false;
-                    }
+                    projectOrSolutionFilePath = possibleSolutionPaths[0];
+                    isSolution = true;
+                    return true;
+                }
+                else // If both solution and project files are found, return false
+                {
+                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
+                    return false;
                 }
             }
+            // If no solutions are found, look for a project file
+            else
+            {
+                string[] possibleProjectPath = GetProjectFilePaths(directory);
 
-            return false;
+                // No projects found throws an error that no sln nor projects were found
+                if (possibleProjectPath.Length == 0)
+                {
+                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorMessage);
+                    return false;
+                }
+                // A single project found, use it
+                else if (possibleProjectPath.Length == 1)
+                {
+                    projectOrSolutionFilePath = possibleProjectPath[0];
+                    return true;
+                }
+                // More than one project found. Not sure which one to choose
+                else
+                {
+                    VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, directory));
+                    return false;
+                }
+            }
         }
 
         private static string[] GetProjectFilePaths(string directory)
         {
-            var projectFiles = Directory.GetFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
-                .Where(f => IsProjectFile(f))
+            var projectFiles = Directory.EnumerateFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
+                .Where(IsProjectFile)
                 .ToArray();
 
             return projectFiles;

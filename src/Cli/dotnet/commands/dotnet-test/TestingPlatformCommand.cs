@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
-using System.Diagnostics;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -13,7 +12,7 @@ namespace Microsoft.DotNet.Cli
     {
         private readonly ConcurrentBag<TestApplication> _testApplications = [];
 
-        private MSBuildHandler _msBuildConnectionHandler;
+        private MSBuildHandler _msBuildHandler;
         private TestModulesFilterHandler _testModulesFilterHandler;
         private TestApplicationActionQueue _actionQueue;
         private List<string> _args;
@@ -78,7 +77,7 @@ namespace Microsoft.DotNet.Cli
                 }
 
                 _args = [.. parseResult.UnmatchedTokens];
-                _msBuildConnectionHandler = new(_args, _actionQueue, degreeOfParallelism);
+                _msBuildHandler = new(_args, _actionQueue, degreeOfParallelism);
                 _testModulesFilterHandler = new(_args, _actionQueue);
 
                 if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
@@ -90,15 +89,13 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    bool allowBinLog = IsBinLogEnabled(_args);
-
-                    if (!await RunMSBuild(parseResult, allowBinLog))
+                    if (!await RunMSBuild(parseResult))
                     {
                         return ExitCodes.GenericFailure;
                     }
 
-                    // If not all test projects have IsTestProject and IsTestingPlatformApplication proprties set to true, we will simply return
-                    if (!_msBuildConnectionHandler.EnqueueTestApplications())
+                    // If not all test projects have IsTestProject and IsTestingPlatformApplication properties set to true, we will simply return
+                    if (!_msBuildHandler.EnqueueTestApplications())
                     {
                         VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
                         return ExitCodes.GenericFailure;
@@ -118,10 +115,8 @@ namespace Microsoft.DotNet.Cli
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
-        private async Task<bool> RunMSBuild(ParseResult parseResult, bool allowBinLog)
+        private async Task<bool> RunMSBuild(ParseResult parseResult)
         {
-            Debugger.Launch();
-
             int msbuildExitCode;
 
             if (parseResult.HasOption(TestingPlatformOptions.ProjectOption))
@@ -141,7 +136,7 @@ namespace Microsoft.DotNet.Cli
                     return false;
                 }
 
-                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(filePath, isSolution: false, allowBinLog);
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(filePath, isSolution: false);
             }
             else if (parseResult.HasOption(TestingPlatformOptions.SolutionOption))
             {
@@ -160,13 +155,13 @@ namespace Microsoft.DotNet.Cli
                     return false;
                 }
 
-                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(filePath, isSolution: true, allowBinLog);
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(filePath, isSolution: true);
             }
             else
             {
                 // If no filter was provided neither the project using --project,
                 // MSBuild will get the test project paths in the current directory
-                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(allowBinLog);
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild();
             }
 
             if (msbuildExitCode != ExitCodes.Success)
@@ -178,24 +173,9 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private static bool IsBinLogEnabled(List<string> args)
-        {
-            var binLog = args.FirstOrDefault(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase));
-
-            if (!string.IsNullOrEmpty(binLog))
-            {
-                // We remove it from the args list so that it is not passed to the test application
-                args.Remove(binLog);
-
-                return true;
-            }
-
-            return false;
-        }
-
         private void CleanUp()
         {
-            _msBuildConnectionHandler.Dispose();
+            _msBuildHandler.Dispose();
             foreach (var testApplication in _testApplications)
             {
                 testApplication.Dispose();
