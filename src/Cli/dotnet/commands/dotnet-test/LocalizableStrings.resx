@@ -332,11 +332,8 @@ Examples:
   <data name="CmdUnsupportedTestRunnerDescription" xml:space="preserve">
     <value>Test runner not supported: {0}.</value>
   </data>
-  <data name="CmdNonExistentProjectFilePathDescription" xml:space="preserve">
-    <value>The provided project file path does not exist: {0}.</value>
-  </data>
-  <data name="CmdNonExistentSolutionFilePathDescription" xml:space="preserve">
-    <value>The provided solution file path does not exist: {0}.</value>
+  <data name="CmdNonExistentFileDescription" xml:space="preserve">
+    <value>The provided file path does not exist: {0}.</value>
   </data>
   <data name="CmdMultipleProjectOrSolutionFilesErrorMessage" xml:space="preserve">
     <value>Specify which project or solution file to use because this folder contains more than one project or solution file.</value>
@@ -352,5 +349,8 @@ Examples:
   </data>
   <data name="CmdInvalidProjectFileExtensionDescription" xml:space="preserve">
     <value>The provided project file has an invalid extension: {0}.</value>
+  </data>
+  <data name="CmdProjectAndSolutionOptionErrorDescription" xml:space="preserve">
+    <value>Specify either the project or solution option.</value>
   </data>
 </root>

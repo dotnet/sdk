@@ -6,6 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -14,12 +15,8 @@ namespace Microsoft.DotNet.Cli
         private readonly List<string> _args;
         private readonly TestApplicationActionQueue _actionQueue;
         private readonly int _degreeOfParallelism;
-
         private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;
-
-        private const string BinLogFileName = "msbuild.binlog";
-        private const string Separator = ";";
         private static readonly Lock buildLock = new();
 
         public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, int degreeOfParallelism)
@@ -29,9 +26,70 @@ namespace Microsoft.DotNet.Cli
             _degreeOfParallelism = degreeOfParallelism;
         }
 
-        public async Task<int> RunWithMSBuild()
+        public async Task<bool> RunMSBuild(BuildPathsOptions buildPathOptions)
         {
-            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(Directory.GetCurrentDirectory(), out string projectOrSolutionFilePath, out bool isSolution);
+            int msbuildExitCode;
+
+            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            {
+                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdProjectAndSolutionOptionErrorDescription);
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
+            {
+                if (!ValidateFilePath(buildPathOptions.ProjectPath, CliConstants.ProjectExtensions, LocalizableStrings.CmdInvalidProjectFileExtensionDescription))
+                {
+                    return false;
+                }
+
+                msbuildExitCode = await RunWithMSBuild(buildPathOptions.ProjectPath, isSolution: false);
+            }
+            else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            {
+                if (!ValidateFilePath(buildPathOptions.SolutionPath, CliConstants.SolutionExtensions, LocalizableStrings.CmdInvalidSolutionFileExtensionDescription))
+                {
+                    return false;
+                }
+
+                msbuildExitCode = await RunWithMSBuild(buildPathOptions.SolutionPath, isSolution: true);
+            }
+            else
+            {
+                // If no filter was provided neither the project using --project,
+                // MSBuild will get the test project paths in the current directory
+                msbuildExitCode = await RunWithMSBuild(Directory.GetCurrentDirectory());
+            }
+
+            if (msbuildExitCode != ExitCodes.Success)
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorMessage, msbuildExitCode));
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool ValidateFilePath(string filePath, string[] validExtensions, string errorMessage)
+        {
+            if (!validExtensions.Contains(Path.GetExtension(filePath)))
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(errorMessage, filePath));
+                return false;
+            }
+
+            if (!File.Exists(filePath))
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.@CmdNonExistentFileDescription, filePath));
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<int> RunWithMSBuild(string directory)
+        {
+            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directory, out string projectOrSolutionFilePath, out bool isSolution);
 
             if (!solutionOrProjectFileFound)
             {
@@ -45,7 +103,7 @@ namespace Microsoft.DotNet.Cli
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
-        public async Task<int> RunWithMSBuild(string filePath, bool isSolution)
+        private async Task<int> RunWithMSBuild(string filePath, bool isSolution)
         {
             (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution);
 
@@ -183,7 +241,7 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                var frameworks = targetFrameworks.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+                var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var framework in frameworks)
                 {
                     project.SetProperty(ProjectProperties.TargetFramework, framework);
@@ -230,7 +288,7 @@ namespace Microsoft.DotNet.Cli
 
         private static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
         {
-            binLogFileName = BinLogFileName;
+            binLogFileName = CliConstants.BinLogFileName;
 
             var binLogArgs = new List<string>();
 
@@ -253,9 +311,9 @@ namespace Microsoft.DotNet.Cli
                 // Get BinLog filename
                 var binLogArg = binLogArgs.LastOrDefault();
 
-                if (binLogArg.Contains(':'))
+                if (binLogArg.Contains(CliConstants.Colon))
                 {
-                    binLogFileName = binLogArg.Split(':')[1];
+                    binLogFileName = binLogArg.Split(CliConstants.Colon)[1];
                 }
                 return true;
             }

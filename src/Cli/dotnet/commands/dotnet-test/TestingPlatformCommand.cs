@@ -27,54 +27,9 @@ namespace Microsoft.DotNet.Cli
             bool hasFailed = false;
             try
             {
-                // User can decide what the degree of parallelism should be
-                // If not specified, we will default to the number of processors
-                if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism))
-                    degreeOfParallelism = Environment.ProcessorCount;
-
-                bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
-
-                if (filterModeEnabled && parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
-                {
-                    VSTestTrace.SafeWriteTrace(() => $"The --arch option is not supported yet.");
-                }
-
-                BuiltInOptions builtInOptions = new(
-                    parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
-                    parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                    parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                    parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
-
-                if (ContainsHelpOption(parseResult.GetArguments()))
-                {
-                    _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                    {
-                        testApp.HelpRequested += OnHelpRequested;
-                        testApp.ErrorReceived += OnErrorReceived;
-                        testApp.TestProcessExited += OnTestProcessExited;
-                        testApp.Run += OnTestApplicationRun;
-                        testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                        return await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
-                    });
-                }
-                else
-                {
-                    _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                    {
-                        testApp.HandshakeReceived += OnHandshakeReceived;
-                        testApp.DiscoveredTestsReceived += OnDiscoveredTestsReceived;
-                        testApp.TestResultsReceived += OnTestResultsReceived;
-                        testApp.FileArtifactsReceived += OnFileArtifactsReceived;
-                        testApp.SessionEventReceived += OnSessionEventReceived;
-                        testApp.ErrorReceived += OnErrorReceived;
-                        testApp.TestProcessExited += OnTestProcessExited;
-                        testApp.Run += OnTestApplicationRun;
-                        testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                        return await testApp.RunAsync(filterModeEnabled, enableHelp: false, builtInOptions);
-                    });
-                }
+                int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
+                BuildConfigurationOptions buildConfigurationOptions = GetBuildConfigurationOptions(parseResult);
+                InitializeActionQueue(parseResult, degreeOfParallelism, buildConfigurationOptions);
 
                 _args = [.. parseResult.UnmatchedTokens];
                 _msBuildHandler = new(_args, _actionQueue, degreeOfParallelism);
@@ -89,12 +44,12 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    if (!await RunMSBuild(parseResult))
+                    var buildPathOptions = GetBuildPathOptions(parseResult);
+                    if (!await _msBuildHandler.RunMSBuild(buildPathOptions))
                     {
                         return ExitCodes.GenericFailure;
                     }
 
-                    // If not all test projects have IsTestProject and IsTestingPlatformApplication properties set to true, we will simply return
                     if (!_msBuildHandler.EnqueueTestApplications())
                     {
                         VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
@@ -104,74 +59,73 @@ namespace Microsoft.DotNet.Cli
 
                 _actionQueue.EnqueueCompleted();
                 hasFailed = _actionQueue.WaitAllActions();
-                // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
             }
             finally
             {
-                // Clean up everything
                 CleanUp();
             }
 
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
-        private async Task<bool> RunMSBuild(ParseResult parseResult)
+        private static int GetDegreeOfParallelism(ParseResult parseResult)
         {
-            int msbuildExitCode;
+            if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism) || degreeOfParallelism <= 0)
+                degreeOfParallelism = Environment.ProcessorCount;
+            return degreeOfParallelism;
+        }
 
-            if (parseResult.HasOption(TestingPlatformOptions.ProjectOption))
+        private static BuildConfigurationOptions GetBuildConfigurationOptions(ParseResult parseResult)
+        {
+            return new BuildConfigurationOptions(
+                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
+                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
+        }
+
+        private static BuildPathsOptions GetBuildPathOptions(ParseResult parseResult)
+        {
+            return new BuildPathsOptions(
+                        parseResult.GetValue(TestingPlatformOptions.ProjectOption),
+                        parseResult.GetValue(TestingPlatformOptions.SolutionOption));
+        }
+
+        private void InitializeActionQueue(ParseResult parseResult, int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions)
+        {
+            if (ContainsHelpOption(parseResult.GetArguments()))
             {
-                string filePath = parseResult.GetValue(TestingPlatformOptions.ProjectOption);
-                string[] extensions = [".proj", ".csproj", ".vbproj", ".fsproj"];
-
-                if (!extensions.Contains(Path.GetExtension(filePath)))
+                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
-                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdInvalidProjectFileExtensionDescription, filePath));
-                    return false;
-                }
+                    testApp.HelpRequested += OnHelpRequested;
+                    testApp.ErrorReceived += OnErrorReceived;
+                    testApp.TestProcessExited += OnTestProcessExited;
+                    testApp.Run += OnTestApplicationRun;
+                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-                if (!File.Exists(filePath))
-                {
-                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentProjectFilePathDescription, filePath));
-                    return false;
-                }
-
-                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(filePath, isSolution: false);
-            }
-            else if (parseResult.HasOption(TestingPlatformOptions.SolutionOption))
-            {
-                string filePath = parseResult.GetValue(TestingPlatformOptions.SolutionOption);
-                string[] extensions = [".sln", ".slnx"];
-
-                if (!extensions.Contains(Path.GetExtension(filePath)))
-                {
-                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdInvalidSolutionFileExtensionDescription, filePath));
-                    return false;
-                }
-
-                if (!File.Exists(filePath))
-                {
-                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentSolutionFilePathDescription, filePath));
-                    return false;
-                }
-
-                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(filePath, isSolution: true);
+                    return await testApp.RunAsync(hasFilterMode: true, enableHelp: true, buildConfigurationOptions);
+                });
             }
             else
             {
-                // If no filter was provided neither the project using --project,
-                // MSBuild will get the test project paths in the current directory
-                msbuildExitCode = await _msBuildHandler.RunWithMSBuild();
-            }
+                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                {
+                    testApp.HandshakeReceived += OnHandshakeReceived;
+                    testApp.DiscoveredTestsReceived += OnDiscoveredTestsReceived;
+                    testApp.TestResultsReceived += OnTestResultsReceived;
+                    testApp.FileArtifactsReceived += OnFileArtifactsReceived;
+                    testApp.SessionEventReceived += OnSessionEventReceived;
+                    testApp.ErrorReceived += OnErrorReceived;
+                    testApp.TestProcessExited += OnTestProcessExited;
+                    testApp.Run += OnTestApplicationRun;
+                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
-            if (msbuildExitCode != ExitCodes.Success)
-            {
-                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorMessage, msbuildExitCode));
-                return false;
+                    return await testApp.RunAsync(hasFilterMode: false, enableHelp: false, buildConfigurationOptions);
+                });
             }
-
-            return true;
         }
+
+        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
 
         private void CleanUp()
         {
@@ -184,14 +138,9 @@ namespace Microsoft.DotNet.Cli
 
         private void OnHandshakeReceived(object sender, HandshakeArgs args)
         {
-            if (!VSTestTrace.TraceEnabled)
-            {
-                return;
-            }
+            if (!VSTestTrace.TraceEnabled) return;
 
-            var handshake = args.Handshake;
-
-            foreach (var property in handshake.Properties)
+            foreach (var property in args.Handshake.Properties)
             {
                 VSTestTrace.SafeWriteTrace(() => $"{property.Key}: {property.Value}");
             }
@@ -199,15 +148,10 @@ namespace Microsoft.DotNet.Cli
 
         private void OnDiscoveredTestsReceived(object sender, DiscoveredTestEventArgs args)
         {
-            if (!VSTestTrace.TraceEnabled)
-            {
-                return;
-            }
-
-            var discoveredTestMessages = args.DiscoveredTests;
+            if (!VSTestTrace.TraceEnabled) return;
 
             VSTestTrace.SafeWriteTrace(() => $"DiscoveredTests Execution Id: {args.ExecutionId}");
-            foreach (DiscoveredTest discoveredTestMessage in discoveredTestMessages)
+            foreach (var discoveredTestMessage in args.DiscoveredTests)
             {
                 VSTestTrace.SafeWriteTrace(() => $"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
             }
@@ -215,10 +159,7 @@ namespace Microsoft.DotNet.Cli
 
         private void OnTestResultsReceived(object sender, TestResultEventArgs args)
         {
-            if (!VSTestTrace.TraceEnabled)
-            {
-                return;
-            }
+            if (!VSTestTrace.TraceEnabled) return;
 
             VSTestTrace.SafeWriteTrace(() => $"TestResults Execution Id: {args.ExecutionId}");
 
@@ -239,10 +180,7 @@ namespace Microsoft.DotNet.Cli
 
         private void OnFileArtifactsReceived(object sender, FileArtifactEventArgs args)
         {
-            if (!VSTestTrace.TraceEnabled)
-            {
-                return;
-            }
+            if (!VSTestTrace.TraceEnabled) return;
 
             VSTestTrace.SafeWriteTrace(() => $"FileArtifactMessages Execution Id: {args.ExecutionId}");
 
@@ -256,10 +194,7 @@ namespace Microsoft.DotNet.Cli
 
         private void OnSessionEventReceived(object sender, SessionEventArgs args)
         {
-            if (!VSTestTrace.TraceEnabled)
-            {
-                return;
-            }
+            if (!VSTestTrace.TraceEnabled) return;
 
             var sessionEvent = args.SessionEvent;
             VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
@@ -267,20 +202,14 @@ namespace Microsoft.DotNet.Cli
 
         private void OnErrorReceived(object sender, ErrorEventArgs args)
         {
-            if (!VSTestTrace.TraceEnabled)
-            {
-                return;
-            }
+            if (!VSTestTrace.TraceEnabled) return;
 
             VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
         }
 
         private void OnTestProcessExited(object sender, TestProcessExitEventArgs args)
         {
-            if (!VSTestTrace.TraceEnabled)
-            {
-                return;
-            }
+            if (!VSTestTrace.TraceEnabled) return;
 
             if (args.ExitCode != ExitCodes.Success)
             {
@@ -307,7 +236,5 @@ namespace Microsoft.DotNet.Cli
         private void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
         {
         }
-
-        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
     }
 }

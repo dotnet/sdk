@@ -158,14 +158,14 @@ Exemplos:
         <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNonExistentProjectFilePathDescription">
-        <source>The provided project file path does not exist: {0}.</source>
-        <target state="new">The provided project file path does not exist: {0}.</target>
+      <trans-unit id="CmdNonExistentFileDescription">
+        <source>The provided file path does not exist: {0}.</source>
+        <target state="new">The provided file path does not exist: {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNonExistentSolutionFilePathDescription">
-        <source>The provided solution file path does not exist: {0}.</source>
-        <target state="new">The provided solution file path does not exist: {0}.</target>
+      <trans-unit id="CmdProjectAndSolutionOptionErrorDescription">
+        <source>Specify either the project or solution option.</source>
+        <target state="new">Specify either the project or solution option.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
