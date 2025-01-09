@@ -160,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">將您的應用程式發佈為架構相依的應用程式。必須在目標機器上安裝相容的 .NET 執行階段，才能執行您的應用程式。</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: '{0}'</source>
+        <target state="new">Incorrectly formatted environment variables: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">.NET CLI 選項:</target>

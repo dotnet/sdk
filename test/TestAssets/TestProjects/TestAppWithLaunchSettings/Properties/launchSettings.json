@@ -14,7 +14,8 @@
       "dotnetRunMessages": "true",
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
-        "DOTNET_LAUNCH_PROFILE": "XYZ"
+        "DOTNET_LAUNCH_PROFILE": "XYZ",
+        "ASPNETCORE_URLS": "XYZ"
       }
     }
   }

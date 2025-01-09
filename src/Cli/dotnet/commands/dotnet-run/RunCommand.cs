@@ -29,9 +29,9 @@ namespace Microsoft.DotNet.Tools.Run
         public string[] RestoreArgs { get; private set; }
 
         /// <summary>
-        /// Environment variables specified on command line via -e option, in the listed order.
+        /// Environment variables specified on command line via -e option.
         /// </summary>
-        public IReadOnlyList<(string name, string value)> EnvironmentVariables { get; private set; }
+        public IReadOnlyDictionary<string, string> EnvironmentVariables { get; private set; }
 
         private bool ShouldBuild => !NoBuild;
 
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Tools.Run
             VerbosityOptions? verbosity,
             string[] restoreArgs,
             string[] args,
-            IReadOnlyList<(string name, string value)> environmentVariables)
+            IReadOnlyDictionary<string, string> environmentVariables)
         {
             NoBuild = noBuild;
             ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory);

@@ -714,6 +714,9 @@ Examples:
   <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
     <value>NAME="VALUE"</value>
   </data>
+  <data name="IncorrectlyFormattedEnvironmentVariables" xml:space="preserve">
+    <value>Incorrectly formatted environment variables: '{0}'</value>
+  </data>
   <data name="SelfContainedOptionDescription" xml:space="preserve">
     <value>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
 The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</value>

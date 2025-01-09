@@ -160,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Publique la aplicación como una aplicación dependiente del marco de trabajo. para ejecutar la aplicación debe instalarse un entorno de ejecución de .NET compatible en el equipo de destino.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: '{0}'</source>
+        <target state="new">Incorrectly formatted environment variables: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">Opciones de la CLI de .NET:</target>

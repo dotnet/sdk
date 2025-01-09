@@ -160,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Опубликуйте приложение как зависимое от платформы. Для запуска приложения на целевом компьютере должна быть установлена совместимая среда выполнения .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: '{0}'</source>
+        <target state="new">Incorrectly formatted environment variables: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">Параметры CLI .NET:</target>

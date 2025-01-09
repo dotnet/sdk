@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
@@ -174,11 +175,41 @@ namespace Microsoft.DotNet.Cli
             // Flip the argument so that if this option is specified we get selfcontained=false
             .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
 
-        public static readonly CliOption<IEnumerable<string>> EnvOption = new CliOption<IEnumerable<string>>("--environment", "-e")
+        public static readonly CliOption<IReadOnlyDictionary<string, string>> EnvOption = new CliOption<IReadOnlyDictionary<string, string>>("--environment", "-e")
         {
             Description = CommonLocalizableStrings.CmdEnvironmentVariableDescription,
-            HelpName = CommonLocalizableStrings.CmdEnvironmentVariableExpression
+            HelpName = CommonLocalizableStrings.CmdEnvironmentVariableExpression,
+            CustomParser = ParseEnvironmentVariables,
         }.AllowSingleArgPerToken();
+
+        private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
+        {
+            Dictionary<string, string> result = [];
+            List<CliToken>? invalid = null;
+
+            foreach (var token in argumentResult.Tokens)
+            {
+                if (token.Value.IndexOf('=') is var index and > 0 &&
+                    token.Value[0..index].Trim() is var name and not "")
+                {
+                    result[name] = token.Value[(index + 1)..];
+                }
+                else
+                {
+                    invalid ??= [];
+                    invalid.Add(token);
+                }
+            }
+
+            if (invalid != null)
+            {
+                argumentResult.AddError(string.Format(
+                    CommonLocalizableStrings.IncorrectlyFormattedEnvironmentVariables,
+                    string.Join(";", invalid.Select(x => x.Value))));
+            }
+
+            return result;
+        }
 
         public static readonly CliOption<string> TestPlatformOption = new("--Platform");
 
@@ -275,31 +306,6 @@ namespace Microsoft.DotNet.Cli
         {
             argument.CompletionSources.Add(completionSource);
             return argument;
-        }
-
-        internal static IEnumerable<(string name, string value)> GetEnvironmentVariables(ParseResult parseResult)
-        {
-            CliOption<IEnumerable<string>> option = EnvOption;
-
-            if (parseResult.GetResult(option) is null)
-            {
-                yield break;
-            }
-
-            foreach (string env in parseResult.GetValue(option))
-            {
-                string name = env;
-                string value = string.Empty;
-
-                int equalsIndex = env.IndexOf('=');
-                if (equalsIndex > 0)
-                {
-                    name = env.Substring(0, equalsIndex);
-                    value = env.Substring(equalsIndex + 1);
-                }
-
-                yield return (name, value);
-            }
         }
     }
 

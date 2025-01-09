@@ -160,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Publikujte svoji aplikaci jako aplikaci závislou na architektuře. Aby bylo možné vaši aplikaci spustit, musí být na cílovém počítači nainstalovaný kompatibilní modul runtime .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: '{0}'</source>
+        <target state="new">Incorrectly formatted environment variables: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">Možnosti rozhraní příkazového řádku .NET:</target>

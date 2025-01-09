@@ -160,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Veröffentlichen Sie Ihre Anwendung als eine von einem Framework abhängige Anwendung. Eine kompatible .NET-Runtime muss auf dem Zielcomputer installiert sein, um Ihre Anwendung ausführen zu können.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: '{0}'</source>
+        <target state="new">Incorrectly formatted environment variables: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">.NET-Cli-Optionen:</target>

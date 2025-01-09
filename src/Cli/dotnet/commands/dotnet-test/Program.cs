@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
@@ -229,9 +230,12 @@ namespace Microsoft.DotNet.Tools.Test
                 msbuildPath);
 
             // Apply environment variables provided by the user via --environment (-e) option, if present
-            foreach (var (name, value) in CommonOptions.GetEnvironmentVariables(result))
+            if (result.GetValue(CommonOptions.EnvOption) is { } environmentVariables)
             {
-                testCommand.EnvironmentVariable(name, value);
+                foreach (var (name, value) in environmentVariables)
+                {
+                    testCommand.EnvironmentVariable(name, value);
+                }
             }
 
             // Set DOTNET_PATH if it isn't already set in the environment as it is required

@@ -160,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">将应用程序发布为依赖框架的应用程序。目标计算机上必须安装兼容的 .NET 运行时才能运行该应用程序。</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: '{0}'</source>
+        <target state="new">Incorrectly formatted environment variables: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">.NET Cli 选项:</target>

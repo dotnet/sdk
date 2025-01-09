@@ -160,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Publique o seu aplicativo como um aplicativo dependente de estrutura. Um runtime do .NET compatível precisa ser instalado no computador de destino para executar o aplicativo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: '{0}'</source>
+        <target state="new">Incorrectly formatted environment variables: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">Opções da CLI do .NET:</target>
