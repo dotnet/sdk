@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
         <source>Building image index '{0}' on top of manifests {1}.</source>
-        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <target state="translated">Criando índice de '{0}' na parte superior dos manifestos {1}.</target>
         <note>
       {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </note>
@@ -176,7 +176,7 @@
       </trans-unit>
       <trans-unit id="ImagesEmpty">
         <source>Cannot create manifest list (image index) because no images were provided.</source>
-        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <target state="translated">Não é possível criar a lista de manifestos (índice de imagem) porque nenhuma imagem foi fornecida.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
@@ -186,7 +186,7 @@
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
         <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <target state="translated">Não é possível criar a lista de manifestos (índice de imagem) porque as imagens fornecidas são inválidas. Os itens devem ter metadados 'Config', 'Manifest', 'ManifestMediaType' e 'ManifestDigest'.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -236,7 +236,7 @@
       </trans-unit>
       <trans-unit id="InvalidTargetRuntimeIdentifiers">
         <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
-        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <target state="translated">Cadeia de caracteres inválida[] TargetRuntimeIdentifiers. Todos devem ser 'linux-musl' ou nenhum.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidTokenResponse">
@@ -276,7 +276,7 @@
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
         <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
-        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <target state="translated">'mediaType' dos manifestos deve ser o mesmo na lista de manifestos (índice de imagem).</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -416,7 +416,7 @@
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
         <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <target state="translated">Não é possível criar a lista de manifestos (índice de imagem) para o 'mediaType' = '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
