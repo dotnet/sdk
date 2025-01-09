@@ -257,6 +257,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 Wartość domyślna to „false”. Jednak w przypadku określania wartości docelowej platformy .NET 7 lub niższej wartość domyślna to „true”, jeśli określono identyfikator środowiska uruchomieniowego.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">Rozwiązanie</target>

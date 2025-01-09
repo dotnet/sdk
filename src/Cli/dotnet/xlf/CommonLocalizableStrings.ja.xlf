@@ -257,6 +257,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 既定値は 'false' です。しかし、.NET 7 以前が対象の場合、ランタイム識別子が指定されていれば、既定値は 'true' です。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">ソリューション</target>
