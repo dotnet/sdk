@@ -856,11 +856,10 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         [Fact]
         public void ItIncludesCommandArgumentsSpecifiedInLaunchSettings()
         {
-            var expectedValue = "TestAppCommandLineArguments";
-            var secondExpectedValue = "SecondTestAppCommandLineArguments";
-            var testAppName = "TestAppWithLaunchSettings";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
                 .WithSource();
+
+            // launchSettings.json specifies commandLineArgs="TestAppCommandLineArguments SecondTestAppCommandLineArguments"
 
             new DotnetCommand(Log, "run")
                .WithWorkingDirectory(testInstance.Path)
@@ -868,9 +867,28 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Should()
                .Pass()
                .And
-               .HaveStdOutContaining(expectedValue)
+               .HaveStdOutContaining("TestAppCommandLineArguments")
                .And
-               .HaveStdOutContaining(secondExpectedValue);
+               .HaveStdOutContaining("SecondTestAppCommandLineArguments");
+        }
+
+        [Fact]
+        public void ItIgnoresCommandArgumentsSpecifiedInLaunchSettings()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            // launchSettings.json specifies commandLineArgs="TestAppCommandLineArguments SecondTestAppCommandLineArguments"
+
+            new DotnetCommand(Log, "run", "--no-launch-profile-arguments")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .NotHaveStdOutContaining("TestAppCommandLineArguments")
+               .And
+               .NotHaveStdOutContaining("SecondTestAppCommandLineArguments");
         }
 
         [Fact]
