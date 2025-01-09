@@ -15,13 +15,15 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// - adds partial keyword
     /// - remove Object from a list of base types.
     /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the <see cref="TypeDeclarationCSharpSyntaxRewriter"/> class, and optionally allows deciding whether to insert the partial modifier for types or not.
-    /// </remarks>
-    /// <param name="addPartialModifier">Determines whether to insert the partial modifier for types or not.</param>
-    public class TypeDeclarationCSharpSyntaxRewriter(bool addPartialModifier) : CSharpSyntaxRewriter
+    public class TypeDeclarationCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
-        private readonly bool _addPartialModifier = addPartialModifier;
+        private readonly bool _addPartialModifier;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeDeclarationCSharpSyntaxRewriter"/> class, and allows deciding whether to insert the partial modifier for types or not.
+        /// </summary>
+        /// <param name="addPartialModifier">Determines whether to insert the partial modifier for types or not.</param>
+        public TypeDeclarationCSharpSyntaxRewriter(bool addPartialModifier) => _addPartialModifier = addPartialModifier;
 
         /// <inheritdoc />
         public override SyntaxNode? VisitInterfaceDeclaration(InterfaceDeclarationSyntax node)
