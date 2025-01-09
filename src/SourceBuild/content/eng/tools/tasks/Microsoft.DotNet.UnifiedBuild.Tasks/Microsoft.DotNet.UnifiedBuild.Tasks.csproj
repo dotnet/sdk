@@ -10,7 +10,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ReferencePath Include="@(SdkAssembly)" />
+    <!-- IncludeAssets=compile to treat these packages as targeting-packs only. The assemblies are available in the SDK. -->
+    <PackageReference Include="Microsoft.Build.Tasks.Core" IncludeAssets="compile" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" IncludeAssets="compile" />
+    <PackageReference Include="NuGet.Protocol" IncludeAssets="compile" />
+    <PackageReference Include="NuGet.ProjectModel" IncludeAssets="compile" />
+    <PackageReference Include="Newtonsoft.Json" IncludeAssets="compile" />
   </ItemGroup>
 
 </Project>

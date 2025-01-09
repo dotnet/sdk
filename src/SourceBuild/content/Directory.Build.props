@@ -133,6 +133,8 @@
     <!-- Don't use Arcade's ExcludeFrom* build infra in the VMR orchestrator. -->
     <DisableArcadeExcludeFromBuildSupport>true</DisableArcadeExcludeFromBuildSupport>
     <LangVersion>latest</LangVersion>
+    <!-- Explicitly set NuGetAuditModel level as it's currently disabled in the product. -->
+    <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
 
   <PropertyGroup>

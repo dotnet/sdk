@@ -5,38 +5,12 @@
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
     <VSTestLogger>console%3bverbosity=normal;trx%3bverbosity=diagnostic%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
     <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotnetTool)</VSTestCLIRunSettings>
-    <!--
-      Required while we're using direct SDK assembly references in
-      $(RepositoryEngineeringDir)tools/Directory.Build.props for all tools projects
-      including Microsoft.DotNet.UnifiedBuild.Tasks.
-    -->
-    <NoWarn>$(NoWarn);MSB3277</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryEngineeringDir)tools/tasks/Microsoft.DotNet.UnifiedBuild.Tasks/Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
-  </ItemGroup>
 
-  <!--
-    Copied from $(RepositoryEngineeringDir)tools/Directory.Build.props - keep in sync.
-
-    Use some assemblies from the SDK, instead of package references. This ensures they match what's
-    found when the task is loaded by the SDK's MSBuild.
-    Reference NuGet assemblies, except a command line assembly that causes warnings such as:
-    MSB3277: Found conflicts between different versions of "System.Collections" that could not be resolved.
-  -->
-  <ItemGroup>
-    <SdkAssembly Include="$([MSBuild]::NormalizePath('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)', 'Newtonsoft.Json.dll'));
-                          $([MSBuild]::NormalizeDirectory('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)'))NuGet.*.dll"
-                 Exclude="$([MSBuild]::NormalizePath('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)', 'NuGet.CommandLine.XPlat.dll'))" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ReferencePath Include="@(SdkAssembly)" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)tools/tasks/Microsoft.DotNet.UnifiedBuild.Tasks/Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
