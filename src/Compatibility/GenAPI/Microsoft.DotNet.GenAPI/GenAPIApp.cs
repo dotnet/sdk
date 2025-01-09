@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.GenAPI
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
-        public static void Run(ILog logger,
+        public static void Run(ILog log,
             string[] assemblies,
             string[]? assemblyReferences,
             string? outputPath,
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.GenAPI
             bool resolveAssemblyReferences = assemblyReferences?.Length > 0;
 
             // Create, configure and execute the assembly loader.
-            AssemblySymbolLoader loader = new(logger, resolveAssemblyReferences, respectInternals);
+            AssemblySymbolLoader loader = new(log, resolveAssemblyReferences, respectInternals);
             if (assemblyReferences is not null)
             {
                 loader.AddReferenceSearchPaths(assemblyReferences);
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.GenAPI
                 using TextWriter textWriter = GetTextWriter(outputPath, assemblySymbol.Name);
                 textWriter.Write(headerFileText);
 
-                using CSharpFileBuilder fileBuilder = new(logger,
+                using CSharpFileBuilder fileBuilder = new(log,
                     symbolFilter,
                     attributeDataSymbolFilter,
                     textWriter,

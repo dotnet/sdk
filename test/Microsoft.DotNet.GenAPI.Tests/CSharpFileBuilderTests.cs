@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
-using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.ApiCompatibility.Tests;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Microsoft.DotNet.GenAPI.Filtering;
 
@@ -54,10 +54,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
             }
             attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
-            ILog logger = new ConsoleLog(MessageImportance.Low);
+            SuppressibleTestLog log = new();
 
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
-                logger,
+                log,
                 symbolFilter,
                 attributeDataSymbolFilter,
                 stringWriter,
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 addPartialModifier: true);
 
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            AssemblySymbolLoader assemblySymbolLoader = new(logger, resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
+            AssemblySymbolLoader assemblySymbolLoader = new(log, resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
             assemblySymbolLoader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
             assemblySymbolLoader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
             IAssemblySymbol assemblySymbol = assemblySymbolLoader.LoadAssembly(assemblyName, assemblyStream);

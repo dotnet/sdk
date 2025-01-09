@@ -7,14 +7,14 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiCompatibility.Tests;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
     public class AssemblyIdentityMustMatchTests
     {
-        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AssemblyIdentityMustMatch(new SuppressibleTestLog(), settings, context));
+        private static readonly SuppressibleTestLog s_log = new();
+        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AssemblyIdentityMustMatch(s_log, settings, context));
 
         private static readonly byte[] _publicKey = new byte[]
         {
@@ -197,10 +197,8 @@ using System.Reflection;
             string leftAssembly = SymbolFactory.EmitAssemblyFromSyntax(syntax, publicKey: _publicKey);
             string rightAssembly = SymbolFactory.EmitAssemblyFromSyntax(syntax);
 
-            ILog logger = new ConsoleLog(MessageImportance.High);
-
-            IAssemblySymbol leftSymbol = new AssemblySymbolLoader(logger).LoadAssembly(leftAssembly);
-            IAssemblySymbol rightSymbol = new AssemblySymbolLoader(logger).LoadAssembly(rightAssembly);
+            IAssemblySymbol leftSymbol = new AssemblySymbolLoader(s_log).LoadAssembly(leftAssembly);
+            IAssemblySymbol rightSymbol = new AssemblySymbolLoader(s_log).LoadAssembly(rightAssembly);
 
             Assert.True(leftSymbol.Identity.IsRetargetable);
             Assert.True(rightSymbol.Identity.IsRetargetable);

@@ -6,14 +6,14 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.ApiCompatibility.Tests;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
 {
     public class AssemblySymbolLoaderTests : SdkTest
     {
-        private readonly ILog _logger = new ConsoleLog(MessageImportance.High);
+        private readonly SuppressibleTestLog _logger = new();
 
         public AssemblySymbolLoaderTests(ITestOutputHelper log) : base(log) { }
 
