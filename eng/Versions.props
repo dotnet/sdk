@@ -162,7 +162,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/testfx -->
-    <MicrosoftTestingPlatformVersion>1.5.0-preview.24604.7</MicrosoftTestingPlatformVersion>
+    <MicrosoftTestingPlatformDotNetTestClientVersion>1.6.0-preview.25059.11</MicrosoftTestingPlatformDotNetTestClientVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
