@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.GenAPI
             bool resolveAssemblyReferences = assemblyReferences?.Length > 0;
 
             // Create, configure and execute the assembly loader.
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences, respectInternals);
+            AssemblySymbolLoader loader = new(logger, resolveAssemblyReferences, respectInternals);
             if (assemblyReferences is not null)
             {
                 loader.AddReferenceSearchPaths(assemblyReferences);
@@ -87,21 +87,8 @@ namespace Microsoft.DotNet.GenAPI
                 fileBuilder.WriteAssembly(assemblySymbol);
             }
 
-            if (loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
-            {
-                foreach (Diagnostic warning in roslynDiagnostics)
-                {
-                    logger.LogWarning(warning.Id, warning.ToString());
-                }
-            }
-
-            if (loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
-            {
-                foreach (AssemblyLoadWarning warning in loadWarnings)
-                {
-                    logger.LogWarning(warning.DiagnosticId, warning.Message);
-                }
-            }
+            loader.LogAllDiagnostics();
+            loader.LogAllWarnings();
         }
 
         // Creates a TextWriter capable of writing into Console or a cs file.

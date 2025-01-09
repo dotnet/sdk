@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiCompatibility.Tests;
 using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
@@ -196,8 +197,10 @@ using System.Reflection;
             string leftAssembly = SymbolFactory.EmitAssemblyFromSyntax(syntax, publicKey: _publicKey);
             string rightAssembly = SymbolFactory.EmitAssemblyFromSyntax(syntax);
 
-            IAssemblySymbol leftSymbol = new AssemblySymbolLoader().LoadAssembly(leftAssembly);
-            IAssemblySymbol rightSymbol = new AssemblySymbolLoader().LoadAssembly(rightAssembly);
+            ILog logger = new ConsoleLog(MessageImportance.High);
+
+            IAssemblySymbol leftSymbol = new AssemblySymbolLoader(logger).LoadAssembly(leftAssembly);
+            IAssemblySymbol rightSymbol = new AssemblySymbolLoader(logger).LoadAssembly(rightAssembly);
 
             Assert.True(leftSymbol.Identity.IsRetargetable);
             Assert.True(rightSymbol.Identity.IsRetargetable);
@@ -210,4 +213,3 @@ using System.Reflection;
         }
     }
 }
-
