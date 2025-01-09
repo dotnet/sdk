@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watch;
 
 internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 {
-    private sealed class SessionManager : IAspireServerEvents, IRuntimeProcessLauncher
+    internal sealed class SessionManager : IAspireServerEvents, IRuntimeProcessLauncher
     {
         private readonly struct Session(string dcpId, string sessionId, RunningProject runningProject, Task outputReader)
         {
@@ -205,6 +205,26 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 
         private ProjectOptions GetProjectOptions(ProjectLaunchRequest projectLaunchInfo)
         {
+            var hostLaunchProfile = _hostProjectOptions.NoLaunchProfile ? null : _hostProjectOptions.LaunchProfileName;
+
+            return new()
+            {
+                IsRootProject = false,
+                ProjectPath = projectLaunchInfo.ProjectPath,
+                WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory,
+                BuildArguments = _hostProjectOptions.BuildArguments,
+                Command = "run",
+                CommandArguments = GetRunCommandArguments(projectLaunchInfo, hostLaunchProfile),
+                LaunchEnvironmentVariables = [],
+                LaunchProfileName = projectLaunchInfo.LaunchProfile,
+                NoLaunchProfile = projectLaunchInfo.DisableLaunchProfile,
+                TargetFramework = _hostProjectOptions.TargetFramework,
+            };
+        }
+
+        // internal for testing
+        internal static IReadOnlyList<string> GetRunCommandArguments(ProjectLaunchRequest projectLaunchInfo, string? hostLaunchProfile)
+        {
             var arguments = new List<string>
             {
                 "--project",
@@ -222,10 +242,10 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 arguments.Add("--launch-profile");
                 arguments.Add(projectLaunchInfo.LaunchProfile);
             }
-            else if (!_hostProjectOptions.NoLaunchProfile && _hostProjectOptions.LaunchProfileName != null)
+            else if (hostLaunchProfile != null)
             {
                 arguments.Add("--launch-profile");
-                arguments.Add(_hostProjectOptions.LaunchProfileName);
+                arguments.Add(hostLaunchProfile);
             }
 
             if (projectLaunchInfo.Arguments != null)
@@ -247,19 +267,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 arguments.Add($"{name}={value}");
             }
 
-            return new()
-            {
-                IsRootProject = false,
-                ProjectPath = projectLaunchInfo.ProjectPath,
-                WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory,
-                BuildArguments = _hostProjectOptions.BuildArguments,
-                Command = "run",
-                CommandArguments = arguments,
-                LaunchEnvironmentVariables = [],
-                LaunchProfileName = projectLaunchInfo.LaunchProfile,
-                NoLaunchProfile = projectLaunchInfo.DisableLaunchProfile,
-                TargetFramework = _hostProjectOptions.TargetFramework,
-            };
+            return arguments;
         }
     }
 
