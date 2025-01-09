@@ -4,7 +4,6 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;

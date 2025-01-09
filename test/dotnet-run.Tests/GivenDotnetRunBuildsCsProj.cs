@@ -931,7 +931,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
                 .WithSource();
 
-            new DotnetCommand(Log, "run", "-e", "DOTNET_LAUNCH_PROFILE=1", "-e", "ASPNETCORE_URLS=2")
+            // 
+            var dotnetLaunchProfile = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? "DOTNET_LAUNCH_profile"
+                : "DOTNET_LAUNCH_PROFILE";
+
+            new DotnetCommand(Log, "run", "-e", $"{dotnetLaunchProfile}=1", "-e", "ASPNETCORE_URLS=2")
                .WithWorkingDirectory(testInstance.Path)
                .Execute()
                .Should()
