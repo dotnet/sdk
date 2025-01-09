@@ -7,6 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions
 {
@@ -15,7 +16,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public class AssemblySymbolLoader : IAssemblySymbolLoader
     {
-        // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and 
+        private readonly ILog _logger;
+        // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and
         // value are the containing folder.
         private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _referencePathDirectories = new(StringComparer.OrdinalIgnoreCase);
@@ -37,10 +39,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <summary>
         /// Creates a new instance of the <see cref="AssemblySymbolLoader"/> class.
         /// </summary>
+        /// <param name="logger">A logger instance for logging message.</param>
         /// <param name="resolveAssemblyReferences">True to attempt to load references for loaded assemblies from the locations specified with <see cref="AddReferenceSearchPaths(string[])"/>. Default is false.</param>
         /// <param name="includeInternalSymbols">True to include all internal metadata for assemblies loaded. Default is false which only includes public and some internal metadata. <seealso cref="MetadataImportOptions"/></param>
-        public AssemblySymbolLoader(bool resolveAssemblyReferences = false, bool includeInternalSymbols = false)
+        public AssemblySymbolLoader(ILog logger, bool resolveAssemblyReferences = false, bool includeInternalSymbols = false)
         {
+            _logger = logger;
             _loadedAssemblies = [];
             CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable,
                 metadataImportOptions: includeInternalSymbols ? MetadataImportOptions.Internal : MetadataImportOptions.Public);
@@ -383,6 +387,40 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                             name,
                             string.Format(Resources.CouldNotResolveReference, name)));
                     }
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public void LogAllDiagnostics(string? headerMessage = null)
+        {
+            if (HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
+            {
+                if (!string.IsNullOrEmpty(headerMessage))
+                {
+                    _logger.LogWarning(headerMessage!);
+                }
+
+                foreach (Diagnostic warning in roslynDiagnostics)
+                {
+                    _logger.LogWarning(warning.Id, warning.ToString());
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public void LogAllWarnings(string? headerMessage = null)
+        {
+            if (HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
+            {
+                if (!string.IsNullOrEmpty(headerMessage))
+                {
+                    _logger.LogWarning(headerMessage!);
+                }
+
+                foreach (AssemblyLoadWarning warning in loadWarnings)
+                {
+                    _logger.LogWarning(warning.DiagnosticId, warning.Message);
                 }
             }
         }
