@@ -257,6 +257,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o una versione inferiore, il valore predefinito è 'true' se viene specificato un identificatore di runtime.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">Soluzione</target>

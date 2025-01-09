@@ -257,6 +257,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 預設值為 'false'。不過，當目標為 .NET 7 或更低版本時，如有指定執行階段識別碼，則預設值為 'true'。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">解決方案</target>

@@ -257,6 +257,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 Varsayılan değer 'false' olur. Ancak çalışma zamanı tanımlayıcısı belirtildiyse .NET 7 veya altı projeler hedeflenirken varsayılan değer 'true' olur.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">Çözüm</target>
