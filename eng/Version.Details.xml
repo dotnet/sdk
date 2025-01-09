@@ -634,10 +634,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform.DotnetTestClient" Version="1.6.0-preview.25059.11">
-      <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>e8edc352e84880a7bc9d3b23fe1eb2d14fa8f229</Sha>
-    </Dependency>
     <Dependency Name="MSTest" Version="3.8.0-preview.25057.8">
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>e8edc352e84880a7bc9d3b23fe1eb2d14fa8f229</Sha>
