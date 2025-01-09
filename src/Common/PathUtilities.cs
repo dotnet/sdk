@@ -8,12 +8,14 @@ static class PathUtilities
     public static string CreateTempSubdirectory()
     {
         string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(path);
 
-#if NET
-        if (!OperatingSystem.IsWindows())
-            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-// #else is only used by Microsoft.NET.TestFramework.csproj for netframework support. nothing to do on unix.
+#if NETFRAMEWORK
+        Directory.CreateDirectory(path);
+#else
+        if (OperatingSystem.IsWindows())
+            Directory.CreateDirectory(path);
+        else
+            Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
 #endif
 
         return path;
