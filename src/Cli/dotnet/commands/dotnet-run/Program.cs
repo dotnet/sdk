@@ -59,6 +59,7 @@ namespace Microsoft.DotNet.Tools.Run
                 projectFileOrDirectory: parseResult.GetValue(RunCommandParser.ProjectOption),
                 launchProfile: parseResult.GetValue(RunCommandParser.LaunchProfileOption),
                 noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
+                noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
                 noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
                 interactive: parseResult.HasOption(RunCommandParser.InteractiveOption),
                 verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,

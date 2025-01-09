@@ -20,30 +20,36 @@ namespace Microsoft.DotNet.Tools.Run
     {
         private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
 
-        public bool NoBuild { get; private set; }
-        public string ProjectFileFullPath { get; private set; }
+        public bool NoBuild { get; }
+        public string? ProjectFileOrDirectory { get; }
+        public string ProjectFileFullPath { get; }
         public string[] Args { get; set; }
-        public bool NoRestore { get; private set; }
+        public bool NoRestore { get; }
         public VerbosityOptions? Verbosity { get; }
-        public bool Interactive { get; private set; }
-        public string[] RestoreArgs { get; private set; }
+        public bool Interactive { get; }
+        public string[] RestoreArgs { get; }
 
         /// <summary>
         /// Environment variables specified on command line via -e option.
         /// </summary>
-        public IReadOnlyDictionary<string, string> EnvironmentVariables { get; private set; }
+        public IReadOnlyDictionary<string, string> EnvironmentVariables { get; }
 
         private bool ShouldBuild => !NoBuild;
 
-        public string LaunchProfile { get; private set; }
-        public bool NoLaunchProfile { get; private set; }
-        private bool UseLaunchProfile => !NoLaunchProfile;
+        public string LaunchProfile { get; }
+        public bool NoLaunchProfile { get; }
+
+        /// <summary>
+        /// True to ignore command line arguments specified by launch profile.
+        /// </summary>
+        public bool NoLaunchProfileArguments { get; }
 
         public RunCommand(
             bool noBuild,
             string? projectFileOrDirectory,
             string launchProfile,
             bool noLaunchProfile,
+            bool noLaunchProfileArguments,
             bool noRestore,
             bool interactive,
             VerbosityOptions? verbosity,
@@ -52,9 +58,11 @@ namespace Microsoft.DotNet.Tools.Run
             IReadOnlyDictionary<string, string> environmentVariables)
         {
             NoBuild = noBuild;
+            ProjectFileOrDirectory = projectFileOrDirectory;
             ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory);
             LaunchProfile = launchProfile;
             NoLaunchProfile = noLaunchProfile;
+            NoLaunchProfileArguments = noLaunchProfileArguments;
             Args = args;
             Interactive = interactive;
             NoRestore = noRestore;
@@ -125,7 +133,7 @@ namespace Microsoft.DotNet.Tools.Run
                 targetCommand.EnvironmentVariable(entry.Key, value);
             }
 
-            if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
+            if (!NoLaunchProfileArguments && string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
             {
                 targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
             }
@@ -134,7 +142,7 @@ namespace Microsoft.DotNet.Tools.Run
         private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
         {
             launchSettingsModel = default;
-            if (!UseLaunchProfile)
+            if (NoLaunchProfile)
             {
                 return true;
             }

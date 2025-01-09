@@ -34,6 +34,11 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CommandOptionNoLaunchProfileDescription
         };
 
+        public static readonly CliOption<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
+        {
+            Description = LocalizableStrings.CommandOptionNoLaunchProfileArgumentsDescription
+        };
+
         public static readonly CliOption<bool> NoBuildOption = new("--no-build")
         {
             Description = LocalizableStrings.CommandOptionNoBuildDescription

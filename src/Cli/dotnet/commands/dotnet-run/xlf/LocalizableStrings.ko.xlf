@@ -17,6 +17,11 @@
         <target state="translated">지정된 프레임워크를 사용하여 앱을 빌드 및 실행합니다. 프로젝트 파일에서 프레임워크를 지정해야 합니다. </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="new">Do not use arguments specified in launch profile to run the application.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">실행할 프로젝트 파일의 경로입니다(프로젝트가 하나만 있는 경우 현재 디렉터리로 기본 설정됨).</target>
