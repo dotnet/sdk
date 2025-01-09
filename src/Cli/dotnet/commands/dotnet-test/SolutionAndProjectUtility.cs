@@ -75,7 +75,6 @@ namespace Microsoft.DotNet.Cli
             return false;
         }
 
-
         private static string[] GetProjectFilePaths(string directory)
         {
             var projectFiles = Directory.GetFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
@@ -94,7 +93,7 @@ namespace Microsoft.DotNet.Cli
                    extension.Equals(".proj", StringComparison.OrdinalIgnoreCase);
         }
 
-        public static async Task<IEnumerable<string>> ParseSolution(string solutionFilePath)
+        public static async Task<IEnumerable<string>> ParseSolution(string solutionFilePath, string directory)
         {
             if (string.IsNullOrEmpty(solutionFilePath))
             {
@@ -119,7 +118,7 @@ namespace Microsoft.DotNet.Cli
 
             if (solution is not null)
             {
-                projectsPaths = [.. solution.SolutionProjects.Select(project => Path.GetFullPath(project.FilePath))];
+                projectsPaths = [.. solution.SolutionProjects.Select(project => Path.Combine(directory, project.FilePath))];
             }
 
             return projectsPaths;

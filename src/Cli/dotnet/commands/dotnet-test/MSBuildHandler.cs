@@ -45,9 +45,9 @@ namespace Microsoft.DotNet.Cli
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
-        public async Task<int> RunWithMSBuild(string filePath, bool allowBinLog)
+        public async Task<int> RunWithMSBuild(string filePath, bool isSolution, bool allowBinLog)
         {
-            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, false, allowBinLog);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution, allowBinLog);
 
             InitializeTestApplications(modules);
 
@@ -92,7 +92,12 @@ namespace Microsoft.DotNet.Cli
 
             if (isSolution)
             {
-                var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath);
+                string fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
+                string rootDirectory = string.IsNullOrEmpty(fileDirectory)
+                    ? Directory.GetCurrentDirectory()
+                    : fileDirectory;
+
+                var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
                 ProcessProjectsInParallel(projects, allowBinLog, allProjects, ref restored);
             }
             else

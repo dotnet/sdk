@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -119,11 +120,20 @@ namespace Microsoft.DotNet.Cli
 
         private async Task<bool> RunMSBuild(ParseResult parseResult, bool allowBinLog)
         {
+            Debugger.Launch();
+
             int msbuildExitCode;
 
             if (parseResult.HasOption(TestingPlatformOptions.ProjectOption))
             {
                 string filePath = parseResult.GetValue(TestingPlatformOptions.ProjectOption);
+                string[] extensions = [".proj", ".csproj", ".vbproj", ".fsproj"];
+
+                if (!extensions.Contains(Path.GetExtension(filePath)))
+                {
+                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdInvalidProjectFileExtensionDescription, filePath));
+                    return false;
+                }
 
                 if (!File.Exists(filePath))
                 {
@@ -131,7 +141,26 @@ namespace Microsoft.DotNet.Cli
                     return false;
                 }
 
-                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(filePath, allowBinLog);
+                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(filePath, isSolution: false, allowBinLog);
+            }
+            else if (parseResult.HasOption(TestingPlatformOptions.SolutionOption))
+            {
+                string filePath = parseResult.GetValue(TestingPlatformOptions.SolutionOption);
+                string[] extensions = [".sln", ".slnx"];
+
+                if (!extensions.Contains(Path.GetExtension(filePath)))
+                {
+                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdInvalidSolutionFileExtensionDescription, filePath));
+                    return false;
+                }
+
+                if (!File.Exists(filePath))
+                {
+                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentSolutionFilePathDescription, filePath));
+                    return false;
+                }
+
+                msbuildExitCode = await _msBuildConnectionHandler.RunWithMSBuild(filePath, isSolution: true, allowBinLog);
             }
             else
             {

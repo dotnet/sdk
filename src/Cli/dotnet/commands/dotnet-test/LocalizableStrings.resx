@@ -187,6 +187,9 @@
   <data name="CmdProjectDescription" xml:space="preserve">
     <value>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</value>
   </data>
+  <data name="CmdSolutionDescription" xml:space="preserve">
+    <value>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</value>
+  </data>
   <data name="CmdResultsDirectoryDescription" xml:space="preserve">
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
@@ -332,6 +335,9 @@ Examples:
   <data name="CmdNonExistentProjectFilePathDescription" xml:space="preserve">
     <value>The provided project file path does not exist: {0}.</value>
   </data>
+  <data name="CmdNonExistentSolutionFilePathDescription" xml:space="preserve">
+    <value>The provided solution file path does not exist: {0}.</value>
+  </data>
   <data name="CmdMultipleProjectOrSolutionFilesErrorMessage" xml:space="preserve">
     <value>Specify which project or solution file to use because this folder contains more than one project or solution file.</value>
   </data>
@@ -340,5 +346,11 @@ Examples:
   </data>
   <data name="CmdMSBuildProjectsPropertiesErrorMessage" xml:space="preserve">
     <value>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</value>
+  </data>
+  <data name="CmdInvalidSolutionFileExtensionDescription" xml:space="preserve">
+    <value>The provided solution file has an invalid extension: {0}.</value>
+  </data>
+  <data name="CmdInvalidProjectFileExtensionDescription" xml:space="preserve">
+    <value>The provided project file has an invalid extension: {0}.</value>
   </data>
 </root>
