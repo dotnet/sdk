@@ -31,12 +31,13 @@
     <!-- msbuild dependencies -->
     <MicrosoftBuildVersion>17.8.3</MicrosoftBuildVersion>
     <!-- runtime dependencies -->
-    <MicrosoftExtensionsFileSystemGlobbingVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>8.0.0</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingVersion>8.0.0</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>9.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0</MicrosoftExtensionsLoggingVersion>
+    <!-- nuget dependencies -->
+    <NuGetProtocolVersion>6.11.0</NuGetProtocolVersion>
     <!-- external dependencies -->
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
-    <NuGetProtocolVersion>6.9.1</NuGetProtocolVersion>
     <OctokitVersion>10.0.0</OctokitVersion>
   </PropertyGroup>
 </Project>
