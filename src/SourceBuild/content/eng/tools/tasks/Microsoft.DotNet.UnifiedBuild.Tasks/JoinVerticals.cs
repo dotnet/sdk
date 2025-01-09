@@ -153,7 +153,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
         // Create MergedManifest.xml
         // taking the attributes from the main manifest
-        XElement mainManifestRoot = verticalManifests.First().Root
+        XElement mainManifestRoot = mainVerticalManifest.Root
             ?? throw new ArgumentException("The root element of the vertical manifest is null.");
         mainManifestRoot.Attribute(_verticalNameAttribute)!.Remove();
 
@@ -162,9 +162,10 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             mainManifestRoot.Name,
             mainManifestRoot.Attributes(),
             packageElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value),
-            blobElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value)));
+            blobElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value)
+        ));
 
-        File.WriteAllText(manifestOutputPath, mergedManifest.ToString());
+        mergedManifest.Save(manifestOutputPath);
 
         Log.LogMessage(MessageImportance.High, $"### Duplicate items found in the following verticals: ###");
 
