@@ -5,11 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- IncludeAssets=compile to treat these packages as targeting-packs only. The assemblies are available in the SDK. -->
     <PackageReference Include="Microsoft.Build.Tasks.Core" IncludeAssets="compile" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" IncludeAssets="compile" />
