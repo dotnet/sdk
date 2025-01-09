@@ -19,21 +19,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         void AddReferenceSearchPaths(params string[] paths);
 
         /// <summary>
-        /// Indicates if the compilation used to resolve binaries has any roslyn diagnostics.
-        /// Might be useful when loading an assembly from source files.
-        /// </summary>
-        /// <param name="diagnostics">List of diagnostics.</param>
-        /// <returns>True if there are any diagnostics, false otherwise.</returns>
-        bool HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> diagnostics);
-
-        /// <summary>
-        /// Indicates if the loader emitted any warnings that might affect the assembly resolution.
-        /// </summary>
-        /// <param name="warnings">List of warnings.</param>
-        /// <returns>True if there are any warnings, false otherwise.</returns>
-        bool HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings);
-
-        /// <summary>
         /// Loads a list of assemblies and gets its corresponding <see cref="IAssemblySymbol"/> from the specified paths.
         /// </summary>
         /// <param name="paths">List of paths to load binaries from. Can be full paths to binaries or directories.</param>
@@ -82,18 +67,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <param name="warnOnMissingAssemblies">Indicates if a warning should be added to the warning list when a matching assembly is not found.</param>
         /// <returns>The list of matching assemblies represented as <see cref="IAssemblySymbol"/>.</returns>
         IEnumerable<IAssemblySymbol> LoadMatchingAssemblies(IEnumerable<IAssemblySymbol> fromAssemblies, IEnumerable<string> searchPaths, bool validateMatchingIdentity = true, bool warnOnMissingAssemblies = true);
-
-        /// <summary>
-        /// Logs all diagnostics that were emitted during the loading of the assemblies.
-        /// </summary>
-        /// <param name="headerMessage">Optional custom message to prepend to the diagnostics.</param>
-        public void LogAllDiagnostics(string? headerMessage = null);
-
-        /// <summary>
-        /// Logs all warnings that were emitted during the loading of the assemblies.
-        /// </summary>
-        /// <param name="headerMessage">Optional custom message to prepend to the warnings.</param>
-        public void LogAllWarnings(string? headerMessage = null);
 
         /// <summary>
         /// The list of metadata references represented as <see cref="MetadataReference" />.

@@ -86,9 +86,6 @@ namespace Microsoft.DotNet.GenAPI
 
                 fileBuilder.WriteAssembly(assemblySymbol);
             }
-
-            loader.LogAllDiagnostics();
-            loader.LogAllWarnings();
         }
 
         // Creates a TextWriter capable of writing into Console or a cs file.

@@ -21,7 +21,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         // value are the containing folder.
         private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _referencePathDirectories = new(StringComparer.OrdinalIgnoreCase);
-        private readonly List<AssemblyLoadWarning> _warnings = [];
         private readonly Dictionary<string, MetadataReference> _loadedAssemblies;
         private readonly bool _resolveReferences;
         private CSharpCompilation _cSharpCompilation;
@@ -78,20 +77,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         }
 
         /// <inheritdoc />
-        public bool HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> diagnostics)
-        {
-            diagnostics = _cSharpCompilation.GetDiagnostics();
-            return diagnostics.Count > 0;
-        }
-
-        /// <inheritdoc />
-        public bool HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings)
-        {
-            warnings = _warnings;
-            return _warnings.Count > 0;
-        }
-
-        /// <inheritdoc />
         public IReadOnlyList<IAssemblySymbol?> LoadAssemblies(params string[] paths)
         {
             // First resolve all assemblies that are passed in and create metadata references out of them.
@@ -109,6 +94,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 ISymbol? symbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference);
                 assemblySymbols[i] = symbol as IAssemblySymbol;
             }
+
+            LogCompilationDiagnostics();
 
             return assemblySymbols;
         }
@@ -159,6 +146,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                     null;
             }
 
+            LogCompilationDiagnostics();
+
             return assemblySymbols;
         }
 
@@ -166,7 +155,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         public IAssemblySymbol? LoadAssembly(string path)
         {
             MetadataReference metadataReference = CreateOrGetMetadataReferenceFromPath(path);
-            return _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
+            IAssemblySymbol? assemblySymbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
+            LogCompilationDiagnostics();
+
+            return assemblySymbol;
         }
 
         /// <inheritdoc />
@@ -182,7 +174,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 metadataReference = CreateAndAddReferenceToCompilation(name, stream);
             }
 
-            return _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
+            IAssemblySymbol? assemblySymbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
+            LogCompilationDiagnostics();
+
+            return assemblySymbol;
         }
 
         /// <inheritdoc />
@@ -209,6 +204,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             _cSharpCompilation = _cSharpCompilation.AddSyntaxTrees(syntaxTrees);
 
             LoadFromPaths(referencePaths);
+            LogCompilationDiagnostics();
+
             return _cSharpCompilation.Assembly;
         }
 
@@ -251,11 +248,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 if (warnOnMissingAssemblies && !found)
                 {
                     string assemblyInfo = validateMatchingIdentity ? assembly.Identity.GetDisplayName() : assembly.Name;
-                    _warnings.Add(new AssemblyLoadWarning(AssemblyNotFoundErrorCode,
-                        assemblyInfo,
-                        string.Format(Resources.MatchingAssemblyNotFound, assemblyInfo)));
+                    _log.LogWarning(AssemblyNotFoundErrorCode, string.Format(Resources.MatchingAssemblyNotFound, assemblyInfo));
                 }
             }
+
+            LogCompilationDiagnostics();
 
             return matchingAssemblies;
         }
@@ -382,46 +379,18 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
                     if (!found)
                     {
-                        _warnings.Add(new AssemblyLoadWarning(
-                            AssemblyReferenceNotFoundErrorCode,
-                            name,
-                            string.Format(Resources.CouldNotResolveReference, name)));
+                        _log.LogWarning(AssemblyReferenceNotFoundErrorCode, string.Format(Resources.CouldNotResolveReference, name));
                     }
                 }
             }
         }
 
-        /// <inheritdoc />
-        public void LogAllDiagnostics(string? headerMessage = null)
+        private void LogCompilationDiagnostics()
         {
-            if (HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
+            var diagnostics = _cSharpCompilation.GetDiagnostics();
+            foreach (Diagnostic warning in diagnostics)
             {
-                if (!string.IsNullOrEmpty(headerMessage))
-                {
-                    _log.LogWarning(headerMessage!);
-                }
-
-                foreach (Diagnostic warning in roslynDiagnostics)
-                {
-                    _log.LogWarning(warning.Id, warning.ToString());
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public void LogAllWarnings(string? headerMessage = null)
-        {
-            if (HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
-            {
-                if (!string.IsNullOrEmpty(headerMessage))
-                {
-                    _log.LogWarning(headerMessage!);
-                }
-
-                foreach (AssemblyLoadWarning warning in loadWarnings)
-                {
-                    _log.LogWarning(warning.DiagnosticId, warning.Message);
-                }
+                _log.LogMessage(MessageImportance.Normal, warning.ToString());
             }
         }
     }
