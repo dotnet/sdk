@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ShellShim;
@@ -95,7 +97,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
             var toolUpdateCommand = new ToolUpdateGlobalOrToolPathCommand(parseResult);
-            toolUpdateCommand._toolInstallGlobalOrToolPathCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            toolUpdateCommand._toolInstallGlobalOrToolPathCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]
@@ -220,6 +222,21 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.First().Should().Contain(string.Format(
                 LocalizableStrings.UpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
+        }
+
+        [Fact]
+        public void GivenAnExistedPreviewVersionInstallationWhenUpdateToHigherVersionItSucceeds()
+        {
+            var installCommand = CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
+            installCommand.Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPackageVersion} --verbosity minimal");
+            command.Execute().Should().Be(0);
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                LocalizableStrings.UpdateSucceeded,
+                _packageId, HigherPreviewPackageVersion, HigherPackageVersion));
         }
 
         [Fact]

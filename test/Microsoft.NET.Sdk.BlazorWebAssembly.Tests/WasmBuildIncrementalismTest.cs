@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
 
@@ -8,7 +10,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmBuildIncrementalismTest(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_IsIncremental()
         {
             // Arrange
@@ -46,7 +48,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_GzipCompression_IsIncremental()
         {
             // Arrange
@@ -93,7 +95,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_SatelliteAssembliesFileIsPreserved()
         {
             // Arrange
@@ -156,7 +158,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_SatelliteAssembliesFileIsCreated_IfNewFileIsAdded()
         {
             // Arrange
@@ -206,7 +208,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             kvp.Value.Should().ContainKey("blazorwasm.resources.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_SatelliteAssembliesFileIsDeleted_IfAllSatelliteFilesAreRemoved()
         {
             // Arrange

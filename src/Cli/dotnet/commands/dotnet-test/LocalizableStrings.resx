@@ -175,6 +175,18 @@
   <data name="CmdNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before testing. Implies --no-restore.</value>
   </data>
+  <data name="CmdNoRestoreDescription" xml:space="preserve">
+    <value>Do not execute an implicit restore.</value>
+  </data>
+  <data name="CmdArchitectureDescription" xml:space="preserve">
+    <value>The target architecture '{0}' on which tests will run.</value>
+  </data>
+  <data name="CmdConfigurationDescription" xml:space="preserve">
+    <value>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</value>
+  </data>
+  <data name="CmdProjectDescription" xml:space="preserve">
+    <value>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</value>
+  </data>
   <data name="CmdResultsDirectoryDescription" xml:space="preserve">
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
@@ -296,5 +308,22 @@ Examples:
   </data>
   <data name="CmdAdditionalMSBuildParametersDescription" xml:space="preserve">
     <value>The additional msbuild parameters to pass.</value>
+  </data>
+  <data name="CmdTestModulesDescription" xml:space="preserve">
+    <value>Run tests for the specified test modules.</value>
+  </data>
+  <data name="CmdTestModulesRootDirectoryDescription" xml:space="preserve">
+    <value>The test modules have the specified root directory.</value>
+  </data>
+  <data name="CmdUnsupportedMessageRequestTypeException" xml:space="preserve">
+    <value>Message Request type '{0}' is unsupported.</value>
+    <comment>{0} - message request type</comment>
+  </data>
+  <data name="CmdInvalidTestMessageStateException" xml:space="preserve">
+    <value>Invalid test message state '{0}'</value>
+    <comment>{0} - test message state</comment>
+  </data>
+  <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
+    <value>Test application(s) that support VSTest are not supported.</value>
   </data>
 </root>

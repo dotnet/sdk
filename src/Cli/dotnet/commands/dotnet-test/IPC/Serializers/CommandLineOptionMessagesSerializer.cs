@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if NETCOREAPP
-#nullable enable
 #endif
 
 using System.Diagnostics;
@@ -12,37 +11,37 @@ namespace Microsoft.DotNet.Tools.Test
     /*
     |---FieldCount---| 2 bytes
 
-    |---ModuleName Id---| 1 (2 bytes)
+    |---ModuleName Id---| (2 bytes)
     |---ModuleName Size---| (4 bytes)
     |---ModuleName Value---| (n bytes)
 
-    |---CommandLineOptionMessageList Id---| 2 (2 bytes)
+    |---CommandLineOptionMessageList Id---| (2 bytes)
     |---CommandLineOptionMessageList Size---| (4 bytes)
     |---CommandLineOptionMessageList Value---| (n bytes)
         |---CommandLineOptionMessageList Length---| (4 bytes)
 
         |---CommandLineOptionMessageList[0] FieldCount---| 2 bytes
 
-        |---CommandLineOptionMessageList[0] Name Id---| 1 (2 bytes)
-        |---CommandLineOptionMessageList[0] Name Size---| (4 bytes)
-        |---CommandLineOptionMessageList[0] Name Value---| (n bytes)
+        |---CommandLineOptionMessageList[0].Name Id---| (2 bytes)
+        |---CommandLineOptionMessageList[0].Name Size---| (4 bytes)
+        |---CommandLineOptionMessageList[0].Name Value---| (n bytes)
 
-        |---CommandLineOptionMessageList[1] Description Id---| 2 (2 bytes)
-        |---CommandLineOptionMessageList[1] Description Size---| (4 bytes)
-        |---CommandLineOptionMessageList[1] Description Value---| (n bytes)
+        |---CommandLineOptionMessageList[0].Description Id---| (2 bytes)
+        |---CommandLineOptionMessageList[0].Description Size---| (4 bytes)
+        |---CommandLineOptionMessageList[0].Description Value---| (n bytes)
 
-        |---CommandLineOptionMessageList[3] IsHidden Id---| 4 (2 bytes)
-        |---CommandLineOptionMessageList[3] IsHidden Size---| (4 bytes)
-        |---CommandLineOptionMessageList[3] IsHidden Value---| (1 byte)
+        |---CommandLineOptionMessageList[0].IsHidden Id---| (2 bytes)
+        |---CommandLineOptionMessageList[0].IsHidden Size---| (4 bytes)
+        |---CommandLineOptionMessageList[0].IsHidden Value---| (1 byte)
 
-        |---CommandLineOptionMessageList[4] IsBuiltIn Id---| 5 (2 bytes)
-        |---CommandLineOptionMessageList[4] IsBuiltIn Size---| (4 bytes)
-        |---CommandLineOptionMessageList[4] IsBuiltIn Value---| (1 byte)
+        |---CommandLineOptionMessageList[0].IsBuiltIn Id---| (2 bytes)
+        |---CommandLineOptionMessageList[0].IsBuiltIn Size---| (4 bytes)
+        |---CommandLineOptionMessageList[0].IsBuiltIn Value---| (1 byte)
     */
 
     internal sealed class CommandLineOptionMessagesSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 3;
+        public int Id => CommandLineOptionMessagesFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
@@ -59,7 +58,7 @@ namespace Microsoft.DotNet.Tools.Test
                 switch (fieldId)
                 {
                     case CommandLineOptionMessagesFieldsId.ModulePath:
-                        moduleName = ReadString(stream);
+                        moduleName = ReadStringValue(stream, fieldSize);
                         break;
 
                     case CommandLineOptionMessagesFieldsId.CommandLineOptionMessageList:
@@ -96,11 +95,11 @@ namespace Microsoft.DotNet.Tools.Test
                     switch (fieldId)
                     {
                         case CommandLineOptionMessageFieldsId.Name:
-                            name = ReadString(stream);
+                            name = ReadStringValue(stream, fieldSize);
                             break;
 
                         case CommandLineOptionMessageFieldsId.Description:
-                            description = ReadString(stream);
+                            description = ReadStringValue(stream, fieldSize);
                             break;
 
                         case CommandLineOptionMessageFieldsId.IsHidden:
@@ -167,11 +166,12 @@ namespace Microsoft.DotNet.Tools.Test
 
         private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) =>
             (ushort)((commandLineOptionMessages.ModulePath is null ? 0 : 1) +
-            (commandLineOptionMessages is null ? 0 : 1));
+            (IsNullOrEmpty(commandLineOptionMessages.CommandLineOptionMessageList) ? 0 : 1));
 
         private static ushort GetFieldCount(CommandLineOptionMessage commandLineOptionMessage) =>
             (ushort)((commandLineOptionMessage.Name is null ? 0 : 1) +
             (commandLineOptionMessage.Description is null ? 0 : 1) +
-            2);
+            (commandLineOptionMessage.IsHidden is null ? 0 : 1) +
+            (commandLineOptionMessage.IsBuiltIn is null ? 0 : 1));
     }
 }

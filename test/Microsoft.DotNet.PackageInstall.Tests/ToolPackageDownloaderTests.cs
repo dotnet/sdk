@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -120,7 +122,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                <root>/packageid/version/packageid/version/tools/framework/rid/mytool.dll
                                        /project.assets.json
              */
-            var assetJsonPath = package.Commands[0].Executable
+            var assetJsonPath = package.Command.Executable
                 .GetDirectoryPath()
                 .GetParentPath()
                 .GetParentPath()
@@ -837,7 +839,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
                 action.Should().NotThrow<ToolConfigurationException>();
 
-                fileSystem.File.Exists(package.Commands[0].Executable.Value).Should().BeTrue($"{package.Commands[0].Executable.Value} should exist");
+                fileSystem.File.Exists(package.Command.Executable.Value).Should().BeTrue($"{package.Command.Executable.Value} should exist");
 
                 uninstaller.Uninstall(package.PackageDirectory);
             }
@@ -866,10 +868,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Should()
                 .Equal(TestPackageVersion);
 
-            package.Commands.Count.Should().Be(1);
-            fileSystem.File.Exists(package.Commands[0].Executable.Value).Should()
-                .BeTrue($"{package.Commands[0].Executable.Value} should exist");
-            package.Commands[0].Executable.Value.Should().Contain(store.Root.Value);
+            package.Command.Should().NotBeNull();
+            fileSystem.File.Exists(package.Command.Executable.Value).Should()
+                .BeTrue($"{package.Command.Executable.Value} should exist");
+            package.Command.Executable.Value.Should().Contain(store.Root.Value);
         }
 
         private static void AssertInstallRollBack(IFileSystem fileSystem, IToolPackageStore store)

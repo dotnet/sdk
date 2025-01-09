@@ -5,7 +5,6 @@ namespace Microsoft.NET.TestFramework
 {
     public static class NuGetConfigWriter
     {
-        public static readonly string DotnetCoreBlobFeed = "https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json";
         public static readonly string AspNetCoreDevFeed = "https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json";
 
         public static void Write(string folder, params string[] nugetSources)

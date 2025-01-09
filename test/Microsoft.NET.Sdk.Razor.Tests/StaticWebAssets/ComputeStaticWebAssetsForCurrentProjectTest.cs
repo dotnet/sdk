@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -273,7 +275,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             task.StaticWebAssets.Should().HaveCount(1);
         }
 
-        private ITaskItem CreateCandidate(
+        private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,
             string sourceType,

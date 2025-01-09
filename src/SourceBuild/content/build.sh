@@ -21,6 +21,7 @@ usage()
   echo "  --clean                         Clean the solution"
   echo "  --help                          Print help and exit (short: -h)"
   echo "  --test                          Run tests (short: -t)"
+  echo "  --sign                          Sign the build."
   echo ""
 
   echo "Source-only settings:"
@@ -128,6 +129,9 @@ while [[ $# > 0 ]]; do
     -test|-t)
       test=true
       ;;
+    -sign)
+      properties+=( "/p:Sign=true" )
+      ;;
 
     # Source-only settings
     -source-only|-source-build|-so|-sb)
@@ -190,7 +194,7 @@ while [[ $# > 0 ]]; do
       prepare_machine=true
       ;;
     -use-mono-runtime)
-      properties+=( "/p:SourceBuildUseMonoRuntime=true" )
+      properties+=( "/p:DotNetBuildUseMonoRuntime=true" )
       ;;
     -dev)
       use_dev_versioning=true
@@ -227,6 +231,8 @@ if [[ "$test" == true ]]; then
   targets="$targets;VSTest"
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   export MSBUILDENSURESTDOUTFORTASKPROCESSES=1
+  # Ensure all test projects share stdout (https://github.com/dotnet/source-build/issues/4635#issuecomment-2397464519)
+  export MSBUILDDISABLENODEREUSE=1
 fi
 
 function Build {
@@ -264,10 +270,10 @@ function Build {
         initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
       fi
 
-      "$CLI_ROOT/dotnet" build-server shutdown
+      "$CLI_ROOT/dotnet" build-server shutdown --msbuild
       "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog "${properties[@]}"
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
-      "$CLI_ROOT/dotnet" build-server shutdown
+      "$CLI_ROOT/dotnet" build-server shutdown --msbuild
     fi
 
     # Point MSBuild to the custom SDK resolvers folder, so it will pick up our custom SDK Resolver

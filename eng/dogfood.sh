@@ -25,3 +25,4 @@ export MicrosoftNETBuildExtensionsTargets="$artifacts_dir/bin/$configuration/Sdk
 
 export PATH=$testDotnetRoot:$PATH
 export DOTNET_ROOT=$testDotnetRoot
+export PS1="(dogfood) $PS1"
