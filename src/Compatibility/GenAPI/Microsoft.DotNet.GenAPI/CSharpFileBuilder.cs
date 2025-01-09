@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.GenAPI
         private readonly AdhocWorkspace _adhocWorkspace;
         private readonly SyntaxGenerator _syntaxGenerator;
         private readonly IEnumerable<MetadataReference> _metadataReferences;
+        private readonly bool _addPartialModifier;
 
         public CSharpFileBuilder(ILog logger,
             ISymbolFilter symbolFilter,
@@ -41,7 +42,8 @@ namespace Microsoft.DotNet.GenAPI
             TextWriter textWriter,
             string? exceptionMessage,
             bool includeAssemblyAttributes,
-            IEnumerable<MetadataReference> metadataReferences)
+            IEnumerable<MetadataReference> metadataReferences,
+            bool addPartialModifier)
         {
             _logger = logger;
             _textWriter = textWriter;
@@ -52,6 +54,7 @@ namespace Microsoft.DotNet.GenAPI
             _adhocWorkspace = new AdhocWorkspace();
             _syntaxGenerator = SyntaxGenerator.GetGenerator(_adhocWorkspace, LanguageNames.CSharp);
             _metadataReferences = metadataReferences;
+            _addPartialModifier = addPartialModifier;
         }
 
         /// <inheritdoc />
@@ -79,7 +82,7 @@ namespace Microsoft.DotNet.GenAPI
 
             SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes)
                 .WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
-                .Rewrite(new TypeDeclarationCSharpSyntaxRewriter())
+                .Rewrite(new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier: true))
                 .Rewrite(new BodyBlockCSharpSyntaxRewriter(_exceptionMessage));
 
             if (_includeAssemblyAttributes)
