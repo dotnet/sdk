@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -29,21 +30,27 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         string _dotnetDir;
         IEnumerable<WorkloadId> _installedWorkloads;
         Func<string, IWorkloadResolver> _getResolverForWorkloadSet;
+        IReporter _verboseReporter;
 
         public HashSet<string> WorkloadSetsToKeep = new();
         public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = new();
         public HashSet<(WorkloadPackId id, string version)> PacksToKeep = new();
 
-        public WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet)
+        public WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
+            IReporter verboseReporter)
         {
             _dotnetDir = dotnetDir;
             _sdkFeatureBand = sdkFeatureBand;
             _installedWorkloads = installedWorkloads;
             _getResolverForWorkloadSet = getResolverForWorkloadSet;
+            _verboseReporter = verboseReporter ?? Reporter.NullReporter;
         }
 
         public void Collect()
         {
+            _verboseReporter.WriteLine("GC: Beginning workload garbage collection.");
+            _verboseReporter.WriteLine($"GC: Installed workloads: {string.Join(", ", _installedWorkloads)}");
+
             GarbageCollectWorkloadSets();
             GarbageCollectWorkloadManifestsAndPacks();
         }
@@ -66,15 +73,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var resolver = GetResolver();
 
             var installedWorkloadSets = resolver.GetWorkloadManifestProvider().GetAvailableWorkloadSets();
-            
+
+            foreach (var set in installedWorkloadSets.Keys)
+            {
+                WorkloadSetsToKeep.Add(set);
+            }
+
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             if (File.Exists(installStateFilePath))
             {
                 //  If there is a rollback state file (default.json) in the workload install state folder, don't garbage collect the workload set it specifies.
-                var installState = SdkDirectoryWorkloadManifestProvider.InstallStateReader.ReadInstallState(installStateFilePath);
-                if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
+                var installState = InstallStateContents.FromPath(installStateFilePath);
+                if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                 {
-                    WorkloadSetsToKeep.Add(installState.WorkloadSetVersion);
+                    WorkloadSetsToKeep.Add(installState.WorkloadVersion);
+                    _verboseReporter.WriteLine($"GC: Keeping workload set version {installState.WorkloadVersion} because it is specified in the install state file {installStateFilePath}");
                 }
             }
             else
@@ -84,6 +97,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     var latestWorkloadSetVersion = installedWorkloadSets.Keys.MaxBy(k => new ReleaseVersion(k));
                     WorkloadSetsToKeep.Add(latestWorkloadSetVersion);
+                    _verboseReporter.WriteLine($"GC: Keeping latest installed workload set version {latestWorkloadSetVersion}");
                 }
             }
 
@@ -93,6 +107,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 if (workloadSet.IsBaselineWorkloadSet)
                 {
                     WorkloadSetsToKeep.Add(workloadSet.Version);
+                    _verboseReporter.WriteLine($"GC: Keeping baseline workload set version {workloadSet.Version}");
                 }
             }
 
@@ -115,21 +130,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             //  - Any manifests listed in the rollback state file (default.json)
             //  - The latest version of each manifest, if a workload set is not installed and there is no rollback state file
 
-            List<IWorkloadResolver> resolvers = new List<IWorkloadResolver>();
-            resolvers.Add(GetResolver());
+            List<(IWorkloadResolver, string workloadSet)> resolvers = new();
+            resolvers.Add((GetResolver(), "<none>"));
 
 
             //  Iterate through all installed workload sets for this SDK feature band that have not been marked for garbage collection
             //  For each manifest version listed in a workload set, add it to a list to keep
             foreach (var workloadSet in WorkloadSetsToKeep)
             {
-                resolvers.Add(GetResolver(workloadSet));
+                resolvers.Add((GetResolver(workloadSet), workloadSet));
             }
 
-            foreach (var resolver in resolvers)
+            foreach (var (resolver, workloadSet) in resolvers)
             {
                 foreach (var manifest in resolver.GetInstalledManifests())
                 {
+                    _verboseReporter.WriteLine($"GC: Keeping manifest {manifest.Id} {manifest.Version}/{manifest.ManifestFeatureBand} as part of workload set {workloadSet}");
                     ManifestsToKeep.Add((new ManifestId(manifest.Id), new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand)));
                 }
 
@@ -137,7 +153,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     .Select(packId => resolver.TryGetPackInfo(packId))
                     .Where(pack => pack != null))
                 {
-                    PacksToKeep.Add((pack.Id, pack.Version));
+                    _verboseReporter.WriteLine($"GC: Keeping workload pack {pack.ResolvedPackageId} {pack.Version} as part of workload set {workloadSet}");
+                    PacksToKeep.Add((new WorkloadPackId(pack.ResolvedPackageId), pack.Version));
                 }
             }
 
