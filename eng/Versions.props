@@ -178,8 +178,8 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes.
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
-    <MicrosoftBuildVersion>17.13.0-preview-24569-04</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.13.0-preview-24569-04</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.13.4</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.13.4-preview-25059-01</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
     <MinimumVSVersion>17.12</MinimumVSVersion>
   </PropertyGroup>
