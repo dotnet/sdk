@@ -12,7 +12,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
 {
     public class AssemblySymbolLoaderTests : SdkTest
     {
-
         public AssemblySymbolLoaderTests(ITestOutputHelper log) : base(log) { }
 
         private const string SimpleAssemblySourceContents = @"
