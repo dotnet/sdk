@@ -78,7 +78,6 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 {
                     throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
                 }
-                // TODO: Check
                 if (ex.InnerException is GracefulException)
                 {
                     throw ex.InnerException;

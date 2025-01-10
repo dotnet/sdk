@@ -21,7 +21,6 @@ namespace Microsoft.DotNet.Tools.Common
             string projectTypeGuid = projectInstance.GetPropertyValue("DefaultProjectTypeGuid");
             if (string.IsNullOrEmpty(projectTypeGuid) && projectInstance.FullPath.EndsWith(".shproj", StringComparison.OrdinalIgnoreCase))
             {
-                // TODO: Centralize project type guids
                 projectTypeGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
             }
             return projectTypeGuid;
