@@ -1,16 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipes;
-using Microsoft.DotNet.Watcher;
-using Microsoft.Extensions.HotReload;
+using Microsoft.DotNet.Watch;
+using Microsoft.DotNet.HotReload;
 
+/// <summary>
+/// The runtime startup hook looks for top-level type named "StartupHook".
+/// </summary>
 internal sealed class StartupHook
 {
     private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages) == "1";
     private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName);
-    private static readonly string s_targetProcessPath = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath);
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
@@ -18,16 +19,6 @@ internal sealed class StartupHook
     public static void Initialize()
     {
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
-
-        // Workaround for https://github.com/dotnet/sdk/issues/40484
-        // When launching the application process dotnet-watch sets Hot Reload environment variables via CLI environment directives (dotnet [env:X=Y] run).
-        // Currently, the CLI parser sets the env variables to the dotnet.exe process itself, rather then to the target process.
-        // This may cause the dotnet.exe process to connect to the named pipe and break it for the target process.
-        if (!IsMatchingProcess(processPath, s_targetProcessPath))
-        {
-            Log($"Ignoring process '{processPath}', expecting '{s_targetProcessPath}'");
-            return;
-        }
 
         Log($"Loaded into process: {processPath}");
 
@@ -51,10 +42,27 @@ internal sealed class StartupHook
                 return;
             }
 
-            using var agent = new HotReloadAgent(pipeClient, Log);
+            using var agent = new HotReloadAgent();
             try
             {
-                await agent.ReceiveDeltasAsync();
+                agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
+
+                var initPayload = new ClientInitializationPayload(agent.Capabilities);
+                await initPayload.WriteAsync(pipeClient, CancellationToken.None);
+
+                while (pipeClient.IsConnected)
+                {
+                    var update = await UpdatePayload.ReadAsync(pipeClient, CancellationToken.None);
+
+                    Log($"ResponseLoggingLevel = {update.ResponseLoggingLevel}");
+
+                    agent.ApplyDeltas(update.Deltas);
+                    var logEntries = agent.GetAndClearLogEntries(update.ResponseLoggingLevel);
+
+                    // response:
+                    await pipeClient.WriteAsync((byte)UpdatePayload.ApplySuccessValue, CancellationToken.None);
+                    await UpdatePayload.WriteLogAsync(pipeClient, logEntries, CancellationToken.None);
+                }
             }
             catch (Exception ex)
             {

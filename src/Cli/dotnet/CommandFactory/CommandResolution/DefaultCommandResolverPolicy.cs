@@ -7,12 +7,12 @@ namespace Microsoft.DotNet.CommandFactory
 {
     public class DefaultCommandResolverPolicy : ICommandResolverPolicy
     {
-        public CompositeCommandResolver CreateCommandResolver()
+        public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
         {
-            return Create();
+            return Create(currentWorkingDirectory);
         }
 
-        public static CompositeCommandResolver Create()
+        public static CompositeCommandResolver Create(string currentWorkingDirectory = null)
         {
             var environment = new EnvironmentProvider();
             var packagedCommandSpecFactory = new PackagedCommandSpecFactoryWithCliRuntime();
@@ -32,20 +32,22 @@ namespace Microsoft.DotNet.CommandFactory
                 environment,
                 packagedCommandSpecFactory,
                 platformCommandSpecFactory,
-                publishedPathCommandSpecFactory);
+                publishedPathCommandSpecFactory,
+                currentWorkingDirectory);
         }
 
         public static CompositeCommandResolver CreateDefaultCommandResolver(
             IEnvironmentProvider environment,
             IPackagedCommandSpecFactory packagedCommandSpecFactory,
             IPlatformCommandSpecFactory platformCommandSpecFactory,
-            IPublishedPathCommandSpecFactory publishedPathCommandSpecFactory)
+            IPublishedPathCommandSpecFactory publishedPathCommandSpecFactory,
+            string currentWorkingDirectory = null)
         {
             var compositeCommandResolver = new CompositeCommandResolver();
 
             compositeCommandResolver.AddCommandResolver(new MuxerCommandResolver());
             compositeCommandResolver.AddCommandResolver(new DotnetToolsCommandResolver());
-            compositeCommandResolver.AddCommandResolver(new LocalToolsCommandResolver());
+            compositeCommandResolver.AddCommandResolver(new LocalToolsCommandResolver(currentWorkingDirectory: currentWorkingDirectory));
             compositeCommandResolver.AddCommandResolver(new RootedCommandResolver());
             compositeCommandResolver.AddCommandResolver(
                 new ProjectToolsCommandResolver(packagedCommandSpecFactory, environment));

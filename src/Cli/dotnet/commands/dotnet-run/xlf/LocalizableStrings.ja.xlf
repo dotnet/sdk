@@ -17,6 +17,11 @@
         <target state="translated">指定されたフレームワークを使用して、アプリを構築して実行します。フレームワークはプロジェクト ファイルで指定する必要があります。 </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="new">Do not use arguments specified in launch profile to run the application.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">実行するプロジェクト ファイルへのパス (プロジェクトが 1 つのみの場合、既定は現在のディレクトリです)。</target>
