@@ -70,28 +70,21 @@ namespace Microsoft.DotNet.Cli
 
         private static string[] GetSolutionFilePaths(string directory)
         {
-            return Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly)
-                .Concat(Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly))
+            return Directory.EnumerateFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly)
+                .Concat(Directory.EnumerateFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly))
                 .ToArray();
         }
 
-        private static string[] GetProjectFilePaths(string directory)
-        {
-            return [.. Directory.EnumerateFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly).Where(IsProjectFile)];
-        }
+        private static string[] GetProjectFilePaths(string directory) => [.. Directory.EnumerateFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly).Where(IsProjectFile)];
 
-        private static bool IsProjectFile(string filePath)
-        {
-            var extension = Path.GetExtension(filePath);
-            return CliConstants.ProjectExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
-        }
+        private static bool IsProjectFile(string filePath) => CliConstants.ProjectExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
 
         public static async Task<IEnumerable<string>> ParseSolution(string solutionFilePath, string directory)
         {
             if (string.IsNullOrEmpty(solutionFilePath))
             {
                 VSTestTrace.SafeWriteTrace(() => $"Solution file path cannot be null or empty: {solutionFilePath}");
-                return Array.Empty<string>();
+                return [];
             }
 
             var projectsPaths = new List<string>();
@@ -106,7 +99,7 @@ namespace Microsoft.DotNet.Cli
             catch (Exception ex)
             {
                 VSTestTrace.SafeWriteTrace(() => $"Failed to parse solution file '{solutionFilePath}': {ex.Message}");
-                return Array.Empty<string>();
+                return [];
             }
 
             if (solution is not null)
