@@ -15,13 +15,11 @@ namespace Microsoft.DotNet.Cli
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
         private readonly ConcurrentBag<TestApplication> _testApplications = [];
-        private readonly CancellationTokenSource _cancellationToken = new();
 
-        private MSBuildConnectionHandler _msBuildConnectionHandler;
+        private MSBuildHandler _msBuildHandler;
         private TestModulesFilterHandler _testModulesFilterHandler;
         private TerminalTestReporter _output;
         private TestApplicationActionQueue _actionQueue;
-        private Task _namedPipeConnectionLoop;
         private List<string> _args;
         private ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
         private byte _cancelled;
@@ -32,7 +30,7 @@ namespace Microsoft.DotNet.Cli
             TreatUnmatchedTokensAsErrors = false;
         }
 
-        public int Run(ParseResult parseResult)
+        public async Task<int> Run(ParseResult parseResult)
         {
             bool hasFailed = false;
             try
@@ -112,10 +110,9 @@ namespace Microsoft.DotNet.Cli
                     });
                 }
 
-                _args = new List<string>(parseResult.UnmatchedTokens);
-                _msBuildConnectionHandler = new(_args, _actionQueue);
+                _args = [.. parseResult.UnmatchedTokens];
+                _msBuildHandler = new(_args, _actionQueue, degreeOfParallelism);
                 _testModulesFilterHandler = new(_args, _actionQueue);
-                _namedPipeConnectionLoop = Task.Run(async () => await _msBuildConnectionHandler.WaitConnectionAsync(_cancellationToken.Token));
 
                 if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
                 {
@@ -127,17 +124,14 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    // If no filter was provided, MSBuild will get the test project paths
-                    var msbuildResult = _msBuildConnectionHandler.RunWithMSBuild(parseResult);
-                    if (msbuildResult != 0)
+                    if (!await RunMSBuild(parseResult))
                     {
-                        VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly with exit code: {msbuildResult}.");
                         CompleteRun();
                         return ExitCodes.GenericFailure;
                     }
 
-                    // If not all test projects have IsTestingPlatformApplication set to true, we will simply return
-                    if (!_msBuildConnectionHandler.EnqueueTestApplications())
+                    // If not all test projects have IsTestProject and IsTestingPlatformApplication properties set to true, we will simply return
+                    if (!_msBuildHandler.EnqueueTestApplications())
                     {
                         VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
                         CompleteRun();
@@ -148,8 +142,6 @@ namespace Microsoft.DotNet.Cli
                 _actionQueue.EnqueueCompleted();
                 hasFailed = _actionQueue.WaitAllActions();
                 // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
-
-                WaitOnMSBuildHandlerPipeConnectionLoop();
             }
             finally
             {
@@ -161,6 +153,38 @@ namespace Microsoft.DotNet.Cli
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
+        private async Task<bool> RunMSBuild(ParseResult parseResult)
+        {
+            int msbuildExitCode;
+
+            if (parseResult.HasOption(TestingPlatformOptions.ProjectOption))
+            {
+                string filePath = parseResult.GetValue(TestingPlatformOptions.ProjectOption);
+
+                if (!File.Exists(filePath))
+                {
+                    VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentProjectFilePathDescription, filePath));
+                    return false;
+                }
+
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild(filePath);
+            }
+            else
+            {
+                // If no filter was provided neither the project using --project,
+                // MSBuild will get the test project paths in the current directory
+                msbuildExitCode = await _msBuildHandler.RunWithMSBuild();
+            }
+
+            if (msbuildExitCode != ExitCodes.Success)
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorMessage, msbuildExitCode));
+                return false;
+            }
+
+            return true;
+        }
+
         private void CompleteRun()
         {
             if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
@@ -169,15 +193,9 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private void WaitOnMSBuildHandlerPipeConnectionLoop()
-        {
-            _cancellationToken.Cancel();
-            _namedPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
-        }
-
         private void CleanUp()
         {
-            _msBuildConnectionHandler.Dispose();
+            _msBuildHandler.Dispose();
             foreach (var testApplication in _testApplications)
             {
                 testApplication.Dispose();
@@ -370,7 +388,7 @@ namespace Microsoft.DotNet.Cli
                 return;
             }
 
-            if (args.ExitCode != 0)
+            if (args.ExitCode != ExitCodes.Success)
             {
                 VSTestTrace.SafeWriteTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
             }

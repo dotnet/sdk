@@ -434,4 +434,19 @@ Examples:
   <data name="ZeroTestsRan" xml:space="preserve">
     <value>Zero tests ran</value>
   </data>
+  <data name="CmdUnsupportedTestRunnerDescription" xml:space="preserve">
+    <value>Test runner not supported: {0}.</value>
+  </data>
+  <data name="CmdNonExistentProjectFilePathDescription" xml:space="preserve">
+    <value>The provided project file path does not exist: {0}.</value>
+  </data>
+  <data name="CmdMultipleProjectOrSolutionFilesErrorMessage" xml:space="preserve">
+    <value>Specify which project or solution file to use because this folder contains more than one project or solution file.</value>
+  </data>
+  <data name="CmdNoProjectOrSolutionFileErrorMessage" xml:space="preserve">
+    <value>Specify a project or solution file. The current working directory does not contain a project or solution file.</value>
+  </data>
+  <data name="CmdMSBuildProjectsPropertiesErrorMessage" xml:space="preserve">
+    <value>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</value>
+  </data>
 </root>
