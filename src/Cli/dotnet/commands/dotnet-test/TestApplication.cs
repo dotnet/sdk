@@ -34,6 +34,9 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<EventArgs> Run;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
+        private const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
+        private const string DLLExtension = "dll";
+
         public Module Module => _module;
 
         public TestApplication(Module module, List<string> args)

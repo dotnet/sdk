@@ -15,8 +15,12 @@ namespace Microsoft.DotNet.Cli
         private readonly List<string> _args;
         private readonly TestApplicationActionQueue _actionQueue;
         private readonly int _degreeOfParallelism;
+
         private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;
+
+        private const string BinLogFileName = "msbuild.binlog";
+        private const string Separator = ";";
         private static readonly Lock buildLock = new();
 
         public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, int degreeOfParallelism)
@@ -288,9 +292,8 @@ namespace Microsoft.DotNet.Cli
 
         private static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
         {
-            binLogFileName = CliConstants.BinLogFileName;
-
-            var binLogArgs = new List<string>();
+			binLogFileName = string.Empty;
+			var binLogArgs = new List<string>();
 
             foreach (var arg in args)
             {
@@ -311,11 +314,17 @@ namespace Microsoft.DotNet.Cli
                 // Get BinLog filename
                 var binLogArg = binLogArgs.LastOrDefault();
 
-                if (binLogArg.Contains(CliConstants.Colon))
-                {
-                    binLogFileName = binLogArg.Split(CliConstants.Colon)[1];
-                }
-                return true;
+				if (binLogArg.Contains(CliConstants.Colon))
+				{
+					var parts = binLogArg.Split(CliConstants.Colon, 2);
+					binLogFileName = !string.IsNullOrEmpty(parts[1]) ? parts[1] : CliConstants.BinLogFileName;
+				}
+				else
+				{
+					binLogFileName = CliConstants.BinLogFileName;
+				}
+
+				return true;
             }
 
             return false;
