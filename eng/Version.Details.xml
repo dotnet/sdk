@@ -557,6 +557,20 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>45155059d0b070e8ac0f6ad8f4909448e7eadd42</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.6.0-preview.25059.14">
+      <Uri>https://github.com/microsoft/testfx</Uri>
+      <Sha>53488cf463d33882113ca7a6fbbb6f93e06251df</Sha>
+    </Dependency>
+    <Dependency Name="MSTest" Version="3.8.0-preview.25059.14">
+      <Uri>https://github.com/microsoft/testfx</Uri>
+      <Sha>53488cf463d33882113ca7a6fbbb6f93e06251df</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.testfx" Version="3.8.0-preview.25059.14">
+      <Uri>https://github.com/microsoft/testfx</Uri>
+      <Sha>53488cf463d33882113ca7a6fbbb6f93e06251df</Sha>
+      <SourceBuild RepoName="testfx" ManagedOnly="true" />
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25058.4">
@@ -633,20 +647,6 @@
     <Dependency Name="Microsoft.IO.Redist" Version="6.0.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.6.0-preview.25059.14">
-      <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>53488cf463d33882113ca7a6fbbb6f93e06251df</Sha>
-    </Dependency>
-    <Dependency Name="MSTest" Version="3.8.0-preview.25059.14">
-      <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>53488cf463d33882113ca7a6fbbb6f93e06251df</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.testfx" Version="3.8.0-preview.24616.12">
-      <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>e6030a8189170d6f34abfce517073d2d641cb5fc</Sha>
-      <SourceBuild RepoName="testfx" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
