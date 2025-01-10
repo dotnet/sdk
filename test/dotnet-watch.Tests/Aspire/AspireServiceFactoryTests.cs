@@ -149,21 +149,4 @@ public class AspireServiceFactoryTests
 
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "P", "a", "b"], args);
     }
-
-    [Fact]
-    public void GetRunCommandArguments_EnvironmentVariables()
-    {
-        var request = new ProjectLaunchRequest()
-        {
-            Arguments = null,
-            DisableLaunchProfile = false,
-            LaunchProfile = null,
-            Environment = [KeyValuePair.Create("X", "1"), KeyValuePair.Create("Y", ""), KeyValuePair.Create("Z", "=")],
-            ProjectPath = "a.csproj"
-        };
-
-        var args = AspireServiceFactory.SessionManager.GetRunCommandArguments(request, hostLaunchProfile: null);
-
-        AssertEx.SequenceEqual(["--project", "a.csproj", "-e", "X=1", "-e", "Y=", "-e", "Z=="], args);
-    }
 }

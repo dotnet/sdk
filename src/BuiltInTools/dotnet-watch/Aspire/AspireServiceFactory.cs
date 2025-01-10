@@ -215,7 +215,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 BuildArguments = _hostProjectOptions.BuildArguments,
                 Command = "run",
                 CommandArguments = GetRunCommandArguments(projectLaunchInfo, hostLaunchProfile),
-                LaunchEnvironmentVariables = [],
+                LaunchEnvironmentVariables = projectLaunchInfo.Environment?.Select(e => (e.Key, e.Value))?.ToArray() ?? [],
                 LaunchProfileName = projectLaunchInfo.LaunchProfile,
                 NoLaunchProfile = projectLaunchInfo.DisableLaunchProfile,
                 TargetFramework = _hostProjectOptions.TargetFramework,
@@ -259,12 +259,6 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                     // indicate that no arguments should be used even if launch profile specifies some:
                     arguments.Add("--no-launch-profile-arguments");
                 }
-            }
-
-            foreach (var (name, value) in projectLaunchInfo.Environment ?? [])
-            {
-                arguments.Add("-e");
-                arguments.Add($"{name}={value}");
             }
 
             return arguments;
