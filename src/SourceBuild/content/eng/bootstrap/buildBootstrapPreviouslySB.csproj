@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="$(MSBuildProjectDirectory)/PackageVersions.props" />
-  <Import Project="$(BootstrapOverrideVersionsProps)" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
 
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
@@ -130,35 +129,9 @@
       Targets="CopyDownloadedPackage"
       Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageDownload.Identity);PackageVersion=%(PackageDownload.Version)" />
 
-    <!-- override PVP with bootstrap-override package versions -->
-    <Message Text="  Overriding previously-source-built package versions with $(BootstrapOverrideVersionsProps)" Importance="High" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
-    <ReadLinesFromFile File="$(UnpackedTarPath)/PackageVersions.props">
-      <Output TaskParameter="Lines" ItemName="OriginalPackageVersionLines" />
-    </ReadLinesFromFile>
-    <ReadLinesFromFile File="$(BootstrapOverrideVersionsProps)">
-      <Output TaskParameter="Lines" ItemName="BootstrapPackageVersionLines" />
-    </ReadLinesFromFile>
-
-    <ItemGroup>
-      <OriginalPackageVersionLines Remove="&lt;/Project&gt;" />
-      <BootstrapPackageVersionLines Remove="&lt;Project&gt;" />
-    </ItemGroup>
-
-    <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
-                      Lines="@(OriginalPackageVersionLines)"
-                      Overwrite="true"
-                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
-    />
-    <WriteLinesToFile File="$(UnpackedTarPath)/PackageVersions.props"
-                      Lines="@(BootstrapPackageVersionLines)"
-                      Overwrite="false"
-                      Condition="Exists('$(BootstrapOverrideVersionsProps)')"
-    />
-
     <!-- Repack tarball with new bootstrap name -->
     <Message Text="  Repacking tarball to $(NewTarballName)" Importance="High" />
     <Exec Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props *.xml SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
-
   </Target>
 
   <Target Name="CopyDownloadedPackage">

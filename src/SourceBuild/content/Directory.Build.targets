@@ -2,7 +2,10 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
 
-  <Target Name="DetermineSourceBuiltSdkVersion">
+  <!-- The SkipPrepareSdkArchive switch exists so that outside components like the license scan test pipeline
+       can run a subset of tests that don't need the SDK archive without building the VMR.
+       The switch is also useful for the local dev innerloop to build the test projects without needing to run them. -->
+  <Target Name="DetermineSourceBuiltSdkVersion" Condition="'$(SkipPrepareSdkArchive)' != 'true'">
     <PropertyGroup>
       <SdkFilenamePrefix>dotnet-sdk-</SdkFilenamePrefix>
     </PropertyGroup>

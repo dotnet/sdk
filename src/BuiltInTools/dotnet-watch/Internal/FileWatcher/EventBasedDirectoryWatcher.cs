@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch
 {
     internal sealed class EventBasedDirectoryWatcher : IDirectoryWatcher
     {
-        public event EventHandler<(string filePath, ChangeKind kind)>? OnFileChange;
+        public event EventHandler<ChangedPath>? OnFileChange;
 
         public event EventHandler<Exception>? OnError;
 
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Watch
         private void NotifyChange(string fullPath, ChangeKind kind)
         {
             // Only report file changes
-            OnFileChange?.Invoke(this, (fullPath, kind));
+            OnFileChange?.Invoke(this, new ChangedPath(fullPath, kind));
         }
 
         private void CreateFileSystemWatcher()

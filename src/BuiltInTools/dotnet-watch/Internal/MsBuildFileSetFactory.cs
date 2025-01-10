@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Watch
                     reporter.Output($"MSBuild output from target '{TargetName}':");
                 }
 
-                BuildUtilities.ReportBuildOutput(reporter, capturedOutput, verboseOutput: success);
+                BuildUtilities.ReportBuildOutput(reporter, capturedOutput, success, projectDisplay: null);
                 if (!success)
                 {
                     return null;
