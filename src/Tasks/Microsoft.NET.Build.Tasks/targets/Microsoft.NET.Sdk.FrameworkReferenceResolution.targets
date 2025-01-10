@@ -18,6 +18,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <UsingTask TaskName="CreateWindowsSdkKnownFrameworkReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="GetPackagesToPrune" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="CheckForDuplicateFrameworkReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="ProcessFrameworkReferences" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="ResolveAppHosts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
@@ -50,6 +51,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     </CreateWindowsSdkKnownFrameworkReferences>
   </Target>
 
+  <PropertyGroup Condition="'$(EnablePrunePackageReferences)' == ''">
+    <EnablePrunePackageReferences>true</EnablePrunePackageReferences>
+  </PropertyGroup>
+  
+  <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
+          Condition="'$(EnablePrunePackageReferences)' == 'true'">
+
+    <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
+                        TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
+                        FrameworkReferences="@(FrameworkReference)">
+      <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
+    </GetPackagesToPrune>
+    
+  </Target>
+  
   <!--
     ============================================================
                                         ProcessFrameworkReferences
