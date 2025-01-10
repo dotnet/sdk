@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Cli
                     }
                     catch (GracefulException)  // Fall back to looking for a solution if multiple project files are found, or there's no project in the directory.
                     {
-                        string? potentialSln = SlnFileFactory.ListSolutionFilesInDirectory(arg, false, false).FirstOrDefault();
+                        string? potentialSln = SlnFileFactory.ListSolutionFilesInDirectory(arg, false).FirstOrDefault();
 
                         if (!string.IsNullOrEmpty(potentialSln))
                         {
@@ -147,14 +147,11 @@ namespace Microsoft.DotNet.Cli
         /// Throws exception if two+ projects disagree in PublishRelease, PackRelease, or whatever _propertyToCheck is, and have it defined.</returns>
         public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, Dictionary<string, string> globalProps)
         {
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(slnPath) ?? throw new GracefulException(
-                CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
-                slnPath);
-
-            SolutionModel sln = serializer.OpenAsync(slnPath, CancellationToken.None).Result;
+            string slnFullPath = Path.GetFullPath(slnPath);
+            SolutionModel sln;
             try
             {
-                sln = SlnFileFactory.CreateFromFileOrDirectory(slnPath, false);
+                sln = SlnFileFactory.CreateFromFileOrDirectory(slnFullPath, false);
             }
             catch (GracefulException)
             {
@@ -169,13 +166,13 @@ namespace Microsoft.DotNet.Cli
             if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))
             {
                 // Evaluate only one project for speed if this environment variable is used. Will break more customers if enabled (adding 8.0 project to SLN with other project TFMs with no Publish or PackRelease.)
-                return GetSingleProjectFromSolution(sln, slnPath, globalProps);
+                return GetSingleProjectFromSolution(sln, slnFullPath, globalProps);
             }
 
             Parallel.ForEach(sln.SolutionProjects.AsEnumerable(), (project, state) =>
             {
 #pragma warning disable CS8604 // Possible null reference argument.
-                string projectFullPath = Path.Combine(Path.GetDirectoryName(slnPath), project.FilePath);
+                string projectFullPath = Path.Combine(Path.GetDirectoryName(slnFullPath), project.FilePath);
 #pragma warning restore CS8604 // Possible null reference argument.
                 if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                     return;
