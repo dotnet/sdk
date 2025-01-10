@@ -105,8 +105,7 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        buildName: ${{ format('{0}_Online_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
+        buildName: ${{ format('{0}_Offline_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         targetArchitecture: x64
@@ -118,7 +117,7 @@ stages:
         buildSourceOnly: true              # ✅
         enablePoison: false                # 🚫
         excludeOmniSharpTests: true        # ✅
-        runOnline: true                    # ✅
+        runOnline: false                   # 🚫
         useMonoRuntime: false              # 🚫
         withPreviousSDK: false             # 🚫
         reuseBuildArtifactsFrom:
