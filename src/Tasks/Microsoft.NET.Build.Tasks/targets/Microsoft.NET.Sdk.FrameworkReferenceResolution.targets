@@ -51,12 +51,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     </CreateWindowsSdkKnownFrameworkReferences>
   </Target>
 
-  <PropertyGroup Condition="'$(EnablePrunePackageReferences)' == ''">
-    <EnablePrunePackageReferences>true</EnablePrunePackageReferences>
+  <PropertyGroup Condition="'$(PrunePlatformPackageReferences)' == ''">
+    <PrunePlatformPackageReferences>false</PrunePlatformPackageReferences>
   </PropertyGroup>
   
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
-          Condition="'$(EnablePrunePackageReferences)' == 'true'">
+          Condition="'$(PrunePlatformPackageReferences)' == 'true'">
 
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                         TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
