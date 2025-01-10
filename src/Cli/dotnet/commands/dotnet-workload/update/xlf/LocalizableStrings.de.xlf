@@ -7,6 +7,11 @@
         <target state="translated">Aktualisieren Sie nur Werbemanifeste.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">Die Optionen {0} und {1} können nicht zusammen verwendet werden.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Aktualisieren Sie alle installierten Workloads.</target>
@@ -24,7 +29,7 @@
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
         <source>No workload update found.</source>
-        <target state="new">No workload update found.</target>
+        <target state="translated">Es wurde kein Workload-Update gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">Fehler bei der Workloadaktualisierung: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">Die Workloadversion „{0}“ wurde nicht gefunden.</target>
         <note />
       </trans-unit>
     </body>
