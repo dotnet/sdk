@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
+  <PropertyGroup>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildArgs>
+  </PropertyGroup>
+
   <ItemGroup>
     <RepositoryReference Include="arcade" />
   </ItemGroup>
