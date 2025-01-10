@@ -23,15 +23,15 @@ namespace Microsoft.DotNet.Cli
 
             var possibleSolutionPaths = GetSolutionFilePaths(directory);
 
-                // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
-                if (possibleSolutionPaths.Length > 1)
-                {
-                    VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
-                    return false;
-                }
+            // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
+            if (possibleSolutionPaths.Length > 1)
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
+                return false;
+            }
 
             if (possibleSolutionPaths.Length == 1)
-                {
+            {
                 var possibleProjectPaths = GetProjectFilePaths(directory);
 
                 if (possibleProjectPaths.Length == 0)
@@ -41,16 +41,14 @@ namespace Microsoft.DotNet.Cli
                     return true;
                 }
 
-                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
-                    return false;
-                }
+                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
+                return false;
             }
+
             // If no solutions are found, look for a project file
             else
             {
                 string[] possibleProjectPath = GetProjectFilePaths(directory);
-
-            var possibleProjectPath = GetProjectFilePaths(directory);
 
                 if (possibleProjectPath.Length == 0)
                 {
@@ -58,16 +56,15 @@ namespace Microsoft.DotNet.Cli
                     return false;
                 }
 
-            if (possibleProjectPath.Length == 1)
+                if (possibleProjectPath.Length == 1)
                 {
                     projectOrSolutionFilePath = possibleProjectPath[0];
                     return true;
                 }
 
-                    VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, directory));
+                VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, directory));
 
-                    return false;
-                }
+                return false;
             }
         }
 
