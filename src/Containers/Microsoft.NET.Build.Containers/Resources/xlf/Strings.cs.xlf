@@ -161,7 +161,7 @@
       </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
         <source>Pushed image index '{0}' to registry '{1}'.</source>
-        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <target state="translated">Image s indexem {0} byla vložena do registru {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
