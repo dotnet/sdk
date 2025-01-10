@@ -63,11 +63,11 @@ namespace Microsoft.DotNet.Cli
             var processStartInfo = CreateProcessStartInfo(hasFilterMode, isDll, buildConfigurationOptions, enableHelp);
 
             _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
-            var result = await StartProcess(processStartInfo);
+            var testProcessResult = await StartProcess(processStartInfo);
 
             WaitOnTestApplicationPipeConnectionLoop();
 
-            return result;
+            return testProcessResult;
         }
 
 
