@@ -19,8 +19,6 @@ namespace Microsoft.DotNet.Cli
         private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;
 
-        private const string BinLogFileName = "msbuild.binlog";
-        private const string Separator = ";";
         private static readonly Lock buildLock = new();
 
         public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, int degreeOfParallelism)
