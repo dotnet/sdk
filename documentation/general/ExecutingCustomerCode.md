@@ -28,6 +28,8 @@ Windows Sandbox permits safely running any operation in a controlled, isolated e
 
 Conveniently, however, it is relatively easy to copy files from your host computer into Sandbox, and as noted earlier, it is a secure, isolated environment, so it is an excellent choice if it is viable.
 
+Before executing customer code in Windows Sandbox, make sure to [disable networking](https://learn.microsoft.com/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-configure-using-wsb-file#networking).
+
 ### Create Your Own Solution
 
 Depending on how well you understand the customer's scenario, you may or may not understand ahead of time the most likely problem, but if it's possible to create your own solution that reproduces the issue the customer alluded to in their report, and you understand all the steps it took to create that solution, that is a safe method for obtaining a project to test and debug. Note that this is only a secure method if you understand all steps involved in creating the test project. "Copy project file provided by customer to disk and build it" does not count as a well-understood pair of steps.
@@ -41,10 +43,6 @@ The other disadvantage of this approach is that it can take a lot of time to sel
 That said, this is a secure means for executing a customer's scenario, and it works for any operating system and can even be configured to work for other architectures. Note that using a VM in the cloud costs real money, though a local VM (such as using [Hyper-V](https://learn.microsoft.com/windows-server/virtualization/hyper-v/get-started/create-a-virtual-machine-in-hyper-v)) typically does not.
 
 For Microsoft employees, [DevTestLab](https://ms.portal.azure.com/#browse/Microsoft.Compute%2FVirtualMachines) can help you create VMs.
-
-#### Docker
-
-As a corollary to using VMs to sequester the customer's scenario away from sensitive parts of your machine, containers (notably Docker containers) are intended to create a small, self-contained environment in which to operate. They're cheaper to create than full VMs, though with more stringent resource limitations and some missing or altered functionality, they may not work for some scenarios. Even so, if they work, they can be a safer and cheaper option than creating a VM. Make sure to follow general best practices such as running in rootless mode if possible and avoiding signing in using your credentials.
 
 ### Read Code
 
@@ -71,7 +69,7 @@ If you discover that a customer provided a malicious project or solution, there 
 1. Most importantly, do not keep any vestige of the repro on your machine. Do not follow their steps.
 2. Add a note to the issue that it was malicious. Include this information in the title if possible.
 3. Delete the contents of the repro steps. (On GitHub, it can still be found by looking at your edit.)
-4. Report the infraction using https://aka.ms/reportitnow
+4. Report the infraction using https://aka.ms/reportitnow (This step is only available to Microsoft employees.)
 5. Report your finding to your manager and your security team.
 6. Depending on the severity of the issue, consider banning the user from GitHub.
 
