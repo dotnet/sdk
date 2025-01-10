@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Common
             ];
         }
 
-        public static SolutionModel CreateFromFileOrDirectory(string fileOrDirectory)
+        public static SolutionModel CreateFromFileOrDirectory(string fileOrDirectory, bool includeSolutionXmlFiles = true)
         {
             if (File.Exists(fileOrDirectory))
             {
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tools.Common
             }
             else
             {
-                return FromDirectory(fileOrDirectory);
+                return FromDirectory(fileOrDirectory, includeSolutionXmlFiles);
             }
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Tools.Common
             return slnFile;
         }
 
-        private static SolutionModel FromDirectory(string solutionDirectory)
+        private static SolutionModel FromDirectory(string solutionDirectory, bool includeSolutionXmlFiles = true)
         {
             DirectoryInfo dir;
             try
@@ -72,7 +72,12 @@ namespace Microsoft.DotNet.Tools.Common
                     solutionDirectory);
             }
 
-            FileInfo[] files = [..dir.GetFiles("*.sln"), ..dir.GetFiles("*.slnx")];
+            FileInfo[] files = dir.GetFiles("*.sln");
+            if (includeSolutionXmlFiles)
+            {
+                files.Concat(dir.GetFiles(".slnx"));
+            }
+
             if (files.Length == 0)
             {
                 throw new GracefulException(
