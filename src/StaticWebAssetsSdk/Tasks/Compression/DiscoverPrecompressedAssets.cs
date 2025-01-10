@@ -32,7 +32,16 @@ public class DiscoverPrecompressedAssets : Task
         var candidates = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray();
         var assetsToUpdate = new List<ITaskItem>();
 
-        var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);
+        var candidatesByIdentity = new Dictionary<string, StaticWebAsset>(OSPath.PathComparer);
+
+        foreach (var asset in candidates)
+        {
+            // Assets might contain duplicated keys, use the first occurance 
+            if (!candidatesByIdentity.ContainsKey(asset.Identity))
+            {
+                candidatesByIdentity[asset.Identity] = asset;
+            }
+        }
 
         foreach (var candidate in candidates)
         {
