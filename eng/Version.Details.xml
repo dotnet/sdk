@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.25057.11">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.25058.4">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>88673185ead8999b65e57ff791aa7e26eb2b773a</Sha>
+      <Sha>486ca10c31ee3c31e9ad9ab9c06fbb37b6cf789e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.25057.11">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.25058.4">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>88673185ead8999b65e57ff791aa7e26eb2b773a</Sha>
+      <Sha>486ca10c31ee3c31e9ad9ab9c06fbb37b6cf789e</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.25057.11">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.25058.4">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>88673185ead8999b65e57ff791aa7e26eb2b773a</Sha>
+      <Sha>486ca10c31ee3c31e9ad9ab9c06fbb37b6cf789e</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.25059.19">
@@ -212,22 +212,22 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>c4b26195ee5a77e70b2ea5fd50db87d6a9194c24</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.13.0-preview-25058-03">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.13.0-preview-25059-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>69c2d3e61a2baf76e1491727e81c4d9b344e4d91</Sha>
+      <Sha>8d080dfdb76633bcac69a90d031a31694908ecaa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.13.0-preview-25058-03">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.13.0-preview-25059-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>69c2d3e61a2baf76e1491727e81c4d9b344e4d91</Sha>
+      <Sha>8d080dfdb76633bcac69a90d031a31694908ecaa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.13.0-preview-25058-03">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.13.0-preview-25059-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>69c2d3e61a2baf76e1491727e81c4d9b344e4d91</Sha>
+      <Sha>8d080dfdb76633bcac69a90d031a31694908ecaa</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.13.0-preview-25058-03">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.13.0-preview-25059-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>69c2d3e61a2baf76e1491727e81c4d9b344e4d91</Sha>
+      <Sha>8d080dfdb76633bcac69a90d031a31694908ecaa</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.0-alpha.1.25059.19">
