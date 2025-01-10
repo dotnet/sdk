@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Cli
             SolutionModel sln = serializer.OpenAsync(slnPath, CancellationToken.None).Result;
             try
             {
-                sln = SlnFileFactory.CreateFromFileOrDirectory(slnPath);
+                sln = SlnFileFactory.CreateFromFileOrDirectory(slnPath, false);
             }
             catch (GracefulException)
             {
