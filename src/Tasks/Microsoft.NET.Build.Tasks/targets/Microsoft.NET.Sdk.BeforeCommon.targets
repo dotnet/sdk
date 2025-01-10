@@ -259,7 +259,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     project will end up selecting the other code paths instead, which can cause all kinds of build failures or other
     problems. For additional context, see: https://github.com/dotnet/sdk/issues/43908.
   -->
-  <Target Name=""
+  <Target Name="AddImplicitDefineConstants"
           Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' "
           DependsOnTargets="GenerateTargetPlatformDefineConstants;GenerateNETCompatibleDefineConstants;GeneratePlatformCompatibleDefineConstants;_DisableDiagnosticTracing"
           AfterTargets="PrepareForBuild" >
