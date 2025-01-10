@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli
             {
                 Console.WriteLine("Waiting for options and extensions...");
 
-                await Run(context.ParseResult);
+                Run(context.ParseResult);
 
                 if (_commandLineOptionNameToModuleNames.IsEmpty)
                 {

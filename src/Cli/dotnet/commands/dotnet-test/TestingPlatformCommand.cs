@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli
             TreatUnmatchedTokensAsErrors = false;
         }
 
-        public async Task<int> Run(ParseResult parseResult)
+        public int Run(ParseResult parseResult)
         {
             bool hasFailed = false;
             try
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli
                 else
                 {
                     var buildPathOptions = GetBuildPathOptions(parseResult);
-                    if (!await _msBuildHandler.RunMSBuild(buildPathOptions))
+                    if (!_msBuildHandler.RunMSBuild(buildPathOptions).GetAwaiter().GetResult())
                     {
                         return ExitCodes.GenericFailure;
                     }
