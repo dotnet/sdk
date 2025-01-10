@@ -387,7 +387,11 @@
 
       <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
-      <ILCompilerSupportedRids Include="@(Net90ILCompilerSupportedRids)" />
+      <ILCompilerSupportedRids Include="
+        @(Net90ILCompilerSupportedRids);
+        linux-riscv64;
+        linux-musl-riscv64;
+        " />
 
       <Net80NativeAOTRuntimePackRids Include="
         ios-arm64;
