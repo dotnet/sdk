@@ -118,9 +118,19 @@ Przykłady:
         <target state="new">Invalid test message state '{0}'</target>
         <note>{0} - test message state</note>
       </trans-unit>
+      <trans-unit id="CmdMSBuildProjectsPropertiesErrorMessage">
+        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
+        <target state="new">Get projects properties with MSBuild didn't execute properly with exit code: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">Maksymalna liczba modułów testowych, które mogą być uruchamiane równolegle.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorMessage">
+        <source>Specify which project or solution file to use because this folder contains more than one project or solution file.</source>
+        <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -128,9 +138,19 @@ Przykłady:
         <target state="translated">Uruchom testy bez wyświetlania baneru platformy testowej firmy Microsoft</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoProjectOrSolutionFileErrorMessage">
+        <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
+        <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoRestoreDescription">
         <source>Do not execute an implicit restore.</source>
         <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentProjectFilePathDescription">
+        <source>The provided project file path does not exist: {0}.</source>
+        <target state="new">The provided project file path does not exist: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
@@ -254,6 +274,11 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
         <source>Message Request type '{0}' is unsupported.</source>
         <target state="new">Message Request type '{0}' is unsupported.</target>
         <note>{0} - message request type</note>
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedTestRunnerDescription">
+        <source>Test runner not supported: {0}.</source>
+        <target state="new">Test runner not supported: {0}.</target>
+        <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
         <source>Test application(s) that support VSTest are not supported.</source>
