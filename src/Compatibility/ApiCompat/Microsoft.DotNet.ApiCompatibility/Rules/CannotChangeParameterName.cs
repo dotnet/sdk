@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 
@@ -11,8 +12,26 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class CannotChangeParameterName : IRule
     {
-        public CannotChangeParameterName(IRuleSettings settings, IRuleRegistrationContext context) =>
+        public CannotChangeParameterName(IRuleSettings settings, IRuleRegistrationContext context)
+        {
+            context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
             context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
+        }
+
+
+        private void RunOnTypeSymbol(ITypeSymbol? left,
+            ITypeSymbol? right,
+            MetadataInformation leftMetadata,
+            MetadataInformation rightMetadata,
+            IList<CompatDifference> differences)
+        {
+            if (left is not INamedTypeSymbol leftType || right is not INamedTypeSymbol rightType)
+            {
+                return;
+            }
+
+            CompareParameters(leftType.TypeParameters, rightType.TypeParameters, left, leftMetadata, rightMetadata, differences, parameterIndicator: "``");
+        }
 
         private void RunOnMemberSymbol(
             ISymbol? left,
@@ -28,12 +47,26 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
-            Debug.Assert(leftMethod.Parameters.Length == rightMethod.Parameters.Length);
+            CompareParameters(leftMethod.Parameters, rightMethod.Parameters, left, leftMetadata, rightMetadata, differences);
 
-            for (int i = 0; i < leftMethod.Parameters.Length; i++)
+            CompareParameters(leftMethod.TypeParameters, rightMethod.TypeParameters, left, leftMetadata, rightMetadata, differences, parameterIndicator: "``");
+
+        }
+
+        private void CompareParameters(IReadOnlyList<ISymbol> leftParameters,
+            IReadOnlyList<ISymbol> rightParameters,
+            ISymbol left,
+            MetadataInformation leftMetadata,
+            MetadataInformation rightMetadata,
+            IList<CompatDifference> differences,
+            string parameterIndicator = "$")
+        {
+            Debug.Assert(leftParameters.Count == rightParameters.Count);
+
+            for (int i = 0; i < leftParameters.Count; i++)
             {
-                IParameterSymbol leftParam = leftMethod.Parameters[i];
-                IParameterSymbol rightParam = rightMethod.Parameters[i];
+                ISymbol leftParam = leftParameters[i];
+                ISymbol rightParam = rightParameters[i];
 
                 if (!leftParam.Name.Equals(rightParam.Name))
                 {
@@ -43,7 +76,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         DiagnosticIds.CannotChangeParameterName,
                         string.Format(Resources.CannotChangeParameterName, left, leftParam.Name, rightParam.Name),
                         DifferenceType.Changed,
-                        $"{leftMethod.GetDocumentationCommentId()}${i}"));
+                        $"{left.GetDocumentationCommentId()}{parameterIndicator}{i}"));
                 }
             }
         }
