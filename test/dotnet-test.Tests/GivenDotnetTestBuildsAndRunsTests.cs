@@ -179,7 +179,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdErr.Should().Contain("Test runner not supported: Unknown");
+                result.StdErr.Should().Contain("Test runner Unknown not supported");
             }
 
             result.ExitCode.Should().Be(1);

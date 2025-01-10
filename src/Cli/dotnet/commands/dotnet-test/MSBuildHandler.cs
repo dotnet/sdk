@@ -6,6 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -17,9 +18,7 @@ namespace Microsoft.DotNet.Cli
 
         private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;
-
-        private const string BinLogFileName = "msbuild.binlog";
-        private static readonly object s_buildLock = new();
+        private static readonly Lock buildLock = new();
 
         public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, int degreeOfParallelism)
         {
@@ -28,29 +27,90 @@ namespace Microsoft.DotNet.Cli
             _degreeOfParallelism = degreeOfParallelism;
         }
 
-        public int RunWithMSBuild(bool allowBinLog)
+        public async Task<bool> RunMSBuild(BuildPathsOptions buildPathOptions)
         {
-            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetSolutionOrProjectFilePath(Directory.GetCurrentDirectory(), out string filePath, out bool isSolution);
+            int msbuildExitCode;
+
+            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            {
+                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdProjectAndSolutionOptionErrorDescription);
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
+            {
+                if (!ValidateFilePath(buildPathOptions.ProjectPath, CliConstants.ProjectExtensions, LocalizableStrings.CmdInvalidProjectFileExtensionDescription))
+                {
+                    return false;
+                }
+
+                msbuildExitCode = await RunWithMSBuild(buildPathOptions.ProjectPath, isSolution: false);
+            }
+            else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            {
+                if (!ValidateFilePath(buildPathOptions.SolutionPath, CliConstants.SolutionExtensions, LocalizableStrings.CmdInvalidSolutionFileExtensionDescription))
+                {
+                    return false;
+                }
+
+                msbuildExitCode = await RunWithMSBuild(buildPathOptions.SolutionPath, isSolution: true);
+            }
+            else
+            {
+                // If no filter was provided neither the project using --project,
+                // MSBuild will get the test project paths in the current directory
+                msbuildExitCode = await RunWithMSBuild(Directory.GetCurrentDirectory());
+            }
+
+            if (msbuildExitCode != ExitCodes.Success)
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorMessage, msbuildExitCode));
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool ValidateFilePath(string filePath, string[] validExtensions, string errorMessage)
+        {
+            if (!validExtensions.Contains(Path.GetExtension(filePath)))
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(errorMessage, filePath));
+                return false;
+            }
+
+            if (!File.Exists(filePath))
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.@CmdNonExistentFileDescription, filePath));
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<int> RunWithMSBuild(string directory)
+        {
+            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directory, out string projectOrSolutionFilePath, out bool isSolution);
 
             if (!solutionOrProjectFileFound)
             {
-                return 1;
+                return ExitCodes.GenericFailure;
             }
 
-            (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(filePath, isSolution, allowBinLog);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(projectOrSolutionFilePath, isSolution);
 
             InitializeTestApplications(modules);
 
-            return restored ? 0 : 1;
+            return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
-        public int RunWithMSBuild(string filePath, bool allowBinLog)
+        private async Task<int> RunWithMSBuild(string filePath, bool isSolution)
         {
-            (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(filePath, false, allowBinLog);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution);
 
             InitializeTestApplications(modules);
 
-            return restored ? 0 : 1;
+            return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
         private void InitializeTestApplications(IEnumerable<Module> modules)
@@ -65,6 +125,7 @@ namespace Microsoft.DotNet.Cli
                 else // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
                 {
                     _areTestingPlatformApplications = false;
+                    return;
                 }
             }
         }
@@ -83,19 +144,26 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private (IEnumerable<Module>, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, bool allowBinLog)
+        private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
         {
             var allProjects = new ConcurrentBag<Module>();
             bool restored = true;
 
             if (isSolution)
             {
-                var projects = SolutionAndProjectUtility.GetProjectsFromSolutionFile(solutionOrProjectFilePath);
-                ProcessProjectsInParallel(projects, allowBinLog, allProjects, ref restored);
+                string fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
+                string rootDirectory = string.IsNullOrEmpty(fileDirectory)
+                    ? Directory.GetCurrentDirectory()
+                    : fileDirectory;
+
+                var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
+                ProcessProjectsInParallel(projects, allProjects, ref restored);
             }
             else
             {
-                var (relatedProjects, isProjectBuilt) = GetProjectPropertiesInternal(solutionOrProjectFilePath, allowBinLog);
+                bool allowBinLog = IsBinaryLoggerEnabled(_args, out string binLogFileName);
+
+                var (relatedProjects, isProjectBuilt) = GetProjectPropertiesInternal(solutionOrProjectFilePath, allowBinLog, binLogFileName);
                 foreach (var relatedProject in relatedProjects)
                 {
                     allProjects.Add(relatedProject);
@@ -109,32 +177,41 @@ namespace Microsoft.DotNet.Cli
             return (allProjects, restored);
         }
 
-        private void ProcessProjectsInParallel(IEnumerable<string> projects, bool allowBinLog, ConcurrentBag<Module> allProjects, ref bool restored)
+        private void ProcessProjectsInParallel(IEnumerable<string> projects, ConcurrentBag<Module> allProjects, ref bool restored)
         {
             bool allProjectsRestored = true;
+            bool allowBinLog = IsBinaryLoggerEnabled(_args, out string binLogFileName);
 
-            Parallel.ForEach(projects, new ParallelOptions { MaxDegreeOfParallelism = _degreeOfParallelism }, project =>
-            {
-                var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog);
-                foreach (var relatedProject in relatedProjects)
+            Parallel.ForEach(
+                projects,
+                new ParallelOptions { MaxDegreeOfParallelism = _degreeOfParallelism },
+                () => true,
+                (project, state, localRestored) =>
                 {
-                    allProjects.Add(relatedProject);
-                }
+                    var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog, binLogFileName);
+                    foreach (var relatedProject in relatedProjects)
+                    {
+                        allProjects.Add(relatedProject);
+                    }
 
-                if (!isRestored)
+                    return localRestored && isRestored;
+                },
+                localRestored =>
                 {
-                    allProjectsRestored = false;
-                }
-            });
+                    if (!localRestored)
+                    {
+                        allProjectsRestored = false;
+                    }
+                });
 
             restored = allProjectsRestored;
         }
 
-        private static (IEnumerable<Module> Modules, bool Restored) GetProjectPropertiesInternal(string projectFilePath, bool allowBinLog)
+        private static (IEnumerable<Module> Modules, bool Restored) GetProjectPropertiesInternal(string projectFilePath, bool allowBinLog, string binLogFileName)
         {
             var projectCollection = new ProjectCollection();
             var project = projectCollection.LoadProject(projectFilePath);
-            var buildResult = RestoreProject(projectFilePath, allowBinLog, projectCollection);
+            var buildResult = RestoreProject(projectFilePath, projectCollection, allowBinLog, binLogFileName);
 
             bool restored = buildResult.OverallResult == BuildResultCode.Success;
 
@@ -165,7 +242,7 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                var frameworks = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var framework in frameworks)
                 {
                     project.SetProperty(ProjectProperties.TargetFramework, framework);
@@ -183,7 +260,7 @@ namespace Microsoft.DotNet.Cli
             return projects;
         }
 
-        private static BuildResult RestoreProject(string projectFilePath, bool allowBinLog, ProjectCollection projectCollection)
+        private static BuildResult RestoreProject(string projectFilePath, ProjectCollection projectCollection, bool allowBinLog, string binLogFileName)
         {
             BuildParameters parameters = new(projectCollection)
             {
@@ -195,19 +272,60 @@ namespace Microsoft.DotNet.Cli
                 parameters.Loggers = parameters.Loggers.Concat([
                     new BinaryLogger
                     {
-                        Parameters = BinLogFileName
+                        Parameters = binLogFileName
                     }
                 ]);
             }
 
             var buildRequestData = new BuildRequestData(projectFilePath, new Dictionary<string, string>(), null, [CliConstants.RestoreCommand], null);
             BuildResult buildResult;
-            lock (s_buildLock)
+            lock (buildLock)
             {
                 buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
             }
 
             return buildResult;
+        }
+
+        internal static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
+        {
+            binLogFileName = string.Empty;
+
+            var binLogArgs = new List<string>();
+
+            foreach (var arg in args)
+            {
+                if (arg.StartsWith("/bl:") || arg.Equals("/bl")
+                    || arg.StartsWith("--binaryLogger:") || arg.Equals("--binaryLogger")
+                    || arg.StartsWith("-bl:") || arg.Equals("-bl"))
+                {
+                    binLogArgs.Add(arg);
+
+                }
+            }
+
+            if (binLogArgs.Count > 0)
+            {
+                // Remove all BinLog args from the list of args
+                args.RemoveAll(arg => binLogArgs.Contains(arg));
+
+                // Get BinLog filename
+                var binLogArg = binLogArgs.LastOrDefault();
+
+                if (binLogArg.Contains(CliConstants.Colon))
+                {
+                    var parts = binLogArg.Split(CliConstants.Colon, 2);
+                    binLogFileName = !string.IsNullOrEmpty(parts[1]) ? parts[1] : CliConstants.BinLogFileName;
+                }
+                else
+                {
+                    binLogFileName = CliConstants.BinLogFileName;
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         public void Dispose()

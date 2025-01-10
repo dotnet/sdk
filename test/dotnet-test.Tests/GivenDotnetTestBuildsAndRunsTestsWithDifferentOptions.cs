@@ -20,12 +20,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]
         [Theory]
-        public void RunSpecificCSProjWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
+        public void RunWithProjectPathWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             string testProjectPath = "TestProject\\TestProject.csproj";
+
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithTraceOutput()
@@ -41,18 +42,62 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]
         [Theory]
-        public void RunSpecificNonExistentCSProj_ShouldReturnZeroAsExitCode(string configuration)
+        public void RunWithBothProjectAndSolutionOptions_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
+            string testProjectPath = "TestProject\\TestProject.csproj";
+            string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
+
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ProjectOption.Name, @"TestProject\TestProject1.csproj",
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
+                                             TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            result.ExitCode.Should().Be(1);
+            result.StdOut?.Contains("Specify either the project or solution option.");
+        }
+
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunWithNonExistentProjectPath_ShouldReturnZeroAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string testProjectPath = "TestProject\\TestProject2.csproj";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.ExitCode.Should().Be(1);
-            result.StdOut?.Contains("MSBUILD : error MSB1009: Project file does not exist.");
+            result.StdOut?.Contains($"The provided file path does not exist: {testProjectPath}.");
+        }
+
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunWithNonExistentSolutionPath_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string nonExistentSolutionPath = "NonExistentSolution.sln";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.SolutionOption.Name, nonExistentSolutionPath,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            result.ExitCode.Should().Be(1);
+            result.StdOut.Should().Contain($"The provided file path does not exist: {nonExistentSolutionPath}.");
         }
 
 
