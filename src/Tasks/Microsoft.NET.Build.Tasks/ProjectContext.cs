@@ -196,10 +196,7 @@ namespace Microsoft.NET.Build.Tasks
                 .SelectMany(g => g.Dependencies)
                 .Select(projectFileDependency =>
                 {
-                    int separatorIndex = projectFileDependency.IndexOf(' ');
-                    string libraryName = separatorIndex > 0 ?
-                        projectFileDependency.Substring(0, separatorIndex) :
-                        projectFileDependency;
+                    string libraryName = projectFileDependency.TakeWhile(c => !char.IsWhiteSpace(c)).ToString();
 
                     if (!string.IsNullOrEmpty(libraryName) && libraryLookup.ContainsKey(libraryName))
                     {
