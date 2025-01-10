@@ -12,7 +12,6 @@ internal sealed class StartupHook
 {
     private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages) == "1";
     private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName);
-    private static readonly string s_targetProcessPath = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath);
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
@@ -20,16 +19,6 @@ internal sealed class StartupHook
     public static void Initialize()
     {
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
-
-        // Workaround for https://github.com/dotnet/sdk/issues/40484
-        // When launching the application process dotnet-watch sets Hot Reload environment variables via CLI environment directives (dotnet [env:X=Y] run).
-        // Currently, the CLI parser sets the env variables to the dotnet.exe process itself, rather then to the target process.
-        // This may cause the dotnet.exe process to connect to the named pipe and break it for the target process.
-        if (!IsMatchingProcess(processPath, s_targetProcessPath))
-        {
-            Log($"Ignoring process '{processPath}', expecting '{s_targetProcessPath}'");
-            return;
-        }
 
         Log($"Loaded into process: {processPath}");
 

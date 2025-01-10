@@ -18,13 +18,6 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         private readonly Dictionary<string, string> _variables = [];
 
-        /// <summary>
-        /// Environment variables passed as directives on command line (dotnet [env:name=value] run).
-        /// Currently, the effect is the same as setting <see cref="_variables"/> due to
-        /// https://github.com/dotnet/sdk/issues/40484
-        /// </summary>
-        private readonly Dictionary<string, string> _directives = [];
-
         public static EnvironmentVariablesBuilder FromCurrentEnvironment()
         {
             var builder = new EnvironmentVariablesBuilder();
@@ -42,57 +35,39 @@ namespace Microsoft.DotNet.Watch
             return builder;
         }
 
-        public void SetDirective(string name, string value)
-        {
-            // should use DotNetStartupHookDirective
-            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase));
-
-            _directives[name] = value;
-        }
-
         public void SetVariable(string name, string value)
         {
-            // should use AspNetCoreHostingStartupAssembliesVariable
+            // should use AspNetCoreHostingStartupAssembliesVariable/DotNetStartupHookDirective
             Debug.Assert(!name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase));
+            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase));
 
             _variables[name] = value;
         }
 
-        public void ConfigureProcess(ProcessSpec processSpec)
+        public void SetProcessEnvironmentVariables(ProcessSpec processSpec)
         {
-            processSpec.Arguments = [.. GetCommandLineDirectives(), .. processSpec.Arguments ?? []];
-            AddToEnvironment(processSpec.EnvironmentVariables);
+            foreach (var (name, value) in GetEnvironment())
+            {
+                processSpec.EnvironmentVariables.Add(name, value);
+            }
         }
 
-        // for testing
-        internal void AddToEnvironment(Dictionary<string, string> variables)
+        public IEnumerable<(string name, string value)> GetEnvironment()
         {
             foreach (var (name, value) in _variables)
             {
-                variables.Add(name, value);
-            }
-
-            if (AspNetCoreHostingStartupAssembliesVariable is not [])
-            {
-                variables.Add(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, string.Join(AssembliesSeparator, AspNetCoreHostingStartupAssembliesVariable));
-            }
-        }
-
-        // for testing
-        internal IEnumerable<string> GetCommandLineDirectives()
-        {
-            foreach (var (name, value) in _directives)
-            {
-                yield return MakeDirective(name, value);
+                yield return (name, value);
             }
 
             if (DotNetStartupHookDirective is not [])
             {
-                yield return MakeDirective(EnvironmentVariables.Names.DotnetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHookDirective));
+                yield return (EnvironmentVariables.Names.DotnetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHookDirective));
             }
 
-            static string MakeDirective(string name, string value)
-                => $"[env:{name}={value}]";
+            if (AspNetCoreHostingStartupAssembliesVariable is not [])
+            {
+                yield return (EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, string.Join(AssembliesSeparator, AspNetCoreHostingStartupAssembliesVariable));
+            }
         }
     }
 }
