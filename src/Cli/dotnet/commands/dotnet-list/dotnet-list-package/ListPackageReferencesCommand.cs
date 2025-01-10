@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Tools.List.PackageReferences
 
             if (Directory.Exists(resultPath))
             {
-                string[] possibleSolutionPath = SlnFileFactory.ListSolutionFilesInDirectory(resultPath).ToArray();
+                string[] possibleSolutionPath = SlnFileFactory.ListSolutionFilesInDirectory(resultPath, false, false).ToArray();
 
                 //If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
                 if (possibleSolutionPath.Count() > 1)

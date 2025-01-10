@@ -10,11 +10,11 @@ namespace Microsoft.DotNet.Tools.Common
 {
     public static class SlnFileFactory
     {
-        public static string[] ListSolutionFilesInDirectory(string directory, bool includeSolutionFilterFiles = false)
+        public static string[] ListSolutionFilesInDirectory(string directory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
         {
             return [
                 ..Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly),
-                ..Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly),
+                ..(includeSolutionXmlFiles ? Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly) : Array.Empty<string>()),
                 ..(includeSolutionFilterFiles ? Directory.GetFiles(directory, "*.slnf", SearchOption.TopDirectoryOnly) : Array.Empty<string>())
             ];
         }
