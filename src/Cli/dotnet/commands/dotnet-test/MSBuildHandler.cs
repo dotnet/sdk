@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!File.Exists(filePath))
             {
-                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.@CmdNonExistentFileDescription, filePath));
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentFileDescription, filePath));
                 return false;
             }
 
@@ -292,8 +292,8 @@ namespace Microsoft.DotNet.Cli
 
         private static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
         {
-			binLogFileName = string.Empty;
-			var binLogArgs = new List<string>();
+            binLogFileName = string.Empty;
+            var binLogArgs = new List<string>();
 
             foreach (var arg in args)
             {
@@ -314,17 +314,17 @@ namespace Microsoft.DotNet.Cli
                 // Get BinLog filename
                 var binLogArg = binLogArgs.LastOrDefault();
 
-				if (binLogArg.Contains(CliConstants.Colon))
-				{
-					var parts = binLogArg.Split(CliConstants.Colon, 2);
-					binLogFileName = !string.IsNullOrEmpty(parts[1]) ? parts[1] : CliConstants.BinLogFileName;
-				}
-				else
-				{
-					binLogFileName = CliConstants.BinLogFileName;
-				}
+                if (binLogArg.Contains(CliConstants.Colon))
+                {
+                    var parts = binLogArg.Split(CliConstants.Colon, 2);
+                    binLogFileName = !string.IsNullOrEmpty(parts[1]) ? parts[1] : CliConstants.BinLogFileName;
+                }
+                else
+                {
+                    binLogFileName = CliConstants.BinLogFileName;
+                }
 
-				return true;
+                return true;
             }
 
             return false;
