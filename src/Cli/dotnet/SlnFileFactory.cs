@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Tools.Common
             return slnFile;
         }
 
-        private static SolutionModel FromDirectory(string solutionDirectory, bool includeSolutionXmlFiles = true)
+        private static SolutionModel FromDirectory(string solutionDirectory, bool includeSolutionXmlFiles)
         {
             DirectoryInfo dir;
             try
@@ -72,11 +72,10 @@ namespace Microsoft.DotNet.Tools.Common
                     solutionDirectory);
             }
 
-            FileInfo[] files = dir.GetFiles("*.sln");
-            if (includeSolutionXmlFiles)
-            {
-                files.Concat(dir.GetFiles(".slnx"));
-            }
+            FileInfo[] files = [
+                ..dir.GetFiles("*.sln"),
+                ..(includeSolutionXmlFiles ? dir.GetFiles(".slnx") : Array.Empty<FileInfo>())
+             ];
 
             if (files.Length == 0)
             {
