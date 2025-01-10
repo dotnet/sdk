@@ -17,6 +17,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(NETCoreSdkBundledVersionsProps)" Condition="Exists('$(NETCoreSdkBundledVersionsProps)')" />
 
+  <PropertyGroup Condition="'$(NETCoreSdkBundledMSBuildInformationProps)' == ''">
+    <NETCoreSdkBundledMSBuildInformationProps>$(MSBuildThisFileDirectory)..\..\..\Microsoft.NETCoreSdk.BundledMSBuildInformation.props</NETCoreSdkBundledMSBuildInformationProps>
+  </PropertyGroup>
+
+  <Import Project="$(NETCoreSdkBundledMSBuildInformationProps)" Condition="Exists('$(NETCoreSdkBundledMSBuildInformationProps)')" />
+
   <PropertyGroup>
     <!-- Disable web SDK implicit package versions for ASP.NET packages, since the .NET SDK now handles that -->
     <EnableWebSdkImplicitPackageVersions>false</EnableWebSdkImplicitPackageVersions>
@@ -89,5 +95,4 @@ Copyright (c) .NET Foundation. All rights reserved.
                         Condition="'$(_IsPublishing)' == 'true' and '$(PublishAotUsingRuntimePack)' == 'true' And ('$(_TargetFrameworkVersionWithoutV)' != '') And ('$(_TargetFrameworkVersionWithoutV)' >= '8.0')" />
 
   </ItemGroup>
-
 </Project>

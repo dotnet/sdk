@@ -52,6 +52,11 @@
         <target state="translated">Das Workloadpaket {0}, Version {1}, wird deinstalliert…</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">Die Workloadversion {0} wird gelöscht.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">VERZEICHNIS</target>
