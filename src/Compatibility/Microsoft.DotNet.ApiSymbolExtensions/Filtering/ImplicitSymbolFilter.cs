@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
-namespace Microsoft.DotNet.GenAPI.Filtering
+namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
 {
     /// <summary>
     /// Filter out implicitly generated members for properties, events, etc.

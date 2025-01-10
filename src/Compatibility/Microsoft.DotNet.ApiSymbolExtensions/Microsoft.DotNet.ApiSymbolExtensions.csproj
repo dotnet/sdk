@@ -19,6 +19,7 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Reference Include="System.IO.Compression" />
+    <Compile Include="$(RepoRoot)src\Common\NullableAttributes.cs" LinkBase="Common" />
   </ItemGroup>
 
 </Project>
