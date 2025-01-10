@@ -1,0 +1,44 @@
+# Contains the paths to files that contains non-OSS licenses and should be removed from source-build
+
+# This file is used by the FileRemover tool to remove files from the VMR
+# If importing a file, include the relative path to the file
+
+#
+# arcade
+#
+
+# Applies to installer
+src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix/eula.rtf
+
+#
+# aspnetcore
+#
+
+# Windows-only installer components
+src/aspnetcore/src/Installers/Windows/AspNetCoreModule-Setup/license/license.rtf
+
+# Windows installer files that have a reference to a URL for license
+src/aspnetcore/src/Installers/Windows/**/*.wxl
+src/aspnetcore/src/Installers/Windows/**/*.wxs
+
+#
+# fsharp
+#
+
+# Applies to installer
+src/fsharp/setup/resources/eula/*.rtf
+
+#
+# roslyn
+#
+
+# Applies to installer
+src/roslyn/src/Setup/Roslyn.ThirdPartyNotices/ThirdPartyNotices.rtf
+src/roslyn/src/Setup/Roslyn.VsixLicense/EULA.rtf
+
+#
+# runtime
+#
+
+# Installer asset
+src/runtime/src/installer/pkg/LICENSE-MSFT.TXT
