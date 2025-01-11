@@ -135,6 +135,8 @@
     <LangVersion>latest</LangVersion>
     <!-- Explicitly set NuGetAuditModel level as it's currently disabled in the product. -->
     <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Only upgrade NuGetAudit warnings to errors for official builds. -->
+    <WarningsNotAsErrors Condition="'$(OfficialBuildId)' == ''">$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>
