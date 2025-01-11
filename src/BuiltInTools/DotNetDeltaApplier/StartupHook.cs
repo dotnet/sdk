@@ -47,26 +47,36 @@ internal sealed class StartupHook
             {
                 agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
 
-                var initPayload = new ClientInitializationPayload(agent.Capabilities);
+                var initPayload = new ClientInitializationRequest(agent.Capabilities);
                 await initPayload.WriteAsync(pipeClient, CancellationToken.None);
 
                 while (pipeClient.IsConnected)
                 {
-                    var update = await UpdatePayload.ReadAsync(pipeClient, CancellationToken.None);
-
+                    var update = await ManagedCodeUpdateRequest.ReadAsync(pipeClient, CancellationToken.None);
                     Log($"ResponseLoggingLevel = {update.ResponseLoggingLevel}");
 
-                    agent.ApplyDeltas(update.Deltas);
+                    bool success;
+                    try
+                    {
+                        agent.ApplyDeltas(update.Deltas);
+                        success = true;
+                    }
+                    catch (Exception e)
+                    {
+                        agent.Reporter.Report($"The runtime failed to applying the change: {e.Message}", AgentMessageSeverity.Error);
+                        agent.Reporter.Report("Further changes won't be applied to this process.", AgentMessageSeverity.Warning);
+                        success = false;
+                    }
+
                     var logEntries = agent.GetAndClearLogEntries(update.ResponseLoggingLevel);
 
-                    // response:
-                    await pipeClient.WriteAsync((byte)UpdatePayload.ApplySuccessValue, CancellationToken.None);
-                    await UpdatePayload.WriteLogAsync(pipeClient, logEntries, CancellationToken.None);
+                    var response = new UpdateResponse(logEntries, success);
+                    await response.WriteAsync(pipeClient, CancellationToken.None);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Log(ex.Message);
+                Log(e.ToString());
             }
 
             Log("Stopped received delta updates. Server is no longer connected.");
