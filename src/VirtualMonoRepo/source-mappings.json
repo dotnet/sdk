@@ -112,7 +112,8 @@
         },
         {
             "name": "scenario-tests",
-            "defaultRemote": "https://github.com/dotnet/scenario-tests"
+            "defaultRemote": "https://github.com/dotnet/scenario-tests",
+            "disableSynchronization": true
         },
         {
             "name": "sdk",
@@ -153,10 +154,6 @@
         {
             "name": "templating",
             "defaultRemote": "https://github.com/dotnet/templating"
-        },
-        {
-            "name": "test-templates",
-            "defaultRemote": "https://github.com/dotnet/test-templates"
         },
         {
             "name": "testfx",

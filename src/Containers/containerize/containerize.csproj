@@ -4,7 +4,6 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>

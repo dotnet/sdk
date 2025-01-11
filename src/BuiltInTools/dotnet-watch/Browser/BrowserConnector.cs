@@ -6,10 +6,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable
     {
@@ -98,7 +96,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             lock (_serversGuard)
             {
-                return _servers.TryGetValue(projectNode, out server);
+                return _servers.TryGetValue(projectNode, out server) && server != null;
             }
         }
 
@@ -150,7 +148,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     // Subsequent iterations (project has been rebuilt and relaunched).
                     // Use refresh server to reload the browser, if available.
                     context.Reporter.Verbose("Reloading browser.");
-                    _ = server.ReloadAsync(cancellationToken);
+                    _ = server.SendReloadMessageAsync(cancellationToken);
                 }
             }
         }
@@ -223,9 +221,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            if (projectOptions.Command != "run")
+            if (!CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command))
             {
-                reporter.Verbose("Browser refresh is only supported for run commands.");
+                reporter.Verbose($"Command '{projectOptions.Command}' does not support browser refresh.");
                 return false;
             }
 

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
@@ -549,6 +551,44 @@ namespace Microsoft.NET.Publish.Tests
             DateTime fileWriteTimeAfterSecondRun = File.GetLastWriteTimeUtc(singleFilePath);
 
             fileWriteTimeAfterSecondRun.Should().Be(fileWriteTimeAfterFirstRun);
+        }
+
+        [RequiresMSBuildVersionFact("16.8.0")]
+        public void It_uses_appropriate_host_on_selfcontained_publish_with_no_build()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            // Build will create app using apphost
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            // Publish without build should create app using singlefilehost
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+                .Execute(PublishSingleFile, "/p:NoBuild=true")
+                .Should()
+                .Pass();
+            string singleFilePath = Path.Combine(
+                GetPublishDirectory(publishCommand).FullName,
+                $"{testProject.Name}{Constants.ExeSuffix}");
+
+            // Make sure published app runs correctly
+            var command = new RunExeCommand(Log, singleFilePath);
+            command.Execute()
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining("Hello World");
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]

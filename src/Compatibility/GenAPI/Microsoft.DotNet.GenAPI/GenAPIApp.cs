@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -81,7 +80,8 @@ namespace Microsoft.DotNet.GenAPI
                     textWriter,
                     exceptionMessage,
                     includeAssemblyAttributes,
-                    loader.MetadataReferences);
+                    loader.MetadataReferences,
+                    addPartialModifier: true);
 
                 fileBuilder.WriteAssembly(assemblySymbol);
             }

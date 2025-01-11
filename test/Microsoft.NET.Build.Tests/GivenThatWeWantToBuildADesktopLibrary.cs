@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
 
@@ -222,6 +224,32 @@ public class NETFramework
             {
                 var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
                 dependencyContext.CompileLibraries.Should().NotBeEmpty();
+            }
+        }
+
+        [Theory]
+        [InlineData("RazorSimpleMvc22", "netcoreapp2.2", "SimpleMvc22")]
+        [InlineData("DesktopReferencingNetStandardLibrary", "net46", "Library")]
+        public void PackageReferences_with_private_assets_do_not_appear_in_deps_file(string asset, string targetFramework, string exeName)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(asset)
+                .WithSource();
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(targetFramework).FullName, exeName + ".deps.json")))
+            {
+                var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
+                if (asset.Equals("DesktopReferencingNetStandardLibrary"))
+                {
+                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Library")).Should().BeTrue();
+                }
+                else
+                {
+                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Microsoft.AspNetCore.App")).Should().BeFalse();
+                }
             }
         }
 

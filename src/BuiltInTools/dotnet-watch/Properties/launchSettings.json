@@ -5,7 +5,10 @@
       "commandLineArgs": "--verbose /bl:DotnetRun.binlog",
       "workingDirectory": "$(RepoRoot)src\\Assets\\TestProjects\\BlazorWasmWithLibrary\\blazorwasm",
       "environmentVariables": {
-        "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)"
+        "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
+        "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",
+        "DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS": "100000",
+        "DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS": "100000"
       }
     }
   }

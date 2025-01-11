@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload.Search;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -26,6 +28,22 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public GivenDotnetWorkloadSearch(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
+        }
+
+        [Theory]
+        [InlineData("--invalidArgument")]
+        [InlineData("notAVersion")]
+        [InlineData("1.2")] // too short
+        [InlineData("1.2.3.4.5")] // too long
+        [InlineData("1.2-3.4")] // numbers after [-, +] don't count
+        public void GivenInvalidArgumentToWorkloadSearchVersionItFailsCleanly(string argument)
+        {
+            _reporter.Clear();
+            var parseResult = Parser.Instance.Parse($"dotnet workload search version {argument}");
+            var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "9.0.100", workloadResolver);
+            var command = () => new WorkloadSearchVersionsCommand(parseResult, _reporter, workloadResolverFactory);
+            command.Should().Throw<CommandParsingException>();
         }
 
         [Fact]
