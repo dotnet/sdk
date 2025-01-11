@@ -2,7 +2,7 @@
 For more information, run: 
    dotnet new list -h
 These templates matched your input: 
-Template Name                                 Short Name                    Language    Tags                          
+Template Name                                 Short Name                  Language    Tags                          
 API
 ASP.NET
 Blazor
