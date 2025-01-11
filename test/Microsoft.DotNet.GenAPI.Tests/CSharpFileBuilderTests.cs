@@ -10,6 +10,7 @@ using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
+using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
@@ -53,8 +54,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
             }
             attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
+            Mock<ILog> log = new();
+
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
-                new ConsoleLog(MessageImportance.Low),
+                log.Object,
                 symbolFilter,
                 attributeDataSymbolFilter,
                 stringWriter,
@@ -64,7 +67,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 addPartialModifier: true);
 
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            AssemblySymbolLoader assemblySymbolLoader = new(resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
+            AssemblySymbolLoader assemblySymbolLoader = new(log.Object, resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
             assemblySymbolLoader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
             assemblySymbolLoader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
             IAssemblySymbol assemblySymbol = assemblySymbolLoader.LoadAssembly(assemblyName, assemblyStream);

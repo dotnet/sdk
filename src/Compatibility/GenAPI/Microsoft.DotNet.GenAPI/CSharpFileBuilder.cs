@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.GenAPI
     /// </summary>
     public sealed class CSharpFileBuilder : IAssemblySymbolWriter, IDisposable
     {
-        private readonly ILog _logger;
+        private readonly ILog _log;
         private readonly TextWriter _textWriter;
         private readonly ISymbolFilter _symbolFilter;
         private readonly ISymbolFilter _attributeDataSymbolFilter;
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.GenAPI
         private readonly IEnumerable<MetadataReference> _metadataReferences;
         private readonly bool _addPartialModifier;
 
-        public CSharpFileBuilder(ILog logger,
+        public CSharpFileBuilder(ILog log,
             ISymbolFilter symbolFilter,
             ISymbolFilter attributeDataSymbolFilter,
             TextWriter textWriter,
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.GenAPI
             IEnumerable<MetadataReference> metadataReferences,
             bool addPartialModifier)
         {
-            _logger = logger;
+            _log = log;
             _textWriter = textWriter;
             _symbolFilter = symbolFilter;
             _attributeDataSymbolFilter = attributeDataSymbolFilter;
@@ -296,7 +296,7 @@ namespace Microsoft.DotNet.GenAPI
                 }
                 else
                 {
-                    _logger.LogWarning(string.Format(
+                    _log.LogWarning(string.Format(
                         Resources.ResolveTypeForwardFailed,
                         symbol.ToDisplayString(),
                         $"{symbol.ContainingAssembly.Name}.dll"));

@@ -103,29 +103,28 @@ stages:
         useMonoRuntime: false              # 🚫
         withPreviousSDK: false             # 🚫
 
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        buildName: ${{ format('{0}_Offline_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        targetArchitecture: x64
+        pool: ${{ parameters.pool_Linux }}
+        container:
+          name: ${{ variables.centOSStreamContainerName }}
+          image: ${{ variables.centOSStreamContainerImage }}
+        buildFromArchive: false            # 🚫
+        buildSourceOnly: true              # ✅
+        enablePoison: false                # 🚫
+        excludeOmniSharpTests: true        # ✅
+        runOnline: false                   # 🚫
+        useMonoRuntime: false              # 🚫
+        withPreviousSDK: false             # 🚫
+        reuseBuildArtifactsFrom:
+        - ${{ format('{0}_Online_MsftSdk_x64', variables.centOSStreamName) }}
+
     ### Additional jobs for lite/full builds ###
     - ${{ if in(parameters.scope, 'lite', 'full') }}:
-
-      - template: ../jobs/vmr-build.yml
-        parameters:
-          # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-          buildName: ${{ format('{0}_Online_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
-          isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-          vmrBranch: ${{ variables.VmrBranch }}
-          targetArchitecture: x64
-          pool: ${{ parameters.pool_Linux }}
-          container:
-            name: ${{ variables.centOSStreamContainerName }}
-            image: ${{ variables.centOSStreamContainerImage }}
-          buildFromArchive: false            # 🚫
-          buildSourceOnly: true              # ✅
-          enablePoison: false                # 🚫
-          excludeOmniSharpTests: true        # ✅
-          runOnline: true                    # ✅
-          useMonoRuntime: false              # 🚫
-          withPreviousSDK: false             # 🚫
-          reuseBuildArtifactsFrom:
-          - ${{ format('{0}_Online_MsftSdk_x64', variables.centOSStreamName) }}
 
       # Disabled due to https://github.com/dotnet/source-build/issues/4819
       # - template: ../jobs/vmr-build.yml
