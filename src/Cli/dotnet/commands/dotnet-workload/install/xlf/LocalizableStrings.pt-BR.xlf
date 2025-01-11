@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="needs-review-translation">Não é possível usar a opção {0} quando a versão da carga de trabalho é especificada em global.json.  Remova a opção {0} ou remova o elemento 'workloadVersion' de {1}.</target>
+        <target state="translated">Não é possível usar a opção {0} quando a versão da carga de trabalho é especificada em global.json.  Remova a opção {0} ou remova o elemento 'workloadVersion' de {1}.</target>
         <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
@@ -399,7 +399,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="needs-review-translation">Atualize para a versão de carga de trabalho especificada.</target>
+        <target state="new">A workload version to display or one or more workloads and their versions joined by the '@' character.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
