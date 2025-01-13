@@ -12,7 +12,12 @@ public static class VerifyExtensions
     {
         var completions = provider.GenerateCompletions(command);
         var settings = new VerifySettings();
-        settings.UseDirectory(Path.Combine("snapshots", provider.ArgumentName));
+        var sourceFileDir = Path.GetDirectoryName(sourceFile)!;
+        if (!Directory.Exists(sourceFileDir))
+        {
+            throw new DirectoryNotFoundException($"The directory ({sourceFileDir}) containing the source file ({sourceFile}) does not exist - Verify is going to try to recreate the directory and that won't work in CI.");
+        }
+        settings.UseDirectory(Path.Combine(sourceFileDir, "snapshots", provider.ArgumentName));
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings, sourceFile: sourceFile);
     }
 }
