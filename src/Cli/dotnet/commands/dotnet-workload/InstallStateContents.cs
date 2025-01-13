@@ -40,6 +40,8 @@ namespace Microsoft.DotNet.Workloads.Workload
         {
             return JsonSerializer.Serialize<InstallStateContents>(this, s_options);
         }
+
+        public bool UseWorkloadSets() => UseWorkloadSets ?? true;
     }
 }
 
