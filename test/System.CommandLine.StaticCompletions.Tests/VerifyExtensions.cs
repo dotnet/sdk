@@ -13,11 +13,22 @@ public static class VerifyExtensions
         var completions = provider.GenerateCompletions(command);
         var settings = new VerifySettings();
         var sourceFileDir = Path.GetDirectoryName(sourceFile)!;
-        if (!Directory.Exists(sourceFileDir))
+        var snapshotDirectory = new DirectoryInfo(Path.Combine(sourceFileDir, "snapshots", provider.ArgumentName));
+        var closestExistingDirectory = GetClosestExistingDirectory(snapshotDirectory);
+        if (!snapshotDirectory.Exists)
         {
-            throw new DirectoryNotFoundException($"The directory ({sourceFileDir}) containing the source file ({sourceFile}) does not exist - Verify is going to try to recreate the directory and that won't work in CI.");
+            throw new DirectoryNotFoundException($"The directory ({snapshotDirectory}) containing the source file ({sourceFile}) does not exist.\nVerify is going to try to recreate the directory and that won't work in CI.\nThe closest existing directory is ({closestExistingDirectory}). The current directory is ({Environment.CurrentDirectory})");
         }
-        settings.UseDirectory(Path.Combine(sourceFileDir, "snapshots", provider.ArgumentName));
+        settings.UseDirectory(snapshotDirectory.FullName);
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings, sourceFile: sourceFile);
+    }
+
+    private static DirectoryInfo? GetClosestExistingDirectory(DirectoryInfo? path)
+    {
+        while (path is not null && !path.Exists)
+        {
+            path = path.Parent;
+        }
+        return path;
     }
 }
