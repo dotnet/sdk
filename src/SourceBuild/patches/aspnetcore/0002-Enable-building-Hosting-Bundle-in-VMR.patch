@@ -1,0 +1,129 @@
+From 6afaf38a1744e313bb6c10f7691bc55ced4dc3f1 Mon Sep 17 00:00:00 2001
+From: wtgodbe <wigodbe@microsoft.com>
+Date: Mon, 13 Jan 2025 15:00:54 -0800
+Subject: [PATCH] Enable building Hosting Bundle in VMR
+
+Backport: https://github.com/dotnet/aspnetcore/pull/59857
+
+---
+ Directory.Build.props                           |  1 +
+ eng/Build.props                                 | 14 +++++++++-----
+ eng/Publishing.props                            |  5 +++--
+ .../WindowsHostingBundle.wixproj                | 17 +++++++++++++----
+ 4 files changed, 26 insertions(+), 11 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 0321c8b193..b195586ed5 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -239,6 +239,7 @@
+     <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetbuilds.blob.core.windows.net/public/</PublicBaseURL>
+     <InternalBaseURL>https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
+     <!-- Allow overriding where installers are pulled in from previously completed jobs in Unified Build scenarios. -->
++    <AddVersionToCrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' != ''">true</AddVersionToCrossArchitectureInstallerBasePath>
+     <CrossArchitectureInstallerBasePath Condition="'$(CrossArchitectureInstallerBasePath)' == ''">$(ArtifactsShippingPackagesDir)</CrossArchitectureInstallerBasePath>
+   </PropertyGroup>
+ 
+diff --git a/eng/Build.props b/eng/Build.props
+index 697c3d9ba0..87e19ef337 100644
+--- a/eng/Build.props
++++ b/eng/Build.props
+@@ -59,7 +59,7 @@
+ 
+   <Choose>
+     <!-- Project selection can be overridden on the command line by passing in -projects. -->
+-    <When Condition="'$(ProjectToBuild)' != ''">
++    <When Condition="'$(ProjectToBuild)' != '' and '$(DotNetBuildPass)' != '2'">
+       <ItemGroup>
+         <ProjectToBuild Include="$(ProjectToBuild)"
+             Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
+@@ -70,6 +70,14 @@
+         </ProjectToBuild>
+       </ItemGroup>
+     </When>
++    <When Condition="'$(DotNetBuildPass)' == '2'">
++      <ItemGroup Condition=" '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64' ">
++        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj">
++          <AdditionalProperties>Platform=x86</AdditionalProperties>
++          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
++        </ProjectToBuild>
++      </ItemGroup>
++    </When>
+     <Otherwise>
+       <!-- BuildNative -->
+       <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64' OR '$(TargetArchitecture)' == 'arm64') ">
+@@ -255,10 +263,6 @@
+         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
+       </ItemGroup>
+ 
+-      <ItemGroup Condition="'$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '2') and '$(TargetOsName)' == 'win' and '$(TargetArchitecture)' == 'x64'">
+-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
+-      </ItemGroup>
+-
+       <ItemGroup>
+         <ProjectToBuild Condition=" '$(BuildInstallers)' == 'true'" Include="@(InstallerProject)" BuildStep="installer" />
+       </ItemGroup>
+diff --git a/eng/Publishing.props b/eng/Publishing.props
+index 201e167159..a6a89bd0e9 100644
+--- a/eng/Publishing.props
++++ b/eng/Publishing.props
+@@ -96,12 +96,13 @@
+     </ItemGroup>
+ 
+     <!-- Generate productVersion.txt file containing the product version. -->
+-    <WriteLinesToFile File="%(ProductVersionFile.Identity)"
++    <WriteLinesToFile Condition="'$(DotNetBuildPass)' != '2'"
++                      File="%(ProductVersionFile.Identity)"
+                       Lines="$(ProductVersion)"
+                       Overwrite="true"
+                       Encoding="ASCII" />
+ 
+-    <ItemGroup>
++    <ItemGroup Condition="'$(DotNetBuildPass)' != '2'">
+       <Artifact Include="@(ProductVersionFile)"
+                 RelativeBlobPath="aspnetcore/Runtime/$(NonStableProductVersion)/%(Filename)%(Extension)" />
+     </ItemGroup>
+diff --git a/src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj b/src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj
+index 3389f389a7..5ef4167757 100644
+--- a/src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj
++++ b/src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj
+@@ -99,18 +99,27 @@
+     <BundleRegName>$(BundleNameFull)</BundleRegName>
+   </PropertyGroup>
+ 
++  <!-- CrossArchitectureInstallerBasePath is a global property, so use a new property instead of modifying it -->
++  <PropertyGroup Condition="'$(AddVersionToCrossArchitectureInstallerBasePath)' == 'true'">
++    <CrossArchitectureInstallerBasePathNormalized>$([MSBuild]::NormalizeDirectory('$(CrossArchitectureInstallerBasePath)', 'aspnetcore', 'Runtime', '$(SharedFxMsiVersion)'))</CrossArchitectureInstallerBasePathNormalized>
++  </PropertyGroup>
++
++  <PropertyGroup Condition="'$(AddVersionToCrossArchitectureInstallerBasePath)' != 'true'">
++    <CrossArchitectureInstallerBasePathNormalized>$(CrossArchitectureInstallerBasePath)</CrossArchitectureInstallerBasePathNormalized>
++  </PropertyGroup>
++
+   <ItemGroup>
+-    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
++    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x64.msi">
+       <TargetPlatform>x64</TargetPlatform>
+       <BundleNameProperty>SharedFxRedistInstallerx64</BundleNameProperty>
+       <Version>$(SharedFxPackageVersion)</Version>
+     </SharedFxInstallers>
+-    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
++    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-x86.msi">
+       <TargetPlatform>x86</TargetPlatform>
+       <BundleNameProperty>SharedFxRedistInstallerx86</BundleNameProperty>
+       <Version>$(SharedFxPackageVersion)</Version>
+     </SharedFxInstallers>
+-    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePath)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
++    <SharedFxInstallers Include="$(CrossArchitectureInstallerBasePathNormalized)$(RuntimeInstallerBaseName)-$(SharedFxMsiVersion)-win-arm64.msi">
+       <TargetPlatform>arm64</TargetPlatform>
+       <BundleNameProperty>SharedFxRedistInstallerarm64</BundleNameProperty>
+       <Version>$(SharedFxPackageVersion)</Version>
+@@ -127,7 +136,7 @@
+     <DefineConstants>$(DefineConstants);BundleRegManufacturer=$(BundleRegManufacturer)</DefineConstants>
+     <DefineConstants>$(DefineConstants);BundleRegFamily=$(BundleRegFamily)</DefineConstants>
+     <DefineConstants>$(DefineConstants);BundleRegName=$(BundleRegName)</DefineConstants>
+-    <DefineConstants>$(DefineConstants);CrossArchitectureInstallerBasePath=$(CrossArchitectureInstallerBasePath)</DefineConstants>
++    <DefineConstants>$(DefineConstants);CrossArchitectureInstallerBasePath=$(CrossArchitectureInstallerBasePathNormalized)</DefineConstants>
+   </PropertyGroup>
+ 
+   <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">
