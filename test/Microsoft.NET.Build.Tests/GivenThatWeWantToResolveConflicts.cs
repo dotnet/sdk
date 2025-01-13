@@ -258,5 +258,44 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PlatformPackagesCanBePruned(bool prunePackages)
+        {
+            var referencedProject = new TestProject("ReferencedProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = false
+            };
+            referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "8.0.0"));
+
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = prunePackages.ToString();
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand.Execute().Should().Pass();
+
+            var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");
+
+            //  TODO: parse and process assets file instead of just loooking for string in it
+            if (prunePackages)
+            {
+                File.ReadAllText(assetsFilePath).Should().NotContain("System.Text.Json");
+            }
+            else
+            {
+                File.ReadAllText(assetsFilePath).Should().Contain("System.Text.Json");
+            }
+        }
     }
 }
