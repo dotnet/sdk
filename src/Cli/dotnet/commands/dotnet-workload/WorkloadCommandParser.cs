@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli
 
             void WriteUpdateModeAndAnyError(string indent = "")
             {
-                var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).UseWorkloadSets();
+                var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).ShouldUseWorkloadSets();
                 var workloadSetsString = useWorkloadSets ? "workload sets" : "loose manifests";
                 reporter.WriteLine(indent + string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
 
