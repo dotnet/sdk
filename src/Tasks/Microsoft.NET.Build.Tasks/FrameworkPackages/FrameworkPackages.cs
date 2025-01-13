@@ -73,7 +73,7 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         }
     }
 
-    public static FrameworkPackages[] GetFrameworkPackages(NuGetFramework framework, string[] frameworkReferences)
+    public static FrameworkPackages[] GetFrameworkPackages(NuGetFramework framework, string[] frameworkReferences, string targetingPackRoot)
     {
         var frameworkPackages = new List<FrameworkPackages>();
 
@@ -94,7 +94,7 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
             {
                 // if we didn't predefine the package overrides, load them from the targeting pack
                 // we might just leave this out since in future frameworks we'll have this functionality built into NuGet.Frameworks
-                var frameworkPackagesFromPack = LoadFrameworkPackagesFromPack(framework, frameworkReference) ?? new FrameworkPackages(framework, frameworkReference);
+                var frameworkPackagesFromPack = LoadFrameworkPackagesFromPack(framework, frameworkReference, targetingPackRoot) ?? new FrameworkPackages(framework, frameworkReference);
 
                 Register(frameworkPackagesFromPack);
 
@@ -105,7 +105,7 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         return frameworkPackages.ToArray();
     }
 
-    private static FrameworkPackages LoadFrameworkPackagesFromPack(NuGetFramework framework, string frameworkName)
+    private static FrameworkPackages LoadFrameworkPackagesFromPack(NuGetFramework framework, string frameworkName, string targetingPackRoot)
     {
         if (framework is null || framework.Framework != FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
         {
@@ -121,33 +121,35 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
             new FrameworkPackages(framework, frameworkName) :
             new FrameworkPackages(framework, frameworkName, FrameworkPackagesByFramework[nearestFramework][frameworkKey]);
 
-        // packs location : %ProgramFiles%\dotnet\packs
-        var packsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "packs", frameworkName + ".Ref");
-        if (Directory.Exists(packsFolder))
+        if (!string.IsNullOrEmpty(targetingPackRoot))
         {
-            var packVersionPattern = $"{framework.Version.Major}.{framework.Version.Minor}.*";
-            var packDirectories = Directory.GetDirectories(packsFolder, packVersionPattern);
-            var packageOverridesFile = packDirectories
-                                            .Select(d => (Overrides: Path.Combine(d, "data", "PackageOverrides.txt"), Version: ParseVersion(Path.GetFileName(d))))
-                                            .Where(d => File.Exists(d.Overrides))
-                                            .OrderByDescending(d => d.Version)
-                                            .FirstOrDefault().Overrides;
-
-            if (packageOverridesFile is not null)
+            var packsFolder = Path.Combine(targetingPackRoot, frameworkName + ".Ref");
+            if (Directory.Exists(packsFolder))
             {
-                // Adapted from https://github.com/dotnet/sdk/blob/c3a8f72c3a5491c693ff8e49e7406136a12c3040/src/Tasks/Common/ConflictResolution/PackageOverride.cs#L52-L68
-                var packageOverrides = File.ReadAllLines(packageOverridesFile);
+                var packVersionPattern = $"{framework.Version.Major}.{framework.Version.Minor}.*";
+                var packDirectories = Directory.GetDirectories(packsFolder, packVersionPattern);
+                var packageOverridesFile = packDirectories
+                                                .Select(d => (Overrides: Path.Combine(d, "data", "PackageOverrides.txt"), Version: ParseVersion(Path.GetFileName(d))))
+                                                .Where(d => File.Exists(d.Overrides))
+                                                .OrderByDescending(d => d.Version)
+                                                .FirstOrDefault().Overrides;
 
-                foreach (var packageOverride in packageOverrides)
+                if (packageOverridesFile is not null)
                 {
-                    var packageOverrideParts = packageOverride.Trim().Split('|');
+                    // Adapted from https://github.com/dotnet/sdk/blob/c3a8f72c3a5491c693ff8e49e7406136a12c3040/src/Tasks/Common/ConflictResolution/PackageOverride.cs#L52-L68
+                    var packageOverrides = File.ReadAllLines(packageOverridesFile);
 
-                    if (packageOverrideParts.Length == 2)
+                    foreach (var packageOverride in packageOverrides)
                     {
-                        var packageId = packageOverrideParts[0];
-                        var packageVersion = ParseVersion(packageOverrideParts[1]);
+                        var packageOverrideParts = packageOverride.Trim().Split('|');
 
-                        frameworkPackages.Packages[packageId] = packageVersion;
+                        if (packageOverrideParts.Length == 2)
+                        {
+                            var packageId = packageOverrideParts[0];
+                            var packageVersion = ParseVersion(packageOverrideParts[1]);
+
+                            frameworkPackages.Packages[packageId] = packageVersion;
+                        }
                     }
                 }
             }

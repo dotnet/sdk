@@ -56,7 +56,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                         TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
-                        FrameworkReferences="@(FrameworkReference)">
+                        FrameworkReferences="@(FrameworkReference)"
+                        TargetingPackRoot="$(NetCoreTargetingPackRoot)">
       <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
     </GetPackagesToPrune>
     

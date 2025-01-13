@@ -22,6 +22,8 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public ITaskItem[] FrameworkReferences { get; set; }
 
+        public string TargetingPackRoot { get; set; }
+
         [Output]
         public ITaskItem[] PackagesToPrune { get; set; }
 
@@ -31,7 +33,7 @@ namespace Microsoft.NET.Build.Tasks
 
             Dictionary<string, NuGetVersion> packagesToPrune = new();
 
-            var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, FrameworkReferences.Select(fr => fr.ItemSpec).ToArray())
+            var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, FrameworkReferences.Select(fr => fr.ItemSpec).ToArray(), TargetingPackRoot)
                 .SelectMany(packages => packages);
 
             foreach (var kvp in frameworkPackages)
