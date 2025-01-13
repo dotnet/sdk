@@ -21,8 +21,6 @@ index c1270224e3..bd7a41270d 100644
 -    "jdk": "11.0.24"
 +    "jdk": "latest"
    },
-   "msbuild-sdks": {
-     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25056.1",
 diff --git a/src/SignalR/clients/java/signalr/build.gradle b/src/SignalR/clients/java/signalr/build.gradle
 index 895f8c4338..3e192445c9 100644
 --- a/src/SignalR/clients/java/signalr/build.gradle
