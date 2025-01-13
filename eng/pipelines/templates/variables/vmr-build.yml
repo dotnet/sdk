@@ -1,0 +1,119 @@
+parameters:
+- name: vmrBranch
+  displayName: dotnet/dotnet branch to use
+  type: string
+  default: ''
+
+variables:
+- ${{ if ne(parameters.vmrBranch, '') }}:
+  - name: VmrBranch
+    value: ${{ parameters.vmrBranch }}
+- ${{ else }}:
+  - name: VmrBranch
+    value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
+
+- name: almaLinuxContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
+- name: alpineLatestContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
+- name: alpinePreviousContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
+- name: centOSStreamContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+- name: fedoraContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
+- name: ubuntuContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
+- name: ubuntuArmContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-arm64
+- name: azurelinuxX64CrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-net9.0
+- name: azurelinuxArmCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-net9.0
+- name: azurelinuxArm64CrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-net9.0
+- name: azurelinuxX64AlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-alpine-net9.0
+- name: azurelinuxArmAlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-alpine-net9.0
+- name: azurelinuxArm64AlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-alpine-net9.0
+- name: androidCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-android-amd64-net9.0
+- name: linuxBionicCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-android-openssl-net9.0
+- name: browserCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
+- name: wasiCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
+
+- name: almaLinuxName
+  value: AlmaLinux8
+- name: alpineLatestName
+  value: Alpine321
+- name: alpinePreviousName
+  value: Alpine320
+- name: centOSStreamName
+  value: CentOSStream9
+- name: fedoraName
+  value: Fedora41
+- name: ubuntuName
+  value: Ubuntu2404
+
+- name: almaLinuxX64Rid
+  value: almalinux.8-x64
+- name: linuxMuslX64Rid
+  value: linux-musl-x64
+- name: linuxMuslArmRid
+  value: linux-musl-arm
+- name: linuxMuslArm64Rid
+  value: linux-musl-arm64
+- name: alpineLatestX64Rid
+  value: alpine.3.21-x64
+- name: alpinePreviousX64Rid
+  value: alpine.3.20-x64
+- name: centOSStreamX64Rid
+  value: centos.9-x64
+- name: fedoraX64Rid
+  value: fedora.41-x64
+- name: ubuntux64Rid
+  value: ubuntu.24.04-x64
+- name: ubuntuArm64Rid
+  value: ubuntu.24.04-arm64
+
+- ${{ if eq(variables['System.TeamProject'], 'public') }}:
+  - name: defaultPoolName
+    value: NetCore-Public-XL
+  - name: shortStackPoolName
+    value: NetCore-Public
+  - name: poolImage_Linux
+    value: build.ubuntu.2204.amd64.open
+  - name: poolImage_LinuxArm64
+    value: Mariner-2-Docker-ARM64
+  - name: poolName_LinuxArm64
+    value: Docker-Linux-Arm-Public
+  - name: poolImage_Mac
+    value: macos-12
+  - name: poolImage_Windows
+    value: windows.vs2022preview.amd64.open
+- ${{ else }}:
+  - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+    - name: defaultPoolName
+      value: NetCore1ESPool-Internal-XL
+    - name: shortStackPoolName
+      value: NetCore1ESPool-Internal
+  - ${{ else }}:
+    - name: defaultPoolName
+      value: $(DncEngInternalBuildPool)
+    - name: shortStackPoolName
+      value: $(DncEngInternalBuildPool)
+  - name: poolImage_Linux
+    value: build.ubuntu.2204.amd64
+  - name: poolImage_LinuxArm64
+    value: Mariner-2-Docker-ARM64
+  - name: poolName_LinuxArm64
+    value: Docker-Linux-Arm-Internal
+  - name: poolImage_Mac
+    value: macos-latest-internal
+  - name: poolImage_Windows
+    value: windows.vs2022preview.amd64

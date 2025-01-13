@@ -1,6 +1,5 @@
 <Project>
   <Target Name="GetCurrentRuntimeInformation"
-          DependsOnTargets="GetCoreSdkGitCommitInfo"
           BeforeTargets="Build">
 
     <PropertyGroup>

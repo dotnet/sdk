@@ -1,9 +1,11 @@
+# Pipeline: https://dev.azure.com/dnceng/internal/_build?definitionId=286
+
 trigger:
   batch: true
   branches:
     include:
     - main
-    - release/8.0.4xx
+    - release/9.0.1xx
     - internal/release/*
     - exp/*
 
@@ -14,37 +16,38 @@ pr:
     - release/*
     - internal/release/*
 
+parameters:
+# When true, runs the pipeline in the same way as the PR pipeline.
+- name: runTestBuild
+  displayName: Run A Test Build
+  type: boolean
+  default: false
 
 variables:
-  - name: _CIBuild
-    value: -restore -build -sign -pack -ci
-  - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
-    - name: PostBuildSign
-      value: false
-  - ${{ else }}:
-    - name: PostBuildSign
-      value: true
-  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
-    - name: _InternalRuntimeDownloadArgs
-      value: ''
-    - name: _OfficialBuildArgs
-      value: ''
-    - name: "skipComponentGovernanceDetection"
-      value: "true"
-  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    - name: _OfficialBuildArgs
-      value: /p:OfficialBuilder=Microsoft
-    - name: Codeql.Enabled
-      value: true
-    - name: _InternalRuntimeDownloadArgs
-      value: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal
-        /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - group: DotNet-CLI-SDLValidation-Params
-  - template: /eng/common/templates-official/variables/pool-providers.yml
-  # Set the MicroBuild plugin installation directory to the agent temp directory to avoid SDL tool scanning.
-  - name: MicroBuildOutputFolderOverride
-    value: $(Agent.TempDirectory)
+- template: /eng/pipelines/templates/variables/sdk-defaults.yml
+# Variables used: DncEngInternalBuildPool
+- template: /eng/common/templates-official/variables/pool-providers.yml
+# Helix testing requires a token when internally run.
+# Variables used: HelixApiAccessToken
+- group: DotNet-HelixApi-Access
+- group: AzureDevOps-Artifact-Feeds-Pats
+# Allows Arcade to run a signed build by disabling post-build signing for release-branch builds or manual builds that are not running tests.
+- ${{ if and(eq(parameters.runTestBuild, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
+  - name: PostBuildSign
+    value: false
+# Provides TSA variables for automatic bug reporting.
+- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+  - group: DotNet-CLI-SDLValidation-Params
+### LOCAL ONLY ###
+- name: _publishArgument
+  value: -publish
+- name: _signArgument
+  value: -sign /p:SignCoreSdk=true
+- name: _officialBuildProperties
+  # The OfficialBuilder property is set to Microsoft for the official build only.
+  # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
+  # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
+  value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 
 resources:
   repositories:
@@ -54,251 +57,275 @@ resources:
     ref: refs/tags/release
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
   parameters:
+    containers:
+      alpine319WithNode:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+      cblMariner20Fpm:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
+      centosStream9:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+      debian12Amd64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
+      fedora39:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
+      mariner20CrossArm:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
+      ubuntu2204DebPkg:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
+      ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        componentgovernance:
+          # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
+          ignoreDirectories: artifacts, .packages
+
     stages:
+    ############### BUILD STAGE ###############
     - stage: build
       displayName: Build
       jobs:
-      - job: Publish_Build_Configuration
-        pool:
-          ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            name: $(DncEngPublicBuildPool)
-            image: 1es-windows-2022-open
-            os: windows
-          ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      ############### WINDOWS ###############
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+        parameters:
+          pool:
             name: $(DncEngInternalBuildPool)
             image: 1es-windows-2022
             os: windows
-        steps:
-          - task: 1ES.PublishPipelineArtifact@1
-            displayName: Publish Build Config
-            inputs:
-              targetPath: $(Build.SourcesDirectory)\eng\buildConfiguration
-              artifactName: buildConfiguration
-      - template: /eng/build.yml@self
+          helixTargetQueue: windows.amd64.vs2022.pre
+          oneESCompat:
+            templateFolderName: templates-official
+            publishTaskPrefix: 1ES.
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          locBranch: release/9.0.2xx
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
+            windowsJobParameterSets:
+            ### OFFICIAL ###
+            - categoryName: Official
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              enableDefaultArtifacts: true
+              runTests: false
+              publishRetryConfig: true
+              variables:
+                _SignType: real
+            - categoryName: Official
+              buildArchitecture: x86
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+              variables:
+                _SignType: real
+            - categoryName: Official
+              buildArchitecture: arm64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+              variables:
+                _SignType: real
+            ### PGO ###
+            - categoryName: PGO
+              pgoInstrument: true
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+              variables:
+                _SignType: real
+            - categoryName: PGO
+              pgoInstrument: true
+              buildArchitecture: x86
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+              variables:
+                _SignType: real
+            - categoryName: PGO
+              pgoInstrument: true
+              buildArchitecture: arm64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+              variables:
+                _SignType: real
+
+      ############### LINUX ###############
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
-          agentOs: Windows_NT
           pool:
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              name: $(DncEngPublicBuildPool)
-              image: 1es-windows-2022-open
-              os: windows
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              name: $(DncEngInternalBuildPool)
-              image: 1es-windows-2022
-              os: windows
-          ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
-          ${{ if ne(variables['System.TeamProject'], 'public') }}:
-            helixTargetQueue: Windows.Amd64.VS2022.Pre
-          variables:
-          - name: _BuildConfig
-            value: Release
-          - name: _PublishArgs
-            value: '-publish /p:DotNetPublishUsingPipelines=true'
-          - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            - name: _SignType
-              value: test
-            - name: _Test
-              value: -test
-          - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            - name: _SignType
-              value: real
-            - name: _Test
-              value: ''
+            name: $(DncEngInternalBuildPool)
+            image: 1es-ubuntu-2204
+            os: linux
+          helixTargetQueue: ubuntu.2204.amd64
+          oneESCompat:
+            templateFolderName: templates-official
+            publishTaskPrefix: 1ES.
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
+            linuxJobParameterSets:
+            ### OFFICIAL ###
+            # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
+            - categoryName: Official
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties)
+              runTests: false
+            - categoryName: Official
+              buildArchitecture: arm
+              runtimeIdentifier: linux-arm
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties)
+              runTests: false
+            - categoryName: Official
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties)
+              runTests: false
+            ### PORTABLE ###
+            - categoryName: Portable
+              container: ubuntu2204DebPkg
+              # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              runTests: false
+            - categoryName: Portable
+              container: cblMariner20Fpm
+              # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              runTests: false
+            - categoryName: Portable
+              container: cblMariner20Fpm
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              runTests: false
+            ### MUSL ###
+            - categoryName: Musl
+              container: alpine319WithNode
+              runtimeIdentifier: linux-musl-x64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              # Use HostOSName when running on alpine.
+              osProperties: /p:HostOSName=linux-musl
+              # SBOM generation is not supported for alpine.
+              enableSbom: false
+              runTests: false
+            - categoryName: Musl
+              container: mariner20CrossArm
+              buildArchitecture: arm
+              runtimeIdentifier: linux-musl-arm
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: /p:OSName=linux-musl
+              runTests: false
+            - categoryName: Musl
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-musl-arm64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: /p:OSName=linux-musl
+              runTests: false
+            ### PGO ###
+            - categoryName: PGO
+              pgoInstrument: true
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties)
+              runTests: false
+            - categoryName: PGO
+              pgoInstrument: true
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties)
+              runTests: false
+
+      ############### MACOS ###############
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+        parameters:
+          pool:
+            name: Azure Pipelines
+            image: macOS-latest
+            os: macOS
+          helixTargetQueue: osx.13.amd64
+          oneESCompat:
+            templateFolderName: templates-official
+            publishTaskPrefix: 1ES.
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+            timeoutInMinutes: 90
+            macOSJobParameterSets:
+            ### OFFICIAL ###
+            - categoryName: Official
+              runtimeIdentifier: osx-x64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+            - categoryName: Official
+              buildArchitecture: arm64
+              runtimeIdentifier: osx-arm64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+
+      ############### SOURCE BUILD ###############
       - template: /eng/common/templates-official/job/source-build.yml@self
         parameters:
           enableInternalSources: true
           platform:
-            name: 'Managed'
-            container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9'
-      - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-        - template: /eng/build.yml@self
-          parameters:
-            agentOs: Windows_NT_FullFramework
-            pool:
-              ${{ if eq(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngPublicBuildPool)
-                image: 1es-windows-2022-open
-                os: windows
-              ${{ if ne(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngInternalBuildPool)
-                image: 1es-windows-2022
-                os: windows
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Windows.Amd64.VS2022.Pre
-            variables:
-            - name: _BuildConfig
-              value: Debug
-            - name: _PublishArgs
-              value: ''
-            - name: _SignType
-              value: test
-            - name: _Test
-              value: -test
+            name: Managed
+            container: centosStream9
+            jobProperties:
+              timeoutInMinutes: 30
 
-        - template: /eng/build.yml@self
+      ############### DOTNET-FORMAT ###############
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        - template: /eng/dotnet-format/dotnet-format-integration.yml@self
           parameters:
-            agentOs: Windows_NT_TestAsTools
-            pool:
-              ${{ if eq(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngPublicBuildPool)
-                image: 1es-windows-2022-open
-                os: windows
-              ${{ if ne(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngInternalBuildPool)
-                image: 1es-windows-2022
-                os: windows
-            variables:
-            - name: _BuildConfig
-              value: Debug
-            - name: _PublishArgs
-              value: ''
-            - name: _SignType
-              value: test
+            oneESCompat:
+              publishTaskPrefix: 1ES.
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
-        - template: /eng/build.yml@self
-          parameters:
-            agentOs: Ubuntu_22_04
-            pool:
-              ${{ if eq(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngPublicBuildPool)
-                image: 1es-ubuntu-2204-open
-                os: linux
-              ${{ if ne(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngInternalBuildPool)
-                image: 1es-ubuntu-2204
-                os: linux
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: ubuntu.2204.amd64.open
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Ubuntu.2204.Amd64
-            variables:
-            - name: _BuildConfig
-              value: Release
-            - name: _PublishArgs
-              value: ''
-            - name: _SignType
-              value: test
-            - name: _Test
-              value: -test
-
-        - template: /eng/build.yml@self
-          parameters:
-            agentOs: Darwin
-            pool:
-              name: Azure Pipelines
-              image: macOS-latest
-              os: macOS
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: OSX.13.Amd64.Open
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: OSX.13.Amd64
-            variables:
-            - name: _BuildConfig
-              value: Release
-            - name: _PublishArgs
-              value: ''
-            - name: _SignType
-              value: test
-            - name: _Test
-              value: -test
-
-          # template-engine builds
-        - template: /eng/build.yml@self
-          parameters:
-            agentOs: Windows_NT_TemplateEngine
-            pool:
-              ${{ if eq(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngPublicBuildPool)
-                image: 1es-windows-2022-open
-                os: windows
-              ${{ if ne(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngInternalBuildPool)
-                image: 1es-windows-2022
-                os: windows
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Windows.Amd64.VS2022.Pre
-            variables:
-              - name: _BuildConfig
-                value: Release
-              - name: PublishArgs
-                value: '-publish /p:DotNetPublishUsingPipelines=true'
-              - name: _SignType
-                value: test
-              - name: _Test
-                value: -test
-
-        - template: /eng/build.yml@self
-          parameters:
-            agentOs: Ubuntu_22_04_TemplateEngine
-            pool:
-              ${{ if eq(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngPublicBuildPool)
-                image: 1es-ubuntu-2204-open
-                os: linux
-              ${{ if ne(variables['System.TeamProject'], 'public') }}:
-                name: $(DncEngInternalBuildPool)
-                image: 1es-ubuntu-2204
-                os: linux
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: 'ubuntu.2204.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-helix-amd64'
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: Ubuntu.2204.Amd64
-            variables:
-              - name: _BuildConfig
-                value: Release
-              - name: _PublishArgs
-                value: ''
-              - name: _SignType
-                value: test
-              - name: _Test
-                value: -test
-
-        - template: /eng/build.yml@self
-          parameters:
-            agentOs: Darwin_TemplateEngine
-            pool:
-              name: Azure Pipelines
-              image: macOS-latest
-              os: macOS
-            ${{ if eq(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: OSX.1100.Amd64.Open
-            ${{ if ne(variables['System.TeamProject'], 'public') }}:
-              helixTargetQueue: OSX.1100.Amd64
-            variables:
-            - name: _BuildConfig
-              value: Release
-            - name: _PublishArgs
-              value: ''
-            - name: _SignType
-              value: test
-            - name: _Test
-              value: -test
-
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    ############### PUBLISH STAGE ###############
+    - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+      - stage: publish
+        displayName: Publish
+        dependsOn: build
+        jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
             publishAssetsImmediately: true
-            dependsOn:
-              - Windows_NT
-              - Source_Build_Managed
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
-    - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+
+      ############### POST-BUILD STAGE ###############
       - template: /eng/common/templates-official/post-build/post-build.yml@self
         parameters:
           publishingInfraVersion: 3

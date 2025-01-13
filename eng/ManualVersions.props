@@ -1,0 +1,28 @@
+<Project>
+
+<!--
+  The following properties (unlike those in version.props) are maintained manually. So
+  when there is a merge conflict, the highest version should generally be chosen, rather
+  than keeping what's in the branch, which is the usual strategy with version.props merge
+  conflicts.
+
+  Basically: In this file, choose the highest version when resolving merge conflicts.
+ -->
+  <PropertyGroup>
+    <MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>10.0.17763.57</MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>10.0.18362.57</MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>10.0.19041.57</MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_20348PackageVersion>10.0.20348.57</MicrosoftWindowsSDKNETRef10_0_20348PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_22000PackageVersion>10.0.22000.57</MicrosoftWindowsSDKNETRef10_0_22000PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_22621PackageVersion>10.0.22621.57</MicrosoftWindowsSDKNETRef10_0_22621PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_26100PackageVersion>10.0.26100.57</MicrosoftWindowsSDKNETRef10_0_26100PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_17763PackageVersionNet6>10.0.17763.55</MicrosoftWindowsSDKNETRef10_0_17763PackageVersionNet6>
+    <MicrosoftWindowsSDKNETRef10_0_18362PackageVersionNet6>10.0.18362.55</MicrosoftWindowsSDKNETRef10_0_18362PackageVersionNet6>
+    <MicrosoftWindowsSDKNETRef10_0_19041PackageVersionNet6>10.0.19041.55</MicrosoftWindowsSDKNETRef10_0_19041PackageVersionNet6>
+    <MicrosoftWindowsSDKNETRef10_0_20348PackageVersionNet6>10.0.20348.55</MicrosoftWindowsSDKNETRef10_0_20348PackageVersionNet6>
+    <MicrosoftWindowsSDKNETRef10_0_22000PackageVersionNet6>10.0.22000.55</MicrosoftWindowsSDKNETRef10_0_22000PackageVersionNet6>
+    <MicrosoftWindowsSDKNETRef10_0_22621PackageVersionNet6>10.0.22621.55</MicrosoftWindowsSDKNETRef10_0_22621PackageVersionNet6>
+    <MicrosoftWindowsSDKNETRef10_0_26100PackageVersionNet6>10.0.26100.55</MicrosoftWindowsSDKNETRef10_0_26100PackageVersionNet6>
+  </PropertyGroup>
+
+</Project>

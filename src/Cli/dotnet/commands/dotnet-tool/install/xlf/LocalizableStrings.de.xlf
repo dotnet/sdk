@@ -93,6 +93,16 @@ Wenn Sie ein Manifest erstellen möchten, verwenden Sie das Flag „--create-man
         <target state="translated">Ermöglicht einem .NET-Tool, ein Rollforward auf neuere Versionen der .NET-Runtime auszuführen, wenn die Runtime, auf die es abzielt, nicht installiert ist.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Ersetzen alle NuGet-Paketquellen für die Nutzung während der Installation durch diese.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">QUELLE</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">Die Version des zu installierenden Toolpakets.</target>
@@ -183,8 +193,8 @@ Weitere Gründe sowie Informationen zum Erzwingen der Paketbenennung finden Sie 
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">QUELLE HINZUFÜGEN</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

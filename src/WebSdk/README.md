@@ -144,6 +144,24 @@ Using dotnet with a profile:
 dotnet publish WebApplication.csproj /p:PublishProfile=<ZipDeployProfile name> /p:Password=<DeploymentPassword>
 ```
 
+One Deploy:
+---------------------
+
+Using dotnet with the default profile:
+
+```
+
+dotnet publish WebJobApplication.csproj /p:WebPublishMethod=OneDeploy /p:PublishUrl=<DestinationUrl> /p:UserName=<username> /p:Password=<DeploymentPassword> /p:PublishProfile=DefaultWebJobOneDeploy
+```
+
+Profile can be added to the following location in the project /Properties/PublishProfiles/<OneDeploy.pubxml>.
+
+Using dotnet with a profile:
+
+```
+dotnet publish WebJobApplication.csproj /p:PublishProfile=<OneDeployProfile name> /p:Password=<DeploymentPassword>
+```
+
 Sample folder profile:
 ---------------------
 

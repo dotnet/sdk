@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MSBuild Directory.Packages.props-Datei",
+  "description": "Eine leere Directory.Packages.props-Datei, die genutzt werden kann, um Paketversionen zentral anzugeben.",
+  "symbols/inherit/displayName": "Erben",
+  "symbols/inherit/description": "Wenn wahr, wird ein Import für die nächste Directory.Packages.props in der Verzeichnishierarchie des Dateisystems hinzugefügt. Directory.Packages.props erben standardmäßig nicht, sodass Sie auf diese Weise Ordner für Ordner eine Reihe von Anpassungen erstellen können."
+}
