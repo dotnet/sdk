@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems" Label="Shared" />
+  <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
   <PropertyGroup>
     <!--
       dotnet-watch may inject this assembly to .NET 6.0+ app, so we can't target a newer version.
@@ -13,11 +14,10 @@
 
   <ItemGroup>
     <Compile Include="..\dotnet-watch\EnvironmentVariables_StartupHook.cs" Link="EnvironmentVariables_StartupHook.cs" />
-    <Compile Include="..\dotnet-watch\HotReload\NamedPipeContract.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.Extensions.DotNetDeltaApplier.Tests"/>
+    <InternalsVisibleTo Include="Microsoft.Extensions.DotNetDeltaApplier.Tests" />
   </ItemGroup>
 
 </Project>

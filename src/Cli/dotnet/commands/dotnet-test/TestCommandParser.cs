@@ -22,12 +22,6 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdListTestsDescription
         }.ForwardAs("-property:VSTestListTests=true");
 
-        public static readonly CliOption<IEnumerable<string>> EnvOption = new CliOption<IEnumerable<string>>("--environment", "-e")
-        {
-            Description = LocalizableStrings.CmdEnvironmentVariableDescription,
-            HelpName = LocalizableStrings.CmdEnvironmentVariableExpression
-        }.AllowSingleArgPerToken();
-
         public static readonly CliOption<string> FilterOption = new ForwardedOption<string>("--filter")
         {
             Description = LocalizableStrings.CmdTestCaseFilterDescription,
@@ -216,7 +210,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Options.Add(SettingsOption);
             command.Options.Add(ListTestsOption);
-            command.Options.Add(EnvOption);
+            command.Options.Add(CommonOptions.EnvOption);
             command.Options.Add(FilterOption);
             command.Options.Add(AdapterOption);
             command.Options.Add(LoggerOption);
