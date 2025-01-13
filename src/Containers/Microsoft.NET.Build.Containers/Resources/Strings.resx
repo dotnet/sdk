@@ -201,6 +201,9 @@
     <value>CONTAINER2019: Invalid SDK semantic version '{0}'.</value>
     <comment>{StrBegin="CONTAINER2019: "}</comment>
   </data>
+  <data name="InvalidTargetRuntimeIdentifiers" xml:space="preserve">
+    <value>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</value>
+  </data>
   <data name="InvalidSdkPrereleaseVersion" xml:space="preserve">
     <value>CONTAINER2018: Invalid SDK prerelease version '{0}' - only 'rc' and 'preview' are supported.</value>
     <comment>{StrBegin="CONTAINER2018: "}</comment>
@@ -240,6 +243,12 @@
   <data name="MissingLinkToRegistry" xml:space="preserve">
     <value>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</value>
     <comment>{StrBegin="CONTAINER2004: "}</comment>
+  </data>
+  <data name="OciImageMultipleTagsNotSupported" xml:space="preserve">
+    <value>Unable to create tarball for oci image with multiple tags.</value>
+  </data>
+  <data name="UnsupportedMediaTypeForTarball" xml:space="preserve">
+    <value>Unable to create tarball for mediaType '{0}'.</value>
   </data>
   <data name="MissingPortNumber" xml:space="preserve">
     <value>CONTAINER2016: ContainerPort item '{0}' does not specify the port number. Please ensure the item's Include is a port number, for example '&lt;ContainerPort Include="80" /&gt;'</value>
@@ -341,8 +350,34 @@
     <value>Pushed image '{0}' to registry '{1}'.</value>
     <comment/>
   </data>
+  <data name="ImageIndexUploadedToRegistry" xml:space="preserve">
+    <value>Pushed image index '{0}' to registry '{1}'.</value>
+    <comment/>
+  </data>
   <data name="ContainerBuilder_StartBuildingImage" xml:space="preserve">
     <value>Building image '{0}' with tags '{1}' on top of base image '{2}'.</value>
+    <comment/>
+  </data>
+  <data name="BuildingImageIndex" xml:space="preserve">
+    <value>Building image index '{0}' on top of manifests {1}.</value>
+    <comment>
+      {0} is the name of the image index and its tag, {1} is the list of manifests digests
+    </comment>
+  </data>
+  <data name="MixedMediaTypes" xml:space="preserve">
+    <value>'mediaType' of manifests should be the same in manifest list (image index).</value>
+    <comment/>
+  </data>
+  <data name="UnsupportedMediaType" xml:space="preserve">
+    <value>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</value>
+    <comment/>
+  </data>
+  <data name="ImagesEmpty" xml:space="preserve">
+    <value>Cannot create manifest list (image index) because no images were provided.</value>
+    <comment/>
+  </data>
+  <data name="InvalidImageMetadata" xml:space="preserve">
+    <value>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">

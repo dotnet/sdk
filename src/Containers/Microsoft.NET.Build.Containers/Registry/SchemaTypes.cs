@@ -10,6 +10,7 @@ internal class SchemaTypes
     internal const string DockerManifestListV2 = "application/vnd.docker.distribution.manifest.list.v2+json";
     internal const string DockerManifestV2 = "application/vnd.docker.distribution.manifest.v2+json";
     internal const string OciManifestV1 = "application/vnd.oci.image.manifest.v1+json"; // https://containers.gitbook.io/build-containers-the-hard-way/#registry-format-oci-image-manifest
+    internal const string OciImageIndexV1 = "application/vnd.oci.image.index.v1+json";
     internal const string DockerLayerGzip = "application/vnd.docker.image.rootfs.diff.tar.gzip";
     internal const string OciLayerGzipV1 = "application/vnd.oci.image.layer.v1.tar+gzip";
 }
