@@ -50,13 +50,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </CreateWindowsSdkKnownFrameworkReferences>
   </Target>
-
-  <PropertyGroup Condition="'$(PrunePlatformPackageReferences)' == ''">
-    <PrunePlatformPackageReferences>false</PrunePlatformPackageReferences>
-  </PropertyGroup>
-  
+ 
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
-          Condition="'$(PrunePlatformPackageReferences)' == 'true'">
+          Condition="'$(RestoreEnablePackagePruning)' == 'true'">
 
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                         TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
