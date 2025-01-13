@@ -22,6 +22,11 @@
         <target state="translated">Impossible d’utiliser les options {0} et {1} ensemble. Si vous installez à partir d’un fichier de restauration, supprimez {0}. Sinon, supprimez {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="translated">Impossible de spécifier une version de charge de travail particulière sur la ligne de commande via --version ou --from-history lorsqu’une version est déjà spécifiée dans global.json fichier {0}. Pour mettre à jour la version de la charge de travail installée globalement, exécutez la commande en dehors du chemin contenant ce fichier global.json ou mettez à jour la version spécifiée dans le fichier global.json et exécutez « dotnet workload update »</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">Recherche de manifestes de charge de travail mis à jour</target>
@@ -182,6 +187,11 @@
         <target state="translated">Suppression de {0} </target>
         <note />
       </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">Installation de la charge de travail {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Impossible d’établir une relation de confiance avec le processus parent ({0}).</target>
@@ -277,6 +287,11 @@
         <target state="translated">Imprimer uniquement la liste des liens à télécharger sans télécharger.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="translated">Le mode d’installation de la charge de travail a été mis à jour pour utiliser {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">Installation du {0} de {1} la version du package à partir du {2} de cache hors connexion.</target>
@@ -360,6 +375,16 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetUpgrade">
+        <source>Updating workload version from {0} to {1}.</source>
+        <target state="translated">Mise à jour de la version de la charge de travail de {0} à {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">Mettre à jour vers la version de charge de travail spécifiée.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
