@@ -14,8 +14,8 @@ namespace Microsoft.DotNet.Tools.Common
         {
             return [
                 ..Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly),
-                ..(includeSolutionXmlFiles ? Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly) : Array.Empty<string>()),
-                ..(includeSolutionFilterFiles ? Directory.GetFiles(directory, "*.slnf", SearchOption.TopDirectoryOnly) : Array.Empty<string>())
+                ..(includeSolutionXmlFiles ? Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly) : []),
+                ..(includeSolutionFilterFiles ? Directory.GetFiles(directory, "*.slnf", SearchOption.TopDirectoryOnly) : [])
             ];
         }
 
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Tools.Common
 
             FileInfo[] files = [
                 ..dir.GetFiles("*.sln"),
-                ..(includeSolutionXmlFiles ? dir.GetFiles(".slnx") : Array.Empty<FileInfo>())
+                ..(includeSolutionXmlFiles ? dir.GetFiles(".slnx") : [])
              ];
 
             if (files.Length == 0)
