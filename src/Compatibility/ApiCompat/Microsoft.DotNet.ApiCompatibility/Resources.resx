@@ -147,9 +147,6 @@
   <data name="IndexShouldBeWithinSetSizeRange" xml:space="preserve">
     <value>The {0} index should be in the range zero through {1} inclusive.</value>
   </data>
-  <data name="MatchingAssemblyNotFound" xml:space="preserve">
-    <value>Could not find matching assembly: '{0}' in any of the search directories.</value>
-  </data>
   <data name="MemberExistsOnLeft" xml:space="preserve">
     <value>Member '{0}' exists on {1} but not on {2}</value>
   </data>
