@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("App.sln")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
