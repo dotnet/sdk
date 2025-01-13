@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -286,15 +289,16 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
 
             var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");
-
-            //  TODO: parse and process assets file instead of just loooking for string in it
+            var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, new NullLogger());
+            var lockFileTarget = lockFile.GetTarget(NuGetFramework.Parse(ToolsetInfo.CurrentTargetFramework), runtimeIdentifier: null);
+            
             if (prunePackages)
             {
-                File.ReadAllText(assetsFilePath).Should().NotContain("System.Text.Json");
+                lockFileTarget.Libraries.Should().NotContain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
             }
             else
             {
-                File.ReadAllText(assetsFilePath).Should().Contain("System.Text.Json");
+                lockFileTarget.Libraries.Should().Contain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
             }
         }
     }
