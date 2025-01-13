@@ -127,3 +127,4 @@ index 3389f389a7..5ef4167757 100644
    </PropertyGroup>
  
    <Target Name="ExtractPropertiesFromSharedFxMsi" DependsOnTargets="FetchDependencies" AfterTargets="ResolveProjectReferences">
+
