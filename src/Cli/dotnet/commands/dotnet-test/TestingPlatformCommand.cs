@@ -83,7 +83,8 @@ namespace Microsoft.DotNet.Cli
 
         private static BuildPathsOptions GetBuildPathOptions(ParseResult parseResult) =>
             new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
-                parseResult.GetValue(TestingPlatformOptions.SolutionOption));
+                parseResult.GetValue(TestingPlatformOptions.SolutionOption),
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
 
         private void InitializeActionQueue(ParseResult parseResult, int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions)
         {

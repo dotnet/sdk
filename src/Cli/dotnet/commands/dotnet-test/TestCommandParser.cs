@@ -201,6 +201,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.ProjectOption);
             command.Options.Add(TestingPlatformOptions.SolutionOption);
+            command.Options.Add(TestingPlatformOptions.DirectoryOption);
 
             return command;
         }

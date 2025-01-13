@@ -30,42 +30,58 @@ namespace Microsoft.DotNet.Cli
 
         public async Task<bool> RunMSBuild(BuildPathsOptions buildPathOptions)
         {
+            if (!ValidateBuildPathOptions(buildPathOptions))
+            {
+                return false;
+            }
+
             int msbuildExitCode;
 
-            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
             {
-                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdProjectAndSolutionOptionErrorDescription);
+                msbuildExitCode = await RunBuild(buildPathOptions.ProjectPath, isSolution: false);
+            }
+            else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            {
+                msbuildExitCode = await RunBuild(buildPathOptions.SolutionPath, isSolution: true);
+            }
+            else
+            {
+                msbuildExitCode = await RunBuild(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+            }
+
+            if (msbuildExitCode != ExitCodes.Success)
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msbuildExitCode));
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateBuildPathOptions(BuildPathsOptions buildPathOptions)
+        {
+            if ((!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.SolutionPath)) ||
+                (!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.DirectoryPath)) ||
+                (!string.IsNullOrEmpty(buildPathOptions.SolutionPath) && !string.IsNullOrEmpty(buildPathOptions.DirectoryPath)))
+            {
+                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
                 return false;
             }
 
             if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
             {
-                if (!ValidateFilePath(buildPathOptions.ProjectPath, CliConstants.ProjectExtensions, LocalizableStrings.CmdInvalidProjectFileExtensionDescription))
-                {
-                    return false;
-                }
-
-                msbuildExitCode = await RunWithMSBuild(buildPathOptions.ProjectPath, isSolution: false);
-            }
-            else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
-            {
-                if (!ValidateFilePath(buildPathOptions.SolutionPath, CliConstants.SolutionExtensions, LocalizableStrings.CmdInvalidSolutionFileExtensionDescription))
-                {
-                    return false;
-                }
-
-                msbuildExitCode = await RunWithMSBuild(buildPathOptions.SolutionPath, isSolution: true);
-            }
-            else
-            {
-                // If no filter was provided neither the project using --project,
-                // MSBuild will get the test project paths in the current directory
-                msbuildExitCode = await RunWithMSBuild(Directory.GetCurrentDirectory());
+                return ValidateFilePath(buildPathOptions.ProjectPath, CliConstants.ProjectExtensions, LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription);
             }
 
-            if (msbuildExitCode != ExitCodes.Success)
+            if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
             {
-                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorMessage, msbuildExitCode));
+                return ValidateFilePath(buildPathOptions.SolutionPath, CliConstants.SolutionExtensions, LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription);
+            }
+
+            if (!string.IsNullOrEmpty(buildPathOptions.DirectoryPath) && !Directory.Exists(buildPathOptions.DirectoryPath))
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, Path.GetFullPath(buildPathOptions.DirectoryPath)));
                 return false;
             }
 
@@ -82,16 +98,16 @@ namespace Microsoft.DotNet.Cli
 
             if (!File.Exists(filePath))
             {
-                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentFileDescription, filePath));
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentFileErrorDescription, Path.GetFullPath(filePath)));
                 return false;
             }
 
             return true;
         }
 
-        private async Task<int> RunWithMSBuild(string directory)
+        private async Task<int> RunBuild(string directoryPath)
         {
-            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directory, out string projectOrSolutionFilePath, out bool isSolution);
+            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out string projectOrSolutionFilePath, out bool isSolution);
 
             if (!solutionOrProjectFileFound)
             {
@@ -105,7 +121,7 @@ namespace Microsoft.DotNet.Cli
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
-        private async Task<int> RunWithMSBuild(string filePath, bool isSolution)
+        private async Task<int> RunBuild(string filePath, bool isSolution)
         {
             (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution);
 

@@ -41,18 +41,16 @@ namespace Microsoft.DotNet.Cli
                     return true;
                 }
 
-                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
+                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
                 return false;
             }
-
-            // If no solutions are found, look for a project file
-            else
+            else  // If no solutions are found, look for a project file
             {
                 string[] possibleProjectPath = GetProjectFilePaths(directory);
 
                 if (possibleProjectPath.Length == 0)
                 {
-                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorMessage);
+                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
                     return false;
                 }
 

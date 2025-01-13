@@ -63,5 +63,11 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdSolutionDescription,
             Arity = ArgumentArity.ExactlyOne
         };
+
+        public static readonly CliOption<string> DirectoryOption = new("--directory")
+        {
+            Description = LocalizableStrings.CmdDirectoryDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
     }
 }
