@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
-        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <target state="translated">同時指定要使用workload@version語法安裝的版本時，無法使用 --version 選項指定工作負載版本。</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -399,7 +399,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="new">A workload version to display or one or more workloads and their versions joined by the '@' character.</target>
+        <target state="translated">要顯示的工作負載版本，或是一或多個工作負載及其由 '@' 字元加入的版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

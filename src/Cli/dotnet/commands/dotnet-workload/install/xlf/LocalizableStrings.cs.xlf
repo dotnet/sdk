@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
-        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <target state="translated">Verzi úlohy nejde zadat pomocí možnosti --version a zároveň zadat verze, které se mají nainstalovat, pomocí syntaxe workload@version.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -399,7 +399,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="new">A workload version to display or one or more workloads and their versions joined by the '@' character.</target>
+        <target state="translated">Verze úlohy, která se má zobrazit, nebo jedna nebo více úloh a jejich verzí připojených znakem @</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

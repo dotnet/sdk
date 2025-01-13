@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
-        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <target state="translated">Nie można określić wersji obciążenia przy użyciu opcji --version, określając jednocześnie wersje do zainstalowania przy użyciu składni workload@version.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -399,7 +399,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="new">A workload version to display or one or more workloads and their versions joined by the '@' character.</target>
+        <target state="translated">Wersja obciążenia do wyświetlenia lub co najmniej jednego obciążenia i ich wersji dołączonych za pomocą znaku "@".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
