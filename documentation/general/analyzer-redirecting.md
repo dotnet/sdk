@@ -59,7 +59,8 @@ will be redirected to
 
 because
 1. the suffix `Sdks\Microsoft.NET.Sdk\analyzers\Microsoft.CodeAnalysis.NetAnalyzers.dll` matches, and
-2. the version `9.0.100-preview.5.24307.3` has the same major and minor component (`9.0`) as the version `9.0.100-dev`.
+2. the version `9.0.100-preview.5.24307.3` has the same major and minor component (`9.0`) as the version `9.0.100-dev`
+   (both versions are read from the paths, not DLL metadata).
 
 Analyzers that cannot be matched will continue to be loaded from the SDK
 (and will fail to load if they reference Roslyn that is newer than is in VS).
