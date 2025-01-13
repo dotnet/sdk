@@ -72,7 +72,7 @@ Returns: @(Watch)
              Condition="'$(UsingMicrosoftNETSdkRazor)'=='true' AND '$(DotNetWatchContentFiles)'!='false' AND '%(Content.Watch)' != 'false' AND $([System.String]::Copy('%(Identity)').Replace('\','/').StartsWith('wwwroot/'))"
              StaticWebAssetPath="$(_DotNetWatchStaticWebAssetBasePath)$([System.String]::Copy('%(Identity)').Replace('\','/').Substring(8))" />
 
-      <_WatchProjects Include="%(ProjectReference.Identity)" Condition="'%(ProjectReference.Watch)' != 'false'" />
+      <_WatchProjects Include="%(ProjectReference.Identity)" Condition="'%(ProjectReference.Watch)' != 'false' and Exists('%(Identity)')" />
     </ItemGroup>
 
     <MSBuild Projects="@(_WatchProjects)"

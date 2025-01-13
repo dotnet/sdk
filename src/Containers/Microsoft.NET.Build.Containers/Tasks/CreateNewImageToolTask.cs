@@ -107,6 +107,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--baseimagetag ", BaseImageTag);
         }
+        if (!string.IsNullOrWhiteSpace(BaseImageDigest))
+        {
+            builder.AppendSwitchIfNotNull("--baseimagedigest ", BaseImageDigest);
+        }
         if (!string.IsNullOrWhiteSpace(OutputRegistry))
         {
             builder.AppendSwitchIfNotNull("--outputregistry ", OutputRegistry);
