@@ -3,7 +3,7 @@
 ### Usage: $0
 ###
 ###   Prepares and runs the file remover tooling to remove files containing non-OSS licenses from the VMR.
-###   Default behavior is to removal licenses specifed in the disallowed-sb-license-paths file.
+###   Default behavior is to remove licenses specified in the disallowed-sb-license-paths.txt file.
 ###
 ### Options:
 ###   --removal-file        Path to the file containing the list of paths to be removed.
