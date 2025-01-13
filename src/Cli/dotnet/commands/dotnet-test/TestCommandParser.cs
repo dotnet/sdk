@@ -190,7 +190,7 @@ namespace Microsoft.DotNet.Cli
         private static CliCommand GetTestingPlatformCliCommand()
         {
             var command = new TestingPlatformCommand("test");
-            command.SetAction(async (parseResult) => await command.Run(parseResult));
+            command.SetAction(parseResult => command.Run(parseResult));
             command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
             command.Options.Add(TestingPlatformOptions.AdditionalMSBuildParametersOption);
             command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
@@ -200,6 +200,8 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.ArchitectureOption);
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.ProjectOption);
+            command.Options.Add(TestingPlatformOptions.SolutionOption);
+            command.Options.Add(TestingPlatformOptions.DirectoryOption);
 
             return command;
         }

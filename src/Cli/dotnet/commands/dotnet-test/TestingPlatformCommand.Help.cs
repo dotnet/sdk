@@ -14,11 +14,11 @@ namespace Microsoft.DotNet.Cli
 
         public IEnumerable<Action<HelpContext>> CustomHelpLayout()
         {
-            yield return async (context) =>
+            yield return (context) =>
             {
                 Console.WriteLine("Waiting for options and extensions...");
 
-                await Run(context.ParseResult);
+                Run(context.ParseResult);
 
                 if (_commandLineOptionNameToModuleNames.IsEmpty)
                 {
