@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Tools.List.PackageReferences
                 //If a single solution is found, use it.
                 else if (possibleSolutionPath.Count() == 1)
                 {
-                    return possibleSolutionPath.Single();
+                    return possibleSolutionPath[0];
                 }
                 //If no solutions are found, look for a project file
                 else

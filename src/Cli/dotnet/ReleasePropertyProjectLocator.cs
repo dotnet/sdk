@@ -148,6 +148,10 @@ namespace Microsoft.DotNet.Cli
         public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, Dictionary<string, string> globalProps)
         {
             string slnFullPath = Path.GetFullPath(slnPath);
+            if (!Path.Exists(slnFullPath))
+            {
+                return null;
+            }
             SolutionModel sln;
             try
             {
@@ -265,7 +269,7 @@ namespace Microsoft.DotNet.Cli
         /// <returns>Returns true if the path exists and is a sln file type.</returns>
         private bool IsValidSlnFilePath(string path)
         {
-            return File.Exists(path) && (Path.GetExtension(path) == ".sln" || Path.GetExtension(path) == ".slnx");
+            return File.Exists(path) && (Path.GetExtension(path).Equals(".sln")|| Path.GetExtension(path).Equals(".slnx"));
         }
 
         /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>
