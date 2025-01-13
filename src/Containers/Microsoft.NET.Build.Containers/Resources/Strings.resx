@@ -119,47 +119,47 @@
   </resheader>
   <data name="AmazonRegistryFailed" xml:space="preserve">
     <value>CONTAINER1002: Request to Amazon Elastic Container Registry failed prematurely. This is often caused when the target repository does not exist in the registry.</value>
-    <comment>{StrBegin="CONTAINER1002: "}</comment>
+    <comment>{StrBegins="CONTAINER1002: "}</comment>
   </data>
   <data name="AmbiguousTags" xml:space="preserve">
     <value>CONTAINER2008: Both {0} and {1} were provided, but only one or the other is allowed.</value>
-    <comment>{StrBegin="CONTAINER2008: "}</comment>
+    <comment>{StrBegins="CONTAINER2008: "}</comment>
   </data>
   <data name="BaseImageNameParsingFailed" xml:space="preserve">
     <value>CONTAINER2009: Could not parse {0}: {1}</value>
-    <comment>{StrBegin="CONTAINER2009: "}</comment>
+    <comment>{StrBegins="CONTAINER2009: "}</comment>
   </data>
   <data name="BaseImageNameWithSpaces" xml:space="preserve">
     <value>CONTAINER2013: {0} had spaces in it, replacing with dashes.</value>
-    <comment>{StrBegin="CONTAINER2013: "}</comment>
+    <comment>{StrBegins="CONTAINER2013: "}</comment>
   </data>
   <data name="BaseImageNameRegistryFallback" xml:space="preserve">
     <value>CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</value>
-    <comment>{StrBegin="CONTAINER2020: "}</comment>
+    <comment>{StrBegins="CONTAINER2020: "}</comment>
   </data>
   <data name="BaseImageNotFound" xml:space="preserve">
     <value>CONTAINER1011: Couldn't find matching base image for {0} that matches RuntimeIdentifier {1}.</value>
-    <comment>{StrBegin="CONTAINER1011: "}</comment>
+    <comment>{StrBegins="CONTAINER1011: "}</comment>
   </data>
   <data name="BlobUploadFailed" xml:space="preserve">
     <value>CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</value>
-    <comment>{StrBegin="CONTAINER1001: "}</comment>
+    <comment>{StrBegins="CONTAINER1001: "}</comment>
   </data>
   <data name="CouldntDeserializeJsonToken" xml:space="preserve">
     <value>CONTAINER1007: Could not deserialize token from JSON.</value>
-    <comment>{StrBegin="CONTAINER1007: "}</comment>
+    <comment>{StrBegins="CONTAINER1007: "}</comment>
   </data>
   <data name="CouldntRecognizeRegistry" xml:space="preserve">
     <value>CONTAINER2012: Could not recognize registry '{0}'.</value>
-    <comment>{StrBegin="CONTAINER2012: "}</comment>
+    <comment>{StrBegins="CONTAINER2012: "}</comment>
   </data>
   <data name="DockerInfoFailed" xml:space="preserve">
     <value>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</value>
-    <comment>{StrBegin="CONTAINER3002: "}</comment>
+    <comment>{StrBegins="CONTAINER3002: "}</comment>
   </data>
   <data name="DockerInfoFailed_Ex" xml:space="preserve">
     <value>CONTAINER3002: Failed to get docker info: {0}</value>
-    <comment>{StrBegin="CONTAINER3002: "}</comment>
+    <comment>{StrBegins="CONTAINER3002: "}</comment>
   </data>
   <data name="ContainerRuntimeProcessCreationFailed" xml:space="preserve">
     <value>CONTAINER3001: Failed creating {0} process.</value>
@@ -167,19 +167,19 @@
   </data>
   <data name="ImagePullNotSupported" xml:space="preserve">
     <value>CONTAINER1010: Pulling images from local registry is not supported.</value>
-    <comment>{StrBegin="CONTAINER1010: "}</comment>
+    <comment>{StrBegins="CONTAINER1010: "}</comment>
   </data>
   <data name="EmptyOrWhitespacePropertyIgnored" xml:space="preserve">
     <value>CONTAINER4006: Property '{0}' is empty or contains whitespace and will be ignored.</value>
-    <comment>{StrBegin="CONTAINER4006: "}</comment>
+    <comment>{StrBegins="CONTAINER4006: "}</comment>
   </data>
   <data name="EmptyValuesIgnored" xml:space="preserve">
     <value>CONTAINER4004: Items '{0}' contain empty item(s) which will be ignored.</value>
-    <comment>{StrBegin="CONTAINER4004: "}</comment>
+    <comment>{StrBegins="CONTAINER4004: "}</comment>
   </data>
   <data name="FailedRetrievingCredentials" xml:space="preserve">
     <value>CONTAINER1008: Failed retrieving credentials for "{0}": {1}</value>
-    <comment>{StrBegin="CONTAINER1008: "}</comment>
+    <comment>{StrBegins="CONTAINER1008: "}</comment>
   </data>
   <data name="HostObjectNotDetected" xml:space="preserve">
     <value>No host object detected.</value>
@@ -187,67 +187,76 @@
   </data>
   <data name="ImageLoadFailed" xml:space="preserve">
     <value>CONTAINER1009: Failed to load image from local registry. stdout: {0}</value>
-    <comment>{StrBegin="CONTAINER1009: "}</comment>
+    <comment>{StrBegins="CONTAINER1009: "}</comment>
   </data>
   <data name="InvalidEnvVar" xml:space="preserve">
     <value>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</value>
-    <comment>{StrBegin="CONTAINER2015: "}</comment>
+    <comment>{StrBegins="CONTAINER2015: "}</comment>
   </data>
   <data name="InvalidImageName_NonAlphanumericStartCharacter" xml:space="preserve">
     <value>CONTAINER2005: The first character of the image name '{0}' must be a lowercase letter or a digit and all characters in the name must be an alphanumeric character, -, /, or _.</value>
-    <comment>{StrBegin="CONTAINER2005: "}</comment>
+    <comment>{StrBegins="CONTAINER2005: "}</comment>
   </data>
   <data name="InvalidSdkVersion" xml:space="preserve">
     <value>CONTAINER2019: Invalid SDK semantic version '{0}'.</value>
-    <comment>{StrBegin="CONTAINER2019: "}</comment>
+    <comment>{StrBegins="CONTAINER2019: "}</comment>
+  </data>
+  <data name="InvalidTargetRuntimeIdentifiers" xml:space="preserve">
+    <value>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</value>
   </data>
   <data name="InvalidSdkPrereleaseVersion" xml:space="preserve">
     <value>CONTAINER2018: Invalid SDK prerelease version '{0}' - only 'rc' and 'preview' are supported.</value>
-    <comment>{StrBegin="CONTAINER2018: "}</comment>
+    <comment>{StrBegins="CONTAINER2018: "}</comment>
   </data>
   <data name="InvalidPort_Number" xml:space="preserve">
     <value>CONTAINER2017: A ContainerPort item was provided with an invalid port number '{0}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</value>
-    <comment>{StrBegin="CONTAINER2017: "}</comment>
+    <comment>{StrBegins="CONTAINER2017: "}</comment>
   </data>
   <data name="InvalidPort_NumberAndType" xml:space="preserve">
     <value>CONTAINER2017: A ContainerPort item was provided with an invalid port number '{0}' and an invalid port type '{1}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</value>
-    <comment>{StrBegin="CONTAINER2017: "}</comment>
+    <comment>{StrBegins="CONTAINER2017: "}</comment>
   </data>
   <data name="InvalidPort_Type" xml:space="preserve">
     <value>CONTAINER2017: A ContainerPort item was provided with an invalid port type '{0}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</value>
-    <comment>{StrBegin="CONTAINER2017: "}</comment>
+    <comment>{StrBegins="CONTAINER2017: "}</comment>
   </data>
   <data name="InvalidTag" xml:space="preserve">
     <value>CONTAINER2007: Invalid {0} provided: {1}. Image tags must be alphanumeric, underscore, hyphen, or period.</value>
-    <comment>{StrBegin="CONTAINER2007: "}</comment>
+    <comment>{StrBegins="CONTAINER2007: "}</comment>
   </data>
   <data name="InvalidTags" xml:space="preserve">
     <value>CONTAINER2010: Invalid {0} provided: {1}. {0} must be a semicolon-delimited list of valid image tags. Image tags must be alphanumeric, underscore, hyphen, or period.</value>
-    <comment>{StrBegin="CONTAINER2010: "}</comment>
+    <comment>{StrBegins="CONTAINER2010: "}</comment>
   </data>
   <data name="InvalidTokenResponse" xml:space="preserve">
     <value>CONTAINER1003: Token response had neither token nor access_token.</value>
-    <comment>{StrBegin="CONTAINER1003: "}</comment>
+    <comment>{StrBegins="CONTAINER1003: "}</comment>
   </data>
   <data name="ItemsWithoutMetadata" xml:space="preserve">
     <value>CONTAINER4005: Item '{0}' contains items without metadata 'Value', and they will be ignored.</value>
-    <comment>{StrBegin="CONTAINER4005: "}</comment>
+    <comment>{StrBegins="CONTAINER4005: "}</comment>
   </data>
   <data name="LocalRegistryNotAvailable" xml:space="preserve">
     <value>CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</value>
-    <comment>{StrBegin="CONTAINER1012: "}</comment>
+    <comment>{StrBegins="CONTAINER1012: "}</comment>
   </data>
   <data name="MissingLinkToRegistry" xml:space="preserve">
     <value>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</value>
-    <comment>{StrBegin="CONTAINER2004: "}</comment>
+    <comment>{StrBegins="CONTAINER2004: "}</comment>
+  </data>
+  <data name="OciImageMultipleTagsNotSupported" xml:space="preserve">
+    <value>Unable to create tarball for oci image with multiple tags.</value>
+  </data>
+  <data name="UnsupportedMediaTypeForTarball" xml:space="preserve">
+    <value>Unable to create tarball for mediaType '{0}'.</value>
   </data>
   <data name="MissingPortNumber" xml:space="preserve">
     <value>CONTAINER2016: ContainerPort item '{0}' does not specify the port number. Please ensure the item's Include is a port number, for example '&lt;ContainerPort Include="80" /&gt;'</value>
-    <comment>{StrBegin="CONTAINER2016: "}</comment>
+    <comment>{StrBegins="CONTAINER2016: "}</comment>
   </data>
   <data name="NoRequestUriSpecified" xml:space="preserve">
     <value>CONTAINER1004: No RequestUri specified.</value>
-    <comment>{StrBegin="CONTAINER1004: "}</comment>
+    <comment>{StrBegins="CONTAINER1004: "}</comment>
   </data>
   <data name="NormalizedContainerName" xml:space="preserve">
     <value>'{0}' was not a valid container image name, it was normalized to '{1}'</value>
@@ -255,79 +264,79 @@
   </data>
   <data name="PublishDirectoryDoesntExist" xml:space="preserve">
     <value>CONTAINER2011: {0} '{1}' does not exist</value>
-    <comment>{StrBegin="CONTAINER2011: "}</comment>
+    <comment>{StrBegins="CONTAINER2011: "}</comment>
   </data>
   <data name="RegistryOutputPushFailed" xml:space="preserve">
     <value>CONTAINER1013: Failed to push to the output registry: {0}</value>
-    <comment>{StrBegin="CONTAINER1013: "}</comment>
+    <comment>{StrBegins="CONTAINER1013: "}</comment>
   </data>
   <data name="RegistryPushFailed" xml:space="preserve">
     <value>CONTAINER1005: Registry push failed; received status code '{0}'.</value>
-    <comment>{StrBegin="CONTAINER1005: "}</comment>
+    <comment>{StrBegins="CONTAINER1005: "}</comment>
   </data>
   <data name="RequiredItemsContainsEmptyItems" xml:space="preserve">
     <value>CONTAINER4003: Required '{0}' items contain empty items.</value>
-    <comment>{StrBegin="CONTAINER4003: "}</comment>
+    <comment>{StrBegins="CONTAINER4003: "}</comment>
   </data>
   <data name="RequiredItemsNotSet" xml:space="preserve">
     <value>CONTAINER4002: Required '{0}' items were not set.</value>
-    <comment>{StrBegin="CONTAINER4002: "}</comment>
+    <comment>{StrBegins="CONTAINER4002: "}</comment>
   </data>
   <data name="RequiredPropertyNotSetOrEmpty" xml:space="preserve">
     <value>CONTAINER4001: Required property '{0}' was not set or empty.</value>
-    <comment>{StrBegin="CONTAINER4001: "}</comment>
+    <comment>{StrBegins="CONTAINER4001: "}</comment>
   </data>
   <data name="TooManyRetries" xml:space="preserve">
     <value>CONTAINER1006: Too many retries, stopping.</value>
-    <comment>{StrBegin="CONTAINER1006: "}</comment>
+    <comment>{StrBegins="CONTAINER1006: "}</comment>
   </data>
   <data name="UnknownLocalRegistryType" xml:space="preserve">
     <value>CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</value>
-    <comment>{StrBegin="CONTAINER2002: "}</comment>
+    <comment>{StrBegins="CONTAINER2002: "}</comment>
   </data>
   <data name="UnknownMediaType" xml:space="preserve">
     <value>CONTAINER2003: The manifest for {0}:{1} from registry {2} was an unknown type: {3}. Please raise an issue at https://github.com/dotnet/sdk-container-builds/issues with this message.</value>
-    <comment>{StrBegin="CONTAINER2003: "}</comment>
+    <comment>{StrBegins="CONTAINER2003: "}</comment>
   </data>
   <data name="UnrecognizedMediaType" xml:space="preserve">
     <value>CONTAINER2001: Unrecognized mediaType '{0}'.</value>
-    <comment>{StrBegin="CONTAINER2001: "}</comment>
+    <comment>{StrBegins="CONTAINER2001: "}</comment>
   </data>
   <data name="UnknownAppCommandInstruction" xml:space="preserve">
     <value>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</value>
-    <comment>{StrBegin="CONTAINER2021: "}</comment>
+    <comment>{StrBegins="CONTAINER2021: "}</comment>
   </data>
   <data name="BaseEntrypointOverwritten" xml:space="preserve">
     <value>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</value>
-    <comment>{StrBegin="CONTAINER2022: "}</comment>
+    <comment>{StrBegins="CONTAINER2022: "}</comment>
   </data>
   <data name="EntrypointAndAppCommandArgsSetNoAppCommandInstruction" xml:space="preserve">
     <value>CONTAINER2023: A ContainerEntrypoint and ContainerAppCommandArgs are provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</value>
-    <comment>{StrBegin="CONTAINER2023: "}</comment>
+    <comment>{StrBegins="CONTAINER2023: "}</comment>
   </data>
   <data name="EntrypointArgsSetNoEntrypoint" xml:space="preserve">
     <value>CONTAINER2024: ContainerEntrypointArgs are provided without specifying a ContainerEntrypoint.</value>
-    <comment>{StrBegin="CONTAINER2024: "}</comment>
+    <comment>{StrBegins="CONTAINER2024: "}</comment>
   </data>
   <data name="AppCommandArgsSetNoAppCommand" xml:space="preserve">
     <value>CONTAINER2025: ContainerAppCommandArgs are provided without specifying a ContainerAppCommand.</value>
-    <comment>{StrBegin="CONTAINER2025: "}</comment>
+    <comment>{StrBegins="CONTAINER2025: "}</comment>
   </data>
   <data name="AppCommandSetNotUsed" xml:space="preserve">
     <value>CONTAINER2026: ContainerAppCommand and ContainerAppCommandArgs must be empty when ContainerAppCommandInstruction is '{0}'.</value>
-    <comment>{StrBegin="CONTAINER2026: "}</comment>
+    <comment>{StrBegins="CONTAINER2026: "}</comment>
   </data>
   <data name="EntrypointSetNoAppCommandInstruction" xml:space="preserve">
     <value>CONTAINER2027: A ContainerEntrypoint is provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</value>
-    <comment>{StrBegin="CONTAINER2027: "}</comment>
+    <comment>{StrBegins="CONTAINER2027: "}</comment>
   </data>
   <data name="EntrypointConflictAppCommand" xml:space="preserve">
     <value>CONTAINER2028: ContainerEntrypoint can not be combined with ContainerAppCommandInstruction '{0}'.</value>
-    <comment>{StrBegin="CONTAINER2028: "}</comment>
+    <comment>{StrBegins="CONTAINER2028: "}</comment>
   </data>
   <data name="EntrypointArgsSetPreferAppCommandArgs" xml:space="preserve">
     <value>CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</value>
-    <comment>{StrBegin="CONTAINER2029: "}</comment>
+    <comment>{StrBegins="CONTAINER2029: "}</comment>
   </data>
   <data name="_Test" xml:space="preserve">
     <value>CONTAINER0000: Value for unit test {0}</value>
@@ -341,8 +350,34 @@
     <value>Pushed image '{0}' to registry '{1}'.</value>
     <comment/>
   </data>
+  <data name="ImageIndexUploadedToRegistry" xml:space="preserve">
+    <value>Pushed image index '{0}' to registry '{1}'.</value>
+    <comment/>
+  </data>
   <data name="ContainerBuilder_StartBuildingImage" xml:space="preserve">
     <value>Building image '{0}' with tags '{1}' on top of base image '{2}'.</value>
+    <comment/>
+  </data>
+  <data name="BuildingImageIndex" xml:space="preserve">
+    <value>Building image index '{0}' on top of manifests {1}.</value>
+    <comment>
+      {0} is the name of the image index and its tag, {1} is the list of manifests digests
+    </comment>
+  </data>
+  <data name="MixedMediaTypes" xml:space="preserve">
+    <value>'mediaType' of manifests should be the same in manifest list (image index).</value>
+    <comment/>
+  </data>
+  <data name="UnsupportedMediaType" xml:space="preserve">
+    <value>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</value>
+    <comment/>
+  </data>
+  <data name="ImagesEmpty" xml:space="preserve">
+    <value>Cannot create manifest list (image index) because no images were provided.</value>
+    <comment/>
+  </data>
+  <data name="InvalidImageMetadata" xml:space="preserve">
+    <value>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">
@@ -391,23 +426,23 @@
   </data>
   <data name="RegistryPullFailed" xml:space="preserve">
     <value>CONTAINER1014: Manifest pull failed.</value>
-    <comment>{StrBegin="CONTAINER1014: "}</comment>
+    <comment>{StrBegins="CONTAINER1014: "}</comment>
   </data>
   <data name="RegistryOperationFailed" xml:space="preserve">
     <value>CONTAINER1017: Unable to communicate with the registry '{0}'.</value>
-    <comment>{StrBegin="CONTAINER1017:" }</comment>
+    <comment>{StrBegins="CONTAINER1017:" }</comment>
   </data>
   <data name="RepositoryNotFound" xml:space="preserve">
     <value>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</value>
-    <comment>{StrBegin="CONTAINER1015: "}</comment>
+    <comment>{StrBegins="CONTAINER1015: "}</comment>
   </data>
   <data name="UnableToAccessRepository" xml:space="preserve">
     <value>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</value>
-    <comment>{StrBegin="CONTAINER1016:" }</comment>
+    <comment>{StrBegins="CONTAINER1016:" }</comment>
   </data>
   <data name="InvalidImageName_EntireNameIsInvalidCharacters" xml:space="preserve">
     <value>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</value>
-    <comment>{StrBegin="CONTAINER2005: "}</comment>
+    <comment>{StrBegins="CONTAINER2005: "}</comment>
   </data>
   <data name="ArchiveRegistry_PushInfo" xml:space="preserve">
     <value>local archive at '{0}'</value>
@@ -419,6 +454,6 @@
   </data>
   <data name="GenerateDigestLabelWithoutGenerateLabels" xml:space="preserve">
     <value>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</value>
-    <comment>{StrBegin="CONTAINER2030: "}</comment>
+    <comment>{StrBegins="CONTAINER2030: "}</comment>
   </data>
 </root>

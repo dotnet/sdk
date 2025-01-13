@@ -1,22 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.Extensions.Tools.Internal;
-using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Microsoft.DotNet.Watcher.Tools;
+namespace Microsoft.DotNet.Watch;
 
 internal class IncrementalMSBuildWorkspace : Workspace
 {
@@ -27,8 +20,11 @@ internal class IncrementalMSBuildWorkspace : Workspace
     {
         WorkspaceFailed += (_sender, diag) =>
         {
-            // Errors reported here are not fatal, an exception would be thrown for fatal issues.
-            reporter.Verbose($"MSBuildWorkspace warning: {diag.Diagnostic}");
+            // Report both Warning and Failure as warnings.
+            // MSBuildProjectLoader reports Failures for cases where we can safely continue loading projects
+            // (e.g. non-C#/VB project is ignored).
+            // https://github.com/dotnet/roslyn/issues/75170
+            reporter.Warn($"msbuild: {diag.Diagnostic}", "⚠");
         };
 
         _reporter = reporter;
@@ -40,15 +36,25 @@ internal class IncrementalMSBuildWorkspace : Workspace
 
         var loader = new MSBuildProjectLoader(this);
         var projectMap = ProjectMap.Create();
-        var projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
 
-        var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => p.FilePath!, elementSelector: static p => p.Id);
+        ImmutableArray<ProjectInfo> projectInfos;
+        try
+        {
+            projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException)
+        {
+            // TODO: workaround for https://github.com/dotnet/roslyn/issues/75956
+            projectInfos = [];
+        }
 
-        // Map new project id to the corresponding old one based on file path, if it exists, and null for added projects.
+        var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => (p.FilePath!, p.Name), elementSelector: static p => p.Id);
+
+        // Map new project id to the corresponding old one based on file path and project name (includes TFM), if it exists, and null for added projects.
         // Deleted projects won't be included in this map.
         var projectIdMap = projectInfos.ToDictionary(
             keySelector: static info => info.Id,
-            elementSelector: info => oldProjectIdsByPath.TryGetValue(info.FilePath!, out var oldProjectId) ? oldProjectId : null);
+            elementSelector: info => oldProjectIdsByPath.TryGetValue((info.FilePath!, info.Name), out var oldProjectId) ? oldProjectId : null);
 
         var newSolution = oldSolution;
 
@@ -106,13 +112,24 @@ internal class IncrementalMSBuildWorkspace : Workspace
             }).ToImmutableArray();
     }
 
-    public async ValueTask UpdateFileContentAsync(IEnumerable<FileItem> changedFiles, CancellationToken cancellationToken)
+    public async ValueTask UpdateFileContentAsync(IEnumerable<ChangedFile> changedFiles, CancellationToken cancellationToken)
     {
         var updatedSolution = CurrentSolution;
 
-        foreach (var changedFile in changedFiles)
+        var documentsToRemove = new List<DocumentId>();
+
+        foreach (var (changedFile, change) in changedFiles)
         {
+            // when a file is added we reevaluate the project:
+            Debug.Assert(change != ChangeKind.Add);
+
             var documentIds = updatedSolution.GetDocumentIdsWithFilePath(changedFile.FilePath);
+            if (change == ChangeKind.Delete)
+            {
+                documentsToRemove.AddRange(documentIds);
+                continue;
+            }
+
             foreach (var documentId in documentIds)
             {
                 var textDocument = updatedSolution.GetDocument(documentId)
@@ -140,8 +157,16 @@ internal class IncrementalMSBuildWorkspace : Workspace
             }
         }
 
+        updatedSolution = RemoveDocuments(updatedSolution, documentsToRemove);
+
         await ReportSolutionFilesAsync(SetCurrentSolution(updatedSolution), cancellationToken);
     }
+
+    private static Solution RemoveDocuments(Solution solution, IEnumerable<DocumentId> ids)
+        => solution
+        .RemoveDocuments(ids.Where(id => solution.GetDocument(id) != null).ToImmutableArray())
+        .RemoveAdditionalDocuments(ids.Where(id => solution.GetAdditionalDocument(id) != null).ToImmutableArray())
+        .RemoveAnalyzerConfigDocuments(ids.Where(id => solution.GetAnalyzerConfigDocument(id) != null).ToImmutableArray());
 
     private static async ValueTask<SourceText> GetSourceTextAsync(string filePath, CancellationToken cancellationToken)
     {

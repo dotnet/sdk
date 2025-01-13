@@ -74,22 +74,22 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             }
             else
             {
-                var globalJsonInformation = _workloadListHelper.ManifestProvider.GetGlobalJsonInformation();
+                var versionInfo = _workloadListHelper.ManifestProvider.GetWorkloadVersion();
                 Reporter.WriteLine();
-                var shouldPrintTable = globalJsonInformation?.WorkloadVersionInstalled != false;
-                var shouldShowWorkloadSetVersion = globalJsonInformation is not null ||
+                var shouldPrintTable = versionInfo.IsInstalled;
+                var shouldShowWorkloadSetVersion = versionInfo.GlobalJsonPath is not null ||
                     InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.UserLocalPath), "default.json")).UseWorkloadSets == true;
 
                 if (shouldShowWorkloadSetVersion)
                 {
-                    if (globalJsonInformation is not null)
+                    if (versionInfo.GlobalJsonPath is not null)
                     {
                         Reporter.WriteLine(string.Format(
-                            globalJsonInformation.WorkloadVersionInstalled ?
+                            versionInfo.IsInstalled ?
                                 LocalizableStrings.WorkloadSetFromGlobalJsonInstalled :
-                                LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled,
-                            globalJsonInformation.GlobalJsonVersion,
-                            globalJsonInformation.GlobalJsonPath));
+                                InformationStrings.WorkloadSetFromGlobalJsonNotInstalled,
+                            versionInfo.Version,
+                            versionInfo.GlobalJsonPath));
                     }
                     else
                     {

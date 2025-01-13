@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="CmdAdditionalMSBuildParametersDescription">
         <source>The additional msbuild parameters to pass.</source>
-        <target state="new">The additional msbuild parameters to pass.</target>
+        <target state="translated">Další parametry msbuild, které se mají předat.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdArchitectureDescription">
@@ -83,6 +83,11 @@ Pro MSTest před 2.2.4 se časový limit použije pro všechny testovací příp
         <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDirectoryDescription">
+        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -113,9 +118,39 @@ Příklady:
         <target state="translated">NÁZEV="HODNOTA"</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
+        <source>The provided project file has an invalid extension: {0}.</source>
+        <target state="new">The provided project file has an invalid extension: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdInvalidSolutionFileExtensionErrorDescription">
+        <source>The provided solution file has an invalid extension: {0}.</source>
+        <target state="new">The provided solution file has an invalid extension: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdInvalidTestMessageStateException">
+        <source>Invalid test message state '{0}'</source>
+        <target state="new">Invalid test message state '{0}'</target>
+        <note>{0} - test message state</note>
+      </trans-unit>
+      <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
+        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
+        <target state="new">Get projects properties with MSBuild didn't execute properly with exit code: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
-        <target state="new">The max number of test modules that can run in parallel.</target>
+        <target state="translated">Maximální počet testovacích modulů, které je možné spustit paralelně.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
+        <source>Specify either the project, solution or directory option.</source>
+        <target state="new">Specify either the project, solution or directory option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
+        <source>Specify which project or solution file to use because this folder contains more than one project or solution file.</source>
+        <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -123,9 +158,24 @@ Příklady:
         <target state="translated">Spustit testy bez zobrazení nápisu Microsoft Testplatform</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
+        <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
+        <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoRestoreDescription">
         <source>Do not execute an implicit restore.</source>
         <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentDirectoryErrorDescription">
+        <source>The provided directory path does not exist: {0}.</source>
+        <target state="new">The provided directory path does not exist: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentFileErrorDescription">
+        <source>The provided file path does not exist: {0}.</source>
+        <target state="new">The provided file path does not exist: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
@@ -146,6 +196,11 @@ Příklady:
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests.</source>
         <target state="translated">Místo spuštění testů vypíše seznam zjištěných testů.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionDescription">
+        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestCaseFilterExpression">
@@ -245,6 +300,21 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
         <target state="new">The test modules have the specified root directory.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdUnsupportedMessageRequestTypeException">
+        <source>Message Request type '{0}' is unsupported.</source>
+        <target state="new">Message Request type '{0}' is unsupported.</target>
+        <note>{0} - message request type</note>
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedTestRunnerDescription">
+        <source>Test runner not supported: {0}.</source>
+        <target state="new">Test runner not supported: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
+        <source>Test application(s) that support VSTest are not supported.</source>
+        <target state="new">Test application(s) that support VSTest are not supported.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">
         <source>DUMP_TYPE</source>
         <target state="translated">DUMP_TYPE</target>
@@ -267,12 +337,12 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
         <source>No serializer registered with ID '{0}'</source>
-        <target state="new">No serializer registered with ID '{0}'</target>
+        <target state="translated">Není zaregistrovaný žádný serializátor s ID {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
         <source>No serializer registered with type '{0}'</source>
-        <target state="new">No serializer registered with type '{0}'</target>
+        <target state="translated">Není zaregistrovaný žádný serializátor s typem {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

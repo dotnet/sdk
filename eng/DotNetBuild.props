@@ -1,4 +1,4 @@
-<!-- Whenever altering this or other Source Build files, please include @dotnet/source-build-internal as a reviewer. -->
+<!-- When altering this file, please include @dotnet/product-construction as a reviewer. -->
 
 <Project>
 
@@ -15,8 +15,7 @@
       <InnerBuildArgs>$(InnerBuildArgs) /p:UseSharedCompilation=false</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:SkipBuildingInstallers=true</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:IncludeAdditionalSharedFrameworks=false</InnerBuildArgs>
-      <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:DISABLE_CROSSGEN=true</InnerBuildArgs>
-      <InnerBuildArgs Condition="'$(PgoInstrument)' == 'true'">$(InnerBuildArgs) /p:PgoInstrument=true</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:DISABLE_CROSSGEN=true</InnerBuildArgs>
     </PropertyGroup>
   </Target>
 

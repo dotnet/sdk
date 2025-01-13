@@ -1,16 +1,6 @@
 // IMPORTANT: This file is read by the merge flow from main branch only. 
 {
     "merge-flow-configurations": {
-        // Automate opening PRs to merge cli release/6.0.1xx to .4xx
-        "release/6.0.1xx":{
-            "MergeToBranch": "release/6.0.4xx",
-            "ExtraSwitches": "-QuietComments"
-        },
-        // Automate opening PRs to merge cli release/6.0.4xx to 8.0.1xx
-        "release/6.0.4xx":{
-            "MergeToBranch": "release/8.0.1xx",
-            "ExtraSwitches": "-QuietComments"
-        },
         // Automate opening PRs to merge cli release/8.0.1xx to 8.0.3xx
         "release/8.0.1xx":{
             "MergeToBranch": "release/8.0.3xx",
@@ -26,8 +16,13 @@
             "MergeToBranch": "release/9.0.1xx",
             "ExtraSwitches": "-QuietComments"
         },        
-        // Automate opening PRs to merge sdk repos from release/9.0.1xx to main
+        // Automate opening PRs to merge sdk repos from release/9.0.1xx to release/9.0.2xx
         "release/9.0.1xx":{
+            "MergeToBranch": "release/9.0.2xx",
+            "ExtraSwitches": "-QuietComments"
+        },
+        // Automate opening PRs to merge sdk repos from release/9.0.2xx to main
+        "release/9.0.2xx":{
             "MergeToBranch": "main",
             "ExtraSwitches": "-QuietComments"
         }

@@ -9,13 +9,32 @@ namespace Microsoft.DotNet.Cli
         public const string HelpOptionKey = "--help";
         public const string ServerOptionKey = "--server";
         public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
-        public const string ProjectOptionKey = "--project";
         public const string FrameworkOptionKey = "--framework";
 
         public const string ServerOptionValue = "dotnettestcli";
 
-        public const string MSBuildExeName = "MSBuild.dll";
         public const string ParametersSeparator = "--";
+        public const string SemiColon = ";";
+        public const string Colon = ":";
+
+        public const string VSTest = "VSTest";
+        public const string MicrosoftTestingPlatform = "MicrosoftTestingPlatform";
+
+        public const string TestSectionKey = "test";
+
+        public const string RestoreCommand = "restore";
+
+        public static readonly string[] ProjectExtensions = { ".proj", ".csproj", ".vbproj", ".fsproj" };
+        public static readonly string[] SolutionExtensions = { ".sln", ".slnx" };
+
+        public const string ProjectExtensionPattern = "*.*proj";
+        public const string SolutionExtensionPattern = "*.sln";
+        public const string SolutionXExtensionPattern = "*.slnx";
+
+        public const string BinLogFileName = "msbuild.binlog";
+
+        public const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
+        public const string DLLExtension = "dll";
     }
 
     internal static class TestStates
@@ -50,5 +69,16 @@ namespace Microsoft.DotNet.Cli
     internal static class ProtocolConstants
     {
         internal const string Version = "1.0.0";
+    }
+
+    internal static class ProjectProperties
+    {
+        internal const string IsTestingPlatformApplication = "IsTestingPlatformApplication";
+        internal const string IsTestProject = "IsTestProject";
+        internal const string TargetFramework = "TargetFramework";
+        internal const string TargetFrameworks = "TargetFrameworks";
+        internal const string TargetPath = "TargetPath";
+        internal const string ProjectFullPath = "MSBuildProjectFullPath";
+        internal const string RunSettingsFilePath = "RunSettingsFilePath";
     }
 }

@@ -18,8 +18,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="Microsoft.DotNet.SourceBuild.SmokeTests\Microsoft.DotNet.SourceBuild.SmokeTests.csproj"
+    <!-- Shared tests - applicable to unified-build and source-build. -->
+    <ProjectReference Include="Microsoft.DotNet.Tests\Microsoft.DotNet.Tests.csproj" />
+    <!-- Source-build specific tests. -->
+    <ProjectReference Include="Microsoft.DotNet.SourceBuild.Tests\Microsoft.DotNet.SourceBuild.Tests.csproj"
                       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <!-- Unified-build specific tests. -->
     <ProjectReference Include="Microsoft.DotNet.UnifiedBuild.Tests\Microsoft.DotNet.UnifiedBuild.Tests.csproj"
                       Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" />
   </ItemGroup>
@@ -27,7 +31,7 @@
   <!-- Make sure that the sdk archive is extracted before running the scenario-tests. Need to do this here as it's hard
        to define the dependency directly in scenario-tests.proj. -->
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" BuildInParallel="false" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" BuildInParallel="false" Condition="'$(SkipPrepareSdkArchive)' != 'true'" />
     <ProjectReference Include="$(RepoProjectsDir)scenario-tests.proj" Condition="'$(_RunScenarioTests)' == 'true'" BuildInParallel="false" />
   </ItemGroup>
 

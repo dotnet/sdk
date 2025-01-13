@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using NuGet.Packaging;
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
@@ -15,6 +15,7 @@ namespace Microsoft.NET.Build.Containers;
 internal interface IManifestPicker
 {
     public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier);
+    public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier);
 }
 
 internal sealed class RidGraphManifestPicker : IManifestPicker
@@ -26,6 +27,16 @@ internal sealed class RidGraphManifestPicker : IManifestPicker
         _runtimeGraph = GetRuntimeGraphForDotNet(runtimeIdentifierGraphPath);
     }
     public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> ridManifestDict, string runtimeIdentifier)
+    {
+        var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
+        if (bestManifestRid is null)
+        {
+            return null;
+        }
+        return ridManifestDict[bestManifestRid];
+    }
+
+    public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> ridManifestDict, string runtimeIdentifier)
     {
         var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
         if (bestManifestRid is null)
@@ -81,7 +92,7 @@ internal sealed class Registry
         this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
 
-    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) : 
+    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
         this(new Uri($"https://{registryName}"), logger, new RegistryApiFactory(mode), settings)
     { }
 
@@ -183,11 +194,20 @@ internal sealed class Registry
             SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await ReadSingleImageAsync(
                 repositoryName,
                 await ReadManifest().ConfigureAwait(false),
+                initialManifestResponse.Content.Headers.ContentType.MediaType,
                 cancellationToken).ConfigureAwait(false),
             SchemaTypes.DockerManifestListV2 => await PickBestImageFromManifestListAsync(
                 repositoryName,
                 reference,
                 await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                runtimeIdentifier,
+                manifestPicker,
+                cancellationToken).ConfigureAwait(false),
+            SchemaTypes.OciImageIndexV1 =>
+                await PickBestImageFromImageIndexAsync(
+                repositoryName,
+                reference,
+                await initialManifestResponse.Content.ReadFromJsonAsync<ImageIndexV1>(cancellationToken: cancellationToken).ConfigureAwait(false),
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
@@ -223,7 +243,7 @@ internal sealed class Registry
         };
     }
 
-    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, CancellationToken cancellationToken)
+    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, string manifestMediaType, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ManifestConfig config = manifest.Config;
@@ -232,14 +252,29 @@ internal sealed class Registry
         JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, configSha, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
-        return new ImageBuilder(manifest, new ImageConfig(configDoc), _logger);
+        // ManifestV2.MediaType can be null, so we also provide manifest mediaType from http response
+        return new ImageBuilder(manifest, manifest.MediaType ?? manifestMediaType, new ImageConfig(configDoc), _logger);
     }
 
 
-    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(ManifestListV2 manifestList)
+    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(PlatformSpecificManifest[] manifestList)
     {
         var ridDict = new Dictionary<string, PlatformSpecificManifest>();
-        foreach (var manifest in manifestList.manifests)
+        foreach (var manifest in manifestList)
+        {
+            if (CreateRidForPlatform(manifest.platform) is { } rid)
+            {
+                ridDict.TryAdd(rid, manifest);
+            }
+        }
+
+        return ridDict;
+    }
+
+    private static IReadOnlyDictionary<string, PlatformSpecificOciManifest> GetManifestsByRid(PlatformSpecificOciManifest[] manifestList)
+    {
+        var ridDict = new Dictionary<string, PlatformSpecificOciManifest>();
+        foreach (var manifest in manifestList)
         {
             if (CreateRidForPlatform(manifest.platform) is { } rid)
             {
@@ -293,24 +328,71 @@ internal sealed class Registry
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var ridManifestDict = GetManifestsByRid(manifestList);
+        var ridManifestDict = GetManifestsByRid(manifestList.manifests);
         if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificManifest matchingManifest)
         {
-            using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-            var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
-            manifest.KnownDigest = matchingManifest.digest;
-            return await ReadSingleImageAsync(
+            return await ReadImageFromManifest(
                 repositoryName,
-                manifest,
-                cancellationToken).ConfigureAwait(false);
+                reference,
+                matchingManifest.digest,
+                matchingManifest.mediaType,
+                runtimeIdentifier,
+                ridManifestDict.Keys,
+                cancellationToken);
         }
         else
         {
             throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
         }
+    }
+
+    private async Task<ImageBuilder> PickBestImageFromImageIndexAsync(
+        string repositoryName,
+        string reference,
+        ImageIndexV1 index,
+        string runtimeIdentifier,
+        IManifestPicker manifestPicker,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var ridManifestDict = GetManifestsByRid(index.manifests);
+        if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificOciManifest matchingManifest)
+        {
+            return await ReadImageFromManifest(
+                repositoryName,
+                reference,
+                matchingManifest.digest,
+                matchingManifest.mediaType,
+                runtimeIdentifier,
+                ridManifestDict.Keys,
+                cancellationToken);
+        }
+        else
+        {
+            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
+        }
+    }
+
+    private async Task<ImageBuilder> ReadImageFromManifest(
+        string repositoryName,
+        string reference,
+        string manifestDigest,
+        string mediaType,
+        string runtimeIdentifier,
+        IEnumerable<string> rids,
+        CancellationToken cancellationToken)
+    {
+        using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, manifestDigest, cancellationToken).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
+        manifest.KnownDigest = manifestDigest;
+        return await ReadSingleImageAsync(
+            repositoryName,
+            manifest,
+            mediaType,
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -447,6 +529,17 @@ internal sealed class Registry
 
     }
 
+    public async Task PushManifestListAsync(string repositoryName, string[] tags, string manifestListJson, string mediaType, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        foreach (var tag in tags)
+        {
+            _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
+            await _registryAPI.Manifest.PutAsync(repositoryName, tag, manifestListJson, mediaType, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
+        }          
+    }
+
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
         => PushAsync(builtImage, source, destination, pushTags: true, cancellationToken);
 
@@ -511,13 +604,14 @@ internal sealed class Registry
         // Tags can refer to an image manifest or an image manifest list.
         // In the first case, we push tags to the registry.
         // In the second case, we push the manifest digest so the manifest list can refer to it.
+        string manifestJson = JsonSerializer.SerializeToNode(builtImage.Manifest)?.ToJsonString() ?? "";
         if (pushTags)
         {
             Debug.Assert(destination.Tags.Length > 0);
             foreach (string tag in destination.Tags)
             {
                 _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, manifestJson, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
             }
         }
@@ -525,7 +619,7 @@ internal sealed class Registry
         {
             string manifestDigest = builtImage.Manifest.GetDigest();
             _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
-            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, manifestJson, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }
@@ -534,7 +628,6 @@ internal sealed class Registry
     {
         private readonly IRegistryAPI? _registryApi;
         private readonly RegistryMode? _mode;
-
         public RegistryApiFactory(IRegistryAPI registryApi)
         {
             _registryApi = registryApi;

@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
-        <target state="needs-review-translation">{0} obsahuje více souborů projektů MSBuild. Pomocí parametru --projekt zadejte, který soubor chcete použít.</target>
+        <target state="translated">{0} obsahuje více souborů projektů MSBuild. Pomocí parametru --project zadejte, který soubor chcete použít.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_NoProjectsFound">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
-        <target state="needs-review-translation">V {0} se nepovedlo najít soubor projektu MSBuild. Pomocí parametru --project zadejte, který projekt chcete použít.</target>
+        <target state="translated">V {0} se nepovedlo najít soubor projektu MSBuild. Pomocí parametru --project zadejte, který projekt chcete použít.</target>
         <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="Error_QuietAndVerboseSpecified">
         <source>Cannot specify both '--quiet' and '--verbose' options.</source>
-        <target state="needs-review-translation">Možnosti --quiet a --verbose se nedají zadat spolu.</target>
+        <target state="translated">Možnosti --quiet a --verbose se nedají zadat spolu.</target>
         <note>{Locked="--quiet"}{Locked="--verbose"}</note>
       </trans-unit>
       <trans-unit id="Help">
@@ -58,37 +58,37 @@ Examples:
   dotnet watch test
 
     </source>
-        <target state="new">
+        <target state="translated">
 
-Environment variables:
+Proměnné prostředí:
 
   DOTNET_USE_POLLING_FILE_WATCHER
-  When set to '1' or 'true', dotnet-watch will poll the file system for
-  changes. This is required for some file systems, such as network shares,
-  Docker mounted volumes, and other virtual file systems.
+  Pokud je nastavená hodnota 1 nebo true, dotnet-watch se bude dotazovat systému souborů na
+  změny. To je potřeba pro některé systémy souborů, jako jsou sdílené síťové složky,
+  svazky připojené k Dockeru a další virtuální systémy souborů.
 
   DOTNET_WATCH
-  dotnet-watch sets this variable to '1' on all child processes launched.
+  dotnet-watch nastaví tuto proměnnou na hodnotu 1 u všech spuštěných podřízených procesů.
 
   DOTNET_WATCH_ITERATION
-  dotnet-watch sets this variable to '1' and increments by one each time
-  a file is changed and the command is restarted.
+  dotnet-watch nastaví tuto proměnnou na hodnotu 1 a pokaždé ji zvýší o jedna pokaždé,
+  když je soubor změněn a příkaz je restartován. 
 
   DOTNET_WATCH_SUPPRESS_EMOJIS
-  When set to '1' or 'true', dotnet-watch will not show emojis in the 
-  console output.
+  Pokud je nastavená hodnota 1 nebo true, dotnet-watch nebude zobrazovat emoji ve 
+  výstupu konzoly.
 
-Remarks:
-  The special option '--' is used to delimit the end of the options and
-  the beginning of arguments that will be passed to the child dotnet process.
+Poznámky:
+  Speciální možnost -- se používá k ohraničení konce možností a
+  začátku argumentů, které budou předány podřízenému procesu dotnet.
 
-  For example: dotnet watch -- --verbose run
+  Příklad: dotnet watch -- --verbose run
 
-  Even though '--verbose' is an option dotnet-watch supports, the use of '--'
-  indicates that '--verbose' should be treated instead as an argument for
+  Přestože --verbose je možnost, kterou dotnet-watch podporuje, použití --
+  označuje, že --verbose by mělo být považováno za argument pro
   dotnet-run.
 
-Examples:
+Příklady:
   dotnet watch run
   dotnet watch test
 
@@ -99,8 +99,8 @@ Examples:
         <source>
       Lists all discovered files without starting the watcher.
     </source>
-        <target state="new">
-      Lists all discovered files without starting the watcher.
+        <target state="translated">
+      Vypíše všechny zjištěné soubory bez spuštění sledovacího procesu.
     </target>
         <note />
       </trans-unit>
@@ -108,8 +108,8 @@ Examples:
         <source>
       Suppress hot reload for supported apps.
     </source>
-        <target state="new">
-      Suppress hot reload for supported apps.
+        <target state="translated">
+      Potlačit opětovné načítání za provozu pro podporované aplikace.
     </target>
         <note />
       </trans-unit>
@@ -118,9 +118,9 @@ Examples:
       Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
       Use this option to prevent console input from being captured.
     </source>
-        <target state="new">
-      Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
-      Use this option to prevent console input from being captured.
+        <target state="translated">
+      Spustí dotnet-watch v neinteraktivním režimu. Tato možnost je podporována pouze při spuštění s povoleným opětovným načítáním za provozu.
+      Tuto možnost použijte, pokud chcete zabránit zachycení vstupu konzoly.
     </target>
         <note />
       </trans-unit>
@@ -128,8 +128,8 @@ Examples:
         <source>
       Suppresses all output except warnings and errors
     </source>
-        <target state="new">
-      Suppresses all output except warnings and errors
+        <target state="translated">
+      Potlačí všechny výstupy kromě upozornění a chyb
     </target>
         <note />
       </trans-unit>
@@ -137,14 +137,14 @@ Examples:
         <source>
       Show verbose output
     </source>
-        <target state="new">
-      Show verbose output
+        <target state="translated">
+      Zobrazit podrobní výstup
     </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
-        <target state="needs-review-translation">Upozornění NETSDK1174: Zkratka -p pro --project je zastaralá. Použijte prosím --project.</target>
+        <target state="translated">Upozornění NETSDK1174: Zkratka -p pro --project je zastaralá. Použijte prosím --project.</target>
         <note>{Locked="-p"}{Locked="--project"}</note>
       </trans-unit>
     </body>

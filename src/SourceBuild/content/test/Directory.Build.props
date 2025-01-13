@@ -8,7 +8,6 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <Nullable>enable</Nullable>
     <VSTestResultsDirectory>$(ArtifactsTestResultsDir)</VSTestResultsDirectory>
   </PropertyGroup>
 

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Search.Tests
@@ -38,12 +40,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public string GetManifestFeatureBand(string manifestId) => throw new NotImplementedException();
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests() => _installedManifests ?? throw new NotImplementedException();
         public IWorkloadResolver CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider) => throw new NotImplementedException();
-        public string GetSdkFeatureBand() => "12.0.400";
-        public WorkloadVersion GetWorkloadVersion() => new WorkloadVersion()
-        {
-            Version = "12.0.400.2",
-            WorkloadInstallType = WorkloadVersion.Type.LooseManifest
-        };
+        public string GetSdkFeatureBand() => "8.0.100";
+        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo("8.0.100.2");
         public IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         WorkloadResolver IWorkloadResolver.CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider) => throw new NotImplementedException();
         WorkloadManifest IWorkloadResolver.GetManifestFromWorkload(WorkloadId workloadId) => throw new NotImplementedException();

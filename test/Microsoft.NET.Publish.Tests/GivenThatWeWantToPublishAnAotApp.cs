@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection.PortableExecutable;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
@@ -19,7 +21,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.8.0")]
+        [RequiresMSBuildVersionTheory("17.12.0")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)
         {
@@ -40,16 +42,34 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            string[] ignoredPatterns = null;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                ignoredPatterns = new string[]
+                {
+                    // Both these exclusions can be removed once the min tested version is .NET 10 and the min supported
+                    // XCode version is XCode 16.
+
+                    // -ld_classic option is required to workaround bugs in XCode 15 and .NET 9 and older runtimes.
+                    // See https://github.com/dotnet/runtime/issues/97745 for details.
+                    "ld: warning: -ld_classic is deprecated and will be removed in a future release",
+                    // These warnings show up when dotnet/runtime compiled using Apple clang 15+ is used
+                    // with classic linker (either Apple clang 14 or clang 15+ with -ld_classic).
+                    "ld: warning: __LD,__compact_unwind entries for",
+                };
+            }
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
-                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("IL2026")
                 .And.NotHaveStdErrContaining("NETSDK1179")
                 .And.NotHaveStdErrContaining("warning")
-                .And.NotHaveStdOutContaining("warning");
+                .And.NotHaveStdOutContaining("warning", ignoredPatterns);
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
@@ -73,7 +93,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [RequiresMSBuildVersionTheory("17.8.0")]
+        [RequiresMSBuildVersionTheory("17.12.0")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_false(string targetFramework)
         {
@@ -84,11 +104,11 @@ namespace Microsoft.NET.Publish.Tests
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "false";
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
+                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:CheckEolTargetFramework=false")
                     .Should().Pass()
                     .And.NotHaveStdOutContaining("IL2026")
                     .And.NotHaveStdErrContaining("NETSDK1179")
@@ -128,7 +148,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -179,7 +199,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -224,7 +244,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject)
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -272,7 +292,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -321,7 +341,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -352,7 +372,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -386,7 +406,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
                 testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -421,7 +441,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
                 testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -469,7 +489,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", ExplicitPackageVersion));
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
@@ -492,7 +512,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                     .WithProjectChanges(project => OverrideKnownILCompilerPackRuntimeIdentifiers(project, $"{rid};"));
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -515,7 +535,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject)
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                     .WithProjectChanges(project => OverrideKnownILCompilerPackRuntimeIdentifiers(project, $"{supportedTargetRid};"));
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -545,7 +565,7 @@ namespace Microsoft.NET.Publish.Tests
             // unless PublishAot is also set.
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -564,7 +584,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "WarningAppWithAotAnalyzer";
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["IsAotCompatible"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             buildCommand
@@ -677,7 +697,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -708,7 +728,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -736,6 +756,59 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void Warnings_are_generated_in_build_with_analyzers_enabled(string targetFramework)
+        {
+
+            var projectName = "WarningAppWithPublishAotAnalyzersDisabled";
+
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            // The below analyzers are enabled by default but explicitly setting them to true
+            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
+            testProject.AdditionalProperties["EnableTrimAnalyzer"] = "true";
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("warning IL3050")
+                .And.HaveStdOutContaining("warning IL3056")
+                .And.HaveStdOutContaining("warning IL2026")
+                .And.HaveStdOutContaining("warning IL3002");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void Warnings_are_not_generated_in_build_with_analyzers_disabled(string targetFramework)
+        {
+
+            var projectName = "WarningAppWithPublishAotAnalyzersDisabled";
+
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            testProject.AdditionalProperties["EnableAotAnalyzer"] = "false";
+            testProject.AdditionalProperties["EnableTrimAnalyzer"] = "false";
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "false";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdOutContaining("warning IL3050")
+                .And.NotHaveStdOutContaining("warning IL3056")
+                .And.NotHaveStdOutContaining("warning IL2026")
+                .And.NotHaveStdOutContaining("warning IL3002");
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Warnings_are_generated_even_with_analyzers_disabled(string targetFramework)
         {
 
@@ -752,7 +825,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -789,7 +862,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SelfContained"] = "true";
             testProject.AdditionalProperties["NativeLib"] = "Static";
             testProject.SelfContained = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -824,13 +897,10 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            // Revisit once the issue is fixed
-            // https://github.com/dotnet/runtime/issues/89346
             publishCommand
                 .Execute()
-                .Should().Pass();
-            // Comment in the following code when https://github.com/dotnet/sdk/issues/34839 gets fixed
-            // .And.HaveStdOutContaining("EventSource is not supported or recommended when compiling to a native library");
+                .Should().Pass()
+                .And.HaveStdOutContaining("EventSource is not supported or recommended when compiling to a native library");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -845,7 +915,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["NativeLib"] = "Shared";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -870,7 +940,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "ImplicitRidNativeAotApp";
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -886,7 +956,7 @@ namespace Microsoft.NET.Publish.Tests
             var projectName = "DynamicCodeSupportFalseApp";
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand

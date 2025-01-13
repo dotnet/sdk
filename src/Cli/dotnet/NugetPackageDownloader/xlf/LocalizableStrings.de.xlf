@@ -30,18 +30,18 @@
       <trans-unit id="FailedToValidatePackageSigning">
         <source>Failed to validate package signing.
 {0}</source>
-        <target state="new">Failed to validate package signing.
+        <target state="translated">Fehler bei der Überprüfung der Paketsignierung.
 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="needs-review-translation">"{0}" wurde in NuGet-Feeds "{1}" nicht gefunden.</target>
+        <target state="translated">"{0}" wurde in NuGet-Feeds "{1}" nicht gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageShouldNotBeSigned">
         <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
-        <target state="new">Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</target>
+        <target state="translated">Die Signaturüberprüfung für das NuGet-Paket „{0}“ wird übersprungen, da sie aus einer Quelle stammt, für die keine Signaturüberprüfung erforderlich ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
@@ -76,7 +76,7 @@
       </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
-        <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>
+        <target state="translated">Es wurde überprüft, ob das NuGet-Paket „{0}“ über eine gültige Signatur verfügt.</target>
         <note />
       </trans-unit>
     </body>

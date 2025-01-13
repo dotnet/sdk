@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CmdNoHttpCacheOptionDescription">
         <source>Disable Http Caching for packages.</source>
-        <target state="new">Disable Http Caching for packages.</target>
+        <target state="translated">パッケージの HTTP キャッシュを無効にします。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSourceOption">

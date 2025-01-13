@@ -7,13 +7,13 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         public bool Exists { get; init; }
 
-        public string CommitSha { get; init; }
+        public string? CommitSha { get; init; }
 
-        public string BuildNumber { get; init; }
+        public string? BuildNumber { get; init; }
 
-        public string FullNugetVersion { get; init; }
+        public string? FullNugetVersion { get; init; }
 
-        public string SdkFeatureBand { get; init; }
+        public string? SdkFeatureBand { get; init; }
 
         /// <summary>
         /// The runtime identifier (rid) that this CLI was built for.
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// RuntimeInformation.RuntimeIdentifier may be for a new version of the OS that
         /// doesn't have full support yet.
         /// </remarks>
-        public string BuildRid { get; init; }
+        public string? BuildRid { get; init; }
 
         public DotnetVersionFile(string versionFilePath)
         {

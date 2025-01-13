@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if NETCOREAPP
-#nullable enable
 #endif
 
 using System.Diagnostics;
@@ -59,7 +58,7 @@ namespace Microsoft.DotNet.Tools.Test
                 switch (fieldId)
                 {
                     case CommandLineOptionMessagesFieldsId.ModulePath:
-                        moduleName = ReadString(stream);
+                        moduleName = ReadStringValue(stream, fieldSize);
                         break;
 
                     case CommandLineOptionMessagesFieldsId.CommandLineOptionMessageList:
@@ -96,11 +95,11 @@ namespace Microsoft.DotNet.Tools.Test
                     switch (fieldId)
                     {
                         case CommandLineOptionMessageFieldsId.Name:
-                            name = ReadString(stream);
+                            name = ReadStringValue(stream, fieldSize);
                             break;
 
                         case CommandLineOptionMessageFieldsId.Description:
-                            description = ReadString(stream);
+                            description = ReadStringValue(stream, fieldSize);
                             break;
 
                         case CommandLineOptionMessageFieldsId.IsHidden:
@@ -167,7 +166,7 @@ namespace Microsoft.DotNet.Tools.Test
 
         private static ushort GetFieldCount(CommandLineOptionMessages commandLineOptionMessages) =>
             (ushort)((commandLineOptionMessages.ModulePath is null ? 0 : 1) +
-            (commandLineOptionMessages.CommandLineOptionMessageList is null ? 0 : 1));
+            (IsNullOrEmpty(commandLineOptionMessages.CommandLineOptionMessageList) ? 0 : 1));
 
         private static ushort GetFieldCount(CommandLineOptionMessage commandLineOptionMessage) =>
             (ushort)((commandLineOptionMessage.Name is null ? 0 : 1) +

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -103,7 +105,7 @@ namespace Microsoft.DotNet.Tests
                 .StartWith(firstTimeNonVerbUseMessage);
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="https://github.com/dotnet/sdk/issues/43328")]
         public void ItShowsTheAppropriateMessageToTheUser()
         {
 
@@ -151,7 +153,7 @@ namespace Microsoft.DotNet.Tests
             homeFolder.Should().NotExist();
         }
 
-        [WindowsOnlyFact]
+        [WindowsOnlyFact(Skip="https://github.com/dotnet/sdk/issues/43328")]
         public void ItShowsTheTelemetryNoticeWhenInvokingACommandAfterInternalReportInstallSuccessHasBeenInvoked()
         {
             var dotnetFirstTime = new DotNetFirstTime();

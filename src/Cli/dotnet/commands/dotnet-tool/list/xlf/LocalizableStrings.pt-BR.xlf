@@ -76,7 +76,7 @@
       </trans-unit>
       <trans-unit id="ToolListFormatOptionDescription">
         <source>The output format for the list of tools.</source>
-        <target state="new">The output format for the list of tools.</target>
+        <target state="translated">O formato de saída da lista de ferramentas.</target>
         <note />
       </trans-unit>
     </body>

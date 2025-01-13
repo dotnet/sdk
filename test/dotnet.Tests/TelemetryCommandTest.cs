@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
@@ -213,7 +215,7 @@ namespace Microsoft.DotNet.Tests
                               e.Properties.ContainsKey("argument") &&
                               e.Properties["argument"] == Sha256Hasher.Hash(argumentToSend.ToUpper()) &&
                               e.Properties.ContainsKey("verb") &&
-                              e.Properties["verb"] == Sha256Hasher.Hash("SLN"));
+                              e.Properties["verb"] == Sha256Hasher.Hash("SOLUTION"));
         }
 
         [Fact]

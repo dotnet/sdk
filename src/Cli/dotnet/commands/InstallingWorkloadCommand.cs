@@ -221,6 +221,18 @@ namespace Microsoft.DotNet.Workloads.Workload
                 if (updateToLatestWorkloadSet)
                 {
                     resolvedWorkloadSetVersion = _workloadManifestUpdater.GetAdvertisedWorkloadSetVersion();
+                    var currentWorkloadVersionInfo = _workloadResolver.GetWorkloadVersion();
+                    if (resolvedWorkloadSetVersion != null && currentWorkloadVersionInfo.IsInstalled && !currentWorkloadVersionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
+                    {
+                        var currentPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(currentWorkloadVersionInfo.Version, out var currentWorkloadSetSdkFeatureBand);
+                        var advertisedPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(resolvedWorkloadSetVersion, out var advertisedWorkloadSetSdkFeatureBand);
+
+                        if (currentWorkloadSetSdkFeatureBand > advertisedWorkloadSetSdkFeatureBand ||
+                            new NuGetVersion(currentPackageVersion) >= new NuGetVersion(advertisedPackageVersion))
+                        {
+                            resolvedWorkloadSetVersion = null;
+                        }
+                    }
                 }
             }
 
@@ -273,6 +285,12 @@ namespace Microsoft.DotNet.Workloads.Workload
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();
+
+                    if (_workloadSetVersionFromGlobalJson != null)
+                    {
+                        //  Record GC Root for this global.json file
+                        _workloadInstaller.RecordWorkloadSetInGlobalJson(_sdkFeatureBand, _globalJsonPath, _workloadSetVersionFromGlobalJson);
+                    }
                 },
                 rollback: () =>
                 {

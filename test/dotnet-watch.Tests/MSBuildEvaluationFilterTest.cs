@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class MSBuildEvaluationFilterTest
     {
-        private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>());
+        private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
 
         [Fact]
         public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
@@ -27,7 +25,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Test.csproj" }, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Test.csproj", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
         }
@@ -51,7 +49,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Controller.cs" }, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.False(evaluator.RequiresRevaluation);
             Assert.Equal(1, counter);
@@ -77,7 +75,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Controller.cs" }, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
             Assert.Equal(2, counter);
@@ -89,11 +87,13 @@ namespace Microsoft.DotNet.Watcher.Tools
             // There's a chance that the watcher does not correctly report edits to msbuild files on
             // concurrent edits. MSBuildEvaluationFilter uses timestamps to additionally track changes to these files.
 
-            var result = new EvaluationResult(new Dictionary<string, FileItem>()
-            {
-                { "Controlller.cs", new FileItem { FilePath = "Controlller.cs" } },
-                { "Proj.csproj", new FileItem { FilePath = "Proj.csproj" } },
-            });
+            var result = new EvaluationResult(
+                new Dictionary<string, FileItem>()
+                {
+                    { "Controlller.cs", new FileItem { FilePath = "Controlller.cs", ContainingProjectPaths = []} },
+                    { "Proj.csproj", new FileItem { FilePath = "Proj.csproj", ContainingProjectPaths = [] } },
+                },
+                projectGraph: null);
 
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => result };
 
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             evaluator.RequiresRevaluation = false;
             evaluator.Timestamps["Proj.csproj"] = new DateTime(1007);
 
-            await evaluator.EvaluateAsync(new() { FilePath = "Controller.cs" }, CancellationToken.None);
+            await evaluator.EvaluateAsync(new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
         }

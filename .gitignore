@@ -45,3 +45,4 @@ cmake/
 
 # Test results
 **/*.trx
+/TestResults

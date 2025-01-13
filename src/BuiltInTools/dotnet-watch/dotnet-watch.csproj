@@ -1,23 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="$(RepoRoot)\src\Layout\redist\targets\PublishDotnetWatch.targets" />
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to watch for source file changes during development and restart the dotnet command.</Description>
-    <RootNamespace>Microsoft.DotNet.Watcher.Tools</RootNamespace>
+    <RootNamespace>Microsoft.DotNet.Watch</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <UseAppHost>false</UseAppHost>
     <RuntimeIdentifier />
-    <Nullable>enable</Nullable>
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\Common\EnvironmentVariableNames.cs" Link="Common\EnvironmentVariableNames.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
@@ -32,6 +28,7 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Locator" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
     <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="All" />
@@ -40,9 +37,15 @@
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
+
+    <Compile Include="..\HotReloadAgent\AgentMessageSeverity.cs" LinkBase="AgentContracts" />
+    <Compile Include="..\HotReloadAgent\ResponseLoggingLevel.cs" LinkBase="AgentContracts" />
+    <Compile Include="..\HotReloadAgent\UpdateDelta.cs" LinkBase="AgentContracts" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj"/>
+
     <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj"
                       PrivateAssets="All"
                       ReferenceOutputAssembly="false"

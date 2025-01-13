@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if NETCOREAPP
-#nullable enable
 #endif
 
 using System.Diagnostics;
@@ -51,7 +50,7 @@ namespace Microsoft.DotNet.Tools.Test
                 switch (fieldId)
                 {
                     case DiscoveredTestMessagesFieldsId.ExecutionId:
-                        executionId = ReadString(stream);
+                        executionId = ReadStringValue(stream, fieldSize);
                         break;
 
                     case DiscoveredTestMessagesFieldsId.DiscoveredTestMessageList:
@@ -87,11 +86,11 @@ namespace Microsoft.DotNet.Tools.Test
                     switch (fieldId)
                     {
                         case DiscoveredTestMessageFieldsId.Uid:
-                            uid = ReadString(stream);
+                            uid = ReadStringValue(stream, fieldSize);
                             break;
 
                         case DiscoveredTestMessageFieldsId.DisplayName:
-                            displayName = ReadString(stream);
+                            displayName = ReadStringValue(stream, fieldSize);
                             break;
 
                         default:
@@ -148,7 +147,7 @@ namespace Microsoft.DotNet.Tools.Test
 
         private static ushort GetFieldCount(DiscoveredTestMessages discoveredTestMessages) =>
             (ushort)((discoveredTestMessages.ExecutionId is null ? 0 : 1) +
-            (discoveredTestMessages.DiscoveredMessages is null ? 0 : 1));
+            (IsNullOrEmpty(discoveredTestMessages.DiscoveredMessages) ? 0 : 1));
 
         private static ushort GetFieldCount(DiscoveredTestMessage discoveredTestMessage) =>
             (ushort)((discoveredTestMessage.Uid is null ? 0 : 1) +

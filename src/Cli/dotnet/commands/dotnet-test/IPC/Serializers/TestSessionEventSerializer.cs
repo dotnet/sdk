@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#nullable enable
-
 using System.Diagnostics;
 
 namespace Microsoft.DotNet.Tools.Test
@@ -37,7 +35,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             for (int i = 0; i < fieldCount; i++)
             {
-                int fieldId = ReadShort(stream);
+                ushort fieldId = ReadShort(stream);
                 int fieldSize = ReadInt(stream);
 
                 switch (fieldId)
@@ -47,11 +45,11 @@ namespace Microsoft.DotNet.Tools.Test
                         break;
 
                     case TestSessionEventFieldsId.SessionUid:
-                        sessionUid = ReadString(stream);
+                        sessionUid = ReadStringValue(stream, fieldSize);
                         break;
 
                     case TestSessionEventFieldsId.ExecutionId:
-                        executionId = ReadString(stream);
+                        executionId = ReadStringValue(stream, fieldSize);
                         break;
 
                     default:

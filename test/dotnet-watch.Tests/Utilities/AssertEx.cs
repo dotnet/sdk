@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections;
 using Xunit.Sdk;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal static class AssertEx
     {
@@ -157,7 +159,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 Assert.NotNull(actual);
             }
 
-            if (!expected.SequenceEqual(actual, comparer))
+            if (!expected.SequenceEqual(actual, comparer ?? EqualityComparer<T>.Default))
             {
                 Fail(GetAssertMessage(expected, actual, message, itemInspector, itemSeparator));
             }
@@ -222,5 +224,29 @@ namespace Microsoft.DotNet.Watcher.Tools
                     banner: "File sets should be equal");
             }
         }
+
+        public static void Contains(string expected, IEnumerable<string> items)
+        {
+            if (items.Any(item => item.Contains(expected)))
+            {
+                return;
+            }
+
+            var message = new StringBuilder();
+            message.AppendLine($"Expected output not found:");
+            message.AppendLine(expected);
+            message.AppendLine();
+            message.AppendLine("Actual output:");
+
+            foreach (var item in items)
+            {
+                message.AppendLine($"'{item}'");
+            }
+
+            Fail(message.ToString());
+        }
+
+        public static void DoesNotContain(string expected, IEnumerable<string> items)
+            => Assert.DoesNotContain(expected, items);
     }
 }

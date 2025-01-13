@@ -1,9 +1,9 @@
 ﻿Microsoft.NET.Build.Containers.ContainerHelpers
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType = 2 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 0 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
-Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber | Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortNumber = 2 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.InvalidPortType = 4 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.MissingPortNumber = 1 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
+Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError.UnknownPortFormat = 8 -> Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
 Microsoft.NET.Build.Containers.Port
 Microsoft.NET.Build.Containers.Port.Deconstruct(out int Number, out Microsoft.NET.Build.Containers.PortType Type) -> void
 Microsoft.NET.Build.Containers.Port.Equals(Microsoft.NET.Build.Containers.Port other) -> bool
@@ -29,6 +29,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageDigest.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
@@ -62,6 +64,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.get
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerMediaType.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerMediaType.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Repository.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageTags.get -> string![]!
@@ -111,6 +115,7 @@ Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParseContainerProp
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerImage.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerTag.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerDigest.get -> string!
 override Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.Execute() -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string! input, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string? portNumber, string? portType, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
@@ -123,8 +128,8 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.get 
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifiers.get -> string![]!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifiers.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag

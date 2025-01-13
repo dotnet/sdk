@@ -232,8 +232,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
-    <!-- Workaround for https://github.com/dotnet/sdk/issues/43016. -->
-    <_SkipCheckMicrosoftNetSdkCompilersToolsetPackageExists Condition="'$(NuGetPackageRoot)' == ''">true</_SkipCheckMicrosoftNetSdkCompilersToolsetPackageExists>
+    <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
   </PropertyGroup>
 
   <!-- NOTE: Keep in sync with https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks -->
@@ -256,13 +255,18 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_CheckMicrosoftNetSdkCompilersToolsetPackageExists"
-          Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true' and '$(DesignTimeBuild)' != 'true' and '$(_SkipCheckMicrosoftNetSdkCompilersToolsetPackageExists)' != 'true'"
+          Condition="'$(_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage)' == 'true' and '$(DesignTimeBuild)' != 'true'"
           BeforeTargets="CoreCompile">
     <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
          (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->
     <NETSdkError ResourceName="MicrosoftNetSdkCompilersToolsetNotFound"
-        Condition="!Exists('$(RoslynTargetsPath)')"
+        Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' != 'true' and !Exists('$(RoslynTargetsPath)')"
         FormatArguments="$(NETCoreSdkVersion)" />
+
+    <!-- Warn if $(NuGetPackageRoot) is empty. See https://github.com/dotnet/sdk/issues/43016.
+         WPF temp projects are ignored (it's known their NuGetPackageRoot is empty and user cannot fix that anyway). -->
+    <NETSdkWarning ResourceName="MicrosoftNetSdkCompilersToolsetRootEmpty"
+        Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' == 'true' and !($(MSBuildProjectFile.EndsWith('_wpftmp.csproj')) or $(MSBuildProjectFile.EndsWith('_wpftmp.vbproj')))" />
   </Target>
 
   <Target Name="_CheckForBuildWithNoBuild"
@@ -331,6 +335,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"
                       CompilerOptions="@(DependencyFileCompilerOptions)"
+                      ExcludeFromPublishPackageReferences="@(_ExcludeFromPublishPackageReference)"
                       CompileReferences="@(ResolvedCompileFileDefinitions)"
                       ResolvedNuGetFiles="@(NativeCopyLocalItems);@(ResourceCopyLocalItems);@(RuntimeCopyLocalItems)"
                       UserRuntimeAssemblies="@(UserRuntimeAssembly)"
@@ -544,6 +549,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"
                                     Condition="'$(_ComObjectDescriptorSupport)' != ''"
                                     Value="$(_ComObjectDescriptorSupport)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Data.DataSet.XmlSerializationIsSupported"
+                                    Condition="'$(_DataSetXmlSerializationSupport)' != ''"
+                                    Value="$(_DataSetXmlSerializationSupport)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"
@@ -784,16 +794,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                                        _GetAppHostPaths
-    Gets the path to apphost (restored via packages or in an apphost pack),
-    and computes the path for the destination apphost.
+                _GetAppHostCreationConfiguration
+    Computes the properties for configuration of apphost creation
+    during either build or publish
     ============================================================
      -->
   <Target Name="_GetAppHostCreationConfiguration"
           Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
     <PropertyGroup>
       <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and
                                       ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
       <_UseSingleFileHostForPublish Condition="'$(PublishSingleFile)' == 'true' and
                                                '$(SelfContained)' == 'true' and
@@ -975,7 +985,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_ComputeNETCoreBuildOutputFiles"
-          DependsOnTargets="_GetAppHostPaths;_GetComHostPaths;_GetIjwHostPaths"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration;_GetComHostPaths;_GetIjwHostPaths"
           BeforeTargets="AssignTargetPaths"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true'">
 

@@ -9,7 +9,8 @@
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
     <!-- DotNetBuildOrchestrator is (currently) needed in order to obtain NuGet packages from the runtime build. -->
-    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(SourceBuildUseMonoRuntime)' != 'true' and '$(DotNetBuildOrchestrator)' == 'true'">true</BundleNativeAotCompiler>
+    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(DotNetBuildOrchestrator)' == 'true'">true</BundleNativeAotCompiler>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,22 +20,15 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" />
-    <!--
-      These two projects reference assets from multiple architectures, so they can't be built until we have a join point job that can pull assets from multiple legs.
-      https://github.com/dotnet/source-build/issues/4336
-    -->
-    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
-    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuild)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
-  <Import Project="targets\BuildCoreSdkTasks.targets" />
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
   <Import Project="targets\SetBuildDefaults.targets" />
-  <Import Project="targets\Versions.targets" />
   <Import Project="targets\Branding.targets" />
   <Import Project="targets\BundledTemplates.targets" />
   <Import Project="targets\BundledManifests.targets" />
@@ -42,14 +36,10 @@
   <Import Project="targets\GenerateBundledVersions.targets" />
   <Import Project="targets\Crossgen.targets" />
   <Import Project="targets\GenerateLayout.targets" />
-  <Import Project="targets\GenerateMSBuildExtensions.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateRuntimeAnalyzers.targets" />
   <Import Project="targets\FileExtensions.targets" />
   <Import Project="targets\GenerateArchives.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateMSIs.targets" />
-  <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" Condition="'$(PackInstaller)' != 'false'"/>
-  <Import Project="targets\GenerateDebs.targets" Condition="'$(PackInstaller)' != 'false'"/>
-  <Import Project="targets\GenerateRPMs.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GeneratePKG.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\GenerateInstallers.targets" Condition="'$(PackInstaller)' != 'false'"/>
   <Import Project="targets\Badge.targets" />

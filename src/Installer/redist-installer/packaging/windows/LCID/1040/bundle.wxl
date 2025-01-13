@@ -4,14 +4,14 @@
   <String Id="ConfirmCancelMessage">Annullare?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Versione precedente</String>
   <String Id="HelpHeader">Guida all'installazione</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - installa, ripara, disinstalla o
-   crea una copia locale completa del bundle nella directory. L'opzione predefinita è '/install'.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - installa, ripristina, disinstalla
+   oppure crea una copia locale completa del pacchetto nella directory. '/install' è l'impostazione predefinita.
 
-/passive | /quiet -  visualizza un'interfaccia utente minima senza prompt oppure non visualizza alcuna interfaccia utente
-   né prompt. Per impostazione predefinita, viene visualizzata l'intera interfaccia utente e tutti i prompt.
+/passive | /quiet - consente di visualizzare un'interfaccia utente minima senza messaggi o di non visualizzare alcuna interfaccia utente
+   nessuna richiesta. Per impostazione predefinita, vengono visualizzati l'interfaccia utente e tutte le richieste.
 
-/norestart - annulla qualsiasi tentativo di riavvio. Per impostazione predefinita, l'interfaccia utente visualizza una richiesta prima del riavvio.
-/log [\[]"log.txt"[\]] - registra il log in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%.</String>
+/norestart - consente di sopprimere qualsiasi tentativo di riavvio. Per impostazione predefinita, prima del riavvio verrà visualizzata una richiesta nell'interfaccia utente.
+/log [\[]"log.txt"[\]] - esegue la registrazione in un file specifico. Per impostazione predefinita, il file di log viene creato in %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Chiudi</String>
   <String Id="InstallAcceptCheckbox">&amp;Accetto i termini e le condizioni di licenza</String>
   <String Id="InstallOptionsButton">&amp;Opzioni</String>
@@ -20,20 +20,20 @@
   <String Id="ProgressHeader">Stato installazione</String>
   <String Id="ProgressLabel">Elaborazione di:</String>
   <String Id="OverallProgressPackageText">Inizializzazione in corso...</String>
-  <String Id="ProgressCancelButton">Ann&amp;ulla</String>
+  <String Id="ProgressCancelButton">&amp;Annulla</String>
   <String Id="ModifyHeader">Modifica installazione</String>
   <String Id="ModifyRepairButton">&amp;Ripristina</String>
   <String Id="ModifyUninstallButton">&amp;Disinstalla</String>
   <String Id="ModifyCloseButton">&amp;Chiudi</String>
   <String Id="SuccessRepairHeader">La riparazione è stata completata</String>
   <String Id="SuccessUninstallHeader">La disinstallazione è stata completata</String>
-  <String Id="SuccessHeader">Installazione completata</String>
+  <String Id="SuccessHeader">L'installazione è stata completata</String>
   <String Id="SuccessLaunchButton">&amp;Avvia</String>
   <String Id="SuccessRestartText">Per completare l'installazione del software, è necessario riavviare il computer.</String>
   <String Id="SuccessRestartButton">&amp;Riavvia</String>
   <String Id="SuccessCloseButton">&amp;Chiudi</String>
   <String Id="FailureHeader">Installazione non riuscita</String>
-  <String Id="FailureInstallHeader">L'installazione non è riuscita</String>
+  <String Id="FailureInstallHeader">Installazione non riuscita</String>
   <String Id="FailureUninstallHeader">Disinstallazione non riuscita</String>
   <String Id="FailureRepairHeader">La riparazione non è riuscita</String>
   <String Id="FailureHyperlinkLogText">Installazione non riuscita a causa di uno o più problemi. Risolvere i problemi e ritentare l'installazione. Per ulteriori informazioni, vedere &lt;a href="#"&gt;log file&lt;/a&gt;.</String>
@@ -46,25 +46,25 @@
   <String Id="FilesInUseDontCloseRadioButton">&amp;Non chiudere le applicazioni; sarà necessario riavviare il sistema</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
   <String Id="FilesInUseCancelButton">&amp;Annulla</String>
-  <String Id="FirstTimeWelcomeMessage">Installazione completata.
+  <String Id="FirstTimeWelcomeMessage">L'installazione è riuscita!
 
 Sono stati installati i prodotti seguenti:
     • .NET SDK [DOTNETSDKVERSION]
-    • Runtime di .NET [DOTNETRUNTIMEVERSION]
-    • Runtime di ASP.NET Core [ASPNETCOREVERSION]
-    • Runtime di Windows Desktop .NET [WINFORMSANDWPFVERSION]
+    • Runtime .NET [DOTNETRUNTIMEVERSION]
+    • Runtime ASP.NET Core [ASPNETCOREVERSION]
+    • Runtime Desktop Windows .NET [WINFORMSANDWPFVERSION]
 
 Questo prodotto raccoglie i dati di utilizzo
-    • Altre informazioni e rifiuto esplicito https://aka.ms/dotnet-cli-telemetry
+    • Altre informazioni e rifiuto esplicito su https://aka.ms/dotnet-cli-telemetry
 
 Risorse
     • Documentazione .NET https://aka.ms/dotnet-docs
     • Documentazione SDK https://aka.ms/dotnet-sdk-docs
     • Note sulla versione https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
-    • Tutorial https://aka.ms/dotnet-tutorials</String>
+    • Esercitazioni https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
-    .NET SDK consente di creare, eseguire e testare applicazioni .NET. È possibile scegliere tra più linguaggi, editor e strumenti di sviluppo e sfruttare un vasto ecosistema di librerie per creare app per Web, dispositivi mobili, desktop, giochi e IoT.</String>
+    .NET SDK viene usato per compilare, eseguire e testare applicazioni .NET. È possibile scegliere tra più linguaggi, editor e strumenti di sviluppo e sfruttare un vasto ecosistema di librerie per creare app per Web, dispositivi mobili, desktop, giochi e IoT. Ci auguriamo che ti piaccia.</String>
   <String Id="LearnMoreTitle">Altre informazioni su .NET</String>
   <String Id="ResourcesHeader">Risorse</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentazione di .NET&lt;/A&gt;</String>
@@ -75,7 +75,7 @@ Risorse
   <String Id="InstallationNoteTitle">Nota sull'installazione</String>
   <String Id="InstallationNote">Durante il processo di installazione verrà eseguito un comando che migliorerà la velocità di ripristino del progetto e abiliterà l'accesso offline. Il completamento del comando richiederà un minuto.
   </String>
-  <String Id="VisualStudioWarning">Se si prevede di usare .NET [VERSIONMAJOR]. [VERSIONMINOR] con Visual Studio, è necessario Visual Studio 2022 [MINIMUMVSVERSION] o versione successiva. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Altre informazioni&lt;/A&gt;. 
+  <String Id="VisualStudioWarning">Se si prevede di usare .NET [VERSIONMAJOR]. [VERSIONMINOR] con Visual Studio, è necessario Visual Studio 2022 [MINIMUMVSVERSION] o versione successiva. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Altre informazioni&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Facendo clic su Installa, si accettano le condizioni seguenti:</String>
   <String Id="InstallPathx64x86">Percorso di installazione per le installazioni x64 SDK: "[DOTNETHOME_X64]" non può essere uguale a quello delle installazioni di x86 SDK: "[DOTNETHOME_X86]"</String>

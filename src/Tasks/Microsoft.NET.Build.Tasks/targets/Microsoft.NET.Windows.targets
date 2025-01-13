@@ -70,6 +70,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <FrameworkReference Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0')) and '$(TargetPlatformIdentifier)' == 'Windows' and '$(UseUwp)' == 'true' " Include="Microsoft.Windows.SDK.NET.Ref.Xaml" />
   </ItemGroup>
 
+  <!-- If WindowsSdkPackageVersion is specified and it is an older version before profile support was added, 
+       add the non profile framework reference. -->
+  <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
+                        and '$(WindowsSdkPackageVersion)' != ''
+                        and '$(UseUwp)' != 'true'
+                        and $([System.Version]::Parse('$(WindowsSdkPackageVersion.Split('-')[0])').Build) &lt;= 26100
+                        and $([System.Version]::Parse('$(WindowsSdkPackageVersion.Split('-')[0])').Revision) &lt;= 34">
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref" IsImplicitlyDefined="true" Pack="false" PrivateAssets="All" />
+  </ItemGroup>
+
   <!-- Default 'CsWinRTUseWindowsUIXamlProjections' to 'false', unless 'UseUwp' is set.
        This is to ensure that using the full Windows SDK projections will work correctly.
        We still allow users to override this, which can help in mixed WinAppSDK scenarios. -->

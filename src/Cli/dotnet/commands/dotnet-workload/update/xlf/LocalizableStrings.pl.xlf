@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="FromHistoryOptionDescription">
         <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
-        <target state="new">Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</target>
+        <target state="translated">Zaktualizuj obciążenia do poprzedniej wersji określonej przez argument. Użyj opcji „historia obciążeń dotnet”, aby wyświetlić dostępne rekordy historii obciążeń.</target>
         <note />
       </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="HistoryManifestOnlyOptionDescription">
         <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
-        <target state="new">Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</target>
+        <target state="translated">Zaktualizuj do wersji obciążenia określonych w historii bez zmieniania, które obciążenia są instalowane. Aktualnie zainstalowane obciążenia zostaną zaktualizowane w celu dopasowania do określonej wersji historii.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadHistoryRecords">
         <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
-        <target state="new">Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</target>
+        <target state="translated">Rekordy historii obciążeń są tworzone podczas uruchamiania operacji modyfikującej obciążenia, takiej jak aktualizacja lub instalacja. Nie można zaktualizować z historii, dopóki nie istnieją rekordy historii obciążeń.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
@@ -84,12 +84,12 @@
       </trans-unit>
       <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
         <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
-        <target state="new">The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</target>
+        <target state="translated">Identyfikator rekordu historii obciążenia powinien należeć do zakresu od 1 do liczby rekordów historii obciążenia włącznie.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
         <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
+        <target state="translated">Nieprawidłowy argument „{0}” argumentu --mode dla aktualizacji obciążenia dotnet. Obsługiwane tryby to „workloadset”, „loosemanifest” i „auto”.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

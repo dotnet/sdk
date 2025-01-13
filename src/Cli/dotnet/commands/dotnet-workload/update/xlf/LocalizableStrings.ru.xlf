@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="FromHistoryOptionDescription">
         <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
-        <target state="new">Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</target>
+        <target state="translated">Обновление рабочих нагрузок до предыдущей версии, указанной в аргументе. Используйте "журнал рабочей нагрузки dotnet" для просмотра доступных записей журнала рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="HistoryManifestOnlyOptionDescription">
         <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
-        <target state="new">Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</target>
+        <target state="translated">Обновление до версий рабочих нагрузок, указанных в журнале, без изменения установленных рабочих нагрузок. Установленные сейчас рабочие нагрузки будут приведены в соответствие с указанной версией журнала.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadHistoryRecords">
         <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
-        <target state="new">Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</target>
+        <target state="translated">Записи журнала рабочей нагрузки создаются при выполнении операции, которая изменяет рабочие нагрузки, такой как обновление или установка. Невозможно выполнить обновление из журнала, пока не появятся записи журнала рабочей нагрузки.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
@@ -84,12 +84,12 @@
       </trans-unit>
       <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
         <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
-        <target state="new">The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</target>
+        <target state="translated">Идентификатор записи журнала рабочей нагрузки должен находиться в диапазоне от 1 до числа записей в журнале рабочей нагрузки включительно.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
         <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
+        <target state="translated">Недопустимый аргумент "{0}" для аргумента --mode для обновления рабочей нагрузки dotnet. Поддерживаются только режимы "workloadset", "loosemanifest" и "auto".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

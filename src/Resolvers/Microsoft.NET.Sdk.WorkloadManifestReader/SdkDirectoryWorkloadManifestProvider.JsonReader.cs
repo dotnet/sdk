@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-
 using Microsoft.NET.Sdk.Localization;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
 using System.Runtime.Serialization;
@@ -83,7 +82,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         [Serializable]
-        internal class JsonFormatException : Exception
+        public class JsonFormatException : Exception
         {
             public JsonFormatException() { }
             public JsonFormatException(string messageFormat, params object?[] args) : base(string.Format(messageFormat, args)) { }

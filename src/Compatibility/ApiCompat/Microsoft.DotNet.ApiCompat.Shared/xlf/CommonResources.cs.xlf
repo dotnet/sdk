@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="UpdateSdkVersion">
         <source>The minimum version required of Roslyn is '{1}' and you are using version '{0}' of Roslyn. You can update the SDK to get the latest version.</source>
-        <target state="needs-review-translation">Minimální požadovaná verze Roslyn je {1}. Používáte verzi Roslyn {0}. Pokud chcete nejnovější verzi, můžete aktualizovat sadu SDK.</target>
+        <target state="translated">Minimální požadovaná verze Roslynu je {1} a vy používáte verzi Roslynu {0}. Pokud chcete získat nejnovější verzi sady SDK, můžete ji aktualizovat.</target>
         <note />
       </trans-unit>
       <trans-unit id="WroteSuppressions">

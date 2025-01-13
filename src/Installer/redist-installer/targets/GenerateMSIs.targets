@@ -3,10 +3,10 @@
   <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
-      <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(WixVersion).zip</WixDownloadUrl>
-      <WixRoot>$(ArtifactsDir)Tools/WixTools/$(WixVersion)</WixRoot>
-      <WixDestinationPath>$(WixRoot)/WixTools.$(WixVersion).zip</WixDestinationPath>
-      <WixDownloadSentinel>$(WixRoot)/WixDownload.$(WixVersion).sentinel</WixDownloadSentinel>
+      <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(MicrosoftSignedWixVersion).zip</WixDownloadUrl>
+      <WixRoot>$(ArtifactsDir)Tools/WixTools/$(MicrosoftSignedWixVersion)</WixRoot>
+      <WixDestinationPath>$(WixRoot)/WixTools.$(MicrosoftSignedWixVersion).zip</WixDestinationPath>
+      <WixDownloadSentinel>$(WixRoot)/WixDownload.$(MicrosoftSignedWixVersion).sentinel</WixDownloadSentinel>
     </PropertyGroup>
 
     <!-- Generate MSI/Bundle Properties -->
@@ -27,19 +27,9 @@
       <SdkPlaceholderInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
       <SdkPlaceholderInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(FullNugetVersion).nupkg</SdkPlaceholderInstallerNupkgFile>
 
-      <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
-
-      <SdkMSBuildExtensionsNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>
-      <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
-      <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
-
       <SdkRuntimeAnalyzersNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.nuspec</SdkRuntimeAnalyzersNuspecFile>
       <SdkRuntimeAnalyzersNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.$(FullNugetVersion).nupkg</SdkRuntimeAnalyzersNupkgFile>
       <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
-
-      <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/$(Configuration)</VSTemplateLocatorLayoutPath>
-      <VSTemplateLocatorNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
-      <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
 
       <!-- Temp directory for light command layouts -->
       <LightCommandObjDir>$(ArtifactsObjDir)/LightCommandPackages</LightCommandObjDir>
@@ -65,8 +55,8 @@
       <CombinedBuildNumberAndRevision>$(_PatchNumber)</CombinedBuildNumberAndRevision>
       <!-- Fallback to 0 when patch number is not set. This happens only during CI. -->
       <CombinedBuildNumberAndRevision Condition=" '$(CombinedBuildNumberAndRevision)' == '' ">000000</CombinedBuildNumberAndRevision>
-      
-      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->    
+
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
       <SDKBundleVersion>$(FileVersion)</SDKBundleVersion>
       <SDKBundleVersion Condition=" '$(SDKBundleVersion)' == '' ">$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
     </PropertyGroup>
@@ -112,7 +102,7 @@
     <MakeDir Directories="$(WixRoot)" />
     <WriteLinesToFile
         File="$(WixDownloadSentinel)"
-        Lines="$(WixVersion)"
+        Lines="$(MicrosoftSignedWixVersion)"
         Overwrite="true"
         Encoding="Unicode" />
 
@@ -289,27 +279,9 @@
                       Overwrite="true" />
   </Target>
 
-  <Target Name="GetMinimumVSVersion"
-          BeforeTargets="GenerateSdkBundle"
-          Condition=" '$(OS)' == 'Windows_NT' "
-          Outputs="$(MinimumVSVersion)">
-    <PropertyGroup>
-      <MinimumMSBuildVersionFile Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</MinimumMSBuildVersionFile>
-    </PropertyGroup>
-
-    <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
-      <Output TaskParameter="Lines" PropertyName="MinimumVSVersion" />
-    </ReadLinesFromFile>
-
-    <PropertyGroup Condition=" '$(VersionSDKMinor)' == '1' and '$(StabilizePackageVersion)' == 'true' ">
-      <MinimumVSVersion>$(MinimumVSVersion.Substring(0,$(MinimumVSVersion.LastIndexOf('.'))))</MinimumVSVersion>
-      <MinimumVSVersion >$([MSBuild]::Add($(MinimumVSVersion), .1))</MinimumVSVersion>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="GenerateSdkBundle"
           DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;GenerateTemplatesMsis;GenerateWorkloadManifestsWxs"
-          Condition=" '$(OS)' == 'Windows_NT' "
+          Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingSdkBundle)' != 'true'"
           Inputs="$(SdkMSIInstallerFile);
                     $(DownloadedSharedFrameworkInstallerFile);
                     $(DownloadedHostFxrInstallerFile);
@@ -319,19 +291,21 @@
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
       <!-- While we don't have 10.0 templates available (need SDK update, choose the 9.0 templates -->
-      <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/> -->
       <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '9.0'"/>
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/>
+      <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '9.0'"/> -->
     </ItemGroup>
     <PropertyGroup>
       <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>
+      <UpgradePoliciesSrcPath>$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs</UpgradePoliciesSrcPath>
     </PropertyGroup>
 
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateBundlePowershellScript) ^
+                      -UpgradePoliciesWxsFile '$(UpgradePoliciesSrcPath)' ^
                       -WorkloadManifestWxsFile '$(WorkloadManifestsWxsPath)' ^
                       -CLISDKMSIFile '$(SdkMSIInstallerFile)' ^
-                      -ASPNETRuntimeWixLibFile '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxWixLibFileName)' ^
+                      -ASPNETRuntimeMSIFile '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)' ^
                       -SharedFxMSIFile '$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)' ^
                       -HostFxrMSIFile '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
                       -SharedHostMSIFile '$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)' ^
@@ -365,7 +339,7 @@
     <ItemGroup>
         <BundleMsiWixSrcFiles Include="$(WixRoot)\bundle.wixobj" />
         <BundleMsiWixSrcFiles Include="$(WixRoot)\WorkloadManifests.wixobj" />
-        <BundleMsiWixSrcFiles Include="$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxWixLibFileName)" />
+        <BundleMsiWixSrcFiles Include="$(WixRoot)\upgradePolicies.wixobj" />
     </ItemGroup>
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
@@ -375,7 +349,7 @@
       InstallerFile="$(CombinedFrameworkSdkHostMSIInstallerFile)"
       WixExtensions="WixBalExtension;WixUtilExtension;WixTagExtension"
       WixSrcFiles="@(BundleMsiWixSrcFiles)"
-      AdditionalBasePaths="$(SdkPkgSourcesRootDirectory)">
+      AdditionalBasePaths="$(SdkPkgSourcesRootDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle">
       <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
   </Target>
@@ -444,27 +418,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateSdkMSBuildExtensionsNupkg"
-          DependsOnTargets="GenerateLayout;GenerateMSBuildExtensions;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
-          Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
-                    $(SdkMSBuildExtensionsNuspecFile);
-                    $(GenerateNupkgPowershellScript)"
-          Outputs="$(SdkMSBuildExtensionsNupkgFile);$(SdkMSBuildExtensionsSwrFile)">
-    <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
-                                  OutputFile="$(SdkMSBuildExtensionsSwrFile)" />
-
-    <!-- Include the swr file in the nuget package for VS authoring -->
-    <Copy SourceFiles="$(SdkMSBuildExtensionsSwrFile)" DestinationFolder="$(MSBuildExtensionsLayoutDirectory)" />
-
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(MSBuildExtensionsLayoutDirectory.TrimEnd('\'))' ^
-                      '$(FullNugetVersion)' ^
-                      '$(SdkMSBuildExtensionsNuspecFile)' ^
-                      '$(SdkMSBuildExtensionsNupkgFile)'" />
-  </Target>
-
   <Target Name="GenerateRuntimeAnalyzersNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
           Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
@@ -486,25 +439,6 @@
                     '$(SdkRuntimeAnalyzersNupkgFile)'" />
   </Target>
 
-  <!--
-    This project references assets from multiple architectures, so it can't be built until we have a join point job that can pull assets from multiple legs.
-    https://github.com/dotnet/source-build/issues/4336
-  -->
-  <Target Name="GenerateVSTemplateLocatorNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' And '$(DotNetBuild)' != 'true'"
-          Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
-                    $(VSTemplateLocatorNuspecFile);
-                    $(GenerateNupkgPowershellScript)"
-          Outputs="$(VSTemplateLocatorNupkgFile)">
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(VSTemplateLocatorLayoutPath.TrimEnd('\'))' ^
-                      '$(FullNugetVersion)' ^
-                      '$(VSTemplateLocatorNuspecFile)' ^
-                      '$(VSTemplateLocatorNupkgFile)'" />
-  </Target>
-
   <Target Name="GenerateMsis"
         DependsOnTargets="GenerateLayout;
                             MsiTargetsSetupInputOutputs;
@@ -516,9 +450,7 @@
                             GenerateToolsetNupkg;
                             GenerateTemplatesNupkgs;
                             GenerateSdkPlaceholderNupkg;
-                            GenerateSdkMSBuildExtensionsNupkg;
-                            GenerateRuntimeAnalyzersNupkg;
-                            GenerateVSTemplateLocatorNupkg"
+                            GenerateRuntimeAnalyzersNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />
 
 </Project>

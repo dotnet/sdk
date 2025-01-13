@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #if NETCOREAPP
-#nullable enable
 #endif
 
 using System.Diagnostics;
@@ -10,74 +9,98 @@ using System.Diagnostics;
 namespace Microsoft.DotNet.Tools.Test
 {
     /*
-    |---FieldCount---| 2 bytes
+      |---FieldCount---| 2 bytes
 
-    |---ExecutionId Id---| (2 bytes)
-    |---ExecutionId Size---| (4 bytes)
-    |---ExecutionId Value---| (n bytes)
+      |---ExecutionId Id---| (2 bytes)
+      |---ExecutionId Size---| (4 bytes)
+      |---ExecutionId Value---| (n bytes)
 
-    |---SuccessfulTestMessageList Id---| (2 bytes)
-    |---SuccessfulTestMessageList Size---| (4 bytes)
-    |---SuccessfulTestMessageList Value---| (n bytes)
-        |---SuccessfulTestMessageList Length---| (4 bytes)
+      |---SuccessfulTestMessageList Id---| (2 bytes)
+      |---SuccessfulTestMessageList Size---| (4 bytes)
+      |---SuccessfulTestMessageList Value---| (n bytes)
+          |---SuccessfulTestMessageList Length---| (4 bytes)
 
-        |---SuccessfulTestMessageList[0] FieldCount---| 2 bytes
+          |---SuccessfulTestMessageList[0] FieldCount---| 2 bytes
 
-        |---SuccessfulTestMessageList[0].Uid Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].Uid Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].Uid Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].Uid Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].Uid Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].Uid Value---| (n bytes)
 
-        |---SuccessfulTestMessageList[0].DisplayName Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].DisplayName Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].DisplayName Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].DisplayName Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].DisplayName Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].DisplayName Value---| (n bytes)
 
-        |---SuccessfulTestMessageList[0].State Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].State Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].State Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].State Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].State Size---| (1 byte)
+          |---SuccessfulTestMessageList[0].State Value---| (n bytes)
 
-        |---SuccessfulTestMessageList[0].Reason Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].Reason Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].Reason Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].Duration Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].Duration Size---| (8 bytes)
+          |---SuccessfulTestMessageList[0].Duration Value---| (n bytes)
 
-        |---SuccessfulTestMessageList[0].SessionUid Id---| (2 bytes)
-        |---SuccessfulTestMessageList[0].SessionUid Size---| (4 bytes)
-        |---SuccessfulTestMessageList[0].SessionUid Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].Reason Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].Reason Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].Reason Value---| (n bytes)
 
-    |---FailedTestMessageList Id---| (2 bytes)
-    |---FailedTestMessageList Size---| (4 bytes)
-    |---FailedTestMessageList Value---| (n bytes)
-        |---FailedTestMessageList Length---| (4 bytes)
+          |---SuccessfulTestMessageList[0].StandardOutput Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].StandardOutput Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].StandardOutput Value---| (n bytes)
 
-        |---FailedTestMessageList[0] FieldCount---| 2 bytes
+          |---SuccessfulTestMessageList[0].StandardError Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].StandardError Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].StandardError Value---| (n bytes)
 
-        |---FailedTestMessageList[0].Uid Id---| (2 bytes)
-        |---FailedTestMessageList[0].Uid Size---| (4 bytes)
-        |---FailedTestMessageList[0].Uid Value---| (n bytes)
+          |---SuccessfulTestMessageList[0].SessionUid Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].SessionUid Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].SessionUid Value---| (n bytes)
 
-        |---FailedTestMessageList[0].DisplayName Id---| (2 bytes)
-        |---FailedTestMessageList[0].DisplayName Size---| (4 bytes)
-        |---FailedTestMessageList[0].DisplayName Value---| (n bytes)
+      |---FailedTestMessageList Id---| (2 bytes)
+      |---FailedTestMessageList Size---| (4 bytes)
+      |---FailedTestMessageList Value---| (n bytes)
+          |---FailedTestMessageList Length---| (4 bytes)
 
-        |---FailedTestMessageList[0].State Id---| (2 bytes)
-        |---FailedTestMessageList[0].State Size---| (4 bytes)
-        |---FailedTestMessageList[0].State Value---| (n bytes)
+          |---FailedTestMessageList[0] FieldCount---| 2 bytes
 
-        |---FailedTestMessageList[0].Reason Id---| (2 bytes)
-        |---FailedTestMessageList[0].Reason Size---| (4 bytes)
-        |---FailedTestMessageList[0].Reason Value---| (n bytes)
+          |---FailedTestMessageList[0].Uid Id---| (2 bytes)
+          |---FailedTestMessageList[0].Uid Size---| (4 bytes)
+          |---FailedTestMessageList[0].Uid Value---| (n bytes)
 
-        |---FailedTestMessageList[0].ErrorMessage Id---| (2 bytes)
-        |---FailedTestMessageList[0].ErrorMessage Size---| (4 bytes)
-        |---FailedTestMessageList[0].ErrorMessage Value---| (n bytes)
+          |---FailedTestMessageList[0].DisplayName Id---| (2 bytes)
+          |---FailedTestMessageList[0].DisplayName Size---| (4 bytes)
+          |---FailedTestMessageList[0].DisplayName Value---| (n bytes)
 
-        |---FailedTestMessageList[0].ErrorStackTrace Id---| (2 bytes)
-        |---FailedTestMessageList[0].ErrorStackTrace Size---| (4 bytes)
-        |---FailedTestMessageList[0].ErrorStackTrace Value---| (n bytes)
+          |---FailedTestMessageList[0].State Id---| (2 bytes)
+          |---FailedTestMessageList[0].State Size---| (1 byte)
+          |---FailedTestMessageList[0].State Value---| (n bytes)
 
-        |---FailedTestMessageList[0].SessionUid Id---| (2 bytes)
-        |---FailedTestMessageList[0].SessionUid Size---| (4 bytes)
-        |---FailedTestMessageList[0].SessionUid Value---| (n bytes)
-    */
+          |---SuccessfulTestMessageList[0].Duration Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].Duration Size---| (8 bytes)
+          |---SuccessfulTestMessageList[0].Duration Value---| (n bytes)
+
+          |---FailedTestMessageList[0].Reason Id---| (2 bytes)
+          |---FailedTestMessageList[0].Reason Size---| (4 bytes)
+          |---FailedTestMessageList[0].Reason Value---| (n bytes)
+
+          |---FailedTestMessageList[0].ErrorMessage Id---| (2 bytes)
+          |---FailedTestMessageList[0].ErrorMessage Size---| (4 bytes)
+          |---FailedTestMessageList[0].ErrorMessage Value---| (n bytes)
+
+          |---FailedTestMessageList[0].ErrorStackTrace Id---| (2 bytes)
+          |---FailedTestMessageList[0].ErrorStackTrace Size---| (4 bytes)
+          |---FailedTestMessageList[0].ErrorStackTrace Value---| (n bytes)
+
+          |---SuccessfulTestMessageList[0].StandardOutput Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].StandardOutput Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].StandardOutput Value---| (n bytes)
+
+          |---SuccessfulTestMessageList[0].StandardError Id---| (2 bytes)
+          |---SuccessfulTestMessageList[0].StandardError Size---| (4 bytes)
+          |---SuccessfulTestMessageList[0].StandardError Value---| (n bytes)
+
+          |---FailedTestMessageList[0].SessionUid Id---| (2 bytes)
+          |---FailedTestMessageList[0].SessionUid Size---| (4 bytes)
+          |---FailedTestMessageList[0].SessionUid Value---| (n bytes)
+      */
 
     internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeSerializer
     {
@@ -99,7 +122,7 @@ namespace Microsoft.DotNet.Tools.Test
                 switch (fieldId)
                 {
                     case TestResultMessagesFieldsId.ExecutionId:
-                        executionId = ReadString(stream);
+                        executionId = ReadStringValue(stream, fieldSize);
                         break;
 
                     case TestResultMessagesFieldsId.SuccessfulTestMessageList:
@@ -130,8 +153,9 @@ namespace Microsoft.DotNet.Tools.Test
             int length = ReadInt(stream);
             for (int i = 0; i < length; i++)
             {
-                string? uid = null, displayName = null, reason = null, sessionUid = null;
+                string? uid = null, displayName = null, reason = null, standardOutput = null, errorOutput = null, sessionUid = null;
                 byte? state = null;
+                long? duration = null;
 
                 int fieldCount = ReadShort(stream);
 
@@ -143,23 +167,35 @@ namespace Microsoft.DotNet.Tools.Test
                     switch (fieldId)
                     {
                         case SuccessfulTestResultMessageFieldsId.Uid:
-                            uid = ReadString(stream);
+                            uid = ReadStringValue(stream, fieldSize);
                             break;
 
                         case SuccessfulTestResultMessageFieldsId.DisplayName:
-                            displayName = ReadString(stream);
+                            displayName = ReadStringValue(stream, fieldSize);
                             break;
 
                         case SuccessfulTestResultMessageFieldsId.State:
                             state = ReadByte(stream);
                             break;
 
+                        case SuccessfulTestResultMessageFieldsId.Duration:
+                            duration = ReadLong(stream);
+                            break;
+
                         case SuccessfulTestResultMessageFieldsId.Reason:
-                            reason = ReadString(stream);
+                            reason = ReadStringValue(stream, fieldSize);
+                            break;
+
+                        case SuccessfulTestResultMessageFieldsId.StandardOutput:
+                            standardOutput = ReadStringValue(stream, fieldSize);
+                            break;
+
+                        case SuccessfulTestResultMessageFieldsId.ErrorOutput:
+                            errorOutput = ReadStringValue(stream, fieldSize);
                             break;
 
                         case SuccessfulTestResultMessageFieldsId.SessionUid:
-                            sessionUid = ReadString(stream);
+                            sessionUid = ReadStringValue(stream, fieldSize);
                             break;
 
                         default:
@@ -168,7 +204,7 @@ namespace Microsoft.DotNet.Tools.Test
                     }
                 }
 
-                successfulTestResultMessages.Add(new SuccessfulTestResultMessage(uid, displayName, state, reason, sessionUid));
+                successfulTestResultMessages.Add(new SuccessfulTestResultMessage(uid, displayName, state, duration, reason, standardOutput, errorOutput, sessionUid));
             }
 
             return successfulTestResultMessages;
@@ -181,8 +217,10 @@ namespace Microsoft.DotNet.Tools.Test
             int length = ReadInt(stream);
             for (int i = 0; i < length; i++)
             {
-                string? uid = null, displayName = null, reason = null, sessionUid = null, errorMessage = null, errorStackTrace = null;
+                string? uid = null, displayName = null, reason = null, sessionUid = null,
+                    errorMessage = null, errorStackTrace = null, standardOutput = null, errorOutput = null;
                 byte? state = null;
+                long? duration = null;
 
                 int fieldCount = ReadShort(stream);
 
@@ -194,31 +232,43 @@ namespace Microsoft.DotNet.Tools.Test
                     switch (fieldId)
                     {
                         case FailedTestResultMessageFieldsId.Uid:
-                            uid = ReadString(stream);
+                            uid = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FailedTestResultMessageFieldsId.DisplayName:
-                            displayName = ReadString(stream);
+                            displayName = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FailedTestResultMessageFieldsId.State:
                             state = ReadByte(stream);
                             break;
 
+                        case FailedTestResultMessageFieldsId.Duration:
+                            duration = ReadLong(stream);
+                            break;
+
                         case FailedTestResultMessageFieldsId.Reason:
-                            reason = ReadString(stream);
+                            reason = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FailedTestResultMessageFieldsId.ErrorMessage:
-                            errorMessage = ReadString(stream);
+                            errorMessage = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FailedTestResultMessageFieldsId.ErrorStackTrace:
-                            errorStackTrace = ReadString(stream);
+                            errorStackTrace = ReadStringValue(stream, fieldSize);
+                            break;
+
+                        case FailedTestResultMessageFieldsId.StandardOutput:
+                            standardOutput = ReadStringValue(stream, fieldSize);
+                            break;
+
+                        case FailedTestResultMessageFieldsId.ErrorOutput:
+                            errorOutput = ReadStringValue(stream, fieldSize);
                             break;
 
                         case FailedTestResultMessageFieldsId.SessionUid:
-                            sessionUid = ReadString(stream);
+                            sessionUid = ReadStringValue(stream, fieldSize);
                             break;
 
                         default:
@@ -227,7 +277,7 @@ namespace Microsoft.DotNet.Tools.Test
                     }
                 }
 
-                failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, reason, errorMessage, errorStackTrace, sessionUid));
+                failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, errorMessage, errorStackTrace, standardOutput, errorOutput, sessionUid));
             }
 
             return failedTestResultMessages;
@@ -268,7 +318,10 @@ namespace Microsoft.DotNet.Tools.Test
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.Uid, successfulTestResultMessage.Uid);
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.DisplayName, successfulTestResultMessage.DisplayName);
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.State, successfulTestResultMessage.State);
+                WriteField(stream, SuccessfulTestResultMessageFieldsId.Duration, successfulTestResultMessage.Duration);
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.Reason, successfulTestResultMessage.Reason);
+                WriteField(stream, SuccessfulTestResultMessageFieldsId.StandardOutput, successfulTestResultMessage.StandardOutput);
+                WriteField(stream, SuccessfulTestResultMessageFieldsId.ErrorOutput, successfulTestResultMessage.ErrorOutput);
                 WriteField(stream, SuccessfulTestResultMessageFieldsId.SessionUid, successfulTestResultMessage.SessionUid);
             }
 
@@ -284,7 +337,7 @@ namespace Microsoft.DotNet.Tools.Test
                 return;
             }
 
-            WriteShort(stream, TestResultMessagesFieldsId.SuccessfulTestMessageList);
+            WriteShort(stream, TestResultMessagesFieldsId.FailedTestMessageList);
 
             // We will reserve an int (4 bytes)
             // so that we fill the size later, once we write the payload
@@ -292,17 +345,20 @@ namespace Microsoft.DotNet.Tools.Test
 
             long before = stream.Position;
             WriteInt(stream, failedTestResultMessages.Length);
-            foreach (FailedTestResultMessage successfulTestResultMessage in failedTestResultMessages)
+            foreach (FailedTestResultMessage failedTestResultMessage in failedTestResultMessages)
             {
-                WriteShort(stream, GetFieldCount(successfulTestResultMessage));
+                WriteShort(stream, GetFieldCount(failedTestResultMessage));
 
-                WriteField(stream, FailedTestResultMessageFieldsId.Uid, successfulTestResultMessage.Uid);
-                WriteField(stream, FailedTestResultMessageFieldsId.DisplayName, successfulTestResultMessage.DisplayName);
-                WriteField(stream, FailedTestResultMessageFieldsId.State, successfulTestResultMessage.State);
-                WriteField(stream, FailedTestResultMessageFieldsId.Reason, successfulTestResultMessage.Reason);
-                WriteField(stream, FailedTestResultMessageFieldsId.ErrorMessage, successfulTestResultMessage.ErrorMessage);
-                WriteField(stream, FailedTestResultMessageFieldsId.ErrorStackTrace, successfulTestResultMessage.ErrorStackTrace);
-                WriteField(stream, FailedTestResultMessageFieldsId.SessionUid, successfulTestResultMessage.SessionUid);
+                WriteField(stream, FailedTestResultMessageFieldsId.Uid, failedTestResultMessage.Uid);
+                WriteField(stream, FailedTestResultMessageFieldsId.DisplayName, failedTestResultMessage.DisplayName);
+                WriteField(stream, FailedTestResultMessageFieldsId.State, failedTestResultMessage.State);
+                WriteField(stream, FailedTestResultMessageFieldsId.Duration, failedTestResultMessage.Duration);
+                WriteField(stream, FailedTestResultMessageFieldsId.Reason, failedTestResultMessage.Reason);
+                WriteField(stream, FailedTestResultMessageFieldsId.ErrorMessage, failedTestResultMessage.ErrorMessage);
+                WriteField(stream, FailedTestResultMessageFieldsId.ErrorStackTrace, failedTestResultMessage.ErrorStackTrace);
+                WriteField(stream, FailedTestResultMessageFieldsId.StandardOutput, failedTestResultMessage.StandardOutput);
+                WriteField(stream, FailedTestResultMessageFieldsId.ErrorOutput, failedTestResultMessage.ErrorOutput);
+                WriteField(stream, FailedTestResultMessageFieldsId.SessionUid, failedTestResultMessage.SessionUid);
             }
 
             // NOTE: We are able to seek only if we are using a MemoryStream
@@ -312,23 +368,29 @@ namespace Microsoft.DotNet.Tools.Test
 
         private static ushort GetFieldCount(TestResultMessages testResultMessages) =>
             (ushort)((testResultMessages.ExecutionId is null ? 0 : 1) +
-            (testResultMessages.SuccessfulTestMessages is null ? 0 : 1) +
-            (testResultMessages.FailedTestMessages is null ? 0 : 1));
+            (IsNullOrEmpty(testResultMessages.SuccessfulTestMessages) ? 0 : 1) +
+            (IsNullOrEmpty(testResultMessages.FailedTestMessages) ? 0 : 1));
 
         private static ushort GetFieldCount(SuccessfulTestResultMessage successfulTestResultMessage) =>
             (ushort)((successfulTestResultMessage.Uid is null ? 0 : 1) +
             (successfulTestResultMessage.DisplayName is null ? 0 : 1) +
             (successfulTestResultMessage.State is null ? 0 : 1) +
+            (successfulTestResultMessage.Duration is null ? 0 : 1) +
             (successfulTestResultMessage.Reason is null ? 0 : 1) +
+            (successfulTestResultMessage.StandardOutput is null ? 0 : 1) +
+            (successfulTestResultMessage.ErrorOutput is null ? 0 : 1) +
             (successfulTestResultMessage.SessionUid is null ? 0 : 1));
 
         private static ushort GetFieldCount(FailedTestResultMessage failedTestResultMessage) =>
             (ushort)((failedTestResultMessage.Uid is null ? 0 : 1) +
             (failedTestResultMessage.DisplayName is null ? 0 : 1) +
             (failedTestResultMessage.State is null ? 0 : 1) +
+            (failedTestResultMessage.Duration is null ? 0 : 1) +
             (failedTestResultMessage.Reason is null ? 0 : 1) +
             (failedTestResultMessage.ErrorMessage is null ? 0 : 1) +
             (failedTestResultMessage.ErrorStackTrace is null ? 0 : 1) +
+            (failedTestResultMessage.StandardOutput is null ? 0 : 1) +
+            (failedTestResultMessage.ErrorOutput is null ? 0 : 1) +
             (failedTestResultMessage.SessionUid is null ? 0 : 1));
     }
 }

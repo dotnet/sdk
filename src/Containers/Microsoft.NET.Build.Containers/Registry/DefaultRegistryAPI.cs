@@ -37,7 +37,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
     private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry, RegistryMode mode)
     {
-        HttpMessageHandler innerHandler = CreateHttpHandler(baseUri, isInsecureRegistry, logger);
+        HttpMessageHandler innerHandler = CreateHttpHandler(registryName, baseUri, isInsecureRegistry, logger);
 
         HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, innerHandler, logger, mode);
 
@@ -56,7 +56,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
         return client;
     }
 
-    private static HttpMessageHandler CreateHttpHandler(Uri baseUri, bool allowInsecure, ILogger logger)
+    private static HttpMessageHandler CreateHttpHandler(string registryName, Uri baseUri, bool allowInsecure, ILogger logger)
     {
         var socketsHttpHandler = new SocketsHttpHandler()
         {
@@ -75,7 +75,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
             RemoteCertificateValidationCallback = IgnoreCertificateErrorsForSpecificHost(baseUri.Host)
         };
 
-        return new FallbackToHttpMessageHandler(baseUri.Host, baseUri.Port, socketsHttpHandler, logger);
+        return new FallbackToHttpMessageHandler(registryName, baseUri.Host, baseUri.Port, socketsHttpHandler, logger);
     }
 
     private static RemoteCertificateValidationCallback IgnoreCertificateErrorsForSpecificHost(string host)
