@@ -14,9 +14,7 @@ diff --git a/global.json b/global.json
 index c1270224e3..bd7a41270d 100644
 --- a/global.json
 +++ b/global.json
-@@ -24,7 +24,7 @@
-     "xcopy-msbuild": "17.8.5"
-   },
+@@ -26,3 +26,3 @@
    "native-tools": {
 -    "jdk": "11.0.24"
 +    "jdk": "latest"
@@ -25,12 +23,8 @@ diff --git a/src/SignalR/clients/java/signalr/build.gradle b/src/SignalR/clients
 index 895f8c4338..3e192445c9 100644
 --- a/src/SignalR/clients/java/signalr/build.gradle
 +++ b/src/SignalR/clients/java/signalr/build.gradle
-@@ -22,7 +22,7 @@ allprojects {
-     version project.findProperty('packageVersion') ?: "99.99.99-dev"
- 
+@@ -24,3 +24,3 @@ allprojects {
      java {
 -        sourceCompatibility = 1.8
 +        sourceCompatibility = 1.9
      }
- 
-     repositories {
