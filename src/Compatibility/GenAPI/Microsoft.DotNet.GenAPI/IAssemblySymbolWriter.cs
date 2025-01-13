@@ -11,9 +11,9 @@ namespace Microsoft.DotNet.GenAPI
     public interface IAssemblySymbolWriter
     {
         /// <summary>
-        /// Process a given assembly symbol.
+        /// Write a given assembly symbol to the instance's desired output.
         /// </summary>
-        /// <param name="assemblySymbol"><see cref="IAssemblySymbol"/> representing the loaded assembly.</param>
+        /// <param name="assemblySymbol">An assembly symbol representing the loaded assembly.</param>
         void WriteAssembly(IAssemblySymbol assemblySymbol);
     }
 }

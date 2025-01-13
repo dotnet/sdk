@@ -69,14 +69,14 @@ namespace Microsoft.DotNet.GenAPI
         }
 
         // Build dummy field from a type, field name, and attribute list.
-        private static SyntaxNode CreateDummyField(string typ, string fieldName, SyntaxList<AttributeListSyntax> attrs, bool isReadonly)
+        private static SyntaxNode CreateDummyField(string type, string fieldName, SyntaxList<AttributeListSyntax> attrs, bool isReadonly)
         {
             List<SyntaxToken> modifiers = new() { SyntaxFactory.Token(SyntaxKind.PrivateKeyword) };
             if (isReadonly)
                 modifiers.Add(SyntaxFactory.Token(SyntaxKind.ReadOnlyKeyword));
             SyntaxNode declaration = SyntaxFactory.FieldDeclaration(
                 SyntaxFactory.VariableDeclaration(
-                    SyntaxFactory.ParseTypeName(typ))
+                    SyntaxFactory.ParseTypeName(type))
                 .WithVariables(
                     SyntaxFactory.SingletonSeparatedList<VariableDeclaratorSyntax>(
                         SyntaxFactory.VariableDeclarator(
