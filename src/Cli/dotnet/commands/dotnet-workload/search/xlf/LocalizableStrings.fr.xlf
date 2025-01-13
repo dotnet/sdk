@@ -63,15 +63,15 @@
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="new">'dotnet workload search version' has three functions depending on its argument:
-      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+        <target state="translated">« dotnet workload search version » a trois fonctions en fonction de son argument :
+      1. Si aucun argument n’est spécifié, il génère une liste des dernières versions de charge de travail publiées à partir de cette bande de fonctionnalités. Prend l’option --take pour spécifier le nombre à fournir et --format pour modifier le format.
+         Exemple :
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
-         Example:
+      2. Si une version de charge de travail est fournie en tant qu’argument, elle génère une table de différentes charges de travail et de leurs versions pour la version de charge de travail spécifiée. Prend l’option --format pour modifier le format de sortie.
+         Exemple :
            dotnet workload search version 9.0.201
-           Workload manifest ID                               Manifest feature band      Manifest Version
+           ID du manifeste de la charge de travail                               Manifeste de la bande de caractéristiques      Version du manifeste
            ------------------------------------------------------------------------------------------------
            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
@@ -88,8 +88,8 @@
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.sdk.aspire                           8.0.100                    8.2.0
-      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+      3. Si une ou plusieurs charges de travail sont fournies avec leurs versions (en les joignant avec le caractère « @ »), elle génère des versions de charge de travail qui correspondent aux versions fournies. Prend l’option --take pour spécifier le nombre à fournir et --format pour modifier le format.
+         Exemple :
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -137,7 +137,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
         <source>No workload version matching {0} was found.</source>
-        <target state="new">No workload version matching {0} was found.</target>
+        <target state="translated">Aucune version de charge de travail correspondant à {0} n’a été trouvée.</target>
         <note />
       </trans-unit>
     </body>

@@ -63,15 +63,15 @@
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="new">'dotnet workload search version' has three functions depending on its argument:
-      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+        <target state="translated">根據其引數，'dotnet workload search version' 有三個函式:
+      1. 如果未指定引數，它會從此功能帶輸出最新發行工作負載版本的清單。使用 --take 選項來指定要提供多少個，以及使用 --format 來變更格式。
+         範例: 
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
-         Example:
+      2. 如果提供工作負載版本做為引數，它會針對指定的工作負載版本輸出各種工作負載及其版本的表格。使用 --format 選項來變更輸出格式。
+         範例: 
            dotnet workload search version 9.0.201
-           Workload manifest ID                               Manifest feature band      Manifest Version
+           工作負載資訊清單識別碼                               資訊清單功能帶      資訊清單版本
            ------------------------------------------------------------------------------------------------
            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
@@ -88,8 +88,8 @@
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.sdk.aspire                           8.0.100                    8.2.0
-      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+      3. 如果提供一或多個工作負載及其版本 (使用 '@' 字元聯結它們)，它會輸出符合所提供版本的工作負載版本。使用 --take 選項來指定要提供多少個，以及使用 --format 來變更格式。
+         範例: 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -137,7 +137,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
         <source>No workload version matching {0} was found.</source>
-        <target state="new">No workload version matching {0} was found.</target>
+        <target state="translated">找不到符合 {0} 的工作負載版本。</target>
         <note />
       </trans-unit>
     </body>
