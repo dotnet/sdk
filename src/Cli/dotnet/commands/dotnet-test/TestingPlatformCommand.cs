@@ -64,6 +64,7 @@ namespace Microsoft.DotNet.Cli
             {
                 CleanUp();
             }
+
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
@@ -74,38 +75,20 @@ namespace Microsoft.DotNet.Cli
             return degreeOfParallelism;
         }
 
-        private static BuildConfigurationOptions GetBuildConfigurationOptions(ParseResult parseResult)
-        {
-            return new BuildConfigurationOptions(
-                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
+        private static BuildConfigurationOptions GetBuildConfigurationOptions(ParseResult parseResult) =>
+            new(parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
                 parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
                 parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
                 parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
-        }
 
-        private static BuildPathsOptions GetBuildPathOptions(ParseResult parseResult)
-        {
-            return new BuildPathsOptions(
-                        parseResult.GetValue(TestingPlatformOptions.ProjectOption),
-                        parseResult.GetValue(TestingPlatformOptions.SolutionOption));
-        }
+        private static BuildPathsOptions GetBuildPathOptions(ParseResult parseResult) =>
+            new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
+                parseResult.GetValue(TestingPlatformOptions.SolutionOption),
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
 
         private void InitializeActionQueue(ParseResult parseResult, int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions)
         {
-            if (ContainsHelpOption(parseResult.GetArguments()))
-            {
-                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                {
-                    testApp.HelpRequested += OnHelpRequested;
-                    testApp.ErrorReceived += OnErrorReceived;
-                    testApp.TestProcessExited += OnTestProcessExited;
-                    testApp.Run += OnTestApplicationRun;
-                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                    return await testApp.RunAsync(hasFilterMode: true, enableHelp: true, buildConfigurationOptions);
-                });
-            }
-            else
+            if (!ContainsHelpOption(parseResult.GetArguments()))
             {
                 _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                 {
@@ -120,6 +103,19 @@ namespace Microsoft.DotNet.Cli
                     testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                     return await testApp.RunAsync(hasFilterMode: false, enableHelp: false, buildConfigurationOptions);
+                });
+            }
+            else
+            {
+                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+                {
+                    testApp.HelpRequested += OnHelpRequested;
+                    testApp.ErrorReceived += OnErrorReceived;
+                    testApp.TestProcessExited += OnTestProcessExited;
+                    testApp.Run += OnTestApplicationRun;
+                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
+
+                    return await testApp.RunAsync(hasFilterMode: true, enableHelp: true, buildConfigurationOptions);
                 });
             }
         }

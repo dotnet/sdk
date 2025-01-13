@@ -42,6 +42,102 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]
         [Theory]
+        public void RunWithSolutionPathWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+
+            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern)
+                                   .Select(match => match.Value.Split(TestApplicationArgsSeparator)[0])
+                                   .ToList();
+
+            string expectedProjectPath = $"{testInstance.TestRoot}\\TestProject\\TestProject.csproj";
+            string otherExpectedProjectPath = $"{testInstance.TestRoot}\\OtherTestProject\\OtherTestProject.csproj";
+
+            bool containsExpectedPath = testAppArgs.Any(arg => arg.Contains(expectedProjectPath) || arg.Contains(otherExpectedProjectPath));
+
+            Assert.True(containsExpectedPath,
+                        $"Expected either '{expectedProjectPath}' or '{otherExpectedProjectPath}' to be present in the test application arguments.");
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunWithInvalidProjectExtension_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string invalidProjectPath = "TestProject\\TestProject.txt";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, invalidProjectPath,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            result.ExitCode.Should().Be(1);
+            result.StdOut.Should().Contain($"The provided project file has an invalid extension: {invalidProjectPath}.");
+        }
+
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunWithInvalidSolutionExtension_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string invalidSolutionPath = "TestProjects.txt";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.SolutionOption.Name, invalidSolutionPath,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            result.ExitCode.Should().Be(1);
+            result.StdOut.Should().Contain($"The provided solution file has an invalid extension: {invalidSolutionPath}.");
+        }
+
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunWithBothProjectAndSolutionAndDirectoryOptions_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string testProjectPath = "TestProject\\TestProject.csproj";
+            string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
+            string testDirectoryPath = "TestProjects";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
+                                             TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                             TestingPlatformOptions.DirectoryOption.Name, testDirectoryPath,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            result.ExitCode.Should().Be(1);
+            result.StdOut?.Contains("Specify either the project, solution or directory option.");
+        }
+
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
         public void RunWithBothProjectAndSolutionOptions_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
@@ -69,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
-            string testProjectPath = "TestProject\\TestProject2.csproj";
+            string testProjectPath = "TestProject\\OtherTestProject.csproj";
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -77,7 +173,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.ExitCode.Should().Be(1);
-            result.StdOut?.Contains($"The provided file path does not exist: {testProjectPath}.");
+            result.StdOut?.Contains($"The provided file path does not exist: {testInstance.TestRoot}\\{testProjectPath}.");
         }
 
         [InlineData(Constants.Debug)]
@@ -88,18 +184,37 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
-            string nonExistentSolutionPath = "NonExistentSolution.sln";
+            string solutionPath = "Solution.sln";
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.SolutionOption.Name, nonExistentSolutionPath,
+                                    .Execute(TestingPlatformOptions.SolutionOption.Name, solutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.ExitCode.Should().Be(1);
-            result.StdOut.Should().Contain($"The provided file path does not exist: {nonExistentSolutionPath}.");
+            result.StdOut.Should().Contain($"The provided file path does not exist: {testInstance.TestRoot}\\{solutionPath}.");
         }
 
+        [InlineData(Constants.Debug)]
+        [InlineData(Constants.Release)]
+        [Theory]
+        public void RunWithNonExistentDirectoryPath_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string directoryPath = "Directory";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.DirectoryOption.Name, directoryPath,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            result.ExitCode.Should().Be(1);
+            result.StdOut.Should().Contain($"The provided directory path does not exist: {testInstance.TestRoot}\\{directoryPath}.");
+        }
 
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]

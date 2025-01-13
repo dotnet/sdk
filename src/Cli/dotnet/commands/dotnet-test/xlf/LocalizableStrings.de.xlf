@@ -83,6 +83,11 @@ für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
         <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDirectoryDescription">
+        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -113,12 +118,12 @@ Beispiele:
         <target state="translated">NAME="WERT"</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdInvalidProjectFileExtensionDescription">
+      <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
         <source>The provided project file has an invalid extension: {0}.</source>
         <target state="new">The provided project file has an invalid extension: {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdInvalidSolutionFileExtensionDescription">
+      <trans-unit id="CmdInvalidSolutionFileExtensionErrorDescription">
         <source>The provided solution file has an invalid extension: {0}.</source>
         <target state="new">The provided solution file has an invalid extension: {0}.</target>
         <note />
@@ -128,7 +133,7 @@ Beispiele:
         <target state="new">Invalid test message state '{0}'</target>
         <note>{0} - test message state</note>
       </trans-unit>
-      <trans-unit id="CmdMSBuildProjectsPropertiesErrorMessage">
+      <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
         <target state="new">Get projects properties with MSBuild didn't execute properly with exit code: {0}.</target>
         <note />
@@ -138,7 +143,12 @@ Beispiele:
         <target state="translated">Die maximale Anzahl von Testmodulen, die parallel ausgeführt werden können.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorMessage">
+      <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
+        <source>Specify either the project, solution or directory option.</source>
+        <target state="new">Specify either the project, solution or directory option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
         <source>Specify which project or solution file to use because this folder contains more than one project or solution file.</source>
         <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
         <note />
@@ -148,7 +158,7 @@ Beispiele:
         <target state="translated">Test(s) ohne Anzeige des Microsoft-Testplattformbanners ausführen</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNoProjectOrSolutionFileErrorMessage">
+      <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
         <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
         <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
         <note />
@@ -158,14 +168,14 @@ Beispiele:
         <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNonExistentFileDescription">
-        <source>The provided file path does not exist: {0}.</source>
-        <target state="new">The provided file path does not exist: {0}.</target>
+      <trans-unit id="CmdNonExistentDirectoryErrorDescription">
+        <source>The provided directory path does not exist: {0}.</source>
+        <target state="new">The provided directory path does not exist: {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdProjectAndSolutionOptionErrorDescription">
-        <source>Specify either the project or solution option.</source>
-        <target state="new">Specify either the project or solution option.</target>
+      <trans-unit id="CmdNonExistentFileErrorDescription">
+        <source>The provided file path does not exist: {0}.</source>
+        <target state="new">The provided file path does not exist: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">

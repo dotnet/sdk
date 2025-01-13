@@ -121,20 +121,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
 
                             types.Add(symbol);
                         }
-                        else
-                        {
-                            // If we should warn on missing references and we are unable to resolve the type forward, then we should log a diagnostic
-                            if (Settings.WithReferences)
-                            {
-                                _assemblyLoadErrors.Add(new CompatDifference(
-                                    side == ElementSide.Left ? assembly.MetadataInformation : MetadataInformation.DefaultLeft,
-                                    side == ElementSide.Right ? assembly.MetadataInformation : MetadataInformation.DefaultRight,
-                                    DiagnosticIds.AssemblyReferenceNotFound,
-                                    string.Format(Resources.MatchingAssemblyNotFound, $"{symbol.ContainingAssembly.Name}.dll"),
-                                    DifferenceType.Changed,
-                                    symbol.ContainingAssembly.Identity.GetDisplayName()));
-                            }
-                        }
                     }
 
                     return typeForwards;
