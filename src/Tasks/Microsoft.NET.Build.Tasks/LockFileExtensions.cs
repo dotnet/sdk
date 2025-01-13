@@ -112,10 +112,9 @@ namespace Microsoft.NET.Build.Tasks
             // Get package name from e.g. Microsoft.VSSDK.BuildTools >= 15.0.25604-Preview4
             static string GetPackageNameFromDependency(string dependency)
             {
-                // Avoid issues with empty dependency
                 if (string.IsNullOrEmpty(dependency))
                 {
-                    return dependency;
+                    return string.Empty;
                 }
                 return dependency.TakeWhile(c => !char.IsWhiteSpace(c)).ToString();
             }
