@@ -94,9 +94,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 foreach (var typeInfo in typeInfoList)
                 {
                     _currentTypeInfoList.Add(typeInfo);
+                    var separator = "";
                     if(_builder.Length > 0)
                     {
-                        var separator = "|";
+                        separator = "|";
                     }
                     _builder.Append($@"{separator}{typeInfo.FullName}");
                     CheckForPartitionLimit(done: false);
