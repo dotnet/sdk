@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
                     static string GetRealPath(string path)
                     {
-                        FileInfo fileInfo = new FileInfo(path);
+                        FileInfo fileInfo = new(path);
                         if (fileInfo.LinkTarget != null)
                         {
                             var resolved = fileInfo.ResolveLinkTarget(true);
