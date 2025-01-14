@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Watch
             return Task.FromResult(capabilities);
         }
 
-        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
@@ -134,6 +134,10 @@ namespace Microsoft.DotNet.Watch
             // If no browser is connected the changes are not sent though.
             return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
+
+        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+            // static asset updates are handled by browser refresh server:
+            => Task.FromResult(ApplyStatus.NoChangesApplied);
 
         public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
             => Task.CompletedTask;

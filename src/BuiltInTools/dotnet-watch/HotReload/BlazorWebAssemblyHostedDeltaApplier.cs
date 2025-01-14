@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Watch
             return result[0].Union(result[1], StringComparer.OrdinalIgnoreCase).ToImmutableArray();
         }
 
-        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             // Apply to both processes.
             // The module the change is for does not need to be loaded in either of the processes, yet we still consider it successful if the application does not fail.
@@ -50,8 +50,8 @@ namespace Microsoft.DotNet.Watch
             // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
 
             var result = await Task.WhenAll(
-                _wasmApplier.Apply(updates, cancellationToken),
-                _hostApplier.Apply(updates, cancellationToken));
+                _wasmApplier.ApplyManagedCodeUpdates(updates, cancellationToken),
+                _hostApplier.ApplyManagedCodeUpdates(updates, cancellationToken));
 
             var wasmResult = result[0];
             var hostResult = result[1];
@@ -79,6 +79,10 @@ namespace Microsoft.DotNet.Watch
                 }
             }
         }
+
+        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+            // static asset updates are handled by browser refresh server:
+            => Task.FromResult(ApplyStatus.NoChangesApplied);
 
         public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
             => _hostApplier.InitialUpdatesApplied(cancellationToken);

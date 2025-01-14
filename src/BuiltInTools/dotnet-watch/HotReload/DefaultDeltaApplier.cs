@@ -66,7 +66,10 @@ namespace Microsoft.DotNet.Watch
             // Should only be called after CreateConnection
             => _capabilitiesTask ?? throw new InvalidOperationException();
 
-        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        private ResponseLoggingLevel ResponseLoggingLevel
+            => Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             // Should only be called after CreateConnection
             Debug.Assert(_capabilitiesTask != null);
@@ -94,7 +97,7 @@ namespace Microsoft.DotNet.Watch
                     ilDelta: [.. update.ILDelta],
                     pdbDelta: [.. update.PdbDelta],
                     updatedTypes: [.. update.UpdatedTypes]))],
-                responseLoggingLevel: Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors);
+                responseLoggingLevel: ResponseLoggingLevel);
 
             var success = false;
             var canceled = false;
@@ -132,6 +135,56 @@ namespace Microsoft.DotNet.Watch
             return
                 !success ? ApplyStatus.Failed :
                 (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+        }
+
+        public async override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+        {
+            var appliedUpdateCount = 0;
+
+            foreach (var update in updates)
+            {
+                var request = new StaticAssetUpdateRequest(
+                    update.AssemblyName,
+                    update.RelativePath,
+                    update.Content,
+                    update.IsApplicationProject,
+                    ResponseLoggingLevel);
+
+                var success = false;
+                var canceled = false;
+                try
+                {
+                    success = await SendAndReceiveUpdate(request, cancellationToken);
+                }
+                catch (OperationCanceledException) when (!(canceled = true))
+                {
+                    // unreachable
+                }
+                catch (Exception e) when (e is not OperationCanceledException)
+                {
+                    success = false;
+                    Reporter.Error($"Change failed to apply (error: '{e.Message}').");
+                    Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
+                }
+                finally
+                {
+                    if (canceled)
+                    {
+                        Reporter.Verbose("Change application cancelled.", "🔥");
+                    }
+                }
+
+                if (success)
+                {
+                    appliedUpdateCount++;
+                }
+            }
+
+            Reporter.Report(MessageDescriptor.UpdatesApplied, appliedUpdateCount, updates.Length);
+
+            return
+                (appliedUpdateCount == 0) ? ApplyStatus.Failed :
+                (appliedUpdateCount < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
         private async ValueTask<bool> SendAndReceiveUpdate<TRequest>(TRequest request, CancellationToken cancellationToken)
