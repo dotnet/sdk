@@ -36,6 +36,32 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         public const string AssemblyReferenceNotFoundErrorCode = "CP1002";
 
         /// <summary>
+        /// Creates an assembly symbol loader and its corresponding assembly symbols from the given DLL files in the filesystem.
+        /// </summary>
+        /// <param name="logger">The logger instance to use for message logging.</param>
+        /// <param name="assembliesPaths">A collection of paths where the assembly DLLs should be searched.</param>
+        /// <param name="assemblyReferencesPaths">An optional collection of paths where the assembly references should be searched.</param>
+        /// <param name="respectInternals">Whether to include internal symbols or not.</param>
+        /// <returns>A tuple containing an assembly symbol loader and its corresponding dictionary of assembly symbols.</returns>
+        public static (AssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromFiles(ILog logger, string[] assembliesPaths, string[]? assemblyReferencesPaths, bool respectInternals = false)
+        {
+            if (assembliesPaths.Length == 0)
+            {
+                return (new AssemblySymbolLoader(logger, resolveAssemblyReferences: true, includeInternalSymbols: respectInternals), new Dictionary<string, IAssemblySymbol>());
+            }
+
+            bool atLeastOneReferencePath = assemblyReferencesPaths?.Count() > 0;
+            AssemblySymbolLoader loader = new(logger, resolveAssemblyReferences: atLeastOneReferencePath, respectInternals);
+            if (atLeastOneReferencePath)
+            {
+                loader.AddReferenceSearchPaths(assemblyReferencesPaths!);
+            }
+            Dictionary<string, IAssemblySymbol> dictionary = new(loader.LoadAssembliesAsDictionary(assembliesPaths));
+
+            return (loader, dictionary);
+        }
+
+        /// <summary>
         /// Creates a new instance of the <see cref="AssemblySymbolLoader"/> class.
         /// </summary>
         /// <param name="log">A logger instance for logging message.</param>
