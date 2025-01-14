@@ -81,7 +81,7 @@ public static class NugetPackageDownloadHelpers
         }
 
         bool found = false;
-        ILogger log = NullLogger.Instance;
+        ILogger logger = NullLogger.Instance;
         CancellationToken cancellationToken = CancellationToken.None;
         SourceCacheContext cache = new SourceCacheContext();
         using (var packageFile = File.Create(packagePath))
@@ -96,7 +96,7 @@ public static class NugetPackageDownloadHelpers
                     packageVersion,
                     packageFile,
                     cache,
-                    log,
+                    logger,
                     cancellationToken);
 
                 if (found)
