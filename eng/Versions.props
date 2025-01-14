@@ -163,7 +163,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/testfx -->
-    <MicrosoftTestingPlatformPackageVersion>1.7.0-dev</MicrosoftTestingPlatformPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>1.6.0-preview.25059.14</MicrosoftTestingPlatformPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
