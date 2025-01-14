@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Testing;
-using Microsoft.DotNet.Watcher.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class FileWatcherTests(ITestOutputHelper output)
     {
@@ -14,29 +11,29 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private async Task TestOperation(
             string dir,
-            (string path, ChangeKind kind)[] expectedChanges,
+            ChangedPath[] expectedChanges,
             bool usePolling,
             Action operation)
         {
             using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
-            if (watcher is DotnetFileWatcher dotnetWatcher)
+            if (watcher is EventBasedDirectoryWatcher dotnetWatcher)
             {
                 dotnetWatcher.Logger = m => output.WriteLine(m);
             }
 
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var filesChanged = new HashSet<(string path, ChangeKind kind)>();
+            var filesChanged = new HashSet<ChangedPath>();
 
-            EventHandler<(string path, ChangeKind kind)> handler = null;
+            EventHandler<ChangedPath> handler = null;
             handler = (_, f) =>
             {
                 if (filesChanged.Add(f))
                 {
-                    output.WriteLine($"Observed new {f.kind}: '{f.path}' ({filesChanged.Count} out of {expectedChanges.Length})");
+                    output.WriteLine($"Observed new {f.Kind}: '{f.Path}' ({filesChanged.Count} out of {expectedChanges.Length})");
                 }
                 else
                 {
-                    output.WriteLine($"Already seen {f.kind}: '{f.path}'");
+                    output.WriteLine($"Already seen {f.Kind}: '{f.Path}'");
                 }
 
                 if (filesChanged.Count == expectedChanges.Length)
@@ -61,7 +58,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             operation();
 
             await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            AssertEx.SequenceEqual(expectedChanges, filesChanged.Order());
+            AssertEx.SequenceEqual(expectedChanges, filesChanged.Order(Comparer<ChangedPath>.Create((x, y) => (x.Path, x.Kind).CompareTo((y.Path, y.Kind)))));
         }
 
         [Theory]
@@ -76,15 +73,15 @@ namespace Microsoft.DotNet.Watcher.Tools
             await TestOperation(
                 dir,
                 expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !usePolling
-                ? new[]
-                {
-                    (testFileFullPath, ChangeKind.Update),
-                    (testFileFullPath, ChangeKind.Add),
-                }
-                : new[]
-                {
-                    (testFileFullPath, ChangeKind.Add),
-                },
+                ?
+                [
+                    new(testFileFullPath, ChangeKind.Update),
+                    new(testFileFullPath, ChangeKind.Add),
+                ]
+                :
+                [
+                    new(testFileFullPath, ChangeKind.Add),
+                ],
                 usePolling,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
@@ -102,16 +99,16 @@ namespace Microsoft.DotNet.Watcher.Tools
             await TestOperation(
                 dir,
                 expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !usePolling
-                ? new[]
-                {
-                    (newDir, ChangeKind.Add),
-                    (newFile, ChangeKind.Update),
-                    (newFile, ChangeKind.Add),
-                }
-                : new[]
-                {
-                    (newDir, ChangeKind.Add),
-                },
+                ?
+                [
+                    new(newDir, ChangeKind.Add),
+                    new(newFile, ChangeKind.Update),
+                    new(newFile, ChangeKind.Add),
+                ]
+                :
+                [
+                    new(newDir, ChangeKind.Add),
+                ],
                 usePolling,
                 () =>
                 {
@@ -132,7 +129,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges: [(testFileFullPath, ChangeKind.Update)],
+                expectedChanges: [new(testFileFullPath, ChangeKind.Update)],
                 usePolling,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
@@ -152,15 +149,15 @@ namespace Microsoft.DotNet.Watcher.Tools
                 expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !usePolling ?
                 [
                     // On OSX events from before we started observing are reported as well.
-                    (srcFile, ChangeKind.Update),
-                    (srcFile, ChangeKind.Add),
-                    (srcFile, ChangeKind.Delete),
-                    (dstFile, ChangeKind.Add),
+                    new(srcFile, ChangeKind.Update),
+                    new(srcFile, ChangeKind.Add),
+                    new(srcFile, ChangeKind.Delete),
+                    new(dstFile, ChangeKind.Add),
                 ]
                 :
                 [
-                    (srcFile, ChangeKind.Delete),
-                    (dstFile, ChangeKind.Add),
+                    new(srcFile, ChangeKind.Delete),
+                    new(dstFile, ChangeKind.Add),
                 ],
                 usePolling,
                 () => File.Move(srcFile, dstFile));
@@ -180,9 +177,10 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges: [
-                    (subdir, ChangeKind.Update),
-                    (testFileFullPath, ChangeKind.Update)
+                expectedChanges:
+                [
+                    new(subdir, ChangeKind.Update),
+                    new(testFileFullPath, ChangeKind.Update)
                 ],
                 usePolling: true,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
@@ -267,7 +265,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await TestOperation(
                 dir,
-                expectedChanges: [(testFileFullPath, ChangeKind.Update)],
+                expectedChanges: [new(testFileFullPath, ChangeKind.Update)],
                 usePolling: true,
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
@@ -291,16 +289,16 @@ namespace Microsoft.DotNet.Watcher.Tools
             watcher.EnableRaisingEvents = false;
         }
 
-        private async Task AssertFileChangeRaisesEvent(string directory, IFileSystemWatcher watcher)
+        private async Task AssertFileChangeRaisesEvent(string directory, IDirectoryWatcher watcher)
         {
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var expectedPath = Path.Combine(directory, Path.GetRandomFileName());
-            EventHandler<(string, ChangeKind)> handler = (_, f) =>
+            EventHandler<ChangedPath> handler = (_, f) =>
             {
                 output.WriteLine("File changed: " + f);
                 try
                 {
-                    if (string.Equals(f.Item1, expectedPath, StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(f.Path, expectedPath, StringComparison.OrdinalIgnoreCase))
                     {
                         changedEv.TrySetResult(0);
                     }
@@ -354,39 +352,39 @@ namespace Microsoft.DotNet.Watcher.Tools
                 dir,
                 expectedChanges: usePolling ?
                 [
-                    (subdir, ChangeKind.Delete),
-                    (f1, ChangeKind.Delete),
-                    (f2, ChangeKind.Delete),
-                    (f3, ChangeKind.Delete),
+                    new(subdir, ChangeKind.Delete),
+                    new(f1, ChangeKind.Delete),
+                    new(f2, ChangeKind.Delete),
+                    new(f3, ChangeKind.Delete),
                 ]
                 : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
                 [
-                    (subdir, ChangeKind.Add),
-                    (subdir, ChangeKind.Delete),
-                    (f1, ChangeKind.Update),
-                    (f1, ChangeKind.Add),
-                    (f1, ChangeKind.Delete),
-                    (f2, ChangeKind.Update),
-                    (f2, ChangeKind.Add),
-                    (f2, ChangeKind.Delete),
-                    (f3, ChangeKind.Update),
-                    (f3, ChangeKind.Add),
-                    (f3, ChangeKind.Delete),
+                    new(subdir, ChangeKind.Add),
+                    new(subdir, ChangeKind.Delete),
+                    new(f1, ChangeKind.Update),
+                    new(f1, ChangeKind.Add),
+                    new(f1, ChangeKind.Delete),
+                    new(f2, ChangeKind.Update),
+                    new(f2, ChangeKind.Add),
+                    new(f2, ChangeKind.Delete),
+                    new(f3, ChangeKind.Update),
+                    new(f3, ChangeKind.Add),
+                    new(f3, ChangeKind.Delete),
                 ]
                 : RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 [
-                    (subdir, ChangeKind.Update),
-                    (subdir, ChangeKind.Delete),
-                    (f1, ChangeKind.Delete),
-                    (f2, ChangeKind.Delete),
-                    (f3, ChangeKind.Delete),
+                    new(subdir, ChangeKind.Update),
+                    new(subdir, ChangeKind.Delete),
+                    new(f1, ChangeKind.Delete),
+                    new(f2, ChangeKind.Delete),
+                    new(f3, ChangeKind.Delete),
                 ]
                 :
                 [
-                    (subdir, ChangeKind.Delete),
-                    (f1, ChangeKind.Delete),
-                    (f2, ChangeKind.Delete),
-                    (f3, ChangeKind.Delete),
+                    new(subdir, ChangeKind.Delete),
+                    new(f1, ChangeKind.Delete),
+                    new(f2, ChangeKind.Delete),
+                    new(f3, ChangeKind.Delete),
                 ],
                 usePolling,
                 () => Directory.Delete(subdir, recursive: true));

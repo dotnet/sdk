@@ -1,0 +1,19 @@
+﻿{
+  "author": "Aleksei Kharlov, halex2005 (codeofclimber.ru)",
+  "name": "NUnit 3 Test Projesi",
+  "description": "Windows, Linux ve macOS üzerinde .NET'te çalışabilen NUnit testlerini içeren bir proje",
+  "symbols/TargetFrameworkOverride/description": "Hedef çerçeveyi geçersiz kılar",
+  "symbols/TargetFrameworkOverride/displayName": "Hedef çerçeveyi geçersiz kılma",
+  "symbols/Framework/description": "Projenin hedef çerçevesi.",
+  "symbols/Framework/displayName": "Çerçeve",
+  "symbols/Framework/choices/net9.0/description": "Hedef net9.0",
+  "symbols/EnablePack/description": "Proje için paketlemeyi etkinleştirip etkinleştirmeme ayarı ( \"dotnet pack\" üzerinden).",
+  "symbols/EnablePack/displayName": "Paketi etkinleştir",
+  "symbols/skipRestore/description": "Belirtilmişse, oluşturma anında projenin otomatik geri yüklenmesini atlar.",
+  "symbols/skipRestore/displayName": "Geri yüklemeyi atla",
+  "symbols/langVersion/description": "Oluşturulan proje dosyasında LangVersion özelliğini ayarlar",
+  "symbols/langVersion/displayName": "Dil sürümü",
+  "postActions/restoreNugetPackages/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "\"dotnet restore\" çalıştır",
+  "postActions/openInEditor/description": "UnitTest1.cs'yi düzenleyicide açar"
+}

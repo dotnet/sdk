@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/9.0.1xx
+    - release/9.0.2xx
     - internal/release/*
     - exp/*
 
@@ -97,7 +97,7 @@ extends:
         parameters:
           pool:
             name: $(DncEngInternalBuildPool)
-            image: 1es-windows-2022
+            image: windows.vs2022.amd64
             os: windows
           helixTargetQueue: windows.amd64.vs2022.pre
           oneESCompat:
@@ -291,6 +291,19 @@ extends:
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
+      ### ARM64 TESTBUILD ###
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+          parameters:
+            pool:
+              name: Azure Pipelines
+              vmImage: macOS-latest
+              os: macOS
+            helixTargetQueue: osx.13.arm64
+            macOSJobParameterSets:
+            - categoryName: TestBuild
+              buildArchitecture: arm64
+              runtimeIdentifier: osx-arm64
 
       ############### SOURCE BUILD ###############
       - template: /eng/common/templates-official/job/source-build.yml@self
