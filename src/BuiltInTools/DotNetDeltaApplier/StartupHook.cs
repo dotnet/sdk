@@ -48,7 +48,7 @@ internal sealed class StartupHook
             return;
         }
 
-        using var agent = new HotReloadAgent();
+        var agent = new HotReloadAgent();
         try
         {
             // block until initialization completes:
@@ -63,7 +63,6 @@ internal sealed class StartupHook
             pipeClient.Dispose();
         }
     }
-
 
     private static async ValueTask InitializeAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)
     {
@@ -115,6 +114,11 @@ internal sealed class StartupHook
             if (!pipeClient.IsConnected)
             {
                 await pipeClient.DisposeAsync();
+            }
+
+            if (!initialUpdates)
+            {
+                agent.Dispose();
             }
         }
     }
