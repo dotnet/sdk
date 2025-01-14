@@ -21,21 +21,18 @@ namespace Microsoft.DotNet.Cli
                 return false;
             }
 
-            string[] possibleSolutionPaths = [
-                ..Directory.GetFiles(directory, "*.sln", SearchOption.TopDirectoryOnly),
-                    ..Directory.GetFiles(directory, "*.slnx", SearchOption.TopDirectoryOnly)];
+            var possibleSolutionPaths = GetSolutionFilePaths(directory);
 
-                // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
-                if (possibleSolutionPaths.Length > 1)
-                {
-                    VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
-                    return false;
-                }
-                // If a single solution is found, use it.
-                else if (possibleSolutionPaths.Length == 1)
-                {
-                    // Get project file paths to check if there are any projects in the directory
-                    string[] possibleProjectPaths = GetProjectFilePaths(directory);
+            // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
+            if (possibleSolutionPaths.Length > 1)
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
+                return false;
+            }
+
+            if (possibleSolutionPaths.Length == 1)
+            {
+                var possibleProjectPaths = GetProjectFilePaths(directory);
 
                 if (possibleProjectPaths.Length == 0)
                 {
@@ -43,58 +40,44 @@ namespace Microsoft.DotNet.Cli
                     isSolution = true;
                     return true;
                 }
-                else // If both solution and project files are found, return false
-                {
-                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorMessage);
-                    return false;
-                }
+
+                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+                return false;
             }
-            // If no solutions are found, look for a project file
-            else
+            else  // If no solutions are found, look for a project file
             {
                 string[] possibleProjectPath = GetProjectFilePaths(directory);
 
-                // No projects found throws an error that no sln nor projects were found
                 if (possibleProjectPath.Length == 0)
                 {
-                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorMessage);
+                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
                     return false;
                 }
-                // A single project found, use it
-                else if (possibleProjectPath.Length == 1)
+
+                if (possibleProjectPath.Length == 1)
                 {
                     projectOrSolutionFilePath = possibleProjectPath[0];
                     return true;
                 }
-                // More than one project found. Not sure which one to choose
-                else
-                {
-                    VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, directory));
-                    return false;
-                }
+
+                VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, directory));
+
+                return false;
             }
         }
 
-
-        private static string[] GetProjectFilePaths(string directory)
+        private static string[] GetSolutionFilePaths(string directory)
         {
-            var projectFiles = Directory.EnumerateFiles(directory, "*.*proj", SearchOption.TopDirectoryOnly)
-                .Where(IsProjectFile)
+            return Directory.EnumerateFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly)
+                .Concat(Directory.EnumerateFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly))
                 .ToArray();
-
-            return projectFiles;
         }
 
-        private static bool IsProjectFile(string filePath)
-        {
-            var extension = Path.GetExtension(filePath);
-            return extension.Equals(".csproj", StringComparison.OrdinalIgnoreCase) ||
-                   extension.Equals(".vbproj", StringComparison.OrdinalIgnoreCase) ||
-                   extension.Equals(".fsproj", StringComparison.OrdinalIgnoreCase) ||
-                   extension.Equals(".proj", StringComparison.OrdinalIgnoreCase);
-        }
+        private static string[] GetProjectFilePaths(string directory) => [.. Directory.EnumerateFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly).Where(IsProjectFile)];
 
-        public static async Task<IEnumerable<string>> ParseSolution(string solutionFilePath)
+        private static bool IsProjectFile(string filePath) => CliConstants.ProjectExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
+
+        public static async Task<IEnumerable<string>> ParseSolution(string solutionFilePath, string directory)
         {
             if (string.IsNullOrEmpty(solutionFilePath))
             {
@@ -119,7 +102,7 @@ namespace Microsoft.DotNet.Cli
 
             if (solution is not null)
             {
-                projectsPaths = [.. solution.SolutionProjects.Select(project => Path.GetFullPath(project.FilePath))];
+                projectsPaths.AddRange(solution.SolutionProjects.Select(project => Path.Combine(directory, project.FilePath)));
             }
 
             return projectsPaths;
