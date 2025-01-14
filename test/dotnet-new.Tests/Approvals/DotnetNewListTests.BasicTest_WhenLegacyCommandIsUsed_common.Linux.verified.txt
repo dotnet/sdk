@@ -1,46 +1,25 @@
 ﻿Warning: use of 'dotnet new --list' is deprecated. Use 'dotnet new list' instead.
 For more information, run: 
    dotnet new list -h
-
 These templates matched your input: 
-
 Template Name                                 Short Name                  Language    Tags                              
---------------------------------------------  --------------------------  ----------  ----------------------------------
-API Controller                                apicontroller               [C#]        Web/ASP.NET                       
-ASP.NET Core Empty                            web                         [C#],F#     Web/Empty                         
-ASP.NET Core gRPC Service                     grpc                        [C#]        Web/gRPC/API/Service              
-ASP.NET Core Web API                          webapi                      [C#],F#     Web/Web API/API/Service/WebAPI    
-ASP.NET Core Web API (native AOT)             webapiaot                   [C#]        Web/Web API/API/Service           
-ASP.NET Core Web App (Model-View-Controller)  mvc                         [C#],F#     Web/MVC                           
-ASP.NET Core Web App (Razor Pages)            webapp,razor                [C#]        Web/MVC/Razor Pages               
-Blazor Server App                             blazorserver                [C#]        Web/Blazor                        
-Blazor Web App                                blazor                      [C#]        Web/Blazor/WebAssembly            
-Blazor WebAssembly Standalone App             blazorwasm                  [C#]        Web/Blazor/WebAssembly/PWA        
-Class Library                                 classlib                    [C#],F#,VB  Common/Library                    
-Console App                                   console                     [C#],F#,VB  Common/Console                    
-dotnet gitignore file                         gitignore,.gitignore                    Config                            
-Dotnet local tool manifest file               tool-manifest                           Config                            
-EditorConfig file                             editorconfig,.editorconfig              Config                            
-global.json file                              globaljson,global.json                  Config                            
-MSBuild Directory.Build.props file            buildprops                              MSBuild/props                     
-MSBuild Directory.Build.targets file          buildtargets                            MSBuild/props                     
-MSBuild Directory.Packages.props file         packagesprops                           MSBuild/packages/props/CPM        
-MSTest Playwright Test Project                mstest-playwright           [C#]        Test/MSTest/Playwright/Desktop/Web
-MSTest Test Class                             mstest-class                [C#],F#,VB  Test/MSTest                       
-MSTest Test Project                           mstest                      [C#],F#,VB  Test/MSTest/Desktop/Web           
-MVC Controller                                mvccontroller               [C#]        Web/ASP.NET                       
-MVC ViewImports                               viewimports                 [C#]        Web/ASP.NET                       
-MVC ViewStart                                 viewstart                   [C#]        Web/ASP.NET                       
-NuGet Config                                  nugetconfig,nuget.config                Config                            
-NUnit 3 Test Item                             nunit-test                  [C#],F#,VB  Test/NUnit                        
-NUnit 3 Test Project                          nunit                       [C#],F#,VB  Test/NUnit/Desktop/Web            
-NUnit Playwright Test Project                 nunit-playwright            [C#]        Test/NUnit/Playwright/Desktop/Web 
-Protocol Buffer File                          proto                                   Web/gRPC                          
-Razor Class Library                           razorclasslib               [C#]        Web/Razor/Library                 
-Razor Component                               razorcomponent              [C#]        Web/ASP.NET                       
-Razor Page                                    page                        [C#]        Web/ASP.NET                       
-Razor View                                    view                        [C#]        Web/ASP.NET                       
-Solution File                                 sln,solution                            Solution                          
-Web Config                                    webconfig                               Config                            
-Worker Service                                worker                      [C#],F#     Common/Worker/Web                 
-xUnit Test Project                            xunit                       [C#],F#,VB  Test/xUnit/Desktop/Web            
+API
+ASP.NET
+Blazor
+Class
+Console
+dotnet
+Dotnet
+EditorConfig
+global.json
+MSBuild
+MSTest
+MVC
+NuGet
+NUnit
+Protocol
+Razor
+Solution
+Web
+Worker
+xUnit
