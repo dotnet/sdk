@@ -272,6 +272,11 @@ namespace Microsoft.DotNet.Cli
                 builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
             }
 
+            if (buildConfigurationOptions.HasListTests)
+            {
+                builder.Append($" {TestingPlatformOptions.ListTestsOption.Name}");
+            }
+
             if (!string.IsNullOrEmpty(buildConfigurationOptions.Architecture))
             {
                 builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {buildConfigurationOptions.Architecture}");
@@ -351,7 +356,7 @@ namespace Microsoft.DotNet.Cli
             {
                 ExecutionId = testResultMessage.ExecutionId,
                 SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
-                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace)).ToArray(), message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
             });
         }
 
