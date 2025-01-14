@@ -11,8 +11,6 @@ using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.Composition;
 
-#nullable enable
-
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public abstract class AbstractFormatterTest

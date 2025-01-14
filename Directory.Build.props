@@ -9,6 +9,7 @@
     <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
     <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
     <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />

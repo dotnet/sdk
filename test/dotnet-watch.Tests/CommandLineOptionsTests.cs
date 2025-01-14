@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watcher.Tools
+#nullable disable
+
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class CommandLineOptionsTests
     {
@@ -52,15 +54,15 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         [Theory]
-        [InlineData("P=V", "P", "V")]
-        [InlineData("P==", "P", "=")]
-        [InlineData("P=A=B", "P", "A=B")]
-        [InlineData(" P\t = V ", "P", " V ")]
-        [InlineData("P=", "P", "")]
+        [InlineData("-p:P=V", "P", "V")]
+        [InlineData("-p:P==", "P", "=")]
+        [InlineData("-p:P=A=B", "P", "A=B")]
+        [InlineData("-p: P\t = V ", "P", " V ")]
+        [InlineData("-p:P=", "P", "")]
         public void BuildProperties_Valid(string argValue, string name, string value)
         {
-            var options = VerifyOptions(["--property", argValue]);
-            Assert.Equal([(name, value)], options.BuildProperties);
+            var properties = CommandLineOptions.ParseBuildProperties([argValue]);
+            AssertEx.SequenceEqual([(name, value)], properties);
         }
 
         [Theory]
@@ -68,10 +70,10 @@ namespace Microsoft.DotNet.Watcher.Tools
         [InlineData("=P3")]
         [InlineData("=")]
         [InlineData("==")]
-        public void BuildProperties_Invalid(string value)
+        public void BuildProperties_Invalid(string argValue)
         {
-            var options = VerifyOptions(["--property", value]);
-            Assert.Empty(options.BuildProperties);
+            var properties = CommandLineOptions.ParseBuildProperties([argValue]);
+            AssertEx.SequenceEqual([], properties);
         }
 
         [Fact]
@@ -290,9 +292,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             Assert.Equal("P", options.ProjectPath);
             Assert.Equal("F", options.TargetFramework);
-            Assert.Equal([("P1", "V1"), ("P2", "V2")], options.BuildProperties);
+            Assert.Equal(["-property:TargetFramework=F", "--property:P1=V1", "--property:P2=V2"], options.BuildArguments);
 
-            Assert.Equal(["--project", "P", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
+            Assert.Equal(["--project", "P", "--framework", "F", "--property:P1=V1", "--property:P2=V2"], options.CommandArguments);
         }
 
         public enum ArgPosition
@@ -341,10 +343,10 @@ namespace Microsoft.DotNet.Watcher.Tools
         public void MultiplePropertyValues()
         {
             var options = VerifyOptions(["--property", "P1=V1", "run", "--property", "P2=V2"]);
-            AssertEx.SequenceEqual(["P1=V1", "P2=V2"], options.BuildProperties.Select(p => $"{p.name}={p.value}"));
+            AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2"], options.BuildArguments);
 
             // options must be repeated since --property does not support multiple args
-            AssertEx.SequenceEqual(["--property", "P1=V1", "--property", "P2=V2"], options.CommandArguments);
+            AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2"], options.CommandArguments);
         }
 
         [Theory]
@@ -407,6 +409,40 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var options = VerifyOptions(["-lp", "CustomLaunchProfile"]);
             Assert.Equal("CustomLaunchProfile", options.LaunchProfileName);
+        }
+
+        /// <summary>
+        /// Validates that options that the "run" command forwards to "build" command are forwarded by dotnet-watch.
+        /// </summary>
+        [Theory]
+        [InlineData(new[] { "--configuration", "release" }, new[] { "-property:Configuration=release" })]
+        [InlineData(new[] { "--framework", "net9.0" }, new[] { "-property:TargetFramework=net9.0" })]
+        [InlineData(new[] { "--runtime", "arm64" }, new[] { "-property:RuntimeIdentifier=arm64","-property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1" })]
+        [InlineData(new[] { "--interactive" }, new[] { "-property:NuGetInteractive=true" })]
+        [InlineData(new[] { "--no-restore" }, new[] { "-restore:false" })]
+        [InlineData(new[] { "--sc" }, new[] { "-property:SelfContained=True", "-property:_CommandLineDefinedSelfContained=true"})]
+        [InlineData(new[] { "--self-contained" }, new[] { "-property:SelfContained=True", "-property:_CommandLineDefinedSelfContained=true" })]
+        [InlineData(new[] { "--no-self-contained" }, new[] { "-property:SelfContained=False","-property:_CommandLineDefinedSelfContained=true"})]
+        [InlineData(new[] { "--verbosity", "q" }, new[] { "-verbosity:q" })]
+        [InlineData(new[] { "--arch", "arm", "--os", "win" }, new[] { "-property:RuntimeIdentifier=win-arm" })]
+        [InlineData(new[] { "--disable-build-servers" }, new[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
+        public void ForwardedBuildOptions(string[] args, string[] buildArgs)
+        {
+            var options = VerifyOptions(["run", .. args]);
+            AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
+        }
+
+        [Fact]
+        public void ForwardedBuildOptions_ArtifactsPath()
+        {
+            var path = TestContext.Current.TestAssetsDirectory;
+
+            var args = new[] { "--artifacts-path", path };
+            var buildArgs = new[] { @"-property:ArtifactsPath=" + path };
+
+            var options = VerifyOptions(["run", .. args]);
+            AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
         }
     }
 }

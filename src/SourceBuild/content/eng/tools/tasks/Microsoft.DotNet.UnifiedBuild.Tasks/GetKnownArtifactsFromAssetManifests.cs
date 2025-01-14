@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +22,8 @@ public sealed class GetKnownArtifactsFromAssetManifests : Build.Utilities.Task
     private const string RepoOriginAttributeName = "RepoOrigin";
     private const string NonShippingAttributeName = "NonShipping";
     private const string DotNetReleaseShippingAttributeName = "DotNetReleaseShipping";
+    private const string VisibilityAttributeName = "Visibility";
+    private const string DefaultVisibility = "External";
 
     // Package metadata
     private const string PackageElementName = "Package";
@@ -69,7 +69,8 @@ public sealed class GetKnownArtifactsFromAssetManifests : Build.Utilities.Task
                 { PackageVersionAttributeName, package.Attribute(PackageVersionAttributeName)!.Value },
                 { RepoOriginAttributeName, package.Attribute(RepoOriginAttributeName)?.Value ?? string.Empty },
                 { NonShippingAttributeName, package.Attribute(NonShippingAttributeName)?.Value ?? string.Empty },
-                { DotNetReleaseShippingAttributeName, package.Attribute(DotNetReleaseShippingAttributeName)?.Value ?? string.Empty }
+                { DotNetReleaseShippingAttributeName, package.Attribute(DotNetReleaseShippingAttributeName)?.Value ?? string.Empty },
+                { VisibilityAttributeName, package.Attribute(VisibilityAttributeName)?.Value ?? DefaultVisibility },
             }))
             .Distinct(TaskItemManifestEqualityComparer.Instance)
             .ToArray();
@@ -81,7 +82,8 @@ public sealed class GetKnownArtifactsFromAssetManifests : Build.Utilities.Task
             {
                 { RepoOriginAttributeName, blob.Attribute(RepoOriginAttributeName)?.Value ?? string.Empty },
                 { NonShippingAttributeName, blob.Attribute(NonShippingAttributeName)?.Value ?? string.Empty },
-                { DotNetReleaseShippingAttributeName, blob.Attribute(DotNetReleaseShippingAttributeName)?.Value ?? string.Empty }
+                { DotNetReleaseShippingAttributeName, blob.Attribute(DotNetReleaseShippingAttributeName)?.Value ?? string.Empty },
+                { VisibilityAttributeName, blob.Attribute(VisibilityAttributeName)?.Value ?? DefaultVisibility },
             }))
             .Distinct(TaskItemManifestEqualityComparer.Instance)
             .ToArray();

@@ -83,6 +83,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDirectoryDescription">
+        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -113,14 +118,39 @@ Examples:
         <target state="translated">NAME="VALUE"</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
+        <source>The provided project file has an invalid extension: {0}.</source>
+        <target state="new">The provided project file has an invalid extension: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdInvalidSolutionFileExtensionErrorDescription">
+        <source>The provided solution file has an invalid extension: {0}.</source>
+        <target state="new">The provided solution file has an invalid extension: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdInvalidTestMessageStateException">
         <source>Invalid test message state '{0}'</source>
         <target state="new">Invalid test message state '{0}'</target>
         <note>{0} - test message state</note>
       </trans-unit>
+      <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
+        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
+        <target state="new">Get projects properties with MSBuild didn't execute properly with exit code: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
         <target state="translated">병렬로 실행할 수 있는 최대 테스트 모듈 수입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
+        <source>Specify either the project, solution or directory option.</source>
+        <target state="new">Specify either the project, solution or directory option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
+        <source>Specify which project or solution file to use because this folder contains more than one project or solution file.</source>
+        <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -128,9 +158,24 @@ Examples:
         <target state="translated">Microsoft Testplatform 배너를 표시하지 않고 테스트 실행</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
+        <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
+        <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoRestoreDescription">
         <source>Do not execute an implicit restore.</source>
         <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentDirectoryErrorDescription">
+        <source>The provided directory path does not exist: {0}.</source>
+        <target state="new">The provided directory path does not exist: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentFileErrorDescription">
+        <source>The provided file path does not exist: {0}.</source>
+        <target state="new">The provided file path does not exist: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
@@ -151,6 +196,11 @@ Examples:
       <trans-unit id="CmdListTestsDescription">
         <source>List the discovered tests instead of running the tests.</source>
         <target state="translated">테스트 실행 대신 검색한 테스트를 나열합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionDescription">
+        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestCaseFilterExpression">
@@ -254,6 +304,11 @@ The specified directory will be created if it does not exist.</source>
         <source>Message Request type '{0}' is unsupported.</source>
         <target state="new">Message Request type '{0}' is unsupported.</target>
         <note>{0} - message request type</note>
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedTestRunnerDescription">
+        <source>Test runner not supported: {0}.</source>
+        <target state="new">Test runner not supported: {0}.</target>
+        <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
         <source>Test application(s) that support VSTest are not supported.</source>

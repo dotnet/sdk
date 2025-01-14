@@ -9,7 +9,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 {
     public class TestProject
     {
-        public TestProject([CallerMemberName] string name = null)
+        public TestProject([CallerMemberName] string? name = null)
         {
             if (name != null)
             {
@@ -21,7 +21,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// A name for the test project that's used to isolate it from a test's root folder by appending it to the root test path.
         /// By default, it is the unhashed name of the function that instantiated the TestProject object.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public bool IsSdkProject { get; set; } = true;
 
@@ -33,7 +33,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         public bool IsWinExe { get; set; }
 
 
-        public string ProjectSdk { get; set; }
+        public string? ProjectSdk { get; set; }
 
         /// <summary>
         /// Applies to SDK-style projects. If the value has only one target framework (ie no semicolons), the value will be used
@@ -41,21 +41,21 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// </summary>
         public string TargetFrameworks { get; set; } = ToolsetInfo.CurrentTargetFramework;
 
-        public string RuntimeFrameworkVersion { get; set; }
+        public string? RuntimeFrameworkVersion { get; set; }
 
-        public string RuntimeIdentifier { get; set; }
+        public string? RuntimeIdentifier { get; set; }
 
         // Set to either true, false, or empty string "". The empty string does not undefine SelfContained, it just doesn't specify it.
         public string SelfContained { get; set; } = "";
 
         //  TargetFrameworkVersion applies to non-SDK projects
-        public string TargetFrameworkVersion { get; set; }
+        public string? TargetFrameworkVersion { get; set; }
 
-        public string TargetFrameworkProfile { get; set; }
+        public string? TargetFrameworkProfile { get; set; }
 
         public bool UseArtifactsOutput { get; set; }
 
-        public List<TestProject> ReferencedProjects { get; } = new List<TestProject>();
+        public List<TestProject?> ReferencedProjects { get; } = new List<TestProject?>();
 
         public List<string> References { get; } = new List<string>();
 
@@ -127,7 +127,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder, string targetExtension = ".csproj")
         {
-            string targetFolder = Path.Combine(targetTestAsset.Path, Name);
+            string targetFolder = Path.Combine(targetTestAsset.Path, Name ?? string.Empty);
             Directory.CreateDirectory(targetFolder);
 
             string targetProjectPath = Path.Combine(targetFolder, Name + targetExtension);
@@ -144,7 +144,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             }
 
             //  Copy any additional files from template
-            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(sourceProject)))
+            foreach (var file in Directory.GetFiles(Path.GetDirectoryName(sourceProject) ?? string.Empty))
             {
                 if (file != sourceProject)
                 {
@@ -154,26 +154,31 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
             var projectXml = XDocument.Load(sourceProject);
 
+            if (projectXml.Root is null)
+            {
+                throw new InvalidOperationException($"The project file '{sourceProject}' does not have a root element.");
+            }
             var ns = projectXml.Root.Name.Namespace;
 
-            if (ProjectSdk != null)
+            var sdkAttribute = projectXml.Root.Attribute("Sdk");
+            if (sdkAttribute is not null && ProjectSdk != null)
             {
-                projectXml.Root.Attribute("Sdk").Value = ProjectSdk;
+                sdkAttribute.Value = ProjectSdk;
             }
 
-            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();
+            var propertyGroup = projectXml.Root?.Elements(ns + "PropertyGroup").First();
 
-            var packageReferenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
+            var packageReferenceItemGroup = projectXml.Root?.Elements(ns + "ItemGroup")
                 .FirstOrDefault(itemGroup => itemGroup.Elements(ns + "PackageReference").Count() > 0);
             if (packageReferenceItemGroup == null)
             {
-                packageReferenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
+                packageReferenceItemGroup = projectXml.Root?.Elements(ns + "ItemGroup")
                     .FirstOrDefault();
             }
             if (packageReferenceItemGroup == null)
             {
                 packageReferenceItemGroup = new XElement(ns + "ItemGroup");
-                projectXml.Root.Add(packageReferenceItemGroup);
+                projectXml.Root?.Add(packageReferenceItemGroup);
             }
 
             foreach (TestPackageReference packageReference in PackageReferences)
@@ -213,52 +218,58 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             {
                 if (TargetFrameworks.Contains(";"))
                 {
-                    propertyGroup.Add(new XElement(ns + "TargetFrameworks", TargetFrameworks));
+                    propertyGroup?.Add(new XElement(ns + "TargetFrameworks", TargetFrameworks));
                 }
                 else
                 {
-                    propertyGroup.Add(new XElement(ns + "TargetFramework", TargetFrameworks));
+                    propertyGroup?.Add(new XElement(ns + "TargetFramework", TargetFrameworks));
                 }
 
                 if (!string.IsNullOrEmpty(RuntimeFrameworkVersion))
                 {
-                    propertyGroup.Add(new XElement(ns + "RuntimeFrameworkVersion", RuntimeFrameworkVersion));
+                    propertyGroup?.Add(new XElement(ns + "RuntimeFrameworkVersion", RuntimeFrameworkVersion));
                 }
 
                 if (!string.IsNullOrEmpty(RuntimeIdentifier))
                 {
-                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", RuntimeIdentifier));
+                    propertyGroup?.Add(new XElement(ns + "RuntimeIdentifier", RuntimeIdentifier));
                 }
             }
             else
             {
                 if (!string.IsNullOrEmpty(TargetFrameworkProfile))
                 {
-                    propertyGroup.Add(new XElement(ns + "TargetFrameworkProfile", TargetFrameworkProfile));
+                    propertyGroup?.Add(new XElement(ns + "TargetFrameworkProfile", TargetFrameworkProfile));
 
                     //  To construct an accurate PCL project file, we must modify the import of the CSharp targets;
                     //    building/testing the SDK requires a VSDev command prompt which sets 'VSINSTALLDIR'
-                    var importGroup = projectXml.Root.Elements(ns + "Import").Last();
-                    importGroup.Attribute("Project").Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
+                    var importGroup = projectXml.Root?.Elements(ns + "Import").Last();
+                    if(importGroup?.Attribute("Project") is not null)
+                    {
+                        importGroup.Attribute("Project")!.Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
+                    }  
                 }
 
-                propertyGroup.Element(ns + "TargetFrameworkVersion").SetValue(TargetFrameworkVersion);
+                if(TargetFrameworkVersion is not null)
+                {
+                    propertyGroup?.Element(ns + "TargetFrameworkVersion")?.SetValue(TargetFrameworkVersion);
+                }
             }
 
             foreach (var additionalProperty in AdditionalProperties)
             {
-                propertyGroup.Add(new XElement(ns + additionalProperty.Key, additionalProperty.Value));
+                propertyGroup?.Add(new XElement(ns + additionalProperty.Key, additionalProperty.Value));
             }
 
             if (AdditionalItems.Any())
             {
                 foreach (var additionalItem in AdditionalItems)
                 {
-                    var additionalItemGroup = projectXml.Root.Elements(ns + "ItemGroup").FirstOrDefault();
+                    var additionalItemGroup = projectXml.Root?.Elements(ns + "ItemGroup").FirstOrDefault();
                     if (additionalItemGroup == null)
                     {
                         additionalItemGroup = new XElement(ns + "ItemGroup");
-                        projectXml.Root.Add(packageReferenceItemGroup);
+                        projectXml.Root?.Add(packageReferenceItemGroup);
                     }
                     var item = new XElement(ns + additionalItem.Key);
                     foreach (var attribute in additionalItem.Value)
@@ -269,21 +280,21 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
             if (IsExe && !IsWinExe)
             {
-                propertyGroup.Element(ns + "OutputType").SetValue("Exe");
+                propertyGroup?.Element(ns + "OutputType")?.SetValue("Exe");
             }
             else if (IsWinExe)
             {
-                propertyGroup.Element(ns + "OutputType").SetValue("WinExe");
+                propertyGroup?.Element(ns + "OutputType")?.SetValue("WinExe");
             }
 
             if (SelfContained != "")
             {
-                propertyGroup.Add(new XElement(ns + "SelfContained", string.Equals(SelfContained, "true", StringComparison.OrdinalIgnoreCase) ? "true" : "false"));
+                propertyGroup?.Add(new XElement(ns + "SelfContained", string.Equals(SelfContained, "true", StringComparison.OrdinalIgnoreCase) ? "true" : "false"));
             }
 
             if (ReferencedProjects.Any())
             {
-                var projectReferenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
+                var projectReferenceItemGroup = projectXml.Root?.Elements(ns + "ItemGroup")
                     .FirstOrDefault(itemGroup => itemGroup.Elements(ns + "ProjectReference").Count() > 0);
                 if (projectReferenceItemGroup == null)
                 {
@@ -293,13 +304,13 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 foreach (var referencedProject in ReferencedProjects)
                 {
                     projectReferenceItemGroup.Add(new XElement(ns + "ProjectReference",
-                    new XAttribute("Include", $"../{referencedProject.Name}/{referencedProject.Name}.csproj")));
+                    new XAttribute("Include", $"../{referencedProject?.Name}/{referencedProject?.Name}.csproj")));
                 }
             }
 
             if (References.Any())
             {
-                var referenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
+                var referenceItemGroup = projectXml.Root?.Elements(ns + "ItemGroup")
                     .FirstOrDefault(itemGroup => itemGroup.Elements(ns + "Reference").Count() > 0);
                 if (referenceItemGroup == null)
                 {
@@ -317,7 +328,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             if (FrameworkReferences.Any())
             {
                 var frameworkReferenceItemGroup = new XElement(ns + "ItemGroup");
-                projectXml.Root.Add(frameworkReferenceItemGroup);
+                projectXml.Root?.Add(frameworkReferenceItemGroup);
                 foreach (var frameworkReference in FrameworkReferences)
                 {
                     frameworkReferenceItemGroup.Add(new XElement(ns + "FrameworkReference",
@@ -343,7 +354,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     }
 
                     target.Add(copyElement);
-                    projectXml.Root.Add(target);
+                    projectXml.Root?.Add(target);
                 }
             }
 
@@ -355,10 +366,10 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             if (PropertiesToRecord.Any())
             {
                 var customAfterDirectoryBuildTargetsPath = new FileInfo(Path.Combine(targetFolder, "obj", "Custom.After.Directory.Build.targets"));
-                customAfterDirectoryBuildTargetsPath.Directory.Create();
+                customAfterDirectoryBuildTargetsPath.Directory?.Create();
 
-                propertyGroup.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
-                propertyGroup.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
+                propertyGroup?.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
+                propertyGroup?.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
                 
                 var customAfterDirectoryBuildTargets = new XDocument(new XElement(ns + "Project"));
 
@@ -366,7 +377,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     new XAttribute("Name", "WritePropertyValues"),
                     new XAttribute("BeforeTargets", "AfterBuild"));
 
-                customAfterDirectoryBuildTargets.Root.Add(target);
+                customAfterDirectoryBuildTargets.Root?.Add(target);
 
                 var itemGroup = new XElement(ns + "ItemGroup");
                 target.Add(itemGroup);
@@ -409,7 +420,7 @@ class Program
 
                     foreach (var dependency in ReferencedProjects)
                     {
-                        string safeDependencyName = dependency.Name.Replace('.', '_');
+                        string? safeDependencyName = dependency?.Name?.Replace('.', '_');
 
                         source += $"        Console.WriteLine({safeDependencyName}.{safeDependencyName}Class.Name);" + Environment.NewLine;
                         source += $"        Console.WriteLine({safeDependencyName}.{safeDependencyName}Class.List);" + Environment.NewLine;
@@ -424,7 +435,7 @@ class Program
                 }
 
                 {
-                    string safeThisName = Name.Replace('.', '_');
+                    string? safeThisName = Name?.Replace('.', '_');
                     string source =
     $@"using System;
 using System.Collections.Generic;
@@ -438,7 +449,7 @@ namespace {safeThisName}
 ";
                     foreach (var dependency in ReferencedProjects)
                     {
-                        string safeDependencyName = dependency.Name.Replace('.', '_');
+                        string? safeDependencyName = dependency?.Name?.Replace('.', '_');
 
                         source += $"        public string {safeDependencyName}Name {{ get {{ return {safeDependencyName}.{safeDependencyName}Class.Name; }} }}" + Environment.NewLine;
                         source += $"        public List<string> {safeDependencyName}List {{ get {{ return {safeDependencyName}.{safeDependencyName}Class.List; }} }}" + Environment.NewLine;
@@ -486,11 +497,11 @@ namespace {safeThisName}
         /// A dictionary of property keys to property value strings, case sensitive.
         /// Only properties added to the <see cref="PropertiesToRecord"/> member will be observed.
         /// </returns>
-        public Dictionary<string, string> GetPropertyValues(string testRoot, string targetFramework = null, string configuration = "Debug")
+        public Dictionary<string, string> GetPropertyValues(string testRoot, string? targetFramework = null, string configuration = "Debug")
         {
             var propertyValues = new Dictionary<string, string>();
 
-            string intermediateOutputPath = Path.Combine(testRoot, Name, "obj", configuration, targetFramework ?? TargetFrameworks);
+            string intermediateOutputPath = Path.Combine(testRoot, Name ?? string.Empty, "obj", configuration, targetFramework ?? TargetFrameworks);
 
             foreach (var line in File.ReadAllLines(Path.Combine(intermediateOutputPath, "PropertyValues.txt")))
             {
@@ -514,10 +525,10 @@ namespace {safeThisName}
 
         private OutputPathCalculator GetOutputPathCalculator(string testRoot)
         {
-            return OutputPathCalculator.FromProject(Path.Combine(testRoot, Name, Name + ".csproj"), this);
+            return OutputPathCalculator.FromProject(Path.Combine(testRoot, Name ?? string.Empty, Name + ".csproj"), this);
         }
 
-        public string GetOutputDirectory(string testRoot, string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "")
+        public string GetOutputDirectory(string testRoot, string? targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "")
         {
             return GetOutputPathCalculator(testRoot)
                 .GetOutputDirectory(targetFramework, configuration, runtimeIdentifier);

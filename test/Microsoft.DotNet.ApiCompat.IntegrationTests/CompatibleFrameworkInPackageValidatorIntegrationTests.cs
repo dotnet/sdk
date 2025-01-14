@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
@@ -25,7 +27,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
                 new ApiCompatRunner(log,
                     new SuppressionEngine(),
                     new ApiComparerFactory(new RuleFactory(log)),
-                    new AssemblySymbolLoaderFactory()));
+                    new AssemblySymbolLoaderFactory(log)));
 
             return (log, validator);
         }

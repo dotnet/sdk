@@ -59,7 +59,6 @@
     <RepositoryReference Include="sourcelink" />
     <RepositoryReference Include="symreader" />
     <RepositoryReference Include="templating" />
-    <RepositoryReference Include="test-templates" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
     <RepositoryReference Include="xdt" />
