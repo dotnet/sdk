@@ -82,11 +82,11 @@ namespace Microsoft.DotNet.PackageValidation
                     // See if the package's assembly reference entries have the same target framework.
                     if (!package.AssemblyReferences.TryGetValue(nuGetFramework, out assemblyReferences))
                     {
-                        log.LogWarning(new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm) { Target = displayString },
-                            DiagnosticIds.SearchDirectoriesNotFoundForTfm,
+                        log.LogWarning(new Suppression(DiagnosticIds.SearchDirectoriesNotFoundForTfm,
                             string.Format(Resources.MissingSearchDirectory,
                                 nuGetFramework.GetShortFolderName(),
-                                displayString));
+                                displayString),
+                            displayString));
                     }
                 }
             }

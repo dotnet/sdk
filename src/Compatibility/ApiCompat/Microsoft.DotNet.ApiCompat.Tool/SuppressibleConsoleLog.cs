@@ -16,24 +16,24 @@ namespace Microsoft.DotNet.ApiCompat.Tool
         public bool HasLoggedErrorSuppressions { get; private set; }
 
         /// <inheritdoc />
-        public bool LogError(Suppression suppression, string code, string message)
+        public bool LogError(Suppression suppression)
         {
             if (suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
             HasLoggedErrorSuppressions = true;
-            LogError(code, message);
+            LogError(suppression.DiagnosticId, suppression.Message);
 
             return true;
         }
 
         /// <inheritdoc />
-        public bool LogWarning(Suppression suppression, string code, string message)
+        public bool LogWarning(Suppression suppression)
         {
             if (suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
-            LogWarning(code, message);
+            LogWarning(suppression.DiagnosticId, suppression.Message);
 
             return true;
         }
