@@ -56,7 +56,7 @@
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
     <SystemCommandLineVersion>2.0.0-beta4.24324.3</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.4.0-alpha.24324.3</SystemCommandLineRenderingVersion>
-    <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24406.1</MicrosoftDeploymentDotNetReleasesVersion>
+    <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-rtm.1.25059.4</MicrosoftDeploymentDotNetReleasesVersion>
     <MicrosoftDiaSymReaderVersion>2.2.0-beta.24327.2</MicrosoftDiaSymReaderVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
