@@ -76,14 +76,5 @@ stages:
         buildArchitecture: arm64
         runtimeIdentifier: osx-arm64
 
-  ############### SOURCE BUILD ###############
-  - template: /eng/common/templates/job/source-build.yml@self
-    parameters:
-      platform:
-        name: Managed
-        container: centosStream9
-        jobProperties:
-          timeoutInMinutes: 30
-
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml

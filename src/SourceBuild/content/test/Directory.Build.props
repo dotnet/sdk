@@ -9,9 +9,6 @@
 
   <PropertyGroup>
     <VSTestResultsDirectory>$(ArtifactsTestResultsDir)</VSTestResultsDirectory>
-    <!-- Set roll forward to allow tests to run against a newer runtime. This is necessary when tests still
-         target a previous TFM but the SDK already provides the newer runtime. -->
-    <RollForward>Major</RollForward>
   </PropertyGroup>
 
 </Project>

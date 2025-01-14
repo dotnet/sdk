@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -21,7 +20,7 @@ namespace Microsoft.DotNet.GenAPI
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
-        public static void Run(ILog logger,
+        public static void Run(ILog log,
             string[] assemblies,
             string[]? assemblyReferences,
             string? outputPath,
@@ -35,7 +34,7 @@ namespace Microsoft.DotNet.GenAPI
             bool resolveAssemblyReferences = assemblyReferences?.Length > 0;
 
             // Create, configure and execute the assembly loader.
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences, respectInternals);
+            AssemblySymbolLoader loader = new(log, resolveAssemblyReferences, respectInternals);
             if (assemblyReferences is not null)
             {
                 loader.AddReferenceSearchPaths(assemblyReferences);
@@ -75,31 +74,16 @@ namespace Microsoft.DotNet.GenAPI
                 using TextWriter textWriter = GetTextWriter(outputPath, assemblySymbol.Name);
                 textWriter.Write(headerFileText);
 
-                using CSharpFileBuilder fileBuilder = new(logger,
+                using CSharpFileBuilder fileBuilder = new(log,
                     symbolFilter,
                     attributeDataSymbolFilter,
                     textWriter,
                     exceptionMessage,
                     includeAssemblyAttributes,
-                    loader.MetadataReferences);
+                    loader.MetadataReferences,
+                    addPartialModifier: true);
 
                 fileBuilder.WriteAssembly(assemblySymbol);
-            }
-
-            if (loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
-            {
-                foreach (Diagnostic warning in roslynDiagnostics)
-                {
-                    logger.LogWarning(warning.Id, warning.ToString());
-                }
-            }
-
-            if (loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
-            {
-                foreach (AssemblyLoadWarning warning in loadWarnings)
-                {
-                    logger.LogWarning(warning.DiagnosticId, warning.Message);
-                }
             }
         }
 

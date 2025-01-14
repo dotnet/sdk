@@ -147,11 +147,6 @@
         <target state="translated">O índice {0} deve estar no intervalo de zero até {1} inclusivo.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">Não foi possível encontrar o assembly correspondente: '{0}' em qualquer um dos diretórios de pesquisa.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MemberExistsOnLeft">
         <source>Member '{0}' exists on {1} but not on {2}</source>
         <target state="translated">O membro '{0}' existe em {1} mas não em {2}</target>

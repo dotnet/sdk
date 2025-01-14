@@ -1,0 +1,38 @@
+From d04dfb1ab0f13dbe0f15c065d7f127d8747a0832 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Thu, 9 Jan 2025 08:54:39 +0100
+Subject: [PATCH] Use the latest available jdk
+
+Backport: https://github.com/dotnet/aspnetcore/pull/59788
+
+---
+ global.json                                   | 2 +-
+ src/SignalR/clients/java/signalr/build.gradle | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/global.json b/global.json
+index c1270224e3..bd7a41270d 100644
+--- a/global.json
++++ b/global.json
+@@ -24,7 +24,7 @@
+     "xcopy-msbuild": "17.8.5"
+   },
+   "native-tools": {
+-    "jdk": "11.0.24"
++    "jdk": "latest"
+   },
+   "msbuild-sdks": {
+     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25056.1",
+diff --git a/src/SignalR/clients/java/signalr/build.gradle b/src/SignalR/clients/java/signalr/build.gradle
+index 895f8c4338..3e192445c9 100644
+--- a/src/SignalR/clients/java/signalr/build.gradle
++++ b/src/SignalR/clients/java/signalr/build.gradle
+@@ -22,7 +22,7 @@ allprojects {
+     version project.findProperty('packageVersion') ?: "99.99.99-dev"
+ 
+     java {
+-        sourceCompatibility = 1.8
++        sourceCompatibility = 1.9
+     }
+ 
+     repositories {

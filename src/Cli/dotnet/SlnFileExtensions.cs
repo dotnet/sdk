@@ -6,7 +6,6 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
-using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -271,7 +270,7 @@ namespace Microsoft.DotNet.Tools.Common
                     else
                     {
 
-                        if(HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, dir, parentDirGuid, slnFile.Projects))
+                        if (HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, dir, parentDirGuid, slnFile.Projects))
                         {
                             throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, slnFile.Projects.FirstOrDefault(p => p.Id == parentDirGuid).Name);
                         }

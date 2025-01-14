@@ -310,15 +310,6 @@ extends:
               buildArchitecture: arm64
               runtimeIdentifier: osx-arm64
 
-      ############### SOURCE BUILD ###############
-      - template: /eng/common/templates-official/job/source-build.yml@self
-        parameters:
-          platform:
-            name: Managed
-            container: centosStream9
-            jobProperties:
-              timeoutInMinutes: 30
-
       ############### DOTNET-FORMAT ###############
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/dotnet-format/dotnet-format-integration.yml@self
