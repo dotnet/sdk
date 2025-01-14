@@ -130,7 +130,10 @@ namespace Microsoft.NET.Build.Tasks
                     foreach (string dependency in group.Dependencies)
                     {
                         string packageName = GetPackageNameFromDependency(dependency);
-                        set.Add(packageName);
+                        if (!string.IsNullOrEmpty(packageName))
+                        {
+                            set.Add(packageName);
+                        }
                     }
                 }
             }

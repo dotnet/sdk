@@ -196,7 +196,7 @@ namespace Microsoft.NET.Build.Tasks
                 .SelectMany(g => g.Dependencies)
                 .Select(projectFileDependency =>
                 {
-                    string libraryName = projectFileDependency.TakeWhile(c => !char.IsWhiteSpace(c)).ToString();
+                    string libraryName = projectFileDependency!.TakeWhile(c => !char.IsWhiteSpace(c)).ToString();
 
                     if (!string.IsNullOrEmpty(libraryName) && libraryLookup.ContainsKey(libraryName))
                     {
