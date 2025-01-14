@@ -542,7 +542,7 @@
     <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="'$(LogManifestNotFoundError)' == 'true' and '$(MinimalConsoleLogOutput)' == 'true' and Exists('$(RepoConsoleLogFile)')" />
     <Error Text="No repository asset manifest files found at '$(RepoAssetManifestsDir)*.xml'. This often means the build failed but did not log an error." Condition="'$(LogManifestNotFoundError)' == 'true'" />
 
-    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)" RepoOrigin="$(RepositoryName)">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifest)">
       <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
       <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
     </GetKnownArtifactsFromAssetManifests>
@@ -554,9 +554,13 @@
         <ShippingFolder Condition="%(ProducedPackage.NonShipping) != 'true'">Shipping</ShippingFolder>
       </ProducedPackage>
 
-      <!-- When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages. -->
-      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-      <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" />
+      <!--
+        When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages so no need to binplace.
+        In addition, don't binplace any packages or blobs with vertical visibility. These are only used for building other repos within this vertical
+        and shouldn't be staged for upload.
+      -->
+      <BinPlaceFile Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/$(RepositoryName)/%(Identity).%(Version).nupkg')" Condition="'$(DotNetBuildSourceOnly)' != 'true' and '%(Visibility)' != 'Vertical'" />
+      <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" Condition="'%(Visibility)' != 'Vertical'"/>
     </ItemGroup>
 
     <!-- Add manifests from dependent verticals. -->
@@ -633,8 +637,11 @@
       but the required features to read in binary files as input to a source generator don't exist.
       To work around these source generators, shut down the compiler server so we can delete the obj directories.
       Don't fail the build when shutdown returns a failure.
+
+      Don't run when source building to prevent the build from hanging indefinitely - https://github.com/dotnet/source-build/issues/4796
     -->
     <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler"
+          Condition="'$(DotNetBuildSourceOnly)' != 'true'"
           EnvironmentVariables="NUGET_PACKAGES=$(RepoArtifactsPackageCache)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true" />
@@ -734,7 +741,7 @@
     MoveDotNetBuildLogs;
     CleanupRepo" />
 
-  <Target Name="Test">
+  <Target Name="RepoTest">
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
     <Message Importance="High" Text="  $(TestCommand)" />
@@ -753,7 +760,11 @@
     </Exec>
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)...done" />
+
+    <OnError ExecuteTargets="MoveDotNetBuildLogs" />
   </Target>
+
+  <Target Name="Test" DependsOnTargets="RepoTest;MoveDotNetBuildLogs" />
   <Target Name="VSTest" DependsOnTargets="Test" />
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />

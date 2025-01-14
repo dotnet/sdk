@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable IDE0240
-#nullable enable
-#pragma warning restore IDE0240
-
 using Microsoft.DotNet.Tools.New;
 using Microsoft.TemplateEngine.Abstractions.Components;
 
@@ -15,7 +11,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         [Fact]
         public async Task GetInstalledVersionsAsync_ShouldContainCurrentVersion()
         {
-            string dotnetRootUnderTest = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+            string? dotnetRootUnderTest = TestContext.Current.ToolsetUnderTest?.DotNetRoot;
             string? pathOrig = Environment.GetEnvironmentVariable("PATH");
             Environment.SetEnvironmentVariable("PATH", dotnetRootUnderTest + Path.PathSeparator + pathOrig);
 

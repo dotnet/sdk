@@ -4,6 +4,7 @@
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
     <RootRepo>dotnet</RootRepo>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Label="CalculateTargetOS">
@@ -131,6 +132,11 @@
     <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
     <!-- Don't use Arcade's ExcludeFrom* build infra in the VMR orchestrator. -->
     <DisableArcadeExcludeFromBuildSupport>true</DisableArcadeExcludeFromBuildSupport>
+    <LangVersion>latest</LangVersion>
+    <!-- Explicitly set NuGetAuditModel level as it's currently disabled in the product. -->
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Only upgrade NuGetAudit warnings to errors for official builds. -->
+    <WarningsNotAsErrors Condition="'$(OfficialBuildId)' == ''">$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -200,9 +206,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Respect the VerticalName property which is set to a unique identifier in CI. Otherwise default to 'VerticalManifest'. -->
-    <MergedAssetManifestOutputPath>$(ArtifactsAssetManifestsDir)$([MSBuild]::ValueOrDefault('$(VerticalName)', 'VerticalManifest')).xml</MergedAssetManifestOutputPath>
-    <ArtifactsStagingDir Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(ArtifactsDir)staging</ArtifactsStagingDir>
+    <!-- Respect the VerticalName property which is set to a unique identifier in CI.
+         Don't use that when building source-only to allow the build to find the previously built manifest file regardless of the vertical name.
+         Default to VerticalManifest.xml. -->
+    <MergedAssetManifestName Condition="'$(VerticalName)' != ''">$(VerticalName).xml</MergedAssetManifestName>
+    <MergedAssetManifestName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(MergedAssetManifestName)' == ''">VerticalManifest.xml</MergedAssetManifestName>
+    <MergedAssetManifestOutputPath>$(ArtifactsAssetManifestsDir)$(MergedAssetManifestName)</MergedAssetManifestOutputPath>
   </PropertyGroup>
 
 </Project>

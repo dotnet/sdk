@@ -512,6 +512,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WebTools.AspireService.Tests", "test\Microsoft.WebTools.AspireService.Tests\Microsoft.WebTools.AspireService.Tests.csproj", "{1F0B4B3C-DC88-4740-B04F-1707102E9930}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSMSBuildExtensions", "src\VSMSBuildExtensions\VSMSBuildExtensions.proj", "{D9617F63-15F4-4CA2-8ECF-728A94B45D82}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.DotNet.HotReload.Agent", "src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.shproj", "{418B10BD-CA42-49F3-8F4A-D8CC90C8A17D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Package", "src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.Package.csproj", "{2FF79F82-60C1-349A-4726-7783D5A6D5DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -971,6 +974,10 @@ Global
 		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1149,6 +1156,8 @@ Global
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{D9617F63-15F4-4CA2-8ECF-728A94B45D82} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
+		{418B10BD-CA42-49F3-8F4A-D8CC90C8A17D} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
+		{2FF79F82-60C1-349A-4726-7783D5A6D5DF} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
@@ -1156,7 +1165,9 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{03c5a84a-982b-4f38-ac73-ab832c645c4a}*SharedItemsImports = 5
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{0a3c9afd-f6e6-4a5d-83fb-93bf66732696}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{1bbfa19c-03f0-4d27-9d0d-0f8172642107}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{1f0b4b3c-dc88-4740-b04f-1707102e9930}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{418b10bd-ca42-49f3-8f4a-d8cc90c8a17d}*SharedItemsImports = 13
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{445efbd5-6730-4f09-943d-278e77501ffd}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{94c8526e-dcc2-442f-9868-3dd0ba2688be}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{9d36039f-d0a1-462f-85b4-81763c6b02cb}*SharedItemsImports = 13

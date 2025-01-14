@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
         <source>Using workload version {0}, which was specified in the global.json file at {1}.</source>
-        <target state="needs-review-translation">Обнаружена версия рабочей нагрузки {0}, закрепленная в файле global.json по адресу {1}.</target>
+        <target state="translated">Использование версии рабочей нагрузки {0}, указанной в файле global.json в {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">

@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable IDE0240
-#nullable enable
-#pragma warning restore IDE0240
-
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
@@ -234,10 +230,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 return comparison;
             }
 
-            var modifiedFirst = "1.1.1" + (firstDash == first.Length ? string.Empty : first.Substring(firstDash));
-            var modifiedSecond = "1.1.1" + (secondDash == second.Length ? string.Empty : second.Substring(secondDash));
+            var modifiedFirst = new ReleaseVersion(1, 1, 1, firstDash == first.Length ? null : first.Substring(firstDash));
+            var modifiedSecond = new ReleaseVersion(1, 1, 1, secondDash == second.Length ? null : second.Substring(secondDash));
 
-            return new ReleaseVersion(modifiedFirst).CompareTo(new ReleaseVersion(modifiedSecond));
+            return modifiedFirst.CompareTo(modifiedSecond);
         }
 
         void ThrowExceptionIfManifestsNotAvailable()

@@ -34,8 +34,13 @@ partial class CreateNewImage
     /// The base image tag.
     /// Ex: 6.0
     /// </summary>
-    [Required]
     public string BaseImageTag { get; set; }
+
+    /// <summary>
+    /// The base image digest.
+    /// Ex: sha256:12345...
+    /// </summary>
+    public string BaseImageDigest { get; set; }
 
     /// <summary>
     /// The registry to push to.
@@ -174,6 +179,9 @@ partial class CreateNewImage
     public string GeneratedArchiveOutputPath { get; set; }
 
     [Output]
+    public string GeneratedContainerMediaType { get; set; }
+
+    [Output]
     public ITaskItem[] GeneratedContainerNames { get; set; }
 
     public CreateNewImage()
@@ -184,6 +192,7 @@ partial class CreateNewImage
         BaseRegistry = "";
         BaseImageName = "";
         BaseImageTag = "";
+        BaseImageDigest = "";
         OutputRegistry = "";
         ArchiveOutputPath = "";
         Repository = "";
@@ -208,6 +217,7 @@ partial class CreateNewImage
         GeneratedContainerManifest = "";
         GeneratedContainerDigest = "";
         GeneratedArchiveOutputPath = "";
+        GeneratedContainerMediaType = "";
         GeneratedContainerNames = Array.Empty<ITaskItem>();
 
         GenerateLabels = false;
