@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
-        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <target state="translated">Es kann keine Workloadversion mithilfe der Option --version angegeben werden, es können jedoch auch Versionen angegeben werden, die mithilfe workload@version Syntax installiert werden sollen.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="needs-review-translation">Die Option {0} kann nicht verwendet werden, wenn die Workloadversion in global.json angegeben ist.  Entfernen Sie die Option {0}, oder entfernen Sie das WorkloadVersion-Element aus {1}.</target>
+        <target state="translated">Die Option {0} kann nicht verwendet werden, wenn die workloadVersion in global.json angegeben ist.  Entfernen Sie die Option {0}, oder entfernen Sie das workloadVersion-Element aus {1}.</target>
         <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
@@ -399,7 +399,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="needs-review-translation">Aktualisieren Sie auf die angegebene Workloadversion.</target>
+        <target state="translated">Eine Workloadversion zum Anzeigen oder mindestens eine Workload und deren Versionen, die mit dem Zeichen "@" verknüpft sind.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

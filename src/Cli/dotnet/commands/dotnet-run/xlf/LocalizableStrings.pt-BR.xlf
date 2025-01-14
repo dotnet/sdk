@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
         <source>Do not use arguments specified in launch profile to run the application.</source>
-        <target state="new">Do not use arguments specified in launch profile to run the application.</target>
+        <target state="translated">Não use argumentos especificados no perfil de inicialização para executar o aplicativo.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
