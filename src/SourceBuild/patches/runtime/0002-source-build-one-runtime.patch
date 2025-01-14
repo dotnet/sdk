@@ -6,7 +6,7 @@ Backport: https://github.com/dotnet/runtime/pull/111415
 
 ---
 diff --git a/eng/Subsets.props b/eng/Subsets.props
-index e6c1acda518..f8ab599e873 100644
+index 445ec9865a12f..6d8af8f493740 100644
 --- a/eng/Subsets.props
 +++ b/eng/Subsets.props
 @@ -572,15 +572,27 @@
@@ -42,3 +42,43 @@ index e6c1acda518..f8ab599e873 100644
            </PropertyGroup>
  
            <ItemGroup>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
+index 2fb9978743ab8..928ddb99bc519 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
+@@ -1,5 +1,12 @@
+-<Project Sdk="Microsoft.NET.Sdk">
+-  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++<Project>
++  <PropertyGroup>
++    <OutDirName Condition="'$(TargetCrossRid)' != ''">monocrossaot-pack.$(TargetCrossRid)</OutDirName>
++    <OutDirName Condition="'$(TargetCrossRid)' == ''">monocrossaot-pack.restore</OutDirName>
++    <RestoreOutputPath>$([System.IO.Path]::GetFullPath('$(ArtifactsObjDir)monocrossaot-pack.restore\'))</RestoreOutputPath>
++    <ProjectAssetsFile>$(RestoreOutputPath)\project.assets.json</ProjectAssetsFile>
++  </PropertyGroup>
++  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
++  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
+ 
+   <PropertyGroup>
+     <SkipValidatePackage>true</SkipValidatePackage>
+@@ -56,4 +63,6 @@
+     <Error Condition="!Exists('$(AotCompilerPath)$(AotCompilerFileName)')" Text="Cross compiler not found in $(AotCompilerPath). MonoAotCrossDir=$(MonoAotCrossDir)" />
+   </Target>
+ 
++  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
++  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+ </Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj b/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj
+index 4fbd851460c3a..d60cb5bd62a4d 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj
+@@ -16,8 +16,8 @@
+     <MonoAotTargetRids Include="$(MonoAotTargets.Split(';'))" Properties="TargetCrossRid=%(Identity);RealRuntimeBinDir=$(RuntimeBinDir)" />
+     <ProjectReference Include="@(MonoAotTargetRids->'$(MSBuildThisFileDirectory)Microsoft.NETCore.App.MonoCrossAOT.sfxproj')" />
+   </ItemGroup>
+-
+   <ItemGroup Condition="'$(MSBuildRestoreSessionId)' != ''">
+     <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.NETCore.App.MonoCrossAOT.sfxproj" />
+   </ItemGroup>
++
+ </Project>
