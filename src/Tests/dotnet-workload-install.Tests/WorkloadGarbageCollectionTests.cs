@@ -343,7 +343,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         private void CreateInstallState(string featureBand, string installStateContents)
         {
-            var installStateFolder = Path.Combine(_dotnetRoot!, "metadata", "workloads", featureBand, "InstallState");
+            var installStateFolder = Path.Combine(_dotnetRoot!, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), featureBand, "InstallState");
             Directory.CreateDirectory(installStateFolder);
 
             string installStatePath = Path.Combine(installStateFolder, "default.json");
