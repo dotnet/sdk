@@ -19,7 +19,7 @@
 			<!-- <HintPath>C:\code\testfx\artifacts\bin\Microsoft.Testing.Platform\Debug\net8.0\Microsoft.Testing.Platform.dll</HintPath> -->
 		<!-- </Reference> -->
 		
-		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformPackageVersion)" />
+		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
 
 	</ItemGroup>
 </Project>
