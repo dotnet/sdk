@@ -119,7 +119,10 @@ namespace Microsoft.DotNet.Watch
                         anyFailure = true;
                     }
 
-                    ReportLog(reporter, data.Log.Select(entry => (entry.Message, (AgentMessageSeverity)entry.Severity)));
+                    foreach (var entry in data.Log)
+                    {
+                        ReportLogEntry(reporter, entry.Message, (AgentMessageSeverity)entry.Severity);
+                    }
                 },
                 cancellationToken);
 

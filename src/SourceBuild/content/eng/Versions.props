@@ -23,20 +23,21 @@
       of a .NET major or minor release, prebuilts may be needed. When the release is mature, prebuilts
       are not necessary, and this property is removed from the file.
     -->
-    <PrivateSourceBuiltSdkVersion>10.0.100-alpha.1.24612.1</PrivateSourceBuiltSdkVersion>
-    <PrivateSourceBuiltArtifactsVersion>10.0.100-alpha.1.24612.1</PrivateSourceBuiltArtifactsVersion>
-    <PrivateSourceBuiltPrebuiltsVersion>0.1.0-10.0.100-7</PrivateSourceBuiltPrebuiltsVersion>
+    <PrivateSourceBuiltSdkVersion>10.0.100-alpha.1.25061.1</PrivateSourceBuiltSdkVersion>
+    <PrivateSourceBuiltArtifactsVersion>10.0.100-alpha.1.25061.1</PrivateSourceBuiltArtifactsVersion>
     <!-- command-line-api dependencies -->
     <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
     <!-- msbuild dependencies -->
-    <MicrosoftBuildVersion>17.8.3</MicrosoftBuildVersion>
+    <MicrosoftBuildVersion>17.12.6</MicrosoftBuildVersion>
+    <!-- nuget dependencies -->
+    <NuGetProtocolVersion>6.12.1</NuGetProtocolVersion>
+    <NuGetProjectModelVersion>6.12.1</NuGetProjectModelVersion>
     <!-- runtime dependencies -->
-    <MicrosoftExtensionsFileSystemGlobbingVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>8.0.0</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingVersion>8.0.0</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>9.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0</MicrosoftExtensionsLoggingVersion>
     <!-- external dependencies -->
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
-    <NuGetProtocolVersion>6.9.1</NuGetProtocolVersion>
     <OctokitVersion>10.0.0</OctokitVersion>
   </PropertyGroup>
 </Project>
