@@ -68,6 +68,24 @@ index 2fb9978743ab8..928ddb99bc519 100644
 +  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
 +  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
  </Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj
+index 5101d093beb13..336574ffe10fc 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj
+@@ -28,9 +28,12 @@
+           AfterTargets="GetFilesToPackage">
+     <ItemGroup>
+       <!-- ILC needs the symbols next to the binaries -->
+-      <FilesToPackage Update="@(FilesToPackage->WithMetadataValue('IsSymbolFile', 'true'))">
++      <FilesToPackage Condition="'%(FilesToPackage.IsSymbolFile)' == 'true'">
+         <IncludeAlways>true</IncludeAlways>
+       </FilesToPackage>
++      <FilesToPackage Condition="'%(Filename)%(Extension)' == 'nonportable.txt'">
++        <ExcludeFromDataFiles>true</ExcludeFromDataFiles>
++      </FilesToPackage>
+     </ItemGroup>
+   </Target>
+ </Project>
 diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj b/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj
 index 4fbd851460c3a..d60cb5bd62a4d 100644
 --- a/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj
