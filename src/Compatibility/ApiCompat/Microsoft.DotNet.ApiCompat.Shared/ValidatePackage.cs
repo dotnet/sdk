@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.PackageValidation;
@@ -23,6 +24,7 @@ namespace Microsoft.DotNet.ApiCompat
             bool enableRuleAttributesMustMatch,
             string[]? excludeAttributesFiles,
             bool enableRuleCannotChangeParameterName,
+            string neutralLanguage,
             string? packagePath,
             bool runApiCompat,
             bool enableStrictModeForCompatibleTfms,
@@ -34,6 +36,22 @@ namespace Microsoft.DotNet.ApiCompat
             IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences,
             string[]? baselinePackageFrameworksToIgnore)
         {
+            // When generating the suppression file and baselining all errors, change the resource language
+            // to neutral. This guarantees that suppression files aren't language specific.
+            if (generateSuppressionFile)
+            {
+                CultureInfo neutralLanguageCultureInfo = new(neutralLanguage);
+                Resources.Culture = neutralLanguageCultureInfo;
+                CommonResources.Culture = neutralLanguageCultureInfo;
+                PackageValidation.ResourceSingleton.ChangeCulture(neutralLanguageCultureInfo);
+            }
+
+            // If a runtime graph is provided, parse and use it for asset selection during the in-memory package construction.
+            if (runtimeGraph != null)
+            {
+                Package.InitializeRuntimeGraph(runtimeGraph);
+            }
+
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
                 () => SuppressionFileHelper.CreateSuppressionEngine(suppressionFiles, noWarn, generateSuppressionFile),
@@ -42,12 +60,6 @@ namespace Microsoft.DotNet.ApiCompat
                     enableRuleCannotChangeParameterName),
                 respectInternals,
                 excludeAttributesFiles);
-
-            // If a runtime graph is provided, parse and use it for asset selection during the in-memory package construction.
-            if (runtimeGraph != null)
-            {
-                Package.InitializeRuntimeGraph(runtimeGraph);
-            }
 
             // Create the in-memory representation of the passed in package path
             Package package = Package.Create(packagePath, packageAssemblyReferences);
