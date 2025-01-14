@@ -5,7 +5,7 @@
   <PropertyGroup Label="Repo version information">
     <VersionMajor>9</VersionMajor>
     <VersionMinor>0</VersionMinor>
-    <VersionSDKMinor>2</VersionSDKMinor>
+    <VersionSDKMinor>3</VersionSDKMinor>
     <VersionFeature>00</VersionFeature>
     <!-- This property powers the SdkAnalysisLevel property in end-user MSBuild code.
          It should always be the hundreds-value of the current SDK version, never any
