@@ -65,11 +65,18 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
+
+            //  Filter out transitive framework references.  Normally they wouldn't be passed to this task, but in Visual Studio design-time builds
+            //  the ResolvePackageAssets and AddTransitiveFrameworkReferences targets may have already run.  Filtering these references out should
+            //  avoid a bug similar to https://github.com/dotnet/sdk/issues/14641
+            var filteredFrameworkReferences = FrameworkReferences.Where(
+                i => i.GetMetadata("IsTransitiveFrameworkReference") is string transitiveVal && !transitiveVal.Equals("true", StringComparison.OrdinalIgnoreCase)).ToList();
+
             CacheKey key = new()
             {
                 TargetFrameworkIdentifier = TargetFrameworkIdentifier,
                 TargetFrameworkVersion = TargetFrameworkVersion,
-                FrameworkReferences = FrameworkReferences.Select(i => i.ItemSpec).ToHashSet()
+                FrameworkReferences = filteredFrameworkReferences.Select(i => i.ItemSpec).ToHashSet()
             };
 
             //  Cache framework package values per build
@@ -84,7 +91,7 @@ namespace Microsoft.NET.Build.Tasks
 
             Dictionary<string, NuGetVersion> packagesToPrune = new();
 
-            var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, FrameworkReferences.Select(fr => fr.ItemSpec).ToArray(), TargetingPackRoot)
+            var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, filteredFrameworkReferences.Select(fr => fr.ItemSpec).ToArray(), TargetingPackRoot)
                 .SelectMany(packages => packages);
 
             foreach (var kvp in frameworkPackages)

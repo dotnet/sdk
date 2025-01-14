@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -299,6 +300,56 @@ namespace Microsoft.NET.Build.Tests
             else
             {
                 lockFileTarget.Libraries.Should().Contain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        [Fact]
+        public void TransitiveFrameworkReferencesDoNotAffectPruning()
+        {
+            var referencedProject = new TestProject("ReferencedProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = false
+            };
+            referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "8.0.0"));
+            referencedProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
+
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            new BuildCommand(testAsset).Execute().Should().Pass();
+
+            var getItemsCommand1 = new MSBuildCommand(testAsset, "AddPrunePackageReferences");
+            var itemsResult1 = getItemsCommand1.Execute("-getItem:PrunePackageReference");
+            itemsResult1.Should().Pass();
+
+            var items1 = ParseItemsJson(itemsResult1.StdOut);
+
+            var getItemsCommand2 = new MSBuildCommand(testAsset, "ResolvePackageAssets;AddTransitiveFrameworkReferences;AddPrunePackageReferences");
+            var itemsResult2 = getItemsCommand2.Execute("-getItem:PrunePackageReference");
+            itemsResult2.Should().Pass();
+
+            var items2 = ParseItemsJson(itemsResult2.StdOut);
+
+            items2.Should().BeEquivalentTo(items1);
+
+            static List<KeyValuePair<string,string>> ParseItemsJson(string json)
+            {
+                List<KeyValuePair<string, string>> ret = new();
+                var root = JsonNode.Parse(json);
+                var items = (JsonArray) root["Items"]["PrunePackageReference"];
+                foreach (var item in items)
+                {
+                    ret.Add(new KeyValuePair<string, string>((string)item["Identity"], (string)item["Version"]));
+                }
+                return ret;
             }
         }
     }
