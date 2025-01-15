@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
@@ -57,7 +57,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             foreach (var line in lines)
             {
-
                 // start trimming whitespace and anything but the first word with the start of the table
                 if (line.StartsWith("Template Name", StringComparison.Ordinal))
                 {
