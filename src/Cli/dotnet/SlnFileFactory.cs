@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Tools.Common
         public static string GetSolutionFileFullPath(string slnFileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
         {
             // Throw error if slnFileOrDirectory is an invalid path
-            if (string.IsNullOrWhiteSpace(slnFileOrDirectory))
+            if (string.IsNullOrWhiteSpace(slnFileOrDirectory) || slnFileOrDirectory.IndexOfAny(Path.GetInvalidPathChars()) != -1)
             {
                 throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory);
             }
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tools.Common
                 filteredSolutionJsonElement = jsonElement.GetProperty("solution");
                 originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
-                if (!File.Exists(originalSolutionPath))
+                if (!File.Exists(originalSolutionPathAbsolute))
                 {
                     throw new Exception();
                 }
