@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.ApiCompat
             _apiCompatRunner = new Lazy<IApiCompatRunner>(() =>
             {
                 AccessibilitySymbolFilter accessibilitySymbolFilter = new(respectInternals);
-                SymbolEqualityComparer symbolEqualityComparer = new();
+                SymbolEqualityComparer symbolEqualityComparer = new(respectInternals);
 
                 // The attribute data symbol filter is a composite that contains both the accessibility
                 // symbol filter and the doc id symbol filter.

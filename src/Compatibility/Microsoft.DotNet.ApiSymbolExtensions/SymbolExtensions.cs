@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     public static class SymbolExtensions
     {
         private static readonly SymbolDisplayFormat s_comparisonFormat;
-        public static readonly SymbolDisplayFormat DisplayFormat;
+        private static readonly SymbolDisplayFormat s_displayFormat;
 
         static SymbolExtensions()
         {
@@ -17,7 +17,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             SymbolDisplayFormat format = SymbolDisplayFormat.CSharpErrorMessageFormat;
             format = format.WithMemberOptions(format.MemberOptions | SymbolDisplayMemberOptions.IncludeType);
 
-            DisplayFormat = format.WithParameterOptions(format.ParameterOptions | SymbolDisplayParameterOptions.IncludeExtensionThis);
+            format.WithGenericsOptions(format.GenericsOptions | SymbolDisplayGenericsOptions.None);
+
+            s_displayFormat = format.WithParameterOptions(format.ParameterOptions | SymbolDisplayParameterOptions.IncludeExtensionThis);
 
             // Remove ? annotations from reference types as we want to map the APIs without nullable annotations
             // and have a special rule to catch those differences.
@@ -32,10 +34,39 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             s_comparisonFormat = format.WithParameterOptions((format.ParameterOptions | SymbolDisplayParameterOptions.IncludeExtensionThis) & ~SymbolDisplayParameterOptions.IncludeParamsRefOut);
         }
 
-        public static string ToComparisonDisplayString(this ISymbol symbol) =>
-            symbol.ToDisplayString(s_comparisonFormat)
+        public static string ToComparisonDisplayString(this ISymbol symbol, bool includeInternalSymbols)
+        {
+            SymbolDisplayFormat comparisonFormatToUse = s_comparisonFormat;
+
+            // HACK: Omit type parameters from display string if all of them are internal.
+            if (symbol is INamedTypeSymbol typeSymbol)
+            {
+                if (typeSymbol.TypeParameters.All(t => !t.IsVisibleOutsideOfAssembly(includeInternalSymbols)))
+                {
+                    comparisonFormatToUse = comparisonFormatToUse.WithGenericsOptions(SymbolDisplayGenericsOptions.None);
+                }
+            }
+
+            return symbol.ToDisplayString(comparisonFormatToUse)
                   .Replace("System.IntPtr", "nint") // Treat IntPtr and nint as the same
                   .Replace("System.UIntPtr", "nuint"); // Treat UIntPtr and nuint as the same
+        }
+
+        public static string ToDisplayStringWithAccessibility(this ISymbol symbol, bool includeInternalSymbols)
+        {
+            SymbolDisplayFormat displayFormatToUse = s_displayFormat;
+
+            // HACK: Omit type parameters from display string if all of them are internal.
+            if (symbol is INamedTypeSymbol typeSymbol)
+            {
+                if (typeSymbol.TypeParameters.All(t => !t.IsVisibleOutsideOfAssembly(includeInternalSymbols)))
+                {
+                    displayFormatToUse = displayFormatToUse.WithGenericsOptions(SymbolDisplayGenericsOptions.None);
+                }
+            }
+
+            return symbol.ToDisplayString(displayFormatToUse);
+        }
 
         public static IEnumerable<ITypeSymbol> GetAllBaseTypes(this ITypeSymbol type)
         {

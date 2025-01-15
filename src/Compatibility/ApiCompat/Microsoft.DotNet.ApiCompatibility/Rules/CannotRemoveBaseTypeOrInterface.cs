@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 leftMetadata,
                 rightMetadata,
                 DiagnosticIds.CannotRemoveBaseType,
-                string.Format(Resources.CannotRemoveBaseType, left.ToDisplayString(SymbolExtensions.DisplayFormat), leftBaseType.ToDisplayString(SymbolExtensions.DisplayFormat), rightName, leftName),
+                string.Format(Resources.CannotRemoveBaseType, left.ToDisplayStringWithAccessibility(_settings.IncludeInternalSymbols), leftBaseType.ToDisplayStringWithAccessibility(_settings.IncludeInternalSymbols), rightName, leftName),
                 DifferenceType.Changed,
                 right));
         }
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         leftMetadata,
                         rightMetadata,
                         DiagnosticIds.CannotRemoveBaseInterface,
-                        string.Format(Resources.CannotRemoveBaseInterface, left.ToDisplayString(SymbolExtensions.DisplayFormat), leftInterface.ToDisplayString(SymbolExtensions.DisplayFormat), rightName, leftName),
+                        string.Format(Resources.CannotRemoveBaseInterface, left.ToDisplayStringWithAccessibility(_settings.IncludeInternalSymbols), leftInterface.ToDisplayStringWithAccessibility(_settings.IncludeInternalSymbols), rightName, leftName),
                         DifferenceType.Changed,
                         right));
                     return;

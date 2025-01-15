@@ -334,5 +334,31 @@ namespace CompatTests
 
             Assert.Empty(differ.GetDifferences(left, right));
         }
+
+        [Fact]
+        public void InternalGenericTypeArgumentNotReported()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  public interface IMyInterface<T> { }
+  public class MyClass : IMyInterface<Foo> { }
+  internal class Foo { }
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+  public interface IMyInterface<T> { }
+  public class MyClass : IMyInterface<Bar> { }
+  internal class Bar { }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            Assert.Empty(differ.GetDifferences(left, right));
+        }
     }
 }

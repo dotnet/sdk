@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.CannotSealType,
-                    string.Format(GetResourceStringForTypeState(right), right.ToDisplayString(SymbolExtensions.DisplayFormat), rightMetadata, leftMetadata),
+                    string.Format(GetResourceStringForTypeState(right), right.ToDisplayStringWithAccessibility(_settings.IncludeInternalSymbols), rightMetadata, leftMetadata),
                     DifferenceType.Changed,
                     right));
             }
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.CannotSealType,
-                    string.Format(GetResourceStringForTypeState(left), left.ToDisplayString(SymbolExtensions.DisplayFormat), leftMetadata, rightMetadata),
+                    string.Format(GetResourceStringForTypeState(left), left.ToDisplayStringWithAccessibility(_settings.IncludeInternalSymbols), leftMetadata, rightMetadata),
                     DifferenceType.Changed,
                     left));
             }

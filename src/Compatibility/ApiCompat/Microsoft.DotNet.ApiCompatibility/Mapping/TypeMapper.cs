@@ -158,6 +158,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
             member is IFieldSymbol &&
             member.Name == "value__" &&
             // When running without references, Roslyn doesn't set the type kind as enum. Compare by name instead.
-            member.ContainingType.BaseType?.ToComparisonDisplayString() == "System.Enum";
+            member.ContainingType.BaseType?.ToComparisonDisplayString(includeInternalSymbols: false) == "System.Enum";
     }
 }

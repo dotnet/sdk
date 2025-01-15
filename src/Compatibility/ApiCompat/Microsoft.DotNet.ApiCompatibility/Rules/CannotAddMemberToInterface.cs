@@ -11,8 +11,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class CannotAddMemberToInterface : IRule
     {
+        private readonly IRuleSettings _settings;
+
         public CannotAddMemberToInterface(IRuleSettings settings, IRuleRegistrationContext context)
         {
+            _settings = settings;
+
             // StrictMode scenario are handled by the MembersMustExist rule.
             if (!settings.StrictMode)
             {
@@ -40,7 +44,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         leftMetadata,
                         rightMetadata,
                         DiagnosticIds.CannotAddMemberToInterface,
-                        string.Format(Resources.CannotAddMemberToInterface, right.ToDisplayString(SymbolExtensions.DisplayFormat), rightMetadata, leftMetadata),
+                        string.Format(Resources.CannotAddMemberToInterface, right.ToDisplayStringWithAccessibility(_settings.IncludeInternalSymbols), rightMetadata, leftMetadata),
                         DifferenceType.Added,
                         right));
                 }

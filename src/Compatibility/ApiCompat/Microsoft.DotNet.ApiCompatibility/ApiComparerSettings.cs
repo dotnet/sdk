@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.ApiCompatibility
             bool withReferences = false)
         {
             SymbolFilter = symbolFilter ?? new AccessibilitySymbolFilter(includeInternalSymbols);
-            SymbolEqualityComparer = symbolEqualityComparer ?? new Comparing.SymbolEqualityComparer();
+            SymbolEqualityComparer = symbolEqualityComparer ?? new Comparing.SymbolEqualityComparer(includeInternalSymbols);
             AttributeDataSymbolFilter = attributeDataSymbolFilter ?? new CompositeSymbolFilter();
             AttributeDataEqualityComparer = attributeDataEqualityComparer ?? new AttributeDataEqualityComparer(SymbolEqualityComparer, new TypedConstantEqualityComparer(SymbolEqualityComparer));
             IncludeInternalSymbols = includeInternalSymbols;

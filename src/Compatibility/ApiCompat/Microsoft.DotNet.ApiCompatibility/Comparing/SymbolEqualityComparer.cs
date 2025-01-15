@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Comparing
     /// <summary>
     /// Defines methods to support the comparison of <see cref="ISymbol"/> for equality.
     /// </summary>
-    public class SymbolEqualityComparer : IEqualityComparer<ISymbol>
+    public class SymbolEqualityComparer(bool includeInternalSymbols) : IEqualityComparer<ISymbol>
     {
         /// <inheritdoc />
         public bool Equals(ISymbol? x, ISymbol? y) =>
@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Comparing
         /// <inheritdoc />
         public int GetHashCode([DisallowNull] ISymbol obj) => GetKey(obj).GetHashCode();
 
-        private static string GetKey(ISymbol symbol)
+        private string GetKey(ISymbol symbol)
         {
             if (symbol is IMethodSymbol method)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Comparing
                 return assembly.Identity.Name;
             }
 
-            return symbol.ToComparisonDisplayString();
+            return symbol.ToComparisonDisplayString(includeInternalSymbols);
         }
     }
 }
