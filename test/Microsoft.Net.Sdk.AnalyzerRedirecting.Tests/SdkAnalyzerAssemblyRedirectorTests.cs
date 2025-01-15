@@ -5,30 +5,50 @@ namespace Microsoft.Net.Sdk.AnalyzerRedirecting.Tests;
 
 public class SdkAnalyzerAssemblyRedirectorTests(ITestOutputHelper log) : SdkTest(log)
 {
-    [Fact]
-    public void SameMajorMinorVersion()
+    [Theory]
+    [InlineData("9.0.0-preview.5.24306.11", "9.0.0-preview.7.24406.2")]
+    [InlineData("9.0.100", "9.0.200")]
+    [InlineData("9.0.100", "9.0.101")]
+    public void SameMajorMinorVersion(string a, string b)
     {
         TestDirectory testDir = _testAssetsManager.CreateTestDirectory(identifier: "RuntimeAnalyzers");
 
         var vsDir = Path.Combine(testDir.Path, "vs");
-        var vsAnalyzerPath = FakeDll(vsDir, @"AspNetCoreAnalyzers\9.0.0-preview.5.24306.11\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
-        var sdkAnalyzerPath = FakeDll(testDir.Path, @"sdk\packs\Microsoft.AspNetCore.App.Ref\9.0.0-preview.7.24406.2\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
+        var vsAnalyzerPath = FakeDll(vsDir, @$"AspNetCoreAnalyzers\{a}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
+        var sdkAnalyzerPath = FakeDll(testDir.Path, @$"sdk\packs\Microsoft.AspNetCore.App.Ref\{b}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
 
         var resolver = new SdkAnalyzerAssemblyRedirector(vsDir);
         var redirected = resolver.RedirectPath(sdkAnalyzerPath);
         redirected.Should().Be(vsAnalyzerPath);
     }
 
-    [Theory]
-    [InlineData("8.0.100")]
-    [InlineData("9.1.100")]
-    public void DifferentMajorMinorVersion(string version)
+    [Fact]
+    public void DifferentPathSuffix()
     {
         TestDirectory testDir = _testAssetsManager.CreateTestDirectory(identifier: "RuntimeAnalyzers");
 
         var vsDir = Path.Combine(testDir.Path, "vs");
-        FakeDll(vsDir, @$"AspNetCoreAnalyzers\{version}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
-        var sdkAnalyzerPath = FakeDll(testDir.Path, @"sdk\packs\Microsoft.AspNetCore.App.Ref\9.0.0-preview.7.24406.2\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
+        FakeDll(vsDir, @"AspNetCoreAnalyzers\9.0.0-preview.5.24306.11\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
+        var sdkAnalyzerPath = FakeDll(testDir.Path, @"sdk\packs\Microsoft.AspNetCore.App.Ref\9.0.0-preview.7.24406.2\analyzers\dotnet\vb", "Microsoft.AspNetCore.App.Analyzers");
+
+        var resolver = new SdkAnalyzerAssemblyRedirector(vsDir);
+        var redirected = resolver.RedirectPath(sdkAnalyzerPath);
+        redirected.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("8.0.100", "9.0.0-preview.7.24406.2")]
+    [InlineData("9.1.100", "9.0.0-preview.7.24406.2")]
+    [InlineData("9.0.100", "9.1.100")]
+    [InlineData("9.0.100", "10.0.100")]
+    [InlineData("9.9.100", "9.10.100")]
+    public void DifferentMajorMinorVersion(string a, string b)
+    {
+        TestDirectory testDir = _testAssetsManager.CreateTestDirectory(identifier: "RuntimeAnalyzers");
+
+        var vsDir = Path.Combine(testDir.Path, "vs");
+        FakeDll(vsDir, @$"AspNetCoreAnalyzers\{a}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
+        var sdkAnalyzerPath = FakeDll(testDir.Path, @$"sdk\packs\Microsoft.AspNetCore.App.Ref\{b}\analyzers\dotnet\cs", "Microsoft.AspNetCore.App.Analyzers");
 
         var resolver = new SdkAnalyzerAssemblyRedirector(vsDir);
         var redirected = resolver.RedirectPath(sdkAnalyzerPath);
