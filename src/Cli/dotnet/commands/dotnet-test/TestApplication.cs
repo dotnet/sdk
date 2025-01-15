@@ -34,8 +34,6 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<EventArgs> Run;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
-        private const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
-        private const string DLLExtension = "dll";
 
         public Module Module => _module;
 
@@ -212,7 +210,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (VSTestTrace.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+                VSTestTrace.SafeWriteTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
             }
 
             var process = Process.Start(processStartInfo);
@@ -382,12 +380,14 @@ namespace Microsoft.DotNet.Cli
             if (!string.IsNullOrEmpty(_module.ProjectPath))
             {
                 builder.Append($"Project: {_module.ProjectPath}");
-            };
+            }
+            ;
 
             if (!string.IsNullOrEmpty(_module.TargetFramework))
             {
                 builder.Append($"Target Framework: {_module.TargetFramework}");
-            };
+            }
+            ;
 
             return builder.ToString();
         }

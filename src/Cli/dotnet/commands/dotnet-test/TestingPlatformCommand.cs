@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Cli
                 }
 
                 _args = [.. parseResult.UnmatchedTokens];
-                _msBuildHandler = new(_args, _actionQueue, degreeOfParallelism);
+                _msBuildHandler = new(_args, _actionQueue, degreeOfParallelism, _output);
                 _testModulesFilterHandler = new(_args, _actionQueue);
 
                 if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Cli
 
                     if (!_msBuildHandler.EnqueueTestApplications())
                     {
-                        _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription, new SystemConsoleColor() { ConsoleColor = ConsoleColor.Red });
+                        _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
                         CompleteRun();
                         return ExitCodes.GenericFailure;
                     }

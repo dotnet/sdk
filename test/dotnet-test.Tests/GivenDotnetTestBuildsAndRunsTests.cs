@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(1);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(Constants.Debug)]
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(1);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(Constants.Debug)]
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(0);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(Constants.Debug)]
@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(1);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(Constants.Debug)]
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(1);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(Constants.Debug)]
@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("Test application(s) that support VSTest are not supported.");
             }
 
-            result.ExitCode.Should().Be(1);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(Constants.Debug)]
@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("Specify a project or solution file. The current working directory does not contain a project or solution file.");
             }
 
-            result.ExitCode.Should().Be(1);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(Constants.Debug)]
@@ -210,7 +210,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("Specify a project or solution file. The current working directory does not contain a project or solution file.");
             }
 
-            result.ExitCode.Should().Be(1);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(Constants.Debug)]
@@ -232,7 +232,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("Specify which project or solution file to use because this folder contains more than one project or solution file.");
             }
 
-            result.ExitCode.Should().Be(1);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
     }
 }
