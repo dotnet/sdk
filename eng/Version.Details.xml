@@ -642,9 +642,5 @@
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>260ef988f3e05e51c390cf77cbd4acf21b10c609</Sha>
     </Dependency>
-		<Dependency Name="Microsoft.Testing.Platform" Version="1.6.0-preview.25059.14">
-      <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>53488cf463d33882113ca7a6fbbb6f93e06251df</Sha>
-    </Dependency>
   </ToolsetDependencies>
 </Dependencies>
