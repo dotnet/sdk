@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                             ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
                             : fullPath);
                 });
-                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).Wait();
+                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
                 return 0;
             }
             catch (Exception ex) when (ex is not GracefulException)
@@ -55,10 +55,6 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 if (ex is SolutionException || ex.InnerException is SolutionException)
                 {
                     throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
-                }
-                if (ex.InnerException is GracefulException)
-                {
-                    throw ex.InnerException;
                 }
                 throw new GracefulException(ex.Message, ex);
             }
