@@ -6,5 +6,4 @@ namespace System.CommandLine.StaticCompletions;
 /// <summary>
 /// Represents an Argument whose completions are dynamically generated and so should not be emitted in static completion scripts.
 /// </summary>
-/// <typeparam name="T"></typeparam>
 public interface IDynamicArgument;
