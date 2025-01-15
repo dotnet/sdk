@@ -210,4 +210,8 @@
   <data name="InvalidVersionForWorkload" xml:space="preserve">
     <value>Error parsing version '{1}' for workload manifest ID '{0}'</value>
   </data>
+  <data name="ManifestDoesNotExist" xml:space="preserve">
+    <value>No manifest with ID {0} exists.</value>
+  </data>
+
 </root>

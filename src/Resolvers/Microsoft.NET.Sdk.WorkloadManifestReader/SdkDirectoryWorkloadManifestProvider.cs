@@ -26,6 +26,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private WorkloadSet? _workloadSet;
         private WorkloadSet? _manifestsFromInstallState;
         private string? _installStateFilePath;
+        private bool _useManifestsFromInstallState = true;
 
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
@@ -120,11 +121,43 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _workloadSet = null;
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
-            var availableWorkloadSets = GetAvailableWorkloadSets();
+            _useManifestsFromInstallState = true;
+            var availableWorkloadSets = GetAvailableWorkloadSets(_sdkVersionBand);
+            var workloadSets80100 = GetAvailableWorkloadSets(new SdkFeatureBand("8.0.100"));
+
+            bool TryGetWorkloadSet(string workloadSetVersion, out WorkloadSet? workloadSet)
+            {
+                if (availableWorkloadSets.TryGetValue(workloadSetVersion, out workloadSet))
+                {
+                    return true;
+                }
+
+                //  Check to see if workload set is from a different feature band
+                WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
+                if (!workloadSetFeatureBand.Equals(_sdkVersionBand))
+                {
+                    var featureBandWorkloadSets = GetAvailableWorkloadSets(workloadSetFeatureBand);
+                    if (featureBandWorkloadSets.TryGetValue(workloadSetVersion, out workloadSet))
+                    {
+                        return true;
+                    }
+                }
+
+                // The baseline workload sets were merged with a fixed 8.0.100 feature band. That means they will always be here
+                // regardless of where they would otherwise belong. This is a workaround for that.
+                if (workloadSets80100.TryGetValue(workloadSetVersion, out workloadSet))
+                {
+                    return true;
+                }
+
+                workloadSet = null;
+                return false;
+            }
 
             if (_workloadSetVersionFromConstructor != null)
             {
-                if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet))
+                _useManifestsFromInstallState = false;
+                if (!TryGetWorkloadSet(_workloadSetVersionFromConstructor, out _workloadSet))
                 {
                     throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, _workloadSetVersionFromConstructor));
                 }
@@ -135,7 +168,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (_globalJsonWorkloadSetVersion != null)
                 {
-                    if (!availableWorkloadSets.TryGetValue(_globalJsonWorkloadSetVersion, out _workloadSet))
+                    _useManifestsFromInstallState = false;
+                    if (!TryGetWorkloadSet(_globalJsonWorkloadSetVersion, out _workloadSet))
                     {
                         _exceptionToThrow = new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, _globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
                         return;
@@ -143,32 +177,56 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
+            _installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
+            var installState = InstallStateContents.FromPath(_installStateFilePath);
             if (_workloadSet is null)
             {
-                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
-                if (File.Exists(installStateFilePath))
+                if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                 {
-                    var installState = InstallStateContents.FromPath(installStateFilePath);
-                    if (!string.IsNullOrEmpty(installState.WorkloadVersion))
+                    if (!TryGetWorkloadSet(installState.WorkloadVersion!, out _workloadSet))
                     {
-                        if (!availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
-                        {
-                            throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
-                        }
+                        throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, _installStateFilePath));
                     }
-
-                    //  Note: It is possible here to have both a workload set and loose manifests listed in the install state.  This might happen if there is a
-                    //  third-party workload manifest installed that's not part of the workload set
-                    _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
-                    _installStateFilePath = installStateFilePath;
                 }
+
+                //  Note: It is possible here to have both a workload set and loose manifests listed in the install state.  This might happen if there is a
+                //  third-party workload manifest installed that's not part of the workload set
+                _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
             }
 
-            if (_workloadSet == null && availableWorkloadSets.Any())
+            if (_workloadSet == null && installState.UseWorkloadSets == true && availableWorkloadSets.Any())
             {
-                var maxWorkloadSetVersion = availableWorkloadSets.Keys.Select(k => new ReleaseVersion(k)).Max()!;
+                var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
+                _useManifestsFromInstallState = false;
             }
+        }
+
+        private static int VersionCompare(string first, string second)
+        {
+            if (first.Equals(second))
+            {
+                return 0;
+            }
+
+            var firstDash = first.IndexOf('-');
+            var secondDash = second.IndexOf('-');
+            firstDash = firstDash < 0 ? first.Length : firstDash;
+            secondDash = secondDash < 0 ? second.Length : secondDash;
+
+            var firstVersion = new Version(first.Substring(0, firstDash));
+            var secondVersion = new Version(second.Substring(0, secondDash));
+
+            var comparison = firstVersion.CompareTo(secondVersion);
+            if (comparison != 0)
+            {
+                return comparison;
+            }
+
+            var modifiedFirst = "1.1.1" + (firstDash == first.Length ? string.Empty : first.Substring(firstDash));
+            var modifiedSecond = "1.1.1" + (secondDash == second.Length ? string.Empty : second.Substring(secondDash));
+
+            return new ReleaseVersion(modifiedFirst).CompareTo(new ReleaseVersion(modifiedSecond));
         }
 
         void ThrowExceptionIfManifestsNotAvailable()
@@ -236,10 +294,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             void ProbeDirectory(string manifestDirectory, string featureBand)
             {
-                (string? id, string? finalManifestDirectory, ReleaseVersion? version) = ResolveManifestDirectory(manifestDirectory);
+                (string? id, string? finalManifestDirectory, string? version) = ResolveManifestDirectory(manifestDirectory);
                 if (id != null && finalManifestDirectory != null)
                 {
-                    AddManifest(id, finalManifestDirectory, featureBand, version?.ToString() ?? Path.GetFileName(manifestDirectory));
+                    AddManifest(id, finalManifestDirectory, featureBand, version ?? Path.GetFileName(manifestDirectory));
                 }
             }
 
@@ -289,28 +347,30 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
                     }
                     AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
-                    
                 }
             }
 
-            //  Load manifests from install state
-            if (_manifestsFromInstallState != null)
+            if (_useManifestsFromInstallState)
             {
-                foreach (var kvp in _manifestsFromInstallState.ManifestVersions)
+                //  Load manifests from install state
+                if (_manifestsFromInstallState != null)
                 {
-                    var manifestSpecifier = new ManifestSpecifier(kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand);
-                    var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
-                    if (manifestDirectory == null)
+                    foreach (var kvp in _manifestsFromInstallState.ManifestVersions)
                     {
-                        throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                        var manifestSpecifier = new ManifestSpecifier(kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand);
+                        var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
+                        if (manifestDirectory == null)
+                        {
+                            throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                        }
+                        AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                     }
-                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                 }
             }
 
-            if (_knownManifestIdsAndOrder != null && _knownManifestIdsAndOrder.Keys.Any(id => !manifestIdsToManifests.ContainsKey(id)))
+            var missingManifestIds = _knownManifestIdsAndOrder?.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
+            if (missingManifestIds != null && missingManifestIds.Any())
             {
-                var missingManifestIds = _knownManifestIdsAndOrder.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
                 foreach (var missingManifestId in missingManifestIds)
                 {
                     var (manifestDir, featureBand) = FallbackForMissingManifest(missingManifestId);
@@ -321,7 +381,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            //  Return manifests in a stable order.  Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
+            //  Return manifests in a stable order. Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
             //  Then the rest of the manifests (if any) will be returned in (ordinal case-insensitive) alphabetical order.
             return manifestIdsToManifests
                 .OrderBy(kvp =>
@@ -342,7 +402,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// Given a folder that may directly include a WorkloadManifest.json file, or may have the workload manifests in version subfolders, choose the directory
         /// with the latest workload manifest.
         /// </summary>
-        private (string? id, string? manifestDirectory, ReleaseVersion? version) ResolveManifestDirectory(string manifestDirectory)
+        private (string? id, string? manifestDirectory, string? version) ResolveManifestDirectory(string manifestDirectory)
         {
             string manifestId = Path.GetFileName(manifestDirectory);
             if (_outdatedManifestIds.Contains(manifestId) ||
@@ -355,18 +415,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     .Where(dir => File.Exists(Path.Combine(dir, "WorkloadManifest.json")))
                     .Select(dir =>
                     {
-                        ReleaseVersion? releaseVersion = null;
-                        ReleaseVersion.TryParse(Path.GetFileName(dir), out releaseVersion);
-                        return (directory: dir, version: releaseVersion);
-                    })
-                    .Where(t => t.version != null)
-                    .OrderByDescending(t => t.version)
-                    .ToList();
+                        return (directory: dir, version: Path.GetFileName(dir));
+                    });
 
             //  Assume that if there are any versioned subfolders, they are higher manifest versions than a workload manifest directly in the specified folder, if it exists
             if (manifestVersionDirectories.Any())
             {
-                return (manifestId, manifestVersionDirectories.First().directory, manifestVersionDirectories.First().version);
+                var maxVersionDirectory = manifestVersionDirectories.Aggregate((d1, d2) => VersionCompare(d1.version, d2.version) > 0 ? d1 : d2);
+                return (manifestId, maxVersionDirectory.directory, maxVersionDirectory.version);
             }
             else if (File.Exists(Path.Combine(manifestDirectory, "WorkloadManifest.json")))
             {
@@ -374,7 +430,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 try
                 {
                     var manifestContents = WorkloadManifestReader.ReadWorkloadManifest(manifestId, File.OpenRead(manifestPath), manifestPath);
-                    return (manifestId, manifestDirectory, new ReleaseVersion(manifestContents.Version));
+                    return (manifestId, manifestDirectory, manifestContents.Version);
                 }
                 catch
                 { }
@@ -440,48 +496,53 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </summary>
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
         {
+            return GetAvailableWorkloadSetsInternal(null);
+        }
+
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets(SdkFeatureBand workloadSetFeatureBand)
+        {
+            return GetAvailableWorkloadSetsInternal(workloadSetFeatureBand);
+        }
+
+        Dictionary<string, WorkloadSet> GetAvailableWorkloadSetsInternal(SdkFeatureBand? workloadSetFeatureBand)
+        {
+            //  How to deal with cross-band workload sets?
             Dictionary<string, WorkloadSet> availableWorkloadSets = new Dictionary<string, WorkloadSet>();
 
             foreach (var manifestRoot in _manifestRoots.Reverse())
             {
-                //  Workload sets must match the SDK feature band, we don't support any fallback to a previous band
-                var workloadSetsRoot = Path.Combine(manifestRoot, _sdkVersionBand.ToString(), WorkloadSetsFolderName);
-                if (Directory.Exists(workloadSetsRoot))
+                if (workloadSetFeatureBand != null)
                 {
-                    foreach (var workloadSetDirectory in Directory.GetDirectories(workloadSetsRoot))
+                    //  Get workload sets for specific feature band
+                    var featureBandDirectory = Path.Combine(manifestRoot, workloadSetFeatureBand.Value.ToString());
+                    AddWorkloadSetsForFeatureBand(availableWorkloadSets, featureBandDirectory);
+                }
+                else
+                {
+                    //  Get workload sets for all feature bands 
+                    foreach (var featureBandDirectory in Directory.GetDirectories(manifestRoot))
                     {
-                        WorkloadSet? workloadSet = null;
-                        foreach (var jsonFile in Directory.GetFiles(workloadSetDirectory, "*.workloadset.json"))
-                        {
-                            var newWorkloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), _sdkVersionBand);
-                            if (workloadSet == null)
-                            {
-                                workloadSet = newWorkloadSet;
-                            }
-                            else
-                            {
-                                //  If there are multiple workloadset.json files, merge them
-                                foreach (var kvp in newWorkloadSet.ManifestVersions)
-                                {
-                                    workloadSet.ManifestVersions.Add(kvp.Key, kvp.Value);
-                                }
-                            }
-                        }
-                        if (workloadSet != null)
-                        {
-                            if (File.Exists(Path.Combine(workloadSetDirectory, "baseline.workloadset.json")))
-                            {
-                                workloadSet.IsBaselineWorkloadSet = true;
-                            }
-
-                            workloadSet.Version = Path.GetFileName(workloadSetDirectory);
-                            availableWorkloadSets[workloadSet.Version] = workloadSet;
-                        }
+                        AddWorkloadSetsForFeatureBand(availableWorkloadSets, featureBandDirectory);
                     }
                 }
             }
 
             return availableWorkloadSets;
+
+            static void AddWorkloadSetsForFeatureBand(Dictionary<string, WorkloadSet> availableWorkloadSets, string featureBandDirectory)
+            {
+                var featureBand = new SdkFeatureBand(Path.GetFileName(featureBandDirectory));
+                var workloadSetsRoot = Path.Combine(featureBandDirectory, WorkloadSetsFolderName);
+                if (Directory.Exists(workloadSetsRoot))
+                {
+                    foreach (var workloadSetDirectory in Directory.GetDirectories(workloadSetsRoot))
+                    {
+                        var workloadSetVersion = Path.GetFileName(workloadSetDirectory);
+                        var workloadSet = WorkloadSet.FromWorkloadSetFolder(workloadSetDirectory, workloadSetVersion, featureBand);
+                        availableWorkloadSets[workloadSet.Version!] = workloadSet;
+                    }
+                }
+            }
         }
 
         public string GetSdkFeatureBand()
