@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using CommandLocalizableStrings = Microsoft.DotNet.Tools.CommonLocalizableStrings;
@@ -24,10 +25,10 @@ namespace Microsoft.DotNet.Tools.Sln.List
 
         public override int Execute()
         {
-            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
+            string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
             try
             {
-                ListAllProjectsAsync(solutionFileFullPath, CancellationToken.None).Wait();
+                ListAllProjectsAsync(solutionFileFullPath);
                 return 0;
             }
             catch (Exception ex)
@@ -36,10 +37,9 @@ namespace Microsoft.DotNet.Tools.Sln.List
             }
         }
 
-        private async Task ListAllProjectsAsync(string solutionFileFullPath, CancellationToken cancellationToken)
+        private void ListAllProjectsAsync(string solutionFileFullPath)
         {
-            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
-            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+            SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
             string[] paths;
             if (_displaySolutionFolders)
             {

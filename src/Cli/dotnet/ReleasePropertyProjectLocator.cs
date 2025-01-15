@@ -155,7 +155,7 @@ namespace Microsoft.DotNet.Cli
             SolutionModel sln;
             try
             {
-                sln = SlnFileFactory.CreateFromFileOrDirectory(slnFullPath, false);
+                sln = SlnFileFactory.CreateFromFileOrDirectory(slnFullPath, false, false);
             }
             catch (GracefulException)
             {
