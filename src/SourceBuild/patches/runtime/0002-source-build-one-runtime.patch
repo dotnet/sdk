@@ -40,7 +40,7 @@ index 445ec9865a12f..d4621753cb63b 100644
 +            <_BuildHostPack Condition="'$(TargetsMobile)' != 'true' and !('$(TargetsLinuxBionic)' == 'true' and '$(TargetArchitecture)' == 'arm')">true</_BuildHostPack>
 +            <_BuildBundle Condition="'$(TargetsMobile)' != 'true' and !('$(TargetsLinuxBionic)' == 'true' and '$(TargetArchitecture)' == 'arm')">true</_BuildBundle>
            </PropertyGroup>
-
+ 
            <ItemGroup>
 @@ -591,7 +603,7 @@
              <SharedFrameworkProjectToBuild Condition="'$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\installers\dotnet-host.proj" />
@@ -51,33 +51,23 @@ index 445ec9865a12f..d4621753cb63b 100644
            </ItemGroup>
            <ItemGroup>
              <ProjectToBuild Condition="'$(NativeAotSupported)' == 'true' and '$(RuntimeFlavor)' != 'Mono' and '$(TargetsMobile)' != 'true' and '$(TargetsLinuxBionic)' != 'true'" Include="$(InstallerProjectRoot)\pkg\projects\nativeaot-packages.proj" Category="packs" />
-diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
-index 2fb9978743ab8..e6970e955b719 100644
---- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
-+++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
-@@ -1,5 +1,13 @@
--<Project Sdk="Microsoft.NET.Sdk">
--  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
-+<Project>
-+  <PropertyGroup>
-+    <OutDirName Condition="'$(TargetCrossRid)' != ''">monocrossaot-pack.$(TargetCrossRid)</OutDirName>
-+    <OutDirName Condition="'$(TargetCrossRid)' == '' or '$(MSBuildRestoreSessionId)' != ''">monocrossaot-pack.restore</OutDirName>
-+    <RestoreOutputPath>$([System.IO.Path]::GetFullPath('$(ArtifactsObjDir)monocrossaot-pack.restore\'))</RestoreOutputPath>
-+    <ProjectAssetsFile>$(RestoreOutputPath)\project.assets.json</ProjectAssetsFile>
-+    <MSBuildProjectExtensionsPath>$(RestoreOutputPath)</MSBuildProjectExtensionsPath>
-+  </PropertyGroup>
-+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
-
-   <PropertyGroup>
-     <SkipValidatePackage>true</SkipValidatePackage>
-@@ -56,4 +64,6 @@
-     <Error Condition="!Exists('$(AotCompilerPath)$(AotCompilerFileName)')" Text="Cross compiler not found in $(AotCompilerPath). MonoAotCrossDir=$(MonoAotCrossDir)" />
-   </Target>
-
-+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
-+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
- </Project>
+diff --git a/eng/testing/workloads-wasm.targets b/eng/testing/workloads-wasm.targets
+index cf7776018338a..c6c5568818a34 100644
+--- a/eng/testing/workloads-wasm.targets
++++ b/eng/testing/workloads-wasm.targets
+@@ -17,11 +17,10 @@
+       <_PropsForAOTCrossBuild Include="@(_DefaultPropsForNuGetBuild)" />
+       <_PropsForAOTCrossBuild Include="TestingWorkloads=true" />
+       <_PropsForAOTCrossBuild Include="RuntimeIdentifier=$(NETCoreSdkRuntimeIdentifier)" />
+-      <_PropsForAOTCrossBuild Include="TargetCrossRid=$(RIDForWorkload)" />
+       <_PropsForAOTCrossBuild Include="DisableSourceLink=true" />
+ 
+       <NuGetsToBuildForWorkloadTesting Include="$(_AOTCrossNuGetPath)"
+-                      Project="$(InstallerProjectRoot)pkg/sfx/Microsoft.NETCore.App\Microsoft.NETCore.App.MonoCrossAOT.sfxproj"
++                      Project="$(InstallerProjectRoot)pkg/sfx/Microsoft.NETCore.App\MonoCrossAOT\Microsoft.NETCore.App.MonoCrossAOT.$(RIDForWorkload).sfxproj"
+                       Properties="@(_PropsForAOTCrossBuild,';')"
+                       Descriptor="AOT Cross compiler"/>
+     </ItemGroup>
 diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj
 index 5101d093beb13..336574ffe10fc 100644
 --- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.Runtime.NativeAOT.sfxproj
@@ -96,17 +86,269 @@ index 5101d093beb13..336574ffe10fc 100644
      </ItemGroup>
    </Target>
  </Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.Sdk.props.in b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.Sdk.props.in
+similarity index 100%
+rename from src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.Sdk.props.in
+rename to src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.Sdk.props.in
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.UnixFilePermissions.xml.in b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.UnixFilePermissions.xml.in
+similarity index 100%
+rename from src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.UnixFilePermissions.xml.in
+rename to src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.UnixFilePermissions.xml.in
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-arm.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-arm.sfxproj
+new file mode 100644
+index 0000000000000..33bf3321c0eb9
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-arm.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>android-arm</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-arm64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-arm64.sfxproj
+new file mode 100644
+index 0000000000000..ee259d7812b9f
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-arm64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>android-arm64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-x64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-x64.sfxproj
+new file mode 100644
+index 0000000000000..6574e57fd4db2
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-x64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>android-x64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-x86.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-x86.sfxproj
+new file mode 100644
+index 0000000000000..b4279f57110d8
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.android-x86.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>android-x86</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.browser-wasm.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.browser-wasm.sfxproj
+new file mode 100644
+index 0000000000000..19b7059c546e3
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.browser-wasm.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>browser-wasm</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.ios-arm64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.ios-arm64.sfxproj
+new file mode 100644
+index 0000000000000..0395c9e026647
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.ios-arm64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>ios-arm64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.iosimulator-arm64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.iosimulator-arm64.sfxproj
+new file mode 100644
+index 0000000000000..915b49934043d
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.iosimulator-arm64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>ivossimulator-arm64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.iossimulator-x64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.iossimulator-x64.sfxproj
+new file mode 100644
+index 0000000000000..e4aa8896ac855
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.iossimulator-x64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>iossimulator-x64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.maccatalyst-arm64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.maccatalyst-arm64.sfxproj
+new file mode 100644
+index 0000000000000..7625df228fc76
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.maccatalyst-arm64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>maccatalyst-arm64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.maccatalyst-x64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.maccatalyst-x64.sfxproj
+new file mode 100644
+index 0000000000000..7382e99e054f9
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.maccatalyst-x64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>maccatalyst-x64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.props
+similarity index 99%
+rename from src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
+rename to src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.props
+index 2fb9978743ab8..cfb14bf5b66e6 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.props
+@@ -1,6 +1,5 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
+-
+   <PropertyGroup>
+     <SkipValidatePackage>true</SkipValidatePackage>
+     <PlatformPackageType>ToolPack</PlatformPackageType>
+@@ -55,5 +54,4 @@
+     <Error Condition="'$(TargetCrossRid)' == ''" Text="TargetCrossRid not set" />
+     <Error Condition="!Exists('$(AotCompilerPath)$(AotCompilerFileName)')" Text="Cross compiler not found in $(AotCompilerPath). MonoAotCrossDir=$(MonoAotCrossDir)" />
+   </Target>
+-
+ </Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvos-arm64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvos-arm64.sfxproj
+new file mode 100644
+index 0000000000000..dcee36b4c8cec
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvos-arm64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>tvos-arm64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvossimulator-x64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvossimulator-x64.sfxproj
+new file mode 100644
+index 0000000000000..223592b08d753
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvossimulator-x64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>tvossimulator-x64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvsosimulator-arm64.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvsosimulator-arm64.sfxproj
+new file mode 100644
+index 0000000000000..277b5aa1fdf4f
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.tvsosimulator-arm64.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>tvossimulator-arm64</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.wasi-wasm.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.wasi-wasm.sfxproj
+new file mode 100644
+index 0000000000000..36b9e2dcd7c6f
+--- /dev/null
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.wasi-wasm.sfxproj
+@@ -0,0 +1,8 @@
++<Project Sdk="Microsoft.NET.Sdk">
++  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++  <PropertyGroup>
++    <TargetCrossRid>wasi-wasm</TargetCrossRid>
++  </PropertyGroup>
++
++  <Import Project="Microsoft.NETCore.App.MonoCrossAOT.props" />
++</Project>
 diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj b/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj
-index 4fbd851460c3a..d60cb5bd62a4d 100644
+index 4fbd851460c3a..1f904f0d515fb 100644
 --- a/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj
 +++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/monocrossaot.proj
-@@ -16,8 +16,8 @@
-     <MonoAotTargetRids Include="$(MonoAotTargets.Split(';'))" Properties="TargetCrossRid=%(Identity);RealRuntimeBinDir=$(RuntimeBinDir)" />
-     <ProjectReference Include="@(MonoAotTargetRids->'$(MSBuildThisFileDirectory)Microsoft.NETCore.App.MonoCrossAOT.sfxproj')" />
+@@ -11,13 +11,14 @@
+     <SkipInstallersPackageReference>true</SkipInstallersPackageReference>
+   </PropertyGroup>
+ 
+-  <!-- Only restore the target sfxproj once to avoid any parallel restore issues. -->
+-  <ItemGroup Condition="'$(MSBuildRestoreSessionId)' == ''">
+-    <MonoAotTargetRids Include="$(MonoAotTargets.Split(';'))" Properties="TargetCrossRid=%(Identity);RealRuntimeBinDir=$(RuntimeBinDir)" />
+-    <ProjectReference Include="@(MonoAotTargetRids->'$(MSBuildThisFileDirectory)Microsoft.NETCore.App.MonoCrossAOT.sfxproj')" />
++  <ItemGroup>
++    <MonoAotTargetRids Condition="$(_MonoCrossAOTTargetOS.contains('+android+'))" Include="android-x64;android-arm64;android-x86;android-arm" />
++    <MonoAotTargetRids Condition="$(_MonoCrossAOTTargetOS.contains('+browser+'))" Include="browser-wasm" />
++    <MonoAotTargetRids Condition="$(_MonoCrossAOTTargetOS.contains('+tvos+'))" Include="tvossimulator-x64;tvossimulator-arm64;tvos-arm64" />
++    <MonoAotTargetRids Condition="$(_MonoCrossAOTTargetOS.contains('+ios+'))" Include="iossimulator-x64;iossimulator-arm64;ios-arm64" />
++    <MonoAotTargetRids Condition="$(_MonoCrossAOTTargetOS.contains('+maccatalyst+'))" Include="maccatalyst-x64;maccatalyst-arm64" />
++    <MonoAotTargetRids Condition="$(_MonoCrossAOTTargetOS.contains('+wasi+'))" Include="wasi-wasm" />
++    <ProjectReference Include="@(MonoAotTargetRids->'$(MSBuildThisFileDirectory)/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.%(Identity).sfxproj')" Properties="RealRuntimeBinDir=$(RuntimeBinDir)" />
    </ItemGroup>
--
-   <ItemGroup Condition="'$(MSBuildRestoreSessionId)' != ''">
-     <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.NETCore.App.MonoCrossAOT.sfxproj" />
+ 
+-  <ItemGroup Condition="'$(MSBuildRestoreSessionId)' != ''">
+-    <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.NETCore.App.MonoCrossAOT.sfxproj" />
+-  </ItemGroup>
+ </Project>
+diff --git a/src/mono/wasm/workloads.proj b/src/mono/wasm/workloads.proj
+index 4c8e694361898..ba206c5a0e138 100644
+--- a/src/mono/wasm/workloads.proj
++++ b/src/mono/wasm/workloads.proj
+@@ -11,10 +11,9 @@
+     <_PropsForAOTCrossBuild Include="@(_DefaultPropsForNuGetBuild)" />
+     <_PropsForAOTCrossBuild Include="TestingWorkloads=true" />
+     <_PropsForAOTCrossBuild Include="RuntimeIdentifier=$(NETCoreSdkRuntimeIdentifier)" />
+-    <_PropsForAOTCrossBuild Include="TargetCrossRid=browser-wasm" />
+     <_PropsForAOTCrossBuild Include="DisableSourceLink=true" />
+ 
+-    <ProjectReference Include="$(InstallerProjectRoot)pkg/sfx/Microsoft.NETCore.App\Microsoft.NETCore.App.MonoCrossAOT.sfxproj"
++    <ProjectReference Include="$(InstallerProjectRoot)pkg/sfx/Microsoft.NETCore.App\MonoCrossAOT\Microsoft.NETCore.App.MonoCrossAOT.browser-wasm.sfxproj"
+                       AdditionalProperties="@(_PropsForAOTCrossBuild,';')" />
    </ItemGroup>
-+
  </Project>
