@@ -48,4 +48,5 @@ namespace Microsoft.DotNet.Cli
             return command;
         }
     }
+
 }
