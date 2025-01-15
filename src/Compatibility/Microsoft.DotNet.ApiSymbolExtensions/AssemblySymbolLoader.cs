@@ -36,6 +36,32 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         public const string AssemblyReferenceNotFoundErrorCode = "CP1002";
 
         /// <summary>
+        /// Creates an assembly symbol loader and its corresponding assembly symbols from the given DLL files in the filesystem.
+        /// </summary>
+        /// <param name="logger">The logger instance to use for message logging.</param>
+        /// <param name="assembliesPaths">A collection of paths where the assembly DLLs should be searched.</param>
+        /// <param name="assemblyReferencesPaths">An optional collection of paths where the assembly references should be searched.</param>
+        /// <param name="respectInternals">Whether to include internal symbols or not.</param>
+        /// <returns>A tuple containing an assembly symbol loader and its corresponding dictionary of assembly symbols.</returns>
+        public static (AssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromFiles(ILog logger, string[] assembliesPaths, string[]? assemblyReferencesPaths, bool respectInternals = false)
+        {
+            if (assembliesPaths.Length == 0)
+            {
+                return (new AssemblySymbolLoader(logger, resolveAssemblyReferences: true, includeInternalSymbols: respectInternals), new Dictionary<string, IAssemblySymbol>());
+            }
+
+            bool atLeastOneReferencePath = assemblyReferencesPaths?.Count() > 0;
+            AssemblySymbolLoader loader = new(logger, resolveAssemblyReferences: atLeastOneReferencePath, respectInternals);
+            if (atLeastOneReferencePath)
+            {
+                loader.AddReferenceSearchPaths(assemblyReferencesPaths!);
+            }
+            Dictionary<string, IAssemblySymbol> dictionary = new(loader.LoadAssembliesAsDictionary(assembliesPaths));
+
+            return (loader, dictionary);
+        }
+
+        /// <summary>
         /// Creates a new instance of the <see cref="AssemblySymbolLoader"/> class.
         /// </summary>
         /// <param name="log">A logger instance for logging message.</param>
@@ -293,6 +319,29 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             }
 
             return result;
+        }
+
+        // Loads a set of assemblies from the filesystem and gets their corresponding <see cref="IAssemblySymbol"/> instances as a dictionary.
+        private IDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths)
+        {
+            // First resolve all assemblies that are passed in and create metadata references out of them.
+            // Reference assemblies of the passed in assemblies that themselves are passed in, will be skipped to be resolved,
+            // as they are resolved as part of the loop below.
+            ImmutableHashSet<string> fileNames = paths.Select(path => Path.GetFileName(path)).ToImmutableHashSet();
+            List<MetadataReference> assembliesToReturn = LoadFromPaths(paths, fileNames);
+
+            // Create IAssemblySymbols out of the MetadataReferences.
+            // Doing this after resolving references to make sure that references are available.
+            Dictionary<string, IAssemblySymbol> assemblySymbols = [];
+            foreach (MetadataReference metadataReference in assembliesToReturn)
+            {
+                if (_cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) is IAssemblySymbol assemblySymbol)
+                {
+                    assemblySymbols.Add(assemblySymbol.Name, assemblySymbol);
+                }
+            }
+
+            return assemblySymbols;
         }
 
         private MetadataReference CreateOrGetMetadataReferenceFromPath(string path, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null)
