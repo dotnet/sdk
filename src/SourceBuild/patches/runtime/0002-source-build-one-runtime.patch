@@ -40,7 +40,7 @@ index 445ec9865a12f..d4621753cb63b 100644
 +            <_BuildHostPack Condition="'$(TargetsMobile)' != 'true' and !('$(TargetsLinuxBionic)' == 'true' and '$(TargetArchitecture)' == 'arm')">true</_BuildHostPack>
 +            <_BuildBundle Condition="'$(TargetsMobile)' != 'true' and !('$(TargetsLinuxBionic)' == 'true' and '$(TargetArchitecture)' == 'arm')">true</_BuildBundle>
            </PropertyGroup>
- 
+
            <ItemGroup>
 @@ -591,7 +603,7 @@
              <SharedFrameworkProjectToBuild Condition="'$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\installers\dotnet-host.proj" />
@@ -68,13 +68,13 @@ index 2fb9978743ab8..e6970e955b719 100644
 +  </PropertyGroup>
 +  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 +  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
- 
+
    <PropertyGroup>
      <SkipValidatePackage>true</SkipValidatePackage>
 @@ -56,4 +64,6 @@
      <Error Condition="!Exists('$(AotCompilerPath)$(AotCompilerFileName)')" Text="Cross compiler not found in $(AotCompilerPath). MonoAotCrossDir=$(MonoAotCrossDir)" />
    </Target>
- 
+
 +  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
 +  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
  </Project>
