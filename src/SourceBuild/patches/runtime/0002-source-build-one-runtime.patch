@@ -352,3 +352,14 @@ index 4c8e694361898..ba206c5a0e138 100644
                        AdditionalProperties="@(_PropsForAOTCrossBuild,';')" />
    </ItemGroup>
  </Project>
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.props b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.props
+index cfb14bf5b66..47c488fae59 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.props
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/MonoCrossAOT/Microsoft.NETCore.App.MonoCrossAOT.props
+@@ -1,5 +1,4 @@
+-<Project Sdk="Microsoft.NET.Sdk">
+-  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
++<Project>
+   <PropertyGroup>
+     <SkipValidatePackage>true</SkipValidatePackage>
+     <PlatformPackageType>ToolPack</PlatformPackageType>
