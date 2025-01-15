@@ -57,9 +57,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal($"{dotnetWatchDefaultPrefix} warn" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
-            // stderr
             reporter.Error("error", emoji: "😄");
-            Assert.Equal($"{dotnetWatchDefaultPrefix} error" + EOL, testConsole.GetError());
+            Assert.Equal($"{dotnetWatchDefaultPrefix} error" + EOL, testConsole.GetOutput());
             testConsole.Clear();
         }
 
