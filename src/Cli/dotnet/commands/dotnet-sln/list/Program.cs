@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tools.Sln.List
 
         public override int Execute()
         {
-            string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, true);
+            string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
             try
             {
                 ListAllProjectsAsync(solutionFileFullPath);
