@@ -1,13 +1,7 @@
 {
   "profiles": {
     "dotnet": {
-      "commandName": "Project",
-      "commandLineArgs": "test --help",
-      "workingDirectory": "S:\\t\\mstest216",
-      "environmentVariables": {
-        "DOTNET_CLI_TESTINGPLATFORM_ENABLE": "1"
-      },
-      "hotReloadEnabled": false
+      "commandName": "Project"
     }
   }
 }
