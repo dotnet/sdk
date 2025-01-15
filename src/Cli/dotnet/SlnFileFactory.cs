@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -51,6 +52,12 @@ namespace Microsoft.DotNet.Tools.Common
         public static SolutionModel CreateFromFileOrDirectory(string fileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
         {
             string solutionPath = GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles, includeSolutionXmlFiles);
+
+            if (solutionPath.HasExtension(".slnf"))
+            {
+                return CreateFromFilteredSolutionFile(solutionPath);
+            }
+
             SolutionModel slnFile;
             try
             {
@@ -68,6 +75,43 @@ namespace Microsoft.DotNet.Tools.Common
                     e.Message);
             }
             return slnFile;
+        }
+
+        public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionFile)
+        {
+            JsonDocument jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionFile));
+            JsonElement jsonElement = jsonDocument.RootElement;
+            JsonElement filteredSolutionJsonElement = jsonElement.GetProperty("solution");
+            string filteredSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
+            string[] filteredSolutionProjectPaths = filteredSolutionJsonElement.GetProperty("projects")
+                .EnumerateArray()
+                .Select(project => project.GetProperty("path").GetString())
+                .ToArray();
+
+            if (string.IsNullOrEmpty(filteredSolutionPath) || !File.Exists(filteredSolutionPath))
+            {
+                throw new GracefulException(
+                    CommonLocalizableStrings.InvalidSolutionFormatString,
+                    filteredSolutionFile, "");
+            }
+
+            SolutionModel filteredSolution = new SolutionModel();
+            SolutionModel originalSolution = CreateFromFileOrDirectory(filteredSolutionPath);
+
+            foreach (string path in filteredSolutionProjectPaths)
+            {
+                SolutionProjectModel? project = originalSolution.FindProject(path);
+                if (project is null)
+                {
+                    throw new GracefulException(
+                        CommonLocalizableStrings.ProjectNotFoundInTheSolution,
+                        path,
+                        filteredSolutionPath);
+                }
+                filteredSolution.AddProject(project.FilePath, project.Type, project.Parent is null ? null : filteredSolution.AddFolder(project.Parent.Path));
+            }
+
+            return filteredSolution;
         }
     }
 }
