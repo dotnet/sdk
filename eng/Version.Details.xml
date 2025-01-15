@@ -307,7 +307,52 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
     </Dependency>
+    <!-- Authentication and Components needed for dotnet/maui CoherentParentDependency -->
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Google" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Components.SdkAnalyzers" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="10.0.0-alpha.2.25062.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Analyzers" Version="10.0.0-alpha.2.25064.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
     </Dependency>
