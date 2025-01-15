@@ -127,29 +127,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         }
 
         /// <inheritdoc />
-        public IDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths)
-        {
-            // First resolve all assemblies that are passed in and create metadata references out of them.
-            // Reference assemblies of the passed in assemblies that themselves are passed in, will be skipped to be resolved,
-            // as they are resolved as part of the loop below.
-            ImmutableHashSet<string> fileNames = paths.Select(path => Path.GetFileName(path)).ToImmutableHashSet();
-            List<MetadataReference> assembliesToReturn = LoadFromPaths(paths, fileNames);
-
-            // Create IAssemblySymbols out of the MetadataReferences.
-            // Doing this after resolving references to make sure that references are available.
-            Dictionary<string, IAssemblySymbol> assemblySymbols = [];
-            foreach (MetadataReference metadataReference in assembliesToReturn)
-            {
-                if(_cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) is IAssemblySymbol assemblySymbol)
-                {
-                    assemblySymbols.Add(assemblySymbol.Name, assemblySymbol);
-                }
-            }
-
-            return assemblySymbols;
-        }
-
-        /// <inheritdoc />
         public IReadOnlyList<IAssemblySymbol?> LoadAssembliesFromArchive(string archivePath, IReadOnlyList<string> relativePaths)
         {
             using FileStream stream = File.OpenRead(archivePath);
@@ -342,6 +319,29 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             }
 
             return result;
+        }
+
+        // Loads a set of assemblies from the filesystem and gets their corresponding <see cref="IAssemblySymbol"/> instances as a dictionary.
+        private IDictionary<string, IAssemblySymbol> LoadAssembliesAsDictionary(params string[] paths)
+        {
+            // First resolve all assemblies that are passed in and create metadata references out of them.
+            // Reference assemblies of the passed in assemblies that themselves are passed in, will be skipped to be resolved,
+            // as they are resolved as part of the loop below.
+            ImmutableHashSet<string> fileNames = paths.Select(path => Path.GetFileName(path)).ToImmutableHashSet();
+            List<MetadataReference> assembliesToReturn = LoadFromPaths(paths, fileNames);
+
+            // Create IAssemblySymbols out of the MetadataReferences.
+            // Doing this after resolving references to make sure that references are available.
+            Dictionary<string, IAssemblySymbol> assemblySymbols = [];
+            foreach (MetadataReference metadataReference in assembliesToReturn)
+            {
+                if (_cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) is IAssemblySymbol assemblySymbol)
+                {
+                    assemblySymbols.Add(assemblySymbol.Name, assemblySymbol);
+                }
+            }
+
+            return assemblySymbols;
         }
 
         private MetadataReference CreateOrGetMetadataReferenceFromPath(string path, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null)
