@@ -10,16 +10,23 @@ public static class VerifyExtensions
 {
     public static async Task Verify(CliCommand command, IShellProvider provider, [CallerFilePath] string sourceFile = "")
     {
+        // Can't use sourceFile directly because in CI the file may be rooted at a different location than the compile-time location
+        // We do have the source code available, just at a different root, so we can use that compute
         var completions = provider.GenerateCompletions(command);
         var settings = new VerifySettings();
-        var sourceFileDir = Path.GetDirectoryName(sourceFile)!;
-        var snapshotDirectory = new DirectoryInfo(Path.Combine(sourceFileDir, "snapshots", provider.ArgumentName));
-        var closestExistingDirectory = GetClosestExistingDirectory(snapshotDirectory);
-        if (!snapshotDirectory.Exists)
+        var repoRoot = GetRepoRoot();
+        if (repoRoot is null)
         {
-            throw new DirectoryNotFoundException($"The directory ({snapshotDirectory}) containing the source file ({sourceFile}) does not exist.\nVerify is going to try to recreate the directory and that won't work in CI.\nThe closest existing directory is ({closestExistingDirectory}). The current directory is ({Environment.CurrentDirectory})");
+            throw new DirectoryNotFoundException("Must be in a git directory");
         }
-        settings.UseDirectory(snapshotDirectory.FullName);
+
+        var runtimeSnapshotDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
+        var closestExistingDirectory = GetClosestExistingDirectory(runtimeSnapshotDir);
+        if (!runtimeSnapshotDir.Exists)
+        {
+            throw new DirectoryNotFoundException($"The directory ({runtimeSnapshotDir}) containing the source file ({sourceFile}) does not exist.\nVerify is going to try to recreate the directory and that won't work in CI.\nThe closest existing directory is ({closestExistingDirectory}). The current directory is ({Environment.CurrentDirectory}). The repo root is ({repoRoot})");
+        }
+        settings.UseDirectory(runtimeSnapshotDir.FullName);
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings, sourceFile: sourceFile);
     }
 
@@ -30,5 +37,25 @@ public static class VerifyExtensions
             path = path.Parent;
         }
         return path;
+    }
+
+    private static DirectoryInfo? GetRepoRoot()
+    {
+        DirectoryInfo? directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null)
+        {
+            var gitPath = directory.GetFileSystemInfos(".git").FirstOrDefault();
+            if (gitPath is FileSystemInfo gitData && gitData.Exists)
+            {
+                // Found the repo root, which should either have a .git folder or, if the repo
+                // is part of a Git worktree, a .git file.
+                return directory;
+            }
+
+            directory = directory.Parent;
+        }
+
+        return null;
     }
 }
