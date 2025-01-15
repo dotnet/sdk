@@ -16,5 +16,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
+		<PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingPlatformVersion)" />
 	</ItemGroup>
 </Project>

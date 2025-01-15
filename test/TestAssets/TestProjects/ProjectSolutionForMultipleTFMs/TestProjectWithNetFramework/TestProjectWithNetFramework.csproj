@@ -2,19 +2,22 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
 		<OutputType>Exe</OutputType>
-
+		<TargetFramework>net4.8</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<IsTestProject>true</IsTestProject>
-
 		<GenerateProgramFile>false</GenerateProgramFile>
-		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+		<IsTestProject>true</IsTestProject>
+		<LangVersion>latest</LangVersion>
 		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<!-- <Reference Include="Microsoft.Testing.Platform"> -->
+			<!-- <HintPath>C:\Code\testfx\artifacts\bin\Microsoft.Testing.Platform\Debug\netstandard2.0\Microsoft.Testing.Platform.dll</HintPath> -->
+		<!-- </Reference> -->
+		
 		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
 	</ItemGroup>
+
 </Project>

@@ -6,20 +6,15 @@ namespace TestProject
 	public sealed class Test1
 	{
 		[TestMethod]
-		public void TestMethod4()
+		public void TestMethod1()
 		{
 			Assert.AreEqual(1, 1);
 		}
 
 		[TestMethod]
-		public void TestMethod5()
+		public void TestMethod2()
 		{
-			Assert.AreEqual(2, 2);
-		}
-
-		[TestMethod]
-		public void TestMethod6()
-		{
+			Assert.AreEqual(1, 2);
 		}
 	}
 }

@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
 		<OutputType>Exe</OutputType>
-
+		<TargetFrameworks>net4.8;net8.0;net9.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<IsTestProject>true</IsTestProject>
-
 		<GenerateProgramFile>false</GenerateProgramFile>
+		<IsTestProject>true</IsTestProject>
+		<LangVersion>latest</LangVersion>
 		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
 		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
 	</PropertyGroup>
@@ -17,4 +15,5 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
 	</ItemGroup>
+
 </Project>

@@ -74,6 +74,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -100,6 +101,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -125,6 +127,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
                                     .Execute("--minimum-expected-tests 2",
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -153,55 +156,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
 
-            //.WithTraceOutput() should be removed later
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithTraceOutput()
+                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
                 result.StdOut.Should().Contain("Test application(s) that support VSTest are not supported.");
-            }
-
-            result.ExitCode.Should().Be(1);
-        }
-
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
-        [Theory]
-        public void RunTestProjectsWithUnknownTestRunnerInGlobalJson_ShouldReturnOneAsExitCode(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithUnknownTestRunner", Guid.NewGuid().ToString())
-                .WithSource();
-
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
-
-            if (!TestContext.IsLocalized())
-            {
-                result.StdErr.Should().Contain("Test runner Unknown not supported");
-            }
-
-            result.ExitCode.Should().Be(1);
-        }
-
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
-        [Theory]
-        public void RunTestProjectsWithUnconfiguredGlobalJson_ShouldReturnOneAsExitCode(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithUnconfiguredGlobalJson", Guid.NewGuid().ToString())
-                .WithSource();
-
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
-
-            if (!TestContext.IsLocalized())
-            {
-                result.StdOut.Should().Contain("VSTest version");
             }
 
             result.ExitCode.Should().Be(1);
@@ -218,6 +180,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithTraceOutput()
+                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -239,6 +202,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithTraceOutput()
+                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -260,6 +224,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithTraceOutput()
+                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
