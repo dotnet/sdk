@@ -98,6 +98,10 @@ internal sealed class StartupHook
                     case RequestType.InitialUpdatesCompleted when initialUpdates:
                         return;
 
+                    case RequestType.TerminateProcess:
+                        Environment.Exit(exitCode: 0);
+                        return;
+
                     default:
                         // can't continue, the pipe content is in an unknown state
                         Log($"Unexpected payload type: {payloadType}. Terminating agent.");

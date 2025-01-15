@@ -611,14 +611,24 @@ namespace Microsoft.DotNet.Watch
 
         private static async ValueTask<IReadOnlyList<int>> TerminateRunningProjects(IEnumerable<RunningProject> projects, CancellationToken cancellationToken)
         {
-            // cancel first, this will cause the process tasks to complete:
+            foreach (var project in projects)
+            {
+                if (!await project.DeltaApplier.TryTerminateProcessAsync(cancellationToken))
+                {
+                    project.ProcessTerminationSource.Cancel();
+                }
+            }
+
+            // wait for all tasks to complete:
+            var exitCode = await Task.WhenAll(projects.Select(p => p.RunningProcess)).WaitAsync(cancellationToken);
+
+            // cancel process output reading tasks:
             foreach (var project in projects)
             {
                 project.ProcessTerminationSource.Cancel();
             }
 
-            // wait for all tasks to complete:
-            return await Task.WhenAll(projects.Select(p => p.RunningProcess)).WaitAsync(cancellationToken);
+            return exitCode;
         }
 
         private static Task ForEachProjectAsync(ImmutableDictionary<string, ImmutableArray<RunningProject>> projects, Func<RunningProject, CancellationToken, Task> action, CancellationToken cancellationToken)

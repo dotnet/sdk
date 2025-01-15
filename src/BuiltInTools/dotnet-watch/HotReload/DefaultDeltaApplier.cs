@@ -224,6 +224,27 @@ namespace Microsoft.DotNet.Watch
             await _pipe.FlushAsync(cancellationToken);
         }
 
+        public override async Task<bool> TryTerminateProcessAsync(CancellationToken cancellationToken)
+        {
+            // Should only be called after CreateConnection
+            Debug.Assert(_capabilitiesTask != null);
+
+            // Should not be disposed:
+            Debug.Assert(_pipe != null);
+
+            try
+            {
+                await _pipe.WriteAsync((byte)RequestType.TerminateProcess, cancellationToken);
+                await _pipe.FlushAsync(cancellationToken);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         private void DisposePipe()
         {
             Reporter.Verbose("Disposing agent communication pipe");

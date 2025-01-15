@@ -25,6 +25,7 @@ internal enum RequestType
     ManagedCodeUpdate = 1,
     StaticAssetUpdate = 2,
     InitialUpdatesCompleted = 3,
+    TerminateProcess = 4,
 }
 
 internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest

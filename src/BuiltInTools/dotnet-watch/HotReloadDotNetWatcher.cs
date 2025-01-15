@@ -515,10 +515,13 @@ namespace Microsoft.DotNet.Watch
                         // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
                         await compilationHandler.TerminateNonRootProcessesAndDispose(CancellationToken.None);
                     }
-
-                    if (!rootProcessTerminationSource.IsCancellationRequested)
+                    
+                    if (!rootProcessTerminationSource.IsCancellationRequested && rootRunningProject != null)
                     {
-                        rootProcessTerminationSource.Cancel();
+                        if (!await rootRunningProject.DeltaApplier.TryTerminateProcessAsync(rootProcessTerminationSource.Token))
+                        {
+                            rootProcessTerminationSource.Cancel();
+                        }
                     }
 
                     try
@@ -532,6 +535,9 @@ namespace Microsoft.DotNet.Watch
                     }
                     finally
                     {
+                        // signal process termination:
+                        rootProcessTerminationSource.Cancel();
+
                         fileWatcherTask = null;
 
                         if (runtimeProcessLauncher != null)

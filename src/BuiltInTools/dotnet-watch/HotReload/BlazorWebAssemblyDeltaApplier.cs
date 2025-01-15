@@ -142,6 +142,10 @@ namespace Microsoft.DotNet.Watch
         public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
             => Task.CompletedTask;
 
+        public override Task<bool> TryTerminateProcessAsync(CancellationToken cancellationToken)
+            // can't terminate browser
+            => Task.FromResult(false);
+
         private readonly struct JsonApplyHotReloadDeltasRequest
         {
             public string Type => "BlazorHotReloadDeltav3";

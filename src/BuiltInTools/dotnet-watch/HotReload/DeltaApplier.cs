@@ -28,6 +28,7 @@ namespace Microsoft.DotNet.Watch
         public abstract Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken);
 
         public abstract Task InitialUpdatesApplied(CancellationToken cancellationToken);
+        public abstract Task<bool> TryTerminateProcessAsync(CancellationToken cancellationToken);
 
         public abstract void Dispose();
 

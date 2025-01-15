@@ -86,5 +86,8 @@ namespace Microsoft.DotNet.Watch
 
         public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
             => _hostApplier.InitialUpdatesApplied(cancellationToken);
+
+        public override Task<bool> TryTerminateProcessAsync(CancellationToken cancellationToken)
+            => _hostApplier.TryTerminateProcessAsync(cancellationToken);
     }
 }
