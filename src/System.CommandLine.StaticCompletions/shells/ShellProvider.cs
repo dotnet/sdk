@@ -21,7 +21,7 @@ public interface IShellProvider
     /// <summary>
     /// Generates a shell-specific completions script for the given command tree.
     /// </summary>
-    /// <param name="rootCommand"></param>
+    /// <param name="command"></param>
     /// <returns></returns>
     string GenerateCompletions(System.CommandLine.CliCommand command);
 }
