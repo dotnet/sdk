@@ -423,7 +423,7 @@
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="10.0.606004">
       <Uri>https://github.com/MichaelSimons/source-build-reference-packages</Uri>
-      <Sha>bdaeffaca7d858cab3146c5ddf6d3bfadda1eae8</Sha>
+      <Sha>4dd8844910386ad94d7bfa72089d37d5c3e0acee</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.24630.1">
