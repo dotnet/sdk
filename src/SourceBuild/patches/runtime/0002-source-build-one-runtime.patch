@@ -6,7 +6,7 @@ Backport: https://github.com/dotnet/runtime/pull/111415
 
 ---
 diff --git a/eng/Subsets.props b/eng/Subsets.props
-index 445ec9865a12f..6d8af8f493740 100644
+index 445ec9865a12f..d4621753cb63b 100644
 --- a/eng/Subsets.props
 +++ b/eng/Subsets.props
 @@ -572,15 +572,27 @@
@@ -42,26 +42,36 @@ index 445ec9865a12f..6d8af8f493740 100644
            </PropertyGroup>
  
            <ItemGroup>
+@@ -591,7 +603,7 @@
+             <SharedFrameworkProjectToBuild Condition="'$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\installers\dotnet-host.proj" />
+             <SharedFrameworkProjectToBuild Condition="'$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\installers\dotnet-hostfxr.proj" />
+             <SharedFrameworkProjectToBuild Condition="'$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\installers\dotnet-runtime-deps\*.proj" />
+-            <SharedFrameworkProjectToBuild Condition="'$(MonoCrossAOTTargetOS)' != ''" Include="$(InstallerProjectRoot)pkg\sfx\Microsoft.NETCore.App\monocrossaot.proj" />
++            <SharedFrameworkProjectToBuild Condition="'$(MonoCrossAOTTargetOS)' != '' and '$(DotNetBuildSourceOnly)' == ''" Include="$(InstallerProjectRoot)pkg\sfx\Microsoft.NETCore.App\monocrossaot.proj" />
+           </ItemGroup>
+           <ItemGroup>
+             <ProjectToBuild Condition="'$(NativeAotSupported)' == 'true' and '$(RuntimeFlavor)' != 'Mono' and '$(TargetsMobile)' != 'true' and '$(TargetsLinuxBionic)' != 'true'" Include="$(InstallerProjectRoot)\pkg\projects\nativeaot-packages.proj" Category="packs" />
 diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
-index 2fb9978743ab8..928ddb99bc519 100644
+index 2fb9978743ab8..e6970e955b719 100644
 --- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
 +++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Microsoft.NETCore.App.MonoCrossAOT.sfxproj
-@@ -1,5 +1,12 @@
+@@ -1,5 +1,13 @@
 -<Project Sdk="Microsoft.NET.Sdk">
 -  <Sdk Name="Microsoft.DotNet.SharedFramework.Sdk" />
 +<Project>
 +  <PropertyGroup>
 +    <OutDirName Condition="'$(TargetCrossRid)' != ''">monocrossaot-pack.$(TargetCrossRid)</OutDirName>
-+    <OutDirName Condition="'$(TargetCrossRid)' == ''">monocrossaot-pack.restore</OutDirName>
++    <OutDirName Condition="'$(TargetCrossRid)' == '' or '$(MSBuildRestoreSessionId)' != ''">monocrossaot-pack.restore</OutDirName>
 +    <RestoreOutputPath>$([System.IO.Path]::GetFullPath('$(ArtifactsObjDir)monocrossaot-pack.restore\'))</RestoreOutputPath>
 +    <ProjectAssetsFile>$(RestoreOutputPath)\project.assets.json</ProjectAssetsFile>
++    <MSBuildProjectExtensionsPath>$(RestoreOutputPath)</MSBuildProjectExtensionsPath>
 +  </PropertyGroup>
 +  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 +  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.SharedFramework.Sdk" />
  
    <PropertyGroup>
      <SkipValidatePackage>true</SkipValidatePackage>
-@@ -56,4 +63,6 @@
+@@ -56,4 +64,6 @@
      <Error Condition="!Exists('$(AotCompilerPath)$(AotCompilerFileName)')" Text="Cross compiler not found in $(AotCompilerPath). MonoAotCrossDir=$(MonoAotCrossDir)" />
    </Target>
  
@@ -100,16 +110,3 @@ index 4fbd851460c3a..d60cb5bd62a4d 100644
    </ItemGroup>
 +
  </Project>
-diff --git a/eng/Subsets.props b/eng/Subsets.props
-index 6d8af8f4937..a1c3f17e961 100644
---- a/eng/Subsets.props
-+++ b/eng/Subsets.props
-@@ -603,7 +603,7 @@
-             <SharedFrameworkProjectToBuild Condition="'$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\installers\dotnet-host.proj" />
-             <SharedFrameworkProjectToBuild Condition="'$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\installers\dotnet-hostfxr.proj" />
-             <SharedFrameworkProjectToBuild Condition="'$(RuntimeFlavor)' == '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'" Include="$(InstallerProjectRoot)pkg\sfx\installers\dotnet-runtime-deps\*.proj" />
--            <SharedFrameworkProjectToBuild Condition="'$(MonoCrossAOTTargetOS)' != ''" Include="$(InstallerProjectRoot)pkg\sfx\Microsoft.NETCore.App\monocrossaot.proj" />
-+            <SharedFrameworkProjectToBuild Condition="'$(MonoCrossAOTTargetOS)' != '' and '$(DotNetBuildSourceOnly)' != ''" Include="$(InstallerProjectRoot)pkg\sfx\Microsoft.NETCore.App\monocrossaot.proj" />
-           </ItemGroup>
-           <ItemGroup>
-             <ProjectToBuild Condition="'$(NativeAotSupported)' == 'true' and '$(RuntimeFlavor)' != 'Mono' and '$(TargetsMobile)' != 'true' and '$(TargetsLinuxBionic)' != 'true'" Include="$(InstallerProjectRoot)\pkg\projects\nativeaot-packages.proj" Category="packs" />
