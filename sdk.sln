@@ -513,6 +513,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WebTools.AspireSe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSMSBuildExtensions", "src\VSMSBuildExtensions\VSMSBuildExtensions.proj", "{D9617F63-15F4-4CA2-8ECF-728A94B45D82}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.DotNet.HotReload.Agent", "src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.shproj", "{418B10BD-CA42-49F3-8F4A-D8CC90C8A17D}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Package", "src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.Package.csproj", "{2FF79F82-60C1-349A-4726-7783D5A6D5DF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.CommandLine.StaticCompletions", "src\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj", "{B84E0837-40AF-484E-A71D-941595568BE7}"

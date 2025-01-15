@@ -1,10 +1,6 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#pragma warning disable IDE0240
-#nullable enable
-#pragma warning restore IDE0240
-
 using Microsoft.NET.Sdk.Localization;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
 using System.Runtime.Serialization;

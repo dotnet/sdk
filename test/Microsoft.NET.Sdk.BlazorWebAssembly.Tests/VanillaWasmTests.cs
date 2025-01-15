@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class VanillaWasmTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
@@ -9,7 +11,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
-            var targetFramework = "net9.0";
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var testInstance = CreateAspNetSdkTestAsset(testAsset)
                 .WithProjectChanges((p, doc) =>
                 {

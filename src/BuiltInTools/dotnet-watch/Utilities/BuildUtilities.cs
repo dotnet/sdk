@@ -7,14 +7,25 @@ namespace Microsoft.DotNet.Watch;
 
 internal static partial class BuildUtilities
 {
+    private const string BuildEmoji = "🔨";
     private static readonly Regex s_buildDiagnosticRegex = GetBuildDiagnosticRegex();
 
     [GeneratedRegex(@"[^:]+: (error|warning) [A-Za-z]+[0-9]+: .+")]
     private static partial Regex GetBuildDiagnosticRegex();
 
-    public static void ReportBuildOutput(IReporter reporter, IEnumerable<OutputLine> buildOutput, bool verboseOutput)
+    public static void ReportBuildOutput(IReporter reporter, IEnumerable<OutputLine> buildOutput, bool success, string? projectDisplay)
     {
-        const string BuildEmoji = "🔨";
+        if (projectDisplay != null)
+        {
+            if (success)
+            {
+                reporter.Output($"Build succeeded: {projectDisplay}", BuildEmoji);
+            }
+            else
+            {
+                reporter.Output($"Build failed: {projectDisplay}", BuildEmoji);
+            }
+        }
 
         foreach (var (line, isError) in buildOutput)
         {
@@ -33,7 +44,7 @@ internal static partial class BuildUtilities
                     reporter.Warn(line);
                 }
             }
-            else if (verboseOutput)
+            else if (success)
             {
                 reporter.Verbose(line, BuildEmoji);
             }

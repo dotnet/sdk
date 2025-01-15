@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -320,7 +322,7 @@ public class ReferencedExeProgram
                 .Replace("Boolean", referenceExeInCode.ToString()));
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/42850")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("xunit")]
         [InlineData("mstest")]
         public void TestProjectCanReferenceExe(string testTemplateName)

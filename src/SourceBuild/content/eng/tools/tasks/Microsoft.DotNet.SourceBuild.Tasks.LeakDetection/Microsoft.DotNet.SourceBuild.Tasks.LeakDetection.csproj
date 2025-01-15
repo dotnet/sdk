@@ -13,8 +13,4 @@
     <ProjectReference Include="../Microsoft.DotNet.UnifiedBuild.Tasks/Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ReferencePath Include="@(SdkAssembly)" />
-  </ItemGroup>
-
 </Project>

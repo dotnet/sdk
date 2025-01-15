@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
@@ -33,6 +34,9 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<EventArgs> Run;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
+        private const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
+        private const string DLLExtension = "dll";
+
         public Module Module => _module;
 
         public TestApplication(Module module, List<string> args)
@@ -46,37 +50,45 @@ namespace Microsoft.DotNet.Cli
             _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
         }
 
-        public async Task<int> RunAsync(bool isFilterMode, bool enableHelp, BuiltInOptions builtInOptions)
+        public async Task<int> RunAsync(bool hasFilterMode, bool enableHelp, BuildConfigurationOptions buildConfigurationOptions)
         {
             Run?.Invoke(this, EventArgs.Empty);
 
-            if (isFilterMode && !ModulePathExists())
+            if (hasFilterMode && !ModulePathExists())
             {
                 return 1;
             }
 
-            bool isDll = _module.DllOrExePath.EndsWith(".dll");
+            bool isDll = _module.DllOrExePath.HasExtension(CliConstants.DLLExtension);
+            var processStartInfo = CreateProcessStartInfo(hasFilterMode, isDll, buildConfigurationOptions, enableHelp);
 
-            ProcessStartInfo processStartInfo = new()
+            _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
+            var testProcessResult = await StartProcess(processStartInfo);
+
+            WaitOnTestApplicationPipeConnectionLoop();
+
+            return testProcessResult;
+        }
+
+
+        private ProcessStartInfo CreateProcessStartInfo(bool hasFilterMode, bool isDll, BuildConfigurationOptions buildConfigurationOptions, bool enableHelp)
+        {
+            var processStartInfo = new ProcessStartInfo
             {
-                FileName = isFilterMode ? isDll ? Environment.ProcessPath : _module.DllOrExePath : Environment.ProcessPath,
-                Arguments = isFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(enableHelp, builtInOptions),
+                FileName = hasFilterMode ? (isDll ? Environment.ProcessPath : _module.DllOrExePath) : Environment.ProcessPath,
+                Arguments = hasFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(enableHelp, buildConfigurationOptions),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
 
             if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
             {
-                processStartInfo.EnvironmentVariables.Add("TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE", _module.RunSettingsFilePath);
+                processStartInfo.EnvironmentVariables.Add(CliConstants.TestingPlatformVsTestBridgeRunSettingsFileEnvVar, _module.RunSettingsFilePath);
             }
 
-            _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
-            var result = await StartProcess(processStartInfo);
-
-            WaitOnTestApplicationPipeConnectionLoop();
-
-            return result;
+            return processStartInfo;
         }
+
 
         private void WaitOnTestApplicationPipeConnectionLoop()
         {
@@ -244,30 +256,35 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private string BuildArgsWithDotnetRun(bool hasHelp, BuiltInOptions builtInOptions)
+        private string BuildArgsWithDotnetRun(bool hasHelp, BuildConfigurationOptions buildConfigurationOptions)
         {
             StringBuilder builder = new();
 
             builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectPath}\"");
 
-            if (builtInOptions.HasNoRestore)
+            if (buildConfigurationOptions.HasNoRestore)
             {
                 builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
             }
 
-            if (builtInOptions.HasNoBuild)
+            if (buildConfigurationOptions.HasNoBuild)
             {
                 builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
             }
 
-            if (!string.IsNullOrEmpty(builtInOptions.Architecture))
+            if (buildConfigurationOptions.HasListTests)
             {
-                builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {builtInOptions.Architecture}");
+                builder.Append($" {TestingPlatformOptions.ListTestsOption.Name}");
             }
 
-            if (!string.IsNullOrEmpty(builtInOptions.Configuration))
+            if (!string.IsNullOrEmpty(buildConfigurationOptions.Architecture))
             {
-                builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {builtInOptions.Configuration}");
+                builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {buildConfigurationOptions.Architecture}");
+            }
+
+            if (!string.IsNullOrEmpty(buildConfigurationOptions.Configuration))
+            {
+                builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {buildConfigurationOptions.Configuration}");
             }
 
             if (!string.IsNullOrEmpty(_module.TargetFramework))
@@ -339,7 +356,7 @@ namespace Microsoft.DotNet.Cli
             {
                 ExecutionId = testResultMessage.ExecutionId,
                 SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
-                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace)).ToArray(), message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
             });
         }
 

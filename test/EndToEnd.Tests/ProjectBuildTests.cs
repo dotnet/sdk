@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable disable
+
 using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests
@@ -192,6 +194,7 @@ namespace EndToEnd.Tests
 [\w \.\(\)]+blazor\s+\[C#\][\w\ \/]+
 [\w \.\(\)]+classlib\s+\[C#\],F#,VB[\w\ \/]+
 [\w \.\(\)]+console\s+\[C#\],F#,VB[\w\ \/]+
+[\w \.\(\)]+mstest\s+\[C#\],F#,VB[\w\ \/]+
 ";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

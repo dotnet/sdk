@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 (string, string)[]? rightAssembliesTransformationPattern = parseResult.GetValue(rightAssembliesTransformationPatternOption);
 
                 SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
-                ValidateAssemblies.Run(logFactory,
+                int exitCode = ValidateAssemblies.Run(logFactory,
                     generateSuppressionFile,
                     preserveUnnecessarySuppressions,
                     permitUnnecessarySuppressions,
@@ -218,6 +218,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     rightAssembliesTransformationPattern);
 
                 roslynResolver.Unregister();
+
+                return exitCode;
             });
 
             // Package command
@@ -319,7 +321,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 string[]? baselinePackageFrameworksToIgnore = parseResult.GetValue(baselinePackageFrameworksToIgnoreOption);
 
                 SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
-                ValidatePackage.Run(logFactory,
+                int exitCode = ValidatePackage.Run(logFactory,
                     generateSuppressionFile,
                     preserveUnnecessarySuppressions,
                     permitUnnecessarySuppressions,
@@ -342,6 +344,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     baselinePackageFrameworksToIgnore);
 
                 roslynResolver.Unregister();
+
+                return exitCode;
             });
 
             rootCommand.Subcommands.Add(packageCommand);

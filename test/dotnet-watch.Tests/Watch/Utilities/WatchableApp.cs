@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal sealed class WatchableApp(ITestOutputHelper logger) : IDisposable
@@ -42,6 +44,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             if (!Process.Output.Any(line => line.Contains(message)))
             {
+                Logger.WriteLine($"[TEST] Test waiting for output: '{message}'");
                 _ = await AssertOutputLine(line => line.Contains(message));
             }
         }

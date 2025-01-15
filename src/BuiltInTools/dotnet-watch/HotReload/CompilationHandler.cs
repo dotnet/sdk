@@ -364,7 +364,7 @@ namespace Microsoft.DotNet.Watch
             switch (updates.Status)
             {
                 case ModuleUpdateStatus.None:
-                    _reporter.Output("No C# changes to apply.");
+                    _reporter.Report(MessageDescriptor.NoHotReloadChangesToApply);
                     break;
 
                 case ModuleUpdateStatus.Ready:

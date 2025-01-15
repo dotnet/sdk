@@ -147,11 +147,6 @@
         <target state="translated">{0} dizini sıfırdan başlayarak {1} dahil olmak üzere bu aralıkta olmalıdır.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">Arama dizinlerinin hiçbirinde eşleşen {0} bütünleştirilmiş kodu bulunamadı.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MemberExistsOnLeft">
         <source>Member '{0}' exists on {1} but not on {2}</source>
         <target state="translated">'{0}' üyesi {1} üzerinde var ancak {2} üzerinde yok</target>

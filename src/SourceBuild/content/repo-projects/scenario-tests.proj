@@ -8,10 +8,6 @@
     <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
     <NuGetConfigInputForScenarioTests>$([MSBuild]::NormalizePath('$(SrcDir)', 'sdk', 'NuGet.config'))</NuGetConfigInputForScenarioTests>
     <NuGetConfigOutputForScenarioTests>$(ScenarioTestsArtifactsDir)NuGet.config</NuGetConfigOutputForScenarioTests>
-
-    <!-- TODO: Remove when source-build uses an Arcade SDK with an updated NetCurrent property. -->
-    <BuildArgs>$(BuildArgs) /p:NetCurrent=$(NetCurrent)</BuildArgs>
-    <TestCommand>$(TestCommand) /p:NetCurrent=$(NetCurrent)</TestCommand>
   </PropertyGroup>
 
   <ItemGroup>

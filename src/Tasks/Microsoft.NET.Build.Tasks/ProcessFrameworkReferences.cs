@@ -828,6 +828,8 @@ namespace Microsoft.NET.Build.Tasks
                     runtimePackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
                 }
 
+                runtimePackItem.SetMetadata(MetadataKeys.RuntimeIdentifier, hostRuntimeIdentifier);
+
                 switch (toolPackType)
                 {
                     case ToolPackType.Crossgen2:

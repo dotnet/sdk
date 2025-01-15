@@ -147,11 +147,6 @@
         <target state="translated">Индекс {0} должен находиться в диапазоне от нуля до {1} включительно.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">Не удалось найти соответствующую сборку "{0}" ни в одном из каталогов поиска.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MemberExistsOnLeft">
         <source>Member '{0}' exists on {1} but not on {2}</source>
         <target state="translated">Элемент "{0}" существует в {1}, но не в {2}</target>

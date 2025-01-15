@@ -8,7 +8,6 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
-    <Nullable>enable</Nullable>
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
     <AssemblyVersion Condition="'$(TargetFramework)' == 'net472'">5.0.100.0</AssemblyVersion>
   </PropertyGroup>

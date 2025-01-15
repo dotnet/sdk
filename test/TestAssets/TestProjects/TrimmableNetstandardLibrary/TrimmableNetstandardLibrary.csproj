@@ -7,7 +7,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsTrimmable>true</IsTrimmable>
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
     <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 

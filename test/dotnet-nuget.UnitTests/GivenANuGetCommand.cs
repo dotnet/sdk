@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Tools.NuGet;
 using Moq;
@@ -75,9 +77,6 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                                    "--interactive",
                                    "--verbosity", "detailed",
                                    "--format", "json"}, 0)]
-        [InlineData(new[] { "why" }, 0)]
-        [InlineData(new[] { "why", "C:\\path", "Fake.Package" }, 0)]
-        [InlineData(new[] { "why", "C:\\path", "Fake.Package", "--framework", "net472", "-f", "netcoreapp5.0" }, 0)]
 
         public void ItPassesCommandIfSupported(string[] inputArgs, int result)
         {
@@ -109,6 +108,30 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 .Fail()
                 .And
                 .HaveStdErrContaining("Required argument missing for option: '-ss'.");
+        }
+
+        [Fact]
+        public void ItHasAWhySubcommand()
+        {
+            var testAssetName = "NewtonSoftDependentProject";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(testAssetName)
+                .WithSource();
+            var projectDirectory = testAsset.Path;
+
+            new RestoreCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr();
+
+            new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute("nuget", "why", "newtonsoft.json")
+                .Should()
+                .Pass()
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining("has the following dependency");
         }
     }
 }

@@ -10,14 +10,11 @@ namespace Microsoft.DotNet.Watch
 
         /// <summary>
         /// List of all projects that contain this file (does not contain duplicates).
-        /// Empty if <see cref="Change"/> is <see cref="ChangeKind.Add"/> and the
-        /// item has not been assigned to a project yet.
+        /// Empty if the item is added but not been assigned to a project yet.
         /// </summary>
         public required List<string> ContainingProjectPaths { get; init; }
 
         public string? StaticWebAssetPath { get; init; }
-
-        public ChangeKind Change { get; init; }
 
         public bool IsStaticFile => StaticWebAssetPath != null;
     }
