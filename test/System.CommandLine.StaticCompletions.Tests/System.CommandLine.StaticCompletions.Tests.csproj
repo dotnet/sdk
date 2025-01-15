@@ -25,4 +25,9 @@
     <ProjectReference Include="..\..\src\System.CommandLine.StaticCompletions\System.CommandLine.StaticCompletions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="snapshots/**/*" />
+    <Content Include="snapshots/**/*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
