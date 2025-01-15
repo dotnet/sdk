@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Tools.Common
             }
 
             SolutionModel slnFile;
-            try
+            /*try
             {
                 ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
                     CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
@@ -73,7 +73,12 @@ namespace Microsoft.DotNet.Tools.Common
                     CommonLocalizableStrings.InvalidSolutionFormatString,
                     solutionPath,
                     e.Message);
-            }
+            }*/
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
+                    CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
+                    solutionPath);
+
+            slnFile = serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
             return slnFile;
         }
 
@@ -85,7 +90,7 @@ namespace Microsoft.DotNet.Tools.Common
             string filteredSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
             string[] filteredSolutionProjectPaths = filteredSolutionJsonElement.GetProperty("projects")
                 .EnumerateArray()
-                .Select(project => project.GetProperty("path").GetString())
+                .Select(project => project.GetString())
                 .ToArray();
 
             if (string.IsNullOrEmpty(filteredSolutionPath) || !File.Exists(filteredSolutionPath))
