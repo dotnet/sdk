@@ -75,34 +75,12 @@ namespace Microsoft.DotNet.NativeWrapper
                 {
                     // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
                     // resolve it to get the actual path to the binary
-                    dotnetExeFromPath = GetRealPath(dotnetExeFromPath);
-
-                    static string GetRealPath(string path)
+                    FileSystemInfo fileInfo = new FileInfo(dotnetExeFromPath);
+                    if ((fileInfo.Attributes & FileAttributes.ReparsePoint) != 0)
                     {
-                        FileInfo fileInfo = new(path);
-                        if (fileInfo.LinkTarget != null)
-                        {
-                            var resolved = fileInfo.ResolveLinkTarget(true);
-                            return resolved?.Exists is true ? resolved.FullName : path;
-                        }
-                
-                        string invariantPart = string.Empty;
-                        DirectoryInfo? parentDirectory = fileInfo.Directory;
-                        while (parentDirectory is not null)
-                        {
-                            invariantPart = path[parentDirectory.FullName.Length..];
-                            if (parentDirectory.LinkTarget != null)
-                            {
-                                var resolved = parentDirectory.ResolveLinkTarget(true);
-                                if (resolved?.Exists is true)
-                                    return Path.Join(resolved.FullName, invariantPart);
-                            }
-                
-                            parentDirectory = parentDirectory.Parent;
-                        }
-                
-                        return path;
+                        fileInfo = fileInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileInfo;
                     }
+                    dotnetExeFromPath = fileInfo.FullName;
                 }
 #endif
 
