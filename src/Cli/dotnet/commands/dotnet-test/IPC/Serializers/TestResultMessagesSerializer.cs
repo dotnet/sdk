@@ -1,8 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-#if NETCOREAPP
-#endif
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Diagnostics;
 
@@ -218,7 +215,7 @@ namespace Microsoft.DotNet.Tools.Test
             for (int i = 0; i < length; i++)
             {
                 string? uid = null, displayName = null, reason = null, sessionUid = null, standardOutput = null, errorOutput = null;
-                List<ExceptionMessage> exceptionMessages = [];
+                ExceptionMessage[] exceptionMessages = [];
                 byte? state = null;
                 long? duration = null;
 
@@ -252,43 +249,8 @@ namespace Microsoft.DotNet.Tools.Test
                             break;
 
                         case FailedTestResultMessageFieldsId.ExceptionMessageList:
-                            {
-                                int length2 = ReadInt(stream);
-                                for (int k = 0; k < length2; k++)
-                                {
-
-                                    int fieldCount2 = ReadShort(stream);
-
-                                    string? errorMessage = null;
-                                    string? errorType = null;
-                                    string? stackTrace = null;
-
-                                    for (int l = 0; l < fieldCount2; l++)
-                                    {
-                                        int fieldId2 = ReadShort(stream);
-                                        int fieldSize2 = ReadInt(stream);
-
-                                        switch (fieldId2)
-                                        {
-                                            case ExceptionMessageFieldsId.ErrorMessage:
-                                                errorMessage = ReadStringValue(stream, fieldSize2);
-                                                break;
-
-                                            case ExceptionMessageFieldsId.ErrorType:
-                                                errorType = ReadStringValue(stream, fieldSize2);
-                                                break;
-
-                                            case ExceptionMessageFieldsId.StackTrace:
-                                                stackTrace = ReadStringValue(stream, fieldSize2);
-                                                break;
-                                        }
-                                    }
-
-                                    exceptionMessages.Add(new ExceptionMessage(errorMessage, errorType, stackTrace));
-                                }
-
-                                break;
-                            }
+                            exceptionMessages = ReadExceptionMessagesPayload(stream);
+                            break;
 
                         case FailedTestResultMessageFieldsId.StandardOutput:
                             standardOutput = ReadStringValue(stream, fieldSize);
@@ -308,10 +270,50 @@ namespace Microsoft.DotNet.Tools.Test
                     }
                 }
 
-                failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, exceptionMessages.ToArray(), standardOutput, errorOutput, sessionUid));
+                failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, exceptionMessages, standardOutput, errorOutput, sessionUid));
             }
 
             return failedTestResultMessages;
+        }
+
+        private static ExceptionMessage[] ReadExceptionMessagesPayload(Stream stream)
+        {
+            var exceptionMessages = new List<ExceptionMessage>();
+
+            int length = ReadInt(stream);
+            for (int i = 0; i < length; i++)
+            {
+                int fieldCount = ReadShort(stream);
+
+                string? errorMessage = null;
+                string? errorType = null;
+                string? stackTrace = null;
+
+                for (int j = 0; j < fieldCount; j++)
+                {
+                    int fieldId = ReadShort(stream);
+                    int fieldSize = ReadInt(stream);
+
+                    switch (fieldId)
+                    {
+                        case ExceptionMessageFieldsId.ErrorMessage:
+                            errorMessage = ReadStringValue(stream, fieldSize);
+                            break;
+
+                        case ExceptionMessageFieldsId.ErrorType:
+                            errorType = ReadStringValue(stream, fieldSize);
+                            break;
+
+                        case ExceptionMessageFieldsId.StackTrace:
+                            stackTrace = ReadStringValue(stream, fieldSize);
+                            break;
+                    }
+                }
+
+                exceptionMessages.Add(new ExceptionMessage(errorMessage, errorType, stackTrace));
+            }
+
+            return exceptionMessages.ToArray();
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
