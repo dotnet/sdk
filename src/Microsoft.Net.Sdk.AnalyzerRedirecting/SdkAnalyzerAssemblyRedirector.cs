@@ -3,7 +3,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel.Composition;
-using Microsoft.CodeAnalysis.Diagnostics.Redirecting;
+using Microsoft.CodeAnalysis.Workspaces.AnalyzerRedirecting;
 
 // Example:
 // FullPath: "C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\8.0.8\analyzers\dotnet\System.Windows.Forms.Analyzers.dll"
