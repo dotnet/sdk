@@ -17,7 +17,11 @@ namespace Microsoft.Net.Sdk.AnalyzerRedirecting;
 public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 {
     private readonly string? _insertedAnalyzersDirectory;
-    private readonly Lazy<ImmutableDictionary<string, List<AnalyzerInfo>>> _analyzerMap;
+
+    /// <summary>
+    /// Map from analyzer assembly name (file name without extension) to a list of matching analyzers.
+    /// </summary>
+    private readonly ImmutableDictionary<string, List<AnalyzerInfo>> _analyzerMap;
 
     [ImportingConstructor]
     public SdkAnalyzerAssemblyRedirector()
@@ -27,13 +31,8 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
     internal SdkAnalyzerAssemblyRedirector(string? insertedAnalyzersDirectory)
     {
         _insertedAnalyzersDirectory = insertedAnalyzersDirectory;
-        _analyzerMap = new(CreateAnalyzerMap);
+        _analyzerMap = CreateAnalyzerMap();
     }
-
-    /// <summary>
-    /// Map from analyzer assembly name (file name without extension) to a list of matching analyzers.
-    /// </summary>
-    private ImmutableDictionary<string, List<AnalyzerInfo>> AnalyzerMap => _analyzerMap.Value;
 
     private ImmutableDictionary<string, List<AnalyzerInfo>> CreateAnalyzerMap()
     {
@@ -80,7 +79,7 @@ public sealed class SdkAnalyzerAssemblyRedirector : IAnalyzerAssemblyRedirector
 
     public string? RedirectPath(string fullPath)
     {
-        if (AnalyzerMap.TryGetValue(Path.GetFileNameWithoutExtension(fullPath), out var analyzers))
+        if (_analyzerMap.TryGetValue(Path.GetFileNameWithoutExtension(fullPath), out var analyzers))
         {
             foreach (AnalyzerInfo analyzer in analyzers)
             {
