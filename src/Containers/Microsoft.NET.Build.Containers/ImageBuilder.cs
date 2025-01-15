@@ -19,7 +19,6 @@ internal sealed class ImageBuilder
 
     // the mutable internal manifest that we're building by modifying the base and applying customizations
     private readonly ManifestV2 _manifest;
-    private readonly string _manifestMediaType;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
 
@@ -32,15 +31,15 @@ internal sealed class ImageBuilder
     public ImageConfig BaseImageConfig => _baseImageConfig;
 
     /// <summary>
-    /// MediaType of the output manifest.
+    /// MediaType of the output manifest. By default, this will be the same as the base images' manifest.
     /// </summary>
-    public string ManifestMediaType => _manifestMediaType; // output the same media type as the base image manifest.
+    public string ManifestMediaType { get; set; }
 
     internal ImageBuilder(ManifestV2 manifest, string manifestMediaType, ImageConfig baseImageConfig, ILogger logger)
     {
         _baseImageManifest = manifest;
         _manifest = new ManifestV2() { SchemaVersion = manifest.SchemaVersion, Config = manifest.Config, Layers = new(manifest.Layers), MediaType = manifest.MediaType };
-        _manifestMediaType = manifestMediaType;
+        ManifestMediaType = manifestMediaType;
         _baseImageConfig = baseImageConfig;
         _logger = logger;
     }
@@ -70,14 +69,20 @@ internal sealed class ImageBuilder
         ManifestConfig newManifestConfig = _manifest.Config with
         {
             digest = imageDigest,
-            size = imageSize
+            size = imageSize,
+            mediaType = ManifestMediaType switch
+            {
+                SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
+                SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
+                _ => SchemaTypes.OciImageConfigV1 // opinion - defaulting to modern here, but really this should never happen
+            }
         };
 
         ManifestV2 newManifest = new ManifestV2()
         {
             Config = newManifestConfig,
             SchemaVersion = _manifest.SchemaVersion,
-            MediaType = _manifest.MediaType,
+            MediaType = ManifestMediaType,
             Layers = _manifest.Layers
         };
 
