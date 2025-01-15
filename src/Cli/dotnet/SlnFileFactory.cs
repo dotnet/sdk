@@ -13,6 +13,11 @@ namespace Microsoft.DotNet.Tools.Common
     {
         public static string GetSolutionFileFullPath(string slnFileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
         {
+            // Throw error if slnFileOrDirectory is an invalid path
+            if (string.IsNullOrWhiteSpace(slnFileOrDirectory))
+            {
+                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory);
+            }
             if (File.Exists(slnFileOrDirectory))
             {
                 return Path.GetFullPath(slnFileOrDirectory);
@@ -64,27 +69,48 @@ namespace Microsoft.DotNet.Tools.Common
             return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
         }
 
-        public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionFile)
+        public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionPath)
         {
-            JsonDocument jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionFile));
-            JsonElement jsonElement = jsonDocument.RootElement;
-            JsonElement filteredSolutionJsonElement = jsonElement.GetProperty("solution");
-            string originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
-            string originalSolutionPathAbsolute = Path.GetFullPath(Path.GetDirectoryName(originalSolutionPath), filteredSolutionFile);
-            string[] filteredSolutionProjectPaths = filteredSolutionJsonElement.GetProperty("projects")
-                .EnumerateArray()
-                .Select(project => project.GetString())
-                .ToArray();
+            JsonDocument jsonDocument;
+            JsonElement jsonElement;
+            JsonElement filteredSolutionJsonElement;
+            string originalSolutionPath;
+            string originalSolutionPathAbsolute;
+            string[] filteredSolutionProjectPaths;
 
-            if (string.IsNullOrEmpty(originalSolutionPathAbsolute) || !File.Exists(originalSolutionPathAbsolute))
+            try
             {
+                jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath));
+                jsonElement = jsonDocument.RootElement;
+                filteredSolutionJsonElement = jsonElement.GetProperty("solution");
+                originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
+                originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
+                if (!File.Exists(originalSolutionPath))
+                {
+                    throw new Exception();
+                }
+                filteredSolutionProjectPaths = filteredSolutionJsonElement.GetProperty("projects")
+                    .EnumerateArray()
+                    .Select(project => project.GetString())
+                    .ToArray();
+            }
+            catch (Exception ex) {
                 throw new GracefulException(
                     CommonLocalizableStrings.InvalidSolutionFormatString,
-                    filteredSolutionFile, "");
+                    filteredSolutionPath, ex.Message);
             }
 
             SolutionModel filteredSolution = new SolutionModel();
-            SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPath);
+            SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPathAbsolute);
+
+            foreach (var platform in originalSolution.Platforms)
+            {
+                filteredSolution.AddPlatform(platform);
+            }
+            foreach (var buildType in originalSolution.BuildTypes)
+            {
+                filteredSolution.AddBuildType(buildType);
+            }
 
             foreach (string path in filteredSolutionProjectPaths)
             {
