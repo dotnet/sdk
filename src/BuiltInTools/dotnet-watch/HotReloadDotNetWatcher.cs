@@ -72,7 +72,6 @@ namespace Microsoft.DotNet.Watch
                 var waitForFileChangeBeforeRestarting = true;
                 EvaluationResult? evaluationResult = null;
                 RunningProject? rootRunningProject = null;
-                Task<ImmutableList<ChangedFile>>? fileWatcherTask = null;
                 IRuntimeProcessLauncher? runtimeProcessLauncher = null;
                 CompilationHandler? compilationHandler = null;
                 Action<ChangedPath>? fileChangedCallback = null;
@@ -101,7 +100,7 @@ namespace Microsoft.DotNet.Watch
 
                     await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    compilationHandler = new CompilationHandler(Context.Reporter);
+                    compilationHandler = new CompilationHandler(Context.Reporter, shutdownCancellationToken);
                     var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
@@ -517,38 +516,24 @@ namespace Microsoft.DotNet.Watch
                         await compilationHandler.TerminateNonRootProcessesAndDispose(CancellationToken.None);
                     }
 
-                    if (!rootProcessTerminationSource.IsCancellationRequested)
+                    if (rootRunningProject != null)
                     {
-                        rootProcessTerminationSource.Cancel();
+                        await rootRunningProject.TerminateAsync(shutdownCancellationToken);
                     }
 
-                    try
+                    if (runtimeProcessLauncher != null)
                     {
-                        // Wait for the root process to exit.
-                        await Task.WhenAll(new[] { (Task?)rootRunningProject?.RunningProcess, fileWatcherTask }.Where(t => t != null)!);
+                        await runtimeProcessLauncher.DisposeAsync();
                     }
-                    catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
+
+                    rootRunningProject?.Dispose();
+
+                    if (waitForFileChangeBeforeRestarting &&
+                        !shutdownCancellationToken.IsCancellationRequested &&
+                        !forceRestartCancellationSource.IsCancellationRequested)
                     {
-                        // nop
-                    }
-                    finally
-                    {
-                        fileWatcherTask = null;
-
-                        if (runtimeProcessLauncher != null)
-                        {
-                            await runtimeProcessLauncher.DisposeAsync();
-                        }
-
-                        rootRunningProject?.Dispose();
-
-                        if (waitForFileChangeBeforeRestarting &&
-                            !shutdownCancellationToken.IsCancellationRequested &&
-                            !forceRestartCancellationSource.IsCancellationRequested)
-                        {
-                            using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
-                            await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
-                        }
+                        using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
+                        await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
                     }
                 }
             }

@@ -43,13 +43,16 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         private ImmutableArray<string> _currentAggregateCapabilities;
 
+        private readonly CancellationToken _shutdownCancellationToken;
+
         private bool _isDisposed;
 
-        public CompilationHandler(IReporter reporter)
+        public CompilationHandler(IReporter reporter, CancellationToken shutdownCancellationToken)
         {
             _reporter = reporter;
             Workspace = new IncrementalMSBuildWorkspace(reporter);
             _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, GetAggregateCapabilitiesAsync);
+            _shutdownCancellationToken = shutdownCancellationToken;
         }
 
         public void Dispose()
@@ -542,16 +545,10 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private static async ValueTask<IReadOnlyList<int>> TerminateRunningProjects(IEnumerable<RunningProject> projects, CancellationToken cancellationToken)
+        private async ValueTask<IReadOnlyList<int>> TerminateRunningProjects(IEnumerable<RunningProject> projects, CancellationToken cancellationToken)
         {
-            // cancel first, this will cause the process tasks to complete:
-            foreach (var project in projects)
-            {
-                project.ProcessTerminationSource.Cancel();
-            }
-
             // wait for all tasks to complete:
-            return await Task.WhenAll(projects.Select(p => p.RunningProcess)).WaitAsync(cancellationToken);
+            return await Task.WhenAll(projects.Select(p => p.TerminateAsync(_shutdownCancellationToken).AsTask())).WaitAsync(cancellationToken);
         }
 
         private static Task ForEachProjectAsync(ImmutableDictionary<string, ImmutableArray<RunningProject>> projects, Func<RunningProject, CancellationToken, Task> action, CancellationToken cancellationToken)

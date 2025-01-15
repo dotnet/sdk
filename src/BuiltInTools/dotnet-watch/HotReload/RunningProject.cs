@@ -68,5 +68,24 @@ namespace Microsoft.DotNet.Watch
         {
             await DeltaApplier.WaitForProcessRunningAsync(cancellationToken);
         }
+
+        public async ValueTask<int> TerminateAsync(CancellationToken shutdownCancellationToken)
+        {
+            if (shutdownCancellationToken.IsCancellationRequested)
+            {
+                // Ctrl+C sent, wait for the process to exit
+                try
+                {
+                    _ = await RunningProcess.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None);
+                }
+                catch (TimeoutException)
+                {
+                    // nop
+                }
+            }
+
+            ProcessTerminationSource.Cancel();
+            return await RunningProcess;
+        }
     }
 }
