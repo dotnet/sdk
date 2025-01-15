@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Tools.Common
             JsonElement jsonElement = jsonDocument.RootElement;
             JsonElement filteredSolutionJsonElement = jsonElement.GetProperty("solution");
             string originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
-            string originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, filteredSolutionFile);
+            string originalSolutionPathAbsolute = Path.GetFullPath(Path.GetDirectoryName(originalSolutionPath), filteredSolutionFile);
             string[] filteredSolutionProjectPaths = filteredSolutionJsonElement.GetProperty("projects")
                 .EnumerateArray()
                 .Select(project => project.GetString())
