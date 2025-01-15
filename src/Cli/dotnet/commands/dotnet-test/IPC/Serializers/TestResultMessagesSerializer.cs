@@ -217,8 +217,8 @@ namespace Microsoft.DotNet.Tools.Test
             int length = ReadInt(stream);
             for (int i = 0; i < length; i++)
             {
-                string? uid = null, displayName = null, reason = null, sessionUid = null,
-                    errorMessage = null, errorStackTrace = null, standardOutput = null, errorOutput = null;
+                string? uid = null, displayName = null, reason = null, sessionUid = null, standardOutput = null, errorOutput = null;
+                List<ExceptionMessage> exceptionMessages = [];
                 byte? state = null;
                 long? duration = null;
 
@@ -251,13 +251,44 @@ namespace Microsoft.DotNet.Tools.Test
                             reason = ReadStringValue(stream, fieldSize);
                             break;
 
-                        case FailedTestResultMessageFieldsId.ErrorMessage:
-                            errorMessage = ReadStringValue(stream, fieldSize);
-                            break;
+                        case FailedTestResultMessageFieldsId.ExceptionMessageList:
+                            {
+                                int length2 = ReadInt(stream);
+                                for (int k = 0; k < length2; k++)
+                                {
 
-                        case FailedTestResultMessageFieldsId.ErrorStackTrace:
-                            errorStackTrace = ReadStringValue(stream, fieldSize);
-                            break;
+                                    int fieldCount2 = ReadShort(stream);
+
+                                    string? errorMessage = null;
+                                    string? errorType = null;
+                                    string? stackTrace = null;
+
+                                    for (int l = 0; l < fieldCount2; l++)
+                                    {
+                                        int fieldId2 = ReadShort(stream);
+                                        int fieldSize2 = ReadInt(stream);
+
+                                        switch (fieldId2)
+                                        {
+                                            case ExceptionMessageFieldsId.ErrorMessage:
+                                                errorMessage = ReadStringValue(stream, fieldSize2);
+                                                break;
+
+                                            case ExceptionMessageFieldsId.ErrorType:
+                                                errorType = ReadStringValue(stream, fieldSize2);
+                                                break;
+
+                                            case ExceptionMessageFieldsId.StackTrace:
+                                                stackTrace = ReadStringValue(stream, fieldSize2);
+                                                break;
+                                        }
+                                    }
+
+                                    exceptionMessages.Add(new ExceptionMessage(errorMessage, errorType, stackTrace));
+                                }
+
+                                break;
+                            }
 
                         case FailedTestResultMessageFieldsId.StandardOutput:
                             standardOutput = ReadStringValue(stream, fieldSize);
@@ -277,7 +308,7 @@ namespace Microsoft.DotNet.Tools.Test
                     }
                 }
 
-                failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, errorMessage, errorStackTrace, standardOutput, errorOutput, sessionUid));
+                failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, exceptionMessages.ToArray(), standardOutput, errorOutput, sessionUid));
             }
 
             return failedTestResultMessages;
@@ -354,11 +385,39 @@ namespace Microsoft.DotNet.Tools.Test
                 WriteField(stream, FailedTestResultMessageFieldsId.State, failedTestResultMessage.State);
                 WriteField(stream, FailedTestResultMessageFieldsId.Duration, failedTestResultMessage.Duration);
                 WriteField(stream, FailedTestResultMessageFieldsId.Reason, failedTestResultMessage.Reason);
-                WriteField(stream, FailedTestResultMessageFieldsId.ErrorMessage, failedTestResultMessage.ErrorMessage);
-                WriteField(stream, FailedTestResultMessageFieldsId.ErrorStackTrace, failedTestResultMessage.ErrorStackTrace);
+                WriteExceptionMessagesPayload(stream, failedTestResultMessage.Exceptions);
                 WriteField(stream, FailedTestResultMessageFieldsId.StandardOutput, failedTestResultMessage.StandardOutput);
                 WriteField(stream, FailedTestResultMessageFieldsId.ErrorOutput, failedTestResultMessage.ErrorOutput);
                 WriteField(stream, FailedTestResultMessageFieldsId.SessionUid, failedTestResultMessage.SessionUid);
+            }
+
+            // NOTE: We are able to seek only if we are using a MemoryStream
+            // thus, the seek operation is fast as we are only changing the value of a property
+            WriteAtPosition(stream, (int)(stream.Position - before), before - sizeof(int));
+        }
+
+        private static void WriteExceptionMessagesPayload(Stream stream, ExceptionMessage[]? exceptionMessages)
+        {
+            if (exceptionMessages is null || exceptionMessages.Length == 0)
+            {
+                return;
+            }
+
+            WriteShort(stream, FailedTestResultMessageFieldsId.ExceptionMessageList);
+
+            // We will reserve an int (4 bytes)
+            // so that we fill the size later, once we write the payload
+            WriteInt(stream, 0);
+
+            long before = stream.Position;
+            WriteInt(stream, exceptionMessages.Length);
+            foreach (ExceptionMessage exceptionMessage in exceptionMessages)
+            {
+                WriteShort(stream, GetFieldCount(exceptionMessage));
+
+                WriteField(stream, ExceptionMessageFieldsId.ErrorMessage, exceptionMessage.ErrorMessage);
+                WriteField(stream, ExceptionMessageFieldsId.ErrorType, exceptionMessage.ErrorType);
+                WriteField(stream, ExceptionMessageFieldsId.StackTrace, exceptionMessage.StackTrace);
             }
 
             // NOTE: We are able to seek only if we are using a MemoryStream
@@ -387,10 +446,14 @@ namespace Microsoft.DotNet.Tools.Test
             (failedTestResultMessage.State is null ? 0 : 1) +
             (failedTestResultMessage.Duration is null ? 0 : 1) +
             (failedTestResultMessage.Reason is null ? 0 : 1) +
-            (failedTestResultMessage.ErrorMessage is null ? 0 : 1) +
-            (failedTestResultMessage.ErrorStackTrace is null ? 0 : 1) +
+            (IsNullOrEmpty(failedTestResultMessage.Exceptions) ? 0 : 1) +
             (failedTestResultMessage.StandardOutput is null ? 0 : 1) +
             (failedTestResultMessage.ErrorOutput is null ? 0 : 1) +
             (failedTestResultMessage.SessionUid is null ? 0 : 1));
+
+        private static ushort GetFieldCount(ExceptionMessage exceptionMessage) =>
+            (ushort)((exceptionMessage.ErrorMessage is null ? 0 : 1) +
+            (exceptionMessage.ErrorType is null ? 0 : 1) +
+            (exceptionMessage.StackTrace is null ? 0 : 1));
     }
 }

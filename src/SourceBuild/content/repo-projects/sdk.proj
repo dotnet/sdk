@@ -70,6 +70,11 @@
     <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2'">
+    <RepositoryReference Remove="@(RepositoryReference)" />
+    <RepositoryReference Include="aspnetcore" DotNetBuildPass="2" />
+  </ItemGroup>
+
   <!--
     If we have authentication, keep the templating internal feed (if one exists) to acquire the
     text-only prebuilt. The source-build repo as a whole should depend on the same internal feed as

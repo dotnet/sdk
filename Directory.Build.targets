@@ -3,7 +3,7 @@
 <Project>
   <PropertyGroup>
     <!--
-      Disable nullable warnings when targeting anything other than our supported .NET core version(s). 
+      Disable nullable warnings when targeting anything other than our supported .NET core version(s).
       This condition will be evaluated multiple times in multi-targeted projects hence need to be careful
       to only set in the inner builds, not the outer build where only $(TargetFrameworks) is defined.
       We still check $(TargetFrameworks) for empty though, because for single-targeted builds we want to
@@ -67,6 +67,10 @@
         Update="Microsoft.NETCore.App"
         TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler"
+        ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2"
+        Crossgen2PackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition="$(MicrosoftAspNetCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))">
