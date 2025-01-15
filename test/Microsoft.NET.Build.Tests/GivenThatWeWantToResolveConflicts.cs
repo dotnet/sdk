@@ -263,7 +263,8 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Theory]
+        //  Should also run on full framework, but needs the right version of NuGet, which isn't on CI yet
+        [CoreMSBuildOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public void PlatformPackagesCanBePruned(bool prunePackages)
