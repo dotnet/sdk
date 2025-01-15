@@ -47,39 +47,5 @@ namespace Microsoft.DotNet.Cli
 
             return command;
         }
-
-        internal static string GetSlnFileFullPath(string slnFileOrDirectory)
-        {
-            if (File.Exists(slnFileOrDirectory))
-            {
-                return Path.GetFullPath(slnFileOrDirectory);
-            }
-            if (Directory.Exists(slnFileOrDirectory))
-            {
-                string[] files = [
-                    ..Directory.GetFiles(slnFileOrDirectory, "*.sln", SearchOption.TopDirectoryOnly),
-                    ..Directory.GetFiles(slnFileOrDirectory, "*.slnx", SearchOption.TopDirectoryOnly)];
-                if (files.Length == 0)
-                {
-                    throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionIn, slnFileOrDirectory);
-                }
-                if (files.Length > 1)
-                {
-                    throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, slnFileOrDirectory);
-                }
-                return Path.GetFullPath(files.Single());
-            }
-            throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, slnFileOrDirectory);
-        }
-
-        internal static ISolutionSerializer GetSolutionSerializer(string solutionFilePath)
-        {
-            ISolutionSerializer? serializer = SolutionSerializers.GetSerializerByMoniker(solutionFilePath);
-            if (serializer is null)
-            {
-                throw new GracefulException(LocalizableStrings.SerializerNotFound, solutionFilePath);
-            }
-            return serializer;
-        }
     }
 }
