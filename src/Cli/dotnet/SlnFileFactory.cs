@@ -10,6 +10,35 @@ namespace Microsoft.DotNet.Tools.Common
 {
     public static class SlnFileFactory
     {
+        public static string GetSolutionFileFullPath(string slnFileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
+        {
+            if (File.Exists(slnFileOrDirectory))
+            {
+                return Path.GetFullPath(slnFileOrDirectory);
+            }
+            if (Directory.Exists(slnFileOrDirectory))
+            {
+                string[] files = ListSolutionFilesInDirectory(slnFileOrDirectory, includeSolutionFilterFiles, includeSolutionXmlFiles);
+                if (files.Length == 0)
+                {
+                    throw new GracefulException(
+                        CommonLocalizableStrings.CouldNotFindSolutionIn,
+                        slnFileOrDirectory);
+                }
+                if (files.Length > 1)
+                {
+                    throw new GracefulException(
+                        CommonLocalizableStrings.MoreThanOneSolutionInDirectory,
+                        slnFileOrDirectory);
+                }
+                return Path.GetFullPath(files.Single());
+            }
+            throw new GracefulException(
+                CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
+                slnFileOrDirectory);
+        }
+
+
         public static string[] ListSolutionFilesInDirectory(string directory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
         {
             return [
@@ -19,21 +48,10 @@ namespace Microsoft.DotNet.Tools.Common
             ];
         }
 
-        public static SolutionModel CreateFromFileOrDirectory(string fileOrDirectory, bool includeSolutionXmlFiles = true)
+        public static SolutionModel CreateFromFileOrDirectory(string fileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
         {
-            if (File.Exists(fileOrDirectory))
-            {
-                return FromFile(fileOrDirectory);
-            }
-            else
-            {
-                return FromDirectory(fileOrDirectory, includeSolutionXmlFiles);
-            }
-        }
-
-        private static SolutionModel FromFile(string solutionPath)
-        {
-            SolutionModel slnFile = null;
+            string solutionPath = GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles, includeSolutionXmlFiles);
+            SolutionModel slnFile;
             try
             {
                 ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
@@ -50,56 +68,6 @@ namespace Microsoft.DotNet.Tools.Common
                     e.Message);
             }
             return slnFile;
-        }
-
-        private static SolutionModel FromDirectory(string solutionDirectory, bool includeSolutionXmlFiles)
-        {
-            DirectoryInfo dir;
-            try
-            {
-                dir = new DirectoryInfo(solutionDirectory);
-                if (!dir.Exists)
-                {
-                    throw new GracefulException(
-                        CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
-                        solutionDirectory);
-                }
-            }
-            catch (ArgumentException)
-            {
-                throw new GracefulException(
-                    CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
-                    solutionDirectory);
-            }
-
-            FileInfo[] files = [
-                ..dir.GetFiles("*.sln"),
-                ..(includeSolutionXmlFiles ? dir.GetFiles(".slnx") : [])
-             ];
-
-            if (files.Length == 0)
-            {
-                throw new GracefulException(
-                    CommonLocalizableStrings.CouldNotFindSolutionIn,
-                    solutionDirectory);
-            }
-
-            if (files.Length > 1)
-            {
-                throw new GracefulException(
-                    CommonLocalizableStrings.MoreThanOneSolutionInDirectory,
-                    solutionDirectory);
-            }
-
-            FileInfo solutionFile = files.Single();
-            if (!solutionFile.Exists)
-            {
-                throw new GracefulException(
-                    CommonLocalizableStrings.CouldNotFindSolutionIn,
-                    solutionDirectory);
-            }
-
-            return FromFile(solutionFile.FullName);
         }
     }
 }

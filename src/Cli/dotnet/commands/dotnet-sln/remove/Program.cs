@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
 
         public override int Execute()
         {
-            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
+            string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
             if (_projects.Count == 0)
             {
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
@@ -66,8 +66,8 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
 
         private async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
         {
-            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
-            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+            SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+            ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
 
             // set UTF-8 BOM encoding for .sln
             if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
