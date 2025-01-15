@@ -356,10 +356,6 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Analyzers" Version="10.0.0-alpha.2.25064.2">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Api.Analyzers" Version="10.0.0-alpha.2.25064.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
