@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Tools.Internal
+using Microsoft.Build.Graph;
+
+namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
@@ -14,9 +16,15 @@ namespace Microsoft.Extensions.Tools.Internal
 
         public static IReporter Singleton { get; } = new NullReporter();
 
-        public bool ReportProcessOutput => false;
+        public bool EnableProcessOutputReporting
+            => false;
 
-        public void ProcessOutput(string projectPath, string data) => throw new InvalidOperationException();
+        public void ReportProcessOutput(OutputLine line)
+            => throw new InvalidOperationException();
+
+        public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
+            => throw new InvalidOperationException();
+
 
         public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
         {

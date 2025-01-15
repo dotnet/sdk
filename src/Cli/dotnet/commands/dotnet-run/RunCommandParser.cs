@@ -34,6 +34,11 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CommandOptionNoLaunchProfileDescription
         };
 
+        public static readonly CliOption<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
+        {
+            Description = LocalizableStrings.CommandOptionNoLaunchProfileArgumentsDescription
+        };
+
         public static readonly CliOption<bool> NoBuildOption = new("--no-build")
         {
             Description = LocalizableStrings.CommandOptionNoBuildDescription
@@ -81,6 +86,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
             command.Options.Add(CommonOptions.ArtifactsPathOption);
+            command.Options.Add(CommonOptions.EnvOption);
 
             command.Arguments.Add(ApplicationArguments);
 

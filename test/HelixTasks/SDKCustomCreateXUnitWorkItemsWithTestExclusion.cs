@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
         /// <summary>
         /// The asynchronous execution method for this MSBuild task which verifies the integrity of required properties
-        /// and validates their formatting, specifically determining whether the provided xUnit project data have a 
+        /// and validates their formatting, specifically determining whether the provided xUnit project data have a
         /// one-to-one mapping. It then creates this mapping before asynchronously preparing the HelixWorkItem TaskItem
         /// objects via the PrepareWorkItem method.
         /// </summary>
@@ -155,6 +155,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
                 string command = $"{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                           $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 15m {testFilter} {enableDiagLogging} {arguments}";
+                command = $"{driver} test {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                          $"{(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .{Path.DirectorySeparatorChar} --logger trx --logger \"console;verbosity=detailed\" --blame-hang --blame-hang-timeout 15m {testFilter} -- {arguments}";
 
                 Log.LogMessage($"Creating work item with properties Identity: {assemblyName}, PayloadDirectory: {publishDirectory}, Command: {command}");
 

@@ -24,7 +24,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             return Verify(commandResult.StdOut)
                 .UniqueForOSPlatform()
                 .UseTextForParameters("common")
-                .DisableRequireUniquePrefix();
+                .DisableRequireUniquePrefix()
+                .AddScrubber(ScrubData);
         }
 
         [Fact]
@@ -39,7 +40,48 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .Pass();
 
-            return Verify(commandResult.StdOut).UniqueForOSPlatform();
+            return Verify(commandResult.StdOut)
+                .UniqueForOSPlatform()
+                .AddScrubber(ScrubData);
+        }
+
+        // We're listing the built in templates which we don't control so this fails often
+        // By scrubbing out the last three columns and then taking only the unique first words
+        // we can ensure that the list is showing columns and they haven't significantly changed.
+        // That's the best we can do for validating an output we don't control
+        private static void ScrubData(StringBuilder input)
+        {
+            var lines = input.ToString().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var scrubbedLines = new HashSet<string>();
+            bool isTable = false;
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("-----"))
+                {
+                    isTable = true;
+                    continue;
+                }
+
+                if (isTable)
+                {
+                    var columns = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (columns.Length > 0)
+                    {
+                        scrubbedLines.Add(columns[0]);
+                    }
+                }
+                else
+                {
+                    scrubbedLines.Add(line);
+                }
+            }
+
+            input.Clear();
+            foreach (var scrubbedLine in scrubbedLines)
+            {
+                input.AppendLine(scrubbedLine);
+            }
         }
 
         [Fact]
