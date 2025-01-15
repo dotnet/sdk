@@ -13,7 +13,7 @@ public static class HelpExtensions
     /// * distinct based on 'path' to get to this function (hence the parentCommandNames)
     /// </summary>
     /// <param name="command"></param>
-    /// <param name="prefix"></param>
+    /// <param name="parentCommandNames">The chain of commands to get to this command</param>
     /// <returns></returns>
     public static string FunctionName(this CliCommand command, string[]? parentCommandNames = null) => parentCommandNames switch
     {
