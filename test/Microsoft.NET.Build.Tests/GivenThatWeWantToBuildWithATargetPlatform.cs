@@ -1,0 +1,173 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.NET.Build.Tasks;
+
+namespace Microsoft.NET.Build.Tests
+{
+    public class GivenThatWeWantToBuildWithATargetPlatform : SdkTest
+    {
+        public GivenThatWeWantToBuildWithATargetPlatform(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [WindowsOnlyRequiresMSBuildVersionTheory("16.8.0.41402")]
+        [InlineData("netcoreapp3.1", ".NETCoreApp", "v3.1", "Windows", "7.0")] // Default values pre-5.0
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}", "", "")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-Windows7.0", ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}", "Windows", "7.0")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-WINDOWS7.0", ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}", "Windows", "7.0")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows", ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}", "Windows", "7.0")]
+        [InlineData($"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0", ".NETCoreApp", $"v{ToolsetInfo.CurrentTargetFrameworkVersion}", "Windows", "10.0.19041.0")]
+        public void It_defines_target_platform_from_target_framework(string targetFramework, string expectedTargetFrameworkIdentifier, string expectedTargetFrameworkVersion, string expectedTargetPlatformIdentifier, string expectedTargetPlatformVersion)
+        {
+            var testProj = new TestProject()
+            {
+                Name = "TargetPlatformTests",
+                TargetFrameworks = targetFramework
+            };
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: targetFramework);
+
+            Action<string, string> assertValue = (string valueName, string expected) =>
+            {
+                var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProj.Name), targetFramework, valueName);
+                getValuesCommand
+                    .Execute()
+                    .Should()
+                    .Pass();
+                if (expected.Trim().Equals(string.Empty))
+                {
+                    getValuesCommand.GetValues().Count.Should().Be(0, $"expect '{valueName}' to be '{expected}'. But get {string.Join(";", getValuesCommand.GetValues())}");
+                }
+                else
+                {
+                    getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { expected }, $"Asserting \"{valueName}\"'s value");
+                }
+            };
+
+            assertValue("TargetFrameworkIdentifier", expectedTargetFrameworkIdentifier);
+            assertValue("TargetFrameworkVersion", expectedTargetFrameworkVersion);
+            assertValue("TargetPlatformIdentifier", expectedTargetPlatformIdentifier);
+            assertValue("TargetPlatformIdentifier", expectedTargetPlatformIdentifier);
+            assertValue("TargetPlatformVersion", expectedTargetPlatformVersion);
+            assertValue("TargetPlatformMoniker", expectedTargetPlatformIdentifier.Equals(string.Empty) && expectedTargetPlatformVersion.Equals(string.Empty) ?
+                string.Empty : $"{expectedTargetPlatformIdentifier},Version={expectedTargetPlatformVersion}");
+            assertValue("TargetPlatformDisplayName", $"{expectedTargetPlatformIdentifier} {expectedTargetPlatformVersion}");
+        }
+
+        [WindowsOnlyRequiresMSBuildVersionFact("16.8.0.41402")]
+        public void It_defines_target_platform_from_target_framework_with_explicit_version()
+        {
+            var targetPlatformVersion = "10.0.19041.0";
+            var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
+            var testProj = new TestProject()
+            {
+                Name = "TargetPlatformTests",
+                TargetFrameworks = targetFramework
+            };
+            testProj.AdditionalProperties["TargetPlatformVersion"] = targetPlatformVersion;
+            var testAsset = _testAssetsManager.CreateTestProject(testProj);
+
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProj.Name), targetFramework, "TargetPlatformIdentifier");
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+            getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "Windows" });
+        }
+
+        [Fact]
+        public void It_fails_on_unsupported_os()
+        {
+            TestProject testProject = new()
+            {
+                Name = "UnsupportedOS",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-unsupported"
+            };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var build = new BuildCommand(Log, Path.Combine(testAsset.Path, testProject.Name));
+            build.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1139");
+        }
+
+        [Fact]
+        public void It_fails_if_targetplatformversion_is_constant_only()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "It_fails_if_targetplatformversion_is_constant_only",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            string DirectoryBuildTargetsContent = $@"
+<Project>
+  <ItemGroup>
+    <SdkSupportedTargetPlatformVersion Include=""111.0"" DefineConstantsOnly=""true"" />
+    <SdkSupportedTargetPlatformVersion Include=""222.0"" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetPlatformVersion>111.0</TargetPlatformVersion>
+    <TargetPlatformIdentifier>ios</TargetPlatformIdentifier>
+    <TargetPlatformSupported>true</TargetPlatformSupported>
+  </PropertyGroup>
+</Project>
+";
+
+            File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), DirectoryBuildTargetsContent);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1140")
+                .And
+                .HaveStdOutContaining(string.Format(Strings.InvalidTargetPlatformVersion, "111.0", "ios", "222.0").Split ('\n', '\r') [0])
+                .And
+                .HaveStdOutContaining("222.0");
+        }
+
+        [Fact]
+        public void It_fails_if_targetplatformversion_is_invalid()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "It_fails_if_targetplatformversion_is_invalid",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            string DirectoryBuildTargetsContent = $@"
+<Project>
+  <ItemGroup>
+    <SdkSupportedTargetPlatformVersion Include=""222.0"" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetPlatformVersion>111.0</TargetPlatformVersion>
+    <TargetPlatformIdentifier>ios</TargetPlatformIdentifier>
+    <TargetPlatformSupported>true</TargetPlatformSupported>
+  </PropertyGroup>
+</Project>
+";
+
+            File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), DirectoryBuildTargetsContent);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1140")
+                .And
+                .HaveStdOutContaining(string.Format(Strings.InvalidTargetPlatformVersion, "111.0", "ios", "222.0").Split ('\n', '\r') [0])
+                .And
+                .HaveStdOutContaining("222.0");
+        }
+    }
+}
