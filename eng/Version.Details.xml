@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.25063.5">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.25064.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8e895f2efee3203a8c134e3ba52da85305f7db7d</Sha>
+      <Sha>130f01eed959cbfe329cab2abcde501a1699df50</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.25063.5">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.25064.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8e895f2efee3203a8c134e3ba52da85305f7db7d</Sha>
+      <Sha>130f01eed959cbfe329cab2abcde501a1699df50</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.25063.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.25064.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8e895f2efee3203a8c134e3ba52da85305f7db7d</Sha>
+      <Sha>130f01eed959cbfe329cab2abcde501a1699df50</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.25063.12">
@@ -254,26 +254,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>56d28a6d280d38a8f0b8a56ac1abf0cf675f4411</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25063.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25065.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>71acd576deb230a0654562d5e002a4b10f1adbba</Sha>
+      <Sha>40823e831e408a9b6edf15587e0a14a34851db73</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25063.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25065.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>71acd576deb230a0654562d5e002a4b10f1adbba</Sha>
+      <Sha>40823e831e408a9b6edf15587e0a14a34851db73</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25063.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25065.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>71acd576deb230a0654562d5e002a4b10f1adbba</Sha>
+      <Sha>40823e831e408a9b6edf15587e0a14a34851db73</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25063.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25065.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>71acd576deb230a0654562d5e002a4b10f1adbba</Sha>
+      <Sha>40823e831e408a9b6edf15587e0a14a34851db73</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.25062.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.25065.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>0f380f765da88c10a361920bec87c4103cf47037</Sha>
+      <Sha>2fa8170912e376da061c5c4f3deeebaa795911d7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="10.0.0-alpha.2.25064.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -307,7 +307,48 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
     </Dependency>
+    <!-- Authentication and Components needed for dotnet/maui CoherentParentDependency -->
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Authentication.Google" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.Analyzers" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.Forms" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Components.SdkAnalyzers" Version="10.0.0-alpha.2.25064.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="10.0.0-alpha.2.25062.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Metadata" Version="10.0.0-alpha.2.25064.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
     </Dependency>
@@ -360,13 +401,13 @@
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-alpha.1.25061.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-alpha.1.25064.7" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>4406e6e4f870dd8c0b9032764d38df521ab652a5</Sha>
+      <Sha>92f6da9cb051207ad7ea054ca43a6521fe31b38b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-alpha.1.25062.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-alpha.1.25065.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>0f380f765da88c10a361920bec87c4103cf47037</Sha>
+      <Sha>2fa8170912e376da061c5c4f3deeebaa795911d7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="10.0.0-preview.24609.2">
       <Uri>https://github.com/dotnet/xdt</Uri>
