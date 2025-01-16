@@ -191,7 +191,7 @@ jobs:
     value: $(Agent.JobName)_Artifacts
 
   - name: failedJobArtifactName
-    value: $(Agent.JobName)_Artifacts_Attempt$(System.JobAttempt)
+    value: $(successfulJobArtifactName)_Attempt$(System.JobAttempt)
 
   # manually disable CodeQL until https://dev.azure.com/mseng/1ES/_workitems/edit/2211548 is implemented
   # CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary
