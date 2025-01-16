@@ -1,13 +1,4 @@
 <Solution>
-  <Configurations>
-    <Platform Name="Any CPU" />
-    <Platform Name="x64" />
-    <Platform Name="x86" />
-  </Configurations>
-  <Folder Name="/src/">
-    <Project Path="src/App/App.csproj">
-      <Platform Solution="*|x64" Project="x64" />
-      <Platform Solution="*|x86" Project="x86" />
-    </Project>
-  </Folder>
+  <Project Path="src/App/App.csproj" />
+  <Project Path="src/OtherApp/OtherApp.csproj" />
 </Solution>

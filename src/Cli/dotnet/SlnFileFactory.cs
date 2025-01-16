@@ -114,7 +114,10 @@ namespace Microsoft.DotNet.Tools.Common
 
             foreach (string path in filteredSolutionProjectPaths)
             {
-                SolutionProjectModel project = originalSolution.FindProject(path) ?? throw new GracefulException(
+                // Normalize path to use correct directory separator
+                string normalizedPath = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+
+                SolutionProjectModel project = originalSolution.FindProject(normalizedPath) ?? throw new GracefulException(
                         CommonLocalizableStrings.ProjectNotFoundInTheSolution,
                         path,
                         originalSolutionPath);
