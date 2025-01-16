@@ -4,19 +4,14 @@
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
-#else
-using JsonTokenType = Newtonsoft.Json.JsonToken;
-#endif
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     partial class WorkloadManifestReader
     {
         private static LocalizationCatalog ReadLocalizationCatalog(ref Utf8JsonStreamReader reader)
-            => new LocalizationCatalog(ReadStringDictionary(ref reader));
+            => new(ReadStringDictionary(ref reader));
 
         public static string? GetLocalizationCatalogFilePath(string manifestFilePath, CultureInfo? culture = null)
             => GetLocalizationCatalogFilePath(manifestFilePath, culture ?? CultureInfo.CurrentUICulture, _fileExists);

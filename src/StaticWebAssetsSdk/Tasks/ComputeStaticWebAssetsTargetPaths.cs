@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     var result = staticWebAsset.ToTaskItem();
                     var targetPath = staticWebAsset.ComputeTargetPath(
                         PathPrefix,
-                        UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar);
+                        UseAlternatePathDirectorySeparator ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar, StaticWebAssetTokenResolver.Instance);
 
                     if (AdjustPathsForPack && string.IsNullOrEmpty(Path.GetExtension(targetPath)))
                     {

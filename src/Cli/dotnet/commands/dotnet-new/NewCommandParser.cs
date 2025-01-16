@@ -4,22 +4,22 @@
 #nullable enable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.New;
-using Microsoft.TemplateEngine.Cli;
-using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.DotNet.Workloads.Workload.List;
-using Microsoft.TemplateEngine.Abstractions.Components;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
-using Microsoft.TemplateEngine.MSBuildEvaluation;
-using Microsoft.TemplateEngine.Abstractions.Constraints;
-using Microsoft.TemplateEngine.Cli.PostActionProcessors;
-using Microsoft.DotNet.Tools.New.PostActionProcessors;
-using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.Extensions.Logging;
-using Microsoft.DotNet.Tools;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.New;
+using Microsoft.DotNet.Tools.New.PostActionProcessors;
+using Microsoft.DotNet.Workloads.Workload.List;
+using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Components;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Cli;
+using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using Microsoft.TemplateEngine.MSBuildEvaluation;
+using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -133,10 +133,10 @@ namespace Microsoft.DotNet.Cli
             LogLevel logLevel)
         {
             var builtIns = new List<(Type InterfaceType, IIdentifiedComponent Instance)>();
-            builtIns.AddRange(Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents);
-            builtIns.AddRange(Microsoft.TemplateEngine.Edge.Components.AllComponents);
-            builtIns.AddRange(Microsoft.TemplateEngine.Cli.Components.AllComponents);
-            builtIns.AddRange(Microsoft.TemplateSearch.Common.Components.AllComponents);
+            builtIns.AddRange(TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents);
+            builtIns.AddRange(TemplateEngine.Edge.Components.AllComponents);
+            builtIns.AddRange(Components.AllComponents);
+            builtIns.AddRange(TemplateSearch.Common.Components.AllComponents);
 
             //post actions
             builtIns.AddRange(new (Type, IIdentifiedComponent)[]
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Cli
             builtIns.Add((typeof(ISdkInfoProvider), new SdkInfoProvider()));
 
             string? preferredLangEnvVar = Environment.GetEnvironmentVariable(PrefferedLangEnvVarName);
-            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar)? "C#" : preferredLangEnvVar;
+            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar) ? "C#" : preferredLangEnvVar;
 
             var preferences = new Dictionary<string, string>
             {

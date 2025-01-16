@@ -6,7 +6,7 @@ using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class CreateComHost : TaskWithAssemblyResolveHooks
+    public class CreateComHost : TaskBase
     {
         [Required]
         public string ComHostSourcePath { get; set; }
@@ -40,10 +40,6 @@ namespace Microsoft.NET.Build.Tasks
                     ComHostDestinationPath,
                     ClsidMapPath,
                     typeLibIdMap);
-            }
-            catch (ComHostCustomizationUnsupportedOSException)
-            {
-                Log.LogError(Strings.CannotEmbedClsidMapIntoComhost);
             }
             catch (TypeLibraryDoesNotExistException ex)
             {
