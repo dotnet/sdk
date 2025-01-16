@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
@@ -18,10 +19,10 @@ namespace Microsoft.DotNet.Cli
         }
 
         public ICommand Create(
-        	string commandName, 
-        	IEnumerable<string> args, 
-        	NuGetFramework framework = null, 
-        	string configuration = Constants.DefaultConfiguration)
+            string commandName,
+            IEnumerable<string> args,
+            NuGetFramework framework = null,
+            string configuration = Constants.DefaultConfiguration)
         {
             if (!_alwaysRunOutOfProc && TryGetBuiltInCommand(commandName, out var builtInCommand))
             {
@@ -37,9 +38,9 @@ namespace Microsoft.DotNet.Cli
         private bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
         {
             var command = Parser.GetBuiltInCommand(commandName);
-            if (command != null && command.Action != null)
+            if (command?.Action is AsynchronousCliAction action)
             {
-                commandFunc = (args) => command.Action.InvokeAsync(Parser.Instance.Parse(args)).Result;
+                commandFunc = (args) => action.InvokeAsync(Parser.Instance.Parse(args)).Result;
                 return true;
             }
             commandFunc = null;

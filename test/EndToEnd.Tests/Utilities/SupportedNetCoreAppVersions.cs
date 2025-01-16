@@ -1,0 +1,77 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Collections;
+
+namespace EndToEnd.Tests.Utilities
+{
+    public static class TargetFrameworkHelper
+    {
+        private static Version _firstNetAppVersion = new Version(5, 0);
+
+        public static IEnumerable<string> GetNetAppTargetFrameworks(IEnumerable<string> versions) =>
+            versions.Select(v => $"netcoreapp{v}")
+                    // Add netX.X tfms starting with 5.0
+                    .Concat(versions.Where(v => Version.Parse(v) >= _firstNetAppVersion).Select(v => $"net{v}"));
+    }
+
+    public class SupportedNetCoreAppVersions : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator() => Versions.Select(version => new object[] { version }).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public static IEnumerable<string> Versions => new[]
+        {
+            "1.0",
+            "1.1",
+            "2.0",
+            "2.1",
+            "2.2",
+            "3.0",
+            "3.1",
+            "5.0",
+            "6.0",
+            "7.0",
+            "8.0",
+            "9.0"
+        };
+
+        public static IEnumerable<string> TargetFrameworkShortFolderVersion
+        {
+            get
+            {
+                var targetFrameworkShortFolderVersion = new List<string>();
+                foreach (var v in Versions)
+                {
+                    if (Version.Parse(v).Major >= 5)
+                    {
+                        targetFrameworkShortFolderVersion.Add($"net{v}");
+                    }
+                    else
+                    {
+                        targetFrameworkShortFolderVersion.Add($"netcoreapp{v}");
+                    }
+                }
+
+                return targetFrameworkShortFolderVersion;
+            }
+        }
+    }
+
+    public class SupportedAspNetCoreVersions : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator() => Versions.Select(version => new object[] { version }).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public static IEnumerable<string> Versions =>
+            SupportedNetCoreAppVersions.Versions.Except(new List<string>() { "1.0", "1.1", "2.0" });
+    }
+
+    public class SupportedAspNetCoreAllVersions : IEnumerable<object[]>
+    {
+        public IEnumerator<object[]> GetEnumerator() => Versions.Select(version => new object[] { version }).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public static IEnumerable<string> Versions =>
+            SupportedAspNetCoreVersions.Versions.Where(v => new Version(v).Major < 3);
+    }
+}
