@@ -780,6 +780,112 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
+    [DockerAvailableFact]
+    public void MultiArchStillAllowsSingleRID()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+
+        // Run PublishContainer for multi-arch-capable, but single-arch actual
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/t:PublishContainer",
+            // make it so the app is _able_ to target both linux TFMs
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            // and that it opts into to multi-targeting containers for both of those linux TFMs
+            "/p:ContainerRuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            // but then only actually publishes for one of them
+            "/p:ContainerRuntimeIdentifier=linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for each RID,
+        // images were created locally for each RID
+        // and image index was NOT created
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry")
+            .And.NotHaveStdOutContaining($"Pushed image '{imageArm64}' to local registry")
+            .And.NotHaveStdOutContaining("Pushed image index");
+
+        // Check that the containers can be run
+        CommandResult processResultX64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}-x64",
+            imageX64)
+        .Execute();
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+    }
+
+    [DockerAvailableFact]
+    public void MultiArchStillAllowsSingleRIDUsingJustRIDProperties()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+
+        // Run PublishContainer for multi-arch-capable, but single-arch actual
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/t:PublishContainer",
+            // make it so the app is _able_ to target both linux TFMs
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            // but then only actually publishes for one of them
+            "-r linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for each RID,
+        // images were created locally for each RID
+        // and image index was NOT created
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry")
+            .And.NotHaveStdOutContaining($"Pushed image '{imageArm64}' to local registry")
+            .And.NotHaveStdOutContaining("Pushed image index");
+
+        // Check that the containers can be run
+        CommandResult processResultX64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}-x64",
+            imageX64)
+        .Execute();
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+    }
+
     private DirectoryInfo CreateNewProject(string template, [CallerMemberName] string callerMemberName = "")
     {
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, callerMemberName));
