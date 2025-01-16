@@ -126,10 +126,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--no-incremental', '--no-incremental', [CompletionResultType]::ParameterName, "Do not use incremental building.")
                 [CompletionResult]::new('--no-dependencies', '--no-dependencies', [CompletionResultType]::ParameterName, "Do not build project-to-project references and only build the specified project.")
                 [CompletionResult]::new('--nologo', '--nologo', [CompletionResultType]::ParameterName, "Do not display the startup banner or the copyright message.")
-                [CompletionResult]::new('--self-contained', '--self-contained', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine.
- The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
-                [CompletionResult]::new('--self-contained', '--sc', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine.
- The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
+                [CompletionResult]::new('--self-contained', '--self-contained', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
+                [CompletionResult]::new('--self-contained', '--sc', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
                 [CompletionResult]::new('--no-self-contained', '--no-self-contained', [CompletionResultType]::ParameterName, "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.")
                 [CompletionResult]::new('--arch', '--arch', [CompletionResultType]::ParameterName, "The target architecture.")
                 [CompletionResult]::new('--arch', '-a', [CompletionResultType]::ParameterName, "The target architecture.")
@@ -274,9 +272,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, "Checks the currently installed template packages for update, and install the updates.")
                 [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, "Searches for the templates on NuGet.org.")
                 [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, "Lists templates containing the specified template name. If no name is specified, lists all templates.")
-                [CompletionResult]::new('details', 'details', [CompletionResultType]::ParameterValue, "
-       Provides the details for specified template package.
-       The command checks if the package is installed locally, if it was not found, it searches the configured NuGet feeds.")
+                [CompletionResult]::new('details', 'details', [CompletionResultType]::ParameterValue, "       Provides the details for specified template package.       The command checks if the package is installed locally, if it was not found, it searches the configured NuGet feeds.")
             )
             $completions += $staticCompletions
             break
@@ -690,10 +686,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--artifacts-path', '--artifacts-path', [CompletionResultType]::ParameterName, "The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.")
                 [CompletionResult]::new('--manifest', '--manifest', [CompletionResultType]::ParameterName, "The path to a target manifest file that contains the list of packages to be excluded from the publish step.")
                 [CompletionResult]::new('--no-build', '--no-build', [CompletionResultType]::ParameterName, "Do not build the project before publishing. Implies --no-restore.")
-                [CompletionResult]::new('--self-contained', '--self-contained', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine.
- The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
-                [CompletionResult]::new('--self-contained', '--sc', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine.
- The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
+                [CompletionResult]::new('--self-contained', '--self-contained', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
+                [CompletionResult]::new('--self-contained', '--sc', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
                 [CompletionResult]::new('--no-self-contained', '--no-self-contained', [CompletionResultType]::ParameterName, "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.")
                 [CompletionResult]::new('--nologo', '--nologo', [CompletionResultType]::ParameterName, "Do not display the startup banner or the copyright message.")
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework to publish for. The target framework has to be specified in the project file.")
@@ -762,10 +756,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "The NuGet configuration file to use.")
                 [CompletionResult]::new('--no-http-cache', '--no-http-cache', [CompletionResultType]::ParameterName, "Disable Http Caching for packages.")
                 [CompletionResult]::new('--ignore-failed-sources', '--ignore-failed-sources', [CompletionResultType]::ParameterName, "Treat package source failures as warnings.")
-                [CompletionResult]::new('--force', '--force', [CompletionResultType]::ParameterName, "Force all dependencies to be resolved even if the last restore was successful.
- This is equivalent to deleting project.assets.json.")
-                [CompletionResult]::new('--force', '-f', [CompletionResultType]::ParameterName, "Force all dependencies to be resolved even if the last restore was successful.
- This is equivalent to deleting project.assets.json.")
+                [CompletionResult]::new('--force', '--force', [CompletionResultType]::ParameterName, "Force all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json.")
+                [CompletionResult]::new('--force', '-f', [CompletionResultType]::ParameterName, "Force all dependencies to be resolved even if the last restore was successful. This is equivalent to deleting project.assets.json.")
                 [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to restore packages for.")
                 [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to restore packages for.")
                 [CompletionResult]::new('--no-dependencies', '--no-dependencies', [CompletionResultType]::ParameterName, "Do not restore project-to-project references and only restore the specified project.")
@@ -800,10 +792,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--no-build', '--no-build', [CompletionResultType]::ParameterName, "Do not build the project before running. Implies --no-restore.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Do not restore the project before building.")
-                [CompletionResult]::new('--self-contained', '--self-contained', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine.
- The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
-                [CompletionResult]::new('--self-contained', '--sc', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine.
- The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
+                [CompletionResult]::new('--self-contained', '--self-contained', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
+                [CompletionResult]::new('--self-contained', '--sc', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
                 [CompletionResult]::new('--no-self-contained', '--no-self-contained', [CompletionResultType]::ParameterName, "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
@@ -898,89 +888,27 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--settings', '-s', [CompletionResultType]::ParameterName, "The settings file to use when running tests.")
                 [CompletionResult]::new('--list-tests', '--list-tests', [CompletionResultType]::ParameterName, "List the discovered tests instead of running the tests.")
                 [CompletionResult]::new('--list-tests', '-t', [CompletionResultType]::ParameterName, "List the discovered tests instead of running the tests.")
-                [CompletionResult]::new('--environment', '--environment', [CompletionResultType]::ParameterName, "Sets the value of an environment variable. 
- Creates the variable if it does not exist, overrides if it does. 
- This will force the tests to be run in an isolated process. 
- This argument can be specified multiple times to provide multiple variables.
- 
- Examples:
- -e VARIABLE=abc
- -e VARIABLE=`"value with spaces`"
- -e VARIABLE=`"value;seperated with;semicolons`"
- -e VAR1=abc -e VAR2=def -e VAR3=ghi
- ")
-                [CompletionResult]::new('--environment', '-e', [CompletionResultType]::ParameterName, "Sets the value of an environment variable. 
- Creates the variable if it does not exist, overrides if it does. 
- This will force the tests to be run in an isolated process. 
- This argument can be specified multiple times to provide multiple variables.
- 
- Examples:
- -e VARIABLE=abc
- -e VARIABLE=`"value with spaces`"
- -e VARIABLE=`"value;seperated with;semicolons`"
- -e VAR1=abc -e VAR2=def -e VAR3=ghi
- ")
-                [CompletionResult]::new('--filter', '--filter', [CompletionResultType]::ParameterName, "Run tests that match the given expression.
-                                         Examples:
-                                         Run tests with priority set to 1: --filter `"Priority = 1`"
-                                         Run a test with the specified full name: --filter `"FullyQualifiedName=Namespace.ClassName.MethodName`"
-                                         Run tests that contain the specified name: --filter `"FullyQualifiedName~Namespace.Class`"
-                                         See https://aka.ms/vstest-filtering for more information on filtering support.
-                                         ")
+                [CompletionResult]::new('--environment', '--environment', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;seperated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
+                [CompletionResult]::new('--environment', '-e', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;seperated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
+                [CompletionResult]::new('--filter', '--filter', [CompletionResultType]::ParameterName, "Run tests that match the given expression.                                         Examples:                                         Run tests with priority set to 1: --filter `"Priority = 1`"                                         Run a test with the specified full name: --filter `"FullyQualifiedName=Namespace.ClassName.MethodName`"                                         Run tests that contain the specified name: --filter `"FullyQualifiedName~Namespace.Class`"                                         See https://aka.ms/vstest-filtering for more information on filtering support.                                         ")
                 [CompletionResult]::new('--test-adapter-path', '--test-adapter-path', [CompletionResultType]::ParameterName, "The path to the custom adapters to use for the test run.")
-                [CompletionResult]::new('--logger', '--logger', [CompletionResultType]::ParameterName, "The logger to use for test results.
-                                         Examples:
-                                         Log in trx format using a unique file name: --logger trx
-                                         Log in trx format using the specified file name: --logger `"trx;LogFileName=<TestResults.trx>`"
-                                         See https://aka.ms/vstest-report for more information on logger arguments.")
-                [CompletionResult]::new('--logger', '-l', [CompletionResultType]::ParameterName, "The logger to use for test results.
-                                         Examples:
-                                         Log in trx format using a unique file name: --logger trx
-                                         Log in trx format using the specified file name: --logger `"trx;LogFileName=<TestResults.trx>`"
-                                         See https://aka.ms/vstest-report for more information on logger arguments.")
+                [CompletionResult]::new('--logger', '--logger', [CompletionResultType]::ParameterName, "The logger to use for test results.                                         Examples:                                         Log in trx format using a unique file name: --logger trx                                         Log in trx format using the specified file name: --logger `"trx;LogFileName=<TestResults.trx>`"                                         See https://aka.ms/vstest-report for more information on logger arguments.")
+                [CompletionResult]::new('--logger', '-l', [CompletionResultType]::ParameterName, "The logger to use for test results.                                         Examples:                                         Log in trx format using a unique file name: --logger trx                                         Log in trx format using the specified file name: --logger `"trx;LogFileName=<TestResults.trx>`"                                         See https://aka.ms/vstest-report for more information on logger arguments.")
                 [CompletionResult]::new('--output', '--output', [CompletionResultType]::ParameterName, "The output directory to place built artifacts in.")
                 [CompletionResult]::new('--output', '-o', [CompletionResultType]::ParameterName, "The output directory to place built artifacts in.")
                 [CompletionResult]::new('--artifacts-path', '--artifacts-path', [CompletionResultType]::ParameterName, "The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.")
                 [CompletionResult]::new('--diag', '--diag', [CompletionResultType]::ParameterName, "Enable verbose logging to the specified file.")
                 [CompletionResult]::new('--diag', '-d', [CompletionResultType]::ParameterName, "Enable verbose logging to the specified file.")
                 [CompletionResult]::new('--no-build', '--no-build', [CompletionResultType]::ParameterName, "Do not build the project before testing. Implies --no-restore.")
-                [CompletionResult]::new('--results-directory', '--results-directory', [CompletionResultType]::ParameterName, "The directory where the test results will be placed.
- The specified directory will be created if it does not exist.")
-                [CompletionResult]::new('--collect', '--collect', [CompletionResultType]::ParameterName, "The friendly name of the data collector to use for the test run.
-                                         More info here: https://aka.ms/vstest-collect")
-                [CompletionResult]::new('--blame', '--blame', [CompletionResultType]::ParameterName, "Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default. 
- 
- When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.
- 
- Based on the additional settings, hang dump or crash dump can also be collected.
- 
- Example: 
-   Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly. 
-   (Crash dumps require additional setup, see below.)
-   dotnet test --blame-hang --blame-crash
- Example: 
-   Timeout the test run when a test takes more than 20 minutes and collect hang dump. 
-   dotnet test --blame-hang-timeout 20min
- ")
-                [CompletionResult]::new('--blame-crash', '--blame-crash', [CompletionResultType]::ParameterName, "Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
-   
- For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.
- 
- Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.
- 
- The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump
-   
- To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
- 
- Implies --blame.")
+                [CompletionResult]::new('--results-directory', '--results-directory', [CompletionResultType]::ParameterName, "The directory where the test results will be placed. The specified directory will be created if it does not exist.")
+                [CompletionResult]::new('--collect', '--collect', [CompletionResultType]::ParameterName, "The friendly name of the data collector to use for the test run.                                         More info here: https://aka.ms/vstest-collect")
+                [CompletionResult]::new('--blame', '--blame', [CompletionResultType]::ParameterName, "Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.   When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.  Based on the additional settings, hang dump or crash dump can also be collected.  Example:    Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.    (Crash dumps require additional setup, see below.)   dotnet test --blame-hang --blame-crash Example:    Timeout the test run when a test takes more than 20 minutes and collect hang dump.    dotnet test --blame-hang-timeout 20min ")
+                [CompletionResult]::new('--blame-crash', '--blame-crash', [CompletionResultType]::ParameterName, "Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.    For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.  Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.  The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump    To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.  Implies --blame.")
                 [CompletionResult]::new('--blame-crash-dump-type', '--blame-crash-dump-type', [CompletionResultType]::ParameterName, "The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.")
                 [CompletionResult]::new('--blame-crash-collect-always', '--blame-crash-collect-always', [CompletionResultType]::ParameterName, "Enables collecting crash dump on expected as well as unexpected testhost exit.")
                 [CompletionResult]::new('--blame-hang', '--blame-hang', [CompletionResultType]::ParameterName, "Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout. Implies --blame-hang.")
                 [CompletionResult]::new('--blame-hang-dump-type', '--blame-hang-dump-type', [CompletionResultType]::ParameterName, "The type of crash dump to be collected. The supported values are full (default), mini, and none. When `'none`' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.")
-                [CompletionResult]::new('--blame-hang-timeout', '--blame-hang-timeout', [CompletionResultType]::ParameterName, "Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
- The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
- When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
- For MSTest before 2.2.4, the timeout is used for all testcases.")
+                [CompletionResult]::new('--blame-hang-timeout', '--blame-hang-timeout', [CompletionResultType]::ParameterName, "Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h. The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds. When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case, For MSTest before 2.2.4, the timeout is used for all testcases.")
                 [CompletionResult]::new('--nologo', '--nologo', [CompletionResultType]::ParameterName, "Run test(s), without displaying Microsoft Testplatform banner")
                 [CompletionResult]::new('--configuration', '--configuration', [CompletionResultType]::ParameterName, "The configuration to use for running tests. The default for most projects is `'Debug`'.")
                 [CompletionResult]::new('--configuration', '-c', [CompletionResultType]::ParameterName, "The configuration to use for running tests. The default for most projects is `'Debug`'.")
@@ -1188,8 +1116,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('repair', 'repair', [CompletionResultType]::ParameterValue, "Repair workload installations.")
                 [CompletionResult]::new('restore', 'restore', [CompletionResultType]::ParameterValue, "Restore workloads required for a project.")
                 [CompletionResult]::new('clean', 'clean', [CompletionResultType]::ParameterValue, "Removes workload components that may have been left behind from previous updates and uninstallations.")
-                [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, "Modify or display workload configuration values.
- To display a value, specify the corresponding command-line option without providing a value.  For example: `"dotnet workload config --update-mode`"")
+                [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, "Modify or display workload configuration values. To display a value, specify the corresponding command-line option without providing a value.  For example: `"dotnet workload config --update-mode`"")
                 [CompletionResult]::new('history', 'history', [CompletionResultType]::ParameterValue, "Shows a history of workload installation actions.")
             )
             $completions += $staticCompletions
