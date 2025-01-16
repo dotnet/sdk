@@ -47,6 +47,11 @@
     <ManifestBuildData Include="AzureDevOpsBranch=$(BUILD_SOURCEBRANCH)" />
   </ItemGroup>
 
+  <!-- The PGO sdk should always have External visibility, even if someone changes the default artifact visibility -->
+  <ItemGroup>
+    <Artifact Update="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*" Visibility="External" />
+  </ItemGroup>
+
   <ItemGroup>
     <ToolsetAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
   </ItemGroup>
