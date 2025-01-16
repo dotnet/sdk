@@ -103,7 +103,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PredefinedCulturesOnly Condition="'$(PredefinedCulturesOnly)' == '' and '$(InvariantGlobalization)' == 'true'">true</PredefinedCulturesOnly>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(GenerateResourceWarnOnBinaryFormatterUse)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))">
+  <PropertyGroup Condition="'$(GenerateResourceWarnOnBinaryFormatterUse)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0'))">
     <GenerateResourceWarnOnBinaryFormatterUse>true</GenerateResourceWarnOnBinaryFormatterUse>
   </PropertyGroup>
 
@@ -1235,6 +1235,8 @@ Copyright (c) .NET Foundation. All rights reserved.
          NoStandardLib="$(NoCompilerStandardLib)"
          Optimize="$(Optimize)"
          PublicSign="$(PublicSign)"
+         PathMap="$(PathMap)"
+         Features="$(Features)"
          DelaySign="$(DelaySign)"
          Deterministic="$(Deterministic)"
          DisabledWarnings="$(DisabledWarnings)"

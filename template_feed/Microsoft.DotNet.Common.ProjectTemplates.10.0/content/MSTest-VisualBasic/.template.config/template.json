@@ -55,26 +55,6 @@
           "description": ".NET 8 (Windows only)"
         },
         {
-          "choice": "net7.0",
-          "description": ".NET 7"
-        },
-        {
-          "choice": "net7.0-windows",
-          "description": ".NET 7 (Windows only)"
-        },
-        {
-          "choice": "net6.0",
-          "description": ".NET 6"
-        },
-        {
-          "choice": "net6.0-windows",
-          "description": ".NET 6 (Windows only)"
-        },
-        {
-          "choice": "netcoreapp3.1",
-          "description": ".NET Core 3.1"
-        },
-        {
           "choice": "net481",
           "description": ".NET Framework 4.8.1"
         },
