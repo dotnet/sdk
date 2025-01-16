@@ -18,7 +18,7 @@ public class DotnetCliSnapshotTests : SdkTest
         var provider = System.CommandLine.StaticCompletions.CompletionsCommand.DefaultShells.Single(x => x.ArgumentName == shellName);
         var completions = provider.GenerateCompletions(Microsoft.DotNet.Cli.Parser.RootCommand);
         var settings = new VerifySettings();
-        settings.UseDirectory($"snapshots/{provider.ArgumentName}");
+        settings.UseDirectory(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings);
     }
 
