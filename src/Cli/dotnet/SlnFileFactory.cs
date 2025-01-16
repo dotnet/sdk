@@ -115,11 +115,11 @@ namespace Microsoft.DotNet.Tools.Common
             foreach (string path in filteredSolutionProjectPaths)
             {
                 // Normalize path to use correct directory separator
-                string normalizedPath = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+                string normalizedPath = path.Replace('\\', Path.DirectorySeparatorChar);
 
                 SolutionProjectModel project = originalSolution.FindProject(normalizedPath) ?? throw new GracefulException(
                         CommonLocalizableStrings.ProjectNotFoundInTheSolution,
-                        path,
+                        normalizedPath,
                         originalSolutionPath);
                 filteredSolution.AddProject(project.FilePath, project.Type, project.Parent is null ? null : filteredSolution.AddFolder(project.Parent.Path));
             }
