@@ -20,7 +20,7 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
         var reporter = new TestReporter(Logger);
         var options = TestOptions.GetProjectOptions(["--project", hostProject]);
 
-        var environmentOptions = new EnvironmentOptions(Environment.CurrentDirectory, "dotnet", TimeSpan.FromSeconds(1000));
+        var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet");
 
         var factory = new MSBuildFileSetFactory(
             rootProjectFile: options.ProjectPath,
