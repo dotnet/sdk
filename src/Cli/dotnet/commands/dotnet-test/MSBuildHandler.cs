@@ -342,7 +342,7 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    binLogFileName = $"msbuild_{Guid.NewGuid().ToString()}.binlog";
+                    binLogFileName = CliConstants.BinLogFileName;
                 }
 
                 return true;
