@@ -123,10 +123,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
 
-            // suppress all DCP timeouts:
+            // suppress all timeouts:
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
+            commandSpec.WithEnvironmentVariable("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS", "1000000");
 
             foreach (var env in EnvironmentVariables)
             {

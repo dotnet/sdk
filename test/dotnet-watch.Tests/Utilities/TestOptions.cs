@@ -15,7 +15,7 @@ internal static class TestOptions
     public static readonly ProjectOptions ProjectOptions = GetProjectOptions([]);
 
     public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", string muxerPath = "", TestAsset? asset = null)
-        => new(workingDirectory, muxerPath, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
+        => new(workingDirectory, muxerPath, ProcessCleanupTimeout: TimeSpan.FromDays(1), TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
 
     public static CommandLineOptions GetCommandLineOptions(string[] args)
         => CommandLineOptions.Parse(args, NullReporter.Singleton, TextWriter.Null, out _) ?? throw new InvalidOperationException();

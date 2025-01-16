@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Watch
 
                     await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    compilationHandler = new CompilationHandler(Context.Reporter, shutdownCancellationToken);
+                    compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, shutdownCancellationToken);
                     var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);

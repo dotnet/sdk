@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Watch
     internal sealed class CompilationHandler : IDisposable
     {
         public readonly IncrementalMSBuildWorkspace Workspace;
+        public readonly EnvironmentOptions EnvironmentOptions;
 
         private readonly IReporter _reporter;
         private readonly WatchHotReloadService _hotReloadService;
@@ -47,9 +48,10 @@ namespace Microsoft.DotNet.Watch
 
         private bool _isDisposed;
 
-        public CompilationHandler(IReporter reporter, CancellationToken shutdownCancellationToken)
+        public CompilationHandler(IReporter reporter, EnvironmentOptions environmentOptions, CancellationToken shutdownCancellationToken)
         {
             _reporter = reporter;
+            EnvironmentOptions = environmentOptions;
             Workspace = new IncrementalMSBuildWorkspace(reporter);
             _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, GetAggregateCapabilitiesAsync);
             _shutdownCancellationToken = shutdownCancellationToken;
@@ -157,6 +159,7 @@ namespace Microsoft.DotNet.Watch
             var runningProject = new RunningProject(
                 projectNode,
                 projectOptions,
+                EnvironmentOptions,
                 deltaApplier,
                 processReporter,
                 browserRefreshServer,

@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Watch
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
         ProjectOptions options,
+        EnvironmentOptions environmentOptions,
         DeltaApplier deltaApplier,
         IReporter reporter,
         BrowserRefreshServer? browserRefreshServer,
@@ -76,7 +77,7 @@ namespace Microsoft.DotNet.Watch
                 // Ctrl+C sent, wait for the process to exit
                 try
                 {
-                    _ = await RunningProcess.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None);
+                    _ = await RunningProcess.WaitAsync(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
                 }
                 catch (TimeoutException)
                 {

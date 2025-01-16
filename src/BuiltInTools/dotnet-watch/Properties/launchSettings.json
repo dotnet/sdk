@@ -8,7 +8,8 @@
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",
         "DCP_IDE_REQUEST_TIMEOUT_SECONDS": "100000",
         "DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS": "100000",
-        "DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS": "100000"
+        "DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS": "100000",
+        "DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS": "10000000"
       }
     }
   }
