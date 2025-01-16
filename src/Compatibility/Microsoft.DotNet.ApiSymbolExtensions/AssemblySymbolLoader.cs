@@ -18,18 +18,18 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     {
         // This is a list of dangling .NET Framework internal assemblies that should never get loaded.
         private static readonly HashSet<string> s_assembliesToIgnore = [
-          "System.ServiceModel.Internals.dll",
-          "Microsoft.Internal.Tasks.Dataflow.dll",
-          "MSDATASRC.dll",
-          "ADODB.dll",
-          "Microsoft.StdFormat.dll",
-          "stdole.dll",
-          "PresentationUI.dll",
-          "Microsoft.VisualBasic.Activities.Compiler.dll",
-          "SMDiagnostics.dll",
-          "System.Xaml.Hosting.dll",
-          "Microsoft.Transactions.Bridge.dll",
-          "Microsoft.Workflow.Compiler.dll"
+            "System.ServiceModel.Internals",
+            "Microsoft.Internal.Tasks.Dataflow",
+            "MSDATASRC",
+            "ADODB",
+            "Microsoft.StdFormat",
+            "stdole",
+            "PresentationUI",
+            "Microsoft.VisualBasic.Activities.Compiler",
+            "SMDiagnostics",
+            "System.Xaml.Hosting",
+            "Microsoft.Transactions.Bridge",
+            "Microsoft.Workflow.Compiler"
         ];
 
         private readonly ILog _log;
@@ -355,11 +355,13 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             foreach (AssemblyReferenceHandle handle in reader.AssemblyReferences)
             {
                 AssemblyReference reference = reader.GetAssemblyReference(handle);
-                string name = $"{reader.GetString(reference.Name)}.dll";
+                string nameWithoutExtension = reader.GetString(reference.Name);
 
                 // Skip assemblies that should never get loaded because they are purely internal
-                if (s_assembliesToIgnore.Contains(name))
+                if (s_assembliesToIgnore.Contains(nameWithoutExtension))
                     continue;
+
+                string name = nameWithoutExtension + ".dll";
 
                 // Skip reference assemblies that are loaded later.
                 if (referenceAssemblyNamesToIgnore != null && referenceAssemblyNamesToIgnore.Contains(name))
