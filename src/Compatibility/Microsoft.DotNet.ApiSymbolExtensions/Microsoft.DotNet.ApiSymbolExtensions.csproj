@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
-    <!-- Disable transitive pinning, we can't upgrade Roslyn dependencies that are excluded  -->
+    <!-- Disable transitive pinning, we shouldn't upgrade dependencies that are excluded for runtime and provided externally. -->
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
