@@ -399,7 +399,7 @@
   Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
-      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and (('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == ''))">true</_IsMultiRIDBuild>
+      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and (('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentifier)' == ''))">true</_IsMultiRIDBuild>
       <_IsSingleRIDBuild Condition="'$(_IsMultiRIDBuild)' == ''">true</_IsSingleRIDBuild>
     </PropertyGroup>
 
