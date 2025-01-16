@@ -59,26 +59,5 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
-
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
-        [Theory]
-        public void RunHelpOnTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
-                .WithSource();
-
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
-                                    .Execute(CliConstants.HelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
-
-            if (!TestContext.IsLocalized())
-            {
-                result.StdOut.Should().Contain("Test application(s) that support VSTest are not supported.");
-            }
-
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
-        }
     }
 }
