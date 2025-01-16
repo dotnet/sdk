@@ -16,7 +16,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
             var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "⌚")} ";
 
-            // stdout
             reporter.Verbose("verbose {0}");
             Assert.Equal($"{dotnetWatchDefaultPrefix}verbose {{0}}" + EOL, testConsole.GetOutput());
             testConsole.Clear();
@@ -29,9 +28,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal($"{dotnetWatchDefaultPrefix}warn" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
-            // stderr
             reporter.Error("error");
-            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetError());
+            Assert.Equal($"dotnet watch {(suppressEmojis ? ":" : "❌")} error" + EOL, testConsole.GetOutput());
             testConsole.Clear();
         }
 
@@ -44,7 +42,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             IReporter reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false, suppressEmojis: suppressEmojis);
             var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "😄")}";
 
-            // stdout
             reporter.Verbose("verbose", emoji: "😄");
             Assert.Equal($"{dotnetWatchDefaultPrefix} verbose" + EOL, testConsole.GetOutput());
             testConsole.Clear();
