@@ -236,7 +236,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
         bool allTestsWereSkipped = totalTests == 0 || totalTests == totalSkippedTests;
         bool anyTestFailed = totalFailedTests > 0;
-        bool runFailed = anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
+        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success);
+        bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
         terminal.SetColor(runFailed ? TerminalColor.Red : TerminalColor.Green);
 
         terminal.Append(LocalizableStrings.TestRunSummary);
@@ -254,7 +255,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(LocalizableStrings.ZeroTestsRan);
         }
-        else if (anyTestFailed)
+        else if (anyTestFailed || anyAssemblyFailed)
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", LocalizableStrings.Failed));
         }
@@ -290,17 +291,28 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int failed = _assemblies.Values.Sum(t => t.FailedTests);
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
+        int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0);
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
-        bool colorizePassed = passed > 0 && _buildErrorsCount == 0 && failed == 0;
-        bool colorizeSkipped = skipped > 0 && skipped == total && _buildErrorsCount == 0 && failed == 0;
+        bool colorizeError = error > 0;
+        bool colorizePassed = passed > 0 && _buildErrorsCount == 0 && failed == 0 && error == 0;
+        bool colorizeSkipped = skipped > 0 && skipped == total && _buildErrorsCount == 0 && failed == 0 && error == 0;
 
+        string errorText = $"{SingleIndentation}error: {error}";
         string totalText = $"{SingleIndentation}total: {total}";
         string failedText = $"{SingleIndentation}failed: {failed}";
         string passedText = $"{SingleIndentation}succeeded: {passed}";
         string skippedText = $"{SingleIndentation}skipped: {skipped}";
         string durationText = $"{SingleIndentation}duration: ";
+
+        if(error > 0)
+        {
+            terminal.SetColor(TerminalColor.Red);
+            terminal.AppendLine(errorText);
+            terminal.ResetColor();
+            terminal.AppendLine();
+        }
 
         terminal.ResetColor();
         terminal.AppendLine(totalText);
@@ -739,6 +751,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int? exitCode, string? outputData, string? errorData)
     {
         TestProgressState assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
+        assemblyRun.ExitCode = exitCode;
+        assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
         _terminalWithProgress.RemoveWorker(assemblyRun.SlotIndex);
@@ -787,7 +801,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture);
         terminal.Append(' ');
-        AppendAssemblyResult(terminal, assemblyRun.FailedTests == 0, failedTests, warnings);
+        AppendAssemblyResult(terminal, assemblyRun.Success, failedTests, warnings);
         terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
     }
