@@ -187,6 +187,12 @@ jobs:
   - name: artifactsStagingDir
     value: $(Build.ArtifactStagingDirectory)/artifacts
 
+  - name: successfulJobArtifactName
+    value: $(Agent.JobName)_Artifacts
+
+  - name: failedJobArtifactName
+    value: $(Agent.JobName)_Artifacts_Attempt$(System.JobAttempt)
+
   # manually disable CodeQL until https://dev.azure.com/mseng/1ES/_workitems/edit/2211548 is implemented
   # CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary
   - ${{ if eq(parameters.pool.os, 'macOS') }}:
@@ -205,9 +211,16 @@ jobs:
 
     - output: pipelineArtifact
       path: $(artifactsStagingDir)
-      artifact: $(Agent.JobName)_Artifacts
+      artifact: $(successfulJobArtifactName)
       displayName: Publish Artifacts
-      condition: succeededOrFailed()
+      condition: succeeded()
+      sbomEnabled: true
+
+    - output: pipelineArtifact
+      path: $(artifactsStagingDir)
+      artifact: $(failedJobArtifactName)
+      displayName: Publish Artifacts
+      condition: failed()
       sbomEnabled: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
@@ -603,9 +616,15 @@ jobs:
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     - publish: $(artifactsStagingDir)
-      artifact: $(Agent.JobName)_Artifacts
+      artifact: $(successfulJobArtifactName)
       displayName: Publish Artifacts
-      condition: succeededOrFailed()
+      condition: succeeded()
+      continueOnError: true
+
+    - publish: $(artifactsStagingDir)
+      artifact: $(failedJobArtifactName)
+      displayName: Publish Artifacts
+      condition: failed()
       continueOnError: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
