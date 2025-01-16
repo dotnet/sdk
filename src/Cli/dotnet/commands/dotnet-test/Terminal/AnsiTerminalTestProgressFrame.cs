@@ -189,7 +189,9 @@ internal sealed class AnsiTerminalTestProgressFrame
 
         // When there is nothing to render, don't write empty lines, e.g. when we start the test run, and then we kick off build
         // in dotnet test, there is a long pause where we have no assemblies and no test results (yet).
-        if (progress.Length > 0)
+        //
+        // We do pre-allocate the array so it is full of nulls once we allocate it but don't have any items to render yet.
+        if (progress.Length > 0 && progress.Any(i => i != null))
         {
             terminal.AppendLine();
         }
