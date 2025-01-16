@@ -399,10 +399,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             public string CssScope { get; }
         }
 
-        private class StaticTagHelperFeature : ITagHelperFeature
+        private class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
         {
-            public RazorEngine Engine { get; set; }
-
             public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
 
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;
