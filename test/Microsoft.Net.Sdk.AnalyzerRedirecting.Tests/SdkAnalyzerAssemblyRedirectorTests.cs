@@ -7,6 +7,8 @@ public class SdkAnalyzerAssemblyRedirectorTests(ITestOutputHelper log) : SdkTest
 {
     [Theory]
     [InlineData("9.0.0-preview.5.24306.11", "9.0.0-preview.7.24406.2")]
+    [InlineData("9.0.0-preview.5.24306.11", "9.0.1-preview.7.24406.2")]
+    [InlineData("9.0.100", "9.0.0-preview.7.24406.2")]
     [InlineData("9.0.100", "9.0.200")]
     [InlineData("9.0.100", "9.0.101")]
     public void SameMajorMinorVersion(string a, string b)
@@ -39,6 +41,7 @@ public class SdkAnalyzerAssemblyRedirectorTests(ITestOutputHelper log) : SdkTest
     [Theory]
     [InlineData("8.0.100", "9.0.0-preview.7.24406.2")]
     [InlineData("9.1.100", "9.0.0-preview.7.24406.2")]
+    [InlineData("9.1.0-preview.5.24306.11", "9.0.0-preview.7.24406.2")]
     [InlineData("9.0.100", "9.1.100")]
     [InlineData("9.0.100", "10.0.100")]
     [InlineData("9.9.100", "9.10.100")]
