@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 string net9ProjectDllRegex = @"\s+.*\\net9\.0\\TestProjectWithNet9\.dll.*\s+--report-trx\s+--report-trx-filename";
                 string net48ProjectExeRegex = @"\s+.*\\net4\.8\\TestProjectWithNetFramework\.exe.*\s+--report-trx\s+--report-trx-filename";
 
-                Assert.Matches(@$"Unavailable extension options:(?:({net9ProjectDllRegex})|({net48ProjectExeRegex}))(?:({net9ProjectDllRegex})|({net48ProjectExeRegex}))", result.StdOut);
+                Assert.Matches(@$"Unavailable extension options:(?:({net9ProjectDllRegex})|({net48ProjectExeRegex}))(?:({net48ProjectExeRegex})|({net9ProjectDllRegex}))", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
