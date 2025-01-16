@@ -16,6 +16,22 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public class AssemblySymbolLoader : IAssemblySymbolLoader
     {
+        // This is a list of dangling .NET Framework internal assemblies that should never get loaded.
+        private static readonly HashSet<string> s_assembliesToIgnore = [
+"System.ServiceModel.Internals.dll",
+"Microsoft.Internal.Tasks.Dataflow.dll",
+"MSDATASRC.dll",
+"ADODB.dll",
+"Microsoft.StdFormat.dll",
+"stdole.dll",
+"PresentationUI.dll",
+"Microsoft.VisualBasic.Activities.Compiler.dll",
+"SMDiagnostics.dll",
+"System.Xaml.Hosting.dll",
+"Microsoft.Transactions.Bridge.dll",
+"Microsoft.Workflow.Compiler.dll"
+];
+
         private readonly ILog _log;
         // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and
         // value are the containing folder.
@@ -341,10 +357,13 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 AssemblyReference reference = reader.GetAssemblyReference(handle);
                 string name = $"{reader.GetString(reference.Name)}.dll";
 
+                // Skip assemblies that should never get loaded because they are purely internal
+                if (s_assembliesToIgnore.Contains(name))
+                    continue;
+
                 // Skip reference assemblies that are loaded later.
                 if (referenceAssemblyNamesToIgnore != null && referenceAssemblyNamesToIgnore.Contains(name))
                     continue;
-
 
                 // If the assembly reference is already loaded, don't do anything.
                 if (_loadedAssemblies.ContainsKey(name))
