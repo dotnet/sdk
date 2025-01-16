@@ -417,7 +417,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('verify', 'verify', [CompletionResultType]::ParameterValue, "verify")
                 [CompletionResult]::new('trust', 'trust', [CompletionResultType]::ParameterValue, "trust")
                 [CompletionResult]::new('sign', 'sign', [CompletionResultType]::ParameterValue, "sign")
-                [CompletionResult]::new('why', 'why', [CompletionResultType]::ParameterValue, "why")
+                [CompletionResult]::new('why', 'why', [CompletionResultType]::ParameterValue, "Shows the dependency graph for a particular package for a given project or solution.")
             )
             $completions += $staticCompletions
             break
@@ -620,10 +620,10 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         }
         'testhost;nuget;why' {
             $staticCompletions = @(
-                [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "--framework")
-                [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "--framework")
-                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework(s) for which dependency graphs are shown.")
+                [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework(s) for which dependency graphs are shown.")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show help and usage information")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show help and usage information")
             )
             $completions += $staticCompletions
             break
