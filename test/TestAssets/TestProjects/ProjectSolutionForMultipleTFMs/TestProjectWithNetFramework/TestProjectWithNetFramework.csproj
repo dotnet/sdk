@@ -13,10 +13,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- <Reference Include="Microsoft.Testing.Platform"> -->
-			<!-- <HintPath>C:\Code\testfx\artifacts\bin\Microsoft.Testing.Platform\Debug\netstandard2.0\Microsoft.Testing.Platform.dll</HintPath> -->
-		<!-- </Reference> -->
-		
 		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
 	</ItemGroup>
 
