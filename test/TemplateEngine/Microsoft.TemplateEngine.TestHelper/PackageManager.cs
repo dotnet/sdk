@@ -256,7 +256,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                         packageSources.Select(source =>
                             Task.Run(() => GetPackageMetadataAsync(source, packageIdentifier, includePrerelease: true, cancellationToken))));
 
-                if (!foundPackagesBySource.Where(result => result.FoundPackages != null).Any())
+                if (!foundPackagesBySource.Any(result => result.FoundPackages != null))
                 {
                     _nugetLogger.LogError($"[NuGet Package Manager] Failed to load NuGet sources {string.Join(";", packageSources.Select(source => source.Source))}.");
                     throw new Exception($"Failed to load NuGet sources {string.Join(";", packageSources.Select(source => source.Source))}");

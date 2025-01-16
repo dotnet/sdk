@@ -18,7 +18,6 @@ namespace Microsoft.TemplateEngine.IDE
 {
     public class Bootstrapper : IDisposable
     {
-        private readonly ITemplateEngineHost _host;
         private readonly TemplateCreator _templateCreator;
         private readonly TemplatePackageManager _templatePackagesManager;
         private readonly EngineEnvironmentSettings _engineEnvironmentSettings;
@@ -39,7 +38,7 @@ namespace Microsoft.TemplateEngine.IDE
             string? hostSettingsLocation = null,
             IEnvironment? environment = null)
         {
-            _host = host ?? throw new ArgumentNullException(nameof(host));
+            _ = host ?? throw new ArgumentNullException(nameof(host));
             environment ??= new DefaultEnvironment();
 
             if (string.IsNullOrWhiteSpace(hostSettingsLocation))
