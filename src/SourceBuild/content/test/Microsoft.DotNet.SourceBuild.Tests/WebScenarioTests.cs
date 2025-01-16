@@ -20,7 +20,7 @@ public class WebScenarioTests : SdkTests
 {
     public WebScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    // [Theory(Skip="https://github.com/dotnet/sdk/issues/42920")]
+    [Theory]
     [MemberData(nameof(GetScenarioObjects))]
     public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 
@@ -37,8 +37,7 @@ public class WebScenarioTests : SdkTests
 
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Razor,         DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorWasm,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
-        // Disabled due to .NET 10.0 transition. See https://github.com/dotnet/sdk/pull/42969
-        // yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.WebApp,        DotNetActions.PublishSelfContained, VerifyRuntimePacksForSelfContained);
+        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.WebApp,        DotNetActions.PublishSelfContained, VerifyRuntimePacksForSelfContained);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Worker);
     }
 

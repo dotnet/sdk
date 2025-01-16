@@ -20,7 +20,7 @@ public class DotNetFormatTests : SdkTests
     /// <Summary>
     /// Format an unformatted project and verify that the output matches the pre-computed solution.
     /// </Summary>
-    // [Fact(Skip="https://github.com/dotnet/sdk/issues/42920")]
+    [Fact]
     public void FormatProject()
     {
         if (DotNetHelper.IsMonoRuntime)
