@@ -72,7 +72,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
         else
         {
             return $"[CompletionResult]::new('{value}', '{name}', [CompletionResultType]::{type}, \"{helpText}\")";
-        };
+        }
     }
 
     private static string ParameterNameResult(string name, string value, string? helpText) => CompletionResult(name, value, "ParameterName", helpText);

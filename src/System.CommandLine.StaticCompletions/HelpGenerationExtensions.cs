@@ -75,6 +75,7 @@ public static class HelpExtensions
 
     public static IEnumerable<CliOption> HierarchicalOptions(this CliCommand c)
     {
+        // don't include hidden options, because hidden shouldn't be shown in completions at all.
         var myOptions = c.Options.Where(o => !o.Hidden);
         if (c.Parents.Count() == 0)
         {
@@ -82,9 +83,9 @@ public static class HelpExtensions
         }
         else
         {
-            return myOptions.Concat(c.Parents.OfType<CliCommand>().SelectMany(OptionsForParent));
+            // the parents could return the same logical option, so we need to dedupe them in order to not crowd the completion lists.
+            return myOptions.Concat(c.Parents.OfType<CliCommand>().SelectMany(OptionsForParent)).DistinctBy(o => o.Name);
         }
-
     }
 
     private static IEnumerable<CliOption> OptionsForParent(CliCommand c)
