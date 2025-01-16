@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <!-- Disable transitive pinning, we can't upgrade dependencies that are excluded from shipping  -->
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <IsPackable>true</IsPackable>
     <IsShippingPackage>true</IsShippingPackage>
     <IncludeBuildOutput>false</IncludeBuildOutput>
