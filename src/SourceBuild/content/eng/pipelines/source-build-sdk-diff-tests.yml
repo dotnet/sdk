@@ -73,7 +73,7 @@ extends:
 
       - template: /eng/pipelines/templates/jobs/sdk-diff-tests.yml@self
         parameters:
-          buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineName) }}
+          buildName: ${{ format('{0}_Offline_MsftSdk', variables.alpineName) }}
           targetRid: ${{ variables.alpineX64Rid }}
           architecture: x64
           dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
