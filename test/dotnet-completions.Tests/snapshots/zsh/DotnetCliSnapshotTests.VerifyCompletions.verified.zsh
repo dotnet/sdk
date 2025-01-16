@@ -618,8 +618,8 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '*--framework=[The target framework(s) for which dependency graphs are shown.]: : ' \
                                             '*-f=[The target framework(s) for which dependency graphs are shown.]: : ' \
-                                            '--help[Show help and usage information.]' \
-                                            '-h[Show help and usage information.]' \
+                                            '--help[Show help and usage information]' \
+                                            '-h[Show help and usage information]' \
                                             '*::PROJECT|SOLUTION -- A path to a project, solution file, or directory.: ' \
                                             ':PACKAGE -- The package name to lookup in the dependency graph.: ' \
                                             && ret=0
