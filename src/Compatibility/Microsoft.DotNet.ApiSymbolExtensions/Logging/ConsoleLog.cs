@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
     /// </summary>
     public class ConsoleLog(MessageImportance messageImportance, string? noWarn = null) : ILog
     {
-        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new(noWarn!.Split(';'));
+        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new(noWarn!.Split(';'), StringComparer.OrdinalIgnoreCase);
 
         /// <inheritdoc />
         public bool HasLoggedErrors { get; private set; }

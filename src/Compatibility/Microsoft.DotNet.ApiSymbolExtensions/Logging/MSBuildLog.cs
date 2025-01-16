@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
     internal class MSBuildLog(Logger log, string? noWarn = null) : ILog
     {
         // Remove passing in NoWarn when MSBuild respects it correctly in outer-builds: https://github.com/dotnet/msbuild/issues/10873
-        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new(noWarn!.Split(';'));
+        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new(noWarn!.Split(';'), StringComparer.OrdinalIgnoreCase);
 
         /// <inheritdoc />
         public bool HasLoggedErrors => log.HasLoggedErrors;
