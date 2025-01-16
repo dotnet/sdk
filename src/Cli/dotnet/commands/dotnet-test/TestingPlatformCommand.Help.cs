@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Cli
         {
             yield return (context) =>
             {
+                var originalOutputColor = Console.ForegroundColor;
                 Console.WriteLine("Waiting for options and extensions...");
 
                 Run(context.ParseResult);
@@ -34,7 +35,7 @@ namespace Microsoft.DotNet.Cli
                 WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
 
                 Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.White;
+                Console.ForegroundColor = originalOutputColor;
             };
         }
 

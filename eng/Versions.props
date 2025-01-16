@@ -162,6 +162,10 @@
     <MicrosoftTestPlatformBuildPackageVersion>17.13.0-preview-25060-03</MicrosoftTestPlatformBuildPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- Dependencies from https://github.com/Microsoft/testfx -->
+    <MicrosoftTestingPlatformVersion>1.5.0-preview.24602.2</MicrosoftTestingPlatformVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>10.0.0-preview.24629.1</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.12.0-beta1.24629.1</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
