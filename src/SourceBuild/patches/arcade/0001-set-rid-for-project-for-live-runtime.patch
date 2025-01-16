@@ -1,19 +1,19 @@
-From 15baa0ae30a0fd2b3d2baad1ebbf2d79ef08281a Mon Sep 17 00:00:00 2001
+From 0b326d7d0d266808c6109282c6417d26835ef648 Mon Sep 17 00:00:00 2001
 From: Jeremy Koritzinsky <jekoritz@microsoft.com>
 Date: Thu, 2 Jan 2025 12:19:02 -0800
 Subject: [PATCH] Infer the projects runtime identifier as the vertical's RID
  when doing a vertical build and filter down RID lists to the target RID in
  such a scenario.
 
- Backport: https://github.com/dotnet/arcade/pull/15371
+Backport: https://github.com/dotnet/arcade/pull/15371
 
 ---
  .../UnifiedBuild/Unified-Build-Controls.md    |  1 +
- .../tools/BeforeNETSdkTargets.targets         |  4 ++
- ...ifierInference.BeforeNETSdkTargets.targets | 64 +++++++++++++++++++
+ .../tools/BeforeNETSdkTargets.targets         |  4 +
+ ...ifierInference.BeforeNETSdkTargets.targets | 79 +++++++++++++++++++
  .../tools/Settings.props                      |  1 +
  .../SourceBuildArcadeBuild.targets            |  1 +
- 5 files changed, 71 insertions(+)
+ 5 files changed, 86 insertions(+)
  create mode 100644 src/Microsoft.DotNet.Arcade.Sdk/tools/BeforeNETSdkTargets.targets
  create mode 100644 src/Microsoft.DotNet.Arcade.Sdk/tools/RuntimeIdentifierInference.BeforeNETSdkTargets.targets
 
@@ -41,10 +41,10 @@ index 000000000..84b2020b6
 +</Project>
 diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/RuntimeIdentifierInference.BeforeNETSdkTargets.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/RuntimeIdentifierInference.BeforeNETSdkTargets.targets
 new file mode 100644
-index 000000000..c1fcbf9cc
+index 000000000..9eba3fad9
 --- /dev/null
 +++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/RuntimeIdentifierInference.BeforeNETSdkTargets.targets
-@@ -0,0 +1,64 @@
+@@ -0,0 +1,79 @@
 +<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
 +<Project>
 +  <PropertyGroup>
@@ -61,6 +61,21 @@ index 000000000..c1fcbf9cc
 +
 +    <!-- If this project is RID-agnostic, don't infer RIDs. -->
 +    <_EnableArcadeRuntimeIdentifierInference Condition="'$(_EnableArcadeRuntimeIdentifierInference)' == '' and ('$(IsRidAgnostic)' == 'true' or '$(_RidAgnosticProject)' == 'true')">false</_EnableArcadeRuntimeIdentifierInference>
++
++    <!--
++      We only need to infer if the project would use the RID
++    -->
++    <_BuildFlavorRequiredRid
++      Condition="
++        '$(SelfContained)' == 'true' or
++        ('$(_IsPublishing)' == 'true' and
++          (
++            '$(PublishReadyToRun)' == 'true' or
++            '$(PublishSingleFile)' == 'true' or
++            '$(PublishAot)' == 'true'
++          )
++        )">true</_BuildFlavorRequiredRid>
++    <_EnableArcadeRuntimeIdentifierInference Condition="'$(_EnableArcadeRuntimeIdentifierInference)' == '' and '$(_BuildFlavorRequiredRid)' != 'true'">false</_EnableArcadeRuntimeIdentifierInference>
 +
 +    <!--
 +      When we're doing a build of a single vertical, we may not have a runtime or host available for any RID outside of our current target.
