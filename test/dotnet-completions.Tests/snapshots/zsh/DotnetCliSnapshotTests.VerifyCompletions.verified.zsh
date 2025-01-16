@@ -616,12 +616,12 @@ _testhost() {
                                         ;;
                                     (why)
                                         _arguments "${_arguments_options[@]}" : \
-                                            '*--framework=[]: : ' \
-                                            '*-f=[]: : ' \
-                                            '--help[Show command line help.]' \
-                                            '-h[Show command line help.]' \
-                                            ':PROJECT|SOLUTION: ' \
-                                            ':PACKAGE: ' \
+                                            '*--framework=[The target framework(s) for which dependency graphs are shown.]: : ' \
+                                            '*-f=[The target framework(s) for which dependency graphs are shown.]: : ' \
+                                            '--help[Show help and usage information.]' \
+                                            '-h[Show help and usage information.]' \
+                                            '*::PROJECT|SOLUTION -- A path to a project, solution file, or directory.: ' \
+                                            ':PACKAGE -- The package name to lookup in the dependency graph.: ' \
                                             && ret=0
                                         ;;
                                 esac
@@ -1555,7 +1555,7 @@ _testhost__nuget_commands() {
         'verify:' \
         'trust:' \
         'sign:' \
-        'why:' \
+        'why:Shows the dependency graph for a particular package for a given project or solution.' \
     )
     _describe -t commands 'testhost nuget commands' commands "$@"
 }
