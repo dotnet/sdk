@@ -31,7 +31,6 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<SessionEventArgs> SessionEventReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
-        public event EventHandler<EventArgs> Run;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
 
@@ -50,8 +49,6 @@ namespace Microsoft.DotNet.Cli
 
         public async Task<int> RunAsync(bool hasFilterMode, bool enableHelp, BuildConfigurationOptions buildConfigurationOptions)
         {
-            Run?.Invoke(this, EventArgs.Empty);
-
             if (hasFilterMode && !ModulePathExists())
             {
                 return 1;

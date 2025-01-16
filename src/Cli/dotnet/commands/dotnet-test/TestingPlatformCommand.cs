@@ -13,8 +13,6 @@ namespace Microsoft.DotNet.Cli
 {
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
-        private readonly ConcurrentBag<TestApplication> _testApplications = [];
-
         private MSBuildHandler _msBuildHandler;
         private TestModulesFilterHandler _testModulesFilterHandler;
         private TerminalTestReporter _output;
@@ -127,7 +125,6 @@ namespace Microsoft.DotNet.Cli
                 testApp.HelpRequested += OnHelpRequested;
                 testApp.ErrorReceived += OnErrorReceived;
                 testApp.TestProcessExited += OnTestProcessExited;
-                testApp.Run += OnTestApplicationRun;
                 testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                 return await testApp.RunAsync(filterModeEnabled, enableHelp: true, buildConfigurationOptions);
@@ -145,7 +142,6 @@ namespace Microsoft.DotNet.Cli
                 testApp.SessionEventReceived += OnSessionEventReceived;
                 testApp.ErrorReceived += OnErrorReceived;
                 testApp.TestProcessExited += OnTestProcessExited;
-                testApp.Run += OnTestApplicationRun;
                 testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                 return await testApp.RunAsync(filterModeEnabled, enableHelp: false, buildConfigurationOptions);
@@ -187,9 +183,9 @@ namespace Microsoft.DotNet.Cli
         private void CleanUp()
         {
             _msBuildHandler.Dispose();
-            foreach (var testApplication in _testApplications)
+            foreach (var execution in _executions)
             {
-                testApplication.Dispose();
+                execution.Key.Dispose();
             }
         }
 
@@ -369,12 +365,6 @@ namespace Microsoft.DotNet.Cli
             {
                 VSTestTrace.SafeWriteTrace(() => $"Error Data: {string.Join("\n", args.ErrorData)}");
             }
-        }
-
-        private void OnTestApplicationRun(object sender, EventArgs args)
-        {
-            TestApplication testApp = sender as TestApplication;
-            _testApplications.Add(testApp);
         }
 
         private void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
