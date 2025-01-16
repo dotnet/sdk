@@ -79,8 +79,8 @@ extends:
       ${{ variables.almaLinuxContainerName }}:
         image: ${{ variables.almaLinuxContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.alpineLatestContainerName }}:
-        image: ${{ variables.alpineLatestContainerImage }}
+      ${{ variables.alpineContainerName }}:
+        image: ${{ variables.alpineContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
       ${{ variables.centOSStreamContainerName }}:
         image: ${{ variables.centOSStreamContainerImage }}
