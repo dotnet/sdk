@@ -31,7 +31,7 @@ internal sealed class ImageBuilder
     public ImageConfig BaseImageConfig => _baseImageConfig;
 
     /// <summary>
-    /// MediaType of the output manifest. By default, this will be the same as the base images' manifest.
+    /// MediaType of the output manifest. By default, this will be the same as the base image manifest.
     /// </summary>
     public string ManifestMediaType { get; set; }
 
