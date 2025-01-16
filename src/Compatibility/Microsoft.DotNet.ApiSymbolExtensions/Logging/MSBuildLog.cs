@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
 
         /// <inheritdoc />
         public virtual void LogWarning(string code, string message) =>
+            // Mimic MSBuild which logs suppressed warnings as low importance messages.
             LogCore(_noWarn.Contains(code) ? MessageLevel.LowImportance : MessageLevel.Warning, code, message);
 
         /// <inheritdoc />
