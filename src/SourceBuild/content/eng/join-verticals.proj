@@ -3,7 +3,7 @@
     <PropertyGroup>
       <TargetFramework>$(NetCurrent)</TargetFramework>
     </PropertyGroup>
-  
+
     <ItemGroup>
       <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
     </ItemGroup>
@@ -19,15 +19,15 @@
       <Error Condition="'$(AzureDevOpsProject)' == ''" Text="AzureDevOpsProject is not set." />
       <Error Condition="'$(MainVerticalArtifactsFolder)' == ''" Text="MainVerticalArtifactsFolder is not set." />
       <Error Condition="'$(OutputFolder)' == ''" Text="OutputFolder is not set." />
-  
+
       <ItemGroup>
-        <VerticalManifest 
+        <VerticalManifest
           Include="$(VerticalManifestsPath)\*.xml"
-          Exclude="$(VerticalManifestsPath)\*Mono*.xml;$(VerticalManifestsPath)\*Pgo*.xml;$(VerticalManifestsPath)\*Shortstack*.xml;$(VerticalManifestsPath)\*DevVersions*.xml" />
+          Exclude="$(VerticalManifestsPath)\*Mono*.xml;$(VerticalManifestsPath)\*Shortstack*.xml;$(VerticalManifestsPath)\*DevVersions*.xml" />
       </ItemGroup>
-  
+
       <!-- AzureDevOpsToken shouldn't be set when running in dnceng-public -->
-      <Microsoft.DotNet.UnifiedBuild.Tasks.JoinVerticals 
+      <Microsoft.DotNet.UnifiedBuild.Tasks.JoinVerticals
         VerticalManifest="@(VerticalManifest)"
         MainVertical="$(MainVertical)"
         BuildId="$(BuildId)"
@@ -37,5 +37,5 @@
         MainVerticalArtifactsFolder="$(MainVerticalArtifactsFolder)"
         OutputFolder="$(OutputFolder)" />
     </Target>
-  
+
   </Project>
