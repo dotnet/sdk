@@ -28,11 +28,6 @@ variables:
 - name: alpineLatestContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
 
-- name: alpinePreviousContainerName
-  value: alpinePreviousContainer
-- name: alpinePreviousContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
-
 - name: centOSStreamContainerName
   value: centOSStreamContainer
 - name: centOSStreamContainerImage
@@ -107,8 +102,6 @@ variables:
   value: AlmaLinux8
 - name: alpineLatestName
   value: Alpine321
-- name: alpinePreviousName
-  value: Alpine320
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
@@ -126,8 +119,6 @@ variables:
   value: linux-musl-arm64
 - name: alpineLatestX64Rid
   value: alpine.3.21-x64
-- name: alpinePreviousX64Rid
-  value: alpine.3.20-x64
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid

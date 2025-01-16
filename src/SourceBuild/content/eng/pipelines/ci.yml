@@ -82,9 +82,6 @@ extends:
       ${{ variables.alpineLatestContainerName }}:
         image: ${{ variables.alpineLatestContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.alpinePreviousContainerName }}:
-        image: ${{ variables.alpinePreviousContainerImage }}
-        options: ${{ variables.defaultContainerOptions }}
       ${{ variables.centOSStreamContainerName }}:
         image: ${{ variables.centOSStreamContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
