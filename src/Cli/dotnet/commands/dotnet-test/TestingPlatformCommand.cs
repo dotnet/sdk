@@ -35,91 +35,34 @@ namespace Microsoft.DotNet.Cli
             bool hasFailed = false;
             try
             {
-                Console.CancelKeyPress += (s, e) =>
-                {
-                    _output?.StartCancelling();
-                    CompleteRun();
-                };
+                SetupCancelKeyPressHandler();
 
                 int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
                 BuildConfigurationOptions buildConfigurationOptions = GetBuildConfigurationOptions(parseResult);
-                InitializeActionQueue(parseResult, degreeOfParallelism, buildConfigurationOptions);
+
+                _isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
+                _args = [.. parseResult.UnmatchedTokens];
+                _isHelp = ContainsHelpOption(parseResult.GetArguments());
+
+                InitializeOutput(degreeOfParallelism);
 
                 bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
-
-                if (filterModeEnabled && parseResult.HasOption(TestingPlatformOptions.ArchitectureOption))
+                if (_isHelp)
                 {
-                    VSTestTrace.SafeWriteTrace(() => $"The --arch option is not supported yet.");
-                }
-
-                if (parseResult.HasOption(TestingPlatformOptions.ListTestsOption))
-                {
-                    _isDiscovery = true;
-                }
-
-                BuildConfigurationOptions builtInOptions = new(
-                    parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
-                    parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                    parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
-                    parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                    parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
-
-                var console = new SystemConsole();
-                var output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
-                {
-                    ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1" ? () => true : () => false,
-                    ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
-                    UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
-                    ShowAssembly = true,
-                    ShowAssemblyStartAndComplete = true,
-                });
-                _output = output;
-
-                _isHelp = false;
-                if (ContainsHelpOption(parseResult.GetArguments()))
-                {
-                    _isHelp = true;
-                    _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                    {
-                        testApp.HelpRequested += OnHelpRequested;
-                        testApp.ErrorReceived += OnErrorReceived;
-                        testApp.TestProcessExited += OnTestProcessExited;
-                        testApp.Run += OnTestApplicationRun;
-                        testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                        var result = await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
-                        return result;
-                    });
+                    InitializeHelpActionQueue(degreeOfParallelism, buildConfigurationOptions, filterModeEnabled);
                 }
                 else
                 {
-                    _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery);
-
-                    _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                    {
-                        testApp.HandshakeReceived += OnHandshakeReceived;
-                        testApp.DiscoveredTestsReceived += OnDiscoveredTestsReceived;
-                        testApp.TestResultsReceived += OnTestResultsReceived;
-                        testApp.FileArtifactsReceived += OnFileArtifactsReceived;
-                        testApp.SessionEventReceived += OnSessionEventReceived;
-                        testApp.ErrorReceived += OnErrorReceived;
-                        testApp.TestProcessExited += OnTestProcessExited;
-                        testApp.Run += OnTestApplicationRun;
-                        testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                        return await testApp.RunAsync(filterModeEnabled, enableHelp: false, builtInOptions);
-                    });
+                    InitializeTestExecutionActionQueue(degreeOfParallelism, buildConfigurationOptions, filterModeEnabled);
                 }
 
-                _args = [.. parseResult.UnmatchedTokens];
                 _msBuildHandler = new(_args, _actionQueue, degreeOfParallelism, _output);
                 _testModulesFilterHandler = new(_args, _actionQueue);
 
-                if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
+                if (filterModeEnabled)
                 {
                     if (!_testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                     {
-                        CompleteRun();
                         return ExitCodes.GenericFailure;
                     }
                 }
@@ -128,14 +71,12 @@ namespace Microsoft.DotNet.Cli
                     var buildPathOptions = GetBuildPathOptions(parseResult);
                     if (!_msBuildHandler.RunMSBuild(buildPathOptions).GetAwaiter().GetResult())
                     {
-                        CompleteRun();
                         return ExitCodes.GenericFailure;
                     }
 
                     if (!_msBuildHandler.EnqueueTestApplications())
                     {
                         _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
-                        CompleteRun();
                         return ExitCodes.GenericFailure;
                     }
                 }
@@ -145,11 +86,70 @@ namespace Microsoft.DotNet.Cli
             }
             finally
             {
+                CompleteRun();
                 CleanUp();
             }
 
-            CompleteRun();
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+        }
+
+        private void SetupCancelKeyPressHandler()
+        {
+            Console.CancelKeyPress += (s, e) =>
+            {
+                _output?.StartCancelling();
+                CompleteRun();
+            };
+        }
+
+        private void InitializeOutput(int degreeOfParallelism)
+        {
+            var console = new SystemConsole();
+            _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
+            {
+                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1" ? () => true : () => false,
+                ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
+                UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
+                ShowAssembly = true,
+                ShowAssemblyStartAndComplete = true,
+            });
+
+            if (!_isHelp)
+            {
+                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery);
+            }
+        }
+
+        private void InitializeHelpActionQueue(int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions, bool filterModeEnabled)
+        {
+            _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+            {
+                testApp.HelpRequested += OnHelpRequested;
+                testApp.ErrorReceived += OnErrorReceived;
+                testApp.TestProcessExited += OnTestProcessExited;
+                testApp.Run += OnTestApplicationRun;
+                testApp.ExecutionIdReceived += OnExecutionIdReceived;
+
+                return await testApp.RunAsync(filterModeEnabled, enableHelp: true, buildConfigurationOptions);
+            });
+        }
+
+        private void InitializeTestExecutionActionQueue(int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions, bool filterModeEnabled)
+        {
+            _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+            {
+                testApp.HandshakeReceived += OnHandshakeReceived;
+                testApp.DiscoveredTestsReceived += OnDiscoveredTestsReceived;
+                testApp.TestResultsReceived += OnTestResultsReceived;
+                testApp.FileArtifactsReceived += OnFileArtifactsReceived;
+                testApp.SessionEventReceived += OnSessionEventReceived;
+                testApp.ErrorReceived += OnErrorReceived;
+                testApp.TestProcessExited += OnTestProcessExited;
+                testApp.Run += OnTestApplicationRun;
+                testApp.ExecutionIdReceived += OnExecutionIdReceived;
+
+                return await testApp.RunAsync(filterModeEnabled, enableHelp: false, buildConfigurationOptions);
+            });
         }
 
         private static int GetDegreeOfParallelism(ParseResult parseResult)
@@ -170,40 +170,6 @@ namespace Microsoft.DotNet.Cli
             new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
                 parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
-
-        private void InitializeActionQueue(ParseResult parseResult, int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions)
-        {
-            if (!ContainsHelpOption(parseResult.GetArguments()))
-            {
-                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                {
-                    testApp.HandshakeReceived += OnHandshakeReceived;
-                    testApp.DiscoveredTestsReceived += OnDiscoveredTestsReceived;
-                    testApp.TestResultsReceived += OnTestResultsReceived;
-                    testApp.FileArtifactsReceived += OnFileArtifactsReceived;
-                    testApp.SessionEventReceived += OnSessionEventReceived;
-                    testApp.ErrorReceived += OnErrorReceived;
-                    testApp.TestProcessExited += OnTestProcessExited;
-                    testApp.Run += OnTestApplicationRun;
-                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                    return await testApp.RunAsync(hasFilterMode: false, enableHelp: false, buildConfigurationOptions);
-                });
-            }
-            else
-            {
-                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                {
-                    testApp.HelpRequested += OnHelpRequested;
-                    testApp.ErrorReceived += OnErrorReceived;
-                    testApp.TestProcessExited += OnTestProcessExited;
-                    testApp.Run += OnTestApplicationRun;
-                    testApp.ExecutionIdReceived += OnExecutionIdReceived;
-
-                    return await testApp.RunAsync(hasFilterMode: true, enableHelp: true, buildConfigurationOptions);
-                });
-            }
-        }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
 
