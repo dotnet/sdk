@@ -150,9 +150,8 @@ variables:
     value: Docker-Linux-Arm-Public
   - name: poolImage_Mac
     value: macos-13
-  # TODO: Change back to preview image when it has a recent enough version of VS installed.
   - name: poolImage_Windows
-    value: windows.vs2022preview.scout.amd64.open
+    value: windows.vs2022preview.amd64.open
 - ${{ else }}:
   - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
     - name: defaultPoolName
