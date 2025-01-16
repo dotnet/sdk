@@ -36,7 +36,7 @@ public class DotNetWatchTests : SdkTests
 
         void processConfigCallback(Process process)
         {
-            const string waitingString = "Waiting for changes";
+            const string waitingString = "Waiting for a file to change";
             const string expectedString = "Hello from dotnet watch!";
 
             bool fileChanged = false;
