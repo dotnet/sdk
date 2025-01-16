@@ -114,14 +114,10 @@ namespace Microsoft.DotNet.Tools.Common
 
             foreach (string path in filteredSolutionProjectPaths)
             {
-                SolutionProjectModel? project = originalSolution.FindProject(path);
-                if (project is null)
-                {
-                    throw new GracefulException(
+                SolutionProjectModel project = originalSolution.FindProject(path) ?? throw new GracefulException(
                         CommonLocalizableStrings.ProjectNotFoundInTheSolution,
                         path,
                         originalSolutionPath);
-                }
                 filteredSolution.AddProject(project.FilePath, project.Type, project.Parent is null ? null : filteredSolution.AddFolder(project.Parent.Path));
             }
 
