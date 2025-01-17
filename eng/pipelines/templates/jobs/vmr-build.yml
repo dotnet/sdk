@@ -161,13 +161,6 @@ jobs:
   - name: runTestsTimeout
     value: 30
 
-  - ${{ if or(eq(parameters.useDevVersions, 'True'), eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-    - name: _SignType
-      value: ''
-  - ${{ else }}:
-    - name: _SignType
-      value: real
-
   - ${{ if parameters.isBuiltFromVmr }}:
     - name: vmrPath
       value: $(Build.SourcesDirectory)
@@ -192,6 +185,54 @@ jobs:
   - ${{ if eq(parameters.pool.os, 'macOS') }}:
     - name: ONEES_ENFORCED_CODEQL_ENABLED
       value: false
+
+  # Build up the command line variables. We avoid doing this in the script sections below
+  # because AzDO will not echo command lines if they are more than a single line.
+
+  ## Build command line - Windows
+  - ${{ if eq(parameters.targetOS, 'windows') }}:
+    ## Basic arguments
+    - name: baseArguments
+      value:  -ci -cleanWhileBuilding -prepareMachine /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+
+    - name: configArguments
+      value: -c ${{ parameters.configuration }}
+
+    - name: targetArguments
+      value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+
+    ### Dev versions variables
+    - ${{ if eq(parameters.useDevVersions, 'True') }}:
+      - name: devArguments
+        value: -dev
+    - ${{ else }}:
+      - name: devArguments
+        value: ''
+
+    ### Signing variables
+    - ${{ if eq(parameters.sign, 'True') }}:
+      - ${{ if or(eq(parameters.useDevVersions, 'True'), eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+        # The _SignType variable is used by microbuild installation
+        - name: _SignType
+          value: ''
+        - name: signArguments
+          value: -sign /p:ForceDryRunSigning=true
+      - ${{ else }}:
+        - name: _SignType
+          value: real
+        - name: signArguments
+          value: -sign /p:DotNetSignType=real /p:TeamName=$(_TeamName)
+    - ${{ else }}:
+      - name: signArguments
+        value: ''
+
+    ### Build Pass
+    - ${{ if ne(parameters.buildPass, '') }}:
+      - name: buildPassArguments
+        value: /p:DotNetBuildPass=${{ parameters.buildPass }}
+    - ${{ else }}:
+      - name: buildPassArguments
+        value: ''
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -307,7 +348,7 @@ jobs:
       parameters:
         enableMicrobuild: true
         enableMicrobuildForMacAndLinux: true
-  
+
   - ${{ if eq(parameters.targetOS, 'windows') }}:
     # Node 20.x is a toolset dependency to build aspnetcore
     # Keep in sync with aspnetcore: https://github.com/dotnet/aspnetcore/blob/7d5309210d8f7bae8fa074da495e9d009d67f1b4/.azure/pipelines/ci.yml#L719-L722
@@ -316,18 +357,14 @@ jobs:
       inputs:
         versionSpec: 20.x
 
-    - script: |
-        set extraBuildArguments=
-
-        set signArgs=/p:ForceDryRunSigning=true
-        if /I '$(_SignType)'=='real' set signArgs=/p:DotNetSignType=real /p:TeamName=$(_TeamName)
-        if /I '$(_SignType)'=='test' set signArgs=/p:DotNetSignType=test /p:TeamName=$(_TeamName)
-        if /I '${{ parameters.sign }}'=='True' if /I NOT '${{ parameters.buildSourceOnly }}'=='True' set extraBuildArguments=%extraBuildArguments% -sign %signArgs%
-
-        if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
-        set extraBuildProperties=
-        if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) %extraBuildProperties% ${{ parameters.extraProperties }}
+    - script: build.cmd
+        $(baseArguments)
+        $(configArguments)
+        $(targetArguments)
+        $(devArguments)
+        $(signArguments)
+        $(buildPassArguments)
+        ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
 
