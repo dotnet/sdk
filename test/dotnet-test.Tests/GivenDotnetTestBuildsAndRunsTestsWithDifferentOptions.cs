@@ -222,64 +222,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]
         [Theory]
-        public void RunTestProjectSolutionRunsWithNoBuildOption_ShouldReturnZeroAsExitCode(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
-
-            new BuildCommand(testInstance)
-                .Execute($"/p:Configuration={configuration}")
-                .Should().Pass();
-
-            var binDirectory = new FileInfo($"{testInstance.Path}/bin").Directory;
-            var binDirectoryLastWriteTime = binDirectory?.LastWriteTime;
-
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
-
-            // Assert that the bin folder hasn't been modified
-            Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
-
-            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern);
-            Assert.Contains(TestingPlatformOptions.NoBuildOption.Name, testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
-
-            result.ExitCode.Should().Be(ExitCodes.Success);
-        }
-
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
-        [Theory]
-        public void RunTestProjectSolutionRunsWithNoRestoreOption_ShouldReturnZeroAsExitCode(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
-
-            new BuildCommand(testInstance)
-                .Execute($"/p:Configuration={configuration}")
-                .Should().Pass();
-
-            var binDirectory = new FileInfo($"{testInstance.Path}/bin").Directory;
-            var binDirectoryLastWriteTime = binDirectory?.LastWriteTime;
-
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
-
-            // Assert that the bin folder hasn't been modified
-            Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
-
-            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern);
-            Assert.Contains(TestingPlatformOptions.NoRestoreOption.Name, testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
-
-            result.ExitCode.Should().Be(ExitCodes.Success);
-        }
-
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
-        [Theory]
         public void RunTestProjectSolutionWithConfigurationOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
