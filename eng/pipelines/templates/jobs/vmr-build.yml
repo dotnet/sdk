@@ -627,7 +627,7 @@ jobs:
 
     - publish: $(artifactsStagingDir)
       artifact: $(failedJobArtifactName)
-      displayName: Publish Artifacts
+      displayName: Publish Artifacts (On Failure)
       condition: failed()
       continueOnError: true
 
