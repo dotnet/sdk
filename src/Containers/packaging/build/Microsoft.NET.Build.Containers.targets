@@ -298,9 +298,9 @@
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
     <Error Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
-      Condition="'$(ContainerArchiveOutputPath)' != '' and 
-                 !$(ContainerArchiveOutputPath.EndsWith('/')) and 
-                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and 
+      Condition="'$(ContainerArchiveOutputPath)' != '' and
+                 !$(ContainerArchiveOutputPath.EndsWith('/')) and
+                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and
                  $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
 
     <ItemGroup>
@@ -400,7 +400,14 @@
   Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
-      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and (('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentifier)' == ''))">true</_IsMultiRIDBuild>
+      <!-- we are multi-RID if:
+          * we have CRIDs and no CRID
+          * we have RIDs and no (CRIDs or CRID or RID)
+      -->
+      <_HasCRIDsAndNoCRID Condition="'$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentifier)' == ''">true</_HasCRIDsAndNoCRID>
+      <_HasRIDs Condition="'$(RuntimeIdentifiers)' != ''">true</_HasRIDs>
+      <_NoCRIDsOrCRIDorRID Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' == ''">true</_NoCRIDsOrCRIDorRID>
+      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and ('$(_HasCRIDsAndNoCRID)' == true or ('$(_HasRIDs)' == 'true' and '$(_NoCRIDsOrCRIDorRID)' == 'true'))">true</_IsMultiRIDBuild>
       <_IsSingleRIDBuild Condition="'$(_IsMultiRIDBuild)' == ''">true</_IsSingleRIDBuild>
     </PropertyGroup>
 
