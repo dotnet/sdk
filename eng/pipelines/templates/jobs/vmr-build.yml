@@ -408,7 +408,7 @@ jobs:
           fi
 
           if [[ '${{ parameters.withPreviousSDK }}' == 'True' ]]; then
-            # Source-built artifacts are from CentOS 9 Stream or Alpine 3.19. We want to download them without
+            # Source-built artifacts are from CentOS 9 Stream. We want to download them without
             # downloading portable versions from the internet.
             customPrepArgs="${customPrepArgs} --no-sdk --no-bootstrap"
             prepSdk=false
