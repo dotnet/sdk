@@ -783,8 +783,7 @@ public class EndToEndTests : IDisposable
     {
         string imageName = NewImageName();
         string imageTag = "1.0";
-        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
-        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+        string qualifiedImageName = $"{imageName}:{imageTag}";
 
         // Create a new console project
         DirectoryInfo newProjectDir = CreateNewProject("console");
@@ -812,10 +811,9 @@ public class EndToEndTests : IDisposable
         // images were created locally for each RID
         // and image index was NOT created
         commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
-            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry")
-            .And.NotHaveStdOutContaining($"Pushed image '{imageArm64}' to local registry")
+            // no rid-specific path because we didn't pass RuntimeIdentifier
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining($"Pushed image '{qualifiedImageName}' to local registry")
             .And.NotHaveStdOutContaining("Pushed image index");
 
         // Check that the containers can be run
@@ -823,8 +821,8 @@ public class EndToEndTests : IDisposable
             _testOutput,
             "--rm",
             "--name",
-            $"test-container-{imageName}-x64",
-            imageX64)
+            $"test-container-{imageName}",
+            qualifiedImageName)
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
 
@@ -837,8 +835,7 @@ public class EndToEndTests : IDisposable
     {
         string imageName = NewImageName();
         string imageTag = "1.0";
-        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
-        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+        string qualifiedImageName = $"{imageName}:{imageTag}";
 
         // Create a new console project
         DirectoryInfo newProjectDir = CreateNewProject("console");
@@ -851,7 +848,7 @@ public class EndToEndTests : IDisposable
             // make it so the app is _able_ to target both linux TFMs
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             // but then only actually publishes for one of them
-            "-r linux-x64",
+            "-r", "linux-x64",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
@@ -866,8 +863,7 @@ public class EndToEndTests : IDisposable
         commandResult.Should().Pass()
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
             .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
-            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry")
-            .And.NotHaveStdOutContaining($"Pushed image '{imageArm64}' to local registry")
+            .And.HaveStdOutContaining($"Pushed image '{qualifiedImageName}' to local registry")
             .And.NotHaveStdOutContaining("Pushed image index");
 
         // Check that the containers can be run
@@ -876,7 +872,7 @@ public class EndToEndTests : IDisposable
             "--rm",
             "--name",
             $"test-container-{imageName}-x64",
-            imageX64)
+            qualifiedImageName)
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
 
