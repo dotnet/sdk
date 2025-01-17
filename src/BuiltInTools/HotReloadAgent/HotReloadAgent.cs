@@ -228,9 +228,11 @@ internal sealed class HotReloadAgent : IDisposable
             return environment;
         }
 
+        var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
         var assemblyLocation = startupHookType.Assembly.Location;
         var updatedValues = environment.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-            .Where(e => !string.Equals(e, assemblyLocation, StringComparison.OrdinalIgnoreCase));
+            .Where(e => !string.Equals(e, assemblyLocation, comparison));
 
         return string.Join(Path.PathSeparator, updatedValues);
     }
