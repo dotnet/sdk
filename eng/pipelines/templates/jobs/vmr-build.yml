@@ -187,6 +187,12 @@ jobs:
   - name: artifactsStagingDir
     value: $(Build.ArtifactStagingDirectory)/artifacts
 
+  - name: successfulJobArtifactName
+    value: $(Agent.JobName)_Artifacts
+
+  - name: failedJobArtifactName
+    value: $(successfulJobArtifactName)_Attempt$(System.JobAttempt)
+
   # manually disable CodeQL until https://dev.azure.com/mseng/1ES/_workitems/edit/2211548 is implemented
   # CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary
   - ${{ if eq(parameters.pool.os, 'macOS') }}:
@@ -203,11 +209,21 @@ jobs:
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
       sbomEnabled: false
 
+    # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
+    # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
+    # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - output: pipelineArtifact
       path: $(artifactsStagingDir)
-      artifact: $(Agent.JobName)_Artifacts
-      displayName: Publish Artifacts
-      condition: succeededOrFailed()
+      artifact: $(successfulJobArtifactName)
+      displayName: Publish Artifacts (On Success)
+      condition: succeeded()
+      sbomEnabled: true
+
+    - output: pipelineArtifact
+      path: $(artifactsStagingDir)
+      artifact: $(failedJobArtifactName)
+      displayName: Publish Artifacts (On Failure)
+      condition: failed()
       sbomEnabled: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
@@ -602,10 +618,19 @@ jobs:
         testRunTitle: ScenarioTests_$(Agent.JobName)
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+    # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
+    # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
+    # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - publish: $(artifactsStagingDir)
-      artifact: $(Agent.JobName)_Artifacts
-      displayName: Publish Artifacts
-      condition: succeededOrFailed()
+      artifact: $(successfulJobArtifactName)
+      displayName: Publish Artifacts (On Success)
+      condition: succeeded()
+      continueOnError: true
+
+    - publish: $(artifactsStagingDir)
+      artifact: $(failedJobArtifactName)
+      displayName: Publish Artifacts (On Failure)
+      condition: failed()
       continueOnError: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
