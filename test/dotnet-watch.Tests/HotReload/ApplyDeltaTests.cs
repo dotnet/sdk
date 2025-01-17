@@ -697,6 +697,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("dotnet watch 🔥 Project baselines updated.");
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
 
+            // Note: sending Ctrl+C via standard input is not the same as sending real Ctrl+C.
+            // The latter terminates the processes gracefully on Windows, so exit codes -1 are actually not reported.
             App.SendControlC();
 
             await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");
@@ -711,8 +713,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
                 // Unix process may return exit code = 128 + SIGTERM
                 // Exited with error code 143
-                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.ApiService ({tfm})] Exited"), failure: _ => false);
-                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.AppHost ({tfm})] Exited"), failure: _ => false);
+                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.ApiService ({tfm})] Exited"));
+                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.AppHost ({tfm})] Exited"));
             }
 
             await App.AssertOutputLineStartsWith("dotnet watch ⭐ Waiting for server to shutdown ...");
