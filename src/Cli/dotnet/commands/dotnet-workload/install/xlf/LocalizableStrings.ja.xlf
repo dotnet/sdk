@@ -22,6 +22,11 @@
         <target state="translated">{0} オプションと {1} オプションを併用することはできません。ロールバック ファイルからインストールする場合、{0} を削除してください。その他の場合には、{1} を削除します</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="translated">global.json ファイル {0} に既にバージョンが指定されている場合は、コマンド ラインで --version または --from-history を使用して特定のワークロード バージョンを指定することはできません。グローバルにインストールされたワークロード バージョンを更新するには、その global.json ファイルを含むパスの外部でコマンドを実行するか、global.json ファイルで指定されたバージョンを更新して、"dotnet workload update" を実行します。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">更新されたワークロード マニフェストを確認しています。</target>
@@ -182,6 +187,11 @@
         <target state="translated">{0} を削除しています </target>
         <note />
       </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">ワークロードのバージョン {0} をインストールしています。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">親プロセス ({0}) との信頼関係を確立できませんでした。</target>
@@ -277,6 +287,11 @@
         <target state="translated">ダウンロードするリンクの一覧をダウンロードせず、印刷だけを行います。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="translated">{0} を使用するようにワークロード インストール モードが正常に更新されました。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">オフライン キャッシュ {2} でパッケージ {0} のバージョン {1} をインストールしています。</target>
@@ -360,6 +375,16 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">パス</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetUpgrade">
+        <source>Updating workload version from {0} to {1}.</source>
+        <target state="translated">ワークロードのバージョンを {0} から {1} に更新しています。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">指定されたワークロード バージョンに更新します。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
