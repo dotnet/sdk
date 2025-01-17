@@ -1278,7 +1278,7 @@ public class EndToEndTests : IDisposable
         // Run PublishContainer for multi-arch with ContainerGenerateLabels
         new DotnetCommand(
             _testOutput,
-            "build",
+            "publish",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
