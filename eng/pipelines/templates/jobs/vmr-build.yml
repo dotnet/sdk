@@ -458,7 +458,7 @@ jobs:
     - script: $customPreBuildArgs ./build.sh $buildArgs
       displayName: Build
       workingDirectory: $(sourcesPath)
-      - ${{ if ne(parameters.crossRootFs, '') }}:
+      ${{ if ne(parameters.crossRootFs, '') }}:
         env:
           ROOTFS_DIR: ${{ parameters.crossRootFs }}
 
