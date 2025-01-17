@@ -168,9 +168,6 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-#if RELEASE
-            return GetVSTestCliCommand();
-#else
             bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
             string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
 
@@ -184,7 +181,6 @@ namespace Microsoft.DotNet.Cli
             }
 
             throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
-#endif
         }
 
         private static CliCommand GetTestingPlatformCliCommand()

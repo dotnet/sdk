@@ -31,11 +31,8 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<SessionEventArgs> SessionEventReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
-        public event EventHandler<EventArgs> Run;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
-        private const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
-        private const string DLLExtension = "dll";
 
         public Module Module => _module;
 
@@ -52,8 +49,6 @@ namespace Microsoft.DotNet.Cli
 
         public async Task<int> RunAsync(bool hasFilterMode, bool enableHelp, BuildConfigurationOptions buildConfigurationOptions)
         {
-            Run?.Invoke(this, EventArgs.Empty);
-
             if (hasFilterMode && !ModulePathExists())
             {
                 return 1;
@@ -89,11 +84,10 @@ namespace Microsoft.DotNet.Cli
             return processStartInfo;
         }
 
-
         private void WaitOnTestApplicationPipeConnectionLoop()
         {
             _cancellationToken.Cancel();
-            _testAppPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+            _testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
@@ -212,7 +206,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (VSTestTrace.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+                VSTestTrace.SafeWriteTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
             }
 
             var process = Process.Start(processStartInfo);
@@ -262,15 +256,9 @@ namespace Microsoft.DotNet.Cli
 
             builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectPath}\"");
 
-            if (buildConfigurationOptions.HasNoRestore)
-            {
-                builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
-            }
-
-            if (buildConfigurationOptions.HasNoBuild)
-            {
-                builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
-            }
+            // Because we restored and built before in MSHandler, we will skip those with dotnet run
+            builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
+            builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
 
             if (buildConfigurationOptions.HasListTests)
             {
@@ -382,12 +370,14 @@ namespace Microsoft.DotNet.Cli
             if (!string.IsNullOrEmpty(_module.ProjectPath))
             {
                 builder.Append($"Project: {_module.ProjectPath}");
-            };
+            }
+            ;
 
             if (!string.IsNullOrEmpty(_module.TargetFramework))
             {
                 builder.Append($"Target Framework: {_module.TargetFramework}");
-            };
+            }
+            ;
 
             return builder.ToString();
         }

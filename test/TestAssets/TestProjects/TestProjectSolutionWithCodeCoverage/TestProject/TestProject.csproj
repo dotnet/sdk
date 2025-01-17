@@ -1,0 +1,13 @@
+<Project Sdk="MSTest.Sdk/3.8.0-preview.25065.17">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+
+	<PropertyGroup>
+		<TargetFramework>net8</TargetFramework>
+		<GenerateTestingPlatformEntryPoint>False</GenerateTestingPlatformEntryPoint>
+		<MicrosoftTestingExtensionsCodeCoverageVersion>17.12.6</MicrosoftTestingExtensionsCodeCoverageVersion>
+		
+	</PropertyGroup>
+
+	<!-- references to the code to test -->
+
+</Project>

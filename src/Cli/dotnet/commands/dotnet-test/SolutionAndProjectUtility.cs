@@ -11,14 +11,14 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class SolutionAndProjectUtility
     {
-        public static bool TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
+        public static (bool SolutionOrProjectFileFound, string Message) TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
         {
             projectOrSolutionFilePath = string.Empty;
             isSolution = false;
 
             if (!Directory.Exists(directory))
             {
-                return false;
+                return (false, string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, directory));
             }
 
             var possibleSolutionPaths = GetSolutionFilePaths(directory);
@@ -26,8 +26,7 @@ namespace Microsoft.DotNet.Cli
             // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
             if (possibleSolutionPaths.Length > 1)
             {
-                VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
-                return false;
+                return (false, string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
             }
 
             if (possibleSolutionPaths.Length == 1)
@@ -38,11 +37,10 @@ namespace Microsoft.DotNet.Cli
                 {
                     projectOrSolutionFilePath = possibleSolutionPaths[0];
                     isSolution = true;
-                    return true;
+                    return (true, string.Empty);
                 }
 
-                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
-                return false;
+                return (false, LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
             else  // If no solutions are found, look for a project file
             {
@@ -50,19 +48,16 @@ namespace Microsoft.DotNet.Cli
 
                 if (possibleProjectPath.Length == 0)
                 {
-                    VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
-                    return false;
+                    return (false, LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
                 }
 
                 if (possibleProjectPath.Length == 1)
                 {
                     projectOrSolutionFilePath = possibleProjectPath[0];
-                    return true;
+                    return (true, string.Empty);
                 }
 
-                VSTestTrace.SafeWriteTrace(() => string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, directory));
-
-                return false;
+                return (false, string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
             }
         }
 

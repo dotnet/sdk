@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+
+	<PropertyGroup>
+		<!-- Enable the MSTest runner, this is an opt-in feature -->
+		<EnableMSTestRunner>true</EnableMSTestRunner>
+		<!-- We need to produce an executable and not a DLL -->
+		<OutputType>Exe</OutputType>
+
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- 
+      MSTest meta package is the recommended way to reference MSTest.
+      It's equivalent to referencing:
+          Microsoft.NET.Test.Sdk
+          MSTest.TestAdapter
+          MSTest.TestFramework
+          MSTest.Analyzers
+    -->
+		 <PackageReference Include="MSTest" Version="$(MSTestVersion)" />
+		 
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+	</ItemGroup>
+
+</Project>
