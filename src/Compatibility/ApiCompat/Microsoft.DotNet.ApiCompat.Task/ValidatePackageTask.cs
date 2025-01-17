@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         protected override void ExecuteCore()
         {
-            SuppressibleMSBuildLog logFactory(ISuppressionEngine suppressionEngine) => new(Log, suppressionEngine);
+            SuppressibleMSBuildLog logFactory(ISuppressionEngine suppressionEngine) => new(Log, suppressionEngine, NoWarn);
             ValidatePackage.Run(logFactory,
                 GenerateSuppressionFile,
                 PreserveUnnecessarySuppressions,
