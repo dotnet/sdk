@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
-        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <target state="translated">在指定要使用workload@version语法安装的版本时，不能使用 --version 选项指定工作负载版本。</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="needs-review-translation">在 global.json 中指定工作负载版本时，无法使用 {0} 选项。移除 {0} 选项，或从 {1} 中移除“workloadVersion”元素。</target>
+        <target state="translated">在 global.json 中指定工作负载版本时，无法使用 {0} 选项。移除 {0} 选项，或从 {1} 中移除“workloadVersion”元素。</target>
         <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
@@ -399,7 +399,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="needs-review-translation">更新到指定的工作负载版本。</target>
+        <target state="translated">要显示的工作负载版本或一个或多个工作负载及其版本由 “@” 字符联接。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

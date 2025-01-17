@@ -63,7 +63,36 @@
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="needs-review-translation">Geben eine Liste der neuesten veröffentlichten Workloadversionen aus. Verwendet die Option „--take“, um anzugeben, wie viele angegeben werden sollen, und „--format“, um das Format zu ändern.</target>
+        <target state="translated">'dotnet workload search version' hat je nach Argument drei Funktionen:
+      1. Wenn kein Argument angegeben wird, wird eine Liste der zuletzt veröffentlichten Workloadversionen aus diesem Featureband ausgegeben. Verwendet die --take Option, um anzugeben, wie viele angegeben werden sollen, und --format, um das Format zu ändern.
+         Beispiel:
+           dotnet workload search version --take 2 --format JSON
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. Wenn eine Workloadversion als Argument angegeben wird, wird eine Tabelle mit verschiedenen Workloads und deren Versionen für die angegebene Workloadversion ausgegeben. Verwendet die --format Option, um das Ausgabeformat zu ändern.
+         Beispiel:
+           dotnet workload search version 9.0.201
+           Manifestversion des Funktionsbandmanifests für Workloadmanifest-ID
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android 9.0.100-rc.1 35.0.0-rc.1.80
+           microsoft.net.sdk.ios 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.sdk.maccatalyst 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.sdk.macos 9.0.100-rc.1 14.5.9270-net9-rc1
+           microsoft.net.sdk.zählung 9.0.100-rc.1 9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.sdk.aturm 8.0.100 8.2.0
+      3. Wenn mindestens eine Workload zusammen mit ihren Versionen bereitgestellt wird (indem sie mit dem Zeichen "@" verbunden werden), werden Workloadversionen ausgegeben, die mit den angegebenen Versionen übereinstimmen. Verwendet die option --take, um anzugeben, wie viele angegeben werden sollen, und --format, um das Format zu ändern.
+         Beispiel:
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </target>
         <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
@@ -108,7 +137,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
         <source>No workload version matching {0} was found.</source>
-        <target state="new">No workload version matching {0} was found.</target>
+        <target state="translated">Es wurde keine Workloadversion gefunden, die mit {0} übereinstimmt.</target>
         <note />
       </trans-unit>
     </body>
