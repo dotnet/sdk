@@ -36,7 +36,7 @@
     <SystemCollectionsImmutablePackageVersion>7.0.0</SystemCollectionsImmutablePackageVersion>
     <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
     <SystemReflectionMetadataVersion>7.0.0</SystemReflectionMetadataVersion>
-    <MicrosoftDotNetSignToolVersion>8.0.0-beta.25064.11</MicrosoftDotNetSignToolVersion>
+    <MicrosoftDotNetSignToolVersion>8.0.0-beta.25066.6</MicrosoftDotNetSignToolVersion>
     <MicrosoftWebXdtPackageVersion>7.0.0-preview.22423.2</MicrosoftWebXdtPackageVersion>
     <SystemSecurityCryptographyProtectedDataPackageVersion>8.0.0</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemCollectionsSpecializedPackageVersion>4.3.0</SystemCollectionsSpecializedPackageVersion>
@@ -147,7 +147,7 @@
     <MicrosoftTemplateEngineUtilsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateSearchCommonPackageVersion>
     <!-- test dependencies -->
-    <MicrosoftTemplateEngineMocksPackageVersion>8.0.309-servicing.25062.11</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>8.0.309-servicing.25066.1</MicrosoftTemplateEngineMocksPackageVersion>
     <MicrosoftTemplateEngineTestHelperPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateEngineTestHelperPackageVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
@@ -213,7 +213,7 @@
   <PropertyGroup>
     <FluentAssertionsVersion>6.12.0</FluentAssertionsVersion>
     <FluentAssertionsJsonVersion>6.1.0</FluentAssertionsJsonVersion>
-    <MicrosoftDotNetXUnitExtensionsVersion>8.0.0-beta.25064.11</MicrosoftDotNetXUnitExtensionsVersion>
+    <MicrosoftDotNetXUnitExtensionsVersion>8.0.0-beta.25066.6</MicrosoftDotNetXUnitExtensionsVersion>
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
     <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>8.0.0-beta.23607.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
