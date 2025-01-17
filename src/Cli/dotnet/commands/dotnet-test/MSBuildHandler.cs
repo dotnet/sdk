@@ -42,15 +42,15 @@ namespace Microsoft.DotNet.Cli
 
             if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
             {
-                msbuildExitCode = await RunBuild(buildPathOptions.ProjectPath, isSolution: false);
+                msbuildExitCode = await RunBuild(buildPathOptions.ProjectPath, isSolution: false, buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild);
             }
             else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
             {
-                msbuildExitCode = await RunBuild(buildPathOptions.SolutionPath, isSolution: true);
+                msbuildExitCode = await RunBuild(buildPathOptions.SolutionPath, isSolution: true, buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild);
             }
             else
             {
-                msbuildExitCode = await RunBuild(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+                msbuildExitCode = await RunBuild(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory(), buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild);
             }
 
             if (msbuildExitCode != ExitCodes.Success)
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private async Task<int> RunBuild(string directoryPath)
+        private async Task<int> RunBuild(string directoryPath, bool hasNoRestore, bool hasNoBuild)
         {
             (bool solutionOrProjectFileFound, string message) = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out string projectOrSolutionFilePath, out bool isSolution);
 
@@ -118,16 +118,16 @@ namespace Microsoft.DotNet.Cli
                 return ExitCodes.GenericFailure;
             }
 
-            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(projectOrSolutionFilePath, isSolution);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(projectOrSolutionFilePath, isSolution, hasNoRestore, hasNoBuild);
 
             InitializeTestApplications(modules);
 
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
-        private async Task<int> RunBuild(string filePath, bool isSolution)
+        private async Task<int> RunBuild(string filePath, bool isSolution, bool hasNoRestore, bool hasNoBuild)
         {
-            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution, hasNoRestore, hasNoBuild);
 
             InitializeTestApplications(modules);
 
@@ -170,10 +170,10 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
+        private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, bool hasNoRestore, bool hasNoBuild)
         {
-            var allProjects = new ConcurrentBag<Module>();
             bool isBuiltOrRestored = true;
+            var allProjects = new ConcurrentBag<Module>();
             var projectCollection = new ProjectCollection();
             bool allowBinLog = IsBinaryLoggerEnabled(_args, out string binLogFileName);
 
@@ -185,14 +185,21 @@ namespace Microsoft.DotNet.Cli
                     : fileDirectory;
 
                 var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
-                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand, CliConstants.BuildCommand], allowBinLog, binLogFileName);
+                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, GetCommands(hasNoRestore, hasNoBuild), allowBinLog, binLogFileName);
 
                 ProcessProjectsInParallel(projectCollection, projects, allProjects);
             }
             else
             {
-                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand], allowBinLog, binLogFileName);
-                isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, [CliConstants.BuildCommand], allowBinLog, binLogFileName);
+                if (!hasNoRestore)
+                {
+                    isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand], allowBinLog, binLogFileName);
+                }
+
+                if (!hasNoBuild)
+                {
+                    isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, [CliConstants.BuildCommand], allowBinLog, binLogFileName);
+                }
 
                 IEnumerable<Module> relatedProjects = GetProjectPropertiesInternal(solutionOrProjectFilePath, projectCollection);
                 foreach (var relatedProject in relatedProjects)
@@ -204,6 +211,23 @@ namespace Microsoft.DotNet.Cli
             LogProjectProperties(allProjects);
 
             return (allProjects, isBuiltOrRestored);
+        }
+
+        public static string[] GetCommands(bool hasNoRestore, bool hasNoBuild)
+        {
+            var commands = new List<string>();
+
+            if (!hasNoRestore)
+            {
+                commands.Add(CliConstants.RestoreCommand);
+            }
+
+            if (!hasNoBuild)
+            {
+                commands.Add(CliConstants.BuildCommand);
+            }
+
+            return commands.ToArray();
         }
 
         private void ProcessProjectsInParallel(ProjectCollection projectCollection, IEnumerable<string> projects, ConcurrentBag<Module> allProjects)

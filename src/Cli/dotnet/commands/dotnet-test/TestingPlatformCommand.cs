@@ -156,16 +156,16 @@ namespace Microsoft.DotNet.Cli
         }
 
         private static BuildConfigurationOptions GetBuildConfigurationOptions(ParseResult parseResult) =>
-            new(parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
-                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
+            new(parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
                 parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
                 parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
 
         private static BuildPathsOptions GetBuildPathOptions(ParseResult parseResult) =>
             new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
+                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
+                parseResult.HasOption(TestingPlatformOptions.NoBuildOption));
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
 

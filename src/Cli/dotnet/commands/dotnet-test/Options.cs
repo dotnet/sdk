@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli
 {
-    internal record BuildConfigurationOptions(bool HasNoRestore, bool HasNoBuild, bool HasListTests, string Configuration, string Architecture);
+    internal record BuildConfigurationOptions(bool HasListTests, string Configuration, string Architecture);
 
-    internal record BuildPathsOptions(string ProjectPath, string SolutionPath, string DirectoryPath);
+    internal record BuildPathsOptions(string ProjectPath, string SolutionPath, string DirectoryPath, bool HasNoRestore, bool HasNoBuild);
 }
