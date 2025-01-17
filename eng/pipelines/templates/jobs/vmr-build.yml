@@ -452,6 +452,9 @@ jobs:
         extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
+
+        echo "##vso[task.setvariable variable=buildArgs]$(buildArgs)"
+        echo "##vso[task.setvariable variable=customPreBuildArgs]$(customPreBuildArgs)"
       displayName: Prepare Build Command
       workingDirectory: $(sourcesPath)
 
