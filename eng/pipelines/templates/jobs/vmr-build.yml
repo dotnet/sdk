@@ -214,7 +214,7 @@ jobs:
     - output: pipelineArtifact
       path: $(artifactsStagingDir)
       artifact: $(successfulJobArtifactName)
-      displayName: Publish Artifacts
+      displayName: Publish Artifacts (On Success)
       condition: succeeded()
       sbomEnabled: true
 
