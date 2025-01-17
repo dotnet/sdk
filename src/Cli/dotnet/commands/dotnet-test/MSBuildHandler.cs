@@ -185,14 +185,14 @@ namespace Microsoft.DotNet.Cli
                     : fileDirectory;
 
                 var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
-                isBuiltOrRestored = BuildOrRestoreProject(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand, CliConstants.BuildCommand], allowBinLog, binLogFileName);
+                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand, CliConstants.BuildCommand], allowBinLog, binLogFileName);
 
                 ProcessProjectsInParallel(projectCollection, projects, allProjects);
             }
             else
             {
-                isBuiltOrRestored = BuildOrRestoreProject(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand], allowBinLog, binLogFileName);
-                isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProject(solutionOrProjectFilePath, projectCollection, [CliConstants.BuildCommand], allowBinLog, binLogFileName);
+                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand], allowBinLog, binLogFileName);
+                isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, [CliConstants.BuildCommand], allowBinLog, binLogFileName);
 
                 IEnumerable<Module> relatedProjects = GetProjectPropertiesInternal(solutionOrProjectFilePath, projectCollection);
                 foreach (var relatedProject in relatedProjects)
@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Cli
             return ExtractModulesFromProject(project);
         }
 
-        private static bool BuildOrRestoreProject(string projectFilePath, ProjectCollection projectCollection, string[] commands, bool allowBinLog, string binLogFileName)
+        private static bool BuildOrRestoreProjectOrSolution(string projectFilePath, ProjectCollection projectCollection, string[] commands, bool allowBinLog, string binLogFileName)
         {
             BuildParameters parameters = new(projectCollection)
             {
