@@ -621,7 +621,7 @@ jobs:
     # This prevents overwrite conflicts in the event of a failed build followed by a rerun and a successful build.
     - publish: $(artifactsStagingDir)
       artifact: $(successfulJobArtifactName)
-      displayName: Publish Artifacts
+      displayName: Publish Artifacts (On Success)
       condition: succeeded()
       continueOnError: true
 
