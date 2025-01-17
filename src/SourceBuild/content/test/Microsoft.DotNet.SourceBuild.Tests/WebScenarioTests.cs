@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,9 +50,28 @@ public class WebScenarioTests : SdkTests
         string projNugetCachePath = Path.Combine(projectPath, "obj", "project.nuget.cache");
 
         JsonNode? projNugetCache = JsonNode.Parse(File.ReadAllText(projNugetCachePath));
-        string? restoredPackageFiles = projNugetCache?["expectedPackageFiles"]?.ToString();
+        JsonArray? restoredPackageFiles = (JsonArray?)projNugetCache?["expectedPackageFiles"];
 
         Assert.True(restoredPackageFiles is not null, "Failed to parse project.nuget.cache");
-        Assert.True("[]" == restoredPackageFiles, "Runtime packs were retrieved from NuGet instead of the SDK");
+
+        string[] allowedPackages = [
+            "Microsoft.AspNetCore.App.Internal.Assets"
+        ];
+
+        string packagesDirectory = Path.Combine(Environment.CurrentDirectory, "packages");
+
+        IEnumerable<string> packages = restoredPackageFiles
+            .Select(file =>
+            {
+                string path = file.ToString();
+                path = path.Substring(packagesDirectory.Length + 1); // trim the leading path up to the package name directory
+                return path.Substring(0, path.IndexOf('/')); // trim the rest of the path
+            })
+            .Except(allowedPackages, StringComparer.OrdinalIgnoreCase);
+
+        if (packages.Any())
+        {
+            Assert.Fail($"The following runtime packs were retrieved from NuGet instead of the SDK: {string.Join(",", packages.ToArray())}");
+        }
     }
 }
