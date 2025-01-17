@@ -66,6 +66,10 @@ public class SymbolsTests : SdkTests
     {
         Assert.True(Directory.Exists(sdkRoot), $"Path, with SDK files to validate, does not exist: {sdkRoot}");
 
+        // Normalize paths, to ensure proper string replacement
+        symbolsRoot = symbolsRoot.TrimEnd(Path.DirectorySeparatorChar);
+        sdkRoot = sdkRoot.TrimEnd(Path.DirectorySeparatorChar);
+
         var failedFiles = new ConcurrentBag<string>();
 
         IEnumerable<string> allFiles = Directory.GetFiles(sdkRoot, "*", SearchOption.AllDirectories);
