@@ -196,7 +196,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 (string, string)[]? leftAssembliesTransformationPattern = parseResult.GetValue(leftAssembliesTransformationPatternOption);
                 (string, string)[]? rightAssembliesTransformationPattern = parseResult.GetValue(rightAssembliesTransformationPatternOption);
 
-                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
+                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity, noWarn);
                 int exitCode = ValidateAssemblies.Run(logFactory,
                     generateSuppressionFile,
                     preserveUnnecessarySuppressions,
@@ -320,7 +320,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Dictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences = parseResult.GetValue(baselinePackageAssemblyReferencesOption);
                 string[]? baselinePackageFrameworksToIgnore = parseResult.GetValue(baselinePackageFrameworksToIgnoreOption);
 
-                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
+                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity, noWarn);
                 int exitCode = ValidatePackage.Run(logFactory,
                     generateSuppressionFile,
                     preserveUnnecessarySuppressions,
