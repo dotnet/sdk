@@ -222,7 +222,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]
         [Theory]
-        public void RunTestProjectSolutionWithNoBuildOption_ShouldReturnZeroAsExitCode(string configuration)
+        public void RunTestProjectSolutionRunsWithNoBuildOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -237,8 +237,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.NoBuildOption.Name,
-                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
@@ -252,7 +251,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]
         [Theory]
-        public void RunTestProjectSolutionWithNoRestoreOption_ShouldReturnZeroAsExitCode(string configuration)
+        public void RunTestProjectSolutionRunsWithNoRestoreOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -267,8 +266,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.NoRestoreOption.Name,
-                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
@@ -324,7 +322,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(Constants.Debug)]
         [InlineData(Constants.Release)]
         [Theory]
-        public void RunSpecificCSProjWithNoBuildAndNoRestoreOptions_ShouldReturnZeroAsExitCode(string configuration)
+        public void RunSpecificCSProjRunsWithNoBuildAndNoRestoreOptions_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
@@ -340,7 +338,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, @"TestProject.csproj",
-                                            TestingPlatformOptions.NoRestoreOption.Name, TestingPlatformOptions.NoBuildOption.Name,
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that the bin folder hasn't been modified
