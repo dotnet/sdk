@@ -45,6 +45,11 @@ function Get-Usage() {
   Write-Host ""
 }
 
+# Print the command line, for the user's convenience sake.
+if ($ci) {
+  Write-Host "Command line: $($MyInvocation.Line)"
+}
+
 $useGlobalNuGetCache=$false
 
 . $PSScriptRoot\common\tools.ps1

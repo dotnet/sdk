@@ -207,6 +207,11 @@ while [[ $# > 0 ]]; do
   shift
 done
 
+# Print the command line, for the user's convenience sake.
+if [[ "$ci" == true ]]; then
+    echo "Command line: $0 $@"
+fi
+
 if [[ "$ci" == true ]]; then
   if [[ "$exclude_ci_binary_log" == false ]]; then
     binary_log=true
