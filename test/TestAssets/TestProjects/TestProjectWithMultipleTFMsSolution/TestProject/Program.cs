@@ -83,9 +83,8 @@ namespace TestProjectWithNetFM
 			DisplayName = "Test5",
 			Properties = new PropertyBag(new CancelledTestNodeStateProperty(new Exception("this is a cancelled exception"), "")),
 		}));
-
-			
-			context.Complete();
+		
+		context.Complete();
 		}
 	}
 }

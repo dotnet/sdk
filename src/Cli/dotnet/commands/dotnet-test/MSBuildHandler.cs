@@ -138,23 +138,21 @@ namespace Microsoft.DotNet.Cli
         {
             foreach (Module module in modules)
             {
-                if (module.IsTestProject)
-                {
-                    if (module.IsTestingPlatformApplication)
-                    {
-                        var testApp = new TestApplication(module, _args);
-                        _testApplications.Add(testApp);
-                    }
-                    else // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
-                    {
-                        _areTestingPlatformApplications = false;
-                        return;
-                    }
-                }
-                else
+                if (!module.IsTestProject)
                 {
                     // Non test projects, like the projects that include production code are skipped over, we won't run them.
+                    return;
                 }
+
+                if (!module.IsTestingPlatformApplication)
+                {
+                    // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
+                    _areTestingPlatformApplications = false;
+                    return;
+                }
+
+                var testApp = new TestApplication(module, _args);
+                _testApplications.Add(testApp);
             }
         }
 
@@ -175,7 +173,9 @@ namespace Microsoft.DotNet.Cli
         private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
         {
             var allProjects = new ConcurrentBag<Module>();
-            bool restored = true;
+            bool isBuiltOrRestored = true;
+            var projectCollection = new ProjectCollection();
+            bool allowBinLog = IsBinaryLoggerEnabled(_args, out string binLogFileName);
 
             if (isSolution)
             {
@@ -185,76 +185,85 @@ namespace Microsoft.DotNet.Cli
                     : fileDirectory;
 
                 var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
-                ProcessProjectsInParallel(projects, allProjects, ref restored);
+                isBuiltOrRestored = BuildOrRestoreProject(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand, CliConstants.BuildCommand], allowBinLog, binLogFileName);
+
+                ProcessProjectsInParallel(projectCollection, projects, allProjects);
             }
             else
             {
-                bool allowBinLog = IsBinaryLoggerEnabled(_args, out string binLogFileName);
+                isBuiltOrRestored = BuildOrRestoreProject(solutionOrProjectFilePath, projectCollection, [CliConstants.RestoreCommand], allowBinLog, binLogFileName);
+                isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProject(solutionOrProjectFilePath, projectCollection, [CliConstants.BuildCommand], allowBinLog, binLogFileName);
 
-                var (relatedProjects, isProjectBuilt) = GetProjectPropertiesInternal(solutionOrProjectFilePath, allowBinLog, binLogFileName);
+                IEnumerable<Module> relatedProjects = GetProjectPropertiesInternal(solutionOrProjectFilePath, projectCollection);
                 foreach (var relatedProject in relatedProjects)
                 {
                     allProjects.Add(relatedProject);
                 }
-
-                if (!isProjectBuilt)
-                {
-                    restored = false;
-                }
             }
-            return (allProjects, restored);
+
+            LogProjectProperties(allProjects);
+
+            return (allProjects, isBuiltOrRestored);
         }
 
-        private void ProcessProjectsInParallel(IEnumerable<string> projects, ConcurrentBag<Module> allProjects, ref bool restored)
+        private void ProcessProjectsInParallel(ProjectCollection projectCollection, IEnumerable<string> projects, ConcurrentBag<Module> allProjects)
         {
-            bool allProjectsRestored = true;
-            bool allowBinLog = IsBinaryLoggerEnabled(_args, out string binLogFileName);
-
             Parallel.ForEach(
                 projects,
                 new ParallelOptions { MaxDegreeOfParallelism = _degreeOfParallelism },
-                () => true,
-                (project, state, localRestored) =>
+                (project, state) =>
                 {
-                    var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog, binLogFileName);
+                    IEnumerable<Module> relatedProjects = GetProjectPropertiesInternal(project, projectCollection);
                     foreach (var relatedProject in relatedProjects)
                     {
                         allProjects.Add(relatedProject);
                     }
-
-                    return localRestored && isRestored;
-                },
-                localRestored =>
-                {
-                    if (!localRestored)
-                    {
-                        allProjectsRestored = false;
-                    }
                 });
-
-            restored = allProjectsRestored;
         }
 
-        private static (IEnumerable<Module> Modules, bool Restored) GetProjectPropertiesInternal(string projectFilePath, bool allowBinLog, string binLogFileName)
+        private static IEnumerable<Module> GetProjectPropertiesInternal(string projectFilePath, ProjectCollection projectCollection)
         {
-            var projectCollection = new ProjectCollection();
             var project = projectCollection.LoadProject(projectFilePath);
-            var buildResult = RestoreProject(projectFilePath, projectCollection, allowBinLog, binLogFileName);
+            return ExtractModulesFromProject(project);
+        }
 
-            bool restored = buildResult.OverallResult == BuildResultCode.Success;
-
-            if (!restored)
+        private static bool BuildOrRestoreProject(string projectFilePath, ProjectCollection projectCollection, string[] commands, bool allowBinLog, string binLogFileName)
+        {
+            BuildParameters parameters = new(projectCollection)
             {
-                return (Array.Empty<Module>(), restored);
+                Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet)]
+            };
+
+            if (allowBinLog)
+            {
+                parameters.Loggers = parameters.Loggers.Concat([
+                    new BinaryLogger
+                    {
+                        Parameters = binLogFileName
+                    }
+                ]);
             }
 
-            return (ExtractModulesFromProject(project), restored);
+            var buildRequestData = new BuildRequestData(projectFilePath, new Dictionary<string, string>(), null, commands, null);
+            BuildResult buildResult;
+            lock (buildLock)
+            {
+                buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
+            }
+
+            return buildResult.OverallResult == BuildResultCode.Success;
         }
 
         private static IEnumerable<Module> ExtractModulesFromProject(Project project)
         {
-            _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
             _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
+
+            if (!isTestProject)
+            {
+                return [];
+            }
+
+            _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
 
             string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
             string targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -288,31 +297,26 @@ namespace Microsoft.DotNet.Cli
             return projects;
         }
 
-        private static BuildResult RestoreProject(string projectFilePath, ProjectCollection projectCollection, bool allowBinLog, string binLogFileName)
+        private void LogProjectProperties(IEnumerable<Module> modules)
         {
-            BuildParameters parameters = new(projectCollection)
+            if (!VSTestTrace.TraceEnabled)
             {
-                Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet)]
-            };
-
-            if (allowBinLog)
-            {
-                parameters.Loggers = parameters.Loggers.Concat([
-                    new BinaryLogger
-                    {
-                        Parameters = binLogFileName
-                    }
-                ]);
+                return;
             }
 
-            var buildRequestData = new BuildRequestData(projectFilePath, new Dictionary<string, string>(), null, [CliConstants.RestoreCommand], null);
-            BuildResult buildResult;
-            lock (buildLock)
+            foreach (var module in modules)
             {
-                buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
-            }
+                Console.WriteLine();
 
-            return buildResult;
+                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.ProjectFullPath}: {module.ProjectPath}");
+                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
+                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
+                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
+                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.TargetPath}: {module.DllOrExePath}");
+                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
+
+                Console.WriteLine();
+            }
         }
 
         internal static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)

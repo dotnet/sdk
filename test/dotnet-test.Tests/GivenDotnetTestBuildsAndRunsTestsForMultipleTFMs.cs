@@ -74,9 +74,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test1");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test2");
-                MatchCollection timeoutTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
+                MatchCollection timeoutTestsMatches = Regex.Matches(result.StdOut!, "failed (canceled) Test3");
                 MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
-                MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, "failed (canceled) Test4");
+                MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, "failed (canceled) Test5");
 
                 Assert.Equal(2, netFrameworkProjectMatches.Count);
                 Assert.Equal(2, net8ProjectMatches.Count);
