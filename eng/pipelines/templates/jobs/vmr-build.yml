@@ -381,7 +381,6 @@ jobs:
         set -ex
         df -h
 
-        customEnvVars=""
         customPreBuildArgs=""
         customBuildArgs="--ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }}"
 
@@ -428,7 +427,6 @@ jobs:
         fi
 
         if [[ -n "${{ parameters.crossRootFs }}" ]]; then
-          customEnvVars="$customEnvVars ROOTFS_DIR=${{ parameters.crossRootFs}}"
           if [[ '${{ parameters.targetArchitecture }}' != 'wasm' ]]; then
             extraBuildProperties="$extraBuildProperties /p:CrossBuild=true"
           fi
@@ -454,15 +452,15 @@ jobs:
         extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
+      displayName: Prepare Build Command
+      workingDirectory: $(sourcesPath)
 
-        for envVar in $customEnvVars; do
-          customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
-        done
-
-        eval $customEnvVarsWithBashSyntax
-        $customPreBuildArgs ./build.sh $buildArgs
+    - script: $customPreBuildArgs ./build.sh $buildArgs
       displayName: Build
       workingDirectory: $(sourcesPath)
+      - ${{ if ne(parameters.crossRootFs) }}:
+        env:
+          ROOTFS_DIR: ${{ parameters.crossRootFs }}
 
     - ${{ if ne(parameters.runOnline, 'True' )}}:
       - script: |
