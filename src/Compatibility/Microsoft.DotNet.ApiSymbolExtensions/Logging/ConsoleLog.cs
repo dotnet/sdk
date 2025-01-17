@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
             // Mimic MSBuild which logs suppressed warnings as low importance messages.
             if (_noWarn.Contains(code))
             {
-                LogMessage(MessageImportance.Low, messageTextWithCode)
+                LogMessage(MessageImportance.Low, messageTextWithCode);
             }
             else
             {
