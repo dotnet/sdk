@@ -210,7 +210,8 @@ jobs:
       sbomEnabled: false
 
     # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
-    # This prevents overwrite conflicts in the event of a failed build followed by a rerun and a successful build.
+    # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
+    # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - output: pipelineArtifact
       path: $(artifactsStagingDir)
       artifact: $(successfulJobArtifactName)
@@ -619,6 +620,7 @@ jobs:
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
     # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
     # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
+    # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - publish: $(artifactsStagingDir)
       artifact: $(successfulJobArtifactName)
       displayName: Publish Artifacts (On Success)
