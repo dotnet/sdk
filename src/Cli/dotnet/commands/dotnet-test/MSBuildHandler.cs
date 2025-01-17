@@ -134,23 +134,21 @@ namespace Microsoft.DotNet.Cli
         {
             foreach (Module module in modules)
             {
-                if (module.IsTestProject)
-                {
-                    if (module.IsTestingPlatformApplication)
-                    {
-                        var testApp = new TestApplication(module, _args);
-                        _testApplications.Add(testApp);
-                    }
-                    else // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
-                    {
-                        _areTestingPlatformApplications = false;
-                        return;
-                    }
-                }
-                else
+                if (!module.IsTestProject)
                 {
                     // Non test projects, like the projects that include production code are skipped over, we won't run them.
+                    return;
                 }
+
+                if (!module.IsTestingPlatformApplication)
+                {
+                    // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
+                    _areTestingPlatformApplications = false;
+                    return;
+                }
+
+                var testApp = new TestApplication(module, _args);
+                _testApplications.Add(testApp);
             }
         }
 
@@ -212,7 +210,7 @@ namespace Microsoft.DotNet.Cli
                 () => true,
                 (project, state, localRestored) =>
                 {
-                    var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog, $"msbuild_{Guid.NewGuid().ToString()}.binlog");
+                    var (relatedProjects, isRestored) = GetProjectPropertiesInternal(project, allowBinLog, binLogFileName);
                     foreach (var relatedProject in relatedProjects)
                     {
                         allProjects.Add(relatedProject);
@@ -342,7 +340,7 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    binLogFileName = $"msbuild_{Guid.NewGuid().ToString()}.binlog";
+                    binLogFileName = CliConstants.BinLogFileName;
                 }
 
                 return true;
