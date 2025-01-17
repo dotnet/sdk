@@ -16,21 +16,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         /// Include internal API.
         /// </summary>
         public bool IncludeInternalSymbols { get; } = includeInternalSymbols;
-
-        /// <summary>
-        /// Include effectively private API.
-        /// </summary>
-        public bool IncludeEffectivelyPrivateSymbols { get; } = includeEffectivelyPrivateSymbols;
-
-        /// <summary>
-        /// Include explicit interface implementation API.
-        /// </summary>
-        public bool IncludeExplicitInterfaceImplementationSymbols { get; } = includeExplicitInterfaceImplementationSymbols;
-
         /// <inheritdoc />
         public bool Include(ISymbol symbol) =>
             symbol.IsVisibleOutsideOfAssembly(IncludeInternalSymbols,
-                IncludeEffectivelyPrivateSymbols,
-                IncludeExplicitInterfaceImplementationSymbols);
+                includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols);
     }
 }

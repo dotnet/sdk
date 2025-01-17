@@ -108,11 +108,33 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                     yield return baseInterface;
         }
 
+        /// <summary>
+        /// Determines whether a symbol is visible outside of the assembly it is defined in.
+        /// The semantic of what is visible outside of an assembly is controlled via additional flags.
+        /// </summary>
+        /// <param name="symbol">The symbol that should be checked for its accessibility.</param>
+        /// <param name="includeInternalSymbols">Set to true if internal symbols should be considered visible outside of an assembly.</param>
+        /// <param name="includeEffectivelyPrivateSymbols">Set to true if effectively private symbols should be considered as visible outside of an assembly.</param>
+        /// <param name="includeExplicitInterfaceImplementationSymbols">Set to true if explicit interface implementation symbols should be considered as visible out of an assembly.</param>
+        /// <returns></returns>
         public static bool IsVisibleOutsideOfAssembly(this ISymbol symbol,
             bool includeInternalSymbols,
             bool includeEffectivelyPrivateSymbols = false,
-            bool includeExplicitInterfaceImplementationSymbols = false) =>
-            symbol.DeclaredAccessibility switch
+            bool includeExplicitInterfaceImplementationSymbols = false)
+        {
+            // If a generic type has a type parameter that isn't visible outside of the assembly, filter the entire type out. The type is considered purely internal.
+            if (symbol is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.IsGenericType)
+            {
+                foreach (ITypeParameterSymbol typeParameterSymbol in namedTypeSymbol.TypeParameters)
+                {
+                    if (!IsVisibleOutsideOfAssembly(typeParameterSymbol, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return symbol.DeclaredAccessibility switch
             {
                 Accessibility.Public => true,
                 Accessibility.Protected => includeEffectivelyPrivateSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternalSymbols),
@@ -121,6 +143,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 Accessibility.Private => includeExplicitInterfaceImplementationSymbols && IsExplicitInterfaceImplementation(symbol),
                 _ => includeInternalSymbols,
             };
+        }
 
         public static bool IsEventAdderOrRemover(this IMethodSymbol method) =>
             method.MethodKind == MethodKind.EventAdd ||
