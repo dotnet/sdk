@@ -48,7 +48,7 @@ Integration with static web assets:
 <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCssScopes" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeCssScope" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.RewriteCss" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
-<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ConcatenateCssFiles" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+<UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ConcatenateCssFiles50" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
 <PropertyGroup>
 
@@ -337,7 +337,7 @@ Integration with static web assets:
   <!-- This is the bundle for the app, we will always generate it when there are scoped css files for the current project or
        we detected existing bundles available. If some other project/package didn't bundle their assets, we will not be including
        them in this bundle. -->
-  <ConcatenateCssFiles
+  <ConcatenateCssFiles50
     Condition="'@(_ScopedCssProjectBundles)' != '' or '@(_ScopedCss)' != ''"
     ScopedCssFiles="@(_CurrentProjectDiscoveredScopedCssFiles)"
     ProjectBundles="@(_ScopedCssProjectBundles)"
@@ -346,7 +346,7 @@ Integration with static web assets:
   <!-- This is the project bundle, we will only generate it when there are scoped files defined in the project. This bundle will be used
        when the project is referenced from another project or packed as a package (Razor Class Library). If some other project/package
        didn't bundle their assets, we will not be including them in this bundle. -->
-  <ConcatenateCssFiles
+  <ConcatenateCssFiles50
     Condition="'@(_ScopedCss)' != ''"
     ScopedCssFiles="@(_CurrentProjectDiscoveredScopedCssFiles)"
     ProjectBundles="@()"
