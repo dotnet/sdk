@@ -34,19 +34,19 @@
   <Target Name="ComputeContainerBaseImage"
           Returns="$(ContainerBaseImage)">
     <PropertyGroup>
-      <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
-      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
 
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
     </PropertyGroup>
 
     <ItemGroup>
-      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
-      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifier)" Condition="'$(ContainerRuntimeIdentifiers)' == ''" />
+      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifier)" Condition="'$(ContainerRuntimeIdentifier)' != ''" />
+      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifiers)" Condition="@(_TargetRuntimeIdentifiers->Count()) == 0" />
     </ItemGroup>
 
     <ComputeDotnetBaseImageAndTag

@@ -863,8 +863,8 @@ public class EndToEndTests : IDisposable
         // images were created locally for each RID
         // and image index was NOT created
         commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64", configuration: "Release"))
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64", configuration: "Release"))
             .And.HaveStdOutContaining($"Pushed image '{qualifiedImageName}' to local registry")
             .And.NotHaveStdOutContaining("Pushed image index");
 
@@ -902,8 +902,8 @@ public class EndToEndTests : IDisposable
         return newProjectDir;
     }
 
-    private string GetPublishArtifactsPath(string projectDir, string rid)
-        => Path.Combine(projectDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, rid, "publish");
+    private string GetPublishArtifactsPath(string projectDir, string rid, string configuration = "Debug")
+        => Path.Combine(projectDir, "bin", configuration, ToolsetInfo.CurrentTargetFramework, rid, "publish");
 
     [DockerIsAvailableAndSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_ArchivePublishing()
