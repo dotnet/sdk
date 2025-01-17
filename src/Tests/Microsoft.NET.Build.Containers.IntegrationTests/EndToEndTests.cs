@@ -181,7 +181,7 @@ public class EndToEndTests : IDisposable
 
     [DockerAvailableFact]
     public async Task TarballsHaveCorrectStructure()
-    { 
+    {
         var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
             nameof(TarballsHaveCorrectStructure), "app.tar.gz");
 
@@ -190,7 +190,7 @@ public class EndToEndTests : IDisposable
             await BuildDockerImageWithArciveDestinationAsync(archiveFile, ["latest"], nameof(TarballsHaveCorrectStructure));
 
         await destinationReference.LocalRegistry!.LoadAsync(dockerImage, sourceReference, destinationReference, default).ConfigureAwait(false);
-        
+
         Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
 
         CheckDockerTarballStructure(archiveFile);
@@ -778,6 +778,108 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
+    [DockerAvailableFact]
+    public void MultiArchStillAllowsSingleRID()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string qualifiedImageName = $"{imageName}:{imageTag}";
+
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+
+        // Run PublishContainer for multi-arch-capable, but single-arch actual
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/t:PublishContainer",
+            // make it so the app is _able_ to target both linux TFMs
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            // and that it opts into to multi-targeting containers for both of those linux TFMs
+            "/p:ContainerRuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            // but then only actually publishes for one of them
+            "/p:ContainerRuntimeIdentifier=linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for each RID,
+        // images were created locally for each RID
+        // and image index was NOT created
+        commandResult.Should().Pass()
+            // no rid-specific path because we didn't pass RuntimeIdentifier
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.HaveStdOutContaining($"Pushed image '{qualifiedImageName}' to local registry")
+            .And.NotHaveStdOutContaining("Pushed image index");
+
+        // Check that the containers can be run
+        CommandResult processResultX64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}",
+            qualifiedImageName)
+        .Execute();
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+    }
+
+    [DockerAvailableFact]
+    public void MultiArchStillAllowsSingleRIDUsingJustRIDProperties()
+    {
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        string qualifiedImageName = $"{imageName}:{imageTag}";
+
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+
+        // Run PublishContainer for multi-arch-capable, but single-arch actual
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/t:PublishContainer",
+            // make it so the app is _able_ to target both linux TFMs
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            // but then only actually publishes for one of them
+            "-r", "linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        // Check that the app was published for each RID,
+        // images were created locally for each RID
+        // and image index was NOT created
+        commandResult.Should().Pass()
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64", configuration: "Release"))
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64", configuration: "Release"))
+            .And.HaveStdOutContaining($"Pushed image '{qualifiedImageName}' to local registry")
+            .And.NotHaveStdOutContaining("Pushed image index");
+
+        // Check that the containers can be run
+        CommandResult processResultX64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-{imageName}-x64",
+            qualifiedImageName)
+        .Execute();
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+    }
+
     private DirectoryInfo CreateNewProject(string template, [CallerMemberName] string callerMemberName = "")
     {
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, callerMemberName));
@@ -798,8 +900,8 @@ public class EndToEndTests : IDisposable
         return newProjectDir;
     }
 
-    private string GetPublishArtifactsPath(string projectDir, string rid)
-        => Path.Combine(projectDir, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, rid, "publish");
+    private string GetPublishArtifactsPath(string projectDir, string rid, string configuration = "Debug")
+        => Path.Combine(projectDir, "bin", configuration, ToolsetInfo.CurrentTargetFramework, rid, "publish");
 
     [DockerSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_ArchivePublishing()
@@ -839,8 +941,8 @@ public class EndToEndTests : IDisposable
             .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to local archive at '{imageArm64Tarball}'")
             .And.NotHaveStdOutContaining("Pushed image index");
 
-        // Check that tarballs were created    
-        File.Exists(imageX64Tarball).Should().BeTrue(); 
+        // Check that tarballs were created
+        File.Exists(imageX64Tarball).Should().BeTrue();
         File.Exists(imageArm64Tarball).Should().BeTrue();
 
         // Load the images from the tarballs
@@ -886,7 +988,7 @@ public class EndToEndTests : IDisposable
 
         // Create a new console project
         DirectoryInfo newProjectDir = CreateNewProject("console");
-        
+
         // Run PublishContainer for multi-arch with ContainerRegistry
         CommandResult commandResult = new DotnetCommand(
             _testOutput,
@@ -1174,7 +1276,7 @@ public class EndToEndTests : IDisposable
         // Run PublishContainer for multi-arch with ContainerGenerateLabels
         new DotnetCommand(
             _testOutput,
-            "build",
+            "publish",
             "/t:PublishContainer",
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
