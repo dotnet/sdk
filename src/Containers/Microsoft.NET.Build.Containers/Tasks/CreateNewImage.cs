@@ -136,6 +136,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                     _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
                 };
             }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+            }
         }
 
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
