@@ -453,12 +453,12 @@ jobs:
 
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
 
-        echo "##vso[task.setvariable variable=buildArgs]$buildArgs"
-        echo "##vso[task.setvariable variable=customPreBuildArgs]$customPreBuildArgs"
+        echo "##vso[task.setvariable variable=buildArgs;]$buildArgs"
+        echo "##vso[task.setvariable variable=customPreBuildArgs;]$customPreBuildArgs"
       displayName: Prepare Build Command
       workingDirectory: $(sourcesPath)
 
-    - script: $customPreBuildArgs ./build.sh $buildArgs
+    - script: $(customPreBuildArgs) ./build.sh $(buildArgs)
       displayName: Build
       workingDirectory: $(sourcesPath)
       ${{ if ne(parameters.crossRootFs, '') }}:
