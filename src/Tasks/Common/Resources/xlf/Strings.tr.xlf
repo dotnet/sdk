@@ -646,6 +646,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1115: Geçerli .NET SDK, .NET SDK Varsayılanlarını kullanmadan .NET Framework'ü desteklemiyor. C++/CLI projesi CLRSupport özelliği ve TargetFramework arasındaki uyuşmazlık bu duruma neden olabilir.</target>
         <note>{StrBegins="NETSDK1115: "}</note>
       </trans-unit>
+      <trans-unit id="NativeCompilationRequiresPublishing">
+        <source>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</source>
+        <target state="new">NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</target>
+        <note>{StrBegins="NETSDK1225: "}</note>
+      </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
         <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
         <target state="translated">NETSDK1223: Visual Studio 2022 17.11'de .NET 9.0 veya daha üst sürümünü hedefleme desteklenmiyor.</target>
