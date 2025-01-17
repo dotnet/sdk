@@ -221,7 +221,7 @@ jobs:
     - output: pipelineArtifact
       path: $(artifactsStagingDir)
       artifact: $(failedJobArtifactName)
-      displayName: Publish Artifacts
+      displayName: Publish Artifacts (On Failure)
       condition: failed()
       sbomEnabled: true
 
