@@ -256,15 +256,9 @@ namespace Microsoft.DotNet.Cli
 
             builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectPath}\"");
 
-            if (buildConfigurationOptions.HasNoRestore)
-            {
-                builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
-            }
-
-            if (buildConfigurationOptions.HasNoBuild)
-            {
-                builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
-            }
+            // Because we restored and built before in MSHandler, we will skip those with dotnet run
+            builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
+            builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
 
             if (buildConfigurationOptions.HasListTests)
             {
