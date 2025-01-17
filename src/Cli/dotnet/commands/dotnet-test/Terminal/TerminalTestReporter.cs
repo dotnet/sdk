@@ -306,7 +306,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string skippedText = $"{SingleIndentation}skipped: {skipped}";
         string durationText = $"{SingleIndentation}duration: ";
 
-        if(error > 0)
+        if (error > 0)
         {
             terminal.SetColor(TerminalColor.Red);
             terminal.AppendLine(errorText);
