@@ -213,7 +213,7 @@ namespace Microsoft.TemplateEngine.Cli
 
                 if (installArg.Contains("::"))
                 {
-                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.Colon_Separator_Deprecated, split[0], split[1]).Yellow());
+                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.Colon_Separator_Deprecated, split[0], split.Length > 0 ? split[1] : string.Empty).Yellow());
                 }
 
                 foreach (string expandedIdentifier in InstallRequestPathResolution.ExpandMaskedPath(identifier, _engineEnvironmentSettings))
