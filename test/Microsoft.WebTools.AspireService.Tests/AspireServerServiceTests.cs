@@ -9,10 +9,8 @@ using System.Net.Http.Headers;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using Microsoft.WebTools.AspireServer.Helpers;
-using Microsoft.WebTools.AspireServer.Models;
 
-namespace Microsoft.WebTools.AspireServer.UnitTests;
+namespace Aspire.Tools.Service.UnitTests;
 
 public class AspireServerServiceTests(ITestOutputHelper output)
 {
@@ -24,6 +22,12 @@ public class AspireServerServiceTests(ITestOutputHelper output)
     private static readonly TestRunSessionRequest Project1SessionRequest = new TestRunSessionRequest(Project1Path, debugging: false, launchProfile: null, disableLaunchProfile: false)
     {
         args = new List<string> { "--project1Arg" },
+        env = new List<EnvVar> { new EnvVar { Name = "var1", Value = "value1" } }
+    };
+
+    private static readonly TestRunSessionRequest Project2SessionRequest = new TestRunSessionRequest(Project1Path, debugging: false, launchProfile: null, disableLaunchProfile: false)
+    {
+        args = null,
         env = new List<EnvVar> { new EnvVar { Name = "var1", Value = "value1" } }
     };
 
@@ -104,6 +108,30 @@ public class AspireServerServiceTests(ITestOutputHelper output)
 
         HttpResponseMessage response;
         response = await client.PutAsJsonAsync(VersionedSessionUrl, Project1SessionRequest);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        Assert.Equal($"{client.BaseAddress}run_session/2", response.Headers.Location.AbsoluteUri);
+
+        await server.DisposeAsync();
+
+        mocks.Verify();
+    }
+
+    [Fact]
+    public async Task LaunchProject_WithNullArgs_PassesThroughNullArgs()
+    {
+        var mocks = new Mocks();
+
+        mocks.GetOrCreate<IAspireServerEventsMock>()
+             .ImplementStartProjectAsync(DcpId, "2", requireNullArguments: true);
+
+        var server = await GetAspireServer(mocks);
+        var tokens = server.GetServerVariables();
+
+        using HttpClient client = GetHttpClient(tokens);
+
+        HttpResponseMessage response;
+        response = await client.PutAsJsonAsync(VersionedSessionUrl, Project2SessionRequest);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.Equal($"{client.BaseAddress}run_session/2", response.Headers.Location.AbsoluteUri);

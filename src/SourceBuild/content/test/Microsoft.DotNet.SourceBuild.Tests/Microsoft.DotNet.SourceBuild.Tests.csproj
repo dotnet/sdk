@@ -10,10 +10,7 @@
     <!-- Multiple loggers are specified so that results are captured in trx and pipelines can fail with AzDO pipeline warnings
          Workaround https://github.com/dotnet/source-build/issues/4003 by disabling VSTestUseMSBuildOutput -->
     <VSTestUseMSBuildOutput>false</VSTestUseMSBuildOutput>
-    <!-- The license scan test pipeline invokes this project directly and only runs the license scan tests.
-         They don't require the SDK archive and therefore don't build the VMR. The DetermineSourceBuiltSdkVersion
-         target would fail as the SDK archive doesn't exist. This hook disables invoking the target and the P2P below. -->
-    <SetRuntimeConfigOptionsDependsOn Condition="'$(SkipPrepareSdkArchive)' != 'true'">DetermineSourceBuiltSdkVersion</SetRuntimeConfigOptionsDependsOn>
+    <SetRuntimeConfigOptionsDependsOn Condition="'$(SkipPrepareSdkArchive)' != 'true'"></SetRuntimeConfigOptionsDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,7 +33,7 @@
   </ItemGroup>
 
   <Target Name="SetRuntimeConfigOptions"
-          DependsOnTargets="$(SetRuntimeConfigOptionsDependsOn)"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
           BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
     <ItemGroup Condition="'$(SourceBuiltArtifactsPath)' == ''">
       <SourceBuiltArtifactsItem Include="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
@@ -77,9 +74,6 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PoisonReportPath"
                                       Condition="'$(EnablePoison)' == 'true'">
         <Value>$(PoisonUsageReportFile)</Value>
-      </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PrereqsPath">
-        <Value>$(SourceBuildTestsPrereqsPath)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SdkTarballPath">
         <Value>$(SdkTarballPath)</Value>

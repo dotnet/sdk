@@ -7,6 +7,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions
 {
@@ -15,11 +16,27 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public class AssemblySymbolLoader : IAssemblySymbolLoader
     {
-        // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and 
+        // This is a list of dangling .NET Framework internal assemblies that should never get loaded.
+        private static readonly HashSet<string> s_assembliesToIgnore = [
+            "System.ServiceModel.Internals",
+            "Microsoft.Internal.Tasks.Dataflow",
+            "MSDATASRC",
+            "ADODB",
+            "Microsoft.StdFormat",
+            "stdole",
+            "PresentationUI",
+            "Microsoft.VisualBasic.Activities.Compiler",
+            "SMDiagnostics",
+            "System.Xaml.Hosting",
+            "Microsoft.Transactions.Bridge",
+            "Microsoft.Workflow.Compiler"
+        ];
+
+        private readonly ILog _log;
+        // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and
         // value are the containing folder.
         private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _referencePathDirectories = new(StringComparer.OrdinalIgnoreCase);
-        private readonly List<AssemblyLoadWarning> _warnings = [];
         private readonly Dictionary<string, MetadataReference> _loadedAssemblies;
         private readonly bool _resolveReferences;
         private CSharpCompilation _cSharpCompilation;
@@ -37,10 +54,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <summary>
         /// Creates a new instance of the <see cref="AssemblySymbolLoader"/> class.
         /// </summary>
+        /// <param name="log">A logger instance for logging message.</param>
         /// <param name="resolveAssemblyReferences">True to attempt to load references for loaded assemblies from the locations specified with <see cref="AddReferenceSearchPaths(string[])"/>. Default is false.</param>
         /// <param name="includeInternalSymbols">True to include all internal metadata for assemblies loaded. Default is false which only includes public and some internal metadata. <seealso cref="MetadataImportOptions"/></param>
-        public AssemblySymbolLoader(bool resolveAssemblyReferences = false, bool includeInternalSymbols = false)
+        public AssemblySymbolLoader(ILog log, bool resolveAssemblyReferences = false, bool includeInternalSymbols = false)
         {
+            _log = log;
             _loadedAssemblies = [];
             CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable,
                 metadataImportOptions: includeInternalSymbols ? MetadataImportOptions.Internal : MetadataImportOptions.Public);
@@ -74,20 +93,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         }
 
         /// <inheritdoc />
-        public bool HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> diagnostics)
-        {
-            diagnostics = _cSharpCompilation.GetDiagnostics();
-            return diagnostics.Count > 0;
-        }
-
-        /// <inheritdoc />
-        public bool HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings)
-        {
-            warnings = _warnings;
-            return _warnings.Count > 0;
-        }
-
-        /// <inheritdoc />
         public IReadOnlyList<IAssemblySymbol?> LoadAssemblies(params string[] paths)
         {
             // First resolve all assemblies that are passed in and create metadata references out of them.
@@ -105,6 +110,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 ISymbol? symbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference);
                 assemblySymbols[i] = symbol as IAssemblySymbol;
             }
+
+            LogCompilationDiagnostics();
 
             return assemblySymbols;
         }
@@ -155,6 +162,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                     null;
             }
 
+            LogCompilationDiagnostics();
+
             return assemblySymbols;
         }
 
@@ -162,7 +171,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         public IAssemblySymbol? LoadAssembly(string path)
         {
             MetadataReference metadataReference = CreateOrGetMetadataReferenceFromPath(path);
-            return _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
+            IAssemblySymbol? assemblySymbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
+            LogCompilationDiagnostics();
+
+            return assemblySymbol;
         }
 
         /// <inheritdoc />
@@ -178,7 +190,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 metadataReference = CreateAndAddReferenceToCompilation(name, stream);
             }
 
-            return _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
+            IAssemblySymbol? assemblySymbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
+            LogCompilationDiagnostics();
+
+            return assemblySymbol;
         }
 
         /// <inheritdoc />
@@ -205,6 +220,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             _cSharpCompilation = _cSharpCompilation.AddSyntaxTrees(syntaxTrees);
 
             LoadFromPaths(referencePaths);
+            LogCompilationDiagnostics();
+
             return _cSharpCompilation.Assembly;
         }
 
@@ -247,11 +264,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 if (warnOnMissingAssemblies && !found)
                 {
                     string assemblyInfo = validateMatchingIdentity ? assembly.Identity.GetDisplayName() : assembly.Name;
-                    _warnings.Add(new AssemblyLoadWarning(AssemblyNotFoundErrorCode,
-                        assemblyInfo,
-                        string.Format(Resources.MatchingAssemblyNotFound, assemblyInfo)));
+                    _log.LogWarning(AssemblyNotFoundErrorCode, string.Format(Resources.MatchingAssemblyNotFound, assemblyInfo));
                 }
             }
+
+            LogCompilationDiagnostics();
 
             return matchingAssemblies;
         }
@@ -338,12 +355,17 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             foreach (AssemblyReferenceHandle handle in reader.AssemblyReferences)
             {
                 AssemblyReference reference = reader.GetAssemblyReference(handle);
-                string name = $"{reader.GetString(reference.Name)}.dll";
+                string nameWithoutExtension = reader.GetString(reference.Name);
+
+                // Skip assemblies that should never get loaded because they are purely internal
+                if (s_assembliesToIgnore.Contains(nameWithoutExtension))
+                    continue;
+
+                string name = nameWithoutExtension + ".dll";
 
                 // Skip reference assemblies that are loaded later.
                 if (referenceAssemblyNamesToIgnore != null && referenceAssemblyNamesToIgnore.Contains(name))
                     continue;
-
 
                 // If the assembly reference is already loaded, don't do anything.
                 if (_loadedAssemblies.ContainsKey(name))
@@ -378,12 +400,18 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
                     if (!found)
                     {
-                        _warnings.Add(new AssemblyLoadWarning(
-                            AssemblyReferenceNotFoundErrorCode,
-                            name,
-                            string.Format(Resources.CouldNotResolveReference, name)));
+                        _log.LogWarning(AssemblyReferenceNotFoundErrorCode, string.Format(Resources.CouldNotResolveReference, name));
                     }
                 }
+            }
+        }
+
+        private void LogCompilationDiagnostics()
+        {
+            var diagnostics = _cSharpCompilation.GetDiagnostics();
+            foreach (Diagnostic warning in diagnostics)
+            {
+                _log.LogMessage(MessageImportance.Normal, warning.ToString());
             }
         }
     }

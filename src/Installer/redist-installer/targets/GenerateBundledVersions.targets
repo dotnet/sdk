@@ -154,7 +154,6 @@
         linux-musl-x64;
         linux-x64;
         osx-x64;
-        rhel.6-x64;
         tizen.4.0.0-armel;
         tizen.5.0.0-armel;
         win-arm;
@@ -386,9 +385,13 @@
         win-x86;
         " />
 
-      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
+      <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (OutputRID). See:
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
-      <ILCompilerSupportedRids Include="@(Net90ILCompilerSupportedRids)" />
+      <ILCompilerSupportedRids Include="
+        @(Net90ILCompilerSupportedRids);
+        linux-riscv64;
+        linux-musl-riscv64;
+        " />
 
       <Net80NativeAOTRuntimePackRids Include="
         ios-arm64;
@@ -440,8 +443,7 @@
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
       <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6;tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('rhel.6-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
       <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
       <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
     </ItemGroup>

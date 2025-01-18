@@ -1,0 +1,19 @@
+﻿{
+  "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
+  "name": "NUnit 3 テスト プロジェクト",
+  "description": "Windows、Linux、macOS 上の .NET で実行できる NUnit テストを含むプロジェクト",
+  "symbols/TargetFrameworkOverride/description": "ターゲット フレームワークをオーバーライドします",
+  "symbols/TargetFrameworkOverride/displayName": "ターゲット フレームワークのオーバーライド",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "symbols/Framework/displayName": "フレームワーク",
+  "symbols/Framework/choices/net10.0/description": "ターゲット net10.0",
+  "symbols/EnablePack/description": "(\"dotnet pack\" を使用して) プロジェクトのパッケージ化を有効にするかどうか。",
+  "symbols/EnablePack/displayName": "パックを有効にする",
+  "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
+  "symbols/skipRestore/displayName": "復元のスキップ",
+  "symbols/langVersion/description": "作成されたプロジェクト ファイルで LangVersion プロパティを設定します",
+  "symbols/langVersion/displayName": "言語バージョン",
+  "postActions/restoreNugetPackages/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "'dotnet restore' を実行する",
+  "postActions/openInEditor/description": "エディターで UnitTest1.cs を開きます"
+}

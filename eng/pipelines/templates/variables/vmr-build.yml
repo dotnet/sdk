@@ -12,20 +12,21 @@ variables:
   - name: VmrBranch
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
+- name: _TeamName
+  value: DotNetCore
+
+- name: defaultContainerOptions
+  value: --privileged
+
 - name: almaLinuxContainerName
   value: almaLinuxContainer
 - name: almaLinuxContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
 
-- name: alpineLatestContainerName
-  value: alpineLatestContainer
-- name: alpineLatestContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
-
-- name: alpinePreviousContainerName
-  value: alpinePreviousContainer
-- name: alpinePreviousContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+- name: alpineContainerName
+  value: alpineContainer
+- name: alpineContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
 
 - name: centOSStreamContainerName
   value: centOSStreamContainer
@@ -99,10 +100,8 @@ variables:
 
 - name: almaLinuxName
   value: AlmaLinux8
-- name: alpineLatestName
-  value: Alpine320
-- name: alpinePreviousName
-  value: Alpine319
+- name: alpineName
+  value: Alpine321
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
@@ -118,10 +117,8 @@ variables:
   value: linux-musl-arm
 - name: linuxMuslArm64Rid
   value: linux-musl-arm64
-- name: alpineLatestX64Rid
-  value: alpine.3.20-x64
-- name: alpinePreviousX64Rid
-  value: alpine.3.19-x64
+- name: alpineX64Rid
+  value: alpine.3.21-x64
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid
