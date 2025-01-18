@@ -1,0 +1,262 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.NET.Publish.Tests
+{
+    public class GivenThatWeWantToExcludeAPackageFromPublish : SdkTest
+    {
+        public GivenThatWeWantToExcludeAPackageFromPublish(ITestOutputHelper log) : base(log)
+        {
+        }
+
+        [Theory]
+        [InlineData("netcoreapp1.1", false)]
+        [InlineData("netcoreapp2.0", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        public void It_does_not_publish_a_PackageReference_with_PrivateAssets_All(string targetFramework, bool shouldIncludeExecutable)
+        {
+            var helloWorldAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", "PublishExcludePackage", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    var itemGroup = new XElement(ns + "ItemGroup");
+                    project.Root.Add(itemGroup);
+
+                    //  Using different casing for the package ID here, to test the scenario from https://github.com/dotnet/sdk/issues/376
+                    itemGroup.Add(new XElement(ns + "PackageReference", new XAttribute("Include", "NEWTONSOFT.Json"),
+                                                                        new XAttribute("Version", ToolsetInfo.GetNewtonsoftJsonPackageVersion()),
+                                                                        new XAttribute("PrivateAssets", "All")));
+                });
+
+            var publishCommand = new PublishCommand(helloWorldAsset);
+            var publishResult = publishCommand.Execute();
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework);
+
+            var expectedFiles = new List<string>()
+            {
+                "HelloWorld.dll",
+                "HelloWorld.pdb",
+                "HelloWorld.deps.json",
+                "HelloWorld.runtimeconfig.json"
+            };
+
+            if (shouldIncludeExecutable)
+            {
+                expectedFiles.Add("HelloWorld" + EnvironmentInfo.ExecutableExtension);
+            }
+
+            if (targetFramework == "netcoreapp1.1")
+            {
+                expectedFiles.Add("System.Xml.XmlDocument.dll");
+            }
+
+            publishDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [Theory]
+        [InlineData("netcoreapp1.1", false)]
+        [InlineData("netcoreapp2.0", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        public void It_does_not_publish_a_PackageReference_with_Publish_false(string targetFramework, bool shouldIncludeExecutable)
+        {
+            var helloWorldAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", "PublishPackagePublishFalse", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    var itemGroup = new XElement(ns + "ItemGroup");
+                    project.Root.Add(itemGroup);
+
+                    itemGroup.Add(new XElement(ns + "PackageReference", new XAttribute("Include", "Newtonsoft.Json"),
+                                                                        new XAttribute("Version", ToolsetInfo.GetNewtonsoftJsonPackageVersion()),
+                                                                        new XAttribute("Publish", "false")));
+                });
+
+            var publishCommand = new PublishCommand(helloWorldAsset);
+            var publishResult = publishCommand.Execute();
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework);
+
+            var expectedFiles = new List<string>()
+            {
+                "HelloWorld.dll",
+                "HelloWorld.pdb",
+                "HelloWorld.deps.json",
+                "HelloWorld.runtimeconfig.json"
+            };
+
+            if (shouldIncludeExecutable)
+            {
+                expectedFiles.Add("HelloWorld" + EnvironmentInfo.ExecutableExtension);
+            }
+
+            if (targetFramework == "netcoreapp1.1")
+            {
+                expectedFiles.Add("System.Xml.XmlDocument.dll");
+            }
+
+            publishDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [Theory]
+        [InlineData("netcoreapp1.1", false)]
+        [InlineData("netcoreapp2.0", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        public void It_publishes_a_PackageReference_with_PrivateAssets_All_and_Publish_true(string targetFramework, bool shouldIncludeExecutable)
+        {
+            var helloWorldAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", "PublishPrivateAssets", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    var itemGroup = new XElement(ns + "ItemGroup");
+                    project.Root.Add(itemGroup);
+
+                    itemGroup.Add(new XElement(ns + "PackageReference", new XAttribute("Include", "Newtonsoft.Json"),
+                                                                        new XAttribute("Version", ToolsetInfo.GetNewtonsoftJsonPackageVersion()),
+                                                                        new XAttribute("PrivateAssets", "All"),
+                                                                        new XAttribute("Publish", "true")));
+                });
+
+            var publishCommand = new PublishCommand(helloWorldAsset);
+            var publishResult = publishCommand.Execute();
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework);
+
+            var expectedFiles = new List<string>()
+            {
+                "HelloWorld.dll",
+                "HelloWorld.pdb",
+                "HelloWorld.deps.json",
+                "HelloWorld.runtimeconfig.json",
+                "Newtonsoft.Json.dll",
+            };
+
+            if (targetFramework == "netcoreapp1.1")
+            {
+                expectedFiles.AddRange(new List<string>()
+                {
+                    "System.Runtime.Serialization.Primitives.dll",
+                    "System.Collections.NonGeneric.dll",
+                    "System.Collections.Specialized.dll",
+                    "System.ComponentModel.Primitives.dll",
+                    "System.ComponentModel.TypeConverter.dll",
+                    "System.Runtime.Serialization.Formatters.dll",
+                    "System.Xml.XmlDocument.dll"
+                });
+            }
+
+            if (shouldIncludeExecutable)
+            {
+                expectedFiles.Add("HelloWorld" + EnvironmentInfo.ExecutableExtension);
+            }
+
+            publishDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [Fact]
+        public void TransitiveNetStandardPackageReferenceAndPublishFalse()
+        {
+            var testLibraryProject = new TestProject()
+            {
+                Name = "TestLibrary",
+                TargetFrameworks = "netstandard2.0"
+            };
+
+            testLibraryProject.PackageReferences.Add(new TestPackageReference("WindowsAzure.Storage", "9.3.3"));
+
+            var testProject = new TestProject()
+            {
+                Name = "TestApp",
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), privateAssets: "all"));
+
+            testProject.ReferencedProjects.Add(testLibraryProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand.Execute().Should().Pass();
+        }
+
+        [Fact]
+        public void TransitivePackageReferenceAndPublishFalse()
+        {
+            var testLibraryProject = new TestProject()
+            {
+                Name = "TestLibrary",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testLibraryProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+
+            var testProject = new TestProject()
+            {
+                Name = "TestApp",
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), publish: "false"));
+
+            testProject.ReferencedProjects.Add(testLibraryProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand.Execute().Should().Pass();
+            var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            publishDirectory.Should().NotHaveFile("Newtonsoft.Json.dll");
+        }
+
+        [Fact]
+        public void It_does_not_exclude_packages_depended_on_by_non_privateassets_references()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "PrivateAssetsTransitive",
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            //  Both these packages depend on NewtonSoft.Json.  Since only one of the package references specifies PrivateAssets=All,
+            //  NewtonSoft.Json should be included in the publish output
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json.Schema", "3.0.13"));
+            testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Extensions.DependencyModel", "3.1.6", privateAssets: "all"));
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute().Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            publishDirectory.Should().HaveFile("Newtonsoft.Json.dll");
+            publishDirectory.Should().HaveFile("Newtonsoft.Json.Schema.dll");
+            publishDirectory.Should().NotHaveFile("Microsoft.Extensions.DependencyModel");
+        }
+    }
+}
