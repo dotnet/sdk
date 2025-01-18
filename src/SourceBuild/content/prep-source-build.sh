@@ -17,8 +17,9 @@
 ###                               runtimes can be downloaded
 ###   --runtime-source-feed-key   Key for accessing the above server, if necessary
 ###
-### Binary-Tooling options:
+### Advanced Options:
 ###   --no-binary-removal         Don't remove non-SB allowed binaries
+###   --no-license-removal        Don't remove non-SB allowed licenses
 ###   --with-sdk                  Use the SDK in the specified directory
 ###                               Default is the .NET SDK
 ###   --with-packages             Specified directory to use as the source feed for packages
@@ -46,6 +47,7 @@ buildBootstrap=true
 downloadArtifacts=true
 downloadPrebuilts=true
 removeBinaries=true
+removeLicenses=true
 installDotnet=true
 artifactsRid=$defaultArtifactsRid
 runtime_source_feed='' # IBM requested these to support s390x scenarios
@@ -91,6 +93,9 @@ while :; do
       ;;
     --no-binary-removal)
       removeBinaries=false
+      ;;
+    --no-license-removal)
+      removeLicenses=false
       ;;
     --with-sdk)
       dotnetSdk=$2
@@ -221,7 +226,7 @@ if [ "$downloadPrebuilts" == true ]; then
   DownloadArchive Prebuilts false $artifactsRid
 fi
 
-if [ "$removeBinaries" == true ]; then
+if [ "$removeBinaries" == true ] || [ "$removeLicenses" == true ]; then
 
   originalPackagesDir=$packagesDir
   # Create working directory for extracking packages
@@ -244,11 +249,21 @@ if [ "$removeBinaries" == true ]; then
     packagesDir=$workingDir
   fi
 
-  "$REPO_ROOT/eng/detect-binaries.sh" \
-  --clean \
-  --allowed-binaries-file "$REPO_ROOT/eng/allowed-sb-binaries.txt" \
-  --with-packages $packagesDir \
-  --with-sdk $dotnetSdk \
+  if [ "$removeLicenses" == true ]; then
+    echo "  Removing non-SB allowed licenses..."
+    "$REPO_ROOT/eng/remove-license-files.sh" \
+    --with-packages $packagesDir \
+    --with-sdk $dotnetSdk
+  fi
+
+  if [ "$removeBinaries" == true ]; then
+    echo "  Removing non-SB allowed binaries..."
+    "$REPO_ROOT/eng/detect-binaries.sh" \
+    --clean \
+    --allowed-binaries-file "$REPO_ROOT/eng/allowed-sb-binaries.txt" \
+    --with-packages $packagesDir \
+    --with-sdk $dotnetSdk
+  fi
 
   rm -rf "$workingDir"
 
