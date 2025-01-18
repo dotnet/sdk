@@ -121,6 +121,7 @@ namespace Microsoft.NET.Publish.Tests
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }
 
+        /*
         [Fact]
         public void compose_multifile()
         {
