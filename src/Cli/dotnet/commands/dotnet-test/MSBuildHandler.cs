@@ -134,16 +134,21 @@ namespace Microsoft.DotNet.Cli
         {
             foreach (Module module in modules)
             {
-                if (module.IsTestProject && module.IsTestingPlatformApplication)
+                if (!module.IsTestProject)
                 {
-                    var testApp = new TestApplication(module, _args);
-                    _testApplications.Add(testApp);
+                    // Non test projects, like the projects that include production code are skipped over, we won't run them.
+                    return;
                 }
-                else // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
+
+                if (!module.IsTestingPlatformApplication)
                 {
+                    // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
                     _areTestingPlatformApplications = false;
                     return;
                 }
+
+                var testApp = new TestApplication(module, _args);
+                _testApplications.Add(testApp);
             }
         }
 

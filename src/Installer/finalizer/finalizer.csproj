@@ -4,10 +4,7 @@
     <TargetFramework>$(SdkTargetFramework)-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(NETCoreSdkPortableRuntimeIdentifier.StartsWith('win-'))">
-    <PublishAot>true</PublishAot>
+    <PublishAot Condition="$(NETCoreSdkPortableRuntimeIdentifier.StartsWith('win-'))">true</PublishAot>
     <ControlFlowGuard>Guard</ControlFlowGuard>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
@@ -30,6 +27,6 @@
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
 
-  <Target Name="PublishOnBuild" AfterTargets="Build" DependsOnTargets="Publish" Condition="$(NETCoreSdkPortableRuntimeIdentifier.StartsWith('win-'))" />
+  <Target Name="PublishOnBuild" AfterTargets="Build" DependsOnTargets="Publish" Condition="'$(PublishAot)' == 'true'" />
 
 </Project>
