@@ -7,6 +7,11 @@
         <target state="translated">Aplikujte předvolby stylu na projekt nebo řešení.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDefinition">
+        <source>Provides additional package commands.</source>
+        <target state="new">Provides additional package commands.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Posune se na vyšší verzi architektury (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
