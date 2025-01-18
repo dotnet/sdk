@@ -26,9 +26,6 @@
     <BuildArgs>$(BuildArgs) /p:CrossArchitectureInstallerBasePath=$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
 
-    <!-- PackageValidation fails with desktop msbuild: https://github.com/dotnet/sdk/issues/45004. -->
-    <BuildArgs>$(BuildArgs) /p:EnablePackageValidation=false</BuildArgs>
-
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
 
