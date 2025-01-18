@@ -14,11 +14,12 @@ namespace Microsoft.DotNet.Cli
 
         public IEnumerable<Action<HelpContext>> CustomHelpLayout()
         {
-            yield return async (context) =>
+            yield return (context) =>
             {
+                var originalOutputColor = Console.ForegroundColor;
                 Console.WriteLine("Waiting for options and extensions...");
 
-                await Run(context.ParseResult);
+                Run(context.ParseResult);
 
                 if (_commandLineOptionNameToModuleNames.IsEmpty)
                 {
@@ -34,7 +35,7 @@ namespace Microsoft.DotNet.Cli
                 WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
 
                 Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.White;
+                Console.ForegroundColor = originalOutputColor;
             };
         }
 

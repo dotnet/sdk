@@ -6,6 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -18,8 +19,6 @@ namespace Microsoft.DotNet.Cli
         private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;
 
-        private const string BinLogFileName = "msbuild.binlog";
-        private const string Separator = ";";
         private static readonly Lock buildLock = new();
 
         public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, int degreeOfParallelism)
@@ -29,9 +28,86 @@ namespace Microsoft.DotNet.Cli
             _degreeOfParallelism = degreeOfParallelism;
         }
 
-        public async Task<int> RunWithMSBuild()
+        public async Task<bool> RunMSBuild(BuildPathsOptions buildPathOptions)
         {
-            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(Directory.GetCurrentDirectory(), out string projectOrSolutionFilePath, out bool isSolution);
+            if (!ValidateBuildPathOptions(buildPathOptions))
+            {
+                return false;
+            }
+
+            int msbuildExitCode;
+
+            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
+            {
+                msbuildExitCode = await RunBuild(buildPathOptions.ProjectPath, isSolution: false);
+            }
+            else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            {
+                msbuildExitCode = await RunBuild(buildPathOptions.SolutionPath, isSolution: true);
+            }
+            else
+            {
+                msbuildExitCode = await RunBuild(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+            }
+
+            if (msbuildExitCode != ExitCodes.Success)
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msbuildExitCode));
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateBuildPathOptions(BuildPathsOptions buildPathOptions)
+        {
+            if ((!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.SolutionPath)) ||
+                (!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.DirectoryPath)) ||
+                (!string.IsNullOrEmpty(buildPathOptions.SolutionPath) && !string.IsNullOrEmpty(buildPathOptions.DirectoryPath)))
+            {
+                VSTestTrace.SafeWriteTrace(() => LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
+            {
+                return ValidateFilePath(buildPathOptions.ProjectPath, CliConstants.ProjectExtensions, LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription);
+            }
+
+            if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            {
+                return ValidateFilePath(buildPathOptions.SolutionPath, CliConstants.SolutionExtensions, LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription);
+            }
+
+            if (!string.IsNullOrEmpty(buildPathOptions.DirectoryPath) && !Directory.Exists(buildPathOptions.DirectoryPath))
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, Path.GetFullPath(buildPathOptions.DirectoryPath)));
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool ValidateFilePath(string filePath, string[] validExtensions, string errorMessage)
+        {
+            if (!validExtensions.Contains(Path.GetExtension(filePath)))
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(errorMessage, filePath));
+                return false;
+            }
+
+            if (!File.Exists(filePath))
+            {
+                VSTestTrace.SafeWriteTrace(() => string.Format(LocalizableStrings.CmdNonExistentFileErrorDescription, Path.GetFullPath(filePath)));
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<int> RunBuild(string directoryPath)
+        {
+            bool solutionOrProjectFileFound = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out string projectOrSolutionFilePath, out bool isSolution);
 
             if (!solutionOrProjectFileFound)
             {
@@ -45,9 +121,9 @@ namespace Microsoft.DotNet.Cli
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
-        public async Task<int> RunWithMSBuild(string filePath)
+        private async Task<int> RunBuild(string filePath, bool isSolution)
         {
-            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, false);
+            (IEnumerable<Module> modules, bool restored) = await GetProjectsProperties(filePath, isSolution);
 
             InitializeTestApplications(modules);
 
@@ -58,16 +134,21 @@ namespace Microsoft.DotNet.Cli
         {
             foreach (Module module in modules)
             {
-                if (module.IsTestProject && module.IsTestingPlatformApplication)
+                if (!module.IsTestProject)
                 {
-                    var testApp = new TestApplication(module, _args);
-                    _testApplications.Add(testApp);
+                    // Non test projects, like the projects that include production code are skipped over, we won't run them.
+                    return;
                 }
-                else // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
+
+                if (!module.IsTestingPlatformApplication)
                 {
+                    // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
                     _areTestingPlatformApplications = false;
                     return;
                 }
+
+                var testApp = new TestApplication(module, _args);
+                _testApplications.Add(testApp);
             }
         }
 
@@ -92,7 +173,12 @@ namespace Microsoft.DotNet.Cli
 
             if (isSolution)
             {
-                var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath);
+                string fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
+                string rootDirectory = string.IsNullOrEmpty(fileDirectory)
+                    ? Directory.GetCurrentDirectory()
+                    : fileDirectory;
+
+                var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
                 ProcessProjectsInParallel(projects, allProjects, ref restored);
             }
             else
@@ -178,7 +264,7 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                var frameworks = targetFrameworks.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+                var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
                 foreach (var framework in frameworks)
                 {
                     project.SetProperty(ProjectProperties.TargetFramework, framework);
@@ -225,8 +311,7 @@ namespace Microsoft.DotNet.Cli
 
         private static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
         {
-            binLogFileName = BinLogFileName;
-
+            binLogFileName = string.Empty;
             var binLogArgs = new List<string>();
 
             foreach (var arg in args)
@@ -248,10 +333,16 @@ namespace Microsoft.DotNet.Cli
                 // Get BinLog filename
                 var binLogArg = binLogArgs.LastOrDefault();
 
-                if (binLogArg.Contains(':'))
+                if (binLogArg.Contains(CliConstants.Colon))
                 {
-                    binLogFileName = binLogArg.Split(':')[1];
+                    var parts = binLogArg.Split(CliConstants.Colon, 2);
+                    binLogFileName = !string.IsNullOrEmpty(parts[1]) ? parts[1] : CliConstants.BinLogFileName;
                 }
+                else
+                {
+                    binLogFileName = CliConstants.BinLogFileName;
+                }
+
                 return true;
             }
 
