@@ -549,7 +549,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             IEnumerable<(PackageSource source, IPackageSearchMetadata package)> accumulativeSearchResults =
                 foundPackagesBySource
-                    .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
+                    .SelectMany(result => result.foundPackages.Select(package => (result.source, package)))
+                    .Distinct();
 
             if (!accumulativeSearchResults.Any())
             {
