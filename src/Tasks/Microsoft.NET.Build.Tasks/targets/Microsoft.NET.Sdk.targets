@@ -602,6 +602,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(InvariantGlobalization)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.TimeZoneInfo.Invariant"
+                                    Condition="'$(InvariantTimezone)' != ''"
+                                    Value="$(InvariantTimezone)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Globalization.Hybrid"
                                     Condition="'$(HybridGlobalization)' != ''"
                                     Value="$(HybridGlobalization)"
