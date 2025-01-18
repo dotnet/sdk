@@ -72,7 +72,6 @@ namespace Microsoft.DotNet.Watch
                 var waitForFileChangeBeforeRestarting = true;
                 EvaluationResult? evaluationResult = null;
                 RunningProject? rootRunningProject = null;
-                Task<ImmutableList<ChangedFile>>? fileWatcherTask = null;
                 IRuntimeProcessLauncher? runtimeProcessLauncher = null;
                 CompilationHandler? compilationHandler = null;
                 Action<ChangedPath>? fileChangedCallback = null;
@@ -101,7 +100,7 @@ namespace Microsoft.DotNet.Watch
 
                     await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    compilationHandler = new CompilationHandler(Context.Reporter);
+                    compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, shutdownCancellationToken);
                     var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
@@ -111,7 +110,7 @@ namespace Microsoft.DotNet.Watch
 
                     var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
-                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildArguments);
+                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions);
                     if (runtimeProcessLauncher != null)
                     {
                         var launcherEnvironment = runtimeProcessLauncher.GetEnvironmentVariables();
@@ -121,9 +120,10 @@ namespace Microsoft.DotNet.Watch
                         };
                     }
 
-                    if (!await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken))
+                    var (buildSucceeded, buildOutput, _) = await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
+                    BuildUtilities.ReportBuildOutput(Context.Reporter, buildOutput, buildSucceeded, projectDisplay: rootProjectOptions.ProjectPath);
+                    if (!buildSucceeded)
                     {
-                        // error has been reported:
                         continue;
                     }
 
@@ -334,7 +334,12 @@ namespace Microsoft.DotNet.Watch
                                     var buildResults = await Task.WhenAll(
                                         projectsToRebuild.Values.Select(projectPath => BuildProjectAsync(projectPath, rootProjectOptions.BuildArguments, iterationCancellationToken)));
 
-                                    if (buildResults.All(success => success))
+                                    foreach (var (success, output, projectPath) in buildResults)
+                                    {
+                                        BuildUtilities.ReportBuildOutput(Context.Reporter, output, success, projectPath);
+                                    }
+
+                                    if (buildResults.All(result => result.success))
                                     {
                                         break;
                                     }
@@ -511,38 +516,24 @@ namespace Microsoft.DotNet.Watch
                         await compilationHandler.TerminateNonRootProcessesAndDispose(CancellationToken.None);
                     }
 
-                    if (!rootProcessTerminationSource.IsCancellationRequested)
+                    if (rootRunningProject != null)
                     {
-                        rootProcessTerminationSource.Cancel();
+                        await rootRunningProject.TerminateAsync(shutdownCancellationToken);
                     }
 
-                    try
+                    if (runtimeProcessLauncher != null)
                     {
-                        // Wait for the root process to exit.
-                        await Task.WhenAll(new[] { (Task?)rootRunningProject?.RunningProcess, fileWatcherTask }.Where(t => t != null)!);
+                        await runtimeProcessLauncher.DisposeAsync();
                     }
-                    catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
+
+                    rootRunningProject?.Dispose();
+
+                    if (waitForFileChangeBeforeRestarting &&
+                        !shutdownCancellationToken.IsCancellationRequested &&
+                        !forceRestartCancellationSource.IsCancellationRequested)
                     {
-                        // nop
-                    }
-                    finally
-                    {
-                        fileWatcherTask = null;
-
-                        if (runtimeProcessLauncher != null)
-                        {
-                            await runtimeProcessLauncher.DisposeAsync();
-                        }
-
-                        rootRunningProject?.Dispose();
-
-                        if (waitForFileChangeBeforeRestarting &&
-                            !shutdownCancellationToken.IsCancellationRequested &&
-                            !forceRestartCancellationSource.IsCancellationRequested)
-                        {
-                            using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
-                            await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
-                        }
+                        using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
+                        await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
                     }
                 }
             }
@@ -815,7 +806,8 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private async Task<bool> BuildProjectAsync(string projectPath, IReadOnlyList<string> buildArguments, CancellationToken cancellationToken)
+        private async Task<(bool success, ImmutableArray<OutputLine> output, string projectPath)> BuildProjectAsync(
+            string projectPath, IReadOnlyList<string> buildArguments, CancellationToken cancellationToken)
         {
             var buildOutput = new List<OutputLine>();
 
@@ -834,17 +826,10 @@ namespace Microsoft.DotNet.Watch
                 Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
             };
 
-            Context.Reporter.Output($"Building '{projectPath}' ...");
+            Context.Reporter.Output($"Building {projectPath} ...");
 
             var exitCode = await ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
-            BuildUtilities.ReportBuildOutput(Context.Reporter, buildOutput, verboseOutput: exitCode == 0);
-
-            if (exitCode == 0)
-            {
-                Context.Reporter.Output("Build succeeded.");
-            }
-
-            return exitCode == 0;
+            return (exitCode == 0, buildOutput.ToImmutableArray(), projectPath);
         }
 
         private string GetRelativeFilePath(string path)

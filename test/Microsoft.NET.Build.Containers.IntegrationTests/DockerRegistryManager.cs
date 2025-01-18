@@ -16,10 +16,12 @@ public class DockerRegistryManager
     public const string Net7ImageTag = "7.0";
     public const string Net8ImageTag = "8.0";
     public const string Net9ImageTag = "9.0";
+    public const string Net9ImageDigest = "sha256:d8f01f752bf9bd3ff630319181a2ccfbeecea4080a1912095a34002f61bfa345";
     public const string Net8PreviewWindowsSpecificImageTag = $"{Net8ImageTag}-nanoserver-ltsc2022";
     public const string LocalRegistry = "localhost:5010";
     public const string FullyQualifiedBaseImageDefault = $"{BaseImageSource}/{RuntimeBaseImage}:{Net9ImageTag}";
     public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net9ImageTag}";
+    public const string FullyQualifiedBaseImageAspNetDigest = $"{BaseImageSource}/{AspNetBaseImage}@{Net9ImageDigest}";
     private static string? s_registryContainerId;
 
     internal class SameArchManifestPicker : IManifestPicker
@@ -78,7 +80,7 @@ public class DockerRegistryManager
                     var ridjson = Path.Combine(Path.GetDirectoryName(dotnetdll)!, "RuntimeIdentifierGraph.json");
 
                     var image = await pullRegistry.GetImageManifestAsync(RuntimeBaseImage, tag, "linux-x64", new SameArchManifestPicker(), CancellationToken.None);
-                    var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag);
+                    var source = new SourceImageReference(pullRegistry, RuntimeBaseImage, tag, null);
                     var dest = new DestinationImageReference(pushRegistry, RuntimeBaseImage, [tag]);
                     logger.LogInformation($"Pushing image for {BaseImageSource}/{RuntimeBaseImage}:{tag}");
                     await pushRegistry.PushAsync(image.Build(), source, dest, CancellationToken.None);

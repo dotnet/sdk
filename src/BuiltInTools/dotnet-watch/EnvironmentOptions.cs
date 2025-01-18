@@ -27,6 +27,7 @@ namespace Microsoft.DotNet.Watch
     internal sealed record EnvironmentOptions(
         string WorkingDirectory,
         string MuxerPath,
+        TimeSpan ProcessCleanupTimeout,
         bool IsPollingEnabled = false,
         bool SuppressHandlingStaticContentFiles = false,
         bool SuppressMSBuildIncrementalism = false,
@@ -40,6 +41,7 @@ namespace Microsoft.DotNet.Watch
         (
             WorkingDirectory: Directory.GetCurrentDirectory(),
             MuxerPath: GetMuxerPathFromEnvironment(),
+            ProcessCleanupTimeout: EnvironmentVariables.ProcessCleanupTimeout,
             IsPollingEnabled: EnvironmentVariables.IsPollingEnabled,
             SuppressHandlingStaticContentFiles: EnvironmentVariables.SuppressHandlingStaticContentFiles,
             SuppressMSBuildIncrementalism: EnvironmentVariables.SuppressMSBuildIncrementalism,

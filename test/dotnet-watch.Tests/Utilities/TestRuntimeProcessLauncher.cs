@@ -11,7 +11,7 @@ internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRu
 {
     public class Factory(Action<TestRuntimeProcessLauncher>? initialize = null) : IRuntimeProcessLauncherFactory
     {
-        public IRuntimeProcessLauncher TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, IReadOnlyList<string> buildArguments)
+        public IRuntimeProcessLauncher TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
         {
             var service = new TestRuntimeProcessLauncher(projectLauncher);
             initialize?.Invoke(service);

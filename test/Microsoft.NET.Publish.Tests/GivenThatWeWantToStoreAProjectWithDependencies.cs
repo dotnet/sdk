@@ -122,38 +122,6 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Fact]
-        public void store_nativeonlyassets()
-        {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
-                .CopyTestAsset("UnmanagedStore")
-                .WithSource();
-
-            var storeCommand = new ComposeStoreCommand(Log, simpleDependenciesAsset.TestRoot);
-
-            var OutputFolder = Path.Combine(simpleDependenciesAsset.TestRoot, "outdir");
-            var WorkingDir = Path.Combine(simpleDependenciesAsset.TestRoot, "w");
-
-            NuGetConfigWriter.Write(simpleDependenciesAsset.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
-
-            storeCommand
-                .Execute($"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeWorkingDir={WorkingDir}", $"/p:ComposeDir={OutputFolder}", $"/p:DoNotDecorateComposeDir=true")
-                .Should()
-                .Pass();
-
-            DirectoryInfo storeDirectory = new(OutputFolder);
-
-            List<string> files_on_disk = new()
-            {
-               "artifact.xml",
-               $"runtime.{_runtimeRid}.microsoft.netcore.coredistools/1.0.1-prerelease-00001/runtimes/{_runtimeRid}/native/{_libPrefix}coredistools{FileConstants.DynamicLibSuffix}",
-               $"runtime.{_runtimeRid}.microsoft.netcore.coredistools/1.0.1-prerelease-00001/runtimes/{_runtimeRid}/native/coredistools.h"
-               };
-
-            storeDirectory.Should().OnlyHaveFiles(files_on_disk);
-        }
-
-        /*
-        [Fact]
         public void compose_multifile()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager

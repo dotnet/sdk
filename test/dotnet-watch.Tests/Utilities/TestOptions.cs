@@ -15,7 +15,8 @@ internal static class TestOptions
     public static readonly ProjectOptions ProjectOptions = GetProjectOptions([]);
 
     public static EnvironmentOptions GetEnvironmentOptions(string workingDirectory = "", string muxerPath = "", TestAsset? asset = null)
-        => new(workingDirectory, muxerPath, TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
+        // 0 timeout for process cleanup in tests. We can't send Ctrl+C, so process termination must be forced.
+        => new(workingDirectory, muxerPath, ProcessCleanupTimeout: TimeSpan.FromSeconds(0), TestFlags: TestFlags.RunningAsTest, TestOutput: asset != null ? GetWatchTestOutputPath(asset) : "");
 
     public static CommandLineOptions GetCommandLineOptions(string[] args)
         => CommandLineOptions.Parse(args, NullReporter.Singleton, TextWriter.Null, out _) ?? throw new InvalidOperationException();

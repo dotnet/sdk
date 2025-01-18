@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using CommandLocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
@@ -240,9 +239,11 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenProjectsInSolutionFoldersPresentInTheSolutionItListsSolutionFolderPaths(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenProjectsInSolutionFoldersPresentInTheSolutionItListsSolutionFolderPaths(string solutionCommand, string solutionExtension)
         {
             string[] expectedOutput = { $"{CommandLocalizableStrings.SolutionFolderHeader}",
 $"{new string('-', CommandLocalizableStrings.SolutionFolderHeader.Length)}",
@@ -255,7 +256,7 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
 
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "list", "--solution-folders");
+                .Execute(solutionCommand, $"App{solutionExtension}", "list", "--solution-folders");
             cmd.Should().Pass();
             cmd.StdOut.Should().ContainAll(expectedOutput);
         }
