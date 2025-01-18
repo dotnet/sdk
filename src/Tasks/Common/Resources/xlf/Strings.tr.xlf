@@ -1033,11 +1033,6 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1057: Bir .NET önizleme sürümü kullanıyorsunuz. Bkz. https://aka.ms/dotnet-support-policy</target>
         <note>{StrBegins="NETSDK1057: "}</note>
       </trans-unit>
-      <trans-unit id="UsingPreviewUseUwpFeature">
-        <source>NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
-        <target state="needs-review-translation">NETSDK1219: UseUwp ve ilişkili tüm işlevler şu anda deneyseldir ve resmi olarak desteklenmez.</target>
-        <note>{StrBegins="NETSDK1219: "}</note>
-      </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
         <target state="needs-review-translation">NETSDK1131: {0} hedeflenirken, WinMDExp ile yönetilen bir Windows Meta Veri bileşeninin üretilmesi desteklenmiyor.</target>

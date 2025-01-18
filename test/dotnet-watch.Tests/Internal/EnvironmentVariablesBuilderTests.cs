@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class EnvironmentVariablesBuilderTest
+    public class EnvironmentVariablesBuilderTests
     {
         [Fact]
         public void Value()
@@ -12,10 +12,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             builder.DotNetStartupHookDirective.Add("a");
             builder.AspNetCoreHostingStartupAssembliesVariable.Add("b");
 
-            var values = new Dictionary<string, string>();
-            builder.AddToEnvironment(values);
-            AssertEx.SequenceEqual(["[env:DOTNET_STARTUP_HOOKS=a]"], builder.GetCommandLineDirectives());
-            AssertEx.SequenceEqual([("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "b")], values.Select(e => (e.Key, e.Value)));
+            var env = builder.GetEnvironment();
+            AssertEx.SequenceEqual(
+            [
+                ("DOTNET_STARTUP_HOOKS", "a"),
+                ("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "b")
+            ], env);
         }
 
         [Fact]
@@ -27,10 +29,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             builder.AspNetCoreHostingStartupAssembliesVariable.Add("b1");
             builder.AspNetCoreHostingStartupAssembliesVariable.Add("b2");
 
-            var values = new Dictionary<string, string>();
-            builder.AddToEnvironment(values);
-            AssertEx.SequenceEqual([$"[env:DOTNET_STARTUP_HOOKS=a1{Path.PathSeparator}a2]"], builder.GetCommandLineDirectives());
-            AssertEx.SequenceEqual([("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "b1;b2")], values.Select(e => (e.Key, e.Value)));
+            var env = builder.GetEnvironment();
+            AssertEx.SequenceEqual(
+            [
+                ("DOTNET_STARTUP_HOOKS", $"a1{Path.PathSeparator}a2"),
+                ("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "b1;b2")
+            ], env);
         }
     }
 }

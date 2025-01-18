@@ -327,7 +327,7 @@
   </data>
   <data name="CannotUseSkipManifestWithGlobalJsonWorkloadVersion" xml:space="preserve">
     <value>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</value>
-    <comment>"workloadVersion" and "global.json" are literal values and should not be translated.</comment>
+    <comment>{Locked="workloadVersion"} Locked={"global.json"}</comment>
   </data>
   <data name="SkipSignCheckOptionDescription" xml:space="preserve">
     <value>Skip signature verification of workload packages and installers.</value>
@@ -348,7 +348,7 @@
     <value>Manifest MSI not found in NuGet package {0}</value>
   </data>
   <data name="WorkloadSetVersionOptionDescription" xml:space="preserve">
-    <value>Update to the specified workload version.</value>
+    <value>A workload version to display or one or more workloads and their versions joined by the '@' character.</value>
   </data>
   <data name="NewWorkloadSet" xml:space="preserve">
     <value>Installing workload version {0}.</value>
@@ -364,5 +364,9 @@
   </data>
   <data name="FailedToInstallWorkloadSet" xml:space="preserve">
     <value>Failed to install workload version {0}: {1}</value>
+  </data>
+  <data name="CannotSpecifyVersionAndWorkloadIdsByComponent" xml:space="preserve">
+    <value>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</value>
+    <comment>{Locked="--version"}</comment>
   </data>
 </root>

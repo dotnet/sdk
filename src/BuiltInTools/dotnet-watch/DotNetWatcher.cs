@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Watch
                     ? await browserConnector.LaunchOrRefreshBrowserAsync(projectRootNode, processSpec, environmentBuilder, Context.RootProjectOptions, shutdownCancellationToken)
                     : null;
 
-                environmentBuilder.ConfigureProcess(processSpec);
+                environmentBuilder.SetProcessEnvironmentVariables(processSpec);
 
                 // Reset for next run
                 buildEvaluator.RequiresRevaluation = false;

@@ -194,7 +194,7 @@ public class EndToEndTests : IDisposable
 
     [DockerAvailableFact]
     public async Task TarballsHaveCorrectStructure()
-    { 
+    {
         var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
             nameof(TarballsHaveCorrectStructure), "app.tar.gz");
 
@@ -203,7 +203,7 @@ public class EndToEndTests : IDisposable
             await BuildDockerImageWithArciveDestinationAsync(archiveFile, ["latest"], nameof(TarballsHaveCorrectStructure));
 
         await destinationReference.LocalRegistry!.LoadAsync(dockerImage, sourceReference, destinationReference, default).ConfigureAwait(false);
-        
+
         Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
 
         CheckDockerTarballStructure(archiveFile);
@@ -702,6 +702,39 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
+    [DockerAvailableFact]
+    public void EndToEnd_SingleArch_NoRid()
+    {
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+
+        // Run PublishContainer for multi-arch
+        CommandResult commandResult = new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/t:PublishContainer",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:EnableSdkContainerSupport=true")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+        commandResult.Should().Pass();
+
+        // Check that the containers can be run
+        CommandResult processResultX64 = ContainerCli.RunCommand(
+            _testOutput,
+            "--rm",
+            "--name",
+            $"test-container-singlearch-norid",
+            $"{imageName}:{imageTag}")
+        .Execute();
+        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
+    }
+
     [DockerIsAvailableAndSupportsArchFact("linux/arm64")]
     public void EndToEndMultiArch_LocalRegistry()
     {
@@ -820,8 +853,8 @@ public class EndToEndTests : IDisposable
             .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to local archive at '{imageArm64Tarball}'")
             .And.NotHaveStdOutContaining("Pushed image index");
 
-        // Check that tarballs were created    
-        File.Exists(imageX64Tarball).Should().BeTrue(); 
+        // Check that tarballs were created
+        File.Exists(imageX64Tarball).Should().BeTrue();
         File.Exists(imageArm64Tarball).Should().BeTrue();
 
         // Load the images from the tarballs
@@ -867,7 +900,7 @@ public class EndToEndTests : IDisposable
 
         // Create a new console project
         DirectoryInfo newProjectDir = CreateNewProject("console");
-        
+
         // Run PublishContainer for multi-arch with ContainerRegistry
         CommandResult commandResult = new DotnetCommand(
             _testOutput,

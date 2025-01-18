@@ -118,36 +118,6 @@ Para MSTest antes de 2.2.4, o tempo limite é usado para todos os casos de teste
         <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdEnvironmentVariableDescription">
-        <source>Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</source>
-        <target state="translated">Define o valor de uma variável de ambiente. 
-Criará a variável quando ela não existir e a substituirá quando existir. 
-Isso forçará a execução dos testes em um processo isolado. 
-Esse argumento pode ser especificado várias vezes para fornecer várias variáveis.
-
-Exemplos:
--e VARIABLE=abc
--e VARIABLE="valor com espaços"
--e VARIABLE="valor;separado com;ponto e vírgula"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdEnvironmentVariableExpression">
-        <source>NAME="VALUE"</source>
-        <target state="translated">NAME="VALUE"</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
         <source>The provided project file has an invalid extension: {0}.</source>
         <target state="new">The provided project file has an invalid extension: {0}.</target>

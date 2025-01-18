@@ -27,6 +27,11 @@
         <target state="translated">無法同時使用 {0} 與 {1} 選項。移除其中一個選項。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <note>{Locked="--version"}</note>
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">當 global.json 檔案 {0} 中已指定版本時，無法在命令列上透過 --version 或 --from-history 指定特定工作負載版本。若要更新全域安裝的工作負載版本，請在包含該 global.json 檔案的路徑外執行命令，或更新 global.json 檔案中指定的版本，然後執行 "dotnet workload update"。</target>
@@ -34,8 +39,8 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="translated">global.json 中指定工作負載版本時，無法使用 {0} 選項。移除 {0} 選項，或從 {1} 移除 'workloadVersion' 元素。</target>
-        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+        <target state="needs-review-translation">global.json 中指定工作負載版本時，無法使用 {0} 選項。移除 {0} 選項，或從 {1} 移除 'workloadVersion' 元素。</target>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
@@ -393,8 +398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload version.</source>
-        <target state="translated">更新至指定的工作負載版本。</target>
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="needs-review-translation">更新至指定的工作負載版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

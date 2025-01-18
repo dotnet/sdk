@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
@@ -174,6 +175,52 @@ namespace Microsoft.DotNet.Cli
             // Flip the argument so that if this option is specified we get selfcontained=false
             .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
 
+        public static readonly CliOption<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
+        {
+            Description = CommonLocalizableStrings.CmdEnvironmentVariableDescription,
+            HelpName = CommonLocalizableStrings.CmdEnvironmentVariableExpression,
+            CustomParser = ParseEnvironmentVariables,
+            // Can't allow multiple arguments because the separator needs to be parsed as part of the environment variable value.
+            AllowMultipleArgumentsPerToken = false
+        };
+
+        private static IReadOnlyDictionary<string, string> ParseEnvironmentVariables(ArgumentResult argumentResult)
+        {
+            var result = new Dictionary<string, string>(
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+
+            List<CliToken>? invalid = null;
+
+            foreach (var token in argumentResult.Tokens)
+            {
+                var separator = token.Value.IndexOf('=');
+                var (name, value) = (separator >= 0)
+                    ? (token.Value[0..separator], token.Value[(separator + 1)..])
+                    : (token.Value, "");
+
+                name = name.Trim();
+
+                if (name != "")
+                {
+                    result[name] = value;
+                }
+                else
+                {
+                    invalid ??= [];
+                    invalid.Add(token);
+                }
+            }
+
+            if (invalid != null)
+            {
+                argumentResult.AddError(string.Format(
+                    CommonLocalizableStrings.IncorrectlyFormattedEnvironmentVariables,
+                    string.Join(", ", invalid.Select(x => $"'{x.Value}'"))));
+            }
+
+            return result;
+        }
+
         public static readonly CliOption<string> TestPlatformOption = new("--Platform");
 
         public static readonly CliOption<string> TestFrameworkOption = new("--Framework");
@@ -258,13 +305,6 @@ namespace Microsoft.DotNet.Cli
             IEnumerable<string> selfContainedProperties = new string[] { $"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
             return selfContainedProperties;
         }
-
-        private static bool UserSpecifiedRidOption(ParseResult parseResult) =>
-            (parseResult.GetResult(RuntimeOption) ??
-            parseResult.GetResult(LongFormRuntimeOption) ??
-            parseResult.GetResult(ArchitectureOption) ??
-            parseResult.GetResult(LongFormArchitectureOption) ??
-            parseResult.GetResult(OperatingSystemOption)) is not null;
 
         internal static CliOption<T> AddCompletions<T>(this CliOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
         {
