@@ -81,6 +81,9 @@
     <!-- Indicate that the build is being run from the orchestrator -->
     <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
 
+    <!-- Pass down configuration properties -->
+    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
+
     <!-- Pass through DotNetBuildPass for join point vertical support. -->
     <BuildArgs Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">$(BuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</BuildArgs>
 
