@@ -738,6 +738,7 @@ namespace ManifestReaderTests
             CreateMockInstallState("8.0.200",
                 """
                 {
+                    "useWorkloadSets": false,
                     "manifests": {
                         "ios": "11.0.1/8.0.100",
                     }
@@ -776,9 +777,10 @@ namespace ManifestReaderTests
             var installStatePath = CreateMockInstallState("8.0.200",
                 """
                 {
-                    "manifests": {
+                    "useWorkloadSets": false,
+                     "manifests": {
                         "ios": "12.0.2/8.0.200",
-                    }
+                    },
                 }
                 """);
 
