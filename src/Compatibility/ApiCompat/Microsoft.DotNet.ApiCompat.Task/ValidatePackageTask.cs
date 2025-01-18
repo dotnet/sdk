@@ -109,6 +109,11 @@ namespace Microsoft.DotNet.ApiCompat.Task
         public string? NoWarn { get; set; }
 
         /// <summary>
+        /// The neutral language to use when generating suppression files. Defaults to en-US.
+        /// </summary>
+        public string NeutralLanguage { get; set; } = "en-US";
+
+        /// <summary>
         /// Assembly references grouped by target framework, for the assets inside the package.
         /// </summary>
         public ITaskItem[]? PackageAssemblyReferences { get; set; }
@@ -152,6 +157,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 EnableRuleAttributesMustMatch,
                 ExcludeAttributesFiles,
                 EnableRuleCannotChangeParameterName,
+                NeutralLanguage,
                 PackageTargetPath!,
                 RunApiCompat,
                 EnableStrictModeForCompatibleTfms,

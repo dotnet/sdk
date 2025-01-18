@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
@@ -21,6 +22,7 @@ namespace Microsoft.DotNet.ApiCompat
             bool enableRuleAttributesMustMatch,
             string[]? excludeAttributesFiles,
             bool enableRuleCannotChangeParameterName,
+            string neutralLanguage,
             string[] leftAssemblies,
             string[] rightAssemblies,
             bool enableStrictMode,
@@ -30,6 +32,16 @@ namespace Microsoft.DotNet.ApiCompat
             (string CaptureGroupPattern, string ReplacementString)[]? leftAssembliesTransformationPatterns,
             (string CaptureGroupPattern, string ReplacementString)[]? rightAssembliesTransformationPatterns)
         {
+            // When generating the suppression file and baselining all errors, change the resource language
+            // to neutral. This guarantees that suppression files aren't language specific.
+            if (generateSuppressionFile)
+            {
+                CultureInfo neutralLanguageCultureInfo = new(neutralLanguage);
+                Resources.Culture = neutralLanguageCultureInfo;
+                CommonResources.Culture = neutralLanguageCultureInfo;
+                ApiCompatibility.ResourceSingleton.ChangeCulture(neutralLanguageCultureInfo);
+            }
+
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
                 () => SuppressionFileHelper.CreateSuppressionEngine(suppressionFiles, noWarn, generateSuppressionFile),
