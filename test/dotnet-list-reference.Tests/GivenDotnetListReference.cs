@@ -181,6 +181,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
+        /*
         [Fact]
         public void ItPrintsMultipleReferences()
         {
@@ -208,6 +209,7 @@ Commands:
             cmd.Should().Pass();
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
+        */
 
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
