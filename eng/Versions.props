@@ -268,10 +268,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>9.0.0-beta.25058.5</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetSignToolVersion>9.0.0-beta.25058.5</MicrosoftDotNetSignToolVersion>
-    <MicrosoftDotNetXliffTasksVersion>9.0.0-beta.25058.5</MicrosoftDotNetXliffTasksVersion>
-    <MicrosoftDotNetXUnitExtensionsVersion>9.0.0-beta.25058.5</MicrosoftDotNetXUnitExtensionsVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>9.0.0-beta.25065.2</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetSignToolVersion>9.0.0-beta.25065.2</MicrosoftDotNetSignToolVersion>
+    <MicrosoftDotNetXliffTasksVersion>9.0.0-beta.25065.2</MicrosoftDotNetXliffTasksVersion>
+    <MicrosoftDotNetXUnitExtensionsVersion>9.0.0-beta.25065.2</MicrosoftDotNetXUnitExtensionsVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sourcelink -->
