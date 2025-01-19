@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 HotReloadAgent.RemoveCurrentAssembly(typeof(StartupHook), typeof(StartupHook).Assembly.Location + Path.PathSeparator + customStartupHook));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ClearHotReloadEnvironmentVariables_RemovesHotReloadStartup_InCaseInvariantManner()
         {
             var customStartupHook = "/path/mycoolstartup.dll";
