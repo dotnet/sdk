@@ -219,6 +219,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="SolutionProjectConfigurationsConflict"
                  FormatArguments="PublishRelease;$(ProjectName)"/>
 
+    <NETSdkError Condition="'$(PublishAot)' == 'true' and
+                            '$(_IsPublishing)' != 'true' and
+                            '$(PublishAotUsingRuntimePack)' == 'true' and
+                            '$(_TargetFrameworkVersionWithoutV)' >= '10.0'"
+                 ResourceName="NativeCompilationRequiresPublishing" />
+
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
       <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
