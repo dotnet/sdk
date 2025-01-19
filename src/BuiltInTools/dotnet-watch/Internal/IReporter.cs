@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = new("Ignoring change in hidden directory '{0}': {1} '{2}'", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = new("Ignoring change in output directory: {0} '{1}'", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor FileAdditionTriggeredReEvaluation = new("File addition triggered re-evaluation.", "⌚", MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor NoHotReloadChangesToApply = new ("No C# changes to apply.", "⌚", MessageSeverity.Output, s_id++);
+        public static readonly MessageDescriptor NoCSharpChangesToApply = new ("No C# changes to apply.", "⌚", MessageSeverity.Output, s_id++);
     }
 
     internal interface IReporter
