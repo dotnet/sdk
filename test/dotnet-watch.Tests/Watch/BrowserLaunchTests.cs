@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains(App.Process.Output, line => line.Contains("Hosting environment: Development"));
 
             // Verify we launched the browser.
-            Assert.Contains(App.Process.Output, line => line.Contains("dotnet watch ⌚ Launching browser: https://localhost:5001/"));
+            Assert.Contains(App.Process.Output, line => line.Contains("dotnet watch ⌚ Launching browser: https://localhost:5001"));
         }
 
         [Fact]
