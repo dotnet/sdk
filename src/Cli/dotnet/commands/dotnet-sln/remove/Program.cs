@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
 
         public override int Execute()
         {
-            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
+            string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
             if (_projects.Count == 0)
             {
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                             ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
                             : fullPath);
                 });
-                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).Wait();
+                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
                 return 0;
             }
             catch (Exception ex) when (ex is not GracefulException)
@@ -56,18 +56,14 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
                 {
                     throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
                 }
-                if (ex.InnerException is GracefulException)
-                {
-                    throw ex.InnerException;
-                }
                 throw new GracefulException(ex.Message, ex);
             }
         }
 
         private async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
         {
-            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
-            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+            SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+            ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
 
             // set UTF-8 BOM encoding for .sln
             if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)

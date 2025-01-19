@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
             }
-            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
+            string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
 
             try
             {
@@ -73,8 +73,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         private async Task AddProjectsToSolutionAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
         {
-            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
-            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+            SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+            ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
             // set UTF8 BOM encoding for .sln
             if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
             {
