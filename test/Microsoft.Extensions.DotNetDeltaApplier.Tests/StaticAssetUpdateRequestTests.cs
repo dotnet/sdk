@@ -14,7 +14,8 @@ public class StaticAssetUpdateRequestTests
             assemblyName: "assembly name",
             relativePath: "some path",
             [1, 2, 3],
-            isApplicationProject: true);
+            isApplicationProject: true,
+            responseLoggingLevel: ResponseLoggingLevel.WarningsAndErrors);
 
         using var stream = new MemoryStream();
         await initial.WriteAsync(stream, CancellationToken.None);

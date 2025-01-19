@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
@@ -37,19 +36,13 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         private ImmutableList<WatchHotReloadService.Update> _previousUpdates = [];
 
-        /// <summary>
-        /// Set of capabilities aggregated across the current set of <see cref="_runningProjects"/>.
-        /// Default if not calculated yet.
-        /// </summary>
-        private ImmutableArray<string> _currentAggregateCapabilities;
-
         private bool _isDisposed;
 
         public CompilationHandler(IReporter reporter)
         {
             _reporter = reporter;
             Workspace = new IncrementalMSBuildWorkspace(reporter);
-            _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, GetAggregateCapabilitiesAsync);
+            _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
 
         public void Dispose()
@@ -150,7 +143,10 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            var capabilityProvider = deltaApplier.GetApplyUpdateCapabilitiesAsync(processCommunicationCancellationSource.Token);
+            // Wait for agent to create the name pipe and send capabilities over.
+            // the agent blocks the app execution until initial updates are applied (if any).
+            var capabilities = await deltaApplier.GetApplyUpdateCapabilitiesAsync(processCommunicationCancellationSource.Token);
+
             var runningProject = new RunningProject(
                 projectNode,
                 projectOptions,
@@ -163,24 +159,22 @@ namespace Microsoft.DotNet.Watch
                 processTerminationSource: processTerminationSource,
                 restartOperation: restartOperation,
                 disposables: [processCommunicationCancellationSource],
-                capabilityProvider);
+                capabilities);
 
             // ownership transferred to running project:
             disposables.Items.Clear();
             disposables.Items.Add(runningProject);
-
-            ImmutableArray<string> observedCapabilities = default;
 
             var appliedUpdateCount = 0;
             while (true)
             {
                 // Observe updates that need to be applied to the new process
                 // and apply them before adding it to running processes.
-                // Do bot block on udpates being made to other processes to avoid delaying the new process being up-to-date.
+                // Do not block on udpates being made to other processes to avoid delaying the new process being up-to-date.
                 var updatesToApply = _previousUpdates.Skip(appliedUpdateCount).ToImmutableArray();
                 if (updatesToApply.Any())
                 {
-                    _ = await deltaApplier.Apply(updatesToApply, processCommunicationCancellationSource.Token);
+                    _ = await deltaApplier.ApplyManagedCodeUpdates(updatesToApply, processCommunicationCancellationSource.Token);
                 }
 
                 appliedUpdateCount += updatesToApply.Length;
@@ -205,26 +199,18 @@ namespace Microsoft.DotNet.Watch
 
                     _runningProjects = _runningProjects.SetItem(projectPath, projectInstances.Add(runningProject));
 
-                    // reset capabilities:
-                    observedCapabilities = _currentAggregateCapabilities;
-                    _currentAggregateCapabilities = default;
-
                     // ownership transferred to _runningProjects
                     disposables.Items.Clear();
                     break;
                 }
             }
 
+            // Notifies the agent that it can unblock the execution of the process:
+            await deltaApplier.InitialUpdatesApplied(cancellationToken);
+
             // If non-empty solution is loaded into the workspace (a Hot Reload session is active):
             if (Workspace.CurrentSolution is { ProjectIds: not [] } currentSolution)
             {
-                // If capabilities have been observed by an edit session, restart the session. Next time EnC service needs
-                // capabilities it calls GetAggregateCapabilitiesAsync which uses the set of projects assigned above to calculate them.
-                if (!observedCapabilities.IsDefault)
-                {
-                    _hotReloadService.CapabilitiesChanged();
-                }
-
                 // Preparing the compilation is a perf optimization. We can skip it if the session hasn't been started yet. 
                 PrepareCompilations(currentSolution, projectPath, cancellationToken);
             }
@@ -232,33 +218,13 @@ namespace Microsoft.DotNet.Watch
             return runningProject;
         }
 
-        private async ValueTask<ImmutableArray<string>> GetAggregateCapabilitiesAsync()
+        private ImmutableArray<string> GetAggregateCapabilities()
         {
-            var capabilities = _currentAggregateCapabilities;
-            if (!capabilities.IsDefault)
-            {
-                return capabilities;
-            }
-
-            while (true)
-            {
-                var runningProjects = _runningProjects;
-                var capabilitiesByProvider = await Task.WhenAll(runningProjects.SelectMany(p => p.Value).Select(p => p.CapabilityProvider));
-                capabilities = capabilitiesByProvider.SelectMany(c => c).Distinct(StringComparer.Ordinal).ToImmutableArray();
-
-                lock (_runningProjectsAndUpdatesGuard)
-                {
-                    if (runningProjects != _runningProjects)
-                    {
-                        // Another process has been launched while we were retrieving capabilities, query the providers again.
-                        // The providers cache the result so we won't be calling into the respective processes again.
-                        continue;
-                    }
-
-                    _currentAggregateCapabilities = capabilities;
-                    break;
-                }
-            }
+            var capabilities = _runningProjects
+                .SelectMany(p => p.Value)
+                .SelectMany(p => p.Capabilities)
+                .Distinct(StringComparer.Ordinal)
+                .ToImmutableArray();
 
             _reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", emoji: "🔥");
             return capabilities;
@@ -277,7 +243,7 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public async ValueTask<(ImmutableDictionary<ProjectId, string> projectsToRebuild, ImmutableArray<RunningProject> terminatedProjects)> HandleFileChangesAsync(
+        public async ValueTask<(ImmutableDictionary<ProjectId, string> projectsToRebuild, ImmutableArray<RunningProject> terminatedProjects)> HandleManagedCodeChangesAsync(
             Func<IEnumerable<string>, CancellationToken, Task> restartPrompt,
             CancellationToken cancellationToken)
         {
@@ -337,7 +303,7 @@ namespace Microsoft.DotNet.Watch
                 try
                 {
                     using var processCommunicationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(runningProject.ProcessExitedSource.Token, cancellationToken);
-                    var applySucceded = await runningProject.DeltaApplier.Apply(updates.ProjectUpdates, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
+                    var applySucceded = await runningProject.DeltaApplier.ApplyManagedCodeUpdates(updates.ProjectUpdates, processCommunicationCancellationSource.Token) != ApplyStatus.Failed;
                     if (applySucceded)
                     {
                         runningProject.Reporter.Report(MessageDescriptor.HotReloadSucceeded);
@@ -364,7 +330,7 @@ namespace Microsoft.DotNet.Watch
             switch (updates.Status)
             {
                 case ModuleUpdateStatus.None:
-                    _reporter.Report(MessageDescriptor.NoHotReloadChangesToApply);
+                    _reporter.Report(MessageDescriptor.NoCSharpChangesToApply);
                     break;
 
                 case ModuleUpdateStatus.Ready:
@@ -465,6 +431,102 @@ namespace Microsoft.DotNet.Watch
                 cancellationToken);
         }
 
+        public async ValueTask<bool> HandleStaticAssetChangesAsync(IReadOnlyList<ChangedFile> files, ProjectNodeMap projectMap, CancellationToken cancellationToken)
+        {
+            var allFilesHandled = true;
+
+            var updates = new Dictionary<RunningProject, List<(string filePath, string relativeUrl, ProjectGraphNode containingProject)>>();
+
+            foreach (var changedFile in files)
+            {
+                var file = changedFile.Item;
+
+                if (file.StaticWebAssetPath is null)
+                {
+                    allFilesHandled = false;
+                    continue;
+                }
+
+                foreach (var containingProjectPath in file.ContainingProjectPaths)
+                {
+                    if (!projectMap.Map.TryGetValue(containingProjectPath, out var containingProjectNodes))
+                    {
+                        // Shouldn't happen.
+                        _reporter.Warn($"Project '{containingProjectPath}' not found in the project graph.");
+                        continue;
+                    }
+
+                    foreach (var containingProjectNode in containingProjectNodes)
+                    {
+                        foreach (var referencingProjectNode in new[] { containingProjectNode }.GetTransitivelyReferencingProjects())
+                        {
+                            if (TryGetRunningProject(referencingProjectNode.ProjectInstance.FullPath, out var runningProjects))
+                            {
+                                foreach (var runningProject in runningProjects)
+                                {
+                                    if (!updates.TryGetValue(runningProject, out var updatesPerRunningProject))
+                                    {
+                                        updates.Add(runningProject, updatesPerRunningProject = []);
+                                    }
+
+                                    updatesPerRunningProject.Add((file.FilePath, file.StaticWebAssetPath, containingProjectNode));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (updates.Count == 0)
+            {
+                return allFilesHandled;
+            }
+
+            var tasks = updates.Select(async entry =>
+            {
+                var (runningProject, assets) = entry;
+
+                if (runningProject.BrowserRefreshServer != null)
+                {
+                    await runningProject.BrowserRefreshServer.UpdateStaticAssetsAsync(assets.Select(a => a.relativeUrl), cancellationToken);
+                }
+                else
+                {
+                    var updates = new List<StaticAssetUpdate>();
+
+                    foreach (var (filePath, relativeUrl, containingProject) in assets)
+                    {
+                        byte[] content;
+                        try
+                        {
+                            content = await File.ReadAllBytesAsync(filePath, cancellationToken);
+                        }
+                        catch (Exception e)
+                        {
+                            _reporter.Error(e.Message);
+                            continue;
+                        }
+
+                        updates.Add(new StaticAssetUpdate(
+                            relativePath: relativeUrl,
+                            assemblyName: containingProject.GetAssemblyName(),
+                            content: content,
+                            isApplicationProject: containingProject == runningProject.ProjectNode));
+
+                        _reporter.Verbose($"Sending static file update request for asset '{relativeUrl}'.");
+                    }
+
+                    await runningProject.DeltaApplier.ApplyStaticAssetUpdates([.. updates], cancellationToken);
+                }
+            });
+
+            await Task.WhenAll(tasks).WaitAsync(cancellationToken);
+
+            _reporter.Output("Hot reload of static files succeeded.", emoji: "🔥");
+
+            return allFilesHandled;
+        }
+
         /// <summary>
         /// Terminates all processes launched for projects with <paramref name="projectPaths"/>,
         /// or all running non-root project processes if <paramref name="projectPaths"/> is null.
@@ -536,9 +598,14 @@ namespace Microsoft.DotNet.Watch
             lock (_runningProjectsAndUpdatesGuard)
             {
                 _runningProjects = updater(_runningProjects);
+            }
+        }
 
-                // reset capabilities:
-                _currentAggregateCapabilities = default;
+        public bool TryGetRunningProject(string projectPath, out ImmutableArray<RunningProject> projects)
+        {
+            lock (_runningProjectsAndUpdatesGuard)
+            {
+                return _runningProjects.TryGetValue(projectPath, out projects);
             }
         }
 

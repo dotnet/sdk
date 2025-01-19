@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -126,7 +127,9 @@ internal sealed class HotReloadAgent : IDisposable
             cachedDeltas.Add(delta);
         }
 
-        _metadataUpdateHandlerInvoker.Invoke(GetMetadataUpdateTypes(deltas));
+        _metadataUpdateHandlerInvoker.MetadataUpdated(GetMetadataUpdateTypes(deltas));
+
+        Reporter.Report("Deltas applied.", AgentMessageSeverity.Verbose);
     }
 
     private Type[] GetMetadataUpdateTypes(IEnumerable<UpdateDelta> deltas)
@@ -194,5 +197,43 @@ internal sealed class HotReloadAgent : IDisposable
         }
 
         return default;
+    }
+
+    /// <summary>
+    /// Applies the content update.
+    /// </summary>
+    public void ApplyStaticAssetUpdate(StaticAssetUpdate update)
+    {
+        _metadataUpdateHandlerInvoker.ContentUpdated(update);
+    }
+
+    /// <summary>
+    /// Clear any hot-reload specific environment variables. This prevents child processes from being
+    /// affected by the current app's hot reload settings. See https://github.com/dotnet/runtime/issues/58000
+    /// </summary>
+    public static void ClearHotReloadEnvironmentVariables(Type startupHookType)
+    {
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks,
+            RemoveCurrentAssembly(startupHookType, Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetStartupHooks)!));
+
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName, "");
+        Environment.SetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages, "");
+    }
+
+    // internal for testing
+    internal static string RemoveCurrentAssembly(Type startupHookType, string environment)
+    {
+        if (environment is "")
+        {
+            return environment;
+        }
+
+        var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+        var assemblyLocation = startupHookType.Assembly.Location;
+        var updatedValues = environment.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Where(e => !string.Equals(e, assemblyLocation, comparison));
+
+        return string.Join(Path.PathSeparator, updatedValues);
     }
 }
