@@ -57,5 +57,23 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdProjectDescription,
             Arity = ArgumentArity.ExactlyOne
         };
+
+        public static readonly CliOption<string> ListTestsOption = new("--list-tests")
+        {
+            Description = LocalizableStrings.CmdListTestsDescription,
+            Arity = ArgumentArity.Zero
+        };
+
+        public static readonly CliOption<string> SolutionOption = new("--solution")
+        {
+            Description = LocalizableStrings.CmdSolutionDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
+
+        public static readonly CliOption<string> DirectoryOption = new("--directory")
+        {
+            Description = LocalizableStrings.CmdDirectoryDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
     }
 }

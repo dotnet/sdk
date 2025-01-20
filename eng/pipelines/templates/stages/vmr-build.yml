@@ -103,52 +103,28 @@ stages:
         useMonoRuntime: false              # 🚫
         withPreviousSDK: false             # 🚫
 
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        buildName: ${{ format('{0}_Offline_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        targetArchitecture: x64
+        pool: ${{ parameters.pool_Linux }}
+        container:
+          name: ${{ variables.centOSStreamContainerName }}
+          image: ${{ variables.centOSStreamContainerImage }}
+        buildFromArchive: false            # 🚫
+        buildSourceOnly: true              # ✅
+        enablePoison: false                # 🚫
+        excludeOmniSharpTests: true        # ✅
+        runOnline: false                   # 🚫
+        useMonoRuntime: false              # 🚫
+        withPreviousSDK: false             # 🚫
+        reuseBuildArtifactsFrom:
+        - ${{ format('{0}_Online_MsftSdk_x64', variables.centOSStreamName) }}
+
     ### Additional jobs for lite/full builds ###
     - ${{ if in(parameters.scope, 'lite', 'full') }}:
-
-      # Disabled until net9.0 -> net10.0 transition is complete - see https://github.com/dotnet/source-build/issues/4605
-      # - template: ../jobs/vmr-build.yml
-      #   parameters:
-      #     # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-      #     buildName: ${{ format('{0}_Online_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
-      #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-      #     vmrBranch: ${{ variables.VmrBranch }}
-      #     targetArchitecture: x64
-      #     pool: ${{ parameters.pool_Linux }}
-      #     container:
-      #       name: ${{ variables.centOSStreamContainerName }}
-      #       image: ${{ variables.centOSStreamContainerImage }}
-      #     buildFromArchive: false            # 🚫
-      #     buildSourceOnly: true              # ✅
-      #     enablePoison: false                # 🚫
-      #     excludeOmniSharpTests: true        # ✅
-      #     runOnline: true                    # ✅
-      #     useMonoRuntime: false              # 🚫
-      #     withPreviousSDK: false             # 🚫
-      #     reuseBuildArtifactsFrom:
-      #     - ${{ format('{0}_Online_MsftSdk_x64', variables.centOSStreamName) }}
-
-      # Disabled until net9.0 -> net10.0 transition is complete - see https://github.com/dotnet/source-build/issues/4605
-      # - template: ../jobs/vmr-build.yml
-      #   parameters:
-      #     # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-      #     buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.alpinePreviousName) }}
-      #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-      #     vmrBranch: ${{ variables.VmrBranch }}
-      #     targetArchitecture: x64
-      #     artifactsRid: ${{ variables.alpinePreviousX64Rid }}
-      #     pool: ${{ parameters.pool_Linux }}
-      #     container:
-      #       name: ${{ variables.alpinePreviousContainerName }}
-      #       image: ${{ variables.alpinePreviousContainerImage }}
-      #     targetRid: ${{ variables.alpinePreviousX64Rid }}
-      #     buildFromArchive: false            # 🚫
-      #     buildSourceOnly: true              # ✅
-      #     enablePoison: true                 # ✅
-      #     excludeOmniSharpTests: true        # ✅
-      #     runOnline: false                   # 🚫
-      #     useMonoRuntime: false              # 🚫
-      #     withPreviousSDK: true              # ✅
 
       - template: ../jobs/vmr-build.yml
         parameters:
@@ -168,6 +144,26 @@ stages:
           runOnline: false                   # 🚫
           useMonoRuntime: false              # 🚫
           withPreviousSDK: false             # 🚫
+
+      - template: ../jobs/vmr-build.yml
+        parameters:
+          # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
+          buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
+          isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+          vmrBranch: ${{ variables.VmrBranch }}
+          targetArchitecture: x64
+          artifactsRid: ${{ variables.centOSStreamX64Rid }}
+          pool: ${{ parameters.pool_Linux }}
+          container:
+            name: ${{ variables.centOSStreamContainerName }}
+            image: ${{ variables.centOSStreamContainerImage }}
+          buildFromArchive: false            # 🚫
+          buildSourceOnly: true              # ✅
+          enablePoison: true                 # ✅
+          excludeOmniSharpTests: true        # ✅
+          runOnline: false                   # 🚫
+          useMonoRuntime: false              # 🚫
+          withPreviousSDK: true              # ✅
 
       ### Additional jobs for full build ###
       - ${{ if in(parameters.scope, 'full') }}:
@@ -196,20 +192,20 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: ${{ format('{0}_Online_MsftSdk', variables.alpineLatestName) }}
+            buildName: ${{ format('{0}_Offline_MsftSdk', variables.alpineName) }}
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             targetArchitecture: x64
             pool: ${{ parameters.pool_Linux }}
             container:
-              name: ${{ variables.alpineLatestContainerName }}
-              image: ${{ variables.alpineLatestContainerImage }}
-            targetRid: ${{ variables.alpineLatestX64Rid }}
+              name: ${{ variables.alpineContainerName }}
+              image: ${{ variables.alpineContainerImage }}
+            targetRid: ${{ variables.alpineX64Rid }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
             excludeOmniSharpTests: true        # ✅
-            runOnline: true                    # ✅
+            runOnline: false                   # 🚫
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
 
@@ -232,47 +228,25 @@ stages:
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
 
-        # Disabled until net9.0 -> net10.0 transition is complete - see https://github.com/dotnet/source-build/issues/4605
-        # - template: ../jobs/vmr-build.yml
-        #   parameters:
-        #     # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        #     buildName: ${{ format('{0}_Online_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
-        #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        #     vmrBranch: ${{ variables.VmrBranch }}
-        #     targetArchitecture: x64
-        #     artifactsRid: ${{ variables.centOSStreamX64Rid }}
-        #     pool: ${{ parameters.pool_Linux }}
-        #     container:
-        #       name: ${{ variables.centOSStreamContainerName }}
-        #       image: ${{ variables.centOSStreamContainerImage }}
-        #     buildFromArchive: false            # 🚫
-        #     buildSourceOnly: true              # ✅
-        #     enablePoison: false                # 🚫
-        #     excludeOmniSharpTests: false       # 🚫
-        #     runOnline: true                    # ✅
-        #     useMonoRuntime: false              # 🚫
-        #     withPreviousSDK: true              # ✅
-
-        # Disabled until net9.0 -> net10.0 transition is complete - see https://github.com/dotnet/source-build/issues/4605
-        # - template: ../jobs/vmr-build.yml
-        #   parameters:
-        #     # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        #     buildName: ${{ format('{0}_Offline_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
-        #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        #     vmrBranch: ${{ variables.VmrBranch }}
-        #     targetArchitecture: x64
-        #     artifactsRid: ${{ variables.centOSStreamX64Rid }}
-        #     pool: ${{ parameters.pool_Linux }}
-        #     container:
-        #       name: ${{ variables.centOSStreamContainerName }}
-        #       image: ${{ variables.centOSStreamContainerImage }}
-        #     buildFromArchive: false            # 🚫
-        #     buildSourceOnly: true              # ✅
-        #     enablePoison: false                # 🚫
-        #     excludeOmniSharpTests: true        # ✅
-        #     runOnline: false                   # 🚫
-        #     useMonoRuntime: false              # 🚫
-        #     withPreviousSDK: true              # ✅
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
+            buildName: ${{ format('{0}_Online_PreviousSourceBuiltSdk', variables.centOSStreamName) }}
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            targetArchitecture: x64
+            artifactsRid: ${{ variables.centOSStreamX64Rid }}
+            pool: ${{ parameters.pool_Linux }}
+            container:
+              name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}
+            buildFromArchive: false            # 🚫
+            buildSourceOnly: true              # ✅
+            enablePoison: false                # 🚫
+            excludeOmniSharpTests: false       # 🚫
+            runOnline: true                    # ✅
+            useMonoRuntime: false              # 🚫
+            withPreviousSDK: true              # ✅
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -331,49 +305,47 @@ stages:
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
 
-        # Disabled until net9.0 -> net10.0 transition is complete - see https://github.com/dotnet/source-build/issues/4605
-        # - template: ../jobs/vmr-build.yml
-        #   parameters:
-        #     # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        #     buildName: ${{ format('{0}_Offline_CurrentSourceBuiltSdk', variables.fedoraName) }}
-        #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        #     vmrBranch: ${{ variables.VmrBranch }}
-        #     targetArchitecture: x64
-        #     pool: ${{ parameters.pool_Linux }}
-        #     container:
-        #       name: ${{ variables.fedoraContainerName }}
-        #       image: ${{ variables.fedoraContainerImage }}
-        #     buildFromArchive: false            # 🚫
-        #     buildSourceOnly: true              # ✅
-        #     enablePoison: false                # 🚫
-        #     excludeOmniSharpTests: false       # 🚫
-        #     runOnline: false                   # 🚫
-        #     useMonoRuntime: false              # 🚫
-        #     withPreviousSDK: false             # 🚫
-        #     reuseBuildArtifactsFrom:
-        #     - ${{ format('{0}_Offline_MsftSdk_x64', variables.fedoraName) }}
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
+            buildName: ${{ format('{0}_Offline_CurrentSourceBuiltSdk', variables.fedoraName) }}
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            targetArchitecture: x64
+            pool: ${{ parameters.pool_Linux }}
+            container:
+              name: ${{ variables.fedoraContainerName }}
+              image: ${{ variables.fedoraContainerImage }}
+            buildFromArchive: false            # 🚫
+            buildSourceOnly: true              # ✅
+            enablePoison: false                # 🚫
+            excludeOmniSharpTests: false       # 🚫
+            runOnline: false                   # 🚫
+            useMonoRuntime: false              # 🚫
+            withPreviousSDK: false             # 🚫
+            reuseBuildArtifactsFrom:
+            - ${{ format('{0}_Offline_MsftSdk_x64', variables.fedoraName) }}
 
-        # Disabled until net9.0 -> net10.0 transition is complete - see https://github.com/dotnet/source-build/issues/4605
-        # - template: ../jobs/vmr-build.yml
-        #   parameters:
-        #     # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-        #     buildName: ${{ format('{0}_Mono_Offline_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
-        #     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        #     vmrBranch: ${{ variables.VmrBranch }}
-        #     targetArchitecture: x64
-        #     pool: ${{ parameters.pool_Linux }}
-        #     container:
-        #       name: ${{ variables.centOSStreamContainerName }}
-        #       image: ${{ variables.centOSStreamContainerImage }}
-        #     buildFromArchive: true             # ✅
-        #     buildSourceOnly: true              # ✅
-        #     enablePoison: false                # 🚫
-        #     excludeOmniSharpTests: true        # ✅
-        #     runOnline: false                   # 🚫
-        #     useMonoRuntime: true               # ✅
-        #     withPreviousSDK: false             # 🚫
-        #     reuseBuildArtifactsFrom:
-        #     - ${{ format('{0}_Mono_Offline_MsftSdk_x64', variables.centOSStreamName) }}
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
+            buildName: ${{ format('{0}_Mono_Offline_CurrentSourceBuiltSdk', variables.centOSStreamName) }}
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            targetArchitecture: x64
+            pool: ${{ parameters.pool_Linux }}
+            container:
+              name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}
+            buildFromArchive: true             # ✅
+            buildSourceOnly: true              # ✅
+            enablePoison: false                # 🚫
+            excludeOmniSharpTests: true        # ✅
+            runOnline: false                   # 🚫
+            useMonoRuntime: true               # ✅
+            withPreviousSDK: false             # 🚫
+            reuseBuildArtifactsFrom:
+            - ${{ format('{0}_Mono_Offline_MsftSdk_x64', variables.centOSStreamName) }}
 
 #### VERTICAL BUILD (Validation) ####
 - ${{ if and(not(parameters.isSourceOnlyBuild), or(eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.TeamProject'], 'internal'))) }}:
