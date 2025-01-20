@@ -6,15 +6,15 @@ using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
 using Newtonsoft.Json;
 using NuGet.Packaging.Core;
-using NuGet.RuntimeModel;
 using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
     /// <summary>
     /// Generates the $(project).deps.json file.
     /// </summary>
-    public class GenerateDepsFile : TaskWithAssemblyResolveHooks
+    public class GenerateDepsFile : TaskBase
     {
         [Required]
         public string ProjectPath { get; set; }
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string RuntimeGraphPath { get; set; }
 
-        List<ITaskItem> _filesWritten = new List<ITaskItem>();
+        List<ITaskItem> _filesWritten = new();
 
         [Output]
         public ITaskItem[] FilesWritten
@@ -198,15 +198,15 @@ namespace Microsoft.NET.Build.Tasks
             {
                 // Generate the RID-fallback for self-contained builds.
                 //
-                // In order to support loading components with RID-specific assets, 
+                // In order to support loading components with RID-specific assets,
                 // the AssemblyDependencyResolver requires a RID fallback graph.
                 // The component itself should not carry the RID fallback graph with it, because
                 // it would need to carry graph of all the RIDs and needs updates for newer RIDs.
-                // For framework dependent apps, the RID fallback graph comes from the core framework Microsoft.NETCore.App, 
+                // For framework dependent apps, the RID fallback graph comes from the core framework Microsoft.NETCore.App,
                 // so there is no need to write it into the app.
                 // If self-contained apps, the (applicable subset of) RID fallback graph needs to be written to the deps.json manifest.
                 //
-                // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback 
+                // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback
                 // graph with respect to the target RuntimeIdentifier.
 
                 RuntimeGraph runtimeGraph =
