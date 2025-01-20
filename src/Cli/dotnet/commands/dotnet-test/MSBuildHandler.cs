@@ -272,11 +272,11 @@ namespace Microsoft.DotNet.Cli
                 ]);
             }
 
-            var globalProperties =
+            var globalProperties = !string.IsNullOrEmpty(msBuildBuildAndRestoreSettings.Configuration) ?
                 new Dictionary<string, string>
                 {
                     { CliConstants.Configuration , msBuildBuildAndRestoreSettings.Configuration }
-                };
+                } : [];
 
             var buildRequestData = new BuildRequestData(projectFilePath, globalProperties, null, msBuildBuildAndRestoreSettings.Commands, null);
             BuildResult buildResult;
