@@ -366,22 +366,22 @@
       <Sha>82269fc71f9ebb38457d5a0010a1171430f16db5</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.25058.6">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.25066.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>46efcec83821d7f0322c01bc9549de83e855dcac</Sha>
+      <Sha>9b1e979b6c3fe7cfbe30f595b9b0994d20bd482c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.25058.6">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.25066.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>46efcec83821d7f0322c01bc9549de83e855dcac</Sha>
+      <Sha>9b1e979b6c3fe7cfbe30f595b9b0994d20bd482c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.25058.6">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.25066.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>46efcec83821d7f0322c01bc9549de83e855dcac</Sha>
+      <Sha>9b1e979b6c3fe7cfbe30f595b9b0994d20bd482c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.25058.6">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.25066.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>46efcec83821d7f0322c01bc9549de83e855dcac</Sha>
+      <Sha>9b1e979b6c3fe7cfbe30f595b9b0994d20bd482c</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-alpha.2.25068.1">
@@ -467,9 +467,9 @@
       <Sha>be366997dfae0aa6e3c9a78bad10bfb3f79cbde1</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.24630.1">
+    <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.25063.2">
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
-      <Sha>c7bcd7d32f7744af89dfd031a9b2085e3004fd9c</Sha>
+      <Sha>3290a7fed58682b6796e6fc916d12c0eb2070ef5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.25066.1">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
@@ -502,9 +502,9 @@
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.deployment-tools" Version="9.0.0-preview.1.24630.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.deployment-tools" Version="9.0.0-preview.1.25063.2">
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
-      <Sha>c7bcd7d32f7744af89dfd031a9b2085e3004fd9c</Sha>
+      <Sha>3290a7fed58682b6796e6fc916d12c0eb2070ef5</Sha>
       <SourceBuild RepoName="deployment-tools" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
@@ -675,13 +675,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.6.0-preview.25067.5">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.6.0-preview.25069.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>edc05edf02f74ff5d32b02c782bf10aa1d774a5b</Sha>
+      <Sha>db85b7ec3d25a73d13c467386e1dde91e966f21a</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.8.0-preview.25067.5">
+    <Dependency Name="MSTest" Version="3.8.0-preview.25069.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>edc05edf02f74ff5d32b02c782bf10aa1d774a5b</Sha>
+      <Sha>db85b7ec3d25a73d13c467386e1dde91e966f21a</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
