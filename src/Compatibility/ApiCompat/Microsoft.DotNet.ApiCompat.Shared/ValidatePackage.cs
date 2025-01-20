@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.ApiCompat
             bool enableRuleAttributesMustMatch,
             string[]? excludeAttributesFiles,
             bool enableRuleCannotChangeParameterName,
-            string neutralLanguage,
+            string suppressionsCulture,
             string? packagePath,
             bool runApiCompat,
             bool enableStrictModeForCompatibleTfms,
@@ -40,10 +40,10 @@ namespace Microsoft.DotNet.ApiCompat
             // to neutral. This guarantees that suppression files aren't language specific.
             if (generateSuppressionFile)
             {
-                CultureInfo neutralLanguageCultureInfo = new(neutralLanguage);
-                Resources.Culture = neutralLanguageCultureInfo;
-                CommonResources.Culture = neutralLanguageCultureInfo;
-                PackageValidation.ResourceSingleton.ChangeCulture(neutralLanguageCultureInfo);
+                CultureInfo suppressionsCultureInfo = new(suppressionsCulture);
+                Resources.Culture = suppressionsCultureInfo;
+                CommonResources.Culture = suppressionsCultureInfo;
+                PackageValidation.ResourceSingleton.ChangeCulture(suppressionsCultureInfo);
             }
 
             // If a runtime graph is provided, parse and use it for asset selection during the in-memory package construction.

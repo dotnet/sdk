@@ -84,9 +84,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Description = "If true, enables rule to check that the parameter names between public methods do not change.",
                 Recursive = true
             };
-            CliOption<string> neutralLanguageOption = new("--neutral-language")
+            CliOption<string> suppressionsCultureOption = new("--suppressions-culture")
             {
-                Description = "The neutral language to use when generating suppression files. Defaults to en-US.",
+                Description = "The culture to use in suppressions when the '--generate-suppression-file' argument is supplied. Defaults to en-US.",
                 Recursive = true,
                 DefaultValueFactory = _ => "en-US"
             };
@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             rootCommand.Options.Add(enableRuleAttributesMustMatchOption);
             rootCommand.Options.Add(excludeAttributesFilesOption);
             rootCommand.Options.Add(enableRuleCannotChangeParameterNameOption);
-            rootCommand.Options.Add(neutralLanguageOption);
+            rootCommand.Options.Add(suppressionsCultureOption);
 
             rootCommand.Options.Add(leftAssembliesOption);
             rootCommand.Options.Add(rightAssembliesOption);
@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 bool enableRuleAttributesMustMatch = parseResult.GetValue(enableRuleAttributesMustMatchOption);
                 string[]? excludeAttributesFiles = parseResult.GetValue(excludeAttributesFilesOption);
                 bool enableRuleCannotChangeParameterName = parseResult.GetValue(enableRuleCannotChangeParameterNameOption);
-                string neutralLanguage = parseResult.GetValue(neutralLanguageOption)!;
+                string suppressionsCulture = parseResult.GetValue(suppressionsCultureOption)!;
 
                 string[] leftAssemblies = parseResult.GetValue(leftAssembliesOption)!;
                 string[] rightAssemblies = parseResult.GetValue(rightAssembliesOption)!;
@@ -216,7 +216,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     enableRuleAttributesMustMatch,
                     excludeAttributesFiles,
                     enableRuleCannotChangeParameterName,
-                    neutralLanguage,
+                    suppressionsCulture,
                     leftAssemblies,
                     rightAssemblies,
                     strictMode,
@@ -317,7 +317,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 bool enableRuleAttributesMustMatch = parseResult.GetValue(enableRuleAttributesMustMatchOption);
                 string[]? excludeAttributesFiles = parseResult.GetValue(excludeAttributesFilesOption);
                 bool enableRuleCannotChangeParameterName = parseResult.GetValue(enableRuleCannotChangeParameterNameOption);
-                string neutralLanguage = parseResult.GetValue(neutralLanguageOption)!;
+                string suppressionsCulture = parseResult.GetValue(suppressionsCultureOption)!;
 
                 string? package = parseResult.GetValue(packageArgument);
                 bool runApiCompat = parseResult.GetValue(runApiCompatOption);
@@ -342,7 +342,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     enableRuleAttributesMustMatch,
                     excludeAttributesFiles,
                     enableRuleCannotChangeParameterName,
-                    neutralLanguage,
+                    suppressionsCulture,
                     package,
                     runApiCompat,
                     enableStrictModeForCompatibleTfms,
