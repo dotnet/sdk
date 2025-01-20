@@ -209,7 +209,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/visualfsharp -->
-    <MicrosoftFSharpCompilerPackageVersion>13.9.300-beta.25067.2</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>13.9.300-beta.25070.2</MicrosoftFSharpCompilerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
