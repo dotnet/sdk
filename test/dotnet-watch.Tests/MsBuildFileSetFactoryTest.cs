@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         private readonly TestReporter _reporter = new(output);
         private readonly TestAssetsManager _testAssets = new(output);
 
-        private string MuxerPath
+        private static string MuxerPath
             => TestContext.Current.ToolsetUnderTest.DotNetHostPath;
 
         private static string InspectPath(string path, string rootDir)
@@ -329,9 +329,6 @@ $@"<ItemGroup>
                 MuxerPath: MuxerPath,
                 WorkingDirectory: testDirectory);
 
-            var output = new List<string>();
-            _reporter.OnProcessOutput += line => output.Add(line.Content);
-
             var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], options, _reporter);
 
             var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
@@ -367,7 +364,7 @@ $@"<ItemGroup>
                     "Collecting watch items from 'F'",
                     "Collecting watch items from 'G'",
                 ],
-                output.Where(l => l.Contains("Collecting watch items from")).Select(l => l.Trim()).Order());
+                _reporter.Messages.Where(l => l.text.Contains("Collecting watch items from")).Select(l => l.text.Trim()).Order());
         }
 
         [Fact]
@@ -390,17 +387,14 @@ $@"<ItemGroup>
                 MuxerPath: MuxerPath,
                 WorkingDirectory: Path.GetDirectoryName(project1Path)!);
 
-            var output = new List<string>();
-            _reporter.OnProcessOutput += line => output.Add($"{(line.IsError ? "[stderr]" : "[stdout]")} {line.Content}");
-
             var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], options, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
-            // note: msbuild prints errors to stdout:
+            // note: msbuild prints errors to stdout, we match the pattern and report as error:
             AssertEx.Equal(
-                $"[stdout] {project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)",
-                output.Single(l => l.Contains("error NU1201")));
+                (MessageSeverity.Error, $"{project1Path} : error NU1201: Project Project2 is not compatible with net462 (.NETFramework,Version=v4.6.2). Project Project2 supports: netstandard2.1 (.NETStandard,Version=v2.1)"),
+                _reporter.Messages.Single(l => l.text.Contains("error NU1201")));
         }
 
         private Task<EvaluationResult> Evaluate(TestAsset projectPath)
