@@ -119,6 +119,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--appcommandinstruction ", AppCommandInstruction);
         }
+        if (!string.IsNullOrWhiteSpace(ImageFormat))
+        {
+            builder.AppendSwitchIfNotNull("--image-format ", ImageFormat);
+        }
 
         AppendSwitchIfNotNullSanitized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);
         AppendSwitchIfNotNullSanitized(builder, "--entrypointargs ", nameof(EntrypointArgs), EntrypointArgs);

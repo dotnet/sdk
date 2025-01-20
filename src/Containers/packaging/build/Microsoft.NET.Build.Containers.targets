@@ -255,6 +255,7 @@
                     BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
+                    ImageFormat="$(ContainerImageFormat)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
@@ -297,9 +298,9 @@
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
     <Error Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
-      Condition="'$(ContainerArchiveOutputPath)' != '' and 
-                 !$(ContainerArchiveOutputPath.EndsWith('/')) and 
-                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and 
+      Condition="'$(ContainerArchiveOutputPath)' != '' and
+                 !$(ContainerArchiveOutputPath.EndsWith('/')) and
+                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and
                  $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
 
     <ItemGroup>
