@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
         /// <summary>
         /// The culture to use in suppressions when <see cref="GenerateSuppressionFile"/> is true. Defaults to en-US.
         /// </summary>
-        public string SuppressionsCulture { get; set; } = "en-US";
+        public string SuppressionCulture { get; set; } = "en-US";
 
         /// <summary>
         /// Performs api comparison checks in strict mode.
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 EnableRuleAttributesMustMatch,
                 ExcludeAttributesFiles,
                 EnableRuleCannotChangeParameterName,
-                SuppressionsCulture,
+                SuppressionCulture,
                 LeftAssemblies!,
                 RightAssemblies!,
                 EnableStrictMode,

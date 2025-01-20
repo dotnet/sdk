@@ -44,7 +44,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       EnableRuleAttributesMustMatch="$(ApiCompatEnableRuleAttributesMustMatch)"
       ExcludeAttributesFiles="@(ApiCompatExcludeAttributesFile)"
       EnableRuleCannotChangeParameterName="$(ApiCompatEnableRuleCannotChangeParameterName)"
-      SuppressionsCulture="$(ApiCompatSuppressionsCulture)"
+      SuppressionCulture="$(ApiCompatSuppressionCulture)"
       RunApiCompat="$(RunApiCompat)"
       EnableStrictModeForCompatibleTfms="$(EnableStrictModeForCompatibleTfms)"
       EnableStrictModeForCompatibleFrameworksInPackage="$(EnableStrictModeForCompatibleFrameworksInPackage)"

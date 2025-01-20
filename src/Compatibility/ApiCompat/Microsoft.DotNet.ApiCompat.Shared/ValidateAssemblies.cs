@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.ApiCompat
             bool enableRuleAttributesMustMatch,
             string[]? excludeAttributesFiles,
             bool enableRuleCannotChangeParameterName,
-            string suppressionsCulture,
+            string suppressionCulture,
             string[] leftAssemblies,
             string[] rightAssemblies,
             bool enableStrictMode,
@@ -36,10 +36,10 @@ namespace Microsoft.DotNet.ApiCompat
             // to neutral. This guarantees that suppression files aren't language specific.
             if (generateSuppressionFile)
             {
-                CultureInfo suppressionsCultureInfo = new(suppressionsCulture);
-                Resources.Culture = suppressionsCultureInfo;
-                CommonResources.Culture = suppressionsCultureInfo;
-                ApiCompatibility.ResourceSingleton.ChangeCulture(suppressionsCultureInfo);
+                CultureInfo suppressionCultureInfo = new(suppressionCulture);
+                Resources.Culture = suppressionCultureInfo;
+                CommonResources.Culture = suppressionCultureInfo;
+                ApiCompatibility.ResourceSingleton.ChangeCulture(suppressionCultureInfo);
             }
 
             // Initialize the service provider
