@@ -82,19 +82,32 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
     private IEnumerable<TargetPathAssetPair> ComputeManifestAssets(IEnumerable<StaticWebAsset> assets, string kind)
     {
-        var assetsByTargetPath = assets
-            .GroupBy(a => a.ComputeTargetPath("", '/'));
+        var assetsByTargetPath = new Dictionary<string, List<StaticWebAsset>>(OSPath.PathComparer);
 
-        foreach (var group in assetsByTargetPath)
+        foreach (var asset in assets)
         {
-            var asset = StaticWebAsset.ChooseNearestAssetKind(group, kind).SingleOrDefault();
-
-            if (asset == null)
+            var key = asset.ComputeTargetPath("", '/');
+            if (!assetsByTargetPath.TryGetValue(key, out var list))
             {
-                Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because it is not a '{1}' or 'All' asset.", group.Key, kind);
+                list = [];
+                assetsByTargetPath[key] = list;
+            }
+            list.Add(asset);
+        }
+
+        foreach (var kvp in assetsByTargetPath)
+        {
+            var key = kvp.Key;
+            var group = kvp.Value;
+            StaticWebAsset.ChooseNearestAssetKind(group, kind);
+
+            if (group.Count == 0)
+            {
+                Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because it is not a '{1}' or 'All' asset.", key, kind);
                 continue;
             }
 
+            var asset = group[0];
             if (asset.HasSourceId(Source) && !StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetInCurrentProject(asset, StaticWebAssetsManifest.ManifestModes.Root))
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because asset mode is '{1}'",
@@ -104,7 +117,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
                 continue;
             }
 
-            yield return new TargetPathAssetPair(group.Key, asset);
+            yield return new TargetPathAssetPair(key, asset);
         }
     }
 
