@@ -166,7 +166,8 @@ namespace Microsoft.DotNet.Cli
                 parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
                 parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
                 parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption));
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
 

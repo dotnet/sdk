@@ -33,7 +33,6 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
-
         public Module Module => _module;
 
         public TestApplication(Module module, List<string> args)

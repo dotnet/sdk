@@ -21,8 +21,6 @@ namespace Microsoft.DotNet.Cli
         private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;
 
-        private static readonly Lock buildLock = new();
-
         public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, int degreeOfParallelism, TerminalTestReporter output)
         {
             _args = args;
@@ -186,7 +184,7 @@ namespace Microsoft.DotNet.Cli
 
                 var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
 
-                MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings = new(GetCommands(buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild), buildPathOptions.Configuration, allowBinLog, binLogFileName);
+                MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings = new(GetCommands(buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild), buildPathOptions.Configuration, buildPathOptions.Architecture, allowBinLog, binLogFileName);
                 isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, msBuildBuildAndRestoreSettings);
 
                 ProcessProjectsInParallel(projectCollection, projects, allProjects);
@@ -195,13 +193,13 @@ namespace Microsoft.DotNet.Cli
             {
                 if (!buildPathOptions.HasNoRestore)
                 {
-                    MSBuildBuildAndRestoreSettings msBuildRestoreSettings = new([CliConstants.RestoreCommand], buildPathOptions.Configuration, allowBinLog, binLogFileName);
+                    MSBuildBuildAndRestoreSettings msBuildRestoreSettings = new([CliConstants.RestoreCommand], buildPathOptions.Configuration, buildPathOptions.Architecture, allowBinLog, binLogFileName);
                     isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, msBuildRestoreSettings);
                 }
 
                 if (!buildPathOptions.HasNoBuild)
                 {
-                    MSBuildBuildAndRestoreSettings msBuildBuildSettings = new([CliConstants.BuildCommand], buildPathOptions.Configuration, allowBinLog, binLogFileName);
+                    MSBuildBuildAndRestoreSettings msBuildBuildSettings = new([CliConstants.BuildCommand], buildPathOptions.Configuration, buildPathOptions.Architecture, allowBinLog, binLogFileName);
                     isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, msBuildBuildSettings);
                 }
 
@@ -257,35 +255,56 @@ namespace Microsoft.DotNet.Cli
 
         private static bool BuildOrRestoreProjectOrSolution(string projectFilePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
         {
+            var parameters = GetBuildParameters(projectCollection, msBuildBuildAndRestoreSettings);
+            var globalProperties = GetGlobalProperties(msBuildBuildAndRestoreSettings);
+
+            var buildRequestData = new BuildRequestData(projectFilePath, globalProperties, null, msBuildBuildAndRestoreSettings.Commands, null);
+
+            BuildResult buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
+
+            return buildResult.OverallResult == BuildResultCode.Success;
+        }
+
+        private static BuildParameters GetBuildParameters(ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
+        {
             BuildParameters parameters = new(projectCollection)
             {
                 Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet)]
             };
 
-            if (msBuildBuildAndRestoreSettings.AllowBinLog)
-            {
-                parameters.Loggers = parameters.Loggers.Concat([
+            if (!msBuildBuildAndRestoreSettings.AllowBinLog)
+                return parameters;
+
+            parameters.Loggers =
+            [
+                .. parameters.Loggers,
+                    .. new[]
+                    {
                     new BinaryLogger
                     {
                         Parameters = msBuildBuildAndRestoreSettings.BinLogFileName
                     }
-                ]);
-            }
+                    },
+                ];
 
-            var globalProperties = !string.IsNullOrEmpty(msBuildBuildAndRestoreSettings.Configuration) ?
-                new Dictionary<string, string>
-                {
-                    { CliConstants.Configuration , msBuildBuildAndRestoreSettings.Configuration }
-                } : [];
+            return parameters;
+        }
 
-            var buildRequestData = new BuildRequestData(projectFilePath, globalProperties, null, msBuildBuildAndRestoreSettings.Commands, null);
-            BuildResult buildResult;
-            lock (buildLock)
+        private static Dictionary<string, string> GetGlobalProperties(MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
+        {
+            var globalProperties = new Dictionary<string, string>();
+
+            if (!string.IsNullOrEmpty(msBuildBuildAndRestoreSettings.Configuration))
             {
-                buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
+                globalProperties[CliConstants.Configuration] = msBuildBuildAndRestoreSettings.Configuration;
             }
 
-            return buildResult.OverallResult == BuildResultCode.Success;
+            if (!string.IsNullOrEmpty(msBuildBuildAndRestoreSettings.Architecture))
+            {
+                globalProperties[CliConstants.Platform] = msBuildBuildAndRestoreSettings.Architecture;
+            }
+
+            return globalProperties;
         }
 
         private static IEnumerable<Module> ExtractModulesFromProject(Project project)

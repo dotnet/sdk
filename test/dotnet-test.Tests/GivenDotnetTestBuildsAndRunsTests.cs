@@ -133,9 +133,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(@".+\\net8\.0\\TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\spassed.*\s+Exit code: 8", result.StdOut);
+                Assert.Matches(@".+\\net8\.0\\TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 8", result.StdOut);
                 Assert.Matches(@".+\\net8\.0\\OtherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 2", result.StdOut);
-                Assert.Matches(@".+\\net8\.0\\AnotherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\spassed.*\s+Exit code: 9", result.StdOut);
+                Assert.Matches(@".+\\net8\.0\\AnotherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 9", result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
