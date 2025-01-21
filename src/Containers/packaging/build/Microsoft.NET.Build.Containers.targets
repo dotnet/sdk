@@ -34,10 +34,10 @@
   <Target Name="ComputeContainerBaseImage"
           Returns="$(ContainerBaseImage)">
     <PropertyGroup>
-      <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
-      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
 
       <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
@@ -45,8 +45,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
-      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifier)" Condition="'$(ContainerRuntimeIdentifiers)' == ''" />
+      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifier)" Condition="'$(ContainerRuntimeIdentifier)' != ''" />
+      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifiers)" Condition="@(_TargetRuntimeIdentifiers->Count()) == 0" />
     </ItemGroup>
 
     <ComputeDotnetBaseImageAndTag
@@ -298,9 +298,9 @@
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
     <Error Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
-      Condition="'$(ContainerArchiveOutputPath)' != '' and 
-                 !$(ContainerArchiveOutputPath.EndsWith('/')) and 
-                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and 
+      Condition="'$(ContainerArchiveOutputPath)' != '' and
+                 !$(ContainerArchiveOutputPath.EndsWith('/')) and
+                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and
                  $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
 
     <ItemGroup>
@@ -400,7 +400,14 @@
   Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
-      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and (('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == ''))">true</_IsMultiRIDBuild>
+      <!-- we are multi-RID if:
+          * we have CRIDs and no CRID
+          * we have RIDs and no (CRIDs or CRID or RID)
+      -->
+      <_HasCRIDsAndNoCRID Condition="'$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentifier)' == ''">true</_HasCRIDsAndNoCRID>
+      <_HasRIDs Condition="'$(RuntimeIdentifiers)' != ''">true</_HasRIDs>
+      <_NoCRIDsOrCRIDorRID Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' == ''">true</_NoCRIDsOrCRIDorRID>
+      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and ('$(_HasCRIDsAndNoCRID)' == true or ('$(_HasRIDs)' == 'true' and '$(_NoCRIDsOrCRIDorRID)' == 'true'))">true</_IsMultiRIDBuild>
       <_IsSingleRIDBuild Condition="'$(_IsMultiRIDBuild)' == ''">true</_IsSingleRIDBuild>
     </PropertyGroup>
 
