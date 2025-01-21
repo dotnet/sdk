@@ -14,10 +14,14 @@ namespace Microsoft.DotNet.Watch
         // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
         private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
 
-        private static readonly Regex s_nowListeningRegex = s_nowListeningOnRegex();
+        private static readonly Regex s_nowListeningRegex = GetNowListeningOnRegex();
+        private static readonly Regex s_aspireDashboardUrlRegex = GetAspireDashboardUrlRegex();
 
         [GeneratedRegex(@"Now listening on: (?<url>.*)\s*$", RegexOptions.Compiled)]
-        private static partial Regex s_nowListeningOnRegex();
+        private static partial Regex GetNowListeningOnRegex();
+
+        [GeneratedRegex(@"Login to the dashboard at (?<url>.*)\s*$", RegexOptions.Compiled)]
+        private static partial Regex GetAspireDashboardUrlRegex();
 
         private readonly object _serversGuard = new();
         private readonly Dictionary<ProjectGraphNode, BrowserRefreshServer?> _servers = [];
@@ -115,6 +119,10 @@ namespace Microsoft.DotNet.Watch
 
             bool matchFound = false;
 
+            // Workaround for Aspire dashboard launching: scan for "Login to the dashboard at " prefix in the output and use the URL.
+            // TODO: Share launch profile processing logic as implemented in VS with dotnet-run and implement browser launching there.
+            var isAspireHost = projectNode.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability);
+
             return handler;
 
             void handler(OutputLine line)
@@ -127,7 +135,7 @@ namespace Microsoft.DotNet.Watch
                     return;
                 }
 
-                var match = s_nowListeningRegex.Match(line.Content);
+                var match = (isAspireHost ? s_aspireDashboardUrlRegex : s_nowListeningRegex).Match(line.Content);
                 if (!match.Success)
                 {
                     return;
@@ -139,7 +147,8 @@ namespace Microsoft.DotNet.Watch
                     ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode))
                 {
                     // first build iteration of a root project:
-                    LaunchBrowser(launchProfile, match.Groups["url"].Value, server);
+                    var launchUrl = GetLaunchUrl(launchProfile.LaunchUrl, match.Groups["url"].Value);
+                    LaunchBrowser(launchUrl, server);
                 }
                 else if (server != null)
                 {
@@ -151,10 +160,15 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private void LaunchBrowser(LaunchSettingsProfile launchProfile, string launchUrl, BrowserRefreshServer? server)
+        public static string GetLaunchUrl(string? profileLaunchUrl, string outputLaunchUrl)
+            => string.IsNullOrWhiteSpace(profileLaunchUrl) ? outputLaunchUrl :
+                Uri.TryCreate(profileLaunchUrl, UriKind.Absolute, out _) ? profileLaunchUrl :
+                Uri.TryCreate(outputLaunchUrl, UriKind.Absolute, out var launchUri) ? new Uri(launchUri, profileLaunchUrl).ToString() :
+                outputLaunchUrl;
+
+        private void LaunchBrowser(string launchUrl, BrowserRefreshServer? server)
         {
-            var launchPath = launchProfile.LaunchUrl;
-            var fileName = Uri.TryCreate(launchPath, UriKind.Absolute, out _) ? launchPath : launchUrl + "/" + launchPath;
+            var fileName = launchUrl;
 
             var args = string.Empty;
             if (EnvironmentVariables.BrowserPath is { } browserPath)
