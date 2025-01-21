@@ -6,9 +6,10 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
-using CommonFileUtilities = Microsoft.DotNet.Tools.FileUtilities;
+
 
 namespace Microsoft.DotNet.Cli
 {
@@ -42,17 +43,17 @@ namespace Microsoft.DotNet.Cli
 
             if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
             {
-                path = CommonFileUtilities.GetFullPath(buildPathOptions.ProjectPath, Path.GetDirectoryName(buildPathOptions.ProjectPath));
+                path = PathUtility.GetFullPath(buildPathOptions.ProjectPath);
                 msbuildExitCode = await RunBuild(path, isSolution: false, buildPathOptions);
             }
             else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
             {
-                path = CommonFileUtilities.GetFullPath(buildPathOptions.SolutionPath, Path.GetDirectoryName(buildPathOptions.SolutionPath));
+                path = PathUtility.GetFullPath(buildPathOptions.SolutionPath);
                 msbuildExitCode = await RunBuild(path, isSolution: true, buildPathOptions);
             }
             else
             {
-                path = CommonFileUtilities.GetFullPath(buildPathOptions.DirectoryPath, Path.GetDirectoryName(buildPathOptions.DirectoryPath));
+                path = PathUtility.GetFullPath(buildPathOptions.DirectoryPath);
                 msbuildExitCode = await RunBuild(path ?? Directory.GetCurrentDirectory(), buildPathOptions);
             }
 
@@ -333,7 +334,7 @@ namespace Microsoft.DotNet.Cli
 
             if (string.IsNullOrEmpty(targetFrameworks))
             {
-                projects.Add(new Module(targetPath, projectFullPath, targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject));
+                projects.Add(new Module(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject));
             }
             else
             {
@@ -344,7 +345,7 @@ namespace Microsoft.DotNet.Cli
                     project.ReevaluateIfNecessary();
 
                     projects.Add(new Module(project.GetPropertyValue(ProjectProperties.TargetPath),
-                        projectFullPath,
+                        PathUtility.FixFilePath(projectFullPath),
                         framework,
                         runSettingsFilePath,
                         isTestingPlatformApplication,

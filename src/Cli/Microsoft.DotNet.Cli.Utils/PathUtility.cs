@@ -388,5 +388,10 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static bool IsDirectory(this string path) =>
             File.GetAttributes(path).HasFlag(FileAttributes.Directory);
+
+        public static string FixFilePath(string path)
+        {
+            return string.IsNullOrEmpty(path) || Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/'); // .Replace("//", "/");
+        }
     }
 }
