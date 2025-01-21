@@ -21,7 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Disable web SDK implicit package versions for ASP.NET packages, since the .NET SDK now handles that -->
     <EnableWebSdkImplicitPackageVersions>false</EnableWebSdkImplicitPackageVersions>
     <!-- Unconditionally use runtime packs for NativeAOT on .NET 9.0 or higher -->
-    <PublishAotUsingRuntimePack Condition="'$(_IsPublishing)' == 'true' And '$(PublishAotUsingRuntimePack)' == '' And '$(PublishAot)' == 'true' And ('$(_TargetFrameworkVersionWithoutV)' != '') And ('$(_TargetFrameworkVersionWithoutV)' >= '9.0')">true</PublishAotUsingRuntimePack>
+    <PublishAotUsingRuntimePack Condition="'$(_IsPublishing)' == 'true' And '$(PublishAotUsingRuntimePack)' == '' And '$(PublishAot)' == 'true' And ('$(_TargetFrameworkVersionWithoutV)' != '') And ('$(_TargetFrameworkVersionWithoutV)' >= '10.0')">true</PublishAotUsingRuntimePack>
   </PropertyGroup>
 
   <PropertyGroup>
