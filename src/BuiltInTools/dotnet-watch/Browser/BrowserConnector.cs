@@ -44,7 +44,12 @@ namespace Microsoft.DotNet.Watch
             }));
         }
 
-        public async ValueTask<BrowserRefreshServer?> LaunchOrRefreshBrowserAsync(
+        /// <summary>
+        /// A single browser refresh server is created for each project that supports browser launching.
+        /// When the project is rebuilt we reuse the same refresh server and browser instance.
+        /// Reload message is sent to the browser in that case.
+        /// </summary>
+        public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(
             ProjectGraphNode projectNode,
             ProcessSpec processSpec,
             EnvironmentVariablesBuilder environmentBuilder,
@@ -64,12 +69,9 @@ namespace Microsoft.DotNet.Watch
                 }
             }
 
-            // Attach trigger to the process that launches browser on URL found in the process output.
-            // Only do so for root projects, not for child processes.
-            if (projectOptions.IsRootProject)
-            {
-                processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
-            }
+            // Attach trigger to the process that detects when the web server reports to the output that it's listening.
+            // Launches browser on the URL found in the process output for root projects.
+            processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
 
             if (server == null)
             {
@@ -81,13 +83,9 @@ namespace Microsoft.DotNet.Watch
             {
                 // Start the server we just created:
                 await server.StartAsync(cancellationToken);
-                server.SetEnvironmentVariables(environmentBuilder);
             }
-            else
-            {
-                // Notify the browser of a project rebuild (delta applier notifies of updates):
-                await server.SendWaitMessageAsync(cancellationToken);
-            }
+
+            server.SetEnvironmentVariables(environmentBuilder);
 
             return server;
         }
@@ -137,10 +135,10 @@ namespace Microsoft.DotNet.Watch
 
                 matchFound = true;
 
-                var projectAddedToAttemptedSet = ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode);
-                if (projectAddedToAttemptedSet)
+                if (projectOptions.IsRootProject &&
+                    ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode))
                 {
-                    // first iteration:
+                    // first build iteration of a root project:
                     LaunchBrowser(launchProfile, match.Groups["url"].Value, server);
                 }
                 else if (server != null)
