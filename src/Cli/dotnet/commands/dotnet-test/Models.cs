@@ -21,5 +21,5 @@ namespace Microsoft.DotNet.Cli
 
     internal sealed record TestSession(byte? SessionType, string? SessionUid, string? ExecutionId);
 
-    internal record MSBuildBuildAndRestoreSettings(string[] Commands, string Configuration, string Architecture, bool AllowBinLog, string BinLogFileName);
+    internal record MSBuildBuildAndRestoreSettings(string[] Commands, string Configuration, string RuntimeIdentifier, bool AllowBinLog, string BinLogFileName);
 }

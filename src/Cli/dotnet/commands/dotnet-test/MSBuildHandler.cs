@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -184,7 +185,7 @@ namespace Microsoft.DotNet.Cli
 
                 var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
 
-                MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings = new(GetCommands(buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild), buildPathOptions.Configuration, buildPathOptions.Architecture, allowBinLog, binLogFileName);
+                MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings = new(GetCommands(buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild), buildPathOptions.Configuration, buildPathOptions.RuntimeIdentifier, allowBinLog, binLogFileName);
                 isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, msBuildBuildAndRestoreSettings);
 
                 ProcessProjectsInParallel(projectCollection, projects, allProjects);
@@ -193,13 +194,13 @@ namespace Microsoft.DotNet.Cli
             {
                 if (!buildPathOptions.HasNoRestore)
                 {
-                    MSBuildBuildAndRestoreSettings msBuildRestoreSettings = new([CliConstants.RestoreCommand], buildPathOptions.Configuration, buildPathOptions.Architecture, allowBinLog, binLogFileName);
+                    MSBuildBuildAndRestoreSettings msBuildRestoreSettings = new([CliConstants.RestoreCommand], buildPathOptions.Configuration, buildPathOptions.RuntimeIdentifier, allowBinLog, binLogFileName);
                     isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, msBuildRestoreSettings);
                 }
 
                 if (!buildPathOptions.HasNoBuild)
                 {
-                    MSBuildBuildAndRestoreSettings msBuildBuildSettings = new([CliConstants.BuildCommand], buildPathOptions.Configuration, buildPathOptions.Architecture, allowBinLog, binLogFileName);
+                    MSBuildBuildAndRestoreSettings msBuildBuildSettings = new([CliConstants.BuildCommand], buildPathOptions.Configuration, buildPathOptions.RuntimeIdentifier, allowBinLog, binLogFileName);
                     isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, msBuildBuildSettings);
                 }
 
@@ -292,6 +293,7 @@ namespace Microsoft.DotNet.Cli
 
         private static Dictionary<string, string> GetGlobalProperties(MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
         {
+            Debugger.Launch();
             var globalProperties = new Dictionary<string, string>();
 
             if (!string.IsNullOrEmpty(msBuildBuildAndRestoreSettings.Configuration))
@@ -299,9 +301,9 @@ namespace Microsoft.DotNet.Cli
                 globalProperties[CliConstants.Configuration] = msBuildBuildAndRestoreSettings.Configuration;
             }
 
-            if (!string.IsNullOrEmpty(msBuildBuildAndRestoreSettings.Architecture))
+            if (!string.IsNullOrEmpty(msBuildBuildAndRestoreSettings.RuntimeIdentifier))
             {
-                globalProperties[CliConstants.Platform] = msBuildBuildAndRestoreSettings.Architecture;
+                globalProperties[CliConstants.RuntimeIdentifier] = msBuildBuildAndRestoreSettings.RuntimeIdentifier;
             }
 
             return globalProperties;
