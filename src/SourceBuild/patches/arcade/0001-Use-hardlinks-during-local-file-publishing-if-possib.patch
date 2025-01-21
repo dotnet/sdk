@@ -1,4 +1,4 @@
-From a50596702abe59745a78cd684e7960ccb1b197e2 Mon Sep 17 00:00:00 2001
+From 497d1fdfb20324e9a9fc41a8d7d19f50d5b32a5c Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Tue, 21 Jan 2025 10:50:44 +0100
 Subject: [PATCH] Use hardlinks during local file publishing if possible
@@ -114,7 +114,7 @@ index c506295dc..7e4cd385c 100644
  }
 diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/NativeMethods.cs b/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/NativeMethods.cs
 new file mode 100644
-index 000000000..f3837c5e4
+index 000000000..7eaa76db7
 --- /dev/null
 +++ b/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/NativeMethods.cs
 @@ -0,0 +1,48 @@
@@ -132,7 +132,7 @@ index 000000000..f3837c5e4
 +    internal partial class NativeMethods
 +    {
 +#if NET
-+        [LibraryImport("kernel32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
++        [LibraryImport("kernel32.dll", EntryPoint = "CreateHardLinkW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
 +        [return: MarshalAs(UnmanagedType.Bool)]
 +        internal static partial bool CreateHardLink(string newFileName, string exitingFileName, IntPtr securityAttributes);
 +#else
