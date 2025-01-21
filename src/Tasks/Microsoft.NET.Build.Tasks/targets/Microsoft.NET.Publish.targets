@@ -24,6 +24,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectCapability Condition="'$(IsAotCompatible)' == 'true'" Include="IsAotCompatible" />
+    <ProjectCapability Condition="'$(IsTrimmable)' == 'true'" Include="IsTrimmable" />
+    <ProjectCapability Condition="'$(PublishAot)' == 'true'" Include="PublishAot" />
+    <ProjectCapability Condition="'$(PublishReadyToRun)' == 'true'" Include="PublishReadyToRun" />
+    <ProjectCapability Condition="'$(PublishSingleFile)' == 'true'" Include="PublishSingleFile" />
+    <ProjectCapability Condition="'$(PublishTrimmed)' == 'true'" Include="PublishTrimmed" />
+  <ItemGroup>
+
   <ItemDefinitionGroup>
     <ResolvedFileToPublish>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
