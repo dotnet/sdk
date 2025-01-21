@@ -456,4 +456,8 @@
     <value>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</value>
     <comment>{StrBegins="CONTAINER2030: "}</comment>
   </data>
+  <data name="InvalidContainerImageFormat" xml:space="preserve">
+    <value>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</value>
+    <comment>{StrBegins="CONTAINER2031: "}</comment>
+  </data>
 </root>
