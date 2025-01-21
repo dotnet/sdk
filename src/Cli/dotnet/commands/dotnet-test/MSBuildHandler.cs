@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -293,7 +292,6 @@ namespace Microsoft.DotNet.Cli
 
         private static Dictionary<string, string> GetGlobalProperties(MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
         {
-            Debugger.Launch();
             var globalProperties = new Dictionary<string, string>();
 
             if (!string.IsNullOrEmpty(msBuildBuildAndRestoreSettings.Configuration))
