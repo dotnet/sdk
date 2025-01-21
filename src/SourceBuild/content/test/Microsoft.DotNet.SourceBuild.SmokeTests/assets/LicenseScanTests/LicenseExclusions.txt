@@ -66,7 +66,9 @@ src/diagnostics/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 
 # False positive
 src/efcore/test/EfCore.Tests/ChangeTracking/ComplexPropertyEntryTest.cs|proprietary-license
+src/efcore/test/EFCore.Tests/ChangeTracking/EntityEntryTest.cs|proprietary-license
 src/efcore/test/EfCore.Tests/ChangeTracking/MemberEntryTest.cs|proprietary-license
+src/efcore/test/EFCore.Tests/ChangeTracking/PropertyEntryTest.cs|proprietary-license
 
 #
 # fsharp
@@ -74,6 +76,9 @@ src/efcore/test/EfCore.Tests/ChangeTracking/MemberEntryTest.cs|proprietary-licen
 
 # Applies to installer, not source
 src/fsharp/setup/resources/eula/*.rtf
+
+# False positive
+src/fsharp/tests/fsharp/core/members/ops/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 
 #
 # msbuild
@@ -106,6 +111,7 @@ src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/DefaultManifestValue
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/LicenseExpressionTokenizerTests.cs
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/NuGetLicenseExpressionParserTests.cs
 src/nuget-client/test/NuGet.Core.Tests/NuGet.Packaging.Test/LicensesTests/NuGetLicenseTests.cs
+src/nuget-client/test/NuGet.Core.FuncTests/Dotnet.Integration.Test/PackCommandTests.cs|389-exception
 src/nuget-client/test/TestUtilities/Test.Utility/JsonData.cs
 
 #
@@ -242,6 +248,7 @@ src/vstest/src/package/Microsoft.VisualStudio.TestTools.TestPlatform.V2.CLI/Lice
 
 # Not applicable to source
 src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/FontEmbeddingRights.cs|proprietary-license
+src/wpf/src/Microsoft.DotNet.Wpf/src/WindowsBase/MS/Internal/IO/Packaging/CompoundFile/RightsManagementEncryptionTransform.cs|proprietary-license
 src/wpf/eng/WpfArcadeSdk/tools/AvTrace/GenTraceSources.pl|proprietary-license
 src/wpf/eng/WpfArcadeSdk/tools/GenXmlStringTable.pl|proprietary-license
 
