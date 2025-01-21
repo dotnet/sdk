@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 System.Console.WriteLine("<Updated>");
                 """);
 
-            await App.AssertOutputLineStartsWith("<Updated>");
+            await App.AssertOutputLineStartsWith("<Updated>", failure: _ => false);
         }
 
         /// <summary>
@@ -248,7 +248,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated");
 
             await App.WaitUntilOutputContains(
-                $"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
+                $"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
         }
 
         [Theory]
@@ -287,7 +287,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            await App.WaitUntilOutputContains($"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!");
+            await App.WaitUntilOutputContains($"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exception from 'AppUpdateHandler.ClearCache': System.InvalidOperationException: Bug!");
 
             if (verbose)
             {
@@ -409,11 +409,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
             UpdateSourceFile(scopedCssPath, newCss);
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
-            App.AssertOutputContains($"dotnet watch ⌚ Handling file change event for scoped css file {scopedCssPath}.");
-            App.AssertOutputContains($"dotnet watch ⌚ [RazorClassLibrary ({ToolsetInfo.CurrentTargetFramework})] No refresh server.");
-            App.AssertOutputContains($"dotnet watch ⌚ [RazorApp ({ToolsetInfo.CurrentTargetFramework})] Refreshing browser.");
+            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'RazorApp.css'.");
             App.AssertOutputContains($"dotnet watch 🔥 Hot reload of scoped css succeeded.");
-            App.AssertOutputContains($"dotnet watch ⌚ No C# changes to apply.");
+            App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
 
             var cssPath = Path.Combine(testAsset.Path, "RazorApp", "wwwroot", "app.css");
@@ -421,10 +419,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
-            App.AssertOutputContains($"dotnet watch ⌚ Sending static file update request for asset 'app.css'.");
-            App.AssertOutputContains($"dotnet watch ⌚ [RazorApp ({ToolsetInfo.CurrentTargetFramework})] Refreshing browser.");
-            App.AssertOutputContains($"dotnet watch 🔥 Hot Reload of static files succeeded.");
-            App.AssertOutputContains($"dotnet watch ⌚ No C# changes to apply.");
+            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'app.css'.");
+            App.AssertOutputContains($"dotnet watch 🔥 Hot reload of static files succeeded.");
+            App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
         }
 
@@ -459,17 +456,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
             // TODO: Warning is currently reported because UpdateContent is not recognized
-            // dotnet watch ⚠ [maui-blazor (net9.0-windows10.0.19041.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager
-            App.AssertOutputContains("Expected to find a static method");
             App.AssertOutputContains("Updates applied: 1 out of 1.");
+            App.AssertOutputContains("Microsoft.AspNetCore.Components.HotReload.HotReloadManager.UpdateApplication");
+            App.Process.ClearOutput();
 
             // update static asset:
             var cssPath = Path.Combine(testAsset.Path, "wwwroot", "css", "app.css");
             UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
 
-
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
-
+            App.AssertOutputContains("Updates applied: 1 out of 1.");
+            App.AssertOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
             App.AssertOutputContains("No C# changes to apply.");
         }
 
