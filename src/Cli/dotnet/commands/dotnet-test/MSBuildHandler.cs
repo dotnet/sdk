@@ -53,8 +53,8 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                path = PathUtility.GetFullPath(buildPathOptions.DirectoryPath);
-                msbuildExitCode = await RunBuild(path ?? Directory.GetCurrentDirectory(), buildPathOptions);
+                path = PathUtility.GetFullPath(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+                msbuildExitCode = await RunBuild(path, buildPathOptions);
             }
 
             if (msbuildExitCode != ExitCodes.Success)

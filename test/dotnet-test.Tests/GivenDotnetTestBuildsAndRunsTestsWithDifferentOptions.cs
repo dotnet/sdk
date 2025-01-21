@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.DirectoryOption.Name, directoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain($"The provided directory path does not exist: {testInstance.TestRoot}\\{directoryPath}.");
+            result.StdOut.Should().Contain($"The provided directory path does not exist: {directoryPath}.");
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
