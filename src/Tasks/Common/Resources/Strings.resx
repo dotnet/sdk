@@ -987,7 +987,7 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <!-- The latest message added is PublishSelfContainedRequiresPublishing. Please update this value with each PR to catch parallel PRs both adding a new message -->
   <data name="PublishSelfContainedRequiresPublishing" xml:space="preserve">
-    <value>NETSDK1126: PublishSelfContained is not supported when invoking the Publish target directly. Try running dotnet publish, or set SelfContained to true.</value>
-    <comment>{StrBegins="NETSDK1126: "}</comment>
+    <value>NETSDK1226: PublishSelfContained is not supported when invoking the Publish target directly. Try running dotnet publish, or set SelfContained to true.</value>
+    <comment>{StrBegins="NETSDK1226: "}</comment>
   </data>
 </root>
