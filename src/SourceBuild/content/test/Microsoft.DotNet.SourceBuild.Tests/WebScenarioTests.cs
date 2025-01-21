@@ -55,6 +55,8 @@ public class WebScenarioTests : SdkTests
         Assert.True(restoredPackageFiles is not null, "Failed to parse project.nuget.cache");
 
         string[] allowedPackages = [
+            // Temporarily allowed due to https://github.com/dotnet/sdk/issues/46165
+            // TODO: Remove this once the issue is resolved
             "Microsoft.AspNetCore.App.Internal.Assets"
         ];
 
