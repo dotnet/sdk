@@ -102,7 +102,6 @@ namespace Microsoft.DotNet.Watch
                     await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
                     compilationHandler = new CompilationHandler(Context.Reporter);
-                    var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
                     var outputDirectories = GetProjectOutputDirectories(evaluationResult.ProjectGraph);
@@ -255,7 +254,7 @@ namespace Microsoft.DotNet.Watch
                         var stopwatch = Stopwatch.StartNew();
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await staticFileHandler.HandleFileChangesAsync(changedFiles, iterationCancellationToken);
+                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.ScopedCssHandler);
@@ -264,7 +263,7 @@ namespace Microsoft.DotNet.Watch
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
-                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleFileChangesAsync(restartPrompt: async (projectNames, cancellationToken) =>
+                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleManagedCodeChangesAsync(restartPrompt: async (projectNames, cancellationToken) =>
                         {
                             if (_rudeEditRestartPrompt != null)
                             {
@@ -516,10 +515,13 @@ namespace Microsoft.DotNet.Watch
                         // Non-cancellable - can only be aborted by forced Ctrl+C, which immediately kills the dotnet-watch process.
                         await compilationHandler.TerminateNonRootProcessesAndDispose(CancellationToken.None);
                     }
-
-                    if (!rootProcessTerminationSource.IsCancellationRequested)
+                    
+                    if (!rootProcessTerminationSource.IsCancellationRequested && rootRunningProject != null)
                     {
-                        rootProcessTerminationSource.Cancel();
+                        if (!await rootRunningProject.DeltaApplier.TryTerminateProcessAsync(rootProcessTerminationSource.Token))
+                        {
+                            rootProcessTerminationSource.Cancel();
+                        }
                     }
 
                     try
@@ -533,6 +535,9 @@ namespace Microsoft.DotNet.Watch
                     }
                     finally
                     {
+                        // signal process termination:
+                        rootProcessTerminationSource.Cancel();
+
                         fileWatcherTask = null;
 
                         if (runtimeProcessLauncher != null)
