@@ -69,28 +69,28 @@
       <Sha>2c27e405e17595694d91892159593d6dd10e61e2</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.13.0-preview-24569-04">
+    <Dependency Name="Microsoft.Build" Version="17.13.8">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>8f6b8ad0ace90c777c66711c907227fcfb6f2efe</Sha>
+      <Sha>cbc39bea8cd57b4a34a1e463cf6abe394507d6c0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.13.0-preview-24569-04">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.13.8-preview-25070-17">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>8f6b8ad0ace90c777c66711c907227fcfb6f2efe</Sha>
+      <Sha>cbc39bea8cd57b4a34a1e463cf6abe394507d6c0</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.13.0-preview-24569-04">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.13.8-preview-25070-17">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>8f6b8ad0ace90c777c66711c907227fcfb6f2efe</Sha>
+      <Sha>cbc39bea8cd57b4a34a1e463cf6abe394507d6c0</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.200-beta.25056.5">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.201-beta.25070.3">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>63a09289745da5c256e7baf5f4194a750b1ec878</Sha>
+      <Sha>3d780e06fbae1bc106cb90088fa9605ea4a42eed</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.200-beta.25056.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.201-beta.25070.3">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>63a09289745da5c256e7baf5f4194a750b1ec878</Sha>
+      <Sha>3d780e06fbae1bc106cb90088fa9605ea4a42eed</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.13.0-3.25057.3">
@@ -597,14 +597,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>47e3672c762970073e4282bd563233da86bcca3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25061.2">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25070.3">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>1512fd86b0eb245fe6d8efd7e833c37f5e290803</Sha>
+      <Sha>702695802459ffcd11d13cfb73f86aa7b9f6a3ea</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25061.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25070.3">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>1512fd86b0eb245fe6d8efd7e833c37f5e290803</Sha>
+      <Sha>702695802459ffcd11d13cfb73f86aa7b9f6a3ea</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
