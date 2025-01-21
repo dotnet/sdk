@@ -179,6 +179,11 @@
         <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidContainerImageFormat">
+        <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
+        <target state="new">CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</target>
+        <note>{StrBegins="CONTAINER2031: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="translated">CONTAINER2015: {0}: '{1}' non è una variabile di ambiente valida. Il valore verrà ignorato.</target>

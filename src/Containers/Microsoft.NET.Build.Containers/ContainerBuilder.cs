@@ -6,6 +6,12 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
+internal enum KnownImageFormats
+{
+    OCI,
+    Docker
+}
+
 internal static class ContainerBuilder
 {
     internal static async Task<int> ContainerizeAsync(
@@ -33,6 +39,7 @@ internal static class ContainerBuilder
         string? archiveOutputPath,
         bool generateLabels,
         bool generateDigestLabel,
+        KnownImageFormats? imageFormat,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -97,6 +104,15 @@ internal static class ContainerBuilder
         }
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
+
+        // forcibly change the media type if required
+        imageBuilder.ManifestMediaType = imageFormat switch
+        {
+            null => imageBuilder.ManifestMediaType,
+            KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+            KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+            _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+        };
 
         Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
         imageBuilder.AddLayer(newLayer);
