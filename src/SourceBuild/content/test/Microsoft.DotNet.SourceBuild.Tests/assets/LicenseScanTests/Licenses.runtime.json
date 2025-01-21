@@ -1,10 +1,6 @@
 {
   "files": [
     {
-      "path": "src/libraries/System.Net.NetworkInformation/tests/FunctionalTests/NetworkFiles/THIRD-PARTY-NOTICES",
-      "detected_license_expression": "gpl-3.0 AND lgpl-2.0-plus AND lgpl-3.0"
-    },
-    {
       "path": "src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES",
       "detected_license_expression": "unknown-license-reference"
     },
