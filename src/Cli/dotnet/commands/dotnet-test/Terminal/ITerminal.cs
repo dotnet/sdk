@@ -36,7 +36,7 @@ internal interface ITerminal
 
     void EraseProgress();
 
-    void RenderProgress(TestProgressState?[] progress);
+    void RenderProgress(ProgressStateBase?[] progress);
 
     void StartBusyIndicator();
 

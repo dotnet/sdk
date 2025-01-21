@@ -161,10 +161,11 @@ internal sealed class NonAnsiTerminal : ITerminal
         // nop
     }
 
-    public void RenderProgress(TestProgressState?[] progress)
+    public void RenderProgress(ProgressStateBase?[] progress)
     {
         int count = 0;
-        foreach (TestProgressState? p in progress)
+
+        foreach (ProgressStateBase? p in progress)
         {
             if (p == null)
             {
@@ -175,51 +176,14 @@ internal sealed class NonAnsiTerminal : ITerminal
 
             string durationString = HumanReadableDurationFormatter.Render(p.Stopwatch.Elapsed);
 
-            int passed = p.PassedTests;
-            int failed = p.FailedTests;
-            int skipped = p.SkippedTests;
-
-            // Use just ascii here, so we don't put too many restrictions on fonts needing to
-            // properly show unicode, or logs being saved in particular encoding.
-            Append('[');
-            SetColor(TerminalColor.DarkGreen);
-            Append('+');
-            Append(passed.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
-
-            Append('/');
-
-            SetColor(TerminalColor.DarkRed);
-            Append('x');
-            Append(failed.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
-
-            Append('/');
-
-            SetColor(TerminalColor.DarkYellow);
-            Append('?');
-            Append(skipped.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
-            Append(']');
-
-            Append(' ');
-            Append(p.AssemblyName);
-
-            if (p.TargetFramework != null || p.Architecture != null)
+            switch (p)
             {
-                Append(" (");
-                if (p.TargetFramework != null)
-                {
-                    Append(p.TargetFramework);
-                    Append('|');
-                }
-
-                if (p.Architecture != null)
-                {
-                    Append(p.Architecture);
-                }
-
-                Append(')');
+                case TestProgressState test:
+                    RenderTestProgress(test);
+                    break;
+                case TaskProgressState task:
+                    RenderTaskProgress(task);
+                    break;
             }
 
             TestDetailState? activeTest = p.TestNodeResultsState?.GetRunningTasks(1).FirstOrDefault();
@@ -239,6 +203,61 @@ internal sealed class NonAnsiTerminal : ITerminal
         if (count > 0)
         {
             AppendLine();
+        }
+    }
+
+    private void RenderTaskProgress(TaskProgressState taskProgress)
+    {
+        Append(taskProgress.Text);
+    }
+
+    private void RenderTestProgress(TestProgressState testProgress)
+    {
+        int passed = testProgress.PassedTests;
+        int failed = testProgress.FailedTests;
+        int skipped = testProgress.SkippedTests;
+
+        // Use just ascii here, so we don't put too many restrictions on fonts needing to
+        // properly show unicode, or logs being saved in particular encoding.
+        Append('[');
+        SetColor(TerminalColor.DarkGreen);
+        Append('+');
+        Append(passed.ToString(CultureInfo.CurrentCulture));
+        ResetColor();
+
+        Append('/');
+
+        SetColor(TerminalColor.DarkRed);
+        Append('x');
+        Append(failed.ToString(CultureInfo.CurrentCulture));
+        ResetColor();
+
+        Append('/');
+
+        SetColor(TerminalColor.DarkYellow);
+        Append('?');
+        Append(skipped.ToString(CultureInfo.CurrentCulture));
+        ResetColor();
+        Append(']');
+
+        Append(' ');
+        Append(testProgress.AssemblyName);
+
+        if (testProgress.TargetFramework != null || testProgress.Architecture != null)
+        {
+            Append(" (");
+            if (testProgress.TargetFramework != null)
+            {
+                Append(testProgress.TargetFramework);
+                Append('|');
+            }
+
+            if (testProgress.Architecture != null)
+            {
+                Append(testProgress.Architecture);
+            }
+
+            Append(')');
         }
     }
 

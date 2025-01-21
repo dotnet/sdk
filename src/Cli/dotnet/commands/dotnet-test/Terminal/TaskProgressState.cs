@@ -5,21 +5,15 @@ using Microsoft.Testing.Platform.Helpers;
 
 namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-internal sealed class TestDetailState : ProgressStateBase
+internal sealed class TaskProgressState : ProgressStateBase
 {
     private string _text;
 
-    public TestDetailState(long id, IStopwatch? stopwatch, string text)
-        : base (id, stopwatch)
+    public TaskProgressState(long id, string text, IStopwatch stopwatch)
+        : base(id, stopwatch)
     {
         _text = text;
     }
-
-    public long Id { get; }
-
-    public long Version { get; set; }
-
-    public IStopwatch? Stopwatch { get; }
 
     public string Text
     {

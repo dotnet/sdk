@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.Testing.Platform.Helpers;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
@@ -50,8 +52,11 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                msbuildExitCode = await RunBuild(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory(), buildPathOptions);
+                string directoryPath = buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory();
+                msbuildExitCode = await RunBuild(directoryPath, buildPathOptions);
             }
+
+            _output.BuildCompleted();
 
             if (msbuildExitCode != ExitCodes.Success)
             {
@@ -255,11 +260,14 @@ namespace Microsoft.DotNet.Cli
             return ExtractModulesFromProject(project);
         }
 
-        private static bool BuildOrRestoreProjectOrSolution(string projectFilePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
+        private bool BuildOrRestoreProjectOrSolution(string projectFilePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
         {
+            var task = _output.BuildStarted($"Building {projectFilePath}");
+            var logger = new NodeLogger(task);
+
             BuildParameters parameters = new(projectCollection)
             {
-                Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet)]
+                Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet), logger]
             };
 
             if (msBuildBuildAndRestoreSettings.AllowBinLog)
@@ -399,6 +407,61 @@ namespace Microsoft.DotNet.Cli
             {
                 testApplication.Dispose();
             }
+        }
+
+        private class NodeLogger : INodeLogger
+        {
+            private readonly TaskProgressState _task;
+            private int _counter;
+
+            public NodeLogger(TaskProgressState task)
+            {
+                _task = task;
+            }
+
+            public LoggerVerbosity Verbosity { get; set; }
+            public string? Parameters { get; set; }
+
+            public void Initialize(IEventSource eventSource, int nodeCount)
+            {
+                //eventSource.BuildStarted += EventSource_BuildStarted;
+                eventSource.ProjectStarted += EventSource_ProjectStarted;
+                eventSource.ProjectFinished += EventSource_ProjectFinished;
+                //eventSource.BuildFinished += EventSource_BuildFinished;
+            }
+
+            private void EventSource_ProjectFinished(object sender, ProjectFinishedEventArgs e)
+            {
+                _task.TestNodeResultsState?.RemoveRunningTestNode(e.ProjectFile);
+            }
+            private void EventSource_ProjectStarted(object sender, ProjectStartedEventArgs e)
+            {
+                if (e.ProjectFile.EndsWith(".sln") || e.ProjectFile.EndsWith(".slnf"))
+                {
+                    return;
+                }
+
+                var sw = SystemStopwatch.StartNew();
+                _task.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
+                _task.TestNodeResultsState.AddRunningTestNode(
+                    Interlocked.Increment(ref _counter), e.ProjectFile, e.ProjectFile, sw);
+            }
+
+            private void EventSource_BuildFinished(object sender, BuildFinishedEventArgs e)
+            {
+
+            }
+            private void EventSource_BuildStarted(object sender, BuildStartedEventArgs e)
+            {
+
+            }
+
+            public void Initialize(IEventSource eventSource)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Shutdown() { }
         }
     }
 }

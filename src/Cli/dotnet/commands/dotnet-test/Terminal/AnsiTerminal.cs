@@ -281,7 +281,7 @@ internal sealed class AnsiTerminal : ITerminal
         _currentFrame.Clear();
     }
 
-    public void RenderProgress(TestProgressState?[] progress)
+    public void RenderProgress(ProgressStateBase?[] progress)
     {
         AnsiTerminalTestProgressFrame newFrame = new(Width, Height);
         newFrame.Render(_currentFrame, progress, terminal: this);

@@ -176,6 +176,7 @@ namespace Microsoft.DotNet.Cli
             {
                 if (!_isHelp)
                 {
+                    _output?.BuildCompleted();
                     _output?.TestExecutionCompleted(DateTimeOffset.Now);
                 }
             }
