@@ -5,6 +5,7 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -264,7 +265,8 @@ namespace MyNamespace
             var assetInfo = GetSimpleTestAsset();
             TestLog log = new();
             AssemblySymbolLoader loader = new(log, resolveAssemblyReferences: resolveReferences);
-            loader.LoadAssembly(Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll"));
+            string assemblyPath = Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll");
+            loader.LoadAssembly(assemblyPath);
 
             if (resolveReferences)
             {
@@ -277,8 +279,8 @@ namespace MyNamespace
                     expectedReference = "mscorlib.dll";
                 }
 
-                List<string> expected = [$"{AssemblySymbolLoader.AssemblyReferenceNotFoundErrorCode} Could not resolve reference '{expectedReference}' in any of the provided search directories."];
-                Assert.Equal(expected, log.Warnings, StringComparer.CurrentCultureIgnoreCase);
+                Assert.Single(log.Warnings);
+                Assert.Matches($"CP1002.*?'{Regex.Escape(expectedReference)}'.*?'{Regex.Escape(assemblyPath)}'.*", log.Warnings.Single());
             }
             else
             {
