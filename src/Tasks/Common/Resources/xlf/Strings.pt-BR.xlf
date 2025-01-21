@@ -806,6 +806,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1193: se PublishSelfContained estiver definido, ele deverá ser true ou false. O valor fornecido foi '{0} '.</target>
         <note>{StrBegins="NETSDK1193: "}</note>
       </trans-unit>
+      <trans-unit id="PublishSelfContainedRequiresPublishing">
+        <source>NETSDK1126: PublishSelfContained is not supported when invoking the Publish target directly. Try running dotnet publish, or set SelfContained to true.</source>
+        <target state="new">NETSDK1126: PublishSelfContained is not supported when invoking the Publish target directly. Try running dotnet publish, or set SelfContained to true.</target>
+        <note>{StrBegins="NETSDK1126: "}</note>
+      </trans-unit>
       <trans-unit id="PublishSingleFileRequiresVersion30">
         <source>NETSDK1123: Publishing an application to a single-file requires .NET Core 3.0 or higher.</source>
         <target state="needs-review-translation">NETSDK1123: a publicação de um aplicativo em um único arquivo exige o .NET Core 3.0 ou superior.</target>

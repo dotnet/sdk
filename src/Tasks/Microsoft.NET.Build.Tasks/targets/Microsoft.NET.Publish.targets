@@ -219,6 +219,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="SolutionProjectConfigurationsConflict"
                  FormatArguments="PublishRelease;$(ProjectName)"/>
 
+    <NETSdkError Condition="'$(PublishSelfContained)' == 'true' and
+                            '$(_IsPublishing)' != 'true' and
+                            '$(SelfContained)' != 'true' and
+                            '$(_TargetFrameworkVersionWithoutV)' >= '10.0'"
+                 ResourceName="PublishSelfContainedRequiresPublishing" />
+
     <NETSdkError Condition="'$(PublishAot)' == 'true' and
                             '$(_IsPublishing)' != 'true' and
                             '$(PublishAotUsingRuntimePack)' == 'true' and
