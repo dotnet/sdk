@@ -8,6 +8,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using CommonFileUtilities = Microsoft.DotNet.Tools.FileUtilities;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -37,18 +38,22 @@ namespace Microsoft.DotNet.Cli
             }
 
             int msbuildExitCode;
+            string path;
 
             if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
             {
-                msbuildExitCode = await RunBuild(buildPathOptions.ProjectPath, isSolution: false, buildPathOptions);
+                path = CommonFileUtilities.GetFullPath(buildPathOptions.ProjectPath, Path.GetDirectoryName(buildPathOptions.ProjectPath));
+                msbuildExitCode = await RunBuild(path, isSolution: false, buildPathOptions);
             }
             else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
             {
-                msbuildExitCode = await RunBuild(buildPathOptions.SolutionPath, isSolution: true, buildPathOptions);
+                path = CommonFileUtilities.GetFullPath(buildPathOptions.SolutionPath, Path.GetDirectoryName(buildPathOptions.SolutionPath));
+                msbuildExitCode = await RunBuild(path, isSolution: true, buildPathOptions);
             }
             else
             {
-                msbuildExitCode = await RunBuild(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory(), buildPathOptions);
+                path = CommonFileUtilities.GetFullPath(buildPathOptions.DirectoryPath, Path.GetDirectoryName(buildPathOptions.DirectoryPath));
+                msbuildExitCode = await RunBuild(path ?? Directory.GetCurrentDirectory(), buildPathOptions);
             }
 
             if (msbuildExitCode != ExitCodes.Success)
@@ -82,7 +87,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!string.IsNullOrEmpty(buildPathOptions.DirectoryPath) && !Directory.Exists(buildPathOptions.DirectoryPath))
             {
-                _output.WriteMessage(string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, Path.GetFullPath(buildPathOptions.DirectoryPath)));
+                _output.WriteMessage(string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, buildPathOptions.DirectoryPath));
                 return false;
             }
 
