@@ -53,7 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ToolsetAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
+    <ToolsetAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" Visibility="$(DefaultArtifactVisibility)" />
   </ItemGroup>
 
   <!-- Include RID specific packages when globbing for default artifacts is disabled. -->
