@@ -663,7 +663,7 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
-            buildName: AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT
+            buildName: AzureLinux_x64_Cross_Shortstack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
@@ -763,7 +763,7 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
-            buildName: AzureLinux_x64_Cross_ShortStack_Mono_LLVMAOT
+            buildName: AzureLinux_x64_Cross_Shortstack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
