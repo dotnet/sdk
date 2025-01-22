@@ -166,6 +166,11 @@ partial class CreateNewImage
     [Required]
     public bool GenerateDigestLabel { get; set; }
 
+    /// <summary>
+    /// Set to either 'OCI', 'Docker', or null. If unset, the generated images' mediaType will be that of the base image. If set, the generated image will be given the specified media type.
+    /// </summary>
+    public string? ImageFormat { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
