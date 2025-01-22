@@ -22,13 +22,13 @@ namespace Microsoft.DotNet.Watch
         CancellationTokenSource processTerminationSource,
         RestartOperation restartOperation,
         IReadOnlyList<IDisposable> disposables,
-        Task<ImmutableArray<string>> capabilityProvider) : IDisposable
+        ImmutableArray<string> capabilities) : IDisposable
     {
         public readonly ProjectGraphNode ProjectNode = projectNode;
         public readonly ProjectOptions Options = options;
         public readonly BrowserRefreshServer? BrowserRefreshServer = browserRefreshServer;
         public readonly DeltaApplier DeltaApplier = deltaApplier;
-        public readonly Task<ImmutableArray<string>> CapabilityProvider = capabilityProvider;
+        public readonly ImmutableArray<string> Capabilities = capabilities;
         public readonly IReporter Reporter = reporter;
         public readonly Task<int> RunningProcess = runningProcess;
         public readonly int ProcessId = processId;

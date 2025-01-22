@@ -27,9 +27,9 @@ namespace Microsoft.NET.Build.Tests
             new FileInfo(Path.Combine(outputDirectory, "test-2", "MSBuildCultureResourceGeneration.resources.dll")).Should().Exist();
         }
 
+        [CoreMSBuildOnlyTheory]
         [InlineData("net7.0")]
         [InlineData("net6.0")]
-        [CoreMSBuildOnlyTheory]
         public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldWarn(string targetFramework)
         {
             var testAsset = _testAssetsManager
@@ -44,9 +44,9 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("warning MSB3002:");
         }
 
+        [FullMSBuildOnlyTheory]
         [InlineData("net7.0")]
         [InlineData("net6.0")]
-        [FullMSBuildOnlyTheory]
         // Is this Failing? Is full FW MSBuild already on 17.13? Then remove this test and remove `[CoreMSBuildOnlyTheory]` attribute on the test above
         //
         // Until MSBuild 17.13 is merged into FullFW MSBuild in sdk tests - the test will fail, as

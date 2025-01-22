@@ -9,7 +9,7 @@ using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable
+    internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable, IStaticAssetChangeApplierProvider
     {
         // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
         private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
@@ -92,6 +92,18 @@ namespace Microsoft.DotNet.Watch
             server.SetEnvironmentVariables(environmentBuilder);
 
             return server;
+        }
+
+        bool IStaticAssetChangeApplierProvider.TryGetApplier(ProjectGraphNode projectNode, [NotNullWhen(true)] out IStaticAssetChangeApplier? applier)
+        {
+            if (TryGetRefreshServer(projectNode, out var server))
+            {
+                applier = server;
+                return true;
+            }
+
+            applier = null;
+            return false;
         }
 
         public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)

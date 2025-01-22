@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -10,6 +11,40 @@ namespace Microsoft.DotNet.Tools.Common
 {
     public static class SlnFileFactory
     {
+        public static string GetSolutionFileFullPath(string slnFileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
+        {
+            // Throw error if slnFileOrDirectory is an invalid path
+            if (string.IsNullOrWhiteSpace(slnFileOrDirectory) || slnFileOrDirectory.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+            {
+                throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory);
+            }
+            if (File.Exists(slnFileOrDirectory))
+            {
+                return Path.GetFullPath(slnFileOrDirectory);
+            }
+            if (Directory.Exists(slnFileOrDirectory))
+            {
+                string[] files = ListSolutionFilesInDirectory(slnFileOrDirectory, includeSolutionFilterFiles, includeSolutionXmlFiles);
+                if (files.Length == 0)
+                {
+                    throw new GracefulException(
+                        CommonLocalizableStrings.CouldNotFindSolutionIn,
+                        slnFileOrDirectory);
+                }
+                if (files.Length > 1)
+                {
+                    throw new GracefulException(
+                        CommonLocalizableStrings.MoreThanOneSolutionInDirectory,
+                        slnFileOrDirectory);
+                }
+                return Path.GetFullPath(files.Single());
+            }
+            throw new GracefulException(
+                CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
+                slnFileOrDirectory);
+        }
+
+
         public static string[] ListSolutionFilesInDirectory(string directory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
         {
             return [
@@ -19,87 +54,77 @@ namespace Microsoft.DotNet.Tools.Common
             ];
         }
 
-        public static SolutionModel CreateFromFileOrDirectory(string fileOrDirectory, bool includeSolutionXmlFiles = true)
+        public static SolutionModel CreateFromFileOrDirectory(string fileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
         {
-            if (File.Exists(fileOrDirectory))
-            {
-                return FromFile(fileOrDirectory);
-            }
-            else
-            {
-                return FromDirectory(fileOrDirectory, includeSolutionXmlFiles);
-            }
-        }
+            string solutionPath = GetSolutionFileFullPath(fileOrDirectory, includeSolutionFilterFiles, includeSolutionXmlFiles);
 
-        private static SolutionModel FromFile(string solutionPath)
-        {
-            SolutionModel slnFile = null;
-            try
+            if (solutionPath.HasExtension(".slnf"))
             {
-                ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
+                return CreateFromFilteredSolutionFile(solutionPath);
+            }
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
                     CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
                     solutionPath);
 
-                slnFile = serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
-            }
-            catch (SolutionException e)
-            {
-                throw new GracefulException(
-                    CommonLocalizableStrings.InvalidSolutionFormatString,
-                    solutionPath,
-                    e.Message);
-            }
-            return slnFile;
+            return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
         }
 
-        private static SolutionModel FromDirectory(string solutionDirectory, bool includeSolutionXmlFiles)
+        public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionPath)
         {
-            DirectoryInfo dir;
+            JsonDocument jsonDocument;
+            JsonElement jsonElement;
+            JsonElement filteredSolutionJsonElement;
+            string originalSolutionPath;
+            string originalSolutionPathAbsolute;
+            string[] filteredSolutionProjectPaths;
+
             try
             {
-                dir = new DirectoryInfo(solutionDirectory);
-                if (!dir.Exists)
+                jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath));
+                jsonElement = jsonDocument.RootElement;
+                filteredSolutionJsonElement = jsonElement.GetProperty("solution");
+                originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
+                originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
+                if (!File.Exists(originalSolutionPathAbsolute))
                 {
-                    throw new GracefulException(
-                        CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
-                        solutionDirectory);
+                    throw new Exception();
                 }
+                filteredSolutionProjectPaths = filteredSolutionJsonElement.GetProperty("projects")
+                    .EnumerateArray()
+                    .Select(project => project.GetString())
+                    .ToArray();
             }
-            catch (ArgumentException)
-            {
+            catch (Exception ex) {
                 throw new GracefulException(
-                    CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
-                    solutionDirectory);
+                    CommonLocalizableStrings.InvalidSolutionFormatString,
+                    filteredSolutionPath, ex.Message);
             }
 
-            FileInfo[] files = [
-                ..dir.GetFiles("*.sln"),
-                ..(includeSolutionXmlFiles ? dir.GetFiles(".slnx") : [])
-             ];
+            SolutionModel filteredSolution = new SolutionModel();
+            SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPathAbsolute);
 
-            if (files.Length == 0)
+            foreach (var platform in originalSolution.Platforms)
             {
-                throw new GracefulException(
-                    CommonLocalizableStrings.CouldNotFindSolutionIn,
-                    solutionDirectory);
+                filteredSolution.AddPlatform(platform);
             }
-
-            if (files.Length > 1)
+            foreach (var buildType in originalSolution.BuildTypes)
             {
-                throw new GracefulException(
-                    CommonLocalizableStrings.MoreThanOneSolutionInDirectory,
-                    solutionDirectory);
+                filteredSolution.AddBuildType(buildType);
             }
 
-            FileInfo solutionFile = files.Single();
-            if (!solutionFile.Exists)
+            foreach (string path in filteredSolutionProjectPaths)
             {
-                throw new GracefulException(
-                    CommonLocalizableStrings.CouldNotFindSolutionIn,
-                    solutionDirectory);
+                // Normalize path to use correct directory separator
+                string normalizedPath = path.Replace('\\', Path.DirectorySeparatorChar);
+
+                SolutionProjectModel project = originalSolution.FindProject(normalizedPath) ?? throw new GracefulException(
+                        CommonLocalizableStrings.ProjectNotFoundInTheSolution,
+                        normalizedPath,
+                        originalSolutionPath);
+                filteredSolution.AddProject(project.FilePath, project.Type, project.Parent is null ? null : filteredSolution.AddFolder(project.Parent.Path));
             }
 
-            return FromFile(solutionFile.FullName);
+            return filteredSolution;
         }
     }
 }
