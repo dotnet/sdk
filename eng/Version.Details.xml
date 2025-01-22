@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.25069.1">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-alpha.1.25071.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>77323f8e0199d6f3a2f15488e96963834e55a8dd</Sha>
+      <Sha>297c71c4560f6e60c0cb1fee50215e2543d14453</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.25069.1">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-alpha.1.25071.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>77323f8e0199d6f3a2f15488e96963834e55a8dd</Sha>
+      <Sha>297c71c4560f6e60c0cb1fee50215e2543d14453</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.25069.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-alpha.1.25071.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>77323f8e0199d6f3a2f15488e96963834e55a8dd</Sha>
+      <Sha>297c71c4560f6e60c0cb1fee50215e2543d14453</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.25070.4">
@@ -87,14 +87,14 @@
       <Sha>ffe5c860f320bb64d1959b6ea457fc8dc58da538</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25070.6">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25071.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>f759d6d9621043e8beeb3294e21d988d17a7beb5</Sha>
+      <Sha>4c4ddfdf66bf9cb2a213114d421a5ced0ee994dc</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.300-beta.25070.6">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.300-beta.25071.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>f759d6d9621043e8beeb3294e21d988d17a7beb5</Sha>
+      <Sha>4c4ddfdf66bf9cb2a213114d421a5ced0ee994dc</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-1.25070.2">
@@ -254,26 +254,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4c224ab16d287c17dbc54236638db91266071465</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25070.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-alpha.1.25071.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>9628f39ee9f588c44c2b39b9fccc2fbca2b1d563</Sha>
+      <Sha>06508b38fe69952c840f3a761f169526ba816484</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25070.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-alpha.1.25071.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>9628f39ee9f588c44c2b39b9fccc2fbca2b1d563</Sha>
+      <Sha>06508b38fe69952c840f3a761f169526ba816484</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25070.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-alpha.1.25071.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>9628f39ee9f588c44c2b39b9fccc2fbca2b1d563</Sha>
+      <Sha>06508b38fe69952c840f3a761f169526ba816484</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25070.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-alpha.1.25071.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>9628f39ee9f588c44c2b39b9fccc2fbca2b1d563</Sha>
+      <Sha>06508b38fe69952c840f3a761f169526ba816484</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.25069.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-alpha.1.25071.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>ad9c7ba7de15ebb10025f37e3379b24ed4c6df13</Sha>
+      <Sha>e4d2e75a31c39c581cad88b3764755b7882e6237</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="10.0.0-alpha.2.25070.3">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -405,9 +405,9 @@
       <Uri>https://github.com/dotnet/winforms</Uri>
       <Sha>1e44f011994881e4268bb9706509f7051a7dae46</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-alpha.1.25069.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-alpha.1.25071.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>ad9c7ba7de15ebb10025f37e3379b24ed4c6df13</Sha>
+      <Sha>e4d2e75a31c39c581cad88b3764755b7882e6237</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="10.0.0-preview.25067.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
