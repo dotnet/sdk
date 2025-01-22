@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Cli
         private MSBuildHandler _msBuildHandler;
         private TestModulesFilterHandler _testModulesFilterHandler;
         private TerminalTestReporter _output;
+        private bool _isHelp;
         private TestApplicationActionQueue _actionQueue;
         private List<string> _args;
         private ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
@@ -74,10 +75,11 @@ namespace Microsoft.DotNet.Cli
                     ShowAssemblyStartAndComplete = true,
                 });
                 _output = output;
-                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery);
 
+                _isHelp = false;
                 if (ContainsHelpOption(parseResult.GetArguments()))
                 {
+                    _isHelp = true;
                     _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                     {
                         testApp.HelpRequested += OnHelpRequested;
@@ -87,12 +89,13 @@ namespace Microsoft.DotNet.Cli
                         testApp.ExecutionIdReceived += OnExecutionIdReceived;
 
                         var result = await testApp.RunAsync(filterModeEnabled, enableHelp: true, builtInOptions);
-                        CompleteRun();
                         return result;
                     });
                 }
                 else
                 {
+                    _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery);
+
                     _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
                     {
                         testApp.HandshakeReceived += OnHandshakeReceived;
@@ -209,7 +212,10 @@ namespace Microsoft.DotNet.Cli
         {
             if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
             {
-                _output?.TestExecutionCompleted(DateTimeOffset.Now);
+                if (!_isHelp)
+                {
+                    _output?.TestExecutionCompleted(DateTimeOffset.Now);
+                }
             }
         }
 
@@ -380,6 +386,10 @@ namespace Microsoft.DotNet.Cli
             if (_executions.TryGetValue(testApplication, out var appInfo))
             {
                 _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+            }
+            else
+            {
+                _output.AssemblyRunCompleted(testApplication.Module.DllOrExePath ?? testApplication.Module.ProjectPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
             }
 
             if (!VSTestTrace.TraceEnabled) return;

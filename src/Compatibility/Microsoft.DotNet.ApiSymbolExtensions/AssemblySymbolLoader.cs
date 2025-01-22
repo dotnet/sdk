@@ -16,6 +16,22 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public class AssemblySymbolLoader : IAssemblySymbolLoader
     {
+        // This is a list of dangling .NET Framework internal assemblies that should never get loaded.
+        private static readonly HashSet<string> s_assembliesToIgnore = [
+            "System.ServiceModel.Internals",
+            "Microsoft.Internal.Tasks.Dataflow",
+            "MSDATASRC",
+            "ADODB",
+            "Microsoft.StdFormat",
+            "stdole",
+            "PresentationUI",
+            "Microsoft.VisualBasic.Activities.Compiler",
+            "SMDiagnostics",
+            "System.Xaml.Hosting",
+            "Microsoft.Transactions.Bridge",
+            "Microsoft.Workflow.Compiler"
+        ];
+
         private readonly ILog _log;
         // Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and
         // value are the containing folder.
@@ -79,6 +95,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <inheritdoc />
         public IReadOnlyList<IAssemblySymbol?> LoadAssemblies(params string[] paths)
         {
+            _log.LogMessage(MessageImportance.Low, string.Format(Resources.LoadingAssemblies, string.Join(", ", paths)));
+
             // First resolve all assemblies that are passed in and create metadata references out of them.
             // Reference assemblies of the passed in assemblies that themselves are passed in, will be skipped to be resolved,
             // as they are resolved as part of the loop below.
@@ -103,6 +121,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <inheritdoc />
         public IReadOnlyList<IAssemblySymbol?> LoadAssembliesFromArchive(string archivePath, IReadOnlyList<string> relativePaths)
         {
+            _log.LogMessage(MessageImportance.Low, string.Format(Resources.LoadingAssembliesFromArchive, string.Join(", ", relativePaths), archivePath));
+
             using FileStream stream = File.OpenRead(archivePath);
             using ZipArchive zipFile = new(stream);
 
@@ -128,7 +148,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 string name = Path.GetFileName(relativePaths[i]);
                 if (!_loadedAssemblies.TryGetValue(name, out MetadataReference? metadataReference))
                 {
-                    metadataReference = CreateAndAddReferenceToCompilation(name, memoryStream, fileNames);
+                    string rootAssemblyDisplayString = string.Format(Resources.RootAssemblyFromPackageDisplayString, relativePaths[i], archivePath);
+                    metadataReference = CreateAndAddReferenceToCompilation(name, rootAssemblyDisplayString, memoryStream, fileNames);
                 }
 
                 metadataReferences[i] = metadataReference;
@@ -154,6 +175,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <inheritdoc />
         public IAssemblySymbol? LoadAssembly(string path)
         {
+            _log.LogMessage(MessageImportance.Low, string.Format(Resources.LoadingAssembly, path));
+
             MetadataReference metadataReference = CreateOrGetMetadataReferenceFromPath(path);
             IAssemblySymbol? assemblySymbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
             LogCompilationDiagnostics();
@@ -164,6 +187,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <inheritdoc />
         public IAssemblySymbol? LoadAssembly(string name, Stream stream)
         {
+            _log.LogMessage(MessageImportance.Low, string.Format(Resources.LoadingAssemblyFromStream, name));
+
             if (stream.Position >= stream.Length)
             {
                 throw new ArgumentException(Resources.StreamPositionGreaterThanLength, nameof(stream));
@@ -171,7 +196,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
             if (!_loadedAssemblies.TryGetValue(name, out MetadataReference? metadataReference))
             {
-                metadataReference = CreateAndAddReferenceToCompilation(name, stream);
+                string rootAssemblyDisplayString = string.Format(Resources.RootAssemblyDisplayString, name);
+                metadataReference = CreateAndAddReferenceToCompilation(name, rootAssemblyDisplayString, stream);
             }
 
             IAssemblySymbol? assemblySymbol = _cSharpCompilation.GetAssemblyOrModuleSymbol(metadataReference) as IAssemblySymbol;
@@ -302,13 +328,14 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             if (!_loadedAssemblies.TryGetValue(name, out MetadataReference? metadataReference))
             {
                 using FileStream stream = File.OpenRead(path);
-                metadataReference = CreateAndAddReferenceToCompilation(name, stream, referenceAssemblyNamesToIgnore);
+                string rootAssemblyDisplayString = string.Format(Resources.RootAssemblyDisplayString, path);
+                metadataReference = CreateAndAddReferenceToCompilation(name, rootAssemblyDisplayString, stream, referenceAssemblyNamesToIgnore);
             }
 
             return metadataReference;
         }
 
-        private MetadataReference CreateAndAddReferenceToCompilation(string name, Stream fileStream, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null)
+        private MetadataReference CreateAndAddReferenceToCompilation(string assemblyName, string rootAssemblyDisplayString, Stream fileStream, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null, string? referenceeAssemblyName = null)
         {
             // If we need to resolve references we can't reuse the same stream after creating the metadata
             // reference from it as Roslyn closes it. So instead we use PEReader and get the bytes
@@ -317,46 +344,60 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
             if (!reader.HasMetadata)
             {
-                throw new ArgumentException(string.Format(Resources.ProvidedStreamDoesNotHaveMetadata, name));
+                throw new ArgumentException(string.Format(Resources.ProvidedStreamDoesNotHaveMetadata, assemblyName));
             }
 
             PEMemoryBlock image = reader.GetEntireImage();
             MetadataReference metadataReference = MetadataReference.CreateFromImage(image.GetContent());
-            _loadedAssemblies.Add(name, metadataReference);
+            _loadedAssemblies.Add(assemblyName, metadataReference);
             _cSharpCompilation = _cSharpCompilation.AddReferences([ metadataReference ]);
+
+            if (referenceeAssemblyName is null)
+            {
+                _log.LogMessage(MessageImportance.Low, string.Format(Resources.AssemblyLoaded, assemblyName));
+            }
+            else
+            {
+                _log.LogMessage(MessageImportance.Low, string.Format(Resources.AssemblyReferenceLoaded, assemblyName, referenceeAssemblyName));
+            }
 
             if (_resolveReferences)
             {
-                ResolveReferences(reader, referenceAssemblyNamesToIgnore);
+                ResolveReferences(reader, assemblyName, rootAssemblyDisplayString, referenceAssemblyNamesToIgnore);
             }
 
             return metadataReference;
         }
 
-        private void ResolveReferences(PEReader peReader, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null)
+        private void ResolveReferences(PEReader peReader, string assemblyName, string rootAssemblyDisplayString, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null)
         {
             MetadataReader reader = peReader.GetMetadataReader();
-            foreach (AssemblyReferenceHandle handle in reader.AssemblyReferences)
+            foreach (AssemblyReferenceHandle assemblyReferenceHandle in reader.AssemblyReferences)
             {
-                AssemblyReference reference = reader.GetAssemblyReference(handle);
-                string name = $"{reader.GetString(reference.Name)}.dll";
+                AssemblyReference assemblyReference = reader.GetAssemblyReference(assemblyReferenceHandle);
+                string assemblyReferenceNameWithoutExtension = reader.GetString(assemblyReference.Name);
 
-                // Skip reference assemblies that are loaded later.
-                if (referenceAssemblyNamesToIgnore != null && referenceAssemblyNamesToIgnore.Contains(name))
+                // Skip assemblies that should never get loaded because they are purely internal
+                if (s_assembliesToIgnore.Contains(assemblyReferenceNameWithoutExtension))
                     continue;
 
+                string assemblyReferenceName = assemblyReferenceNameWithoutExtension + ".dll";
+
+                // Skip reference assemblies that are loaded later.
+                if (referenceAssemblyNamesToIgnore != null && referenceAssemblyNamesToIgnore.Contains(assemblyReferenceName))
+                    continue;
 
                 // If the assembly reference is already loaded, don't do anything.
-                if (_loadedAssemblies.ContainsKey(name))
+                if (_loadedAssemblies.ContainsKey(assemblyReferenceName))
                     continue;
 
                 // First we try to see if a reference path for this specific assembly was passed in directly, and if so
                 // we use that.
-                if (_referencePathFiles.TryGetValue(name, out string? fullReferencePath))
+                if (_referencePathFiles.TryGetValue(assemblyReferenceName, out string? fullReferencePath))
                 {
                     // TODO: add version check and add a warning if it doesn't match?
-                    using FileStream resolvedStream = File.OpenRead(Path.Combine(fullReferencePath, name));
-                    CreateAndAddReferenceToCompilation(name, resolvedStream, referenceAssemblyNamesToIgnore);
+                    using FileStream resolvedStream = File.OpenRead(Path.Combine(fullReferencePath, assemblyReferenceName));
+                    CreateAndAddReferenceToCompilation(assemblyReferenceName, rootAssemblyDisplayString, resolvedStream, referenceAssemblyNamesToIgnore, assemblyName);
                 }
                 // If we can't find a specific reference path for the dependency, then we look in the folders where the
                 // rest of the reference paths are located to see if we can find the dependency there.
@@ -366,12 +407,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
                     foreach (string referencePathDirectory in _referencePathDirectories)
                     {
-                        string potentialPath = Path.Combine(referencePathDirectory, name);
+                        string potentialPath = Path.Combine(referencePathDirectory, assemblyReferenceName);
                         if (File.Exists(potentialPath))
                         {
                             // TODO: add version check and add a warning if it doesn't match?
                             using FileStream resolvedStream = File.OpenRead(potentialPath);
-                            CreateAndAddReferenceToCompilation(name, resolvedStream, referenceAssemblyNamesToIgnore);
+                            CreateAndAddReferenceToCompilation(assemblyReferenceName, rootAssemblyDisplayString, resolvedStream, referenceAssemblyNamesToIgnore, assemblyName);
                             found = true;
                             break;
                         }
@@ -379,7 +420,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
                     if (!found)
                     {
-                        _log.LogWarning(AssemblyReferenceNotFoundErrorCode, string.Format(Resources.CouldNotResolveReference, name));
+                        _log.LogWarning(AssemblyReferenceNotFoundErrorCode,
+                            string.Format(Resources.CouldNotResolveReference, assemblyReferenceName, rootAssemblyDisplayString));
                     }
                 }
             }

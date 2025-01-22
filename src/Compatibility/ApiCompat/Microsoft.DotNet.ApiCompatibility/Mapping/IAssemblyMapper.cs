@@ -18,11 +18,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
         IAssemblySetMapper? ContainingAssemblySet { get; }
 
         /// <summary>
-        /// Gets the assembly load errors that happened when trying to follow type forwards.
-        /// </summary>
-        IEnumerable<CompatDifference> AssemblyLoadErrors { get; }
-
-        /// <summary>
         /// Gets the mappers for the namespaces contained in <see cref="IElementMapper{T}.Left"/> and <see cref="IElementMapper{T}.Right"/>
         /// </summary>
         /// <returns>The list of <see cref="INamespaceMapper"/>.</returns>
