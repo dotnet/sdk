@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
@@ -35,7 +36,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly IReporter _reporter;
         private readonly IFirstPartyNuGetPackageSigningVerifier _firstPartyNuGetPackageSigningVerifier;
         private bool _validationMessagesDisplayed = false;
-        private readonly Dictionary<PackageSource, SourceRepository> _sourceRepositories;
+        private readonly ConcurrentDictionary<PackageSource, SourceRepository> _sourceRepositories;
         private readonly bool _shouldUsePackageSourceMapping;
 
         private readonly bool _verifySignatures;
@@ -818,7 +819,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             if (!_sourceRepositories.TryGetValue(source, out SourceRepository value))
             {
                 value = Repository.Factory.GetCoreV3(source);
-                _sourceRepositories.Add(source, value);
+                _sourceRepositories.AddOrUpdate(source, _ => value, (_, _) => value);
             }
 
             return value;
