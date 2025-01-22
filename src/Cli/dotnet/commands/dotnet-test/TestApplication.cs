@@ -102,9 +102,14 @@ namespace Microsoft.DotNet.Cli
                     _testAppPipeConnections.Add(pipeConnection);
                 }
             }
-            catch (OperationCanceledException ex) when (ex.CancellationToken == token)
+            catch (OperationCanceledException ex)
             {
                 // We are exiting
+                if (VSTestTrace.TraceEnabled)
+                {
+                    string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
+                    VSTestTrace.SafeWriteTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
+                }
             }
             catch (Exception ex)
             {
