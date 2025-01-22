@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private const string IsOSPlatform = nameof(IsOSPlatform);
         private const string IsPrefix = "Is";
         private const string OptionalSuffix = "VersionAtLeast";
-        private const string Net = "net";
+        private const string NetCoreAppIdentifier = ".NETCoreApp";
         private const string macOS = nameof(macOS);
         private const string OSX = nameof(OSX);
         private const string MacSlashOSX = "macOS/OSX";
@@ -281,17 +281,20 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static bool PlatformAnalysisAllowed(AnalyzerOptions options, Compilation compilation)
         {
-            var tfmString = options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.TargetFramework, compilation);
+            string tfmIdentifier = options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.TargetFrameworkIdentifier, compilation) ?? "";
+            string tfmVersion = options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.TargetFrameworkVersion, compilation) ?? "";
 
-            if (tfmString?.Length >= 4 &&
-                tfmString.StartsWith(Net, StringComparison.OrdinalIgnoreCase) &&
-                int.TryParse(tfmString[3].ToString(), out var major) &&
-                major >= 5)
+            if (tfmIdentifier.Equals(NetCoreAppIdentifier, StringComparison.OrdinalIgnoreCase) &&
+                tfmVersion.StartsWith("v", StringComparison.OrdinalIgnoreCase) &&
+                Version.TryParse(tfmVersion[1..], out var version) &&
+                version.Major >= 5)
             {
+                // We want to only support cases we know are well-formed by default
                 return true;
             }
             else
             {
+                // We want to fallback to allowing force enablement regardless of recognizing the Identifier/Version
                 return LowerTargetsEnabled(options, compilation);
             }
         }

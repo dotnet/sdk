@@ -1267,6 +1267,8 @@ public class Program
 
 [*]
 build_property.TargetFramework = net5
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v5.0
 "));
             await test.RunAsync();
         }
@@ -3983,7 +3985,7 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5");
+            await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5\nbuild_property.TargetFrameworkIdentifier = .NETCoreApp\nbuild_property.TargetFrameworkVersion = v5.0");
         }
 
         [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]

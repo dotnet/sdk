@@ -20,7 +20,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
     public partial class PlatformCompatabilityAnalyzerTests
     {
-        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS,maccatalyst, ios, linux;\nbuild_property.TargetFramework=net5.0";
+        private const string s_msBuildPlatforms = "build_property._SupportedPlatformList=windows,browser,macOS,maccatalyst, ios, linux;\nbuild_property.TargetFramework=net5.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0";
 
         [Fact(Skip = "TODO need to be fixed: Test for for wrong arguments, not sure how to report the Compiler error diagnostic")]
         public async Task TestOsPlatformAttributesWithNonStringArgumentAsync()
@@ -43,17 +43,33 @@ public class Test
 
         public static IEnumerable<object[]> Create_DifferentTfms()
         {
-            yield return new object[] { "build_property.TargetFramework = net472", false };
-            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0", false };
-            yield return new object[] { "build_property.TargetFramework = dotnet", false };
-            yield return new object[] { "build_property.TargetFramework = uap10.0", false };
-            yield return new object[] { "build_property.TargetFramework = netstandard2.1", false };
-            yield return new object[] { "build_property.TargetFramework = net5", true };
-            yield return new object[] { "build_property.TargetFramework = net5.0", true };
-            yield return new object[] { "build_property.TargetFramework = net5.0-windows", true };
-            yield return new object[] { "build_property.TargetFramework = net5.0-ios14.0", true };
-            yield return new object[] { "build_property.TargetFramework = Net99", true };
-            yield return new object[] { "build_property.TargetFramework = netcoreapp5", false };
+            // Pre-.NET 5 TFMS
+            yield return new object[] { "build_property.TargetFramework = net472\nbuild_property.TargetFrameworkIdentifier=.NETFramework\nbuild_property.TargetFrameworkVersion=v4.7.2", false };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v1.0", false };
+            yield return new object[] { "build_property.TargetFramework = dotnet\nbuild_property.TargetFrameworkIdentifier=.NETPlatform\nbuild_property.TargetFrameworkVersion=v5.0", false };
+            yield return new object[] { "build_property.TargetFramework = uap10.0\nbuild_property.TargetFrameworkIdentifier=UAP\nbuild_property.TargetFrameworkVersion=v10.0", false };
+            yield return new object[] { "build_property.TargetFramework = netstandard2.1\nbuild_property.TargetFrameworkIdentifier=.NETStandard\nbuild_property.TargetFrameworkVersion=v2.1", false };
+
+            // .NET 5+ TFMs with a single major version digit
+            yield return new object[] { "build_property.TargetFramework = net5\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0-windows\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0-ios14.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0", true };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp5\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0", true };
+
+            // .NET 5+ TFMs that have more than one major version digit
+            yield return new object[] { "build_property.TargetFramework = net10.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v10.0", true };
+            yield return new object[] { "build_property.TargetFramework = net11.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v11.0", true };
+
+            // Custom TFMs with valid user specified Identifier/Version
+            yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v11.0", true };
+
+            // Custom TFMs with invalid user specified Identifier/Version
+            yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5", false };
+            yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0", false };
+
+            // Custom TFMs with inferred Identifier/Version
+            yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=Unsupported\nbuild_property.TargetFrameworkVersion=v0.0", false };
         }
 
         [Theory]
@@ -85,20 +101,23 @@ namespace CallerTargetsBelow5_0
 
         public static IEnumerable<object[]> Create_DifferentTfmsWithOption()
         {
-            yield return new object[] { "build_property.TargetFramework = net472\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
-            yield return new object[] { "build_property.TargetFramework = net472\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
-            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
-            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0\ndotnet_code_quality.CA1416.enable_platform_analyzer_on_pre_net5_target=false", false };
-            yield return new object[] { "build_property.TargetFramework = dotnet\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
-            yield return new object[] { "build_property.TargetFramework = uap10.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
-            yield return new object[] { "build_property.TargetFramework = netstandard2.1\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
-            yield return new object[] { "build_property.TargetFramework = netstandard2.1\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
-            yield return new object[] { "build_property.TargetFramework = net5\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
-            yield return new object[] { "build_property.TargetFramework = net5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
-            yield return new object[] { "build_property.TargetFramework = net5.0-windows\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
-            yield return new object[] { "build_property.TargetFramework = net5.0-ios14.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
-            yield return new object[] { "build_property.TargetFramework = net6.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
-            yield return new object[] { "build_property.TargetFramework = netcoreapp5\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
+            // Pre-.NET 5 TFMS
+            yield return new object[] { "build_property.TargetFramework = net472\nbuild_property.TargetFrameworkIdentifier=.NETFramework\nbuild_property.TargetFrameworkVersion=v4.7.2\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
+            yield return new object[] { "build_property.TargetFramework = net472\nbuild_property.TargetFrameworkIdentifier=.NETFramework\nbuild_property.TargetFrameworkVersion=v4.7.2\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0\n\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v1.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp1.0\n\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v1.0\ndotnet_code_quality.CA1416.enable_platform_analyzer_on_pre_net5_target=false", false };
+            yield return new object[] { "build_property.TargetFramework = dotnet\nbuild_property.TargetFrameworkIdentifier=.NETPlatform\nbuild_property.TargetFrameworkVersion=v5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
+            yield return new object[] { "build_property.TargetFramework = uap10.0\nbuild_property.TargetFrameworkIdentifier=UAP\nbuild_property.TargetFrameworkVersion=v10.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
+            yield return new object[] { "build_property.TargetFramework = netstandard2.1\nbuild_property.TargetFrameworkIdentifier=.NETStandard\nbuild_property.TargetFrameworkVersion=v2.1\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=true", true };
+            yield return new object[] { "build_property.TargetFramework = netstandard2.1\nbuild_property.TargetFrameworkIdentifier=.NETStandard\nbuild_property.TargetFrameworkVersion=v2.1\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", false };
+
+            // .NET 5+ TFMs with a single major version digit
+            yield return new object[] { "build_property.TargetFramework = net5\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0-windows\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = net5.0-ios14.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = net6.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v6.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
+            yield return new object[] { "build_property.TargetFramework = netcoreapp5\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0\ndotnet_code_quality.enable_platform_analyzer_on_pre_net5_target=false", true };
         }
 
         [Theory]
@@ -200,7 +219,7 @@ public class Test
         a = AndroidBrowserOnlyProgram;
     }
 }";
-            await VerifyAnalyzerCSAsync(source, "build_property.PlatformNeutralAssembly = true\nbuild_property.TargetFramework=net5.0",
+            await VerifyAnalyzerCSAsync(source, "build_property.PlatformNeutralAssembly = true\nbuild_property.TargetFramework=net5.0\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5.0",
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(0).WithArguments("Test.WindowsOnlyProgram", "'windows'", "'linux'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1).WithArguments("Test.UnsupportedLinuxProgram", "'linux'", "'linux'"),
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(2).WithArguments("Test.AndroidBrowserOnlyProgram", "'android', 'browser'", "'linux'"),
@@ -4157,7 +4176,7 @@ class TestType
         }
 
         private static async Task VerifyAnalyzerCSAsync(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
-            => await VerifyAnalyzerCSAsync(sourceCode, "build_property.TargetFramework = net5", expectedDiagnostics);
+            => await VerifyAnalyzerCSAsync(sourceCode, "build_property.TargetFramework = net5\nbuild_property.TargetFrameworkIdentifier = .NETCoreApp\nbuild_property.TargetFrameworkVersion = v5.0", expectedDiagnostics);
 
         private static async Task VerifyAnalyzerCSAsync(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
@@ -4182,7 +4201,7 @@ class TestType
         }
 
         private static async Task VerifyAnalyzerVBAsync(string sourceCode, params DiagnosticResult[] expectedDiagnostics)
-            => await VerifyAnalyzerVBAsync(sourceCode, "build_property.TargetFramework = net5", expectedDiagnostics);
+            => await VerifyAnalyzerVBAsync(sourceCode, "build_property.TargetFramework = net5\nbuild_property.TargetFrameworkIdentifier = .NETCoreApp\nbuild_property.TargetFrameworkVersion = v5.0", expectedDiagnostics);
 
         private static async Task VerifyAnalyzerVBAsync(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
         {
