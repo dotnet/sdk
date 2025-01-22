@@ -13,6 +13,8 @@
     <!-- Enable building installers on Windows and Linux. ASP.NET Core doesn't produce installers on Mac -->
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)BuildInstallers</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'linux'">$(BuildActions) $(FlagParameterPrefix)build-installers</BuildActions>
+    <BuildActions Condition="'$(NuGetConfigFile)' != '' and '$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)RestoreConfigFile "$(NuGetConfigFile)"</BuildActions>
+    <BuildActions Condition="'$(NuGetConfigFile)' != '' and '$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)restore-config-file "$(NuGetConfigFile)"</BuildActions>
     <!-- In a source-only build, we don't pass -all, so we need to explicitly opt-in to managed components here. -->
     <BuildActions Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(BuildOS)' == 'linux'">$(BuildActions) $(FlagParameterPrefix)build-managed</BuildActions>
 

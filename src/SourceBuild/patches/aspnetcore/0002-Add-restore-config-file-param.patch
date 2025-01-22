@@ -1,0 +1,108 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Matt Mitchell (.NET) (from Dev Box)" <mmitche@microsoft.com>
+Date: Wed, 22 Jan 2025 14:58:12 -0800
+Subject: [PATCH] Add restore config file param
+
+Backport: https://github.com/dotnet/aspnetcore/pull/60004
+
+---
+ eng/DotNetBuild.props |  2 +-
+ eng/build.ps1         | 11 +++++++++++
+ eng/build.sh          | 14 ++++++++++++++
+ 3 files changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 9c4eb173ed..c4827cbcb4 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -32,7 +32,7 @@
+       <_AdditionalRepoTaskBuildArgs />
+       <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeed)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeed $(DotNetRuntimeSourceFeed)</_AdditionalRepoTaskBuildArgs>
+       <_AdditionalRepoTaskBuildArgs Condition="'$(DotNetRuntimeSourceFeedKey)' != ''" >$(_AdditionalRepoTaskBuildArgs) --runtimesourcefeedkey $(DotNetRuntimeSourceFeedKey)</_AdditionalRepoTaskBuildArgs>
+-      <_AdditionalRepoTaskBuildArgs Condition="'$(RestoreConfigFile)' != ''" >$(_AdditionalRepoTaskBuildArgs) /p:RestoreConfigFile=$(RestoreConfigFile)</_AdditionalRepoTaskBuildArgs>
++      <_AdditionalRepoTaskBuildArgs Condition="'$(RestoreConfigFile)' != ''" >$(_AdditionalRepoTaskBuildArgs) --restore-config-file $(RestoreConfigFile)</_AdditionalRepoTaskBuildArgs>
+     </PropertyGroup>
+ 
+     <ItemGroup>
+diff --git a/eng/build.ps1 b/eng/build.ps1
+index 15fe87ac6f..9b34eec7f4 100644
+--- a/eng/build.ps1
++++ b/eng/build.ps1
+@@ -99,6 +99,9 @@ Additional feed that can be used when downloading .NET runtimes and SDKs
+ .PARAMETER RuntimeSourceFeedKey
+ Key for feed that can be used when downloading .NET runtimes and SDKs
+ 
++.PARAMETER RestoreConfigFile
++NuGet.config that should be passed to build commands (via /p:RestoreConfigFile)
++
+ .EXAMPLE
+ Building both native and managed projects.
+ 
+@@ -196,6 +199,8 @@ param(
+     [Alias('DotNetRuntimeSourceFeedKey')]
+     [string]$RuntimeSourceFeedKey,
+ 
++    [string]$RestoreConfigFile
++
+     # Capture the rest
+     [Parameter(ValueFromRemainingArguments = $true)]
+     [string[]]$MSBuildArguments
+@@ -288,6 +293,12 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
+     $ToolsetBuildArguments += $runtimeFeedKeyArg
+ }
+ 
++if ($RestoreConfigFile) {
++    $restoreConfigFileArg = "/p:RestoreConfigFile=$RestoreConfigFile"
++    $MSBuildArguments += $restoreConfigFileArg
++    $ToolsetBuildArguments += $restoreConfigFileArg
++}
++
+ # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
+ [string[]]$dotnetBuildArguments = ''
+ [string[]]$MSBuildOnlyArguments = ''
+diff --git a/eng/build.sh b/eng/build.sh
+index a27eaad468..0ffb000c57 100755
+--- a/eng/build.sh
++++ b/eng/build.sh
+@@ -35,6 +35,7 @@ target_arch='x64'
+ configuration=''
+ runtime_source_feed=''
+ runtime_source_feed_key=''
++restore_config_file=''
+ 
+ if [ "$(uname)" = "Darwin" ]; then
+     target_os_name='osx'
+@@ -88,6 +89,8 @@ Options:
+     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
+     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
+ 
++    --restore-config-file             NuGet.config file to use when building the repository
++
+ Description:
+     This build script installs required tools and runs an MSBuild command on this repository
+     This script can be used to invoke various targets, such as targets to produce packages
+@@ -242,6 +245,11 @@ while [[ $# -gt 0 ]]; do
+             [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed-key" && __usage
+             runtime_source_feed_key="${1:-}"
+             ;;
++        -restore-config-file|-restoreconfigfile)
++            shift
++            [ -z "${1:-}" ] && __error "Missing value for parameter --restore-config-file" && __usage
++            restore_config_file="${1:-}"
++            ;;
+         *)
+             msbuild_args[${#msbuild_args[*]}]="$1"
+             ;;
+@@ -330,6 +338,12 @@ if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
+     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
+ fi
+ 
++if [ ! -z "$restore_config_file" ]; then
++    restoreConfigFileArg="/p:RestoreConfigFile=$restore_config_file"
++    msbuild_args[${#msbuild_args[*]}]=$restoreConfigFileArg
++    toolset_build_args[${#toolset_build_args[*]}]=$restoreConfigFileArg
++fi
++
+ # Initialize global variables need to be set before the import of Arcade is imported
+ restore=$run_restore
+ 
