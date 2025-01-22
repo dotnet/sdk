@@ -273,7 +273,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             var hasUpdateSource = w.CreateCompletionSource();
             w.Reporter.OnProcessOutput += line =>
             {
-                if (line.Content.StartsWith($"[ServiceA ({tfm})]") && line.Content.Contains("Started A: 2"))
+                if (line.Content.StartsWith($"[A ({tfm})]") && line.Content.Contains("Started A: 2"))
                 {
                     hasUpdateSource.SetResult();
                 }
