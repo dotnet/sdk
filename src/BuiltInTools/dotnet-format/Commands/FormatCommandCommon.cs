@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.Tools.Logging;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.CodeAnalysis.Tools
 {
@@ -137,10 +138,12 @@ namespace Microsoft.CodeAnalysis.Tools
             return arg;
         }
 
-        public static ILogger<Program> SetupLogging(this IConsole console, LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
+        public static ILogger<Program> SetupLogging(LogLevel minimalLogLevel)
         {
-            var loggerFactory = new LoggerFactory()
-                .AddSimpleConsole(console, minimalLogLevel, minimalErrorLevel);
+            using ILoggerFactory loggerFactory = LoggerFactory
+                .Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Default) // Use the default color behavior, enabling color except when the console output is redirected
+                .SetMinimumLevel(minimalLogLevel));
+
             var logger = loggerFactory.CreateLogger<Program>();
             return logger;
         }
