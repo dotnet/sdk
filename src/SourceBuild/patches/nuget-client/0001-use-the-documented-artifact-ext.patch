@@ -14,9 +14,9 @@ diff --git a/eng/Publishing.props b/eng/Publishing.props
 index 38810c73428..1175200dd59 100644
 --- a/eng/Publishing.props
 +++ b/eng/Publishing.props
-@@ -1,11 +1,6 @@
+@@ -1,11 +1,8 @@
  <Project>
--
+
    <ItemGroup>
 -    <ItemsToPushToBlobFeed Include="$(ArtifactsDir)nupkgs/*.nupkg"
 -                           IsShipping="true"
@@ -24,9 +24,9 @@ index 38810c73428..1175200dd59 100644
 -    <_SymbolsPackages Include="$(ArtifactsDir)nupkgs/*.symbols.nupkg" />
 -    <ItemsToPushToBlobFeed Remove="@(_SymbolsPackages)" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 +    <Artifact Include="$(ArtifactsDir)nupkgs/*.nupkg"
-+              IsShipping="true" />
++              PublishFlatContainer="false" />
    </ItemGroup>
--
+
 -</Project>
 \ No newline at end of file
 +</Project>
