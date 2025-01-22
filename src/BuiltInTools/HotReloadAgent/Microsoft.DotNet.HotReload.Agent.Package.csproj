@@ -27,4 +27,5 @@
   <ItemGroup>
     <Using Remove="@(Using)" />
   </ItemGroup>
+  <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
 </Project>

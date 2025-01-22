@@ -516,6 +516,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.DotNet.HotReload.Agent.PipeRpc", "src\BuiltInTools\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj", "{FA3C7F91-42A2-45AD-897C-F646B081016C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.HotReload.Agent.Data.Package", "src\BuiltInTools\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.Package.csproj", "{3DF5A9B8-6F90-4CFB-4518-0E97982B6748}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.DotNet.HotReload.Agent.Data", "src\BuiltInTools\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.shproj", "{0762B436-F4B0-4008-9097-BB5FF6BD84AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -978,6 +982,10 @@ Global
 		{692B71D8-9C31-D1EE-6C1B-570A12B18E39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{692B71D8-9C31-D1EE-6C1B-570A12B18E39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{692B71D8-9C31-D1EE-6C1B-570A12B18E39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DF5A9B8-6F90-4CFB-4518-0E97982B6748}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DF5A9B8-6F90-4CFB-4518-0E97982B6748}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DF5A9B8-6F90-4CFB-4518-0E97982B6748}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DF5A9B8-6F90-4CFB-4518-0E97982B6748}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1159,19 +1167,26 @@ Global
 		{2FF79F82-60C1-349A-4726-7783D5A6D5DF} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{692B71D8-9C31-D1EE-6C1B-570A12B18E39} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{FA3C7F91-42A2-45AD-897C-F646B081016C} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
+		{3DF5A9B8-6F90-4CFB-4518-0E97982B6748} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
+		{0762B436-F4B0-4008-9097-BB5FF6BD84AF} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{03c5a84a-982b-4f38-ac73-ab832c645c4a}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems*{0762b436-f4b0-4008-9097-bb5ff6bd84af}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{0a3c9afd-f6e6-4a5d-83fb-93bf66732696}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems*{1bbfa19c-03f0-4d27-9d0d-0f8172642107}*SharedItemsImports = 5
 		src\BuiltInTools\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems*{1bbfa19c-03f0-4d27-9d0d-0f8172642107}*SharedItemsImports = 5
 		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{1bbfa19c-03f0-4d27-9d0d-0f8172642107}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{1f0b4b3c-dc88-4740-b04f-1707102e9930}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems*{2ff79f82-60c1-349a-4726-7783d5a6d5df}*SharedItemsImports = 5
 		src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems*{418b10bd-ca42-49f3-8f4a-d8cc90c8a17d}*SharedItemsImports = 13
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{445efbd5-6730-4f09-943d-278e77501ffd}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems*{445efbd5-6730-4f09-943d-278e77501ffd}*SharedItemsImports = 5
 		src\BuiltInTools\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems*{445efbd5-6730-4f09-943d-278e77501ffd}*SharedItemsImports = 5
+		src\BuiltInTools\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems*{692b71d8-9c31-d1ee-6c1b-570a12b18e39}*SharedItemsImports = 5
 		src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.projitems*{94c8526e-dcc2-442f-9868-3dd0ba2688be}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{9d36039f-d0a1-462f-85b4-81763c6b02cb}*SharedItemsImports = 13
 		src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems*{a9103b98-d888-4260-8a05-fa36f640698a}*SharedItemsImports = 5
