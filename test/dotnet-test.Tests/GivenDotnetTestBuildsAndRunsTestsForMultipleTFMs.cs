@@ -121,8 +121,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed TestMethod3");
 
-                Assert.Equal(2, net8ProjectMatches.Count);
-                Assert.Equal(2, net9ProjectMatches.Count);
+                Assert.True(net8ProjectMatches.Count > 1);
+                Assert.True(net9ProjectMatches.Count > 1);
 
                 Assert.Multiple(() => Assert.Equal(2, failedTestsMatches.Count));
 

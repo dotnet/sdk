@@ -134,9 +134,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches($@".+\\net8\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 8", result.StdOut);
-                Assert.Matches($@".+\\net8\.0{PathUtility.GetDirectorySeparatorChar()}OtherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 2", result.StdOut);
-                Assert.Matches($@".+\\net8\.0{PathUtility.GetDirectorySeparatorChar()}AnotherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 9", result.StdOut);
+                Assert.Matches($@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 8", result.StdOut);
+                Assert.Matches($@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}OtherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 2", result.StdOut);
+                Assert.Matches($@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}AnotherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 9", result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
