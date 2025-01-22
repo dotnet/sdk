@@ -679,7 +679,7 @@
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true" />
 
-    <Message Text="DirSize After Building $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'" />
+    <Message Text="DirSize After Building $(RepositoryName)" Importance="High" />
     <Exec Command="$(DiskUsageCommand)" />
 
     <!-- Cleanup the entire repo artifacts dir. Ignore failures as this is best effort.
@@ -691,7 +691,7 @@
 
     <Exec Command="$(RepoCleanCommand)" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" />
 
-    <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'" />
+    <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" />
     <Exec Command="$(DiskUsageCommand)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
