@@ -601,7 +601,7 @@
           DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
           SkipUnchangedFiles="true"
           Retries="5"
-          UseHardLinksIfPossible="true"
+          UseHardlinksIfPossible="true"
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
@@ -657,7 +657,7 @@
     <!-- Make a copy of project.assets.json files -->
     <Copy SourceFiles="@(ObjFilesToCopy)"
           DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
-          UseHardLinksIfPossible="true"
+          UseHardlinksIfPossible="true"
           Condition="'@(ObjFilesToCopy)' != ''" />
 
     <ItemGroup>
@@ -723,7 +723,7 @@
 
     <Copy SourceFiles="@(ExtractedToolFiles)"
           DestinationFolder="$(SourceBuiltSdksDir)/"
-          UseHardLinksIfPossible="true" />
+          UseHardlinksIfPossible="true" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)ExtractToolPackage.complete" AlwaysCreate="true">
