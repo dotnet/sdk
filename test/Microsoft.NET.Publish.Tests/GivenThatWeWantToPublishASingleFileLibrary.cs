@@ -24,7 +24,8 @@ namespace Microsoft.NET.Publish.Tests
             TestProject testProject = new("MainProject")
             {
                 TargetFrameworks = targetFramework,
-                IsExe = true
+                IsExe = true,
+                SelfContained = "true"
             };
             testProject.ReferencedProjects.Add(referencedProject);
             testProject.RecordProperties("RuntimeIdentifier");
