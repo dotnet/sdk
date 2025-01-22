@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using dotnet.Tests;
+using Microsoft.DotNet.Tools.Common;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -59,7 +60,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(@"In\sprocess\sfile\sartifacts\sproduced:\s+.*\\TestResults\\.*\.coverage".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
+                string pattern = $@"In\sprocess\sfile\sartifacts\sproduced:\s+.*{PathUtility.GetDirectorySeparatorChar()}TestResults{PathUtility.GetDirectorySeparatorChar()}.*\.coverage";
+
+                Assert.Matches(pattern, result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")

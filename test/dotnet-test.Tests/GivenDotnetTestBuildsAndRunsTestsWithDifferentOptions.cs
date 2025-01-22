@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern);
             string fullProjectPath = $"{testInstance.TestRoot}\\{testProjectPath}".Replace('\\', Path.DirectorySeparatorChar);
-            Assert.Contains($"{TestingPlatformOptions.ProjectOption.Name} {fullProjectPath}", testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
+            Assert.Contains($"{TestingPlatformOptions.ProjectOption.Name} \"{fullProjectPath}\"", testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
