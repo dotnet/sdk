@@ -31,7 +31,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Condition="'$(PublishReadyToRun)' == 'true'" Include="PublishReadyToRun" />
     <ProjectCapability Condition="'$(PublishSingleFile)' == 'true'" Include="PublishSingleFile" />
     <ProjectCapability Condition="'$(PublishTrimmed)' == 'true'" Include="PublishTrimmed" />
-  <ItemGroup>
+  </ItemGroup>
 
   <ItemDefinitionGroup>
     <ResolvedFileToPublish>
