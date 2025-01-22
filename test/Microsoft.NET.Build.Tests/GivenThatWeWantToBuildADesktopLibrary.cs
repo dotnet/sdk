@@ -246,7 +246,8 @@ public class NETFramework
                 }
                 else
                 {
-                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Microsoft.AspNetCore.App")).Should().BeFalse();
+                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Microsoft.AspNetCore.App")).Should().BeTrue();
+                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Microsoft.AspNetCore")).Should().BeFalse();
                 }
             }
         }
