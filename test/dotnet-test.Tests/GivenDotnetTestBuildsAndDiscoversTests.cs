@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using dotnet.Tests;
+using Microsoft.DotNet.Tools.Common;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(@"Discovered 0 tests.*\\TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
+                Assert.Matches($@"Discovered 0 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)", result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Discovered 0 tests.");
@@ -51,9 +52,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(@"Discovered 0 tests.*\\TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
-                Assert.Matches(@"Discovered 0 tests.*\\OtherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
-                Assert.Matches(@"Discovered 0 tests.*\\AnotherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
+                Assert.Matches($@"Discovered 0 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)", result.StdOut);
+                Assert.Matches($@"Discovered 0 tests.*{PathUtility.GetDirectorySeparatorChar()}OtherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)", result.StdOut);
+                Assert.Matches($@"Discovered 0 tests.*{PathUtility.GetDirectorySeparatorChar()}AnotherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)", result.StdOut);
                 Assert.Matches(@"Discovered 0 tests.*", result.StdOut);
             }
 
@@ -75,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(@"Discovered 1 tests.*\\TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test0".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
+                Assert.Matches($@"Discovered 1 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test0", result.StdOut);
                 Assert.Matches(@"Discovered 1 tests.*", result.StdOut);
             }
 
@@ -97,8 +98,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(@"Discovered 2 tests.*\\TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test0\s+Test2".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
-                Assert.Matches(@"Discovered 1 tests.*\\OtherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test1".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
+                Assert.Matches($@"Discovered 2 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test0\s+Test2", result.StdOut);
+                Assert.Matches($@"Discovered 1 tests.*{PathUtility.GetDirectorySeparatorChar()}OtherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test1", result.StdOut);
                 Assert.Matches(@"Discovered 3 tests.*", result.StdOut);
             }
 
@@ -120,8 +121,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(@"Discovered 3 tests.*\\TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+TestMethod1\s+TestMethod2\s+TestMethod3".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
-                Assert.Matches(@"Discovered 2 tests.*\\TestProject.dll\s\(net9.0\|[a-zA-Z][0-9]+\)\s+TestMethod1\s+TestMethod3".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
+                Assert.Matches($@"Discovered 3 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+TestMethod1\s+TestMethod2\s+TestMethod3", result.StdOut);
+                Assert.Matches($@"Discovered 2 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net9.0\|[a-zA-Z][0-9]+\)\s+TestMethod1\s+TestMethod3", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
