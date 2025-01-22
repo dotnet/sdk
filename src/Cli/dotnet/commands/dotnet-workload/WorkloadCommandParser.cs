@@ -9,6 +9,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using CommonStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -16,19 +17,19 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-workload";
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static readonly CliOption<bool> InfoOption = new("--info")
+        public static readonly Option<bool> InfoOption = new("--info")
         {
             Description = CommonStrings.WorkloadInfoDescription
         };
 
-        public static readonly CliOption<bool> VersionOption = new("--version")
+        public static readonly Option<bool> VersionOption = new("--version")
         {
             Description = CommonStrings.WorkloadVersionDescription
         };
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             Command.Options.Add(InfoOption);
             Command.Options.Add(VersionOption);
@@ -139,7 +140,7 @@ namespace Microsoft.DotNet.Cli
             return parseResult.HandleMissingCommand();
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
             DocumentedCommand command = new("workload", DocsLink, CommonStrings.CommandDescription);
 

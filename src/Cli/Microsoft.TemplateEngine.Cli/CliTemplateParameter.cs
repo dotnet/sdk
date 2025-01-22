@@ -134,12 +134,12 @@ namespace Microsoft.TemplateEngine.Cli
         protected bool AllowMultipleValues { get; private init; }
 
         /// <summary>
-        /// Creates <see cref="CliOption"/> for template parameter.
+        /// Creates <see cref="Option"/> for template parameter.
         /// </summary>
         /// <param name="aliases">aliases to be used for option.</param>
-        internal CliOption GetOption(IReadOnlySet<string> aliases)
+        internal Option GetOption(IReadOnlySet<string> aliases)
         {
-            CliOption option = GetBaseOption(aliases);
+            Option option = GetBaseOption(aliases);
             option.Hidden = IsHidden;
 
             //if parameter is required, the default value is ignored.
@@ -151,13 +151,13 @@ namespace Microsoft.TemplateEngine.Cli
                 {
                     switch (option)
                     {
-                        case CliOption<string> stringOption:
+                        case Option<string> stringOption:
                             stringOption.DefaultValueFactory = (_) => DefaultValue;
                             break;
-                        case CliOption<bool> booleanOption:
+                        case Option<bool> booleanOption:
                             booleanOption.DefaultValueFactory = (_) => bool.Parse(DefaultValue);
                             break;
-                        case CliOption<long> integerOption:
+                        case Option<long> integerOption:
                             if (Type == ParameterType.Hex)
                             {
                                 integerOption.DefaultValueFactory = (_) => Convert.ToInt64(DefaultValue, 16);
@@ -167,10 +167,10 @@ namespace Microsoft.TemplateEngine.Cli
                                 integerOption.DefaultValueFactory = (_) => long.Parse(DefaultValue);
                             }
                             break;
-                        case CliOption<float> floatOption:
+                        case Option<float> floatOption:
                             floatOption.DefaultValueFactory = (_) => float.Parse(DefaultValue);
                             break;
-                        case CliOption<double> doubleOption:
+                        case Option<double> doubleOption:
                             doubleOption.DefaultValueFactory = (_) => double.Parse(DefaultValue);
                             break;
                         default:
@@ -203,31 +203,31 @@ namespace Microsoft.TemplateEngine.Cli
             };
         }
 
-        protected virtual CliOption GetBaseOption(IReadOnlySet<string> aliases)
+        protected virtual Option GetBaseOption(IReadOnlySet<string> aliases)
         {
             string name = GetName(aliases);
-            CliOption cliOption = Type switch
+            Option cliOption = Type switch
             {
-                ParameterType.Boolean => new CliOption<bool>(name)
+                ParameterType.Boolean => new Option<bool>(name)
                 {
                     Arity = new ArgumentArity(0, 1)
                 },
-                ParameterType.Integer => new CliOption<long>(name)
+                ParameterType.Integer => new Option<long>(name)
                 {
                     CustomParser = result => GetParseArgument(this, ConvertValueToInt)(result),
                     Arity = new ArgumentArity(string.IsNullOrWhiteSpace(DefaultIfOptionWithoutValue) ? 1 : 0, 1)
                 },
-                ParameterType.String => new CliOption<string>(name)
+                ParameterType.String => new Option<string>(name)
                 {
                     CustomParser = result => GetParseArgument(this, ConvertValueToString)(result),
                     Arity = new ArgumentArity(DefaultIfOptionWithoutValue == null ? 1 : 0, 1)
                 },
-                ParameterType.Float => new CliOption<double>(name)
+                ParameterType.Float => new Option<double>(name)
                 {
                     CustomParser = result => GetParseArgument(this, ConvertValueToFloat)(result),
                     Arity = new ArgumentArity(string.IsNullOrWhiteSpace(DefaultIfOptionWithoutValue) ? 1 : 0, 1)
                 },
-                ParameterType.Hex => new CliOption<long>(name)
+                ParameterType.Hex => new Option<long>(name)
                 {
                     CustomParser = result => GetParseArgument(this, ConvertValueToHex)(result),
                     Arity = new ArgumentArity(string.IsNullOrWhiteSpace(DefaultIfOptionWithoutValue) ? 1 : 0, 1)
@@ -271,7 +271,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
         }
 
-        protected void AddAliases(CliOption option, IReadOnlySet<string> aliases)
+        protected void AddAliases(Option option, IReadOnlySet<string> aliases)
         {
             foreach (string alias in aliases)
             {

@@ -7,16 +7,16 @@ namespace Microsoft.DotNet.Tools.Sdk.Check
 {
     internal static class SdkCheckCommandParser
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("check", LocalizableStrings.AppFullName);
+            Command command = new("check", LocalizableStrings.AppFullName);
 
             command.SetAction(SdkCheckCommand.Run);
 

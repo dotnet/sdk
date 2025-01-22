@@ -19,14 +19,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Aliases.Add("-l");
             Validators.Add(ValidateParentCommandArguments);
 
-            parentCommand.AddNoLegacyUsageValidators(this, except: Filters.Values.Concat(new CliSymbol[] { ColumnsAllOption, ColumnsOption, NewCommand.ShortNameArgument }).ToArray());
+            parentCommand.AddNoLegacyUsageValidators(this, except: Filters.Values.Concat(new Symbol[] { ColumnsAllOption, ColumnsOption, NewCommand.ShortNameArgument }).ToArray());
         }
 
-        public override CliOption<bool> ColumnsAllOption => ParentCommand.ColumnsAllOption;
+        public override Option<bool> ColumnsAllOption => ParentCommand.ColumnsAllOption;
 
-        public override CliOption<string[]> ColumnsOption => ParentCommand.ColumnsOption;
+        public override Option<string[]> ColumnsOption => ParentCommand.ColumnsOption;
 
-        protected override CliOption GetFilterOption(FilterOptionDefinition def)
+        protected override Option GetFilterOption(FilterOptionDefinition def)
         {
             return ParentCommand.LegacyFilters[def];
         }

@@ -10,28 +10,28 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class RemoveProjectToProjectReferenceParser
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new CliArgument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
+        public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new Argument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
         {
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore,
         }.AddCompletions(Complete.ProjectReferencesFromProjectFile);
 
-        public static readonly CliOption<string> FrameworkOption = new("--framework", "-f")
+        public static readonly Option<string> FrameworkOption = new("--framework", "-f")
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
             HelpName = CommonLocalizableStrings.CmdFramework
         };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+            var command = new Command("reference", LocalizableStrings.AppFullName);
 
             command.Arguments.Add(ProjectPathArgument);
             command.Options.Add(FrameworkOption);

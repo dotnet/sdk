@@ -9,16 +9,16 @@ namespace Microsoft.DotNet.Cli
 {
     public static class SlnMigrateCommandParser
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("migrate", LocalizableStrings.MigrateAppFullName);
+            Command command = new("migrate", LocalizableStrings.MigrateAppFullName);
 
             command.Arguments.Add(SlnCommandParser.SlnArgument);
 

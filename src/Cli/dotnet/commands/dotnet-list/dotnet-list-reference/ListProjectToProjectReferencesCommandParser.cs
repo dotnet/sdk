@@ -9,18 +9,18 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ListProjectToProjectReferencesCommandParser
     {
-        public static readonly CliArgument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+        public static readonly Argument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+            var command = new Command("reference", LocalizableStrings.AppFullName);
 
             command.Arguments.Add(Argument);
 

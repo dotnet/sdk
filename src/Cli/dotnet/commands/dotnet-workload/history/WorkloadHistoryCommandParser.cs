@@ -8,16 +8,16 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadHistoryCommandParser
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            var command = new CliCommand("history", LocalizableStrings.CommandDescription);
+            var command = new Command("history", LocalizableStrings.CommandDescription);
 
             command.SetAction(parseResult => new WorkloadHistoryCommand(parseResult).Execute());
 

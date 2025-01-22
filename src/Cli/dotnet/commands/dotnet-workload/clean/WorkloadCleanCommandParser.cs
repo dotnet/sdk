@@ -9,18 +9,18 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadCleanCommandParser
     {
-        public static readonly CliOption<bool> CleanAllOption = new("--all") { Description = LocalizableStrings.CleanAllOptionDescription };
+        public static readonly Option<bool> CleanAllOption = new("--all") { Description = LocalizableStrings.CleanAllOptionDescription };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("clean", LocalizableStrings.CommandDescription);
+            Command command = new("clean", LocalizableStrings.CommandDescription);
 
             command.Options.Add(CleanAllOption);
 

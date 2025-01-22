@@ -10,39 +10,39 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadInstallCommandParser
     {
-        public static readonly CliArgument<IEnumerable<string>> WorkloadIdArgument = new("workloadId")
+        public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = new("workloadId")
         {
             HelpName = LocalizableStrings.WorkloadIdArgumentName,
             Arity = ArgumentArity.OneOrMore,
             Description = LocalizableStrings.WorkloadIdArgumentDescription
         };
 
-        public static readonly CliOption<bool> SkipSignCheckOption = new("--skip-sign-check")
+        public static readonly Option<bool> SkipSignCheckOption = new("--skip-sign-check")
         {
             Description = LocalizableStrings.SkipSignCheckOptionDescription,
             Hidden = true
         };
 
-        public static readonly CliOption<bool> SkipManifestUpdateOption = new("--skip-manifest-update")
+        public static readonly Option<bool> SkipManifestUpdateOption = new("--skip-manifest-update")
         {
             Description = LocalizableStrings.SkipManifestUpdateOptionDescription
         };
 
-        public static readonly CliOption<string> TempDirOption = new("--temp-dir")
+        public static readonly Option<string> TempDirOption = new("--temp-dir")
         {
             Description = LocalizableStrings.TempDirOptionDescription
         };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("install", LocalizableStrings.CommandDescription);
+            Command command = new("install", LocalizableStrings.CommandDescription);
 
             command.Arguments.Add(WorkloadIdArgument);
             AddWorkloadInstallCommandOptions(command);
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli
             return command;
         }
 
-        internal static void AddWorkloadInstallCommandOptions(CliCommand command)
+        internal static void AddWorkloadInstallCommandOptions(Command command)
         {
             InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 

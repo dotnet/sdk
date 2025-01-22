@@ -10,28 +10,28 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolCommandRestorePassThroughOptions
     {
-        public static CliOption<bool> DisableParallelOption = new ForwardedOption<bool>("--disable-parallel")
+        public static Option<bool> DisableParallelOption = new ForwardedOption<bool>("--disable-parallel")
         {
             Description = LocalizableStrings.CmdDisableParallelOptionDescription
         }.ForwardAs("--disable-parallel");
 
-        public static CliOption<bool> NoCacheOption = new ForwardedOption<bool>("--no-cache")
+        public static Option<bool> NoCacheOption = new ForwardedOption<bool>("--no-cache")
         {
             Description = LocalizableStrings.CmdNoCacheOptionDescription,
             Hidden = true
         }.ForwardAs("--no-cache");
 
-        public static CliOption<bool> NoHttpCacheOption = new ForwardedOption<bool>("--no-http-cache")
+        public static Option<bool> NoHttpCacheOption = new ForwardedOption<bool>("--no-http-cache")
         {
             Description = LocalizableStrings.CmdNoCacheOptionDescription
         }.ForwardAs("--no-http-cache");
 
-        public static CliOption<bool> IgnoreFailedSourcesOption = new ForwardedOption<bool>("--ignore-failed-sources")
+        public static Option<bool> IgnoreFailedSourcesOption = new ForwardedOption<bool>("--ignore-failed-sources")
         {
             Description = LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription
         }.ForwardAs("--ignore-failed-sources");
 
-        public static CliOption<bool> InteractiveRestoreOption = new ForwardedOption<bool>("--interactive")
+        public static Option<bool> InteractiveRestoreOption = new ForwardedOption<bool>("--interactive")
         {
             Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
         }.ForwardAs(Constants.RestoreInteractiveOption);

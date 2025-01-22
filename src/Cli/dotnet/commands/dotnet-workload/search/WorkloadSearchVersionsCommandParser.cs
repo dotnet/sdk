@@ -10,32 +10,32 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadSearchVersionsCommandParser
     {
-        public static readonly CliArgument<string> WorkloadVersionArgument =
+        public static readonly Argument<string> WorkloadVersionArgument =
             new(LocalizableStrings.WorkloadVersionArgument)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 Description = LocalizableStrings.WorkloadVersionArgumentDescription
             };
 
-        public static readonly CliOption<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
+        public static readonly Option<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
 
-        public static readonly CliOption<string> FormatOption = new("--format")
+        public static readonly Option<string> FormatOption = new("--format")
         {
             Description = LocalizableStrings.FormatOptionDescription
         };
 
-        public static readonly CliOption<bool> IncludePreviewsOption = new("--include-previews");
+        public static readonly Option<bool> IncludePreviewsOption = new("--include-previews");
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            var command = new CliCommand("version", LocalizableStrings.PrintSetVersionsDescription);
+            var command = new Command("version", LocalizableStrings.PrintSetVersionsDescription);
             command.Arguments.Add(WorkloadVersionArgument);
             command.Options.Add(FormatOption);
             command.Options.Add(TakeOption);

@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class AddPackageParser
     {
-        public static readonly CliArgument<string> CmdPackageArgument = new CliArgument<string>(LocalizableStrings.CmdPackage)
+        public static readonly Argument<string> CmdPackageArgument = new Argument<string>(LocalizableStrings.CmdPackage)
         {
             Description = LocalizableStrings.CmdPackageDescription
         }.AddCompletions((context) =>
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli
             return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
         });
 
-        public static readonly CliOption<string> VersionOption = new ForwardedOption<string>("--version", "-v")
+        public static readonly Option<string> VersionOption = new ForwardedOption<string>("--version", "-v")
         {
             Description = LocalizableStrings.CmdVersionDescription,
             HelpName = LocalizableStrings.CmdVersion
@@ -46,49 +46,49 @@ namespace Microsoft.DotNet.Cli
                 }
             });
 
-        public static readonly CliOption<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
+        public static readonly Option<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
             HelpName = LocalizableStrings.CmdFramework
         }.ForwardAsSingle(o => $"--framework {o}");
 
-        public static readonly CliOption<bool> NoRestoreOption = new("--no-restore", "-n")
+        public static readonly Option<bool> NoRestoreOption = new("--no-restore", "-n")
         {
             Description = LocalizableStrings.CmdNoRestoreDescription
         };
 
-        public static readonly CliOption<string> SourceOption = new ForwardedOption<string>("--source", "-s")
+        public static readonly Option<string> SourceOption = new ForwardedOption<string>("--source", "-s")
         {
             Description = LocalizableStrings.CmdSourceDescription,
             HelpName = LocalizableStrings.CmdSource
         }.ForwardAsSingle(o => $"--source {o}");
 
-        public static readonly CliOption<string> PackageDirOption = new ForwardedOption<string>("--package-directory")
+        public static readonly Option<string> PackageDirOption = new ForwardedOption<string>("--package-directory")
         {
             Description = LocalizableStrings.CmdPackageDirectoryDescription,
             HelpName = LocalizableStrings.CmdPackageDirectory
         }.ForwardAsSingle(o => $"--package-directory {o}");
 
-        public static readonly CliOption<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
+        public static readonly Option<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
         {
             Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
         }.ForwardAs("--interactive");
 
-        public static readonly CliOption<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
+        public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
         {
             Description = CommonLocalizableStrings.CommandPrereleaseOptionDescription
         }.ForwardAs("--prerelease");
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("package", LocalizableStrings.AppFullName);
+            Command command = new("package", LocalizableStrings.AppFullName);
 
             command.Arguments.Add(CmdPackageArgument);
             command.Options.Add(VersionOption);

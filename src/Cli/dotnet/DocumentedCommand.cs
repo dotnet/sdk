@@ -6,7 +6,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli
 {
-    public class DocumentedCommand : CliCommand, ICommandDocument
+    public class DocumentedCommand : Command, ICommandDocument
     {
         public string DocsLink { get; }
 

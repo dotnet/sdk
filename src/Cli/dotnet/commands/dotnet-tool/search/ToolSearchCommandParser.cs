@@ -9,44 +9,44 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolSearchCommandParser
     {
-        public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
+        public static readonly Argument<string> SearchTermArgument = new("searchTerm")
         {
             HelpName = LocalizableStrings.SearchTermArgumentName,
             Description = LocalizableStrings.SearchTermDescription
         };
 
-        public static readonly CliOption<bool> DetailOption = new("--detail")
+        public static readonly Option<bool> DetailOption = new("--detail")
         {
             Description = LocalizableStrings.DetailDescription
         };
 
-        public static readonly CliOption<string> SkipOption = new("--skip")
+        public static readonly Option<string> SkipOption = new("--skip")
         {
             Description = LocalizableStrings.SkipDescription,
             HelpName = LocalizableStrings.SkipArgumentName
         };
 
-        public static readonly CliOption<string> TakeOption = new("--take")
+        public static readonly Option<string> TakeOption = new("--take")
         {
             Description = LocalizableStrings.TakeDescription,
             HelpName = LocalizableStrings.TakeArgumentName
         };
 
-        public static readonly CliOption<bool> PrereleaseOption = new("--prerelease")
+        public static readonly Option<bool> PrereleaseOption = new("--prerelease")
         {
             Description = LocalizableStrings.PrereleaseDescription
         };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("search", LocalizableStrings.CommandDescription);
+            Command command = new("search", LocalizableStrings.CommandDescription);
 
             command.Arguments.Add(SearchTermArgument);
 

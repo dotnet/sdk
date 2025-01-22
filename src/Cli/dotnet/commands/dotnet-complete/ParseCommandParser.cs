@@ -7,16 +7,16 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ParseCommandParser
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            var command = new CliCommand("parse")
+            var command = new Command("parse")
             {
                 Hidden = true
             };

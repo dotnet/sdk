@@ -21,6 +21,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
 using Strings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Workloads.Workload
 {
@@ -441,63 +442,63 @@ namespace Microsoft.DotNet.Workloads.Workload
 
     internal static class InstallingWorkloadCommandParser
     {
-        public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
+        public static readonly Option<string> WorkloadSetVersionOption = new("--version")
         {
             Description = Strings.WorkloadSetVersionOptionDescription
         };
 
-        public static readonly CliOption<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
+        public static readonly Option<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
         {
             Description = Strings.PrintDownloadLinkOnlyDescription,
             Hidden = true
         };
 
-        public static readonly CliOption<string> FromCacheOption = new("--from-cache")
+        public static readonly Option<string> FromCacheOption = new("--from-cache")
         {
             Description = Strings.FromCacheOptionDescription,
             HelpName = Strings.FromCacheOptionArgumentName,
             Hidden = true
         };
 
-        public static readonly CliOption<bool> IncludePreviewOption =
+        public static readonly Option<bool> IncludePreviewOption =
         new("--include-previews")
         {
             Description = Strings.IncludePreviewOptionDescription
         };
 
-        public static readonly CliOption<string> DownloadToCacheOption = new("--download-to-cache")
+        public static readonly Option<string> DownloadToCacheOption = new("--download-to-cache")
         {
             Description = Strings.DownloadToCacheOptionDescription,
             HelpName = Strings.DownloadToCacheOptionArgumentName,
             Hidden = true
         };
 
-        public static readonly CliOption<string> VersionOption = new("--sdk-version")
+        public static readonly Option<string> VersionOption = new("--sdk-version")
         {
             Description = Strings.VersionOptionDescription,
             HelpName = Strings.VersionOptionName,
             Hidden = true
         };
 
-        public static readonly CliOption<string> FromRollbackFileOption = new("--from-rollback-file")
+        public static readonly Option<string> FromRollbackFileOption = new("--from-rollback-file")
         {
             Description = Update.LocalizableStrings.FromRollbackDefinitionOptionDescription,
             Hidden = true
         };
 
-        public static readonly CliOption<string> ConfigOption = new("--configfile")
+        public static readonly Option<string> ConfigOption = new("--configfile")
         {
             Description = Strings.ConfigFileOptionDescription,
             HelpName = Strings.ConfigFileOptionName
         };
 
-        public static readonly CliOption<string[]> SourceOption = new CliOption<string[]>("--source", "-s")
+        public static readonly Option<string[]> SourceOption = new Option<string[]>("--source", "-s")
         {
             Description = Strings.SourceOptionDescription,
             HelpName = Strings.SourceOptionName
         }.AllowSingleArgPerToken();
 
-        internal static void AddWorkloadInstallCommandOptions(CliCommand command)
+        internal static void AddWorkloadInstallCommandOptions(Command command)
         {
             command.Options.Add(VersionOption);
             command.Options.Add(ConfigOption);

@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         public void Can_pass_msbuild_properties_safely(string[] tokens, string[] forwardedTokens)
         {
             var forwardingFunction = (CommonOptions.PropertiesOption as ForwardedOption<string[]>).GetForwardingFunction();
-            var result = new CliRootCommand() { CommonOptions.PropertiesOption }.Parse(tokens);
+            var result = new RootCommand() { CommonOptions.PropertiesOption }.Parse(tokens);
             var parsedTokens = forwardingFunction(result);
             parsedTokens.Should().BeEquivalentTo(forwardedTokens);
         }

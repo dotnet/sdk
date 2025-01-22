@@ -38,19 +38,19 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Validators.Add(symbolResult => parentCommand.ValidateOptionUsage(symbolResult, SharedOptions.ProjectPathOption));
         }
 
-        internal static CliArgument<string> ShortNameArgument { get; } = new CliArgument<string>("template-short-name")
+        internal static Argument<string> ShortNameArgument { get; } = new Argument<string>("template-short-name")
         {
             Description = SymbolStrings.Command_Instantiate_Argument_ShortName,
             Arity = new ArgumentArity(0, 1)
         };
 
-        internal CliArgument<string[]> RemainingArguments { get; } = new CliArgument<string[]>("template-args")
+        internal Argument<string[]> RemainingArguments { get; } = new Argument<string[]>("template-args")
         {
             Description = SymbolStrings.Command_Instantiate_Argument_TemplateOptions,
             Arity = new ArgumentArity(0, 999)
         };
 
-        internal IReadOnlyList<CliOption> PassByOptions { get; } = new CliOption[]
+        internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
         {
             SharedOptions.ForceOption,
             SharedOptions.NameOption,
@@ -434,7 +434,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     template,
                     validateDefaultLanguage);
 
-                CliConfiguration parser = ParserFactory.CreateParser(command);
+                CommandLineConfiguration parser = ParserFactory.CreateParser(command);
                 ParseResult parseResult = parser.Parse(args.RemainingArguments ?? Array.Empty<string>());
                 return (command, parseResult);
             }

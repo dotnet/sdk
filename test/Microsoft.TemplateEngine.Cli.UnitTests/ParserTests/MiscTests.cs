@@ -18,10 +18,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [Fact]
         public void KnownHelpAliasesAreCorrect()
         {
-            ParseResult result = new CliConfiguration(new CliRootCommand())
+            ParseResult result = new CommandLineConfiguration(new RootCommand())
                 .Parse(Constants.KnownHelpAliases[0]);
 
-            CliOption helpOption = result.CommandResult
+            Option helpOption = result.CommandResult
                 .Children
                 .OfType<OptionResult>()
                 .Select(r => r.Option)
@@ -151,7 +151,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
 
-            var customOption = new CliOption<string>("--newOption")
+            var customOption = new Option<string>("--newOption")
             {
                 Recursive = true
             };
@@ -177,7 +177,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
 
-            CliRootCommand rootCommand = new();
+            RootCommand rootCommand = new();
 
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
             rootCommand.Add(myCommand);
@@ -195,7 +195,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
 
-            CliRootCommand rootCommand = new();
+            RootCommand rootCommand = new();
 
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
             rootCommand.Add(myCommand);

@@ -8,75 +8,75 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class PackageSearchCommandParser
     {
-        public static readonly CliArgument<string> SearchTermArgument = new CliArgument<string>("SearchTerm")
+        public static readonly Argument<string> SearchTermArgument = new Argument<string>("SearchTerm")
         {
             HelpName = LocalizableStrings.SearchTermArgumentName,
             Description = LocalizableStrings.SearchTermDescription,
             Arity = ArgumentArity.ZeroOrOne
         };
 
-        public static readonly CliOption Sources =  new ForwardedOption<IEnumerable<string>>("--source")
+        public static readonly Option Sources =  new ForwardedOption<IEnumerable<string>>("--source")
         {
             Description = LocalizableStrings.SourceDescription,
             HelpName = LocalizableStrings.SourceArgumentName
         }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
         .AllowSingleArgPerToken();
 
-        public static readonly CliOption<string> Take = new ForwardedOption<string>("--take")
+        public static readonly Option<string> Take = new ForwardedOption<string>("--take")
         {
             Description = LocalizableStrings.TakeDescription,
             HelpName = LocalizableStrings.TakeArgumentName
         }.ForwardAsSingle(o => $"--take:{o}");
 
-        public static readonly CliOption<string> Skip = new ForwardedOption<string>("--skip")
+        public static readonly Option<string> Skip = new ForwardedOption<string>("--skip")
         {
             Description = LocalizableStrings.SkipDescription,
             HelpName = LocalizableStrings.SkipArgumentName
         }.ForwardAsSingle(o => $"--skip:{o}");
 
-        public static readonly CliOption<bool> ExactMatch = new ForwardedOption<bool>("--exact-match")
+        public static readonly Option<bool> ExactMatch = new ForwardedOption<bool>("--exact-match")
         {
             Description = LocalizableStrings.ExactMatchDescription
         }.ForwardAs("--exact-match");
 
-        public static readonly CliOption<bool> Interactive = new ForwardedOption<bool>("--interactive")
+        public static readonly Option<bool> Interactive = new ForwardedOption<bool>("--interactive")
         {
             Description = LocalizableStrings.InteractiveDescription
         }.ForwardAs("--interactive");
 
-        public static readonly CliOption<bool> Prerelease = new ForwardedOption<bool>("--prerelease")
+        public static readonly Option<bool> Prerelease = new ForwardedOption<bool>("--prerelease")
         {
             Description = LocalizableStrings.PrereleaseDescription
         }.ForwardAs("--prerelease");
 
-        public static readonly CliOption<string> ConfigFile = new ForwardedOption<string>("--configfile")
+        public static readonly Option<string> ConfigFile = new ForwardedOption<string>("--configfile")
         {
             Description = LocalizableStrings.ConfigFileDescription,
             HelpName = LocalizableStrings.ConfigFileArgumentName
         }.ForwardAsSingle(o => $"--configfile:{o}");
 
-        public static readonly CliOption<string> Format = new ForwardedOption<string>("--format")
+        public static readonly Option<string> Format = new ForwardedOption<string>("--format")
         {
             Description = LocalizableStrings.FormatDescription,
             HelpName = LocalizableStrings.FormatArgumentName
         }.ForwardAsSingle(o => $"--format:{o}");
 
-        public static readonly CliOption<string> Verbosity = new ForwardedOption<string>("--verbosity")
+        public static readonly Option<string> Verbosity = new ForwardedOption<string>("--verbosity")
         {
             Description = LocalizableStrings.VerbosityDescription,
             HelpName = LocalizableStrings.VerbosityArgumentName
         }.ForwardAsSingle(o => $"--verbosity:{o}");
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand searchCommand = new("search", LocalizableStrings.CommandDescription);
+            Command searchCommand = new("search", LocalizableStrings.CommandDescription);
 
             searchCommand.Arguments.Add(SearchTermArgument);
             searchCommand.Options.Add(Sources);

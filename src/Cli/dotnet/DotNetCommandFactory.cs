@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli
         private bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
         {
             var command = Parser.GetBuiltInCommand(commandName);
-            if (command?.Action is AsynchronousCliAction action)
+            if (command?.Action is AsynchronousCommandLineAction action)
             {
                 commandFunc = (args) => action.InvokeAsync(Parser.Instance.Parse(args)).Result;
                 return true;

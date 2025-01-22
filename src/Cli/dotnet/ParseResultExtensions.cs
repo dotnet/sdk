@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli
         {
             // take from the start of the list until we hit an option/--/unparsed token
             // since commands can have arguments, we must take those as well in order to get accurate help
-            var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
+            var tokenList = parseResult.Tokens.TakeWhile(token => token.Type is TokenType.Argument or TokenType.Command or TokenType.Directive).Select(t => t.Value).ToList();
             tokenList.Add("-h");
             Instance.Parse(tokenList).Invoke();
         }
@@ -96,13 +96,13 @@ namespace Microsoft.DotNet.Cli
 
         public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
         {
-            return parseResult.CommandResult.Command.Equals(RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+            return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
         }
 
         public static bool CanBeInvoked(this ParseResult parseResult)
         {
             return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-                parseResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
+                parseResult.Tokens.Any(token => token.Type == TokenType.Directive) ||
                 (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
         }
 
@@ -222,14 +222,14 @@ namespace Microsoft.DotNet.Cli
             var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
 
-            static CliToken GetOptionTokenOrDefault(SymbolResult symbolResult)
+            static Token GetOptionTokenOrDefault(SymbolResult symbolResult)
             {
                 if (symbolResult is not OptionResult optionResult)
                 {
                     return null;
                 }
 
-                return optionResult.IdentifierToken ?? new CliToken($"--{optionResult.Option.Name}", CliTokenType.Option, optionResult.Option);
+                return optionResult.IdentifierToken ?? new Token($"--{optionResult.Option.Name}", TokenType.Option, optionResult.Option);
             }
         }
 
@@ -248,7 +248,7 @@ namespace Microsoft.DotNet.Cli
         /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
         /// will have covered these cases.
         /// </summary>
-        public static T SafelyGetValueForOption<T>(this ParseResult parseResult, CliOption<T> optionToGet)
+        public static T SafelyGetValueForOption<T>(this ParseResult parseResult, Option<T> optionToGet)
         {
             if (parseResult.GetResult(optionToGet) is OptionResult optionResult &&
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
@@ -261,6 +261,6 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.GetResult(option) is not null;
+        public static bool HasOption(this ParseResult parseResult, Option option) => parseResult.GetResult(option) is not null;
     }
 }

@@ -10,24 +10,24 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolRestoreCommandParser
     {
-        public static readonly CliOption<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
+        public static readonly Option<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
 
-        public static readonly CliOption<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
+        public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
 
-        public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+        public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
 
-        public static readonly CliOption<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+        public static readonly Option<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("restore", LocalizableStrings.CommandDescription);
+            Command command = new("restore", LocalizableStrings.CommandDescription);
 
             command.Options.Add(ConfigOption);
             command.Options.Add(AddSourceOption);

@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Cli
     {
         private const string DocsLink = "https://aka.ms/dotnet-package";
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
-            CliCommand command = new DocumentedCommand("package", DocsLink);
+            Command command = new DocumentedCommand("package", DocsLink);
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
             command.Subcommands.Add(PackageSearchCommandParser.GetCommand());
 

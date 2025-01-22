@@ -11,23 +11,23 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-list";
 
-        public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CommonLocalizableStrings.SolutionOrProjectArgumentName, CommonLocalizableStrings.SolutionOrProjectArgumentDescription);
+        public static readonly Argument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CommonLocalizableStrings.SolutionOrProjectArgumentName, CommonLocalizableStrings.SolutionOrProjectArgumentDescription);
 
-        internal static CliArgument<string> CreateSlnOrProjectArgument(string name, string description)
-            => new CliArgument<string>(name)
+        internal static Argument<string> CreateSlnOrProjectArgument(string name, string description)
+            => new Argument<string>(name)
             {
                 Description = description,
                 Arity = ArgumentArity.ZeroOrOne
             }.DefaultToCurrentDirectory();
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
             var command = new DocumentedCommand("list", DocsLink, LocalizableStrings.NetListCommand);
 

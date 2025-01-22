@@ -10,43 +10,43 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadUpdateCommandParser
     {
-        public static readonly CliOption<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
+        public static readonly Option<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
 
-        public static readonly CliOption<bool> FromPreviousSdkOption = new("--from-previous-sdk")
+        public static readonly Option<bool> FromPreviousSdkOption = new("--from-previous-sdk")
         {
             Description = LocalizableStrings.FromPreviousSdkOptionDescription
         };
 
-        public static readonly CliOption<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
+        public static readonly Option<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
         {
             Description = LocalizableStrings.AdManifestOnlyOptionDescription
         };
 
-        public static readonly CliOption<bool> PrintRollbackOption = new("--print-rollback")
+        public static readonly Option<bool> PrintRollbackOption = new("--print-rollback")
         {
             Hidden = true
         };
 
-        public static readonly CliOption<int> FromHistoryOption = new("--from-history")
+        public static readonly Option<int> FromHistoryOption = new("--from-history")
         {
             Description = LocalizableStrings.FromHistoryOptionDescription
         };
 
-        public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
+        public static readonly Option<string> HistoryManifestOnlyOption = new("--manifests-only")
         {
             Description = LocalizableStrings.HistoryManifestOnlyOptionDescription
         };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("update", LocalizableStrings.CommandDescription);
+            Command command = new("update", LocalizableStrings.CommandDescription);
 
             InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 

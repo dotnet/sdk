@@ -47,12 +47,12 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Theory]
         public void Build(string command, string option)
         {
-            var cliCommand = Parser.Instance.RootCommand.Children.OfType<CliCommand>().FirstOrDefault(c => c.Name == command);
+            var cliCommand = Parser.Instance.RootCommand.Children.OfType<Command>().FirstOrDefault(c => c.Name == command);
             if (cliCommand is null)
             {
                 throw new ArgumentException($"Command {command} not found in the dotnet CLI");
             }
-            var cliOption = cliCommand.Children.OfType<CliOption>().FirstOrDefault(o => o.Name == option || o.Aliases.Contains(option));
+            var cliOption = cliCommand.Children.OfType<Option>().FirstOrDefault(o => o.Name == option || o.Aliases.Contains(option));
             if (cliOption is null)
             {
                 throw new ArgumentException($"Option {option} not found in the {command} command");

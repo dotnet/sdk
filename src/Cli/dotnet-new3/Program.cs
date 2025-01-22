@@ -21,7 +21,7 @@ namespace Dotnet_new3
                 }
             }
 
-            CliRootCommand rootCommand = new();
+            RootCommand rootCommand = new();
             rootCommand.Subcommands.Add(New3CommandFactory.Create());
             return ParserFactory.CreateParser(rootCommand).Parse(args).InvokeAsync();
         }

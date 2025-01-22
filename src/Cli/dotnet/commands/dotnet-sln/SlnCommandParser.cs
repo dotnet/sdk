@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -17,21 +18,21 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly string CommandName = "solution";
         public static readonly string CommandAlias = "sln";
-        public static readonly CliArgument<string> SlnArgument = new CliArgument<string>(LocalizableStrings.SolutionArgumentName)
+        public static readonly Argument<string> SlnArgument = new Argument<string>(LocalizableStrings.SolutionArgumentName)
         {
             HelpName = LocalizableStrings.SolutionArgumentName,
             Description = LocalizableStrings.SolutionArgumentDescription,
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
             DocumentedCommand command = new(CommandName, DocsLink, LocalizableStrings.AppFullName);
 

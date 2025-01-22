@@ -12,14 +12,14 @@ namespace Microsoft.DotNet.Cli.Telemetry
     {
         public TopLevelCommandNameAndOptionToLog(
             HashSet<string> topLevelCommandName,
-            HashSet<CliOption> optionsToLog)
+            HashSet<Option> optionsToLog)
         {
             _topLevelCommandName = topLevelCommandName;
             _optionsToLog = optionsToLog;
         }
 
         private HashSet<string> _topLevelCommandName { get; }
-        private HashSet<CliOption> _optionsToLog { get; }
+        private HashSet<Option> _optionsToLog { get; }
 
         public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
         {

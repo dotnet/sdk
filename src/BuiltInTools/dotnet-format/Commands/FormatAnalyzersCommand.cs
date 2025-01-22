@@ -13,9 +13,9 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
     {
         private static readonly FormatAnalyzersHandler s_analyzerHandler = new();
 
-        internal static CliCommand GetCommand()
+        internal static Command GetCommand()
         {
-            var command = new CliCommand("analyzers", Resources.Run_3rd_party_analyzers__and_apply_fixes)
+            var command = new Command("analyzers", Resources.Run_3rd_party_analyzers__and_apply_fixes)
             {
                 DiagnosticsOption,
                 ExcludeDiagnosticsOption,
@@ -26,7 +26,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             return command;
         }
 
-        private class FormatAnalyzersHandler : AsynchronousCliAction
+        private class FormatAnalyzersHandler : AsynchronousCommandLineAction
         {
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
