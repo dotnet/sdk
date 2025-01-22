@@ -64,7 +64,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem CompilerOptions { get; set; }
 
-        public ITaskItem[] ExcludeFromPublishPackageReferences { get; set; } = Array.Empty<ITaskItem>();
+        public ITaskItem[] AllPackageReferences { get; set; } = Array.Empty<ITaskItem>();
 
         public ITaskItem[] RuntimeStorePackages { get; set; }
 
@@ -228,13 +228,21 @@ namespace Microsoft.NET.Build.Tasks
                     targetFramework: TargetFramework);
             }
 
+            Func<ITaskItem, bool> ShouldNotBeInDepsFile = taskItem =>
+            {
+                var excludedAssets = taskItem.GetMetadata("ExcludeAssets");
+                var includedAssets = taskItem.GetMetadata("IncludeAssets");
+                return excludedAssets?.Contains("runtime") == true || excludedAssets?.Contains("all") == true ||
+                    (!string.IsNullOrEmpty(includedAssets) && !includedAssets.Contains("runtime") && !includedAssets.Contains("all"));
+            };
+
             builder = builder
                 .WithMainProjectInDepsFile(IncludeMainProject)
                 .WithReferenceAssemblies(referenceAssemblyInfos)
                 .WithDirectReferences(directReferences)
                 .WithDependencyReferences(dependencyReferences)
                 .WithReferenceProjectInfos(referenceProjects)
-                .WithExcludeFromPublishAssets(PackageReferenceConverter.GetPackageIds(ExcludeFromPublishPackageReferences))
+                .WithExcludeFromPublishAssets(PackageReferenceConverter.GetPackageIds(AllPackageReferences?.Where(ShouldNotBeInDepsFile)))
                 .WithRuntimePackAssets(runtimePackAssets)
                 .WithCompilationOptions(compilationOptions)
                 .WithReferenceAssembliesPath(FrameworkReferenceResolver.GetDefaultReferenceAssembliesPath())
