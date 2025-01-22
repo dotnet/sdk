@@ -34,10 +34,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" IncludeAssets="compile" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" IncludeAssets="compile" />
+    <!-- Upgrade the transitive MSBuild dependency to a non-vulnerable version.
+         This needs to be done manually here outside of CPM as transitive pinning is disabled for this project. -->
+    <PackageReference Include="Microsoft.IO.Redist" IncludeAssets="compile" />
+
     <!-- We carry NuGet as part of the package in case the package is used with an older SDKs or with full framework MSBuild. -->
     <PackageReference Include="NuGet.Packaging" PrivateAssets="All" Publish="true" />
+
     <!-- The ApiCompatibility/PackageValidation stuff depends on CodeAnalysis.CSharp at the version that is
          currently built into the SDK. That may in turn have transitive dependencies on System.Collections.Immutable
          and System.Reflection.Metadata, which could bump the versions of those packages past the versions guaranteed
@@ -46,7 +51,7 @@
          but the only reason that Microsoft.NET.Build.Tasks.csproj references this project is for _deployment_, and
          it should never share types with this assembly. Within this task, the RoslynResolver should provide a good
          closure of references. -->
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="Runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" IncludeAssets="compile" PrivateAssets="all" />
 
     <ProjectReference Include="..\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />

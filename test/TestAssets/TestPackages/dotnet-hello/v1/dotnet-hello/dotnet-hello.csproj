@@ -12,6 +12,8 @@
     <RuntimeIdentifiers>$(LatestRuntimeIdentifiers)</RuntimeIdentifiers>
     <IsPackable>true</IsPackable>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <!-- Disable NuGetAudit as this project intentionally tests with older versions. -->
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
 </Project>

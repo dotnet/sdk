@@ -9,6 +9,8 @@
     <VersionSuffix></VersionSuffix>
     <IsPackable>true</IsPackable>
     <RollForward>LatestMajor</RollForward>
+    <!-- Disable NuGetAudit as this project intentionally tests with older versions. -->
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
   
 </Project>

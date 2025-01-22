@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" IncludeAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
