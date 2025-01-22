@@ -6,6 +6,7 @@
 
     <ScenarioTestsArtifactsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'scenario-tests'))</ScenarioTestsArtifactsDir>
     <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
+    <!-- Use the updated NuGet.config file from the intermediate folder which contains the live local feeds. -->
     <NuGetConfigInputForScenarioTests>$([MSBuild]::NormalizePath('$(ArtifactsObjDir)', 'sdk', 'NuGet.config'))</NuGetConfigInputForScenarioTests>
     <NuGetConfigOutputForScenarioTests>$(ScenarioTestsArtifactsDir)NuGet.config</NuGetConfigOutputForScenarioTests>
   </PropertyGroup>
