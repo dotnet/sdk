@@ -9,6 +9,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <DiskUsageCommand Condition="'$(BuildOS)' == 'windows'">powershell "Get-PSDrive -PSProvider FileSystem"</DiskUsageCommand>
+    <DiskUsageCommand Condition="'$(BuildOS)' != 'windows'">df -h $(RepoRoot)</DiskUsageCommand>
+
     <!-- Force use of dotnet msbuild (ignoring global.json contents) unless ForceDotNetMSBuildEngine is explicitly set in the repo project. -->
     <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(ForceDotNetMSBuildEngine)' != 'false'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
     <!-- Add the overrides for the shipping and non-shipping packages here to allow repo projects to identify a project as reference-only -->
@@ -480,10 +483,8 @@
     <Message Importance="High" Text="  With Environment Variables:"/>
     <Message Importance="High" Text="    %(EnvironmentVariables.Identity)" />
 
-    <Message Text="DirSize Before Building $(RepositoryName)" Importance="High"
-             Condition=" '$(CleanWhileBuilding)' == 'true' and '$(BuildOS)' != 'windows'" />
-    <Exec Command="df -h $(RepoRoot)"
-          Condition=" '$(CleanWhileBuilding)' == 'true' and '$(BuildOS)' != 'windows'" />
+    <Message Text="DirSize Before Building $(RepositoryName)" Importance="High" Condition=" '$(CleanWhileBuilding)' == 'true'" />
+    <Exec Command="$(DiskUsageCommand)" Condition="'$(CleanWhileBuilding)' == 'true'" />
 
     <PropertyGroup>
       <FullCommand>$(BuildCommand)</FullCommand>
@@ -679,7 +680,7 @@
           IgnoreExitCode="true" />
 
     <Message Text="DirSize After Building $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'" />
-    <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'" />
+    <Exec Command="$(DiskUsageCommand)" />
 
     <!-- Cleanup the entire repo artifacts dir. Ignore failures as this is best effort.
          Don't use Removedir as ContinueOnError on it doesn't work when using warnaserror/TreatWarningsAsErrors. -->
@@ -691,7 +692,7 @@
     <Exec Command="$(RepoCleanCommand)" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" />
 
     <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'" />
-    <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'" />
+    <Exec Command="$(DiskUsageCommand)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)CleanupRepo.complete" AlwaysCreate="true">
