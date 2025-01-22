@@ -6,7 +6,7 @@
 
     <ScenarioTestsArtifactsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'scenario-tests'))</ScenarioTestsArtifactsDir>
     <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
-    <NuGetConfigInputForScenarioTests>$([MSBuild]::NormalizePath('$(SrcDir)', 'sdk', 'NuGet.config'))</NuGetConfigInputForScenarioTests>
+    <NuGetConfigInputForScenarioTests>$([MSBuild]::NormalizePath('$(ArtifactsObjDir)', 'sdk', 'NuGet.config'))</NuGetConfigInputForScenarioTests>
     <NuGetConfigOutputForScenarioTests>$(ScenarioTestsArtifactsDir)NuGet.config</NuGetConfigOutputForScenarioTests>
   </PropertyGroup>
 
