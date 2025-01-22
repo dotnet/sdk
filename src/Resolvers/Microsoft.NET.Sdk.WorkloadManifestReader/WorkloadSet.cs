@@ -5,19 +5,13 @@
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
-
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
-#else
-using Newtonsoft.Json;
-#endif
-
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public class WorkloadSet
     {
-        public Dictionary<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)> ManifestVersions = new Dictionary<ManifestId, (ManifestVersion version, SdkFeatureBand featureBand)>();
+        public Dictionary<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)> ManifestVersions = new();
 
         //  TODO: Generate version from hash of manifest versions if not otherwise set
         public string? Version { get; set; }
@@ -34,29 +28,33 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             };
         }
 
-        public static WorkloadSet FromDictionaryForJson(IDictionary<string, string> dictionary, SdkFeatureBand defaultFeatureBand)
+        public static WorkloadSet FromDictionaryForJson(IDictionary<string, string?> dictionary, SdkFeatureBand defaultFeatureBand)
         {
             var manifestVersions = dictionary
                 .Select(manifest =>
                 {
                     ManifestVersion manifestVersion;
                     SdkFeatureBand manifestFeatureBand;
-                    var parts = manifest.Value.Split('/');
+                    var parts = manifest.Value?.Split('/');
 
-                    string manifestVersionString = parts[0];
-                    if (!FXVersion.TryParse(manifestVersionString, out FXVersion version))
+                    string manifestVersionString = string.Empty;
+                    if (parts != null)
                     {
-                        throw new FormatException(String.Format(Strings.InvalidVersionForWorkload, manifest.Key, manifestVersionString));
+                        manifestVersionString = parts[0];
+                    }
+                    if (!FXVersion.TryParse(manifestVersionString, out FXVersion? version))
+                    {
+                        throw new FormatException(string.Format(Strings.InvalidVersionForWorkload, manifest.Key, manifestVersionString));
                     }
 
-                    manifestVersion = new ManifestVersion(parts[0]);
-                    if (parts.Length == 1)
+                    manifestVersion = new ManifestVersion(parts?[0]);
+                    if (parts != null && parts.Length == 1)
                     {
                         manifestFeatureBand = defaultFeatureBand;
                     }
                     else
                     {
-                        manifestFeatureBand = new SdkFeatureBand(parts[1]);
+                        manifestFeatureBand = new SdkFeatureBand(parts?[1]);
                     }
                     return (id: new ManifestId(manifest.Key), manifestVersion, manifestFeatureBand);
                 }).ToDictionary(t => t.id, t => (t.manifestVersion, t.manifestFeatureBand));
@@ -69,16 +67,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public static WorkloadSet FromJson(string json, SdkFeatureBand defaultFeatureBand)
         {
-#if USE_SYSTEM_TEXT_JSON
             var jsonSerializerOptions = new JsonSerializerOptions()
             {
                 AllowTrailingCommas = true,
                 ReadCommentHandling = JsonCommentHandling.Skip
             };
             return FromDictionaryForJson(JsonSerializer.Deserialize<IDictionary<string, string>>(json, jsonSerializerOptions)!, defaultFeatureBand);
-#else
-            return FromDictionaryForJson(JsonConvert.DeserializeObject<IDictionary<string, string>>(json)!, defaultFeatureBand);
-#endif
         }
 
         public static WorkloadSet FromWorkloadSetFolder(string path, string workloadSetVersion, SdkFeatureBand defaultFeatureBand)
@@ -128,11 +122,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public string ToJson()
         {
-#if USE_SYSTEM_TEXT_JSON
             var json = JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
-#else
-            var json = JsonConvert.SerializeObject(ToDictionaryForJson(), Formatting.Indented);
-#endif
             return json;
         }
 
@@ -175,6 +165,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
 
             return packageVersion;
+        }
+
+        public static SdkFeatureBand GetWorkloadSetFeatureBand(string setVersion)
+        {
+            WorkloadSetVersionToWorkloadSetPackageVersion(setVersion, out SdkFeatureBand sdkFeatureBand);
+            return sdkFeatureBand;
         }
     }
 }

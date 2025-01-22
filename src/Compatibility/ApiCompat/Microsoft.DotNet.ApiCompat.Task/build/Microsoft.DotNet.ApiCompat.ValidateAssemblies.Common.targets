@@ -1,0 +1,38 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
+  <PropertyGroup>
+    <_ApiCompatValidateAssembliesSemaphoreFile>$(IntermediateOutputPath)$(MSBuildThisFileName).semaphore</_ApiCompatValidateAssembliesSemaphoreFile>
+    <ApiCompatValidateAssembliesDependsOn>CollectApiCompatInputs;$(ApiCompatValidateAssembliesDependsOn)</ApiCompatValidateAssembliesDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ApiCompatValidateAssembliesCore"
+          Inputs="@(ApiCompatLeftAssemblies);
+                  @(ApiCompatRightAssemblies);
+                  @(ApiCompatSuppressionFile);
+                  $(ApiCompatSuppressionOutputFile)"
+          Outputs="$(_ApiCompatValidateAssembliesSemaphoreFile)"
+          Condition="'@(ApiCompatLeftAssemblies)' != '' and '@(ApiCompatRightAssemblies)' != '' and '$(DesignTimeBuild)' != 'true'"
+          DependsOnTargets="$(ApiCompatValidateAssembliesDependsOn)">
+    <Microsoft.DotNet.ApiCompat.Task.ValidateAssembliesTask
+      RoslynAssembliesPath="$(RoslynAssembliesPath)"
+      LeftAssemblies="@(ApiCompatLeftAssemblies)"
+      RightAssemblies="@(ApiCompatRightAssemblies)"
+      GenerateSuppressionFile="$(ApiCompatGenerateSuppressionFile)"
+      PreserveUnnecessarySuppressions="$(ApiCompatPreserveUnnecessarySuppressions)"
+      PermitUnnecessarySuppressions="$(ApiCompatPermitUnnecessarySuppressions)"
+      SuppressionFiles="@(ApiCompatSuppressionFile)"
+      SuppressionOutputFile="$(ApiCompatSuppressionOutputFile)"
+      NoWarn="$(NoWarn)"
+      RespectInternals="$(ApiCompatRespectInternals)"
+      EnableRuleAttributesMustMatch="$(ApiCompatEnableRuleAttributesMustMatch)"
+      ExcludeAttributesFiles="@(ApiCompatExcludeAttributesFile)"
+      EnableRuleCannotChangeParameterName="$(ApiCompatEnableRuleCannotChangeParameterName)"
+      EnableStrictMode="$(ApiCompatStrictMode)"
+      LeftAssembliesReferences="@(ApiCompatLeftAssembliesReferences)"
+      RightAssembliesReferences="@(ApiCompatRightAssembliesReferences)"
+      CreateWorkItemPerAssembly="true"
+      LeftAssembliesTransformationPattern="@(ApiCompatLeftAssembliesTransformationPattern)"
+      RightAssembliesTransformationPattern="@(ApiCompatRightAssembliesTransformationPattern)"
+      SemaphoreFile="$(_ApiCompatValidateAssembliesSemaphoreFile)" />
+  </Target>
+</Project>
