@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(@"In\sprocess\sfile\sartifacts\sproduced:\s+.*\\TestResults\\.*\.coverage", result.StdOut);
+                Assert.Matches(@"In\sprocess\sfile\sartifacts\sproduced:\s+.*\\TestResults\\.*\.coverage".Replace('\\', Path.DirectorySeparatorChar), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")

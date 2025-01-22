@@ -11,7 +11,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
     {
         private const string TestApplicationArgsSeparator = $" {CliConstants.ParametersSeparator} ";
         private const string TestApplicationArgsPattern = @".*(Test application arguments).*";
-        private const string MSBuildArgsPattern = @".*(MSBuild command line arguments).*";
 
         public GivenDotnetTestBuildsAndRunsTestsWithDifferentOptions(ITestOutputHelper log) : base(log)
         {
@@ -35,7 +34,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern);
-            Assert.Contains($"{TestingPlatformOptions.ProjectOption.Name} \"{testInstance.TestRoot}\\{testProjectPath}\"", testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
+            string fullProjectPath = $"{testInstance.TestRoot}\\{testProjectPath}".Replace('\\', Path.DirectorySeparatorChar);
+            Assert.Contains($"{TestingPlatformOptions.ProjectOption.Name} {fullProjectPath}", testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -62,8 +62,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                    .Select(match => match.Value.Split(TestApplicationArgsSeparator)[0])
                                    .ToList();
 
-            string expectedProjectPath = $"{testInstance.TestRoot}\\TestProject\\TestProject.csproj";
-            string otherExpectedProjectPath = $"{testInstance.TestRoot}\\OtherTestProject\\OtherTestProject.csproj";
+            string expectedProjectPath = $"{testInstance.TestRoot}\\TestProject\\TestProject.csproj".Replace('\\', Path.DirectorySeparatorChar);
+            string otherExpectedProjectPath = $"{testInstance.TestRoot}\\OtherTestProject\\OtherTestProject.csproj".Replace('\\', Path.DirectorySeparatorChar);
 
             bool containsExpectedPath = testAppArgs.Any(arg => arg.Contains(expectedProjectPath) || arg.Contains(otherExpectedProjectPath));
 
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
-            string invalidProjectPath = "TestProject\\TestProject.txt";
+            string invalidProjectPath = "TestProject\\TestProject.txt".Replace('\\', Path.DirectorySeparatorChar);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
-            string testProjectPath = "TestProject\\TestProject.csproj";
+            string testProjectPath = "TestProject\\TestProject.csproj".Replace('\\', Path.DirectorySeparatorChar);
             string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
             string testDirectoryPath = "TestProjects";
 
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
-            string testProjectPath = "TestProject\\TestProject.csproj";
+            string testProjectPath = "TestProject\\TestProject.csproj".Replace('\\', Path.DirectorySeparatorChar);
             string testSolutionPath = "MultiTestProjectSolutionWithTests.sln";
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -175,7 +175,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut?.Contains($"The provided file path does not exist: {testInstance.TestRoot}\\{testProjectPath}.");
+            string fullProjectPath = $"{testInstance.TestRoot}\\{testProjectPath}".Replace('\\', Path.DirectorySeparatorChar);
+            result.StdOut?.Contains($"The provided file path does not exist: {fullProjectPath}.");
+
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
@@ -195,7 +197,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, solutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain($"The provided file path does not exist: {testInstance.TestRoot}\\{solutionPath}.");
+            string fullSolutionPath = $"{testInstance.TestRoot}\\{solutionPath}".Replace('\\', Path.DirectorySeparatorChar);
+            result.StdOut.Should().Contain($"The provided file path does not exist: {fullSolutionPath}.");
+
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
@@ -272,7 +276,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute($"/p:Configuration={configuration}")
                 .Should().Pass();
 
-            var binDirectory = new FileInfo($"{testInstance.Path}/bin").Directory;
+            var binDirectory = new FileInfo($"{testInstance.Path}{Path.DirectorySeparatorChar}bin").Directory;
             var binDirectoryLastWriteTime = binDirectory?.LastWriteTime;
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)

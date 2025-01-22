@@ -28,9 +28,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                MatchCollection netFrameworkProjectMatches = Regex.Matches(result.StdOut!, @".+\\net4\.8\\TestProjectWithNetFramework\.exe\s+\(net48\|[a-zA-Z][1-9]+\)\spassed");
-                MatchCollection net8ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net8\.0\\TestProjectWithNet8\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed");
-                MatchCollection net9ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net9\.0\\TestProjectWithNet9\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\spassed");
+                MatchCollection netFrameworkProjectMatches = Regex.Matches(result.StdOut!, @".+\\net4\.8\\TestProjectWithNetFramework\.exe\s+\(net48\|[a-zA-Z][1-9]+\)\spassed".Replace('\\', Path.DirectorySeparatorChar));
+                MatchCollection net8ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net8\.0\\TestProjectWithNet8\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed".Replace('\\', Path.DirectorySeparatorChar));
+                MatchCollection net9ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net9\.0\\TestProjectWithNet9\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\spassed".Replace('\\', Path.DirectorySeparatorChar));
 
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test2");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
@@ -68,9 +68,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                var netFrameworkProjectMatches = Regex.Matches(result.StdOut!, @".+\\net4\.8\\TestProject\.exe\s+\(net48\|[a-zA-Z][1-9]+\)\sfailed");
-                var net8ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net8\.0\\TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed");
-                var net9ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net9\.0\\TestProject\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\sfailed");
+                var netFrameworkProjectMatches = Regex.Matches(result.StdOut!, @".+\\net4\.8\\TestProject\.exe\s+\(net48\|[a-zA-Z][1-9]+\)\sfailed".Replace('\\', Path.DirectorySeparatorChar));
+                var net8ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net8\.0\\TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed".Replace('\\', Path.DirectorySeparatorChar));
+                var net9ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net9\.0\\TestProject\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\sfailed".Replace('\\', Path.DirectorySeparatorChar));
 
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test1");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test2");
@@ -115,8 +115,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                MatchCollection net8ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net8\.0\\TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed");
-                MatchCollection net9ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net9\.0\\TestProject\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\sfailed");
+                MatchCollection net8ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net8\.0\\TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed".Replace('\\', Path.DirectorySeparatorChar));
+                MatchCollection net9ProjectMatches = Regex.Matches(result.StdOut!, @".+\\net9\.0\\TestProject\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\sfailed".Replace('\\', Path.DirectorySeparatorChar));
 
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed TestMethod3");
 
