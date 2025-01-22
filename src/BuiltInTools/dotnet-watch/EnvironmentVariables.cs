@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
 
 internal static partial class EnvironmentVariables
 {
@@ -22,6 +22,7 @@ internal static partial class EnvironmentVariables
     public static bool IsPollingEnabled => ReadBool("DOTNET_USE_POLLING_FILE_WATCHER");
     public static bool SuppressEmojis => ReadBool("DOTNET_WATCH_SUPPRESS_EMOJIS");
     public static bool RestartOnRudeEdit => ReadBool("DOTNET_WATCH_RESTART_ON_RUDE_EDIT");
+    public static TimeSpan ProcessCleanupTimeout => ReadTimeSpan("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS");
 
     public static string SdkRootDirectory =>
 #if DEBUG
@@ -36,10 +37,14 @@ internal static partial class EnvironmentVariables
     public static bool SuppressBrowserRefresh => ReadBool("DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH");
 
     public static TestFlags TestFlags => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS") is { } value ? Enum.Parse<TestFlags>(value) : TestFlags.None;
+    public static string TestOutputDir => Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR") ?? "";  
 
     public static string? AutoReloadWSHostName => Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
 
     private static bool ReadBool(string variableName)
         => Environment.GetEnvironmentVariable(variableName) is var value && (value == "1" || bool.TryParse(value, out var boolValue) && boolValue);
+
+    private static TimeSpan ReadTimeSpan(string variableName)
+        => Environment.GetEnvironmentVariable(variableName) is var value && long.TryParse(value, out var intValue) && intValue >= 0 ? TimeSpan.FromMilliseconds(intValue) : TimeSpan.FromSeconds(5);
 }

@@ -7,10 +7,9 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.Extensions.HotReload;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.DotNet.HotReload;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier(reporter)
     {
@@ -37,9 +36,14 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                     // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
 
-                    var capabilities = ClientInitializationPayload.Read(_pipe).Capabilities;
+                    var capabilities = (await ClientInitializationRequest.ReadAsync(_pipe, cancellationToken)).Capabilities;
                     Reporter.Verbose($"Capabilities: '{capabilities}'");
-                    return capabilities.Split(' ').ToImmutableArray();
+                    return [.. capabilities.Split(' ')];
+                }
+                catch (EndOfStreamException)
+                {
+                    // process terminated before capabilities sent:
+                    return [];
                 }
                 catch (Exception e) when (e is not OperationCanceledException)
                 {
@@ -83,27 +87,36 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return ApplyStatus.NoChangesApplied;
             }
 
-            var payload = new UpdatePayload(
-                deltas: applicableUpdates.Select(update => new UpdateDelta(
+            var request = new ManagedCodeUpdateRequest(
+                deltas: [.. applicableUpdates.Select(update => new UpdateDelta(
                     update.ModuleId,
-                    metadataDelta: update.MetadataDelta.ToArray(),
-                    ilDelta: update.ILDelta.ToArray(),
-                    update.UpdatedTypes.ToArray())).ToArray(),
+                    metadataDelta: [.. update.MetadataDelta],
+                    ilDelta: [.. update.ILDelta],
+                    pdbDelta: [.. update.PdbDelta],
+                    updatedTypes: [.. update.UpdatedTypes]))],
                 responseLoggingLevel: Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors);
 
             var success = false;
             var canceled = false;
             try
             {
-                await payload.WriteAsync(_pipe, cancellationToken);
+                await request.WriteAsync(_pipe, cancellationToken);
                 await _pipe.FlushAsync(cancellationToken);
-                success = await ReceiveApplyUpdateResult(cancellationToken);
+
+                (success, var log) = await UpdateResponse.ReadAsync(_pipe, cancellationToken);
+
+                await foreach (var (message, severity) in log)
+                {
+                    ReportLogEntry(Reporter, message, severity);
+                }
             }
             catch (OperationCanceledException) when (!(canceled = true))
             {
+                // unreachable
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
+                success = false;
                 Reporter.Error($"Change failed to apply (error: '{e.Message}'). Further changes won't be applied to this process.");
                 Reporter.Verbose($"Exception stack trace: {e.StackTrace}", "❌");
             }
@@ -129,54 +142,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
         }
 
-        private async Task<bool> ReceiveApplyUpdateResult(CancellationToken cancellationToken)
-        {
-            Debug.Assert(_pipe != null);
-
-            var status = ArrayPool<byte>.Shared.Rent(1);
-            try
-            {
-                var statusBytesRead = await _pipe.ReadAsync(status, offset: 0, count: 1, cancellationToken);
-                if (statusBytesRead != 1 || status[0] != UpdatePayload.ApplySuccessValue)
-                {
-                    var message = (statusBytesRead == 0) ? "received no data" : $"received status 0x{status[0]:x2}";
-                    Reporter.Error($"Change failed to apply ({message}). Further changes won't be applied to this process.");
-                    return false;
-                }
-
-                foreach (var (message, severity) in UpdatePayload.ReadLog(_pipe))
-                {
-                    switch (severity)
-                    {
-                        case AgentMessageSeverity.Verbose:
-                            Reporter.Verbose(message, emoji: "🕵️");
-                            break;
-
-                        case AgentMessageSeverity.Error:
-                            Reporter.Error(message);
-                            break;
-
-                        case AgentMessageSeverity.Warning:
-                            Reporter.Warn(message, emoji: "⚠");
-                            break;
-
-                        default:
-                            Reporter.Error($"Unexpected message severity: {severity}");
-                            return false;
-                    }
-                }
-
-                return true;
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(status);
-            }
-        }
-
         private void DisposePipe()
         {
-            Reporter.Verbose("Disposing pipe");
+            Reporter.Verbose("Disposing agent communication pipe");
             _pipe?.Dispose();
             _pipe = null;
         }

@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher;
+namespace Microsoft.DotNet.Watch;
+
+internal delegate ValueTask ProcessExitAction(int processId, int? exitCode);
 
 internal sealed class ProjectLauncher(
     DotNetWatchContext context,
@@ -23,7 +24,12 @@ internal sealed class ProjectLauncher(
     public EnvironmentOptions EnvironmentOptions
         => context.EnvironmentOptions;
 
-    public async ValueTask<RunningProject?> TryLaunchProcessAsync(ProjectOptions projectOptions, CancellationTokenSource processTerminationSource, bool build, CancellationToken cancellationToken)
+    public async ValueTask<RunningProject?> TryLaunchProcessAsync(
+        ProjectOptions projectOptions,
+        CancellationTokenSource processTerminationSource,
+        Action<OutputLine>? onOutput,
+        RestartOperation restartOperation,
+        CancellationToken cancellationToken)
     {
         var projectNode = projectMap.TryGetProjectNode(projectOptions.ProjectPath, projectOptions.TargetFramework);
         if (projectNode == null)
@@ -34,55 +40,25 @@ internal sealed class ProjectLauncher(
 
         if (!projectNode.IsNetCoreApp(Versions.Version6_0))
         {
-            Reporter.Error($"Hot Reload based watching is only supported in .NET 6.0 or newer apps. Update the project's launchSettings.json to disable this feature.");
+            Reporter.Error($"Hot Reload based watching is only supported in .NET 6.0 or newer apps. Use --no-hot-reload switch or update the project's launchSettings.json to disable this feature.");
             return null;
         }
 
-        try
-        {
-            return await LaunchProcessAsync(projectOptions, projectNode, processTerminationSource, build, cancellationToken);
-        }
-        catch (ObjectDisposedException e) when (e.ObjectName == typeof(HotReloadDotNetWatcher).FullName)
-        {
-            Reporter.Verbose("Unable to launch project, watcher has been disposed");
-            return null;
-        }
-    }
+        var profile = HotReloadProfileReader.InferHotReloadProfile(projectNode, Reporter);
 
-    public async Task<RunningProject> LaunchProcessAsync(ProjectOptions projectOptions, ProjectGraphNode projectNode, CancellationTokenSource processTerminationSource, bool build, CancellationToken cancellationToken)
-    {
+        // Blazor WASM does not need dotnet applier as all changes are applied in the browser,
+        // the process being launched is a dev server.
+        var injectDeltaApplier = profile != HotReloadProfile.BlazorWebAssembly;
+
         var processSpec = new ProcessSpec
         {
             Executable = EnvironmentOptions.MuxerPath,
             WorkingDirectory = projectOptions.WorkingDirectory,
-            Arguments = build || projectOptions.Command is not ("run" or "test")
-                ? [projectOptions.Command, .. projectOptions.CommandArguments]
-                : [projectOptions.Command, "--no-build", .. projectOptions.CommandArguments]
+            OnOutput = onOutput
         };
-
-        // allow tests to watch for application output:
-        if (Reporter.ReportProcessOutput)
-        {
-            var projectPath = projectNode.ProjectInstance.FullPath;
-            processSpec.OnOutput += (sender, args) =>
-            {
-                if (args.Data != null)
-                {
-                    Reporter.ProcessOutput(projectPath, args.Data);
-                }
-            };
-        }
 
         var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
         var namedPipeName = Guid.NewGuid().ToString();
-
-        // Directives:
-
-        environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
-        environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
-        environmentBuilder.SetDirective(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, namedPipeName);
-
-        // Variables:
 
         foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
         {
@@ -100,32 +76,57 @@ internal sealed class ProjectLauncher(
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatch, "1");
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchIteration, (Iteration + 1).ToString(CultureInfo.InvariantCulture));
 
-        if (context.Options.Verbose)
+        // Note:
+        // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions and Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware
+        // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.
+        // The value is converted to DOTNET-MODIFIABLE-ASSEMBLIES header, which is in turn converted back to environment variable in Mono browser runtime loader:
+        // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
+        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
+
+        if (injectDeltaApplier)
         {
-            environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
+            environmentBuilder.DotNetStartupHookDirective.Add(DeltaApplier.StartupHookPath);
+            environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, namedPipeName);
+
+            if (context.Options.Verbose)
+            {
+                environmentBuilder.SetVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "1");
+            }
         }
 
-        // TODO: workaround for https://github.com/dotnet/sdk/issues/40484
-        var targetPath = projectNode.ProjectInstance.GetPropertyValue("RunCommand");
-        environmentBuilder.SetVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath, targetPath);
-        Reporter.Verbose($"Target process is '{targetPath}'");
+        var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
 
-        var browserRefreshServer = await browserConnector.LaunchOrRefreshBrowserAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
-        environmentBuilder.ConfigureProcess(processSpec);
+        var arguments = new List<string>()
+        {
+            projectOptions.Command,
+            "--no-build"
+        };
 
-        var processReporter = new MessagePrefixingReporter($"[{projectNode.GetDisplayName()}] ", Reporter);
+        foreach (var (name, value) in environmentBuilder.GetEnvironment())
+        {
+            arguments.Add("-e");
+            arguments.Add($"{name}={value}");
+        }
+
+        arguments.AddRange(projectOptions.CommandArguments);
+
+        processSpec.Arguments = arguments;
+
+        var processReporter = new ProjectSpecificReporter(projectNode, Reporter);
 
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,
             projectOptions,
+            profile,
             namedPipeName,
             browserRefreshServer,
             processSpec,
+            restartOperation,
             processReporter,
             processTerminationSource,
             cancellationToken);
     }
 
-    public ValueTask<IEnumerable<RunningProject>> TerminateProcessesAsync(IReadOnlyList<string> projectPaths, CancellationToken cancellationToken)
-        => compilationHandler.TerminateNonRootProcessesAsync(projectPaths, cancellationToken);
+    public ValueTask<int> TerminateProcessAsync(RunningProject project, CancellationToken cancellationToken)
+        => compilationHandler.TerminateNonRootProcessAsync(project, cancellationToken);
 }
