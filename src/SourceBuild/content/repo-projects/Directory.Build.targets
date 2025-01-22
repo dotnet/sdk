@@ -129,9 +129,8 @@
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(NuGetConfigFile)'))" />
 
-    <Copy
-      SourceFiles="$(OriginalNuGetConfigFile)"
-      DestinationFiles="$(NuGetConfigFile)">
+    <Copy SourceFiles="$(OriginalNuGetConfigFile)"
+          DestinationFiles="$(NuGetConfigFile)">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
@@ -602,6 +601,7 @@
           DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
           SkipUnchangedFiles="true"
           Retries="5"
+          UseHardLinksIfPossible="true"
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
@@ -657,6 +657,7 @@
     <!-- Make a copy of project.assets.json files -->
     <Copy SourceFiles="@(ObjFilesToCopy)"
           DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
+          UseHardLinksIfPossible="true"
           Condition="'@(ObjFilesToCopy)' != ''" />
 
     <ItemGroup>
@@ -720,7 +721,9 @@
       <ExtractedToolFiles Include="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/**/*netcore*/*.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(ExtractedToolFiles)" DestinationFolder="$(SourceBuiltSdksDir)/" />
+    <Copy SourceFiles="@(ExtractedToolFiles)"
+          DestinationFolder="$(SourceBuiltSdksDir)/"
+          UseHardLinksIfPossible="true" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)ExtractToolPackage.complete" AlwaysCreate="true">
