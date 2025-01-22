@@ -8,7 +8,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 /// <summary>
 /// Represents the contents of a <c><script type="importmap"></script></c> element that defines the import map
@@ -337,7 +337,7 @@ public sealed class ResourceAssetProperty(string name, string value)
 
 internal static class ResourceCollectionResolver
 {
-    public static ResourceAssetCollection ResolveResourceCollection(StaticAssetsManifest manifest)
+    public static ResourceAssetCollection ResolveResourceCollection(StaticWebAssetEndpointsManifest manifest)
     {
         var descriptors = manifest.Endpoints;
         var resources = new List<ResourceAsset>();
@@ -352,12 +352,12 @@ internal static class ResourceCollectionResolver
             string? integrity = null;
 
             // If there's a selector this means that this is an alternative representation for a resource, so skip it.
-            if (descriptor.Selectors.Count == 0)
+            if (descriptor.Selectors?.Length == 0)
             {
                 var foundProperties = 0;
-                for (var i = 0; i < descriptor.Properties.Count; i++)
+                for (var i = 0; i < descriptor.EndpointProperties?.Length; i++)
                 {
-                    var property = descriptor.Properties[i];
+                    var property = descriptor.EndpointProperties[i];
                     if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
                     {
                         label = property.Value;
@@ -385,7 +385,7 @@ internal static class ResourceCollectionResolver
 
     private static void AddResource(
         List<ResourceAsset> resources,
-        StaticAssetDescriptor descriptor,
+        StaticWebAssetEndpoint descriptor,
         string? label,
         string? integrity,
         int foundProperties)

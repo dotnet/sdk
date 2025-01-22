@@ -6,12 +6,21 @@ using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 public class WriteImportMapToHtml : Task
 {
     [Required]
-    public string ManifestPath { get; set; } = string.Empty;
+    public ITaskItem[] Assets { get; set; } = [];
+
+    [Required]
+    public ITaskItem[] Endpoints { get; set; } = [];
+
+    [Required]
+    public string ManifestType { get; set; } = string.Empty;
+
+    [Required]
+    public string Source { get; set; } = string.Empty;
 
     [Required]
     public string OutputPath { get; set; } = string.Empty;
@@ -36,7 +45,7 @@ public class WriteImportMapToHtml : Task
 
     public override bool Execute()
     {
-        var manifest = StaticAssetsManifest.Parse(ManifestPath);
+        var manifest = GenerateStaticWebAssetEndpointsManifest.CreateManifest(Log, Assets, Endpoints, ManifestType, Source);
         var resources = ResourceCollectionResolver.ResolveResourceCollection(manifest);
         var importMap = ImportMapDefinition.FromResourceCollection(resources);
 
