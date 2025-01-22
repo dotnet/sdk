@@ -8,7 +8,6 @@
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
 
     <IsSpecialFlavorBuild Condition="'$(DotNetBuildRuntimeWasmEnableThreads)' == 'true'">true</IsSpecialFlavorBuild>
     <IsSpecialFlavorBuild Condition="'$(DotNetBuildMonoEnableLLVM)' != ''">true</IsSpecialFlavorBuild>

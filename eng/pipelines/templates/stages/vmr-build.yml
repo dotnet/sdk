@@ -379,7 +379,7 @@ stages:
         vmrBranch: ${{ variables.VmrBranch }}
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
-        targetArchitecture: x64
+        targetArchitecture: x86
         useDevVersions: true # Use dev versions for CI validation of the experience.
         runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
 
