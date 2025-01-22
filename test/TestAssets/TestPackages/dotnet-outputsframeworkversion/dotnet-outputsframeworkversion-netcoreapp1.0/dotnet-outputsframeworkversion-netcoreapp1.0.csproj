@@ -8,6 +8,8 @@
     <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <!-- Disable NuGetAudit as this project intentionally tests with older versions. -->
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
    
   <ItemGroup>
@@ -15,4 +17,5 @@
     <PackageReference Include="System.Net.Security" Version="4.3.1" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
   </ItemGroup>
+
 </Project>

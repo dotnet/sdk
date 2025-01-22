@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.Packaging" ExcludeAssets="Runtime" />
+    <PackageReference Include="NuGet.Packaging" IncludeAssets="compile" />
     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
   </ItemGroup>
 
