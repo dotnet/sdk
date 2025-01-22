@@ -129,9 +129,8 @@
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(NuGetConfigFile)'))" />
 
-    <Copy
-      SourceFiles="$(OriginalNuGetConfigFile)"
-      DestinationFiles="$(NuGetConfigFile)">
+    <Copy SourceFiles="$(OriginalNuGetConfigFile)"
+          DestinationFiles="$(NuGetConfigFile)">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
@@ -602,6 +601,7 @@
           DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
           SkipUnchangedFiles="true"
           Retries="5"
+          UseHardlinksIfPossible="true"
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
@@ -625,9 +625,28 @@
           Condition="'@(PrebuiltReportsToMove)' != ''" />
   </Target>
 
+  <!-- Make a copy of project.assets.json files for prebuilt report generation. -->
+  <Target Name="BackupProjectAssetsJsonFiles"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <PropertyGroup>
+      <ProjectAssetsJsonBackupDir>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', 'project-assets-json'))</ProjectAssetsJsonBackupDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectAssetsJsonFile Include="$(RepoArtifactsDir)**/project.assets.json" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ProjectAssetsJsonFile)"
+          DestinationFolder="$(ProjectAssetsJsonBackupDir)%(RecursiveDir)"
+          UseHardlinksIfPossible="true"
+          SkipUnchangedFiles="true"
+          Condition="'@(ProjectAssetsJsonFile)' != ''" />
+  </Target>
+
   <Target Name="CleanupRepo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
+          DependsOnTargets="BackupProjectAssetsJsonFiles"
           Condition="'$(IsUtilityProject)' != 'true' and
                      '$(CleanWhileBuilding)' == 'true' and
                      Exists('$(RepoArtifactsDir)')">
@@ -646,35 +665,20 @@
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true" />
 
+    <Message Text="DirSize After Building $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'" />
+    <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'" />
+
+    <!-- Cleanup the entire repo artifacts dir. Ignore failures as this is best effort.
+         Don't use Removedir as ContinueOnError on it doesn't work when using warnaserror/TreatWarningsAsErrors. -->
     <PropertyGroup>
-      <BuildObjDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildObj'))</BuildObjDir>
+      <RepoCleanCommand Condition="'$(BuildOS)' == 'windows'">rmdir "$(RepoArtifactsDir.TrimEnd('\'))" /s /q</RepoCleanCommand>
+      <RepoCleanCommand Condition="'$(BuildOS)' != 'windows'">rm -rf "$(RepoArtifactsDir)"</RepoCleanCommand>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ObjFilesToCopy Include="$(RepoArtifactsDir)**/project.assets.json" />
-    </ItemGroup>
+    <Exec Command="$(RepoCleanCommand)" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" />
 
-    <!-- Make a copy of project.assets.json files -->
-    <Copy SourceFiles="@(ObjFilesToCopy)"
-          DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
-          Condition="'@(ObjFilesToCopy)' != ''" />
-
-    <ItemGroup>
-      <DirsToDelete Include="$([System.IO.Directory]::GetDirectories('$(RepoArtifactsDir)'))" />
-
-      <DirsToDeleteWithTrailingSeparator Include="$([MSBuild]::EnsureTrailingSlash('%(DirsToDelete.Identity)'))" />
-      <DirsToDeleteWithTrailingSeparator Remove="$(BuildObjDir)" />
-    </ItemGroup>
-
-    <Message Text="DirSize After Building $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows' and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
-    <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows' and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
-
-    <!-- Cleanup everything else. Ignore errors as out-of-band build servers don't reliably shut down, even with the build-server shutdown command.
-         https://github.com/dotnet/source-build/issues/4175 tracks a long term fix. -->
-    <RemoveDir Directories="@(DirsToDeleteWithTrailingSeparator)" ContinueOnError="true" />
-
-    <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
-    <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
+    <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'" />
+    <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)CleanupRepo.complete" AlwaysCreate="true">
@@ -720,7 +724,9 @@
       <ExtractedToolFiles Include="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/**/*netcore*/*.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(ExtractedToolFiles)" DestinationFolder="$(SourceBuiltSdksDir)/" />
+    <Copy SourceFiles="@(ExtractedToolFiles)"
+          DestinationFolder="$(SourceBuiltSdksDir)/"
+          UseHardlinksIfPossible="true" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)ExtractToolPackage.complete" AlwaysCreate="true">
