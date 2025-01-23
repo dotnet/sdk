@@ -13,6 +13,9 @@
 #   - CI: release/* only, every batched commit, full build
 #   - Schedule: main only, full build
 #
+# - dotnet-unified-build-full (public)
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=288
+#   Comment trigger only
 
 variables:
 # enable source-only build for pipelines that contain the -source-build string
@@ -38,7 +41,7 @@ stages:
   parameters:
     isBuiltFromVmr: true
     isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
-    ${{ if eq(variables.isScheduleTrigger, 'true') }}:
+    ${{ if or(eq(variables.isScheduleTrigger, 'true'), contains(variables['Build.DefinitionName'], '-full')) }}:
       scope: full
     ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
       scope: lite
