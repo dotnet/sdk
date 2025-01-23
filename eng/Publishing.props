@@ -89,7 +89,7 @@
     <ItemGroup>
       <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg" />
       <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
-      <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" IsShipping="true" />
+      <Artifact Include="@(FSharpPackagesToPush)" PublishFlatContainer="false" />
     </ItemGroup>
   </Target>
 
