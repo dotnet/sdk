@@ -285,8 +285,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             string tfmVersion = options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.TargetFrameworkVersion, compilation) ?? "";
 
             if (tfmIdentifier.Equals(NetCoreAppIdentifier, StringComparison.OrdinalIgnoreCase) &&
-                tfmVersion.StartsWith("v", StringComparison.OrdinalIgnoreCase) &&
-                Version.TryParse(tfmVersion[1..], out var version) &&
+                Version.TryParse(tfmVersion.TrimStart(['v', 'V']), out var version) &&
                 version.Major >= 5)
             {
                 // We want to only support cases we know are well-formed by default

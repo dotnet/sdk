@@ -63,6 +63,8 @@ public class Test
 
             // Custom TFMs with valid user specified Identifier/Version
             yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v11.0", true };
+            yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=V11.0", true };
+            yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=11.0", true };
 
             // Custom TFMs with invalid user specified Identifier/Version
             yield return new object[] { "build_property.TargetFramework = nonesense\nbuild_property.TargetFrameworkIdentifier=.NETCoreApp\nbuild_property.TargetFrameworkVersion=v5", false };
