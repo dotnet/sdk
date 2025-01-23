@@ -255,7 +255,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 {
                     // Only output the file if we generated it without errors.
                     var outputFilePath = result.InputItem.OutputPath;
-                    var generatedCode = result.CSharpDocument.GeneratedCode;
+                    var generatedCode = result.CSharpDocument.Text.ToString();
                     if (isGeneratingDeclaration)
                     {
                         // When emiting declarations, only write if it the contents are different.
@@ -267,7 +267,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                         }
                     }
 
-                    File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
+                    File.WriteAllText(outputFilePath, generatedCode);
                 }
             }
 
