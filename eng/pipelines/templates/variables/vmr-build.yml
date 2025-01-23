@@ -23,15 +23,10 @@ variables:
 - name: almaLinuxContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
 
-- name: alpineLatestContainerName
-  value: alpineLatestContainer
-- name: alpineLatestContainerImage
+- name: alpineContainerName
+  value: alpineContainer
+- name: alpineContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
-
-- name: alpinePreviousContainerName
-  value: alpinePreviousContainer
-- name: alpinePreviousContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
 
 - name: centOSStreamContainerName
   value: centOSStreamContainer
@@ -105,10 +100,8 @@ variables:
 
 - name: almaLinuxName
   value: AlmaLinux8
-- name: alpineLatestName
+- name: alpineName
   value: Alpine321
-- name: alpinePreviousName
-  value: Alpine320
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
@@ -124,10 +117,8 @@ variables:
   value: linux-musl-arm
 - name: linuxMuslArm64Rid
   value: linux-musl-arm64
-- name: alpineLatestX64Rid
+- name: alpineX64Rid
   value: alpine.3.21-x64
-- name: alpinePreviousX64Rid
-  value: alpine.3.20-x64
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid
@@ -150,9 +141,8 @@ variables:
     value: Docker-Linux-Arm-Public
   - name: poolImage_Mac
     value: macos-13
-  # TODO: Change back to preview image when it has a recent enough version of VS installed.
   - name: poolImage_Windows
-    value: windows.vs2022preview.scout.amd64.open
+    value: windows.vs2022preview.amd64.open
 - ${{ else }}:
   - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
     - name: defaultPoolName

@@ -103,7 +103,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PredefinedCulturesOnly Condition="'$(PredefinedCulturesOnly)' == '' and '$(InvariantGlobalization)' == 'true'">true</PredefinedCulturesOnly>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(GenerateResourceWarnOnBinaryFormatterUse)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))">
+  <PropertyGroup Condition="'$(GenerateResourceWarnOnBinaryFormatterUse)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0'))">
     <GenerateResourceWarnOnBinaryFormatterUse>true</GenerateResourceWarnOnBinaryFormatterUse>
   </PropertyGroup>
 
@@ -600,6 +600,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant"
                                     Condition="'$(InvariantGlobalization)' != ''"
                                     Value="$(InvariantGlobalization)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.TimeZoneInfo.Invariant"
+                                    Condition="'$(InvariantTimezone)' != ''"
+                                    Value="$(InvariantTimezone)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Globalization.Hybrid"
