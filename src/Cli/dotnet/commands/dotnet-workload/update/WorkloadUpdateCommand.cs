@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         UpdateWorkloads();
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     // Don't show entire stack trace
                     throw new GracefulException(string.Format(LocalizableStrings.WorkloadUpdateFailed, e.Message), e, isUserError: false);
