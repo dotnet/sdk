@@ -737,5 +737,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Compression.targets" Condition="'$(CompressionEnabled)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.ServiceWorker.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
+  
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.HtmlImportMap.targets" Condition="'$(WriteImportMapToHtml)' == 'true'" />
 
 </Project>
