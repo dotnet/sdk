@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Options.Add(CheckOnlyOption);
         }
 
-        internal static CliOption<bool> CheckOnlyOption { get; } = new("--check-only", "--dry-run")
+        internal static Option<bool> CheckOnlyOption { get; } = new("--check-only", "--dry-run")
         {
             Description = SymbolStrings.Command_Update_Option_CheckOnly
         };

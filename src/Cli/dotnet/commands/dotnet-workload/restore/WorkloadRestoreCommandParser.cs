@@ -9,16 +9,16 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadRestoreCommandParser
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("restore", LocalizableStrings.CommandDescription);
+            Command command = new("restore", LocalizableStrings.CommandDescription);
 
             command.Arguments.Add(RestoreCommandParser.SlnOrProjectArgument);
             WorkloadInstallCommandParser.AddWorkloadInstallCommandOptions(command);

@@ -11,12 +11,12 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-store";
 
-        public static readonly CliArgument<IEnumerable<string>> Argument = new("argument")
+        public static readonly Argument<IEnumerable<string>> Argument = new("argument")
         {
             Arity = ArgumentArity.ZeroOrMore,
         };
 
-        public static readonly CliOption<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", "-m")
+        public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", "-m")
         {
             Description = LocalizableStrings.ProjectManifestDescription,
             HelpName = LocalizableStrings.ProjectManifest
@@ -43,42 +43,42 @@ namespace Microsoft.DotNet.Cli
             }
         }).AllowSingleArgPerToken();
 
-        public static readonly CliOption<string> FrameworkVersionOption = new ForwardedOption<string>("--framework-version")
+        public static readonly Option<string> FrameworkVersionOption = new ForwardedOption<string>("--framework-version")
         {
             Description = LocalizableStrings.FrameworkVersionOptionDescription,
             HelpName = LocalizableStrings.FrameworkVersionOption
         }.ForwardAsSingle(o => $"-property:RuntimeFrameworkVersion={o}");
 
-        public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+        public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
         {
             Description = LocalizableStrings.OutputOptionDescription,
             HelpName = LocalizableStrings.OutputOption
         }.ForwardAsOutputPath("ComposeDir");
 
-        public static readonly CliOption<string> WorkingDirOption = new ForwardedOption<string>("--working-dir", "-w")
+        public static readonly Option<string> WorkingDirOption = new ForwardedOption<string>("--working-dir", "-w")
         {
             Description = LocalizableStrings.IntermediateWorkingDirOptionDescription,
             HelpName = LocalizableStrings.IntermediateWorkingDirOption
         }.ForwardAsSingle(o => $"-property:ComposeWorkingDir={CommandDirectoryContext.GetFullPath(o)}");
 
-        public static readonly CliOption<bool> SkipOptimizationOption = new ForwardedOption<bool>("--skip-optimization")
+        public static readonly Option<bool> SkipOptimizationOption = new ForwardedOption<bool>("--skip-optimization")
         {
             Description = LocalizableStrings.SkipOptimizationOptionDescription
         }.ForwardAs("-property:SkipOptimization=true");
 
-        public static readonly CliOption<bool> SkipSymbolsOption = new ForwardedOption<bool>("--skip-symbols")
+        public static readonly Option<bool> SkipSymbolsOption = new ForwardedOption<bool>("--skip-symbols")
         {
             Description = LocalizableStrings.SkipSymbolsOptionDescription
         }.ForwardAs("-property:CreateProfilingSymbols=false");
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
             DocumentedCommand command = new("store", DocsLink, LocalizableStrings.AppDescription);
 

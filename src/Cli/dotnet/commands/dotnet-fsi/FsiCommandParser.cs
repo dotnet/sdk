@@ -10,16 +10,16 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-fsi";
 
-        public static readonly CliArgument<string[]> Arguments = new("arguments");
+        public static readonly Argument<string[]> Arguments = new("arguments");
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
             DocumentedCommand command = new("fsi", DocsLink) { Arguments };
 

@@ -10,25 +10,25 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadSearchCommandParser
     {
-        public static readonly CliArgument<string> WorkloadIdStubArgument =
+        public static readonly Argument<string> WorkloadIdStubArgument =
             new(LocalizableStrings.WorkloadIdStubArgumentName)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 Description = LocalizableStrings.WorkloadIdStubArgumentDescription
             };
 
-        public static readonly CliOption<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+        public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            var command = new CliCommand("search", LocalizableStrings.CommandDescription);
+            var command = new Command("search", LocalizableStrings.CommandDescription);
             command.Subcommands.Add(WorkloadSearchVersionsCommandParser.GetCommand());
             command.Arguments.Add(WorkloadIdStubArgument);
             command.Options.Add(CommonOptions.HiddenVerbosityOption);

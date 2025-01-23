@@ -12,20 +12,20 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
-        public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+        public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
         {
             Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
             Arity = ArgumentArity.ZeroOrMore
         };
 
-        public static readonly CliOption<IEnumerable<string>> SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
+        public static readonly Option<IEnumerable<string>> SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
         {
             Description = LocalizableStrings.CmdSourceOptionDescription,
             HelpName = LocalizableStrings.CmdSourceOption
         }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
         .AllowSingleArgPerToken();
 
-        private static IEnumerable<CliOption> FullRestoreOptions() =>
+        private static IEnumerable<Option> FullRestoreOptions() =>
             ImplicitRestoreOptions(true, true, true, true).Concat(
                 [
                     CommonOptions.VerbosityOption,
@@ -50,14 +50,14 @@ namespace Microsoft.DotNet.Cli
                     }.ForwardAs("-property:RestoreForceEvaluate=true"),
                 ]);
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
             var command = new DocumentedCommand("restore", DocsLink, LocalizableStrings.AppFullName);
 
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli
             return command;
         }
 
-        public static void AddImplicitRestoreOptions(CliCommand command, bool showHelp = false, bool useShortOptions = false, bool includeRuntimeOption = true, bool includeNoDependenciesOption = true)
+        public static void AddImplicitRestoreOptions(Command command, bool showHelp = false, bool useShortOptions = false, bool includeRuntimeOption = true, bool includeNoDependenciesOption = true)
         {
             foreach (var option in ImplicitRestoreOptions(showHelp, useShortOptions, includeRuntimeOption, includeNoDependenciesOption))
             {
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Cli
             return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
         }
 
-        private static IEnumerable<CliOption> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
+        private static IEnumerable<Option> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
         {
             if (showHelp && useShortOptions)
             {
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                CliOption<IEnumerable<string>> sourceOption = new ForwardedOption<IEnumerable<string>>("--source")
+                Option<IEnumerable<string>> sourceOption = new ForwardedOption<IEnumerable<string>>("--source")
                 {
                     Description = showHelp ? LocalizableStrings.CmdSourceOptionDescription : string.Empty,
                     HelpName = LocalizableStrings.CmdSourceOption,
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli
 
             if (includeRuntimeOption)
             {
-                CliOption<IEnumerable<string>> runtimeOption = new ForwardedOption<IEnumerable<string>>("--runtime")
+                Option<IEnumerable<string>> runtimeOption = new ForwardedOption<IEnumerable<string>>("--runtime")
                 {
                     Description = LocalizableStrings.CmdRuntimeOptionDescription,
                     HelpName = LocalizableStrings.CmdRuntimeOption,

@@ -9,23 +9,23 @@ namespace Microsoft.DotNet.Cli
 {
     public static class SlnRemoveParser
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.RemoveProjectPathArgumentName)
+        public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.RemoveProjectPathArgumentName)
         {
             HelpName = LocalizableStrings.RemoveProjectPathArgumentName,
             Description = LocalizableStrings.RemoveProjectPathArgumentDescription,
             Arity = ArgumentArity.ZeroOrMore
         };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("remove", LocalizableStrings.RemoveAppFullName);
+            Command command = new("remove", LocalizableStrings.RemoveAppFullName);
 
             command.Arguments.Add(ProjectPathArgument);
 

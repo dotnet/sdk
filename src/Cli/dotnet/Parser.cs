@@ -12,20 +12,21 @@ using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.NuGet;
 using Microsoft.TemplateEngine.Cli;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli
 {
     public static class Parser
     {
-        public static readonly CliRootCommand RootCommand = new()
+        public static readonly RootCommand RootCommand = new()
         {
             Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
         };
 
-        public static readonly CliCommand InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
+        public static readonly Command InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
 
         // Subcommands
-        public static readonly CliCommand[] Subcommands = new CliCommand[]
+        public static readonly Command[] Subcommands = new Command[]
         {
             AddCommandParser.GetCommand(),
             BuildCommandParser.GetCommand(),
@@ -56,24 +57,24 @@ namespace Microsoft.DotNet.Cli
             WorkloadCommandParser.GetCommand()
         };
 
-        public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
+        public static readonly Option<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
 
-        public static readonly CliOption<bool> VersionOption = new("--version");
+        public static readonly Option<bool> VersionOption = new("--version");
 
-        public static readonly CliOption<bool> InfoOption = new("--info");
+        public static readonly Option<bool> InfoOption = new("--info");
 
-        public static readonly CliOption<bool> ListSdksOption = new("--list-sdks");
+        public static readonly Option<bool> ListSdksOption = new("--list-sdks");
 
-        public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes");
+        public static readonly Option<bool> ListRuntimesOption = new("--list-runtimes");
 
         // Argument
-        public static readonly CliArgument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+        public static readonly Argument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
-        private static CliCommand ConfigureCommandLine(CliCommand rootCommand)
+        private static Command ConfigureCommandLine(Command rootCommand)
         {
             for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
             {
-                CliOption option = rootCommand.Options[i];
+                Option option = rootCommand.Options[i];
 
                 if (option is VersionOption)
                 {
@@ -125,7 +126,7 @@ namespace Microsoft.DotNet.Cli
             return rootCommand;
         }
 
-        public static CliCommand GetBuiltInCommand(string commandName)
+        public static Command GetBuiltInCommand(string commandName)
         {
             return Subcommands
                 .FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
@@ -161,7 +162,7 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        public static CliConfiguration Instance { get; } = new(ConfigureCommandLine(RootCommand))
+        public static CommandLineConfiguration Instance { get; } = new(ConfigureCommandLine(RootCommand))
         {
             EnableDefaultExceptionHandler = false,
             EnablePosixBundling = false,
@@ -242,8 +243,8 @@ namespace Microsoft.DotNet.Cli
             public void additionalOption(HelpContext context)
             {
                 List<TwoColumnHelpRow> options = new();
-                HashSet<CliOption> uniqueOptions = new();
-                foreach (CliOption option in context.Command.Options)
+                HashSet<Option> uniqueOptions = new();
+                foreach (Option option in context.Command.Options)
                 {
                     if (!option.Hidden && uniqueOptions.Add(option))
                     {
@@ -319,7 +320,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     if (command.Name.Equals(ListProjectToProjectReferencesCommandParser.GetCommand().Name))
                     {
-                        CliCommand listCommand = command.Parents.Single() as CliCommand;
+                        Command listCommand = command.Parents.Single() as Command;
 
                         for (int i = 0; i < listCommand.Arguments.Count; i++)
                         {

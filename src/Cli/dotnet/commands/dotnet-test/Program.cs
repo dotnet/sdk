@@ -305,7 +305,7 @@ namespace Microsoft.DotNet.Tools.Test
 
         private static void SetEnvironmentVariablesFromParameters(TestCommand testCommand, ParseResult parseResult)
         {
-            CliOption<IEnumerable<string>> option = TestCommandParser.EnvOption;
+            Option<IEnumerable<string>> option = TestCommandParser.EnvOption;
 
             if (parseResult.GetResult(option) is null)
             {

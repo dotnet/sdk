@@ -400,8 +400,8 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         [InlineData("run")]
         public void It_uses_correct_runtime_help_description(string command)
         {
-            CliConfiguration sharedConfig = Parser.Instance;
-            CliConfiguration localCopy = new(sharedConfig.RootCommand)
+            CommandLineConfiguration sharedConfig = Parser.Instance;
+            CommandLineConfiguration localCopy = new(sharedConfig.RootCommand)
             {
                 EnableDefaultExceptionHandler = sharedConfig.EnableDefaultExceptionHandler,
                 ResponseFileTokenReplacer = sharedConfig.ResponseFileTokenReplacer,

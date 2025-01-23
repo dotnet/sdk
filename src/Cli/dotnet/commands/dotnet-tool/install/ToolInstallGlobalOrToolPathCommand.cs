@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _reporter = (reporter ?? Reporter.Output);
         }
 
-        public static T GetValueOrDefault<T>(CliOption<T> option, T defaultOption, ParseResult parseResult)
+        public static T GetValueOrDefault<T>(Option<T> option, T defaultOption, ParseResult parseResult)
         {
             if (parseResult.GetResult(option) is { } result &&
                 result.GetValueOrDefault<T>() is { } t)

@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli
     public static class ParserExtensions
     {
         public static ParseResult ParseFrom(
-            this CliConfiguration parser,
+            this CommandLineConfiguration parser,
             string context,
             string[] args = null) =>
             parser.Parse(context.Split(' ').Concat(args).ToArray());
