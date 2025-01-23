@@ -28,6 +28,7 @@ internal static class EnvironmentVariables
     public static bool IsPollingEnabled => ReadBool("DOTNET_USE_POLLING_FILE_WATCHER");
     public static bool SuppressEmojis => ReadBool("DOTNET_WATCH_SUPPRESS_EMOJIS");
     public static bool RestartOnRudeEdit => ReadBool("DOTNET_WATCH_RESTART_ON_RUDE_EDIT");
+    public static TimeSpan ProcessCleanupTimeout => ReadTimeSpan("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS");
 
     public static string SdkRootDirectory =>
 #if DEBUG
@@ -49,4 +50,7 @@ internal static class EnvironmentVariables
 
     private static bool ReadBool(string variableName)
         => Environment.GetEnvironmentVariable(variableName) is var value && (value == "1" || bool.TryParse(value, out var boolValue) && boolValue);
+
+    private static TimeSpan ReadTimeSpan(string variableName)
+        => Environment.GetEnvironmentVariable(variableName) is var value && long.TryParse(value, out var intValue) && intValue >= 0 ? TimeSpan.FromMilliseconds(intValue) : TimeSpan.FromSeconds(5);
 }

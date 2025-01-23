@@ -82,15 +82,15 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 {
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
                 });
-            }
-            // Set default configurations and platforms for sln file
-            foreach (var platform in _defaultPlatforms)
-            {
-                solution.AddPlatform(platform);
-            }
-            foreach (var buildType in _defaultBuildTypes)
-            {
-                solution.AddBuildType(buildType);
+                // Set default configurations and platforms for sln file
+                foreach (var platform in _defaultPlatforms)
+                {
+                    solution.AddPlatform(platform);
+                }
+                foreach (var buildType in _defaultBuildTypes)
+                {
+                    solution.AddBuildType(buildType);
+                }
             }
 
             SolutionFolderModel? solutionFolder = (!_inRoot && !string.IsNullOrEmpty(_solutionFolderPath))
