@@ -12,6 +12,7 @@
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'false'">
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
@@ -26,8 +27,8 @@
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName main</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialVisualStudioDropAccessToken $(IBCDropAccessToken)</BuildArgs>
   </PropertyGroup>
+
   <PropertyGroup>
-    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:ApplyPartialNgenOptimization=false</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:EnablePartialNgenOptimization=false</BuildArgs>

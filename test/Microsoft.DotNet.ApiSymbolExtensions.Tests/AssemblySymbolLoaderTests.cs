@@ -270,17 +270,21 @@ namespace MyNamespace
 
             if (resolveReferences)
             {
-                Assert.True(log.HasLoggedWarnings);
+                // Temporarily downgrade assembly reference load warnings to messages: https://github.com/dotnet/sdk/issues/46236
 
-                string expectedReference = "System.Runtime.dll";
+                // Assert.True(log.HasLoggedWarnings);
 
-                if (TargetFrameworks.StartsWith("net4", StringComparison.OrdinalIgnoreCase))
-                {
-                    expectedReference = "mscorlib.dll";
-                }
+                // string expectedReference = "System.Runtime.dll";
 
-                Assert.Single(log.Warnings);
-                Assert.Matches($"CP1002.*?'{Regex.Escape(expectedReference)}'.*?'{Regex.Escape(assemblyPath)}'.*", log.Warnings.Single());
+                // if (TargetFrameworks.StartsWith("net4", StringComparison.OrdinalIgnoreCase))
+                // {
+                //     expectedReference = "mscorlib.dll";
+                // }
+
+                // Assert.Single(log.Warnings);
+                // Assert.Matches($"CP1002.*?'{Regex.Escape(expectedReference)}'.*?'{Regex.Escape(assemblyPath)}'.*", log.Warnings.Single());
+
+                Assert.Empty(log.Warnings);
             }
             else
             {
