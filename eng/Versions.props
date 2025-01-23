@@ -280,6 +280,20 @@
     <MicrosoftSourceLinkGitLabVersion>9.0.0-beta.25070.1</MicrosoftSourceLinkGitLabVersion>
     <MicrosoftSourceLinkBitbucketGitVersion>9.0.0-beta.25070.1</MicrosoftSourceLinkBitbucketGitVersion>
   </PropertyGroup>
+  <!--
+    Dependencies to support netstandard2.0 targets.
+    Versions need to be conditionally selected: due to https://github.com/dotnet/sdk/issues/45155
+  -->
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <SystemBuffersVersion>4.6.0</SystemBuffersVersion>
+    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
+    <SystemThreadingTasksExtensionsVersion>4.6.0</SystemThreadingTasksExtensionsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <SystemBuffersVersion>4.5.1</SystemBuffersVersion>
+    <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
+    <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
+  </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>

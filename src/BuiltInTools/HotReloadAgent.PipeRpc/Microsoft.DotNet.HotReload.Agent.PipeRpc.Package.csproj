@@ -9,7 +9,6 @@
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
-    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
