@@ -30,10 +30,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_UpdateHtmlFiles">
     <PropertyGroup>
-      <_WasmBuildImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(IntermediateOutputPath), 'importmaphtml', 'build'))</_WasmBuildImportMapHtmlPath>
+      <_BuildImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(IntermediateOutputPath), 'importmaphtml', 'build'))</_BuildImportMapHtmlPath>
     </PropertyGroup>
 
-    <MakeDir Directories="$(_WasmBuildImportMapHtmlPath)"/>
+    <MakeDir Directories="$(_BuildImportMapHtmlPath)"/>
 
     <!-- Find HTML swa -->
     <ItemGroup>
@@ -47,7 +47,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
       HtmlFiles="@(_HtmlStaticWebAssets)"
-      OutputPath="$(_WasmBuildImportMapHtmlPath)">
+      OutputPath="$(_BuildImportMapHtmlPath)">
       <Output TaskParameter="HtmlCandidates" ItemName="_HtmlCandidates" />
       <Output TaskParameter="HtmlFilesToRemove" ItemName="_HtmlFilesToRemove" />
       <Output TaskParameter="FileWrites" ItemName="FileWrites" />
@@ -58,7 +58,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_HtmlCandidatesNoMetadata
         Include="@(_HtmlCandidates)"
         RemoveMetadata="Integrity;Fingerprint" />
-      <_HtmlCandidatesNoMetadata ContentRoot="$(_WasmBuildImportMapHtmlPath)" />
+      <_HtmlCandidatesNoMetadata ContentRoot="$(_BuildImportMapHtmlPath)" />
     </ItemGroup>
     <DefineStaticWebAssets CandidateAssets="@(_HtmlCandidatesNoMetadata)">
       <Output TaskParameter="Assets" ItemName="_UpdatedHtmlStaticWebAssets" />
