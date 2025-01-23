@@ -21,13 +21,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
         IAssemblySetMapper? containingAssemblySet = null) : ElementMapper<ElementContainer<IAssemblySymbol>>(ruleRunner, settings, rightSetSize), IAssemblyMapper
     {
         private Dictionary<INamespaceSymbol, INamespaceMapper>? _namespaces;
-        private readonly List<CompatDifference> _assemblyLoadErrors = [];
 
         /// <inheritdoc />
         public IAssemblySetMapper? ContainingAssemblySet { get; } = containingAssemblySet;
-
-        /// <inheritdoc />
-        public IEnumerable<CompatDifference> AssemblyLoadErrors => _assemblyLoadErrors;
 
         /// <inheritdoc />
         public IEnumerable<INamespaceMapper> GetNamespaces()

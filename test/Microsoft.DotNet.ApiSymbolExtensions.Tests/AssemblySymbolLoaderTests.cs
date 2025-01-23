@@ -5,6 +5,7 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -264,21 +265,26 @@ namespace MyNamespace
             var assetInfo = GetSimpleTestAsset();
             TestLog log = new();
             AssemblySymbolLoader loader = new(log, resolveAssemblyReferences: resolveReferences);
-            loader.LoadAssembly(Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll"));
+            string assemblyPath = Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll");
+            loader.LoadAssembly(assemblyPath);
 
             if (resolveReferences)
             {
-                Assert.True(log.HasLoggedWarnings);
+                // Temporarily downgrade assembly reference load warnings to messages: https://github.com/dotnet/sdk/issues/46236
 
-                string expectedReference = "System.Runtime.dll";
+                // Assert.True(log.HasLoggedWarnings);
 
-                if (TargetFrameworks.StartsWith("net4", StringComparison.OrdinalIgnoreCase))
-                {
-                    expectedReference = "mscorlib.dll";
-                }
+                // string expectedReference = "System.Runtime.dll";
 
-                List<string> expected = [$"{AssemblySymbolLoader.AssemblyReferenceNotFoundErrorCode} Could not resolve reference '{expectedReference}' in any of the provided search directories."];
-                Assert.Equal(expected, log.Warnings, StringComparer.CurrentCultureIgnoreCase);
+                // if (TargetFrameworks.StartsWith("net4", StringComparison.OrdinalIgnoreCase))
+                // {
+                //     expectedReference = "mscorlib.dll";
+                // }
+
+                // Assert.Single(log.Warnings);
+                // Assert.Matches($"CP1002.*?'{Regex.Escape(expectedReference)}'.*?'{Regex.Escape(assemblyPath)}'.*", log.Warnings.Single());
+
+                Assert.Empty(log.Warnings);
             }
             else
             {

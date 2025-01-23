@@ -243,6 +243,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> b
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.get -> string?
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
