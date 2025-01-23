@@ -14,7 +14,7 @@
 #   - Schedule: main only, full build
 #
 # - dotnet-unified-build-full (public)
-#   https://dev.azure.com/dnceng-public/public/_build?definitionId=288
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=303
 #   Comment trigger only
 
 variables:
