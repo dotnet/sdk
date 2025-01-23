@@ -26,7 +26,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <ItemGroup>
     <StaticWebAssetFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
-    <StaticWebAssetFingerprintPattern Include="Css" Pattern="*.css" Expression="#[.{fingerprint}]!" />
   </ItemGroup>
 
   <Target Name="_UpdateHtmlFiles">
