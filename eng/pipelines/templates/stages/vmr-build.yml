@@ -402,6 +402,7 @@ stages:
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
+        enableIBCOptimization: true
 
     - template: ../jobs/vmr-build.yml
       parameters:
