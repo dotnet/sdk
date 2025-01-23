@@ -409,12 +409,6 @@ namespace EndToEnd.Tests
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
             if (latestMajorVersion == 10)
             {
-                // TODO: This block need to be updated when every template updates their default tfm.
-                // Currently winforms updated their default templates target but not others.
-                if (template.StartsWith("winforms") || template.StartsWith("wpf"))
-                {
-                    return $"net9.0";
-                }
                 return $"net{latestMajorVersion}.0";
             }
 
