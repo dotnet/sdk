@@ -42,7 +42,7 @@ index 15fe87ac6f..9b34eec7f4 100644
      [Alias('DotNetRuntimeSourceFeedKey')]
      [string]$RuntimeSourceFeedKey,
  
-+    [string]$RestoreConfigFile
++    [string]$RestoreConfigFile,
 +
      # Capture the rest
      [Parameter(ValueFromRemainingArguments = $true)]
