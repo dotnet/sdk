@@ -131,7 +131,8 @@
       AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
       ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
       NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
-      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
+      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)"
+      ArtifactVisibilitiesToPublish="@(ArtifactVisibilityToPublish)" />
   </Target>
 
   <PropertyGroup>
@@ -243,7 +244,8 @@
       AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
       ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
       NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
-      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
+      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)"
+      ArtifactVisibilitiesToPublish="@(ArtifactVisibilityToPublish)" />
   </Target>
 
 </Project>
