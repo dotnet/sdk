@@ -15,7 +15,6 @@
      <!-- NuGet -->
     <IsPackable>true</IsPackable>
     <PackageId>Microsoft.DotNet.HotReload.Agent.Host</PackageId>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageDescription>
       Package containing Hot Reload agent host.
     </PackageDescription>
