@@ -13,8 +13,6 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
-        private const string DotnetHost = "DOTNET_HOST_PATH";
-        private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
         {
@@ -202,18 +200,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Count.Should().Be(2);
-                result.PropertiesToAdd.Should().ContainKey(DotnetHost);          
-            }
-            else
-            {
-                result.PropertiesToAdd.Count.Should().Be(1);
-            }
-            result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
-            result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
+            result.PropertiesToAdd.Should().BeNull();
             result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
             result.Warnings.Should().BeNullOrEmpty();
             result.Errors.Should().BeNullOrEmpty();
@@ -287,20 +274,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Count.Should().Be(4);
-                result.PropertiesToAdd.Should().ContainKey(DotnetHost);
-            }
-            else
-            {
-                result.PropertiesToAdd.Count.Should().Be(3);
-            }
-            result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
-            result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
-            result.PropertiesToAdd.Should().ContainKey("SdkResolverHonoredGlobalJson");
-            result.PropertiesToAdd.Should().ContainKey("SdkResolverGlobalJsonPath");
+            result.PropertiesToAdd.Count.Should().Be(2);
+            result.PropertiesToAdd.ContainsKey("SdkResolverHonoredGlobalJson");
+            result.PropertiesToAdd.ContainsKey("SdkResolverGlobalJsonPath");
             result.PropertiesToAdd["SdkResolverHonoredGlobalJson"].Should().Be("false");
             result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
             result.Warnings.Should().BeEquivalentTo(new[] { "Unable to locate the .NET SDK version '1.2.3' as specified by global.json, please check that the specified version is installed." });
@@ -608,7 +584,6 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     GetEnvironmentVariable,
                     // force current executable location to be the mocked dotnet executable location
                     () => ProcessPath,
-                    (x, y) => "mockRuntimeVersion",
                     useAmbientSettings
                         ? VSSettings.Ambient
                         : new VSSettings(VSSettingsFile?.FullName, DisallowPrereleaseByDefault));
