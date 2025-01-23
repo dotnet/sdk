@@ -96,7 +96,9 @@
     <!-- Pass locations for assets -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
-    <BuildArgs Condition="'$(OfficialBuildId)' != ''">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
+    <BuildArgs Condition="'$(OfficialBuildId)' != '' and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
+    <!-- Add 100 to patch version for Unified Build -->
+    <BuildArgs Condition="'$(OfficialBuildId)' != '' and '$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId.Split('.')[0]).$([MSBuild]::Add($(OfficialBuildId.Split('.')[1]), 100))</BuildArgs>
     <BuildArgs Condition="'$(ForceDryRunSigning)' != ''">$(BuildArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</BuildArgs>
   </PropertyGroup>
 
