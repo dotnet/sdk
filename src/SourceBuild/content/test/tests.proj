@@ -18,16 +18,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="Microsoft.DotNet.SourceBuild.SmokeTests\Microsoft.DotNet.SourceBuild.SmokeTests.csproj"
+    <!-- Shared tests - applicable to unified-build and source-build. -->
+    <ProjectReference Include="Microsoft.DotNet.Tests\Microsoft.DotNet.Tests.csproj" />
+    <!-- Source-build specific tests. -->
+    <ProjectReference Include="Microsoft.DotNet.SourceBuild.Tests\Microsoft.DotNet.SourceBuild.Tests.csproj"
                       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-    <ProjectReference Include="Microsoft.DotNet.UnifiedBuild.Tests\Microsoft.DotNet.UnifiedBuild.Tests.csproj"
-                      Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" />
+    <!-- Unified-build specific tests. -->
+    <!-- TODO: Re-enable the asset comparison tests when building in the final stage build with the final merged manifest as an input.
+               Disabling the tests meanwhile as the current mechanism doesn't work with unique official build ids for which there is no
+               corresponding msft build. https://github.com/dotnet/source-build/issues/4763 -->
+    <!-- <ProjectReference Include="Microsoft.DotNet.UnifiedBuild.Tests\Microsoft.DotNet.UnifiedBuild.Tests.csproj"
+                      Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" /> -->
   </ItemGroup>
 
   <!-- Make sure that the sdk archive is extracted before running the scenario-tests. Need to do this here as it's hard
        to define the dependency directly in scenario-tests.proj. -->
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" BuildInParallel="false" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" BuildInParallel="false" Condition="'$(SkipPrepareSdkArchive)' != 'true'" />
     <ProjectReference Include="$(RepoProjectsDir)scenario-tests.proj" Condition="'$(_RunScenarioTests)' == 'true'" BuildInParallel="false" />
   </ItemGroup>
 

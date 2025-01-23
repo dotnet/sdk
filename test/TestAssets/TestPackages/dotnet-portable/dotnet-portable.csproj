@@ -6,10 +6,10 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
-
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
     <EnableSourceLink>false</EnableSourceLink>
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
 </Project>

@@ -41,7 +41,20 @@ public class EndToEndTests : IDisposable
         _loggerFactory.Dispose();
     }
 
-    [DockerAvailableFact()]
+    internal static readonly string _oldFramework = "net9.0";
+    // CLI will not let us to target net9.0 anymore but we still need it because images for net10.0 aren't ready yet.
+    // so we let it create net10.0 app, then change the target. Since we're building just small sample applications, it works.
+    internal static void ChangeTargetFrameworkAfterAppCreation(string path)
+    {
+        DirectoryInfo d = new DirectoryInfo(path);
+        FileInfo[] Files = d.GetFiles("*.csproj"); //Getting .csproj files
+        string csprojFilename = Files[0].Name; // There is only one
+        string text = File.ReadAllText(Path.Combine(path, csprojFilename));
+        text = text.Replace("net10.0", _oldFramework);
+        File.WriteAllText(Path.Combine(path, csprojFilename), text);
+    }
+
+    [DockerAvailableFact]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithRegistryPushAndPull));
@@ -88,7 +101,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact]
     public async Task ApiEndToEndWithLocalLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithLocalLoad));
@@ -129,7 +142,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact]
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
@@ -338,18 +351,21 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
+        ChangeTargetFrameworkAfterAppCreation(Path.Combine(TestSettings.TestArtifactsDirectory, testName, "MinimalTestApp"));
+
+
         var publishCommand =
-            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", tfm, "-c", "Debug")
+            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", _oldFramework, "-c", "Debug")
                 .WithWorkingDirectory(workingDirectory);
 
         publishCommand.Execute()
             .Should().Pass();
 
-        string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", tfm, rid, "publish");
+        string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", _oldFramework, rid, "publish");
         return publishDirectory;
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact]
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
@@ -402,7 +418,7 @@ public class EndToEndTests : IDisposable
             document
                 .Descendants()
                 .First(e => e.Name.LocalName == "TargetFramework")
-                .Value = ToolsetInfo.CurrentTargetFramework;
+                .Value = _oldFramework;
 
             stream.SetLength(0);
             await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
@@ -415,7 +431,7 @@ public class EndToEndTests : IDisposable
             document
                 .Descendants()
                 .First(e => e.Name.LocalName == "TargetFramework")
-                .Value = ToolsetInfo.CurrentTargetFramework;
+                .Value = _oldFramework;
 
             stream.SetLength(0);
             await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
@@ -431,7 +447,7 @@ public class EndToEndTests : IDisposable
         commandResult.Should().HaveStdOutContaining("Pushed image 'consoleapp:latest'");
     }
 
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/45181")]
     [InlineData("webapi", false)]
     [InlineData("webapi", true)]
     [InlineData("worker", false)]
@@ -453,7 +469,6 @@ public class EndToEndTests : IDisposable
 
         newProjectDir.Create();
         privateNuGetAssets.Create();
-
         new DotnetNewCommand(_testOutput, projectType, "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
@@ -466,16 +481,16 @@ public class EndToEndTests : IDisposable
         {
             File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-            (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+            (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
                 .Should().Pass();
 
             // Add package to the project
-            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion ?? string.Empty)
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
@@ -538,18 +553,14 @@ public class EndToEndTests : IDisposable
         processResult.Should().Pass();
         Assert.NotNull(processResult.StdOut);
         string appContainerId = processResult.StdOut.Trim();
-
         bool everSucceeded = false;
-
-
-
         if (projectType == "webapi")
         {
             var portCommand =
             ContainerCli.PortCommand(_testOutput, containerName, 8080)
                 .Execute();
             portCommand.Should().Pass();
-            var port = portCommand.StdOut.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
+            var port = portCommand.StdOut?.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
             _testOutput.WriteLine($"Discovered port was '{port}'");
             var tempUri = new Uri($"http://{port}", UriKind.Absolute);
             var appUri = new UriBuilder(tempUri)
@@ -635,19 +646,20 @@ public class EndToEndTests : IDisposable
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .Execute()
             .Should().Pass();
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
 
         File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-        (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+        (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework , "-v", packageVersion ?? string.Empty)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -1296,7 +1308,7 @@ public class EndToEndTests : IDisposable
             imageX64)
         .Execute();
         inspectResult.Should().Pass();
-        var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(inspectResult.StdOut);
+        var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(inspectResult.StdOut ?? string.Empty);
         labels.Should().NotBeNull().And.HaveCountGreaterThan(0);
         labels!.Values.Should().AllSatisfy(value => value.Should().NotBeNullOrEmpty());
 
@@ -1309,7 +1321,7 @@ public class EndToEndTests : IDisposable
     [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip = "There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
     [DockerSupportsArchInlineData("windows/amd64", "win-x64", "C:\\app")]
     [DockerSupportsArchInlineData("linux/amd64", "linux-x64", "/app")]
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));

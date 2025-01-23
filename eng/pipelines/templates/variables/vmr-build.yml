@@ -12,47 +12,96 @@ variables:
   - name: VmrBranch
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
-- name: almaLinuxContainer
+- name: _TeamName
+  value: DotNetCore
+
+- name: defaultContainerOptions
+  value: --privileged
+
+- name: almaLinuxContainerName
+  value: almaLinuxContainer
+- name: almaLinuxContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
-- name: alpineLatestContainer
+
+- name: alpineContainerName
+  value: alpineContainer
+- name: alpineContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
-- name: alpinePreviousContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.20-withnode
-- name: centOSStreamContainer
+
+- name: centOSStreamContainerName
+  value: centOSStreamContainer
+- name: centOSStreamContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-- name: fedoraContainer
+
+- name: fedoraContainerName
+  value: fedoraContainer
+- name: fedoraContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
-- name: ubuntuContainer
+
+- name: ubuntuContainerName
+  value: ubuntuContainer
+- name: ubuntuContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
-- name: ubuntuArmContainer
+
+- name: ubuntuArmContainerName
+  value: ubuntuArmContainer
+- name: ubuntuArmContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-arm64
-- name: azurelinuxX64CrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-net9.0
-- name: azurelinuxArmCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-net9.0
-- name: azurelinuxArm64CrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-net9.0
-- name: azurelinuxX64AlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-alpine-net9.0
-- name: azurelinuxArmAlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-alpine-net9.0
-- name: azurelinuxArm64AlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-alpine-net9.0
-- name: androidCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-android-amd64-net9.0
-- name: linuxBionicCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-android-openssl-net9.0
-- name: browserCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
-- name: wasiCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
+
+- name: azurelinuxX64CrossContainerName
+  value: azurelinuxX64CrossContainer
+- name: azurelinuxX64CrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64
+
+- name: azurelinuxArmCrossContainerName
+  value: azurelinuxArmCrossContainer
+- name: azurelinuxArmCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm
+
+- name: azurelinuxArm64CrossContainerName
+  value: azurelinuxArm64CrossContainer
+- name: azurelinuxArm64CrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64
+
+- name: azurelinuxX64AlpineCrossContainerName
+  value: azurelinuxX64AlpineCrossContainer
+- name: azurelinuxX64AlpineCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64-alpine
+
+- name: azurelinuxArmAlpineCrossContainerName
+  value: azurelinuxArmAlpineCrossContainer
+- name: azurelinuxArmAlpineCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
+
+- name: azurelinuxArm64AlpineCrossContainerName
+  value: azurelinuxArm64AlpineCrossContainer
+- name: azurelinuxArm64AlpineCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64-alpine
+
+- name: androidCrossContainerName
+  value: androidCrossContainer
+- name: androidCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-android-amd64
+
+- name: linuxBionicCrossContainerName
+  value: linuxBionicCrossContainer
+- name: linuxBionicCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-android-openssl
+
+- name: browserCrossContainerName
+  value: browserCrossContainer
+- name: browserCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
+
+- name: wasiCrossContainerName
+  value: wasiCrossContainer
+- name: wasiCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
 
 - name: almaLinuxName
   value: AlmaLinux8
-- name: alpineLatestName
+- name: alpineName
   value: Alpine321
-- name: alpinePreviousName
-  value: Alpine320
 - name: centOSStreamName
   value: CentOSStream9
 - name: fedoraName
@@ -68,10 +117,8 @@ variables:
   value: linux-musl-arm
 - name: linuxMuslArm64Rid
   value: linux-musl-arm64
-- name: alpineLatestX64Rid
+- name: alpineX64Rid
   value: alpine.3.21-x64
-- name: alpinePreviousX64Rid
-  value: alpine.3.20-x64
 - name: centOSStreamX64Rid
   value: centos.9-x64
 - name: fedoraX64Rid
@@ -93,7 +140,7 @@ variables:
   - name: poolName_LinuxArm64
     value: Docker-Linux-Arm-Public
   - name: poolImage_Mac
-    value: macos-12
+    value: macos-13
   - name: poolImage_Windows
     value: windows.vs2022preview.amd64.open
 - ${{ else }}:

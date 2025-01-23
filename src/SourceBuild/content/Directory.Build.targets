@@ -2,7 +2,10 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
 
-  <Target Name="DetermineSourceBuiltSdkVersion">
+  <!-- The SkipPrepareSdkArchive switch exists so that outside components like the license scan test pipeline
+       can run a subset of tests that don't need the SDK archive without building the VMR.
+       The switch is also useful for the local dev innerloop to build the test projects without needing to run them. -->
+  <Target Name="DetermineSourceBuiltSdkVersion" Condition="'$(SkipPrepareSdkArchive)' != 'true'">
     <PropertyGroup>
       <SdkFilenamePrefix>dotnet-sdk-</SdkFilenamePrefix>
     </PropertyGroup>
@@ -29,6 +32,36 @@
       <SdkTarballPath Condition="'$(SdkTarballPath)' == ''">%(SdkTarballItem.Identity)</SdkTarballPath>
       <SourceBuiltSdkVersion>$(SdkFilename.Replace('$(SdkFilenamePrefix)','').Replace('-$(TargetRid)$(ArchiveExtension)',''))</SourceBuiltSdkVersion>
     </PropertyGroup>
+  </Target>
+
+  <ItemGroup>
+    <!-- Binplace all assets and packages to ArtifactsStagingDir. -->
+    <BinPlaceDir Include="$(ArtifactsStagingDir)" Condition="'$(ArtifactsStagingDir)' != ''" />
+  </ItemGroup>
+
+  <Target Name="BinPlaceFiles"
+          AfterTargets="Build"
+          Condition="'@(BinPlaceDir)' != '' and '@(BinPlaceFile)' != ''"
+          Inputs="@(BinPlaceDir);%(BinPlaceDir.Identity)"
+          Outputs="unused">
+    <PropertyGroup>
+      <_BinPlaceDir>%(BinPlaceDir.Identity)</_BinPlaceDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BinPlaceFileWithFullTargetPath Include="@(BinPlaceFile)">
+        <TargetPath Condition="'%(BinPlaceFile.TargetPath)' != ''">%(BinPlaceFile.TargetPath)</TargetPath>
+        <TargetPath Condition="'%(BinPlaceFile.TargetPath)' == ''">$([MSBuild]::MakeRelative('$(ArtifactsDir)', '%(BinPlaceFile.Identity)'))</TargetPath>
+      </_BinPlaceFileWithFullTargetPath>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_BinPlaceFileWithFullTargetPath)"
+          DestinationFiles="@(_BinPlaceFileWithFullTargetPath -> '$([MSBuild]::EnsureTrailingSlash('$(_BinPlaceDir)'))%(TargetPath)')"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="true" />
   </Target>
 
 </Project>

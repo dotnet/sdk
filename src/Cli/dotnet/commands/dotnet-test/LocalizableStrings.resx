@@ -175,6 +175,24 @@
   <data name="CmdNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before testing. Implies --no-restore.</value>
   </data>
+  <data name="CmdNoRestoreDescription" xml:space="preserve">
+    <value>Do not execute an implicit restore.</value>
+  </data>
+  <data name="CmdArchitectureDescription" xml:space="preserve">
+    <value>The target architecture '{0}' on which tests will run.</value>
+  </data>
+  <data name="CmdConfigurationDescription" xml:space="preserve">
+    <value>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</value>
+  </data>
+  <data name="CmdProjectDescription" xml:space="preserve">
+    <value>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</value>
+  </data>
+  <data name="CmdSolutionDescription" xml:space="preserve">
+    <value>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</value>
+  </data>
+  <data name="CmdDirectoryDescription" xml:space="preserve">
+    <value>Defines the path of directory to run. If not specified, it defaults to the current directory.</value>
+  </data>
   <data name="CmdResultsDirectoryDescription" xml:space="preserve">
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
@@ -270,15 +288,167 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
     <value>TIMESPAN</value>
   </data>
   <data name="NoSerializerRegisteredWithIdErrorMessage" xml:space="preserve">
-      <value>No serializer registered with ID '{0}'</value>
+    <value>No serializer registered with ID '{0}'</value>
   </data>
   <data name="NoSerializerRegisteredWithTypeErrorMessage" xml:space="preserve">
-      <value>No serializer registered with type '{0}'</value>
+    <value>No serializer registered with type '{0}'</value>
   </data>
   <data name="CmdMaxParallelTestModulesDescription" xml:space="preserve">
     <value>The max number of test modules that can run in parallel.</value>
   </data>
   <data name="CmdAdditionalMSBuildParametersDescription" xml:space="preserve">
     <value>The additional msbuild parameters to pass.</value>
+  </data>
+  <data name="CmdTestModulesDescription" xml:space="preserve">
+    <value>Run tests for the specified test modules.</value>
+  </data>
+  <data name="CmdTestModulesRootDirectoryDescription" xml:space="preserve">
+    <value>The test modules have the specified root directory.</value>
+  </data>
+  <data name="CmdUnsupportedMessageRequestTypeException" xml:space="preserve">
+    <value>Message Request type '{0}' is unsupported.</value>
+    <comment>{0} - message request type</comment>
+  </data>
+  <data name="CmdInvalidTestMessageStateException" xml:space="preserve">
+    <value>Invalid test message state '{0}'</value>
+    <comment>{0} - test message state</comment>
+  </data>
+  <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
+    <value>Test application(s) that support VSTest are not supported.</value>
+  </data>
+  <data name="Aborted" xml:space="preserve">
+    <value>Aborted</value>
+  </data>
+  <data name="ActiveTestsRunning_FullTestsCount" xml:space="preserve">
+    <value>{0} tests running</value>
+  </data>
+  <data name="ActiveTestsRunning_MoreTestsCount" xml:space="preserve">
+    <value>and {0} more</value>
+  </data>
+  <data name="Actual" xml:space="preserve">
+    <value>Actual</value>
+  </data>
+  <data name="CancelledLowercase" xml:space="preserve">
+    <value>canceled</value>
+  </data>
+  <data name="CancellingTestSession" xml:space="preserve">
+    <value>Canceling the test session...</value>
+  </data>
+  <data name="ConsoleIsAlreadyInBatchingMode" xml:space="preserve">
+    <value>Console is already in batching mode.</value>
+    <comment>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</comment>
+  </data>
+  <data name="DiscoveredTestsInAssembly" xml:space="preserve">
+    <value>Discovered {0} tests in assembly</value>
+    <comment>0 is count, the sentence is followed by the path of the assebly</comment>
+  </data>
+  <data name="DiscoveringTestsFrom" xml:space="preserve">
+    <value>Discovering tests from</value>
+  </data>
+  <data name="ExitCode" xml:space="preserve">
+    <value>Exit code</value>
+  </data>
+  <data name="Expected" xml:space="preserve">
+    <value>Expected</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="FailedLowercase" xml:space="preserve">
+    <value>failed</value>
+  </data>
+  <data name="FailedWithErrors" xml:space="preserve">
+    <value>failed with {0} error(s)</value>
+  </data>
+  <data name="FailedWithErrorsAndWarnings" xml:space="preserve">
+    <value>failed with {0} error(s) and {1} warning(s)</value>
+  </data>
+  <data name="FailedWithWarnings" xml:space="preserve">
+    <value>failed with {0} warning(s)</value>
+  </data>
+  <data name="ForTest" xml:space="preserve">
+    <value>For test</value>
+    <comment>is followed by test name</comment>
+  </data>
+  <data name="FromFile" xml:space="preserve">
+    <value>from</value>
+    <comment>from followed by a file name to point to the file from which test is originating</comment>
+  </data>
+  <data name="InProcessArtifactsProduced" xml:space="preserve">
+    <value>In process file artifacts produced:</value>
+  </data>
+  <data name="MinimumExpectedTestsPolicyViolation" xml:space="preserve">
+    <value>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</value>
+    <comment>{0}, {1} number of tests</comment>
+  </data>
+  <data name="OutOfProcessArtifactsProduced" xml:space="preserve">
+    <value>Out of process file artifacts produced:</value>
+  </data>
+  <data name="Passed" xml:space="preserve">
+    <value>Passed</value>
+  </data>
+  <data name="PassedLowercase" xml:space="preserve">
+    <value>passed</value>
+  </data>
+  <data name="RunningTestsFrom" xml:space="preserve">
+    <value>Running tests from</value>
+  </data>
+  <data name="SkippedLowercase" xml:space="preserve">
+    <value>skipped</value>
+  </data>
+  <data name="StackFrameAt" xml:space="preserve">
+    <value>at</value>
+    <comment>at that is used for a stack frame location in a stack trace, is followed by a class and method name</comment>
+  </data>
+  <data name="StackFrameIn" xml:space="preserve">
+    <value>in</value>
+    <comment>in that is used in stack frame it is followed by file name</comment>
+  </data>
+  <data name="StandardError" xml:space="preserve">
+    <value>Error output</value>
+  </data>
+  <data name="StandardOutput" xml:space="preserve">
+    <value>Standard output</value>
+  </data>
+  <data name="TestDiscoverySummary" xml:space="preserve">
+    <value>Discovered {0} tests in {1} assemblies.</value>
+    <comment>0 is number of tests, 1 is count of assemblies</comment>
+  </data>
+  <data name="TestDiscoverySummarySingular" xml:space="preserve">
+    <value>Discovered {0} tests.</value>
+    <comment>0 is number of tests</comment>
+  </data>
+  <data name="TestRunSummary" xml:space="preserve">
+    <value>Test run summary:</value>
+  </data>
+  <data name="ZeroTestsRan" xml:space="preserve">
+    <value>Zero tests ran</value>
+  </data>
+  <data name="CmdUnsupportedTestRunnerDescription" xml:space="preserve">
+    <value>Test runner not supported: {0}.</value>
+  </data>
+  <data name="CmdNonExistentFileErrorDescription" xml:space="preserve">
+    <value>The provided file path does not exist: {0}.</value>
+  </data>
+  <data name="CmdNonExistentDirectoryErrorDescription" xml:space="preserve">
+    <value>The provided directory path does not exist: {0}.</value>
+  </data>
+  <data name="CmdMultipleProjectOrSolutionFilesErrorDescription" xml:space="preserve">
+    <value>Specify which project or solution file to use because this folder contains more than one project or solution file.</value>
+  </data>
+  <data name="CmdNoProjectOrSolutionFileErrorDescription" xml:space="preserve">
+    <value>Specify a project or solution file. The current working directory does not contain a project or solution file.</value>
+  </data>
+  <data name="CmdMSBuildProjectsPropertiesErrorDescription" xml:space="preserve">
+    <value>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</value>
+  </data>
+  <data name="CmdInvalidSolutionFileExtensionErrorDescription" xml:space="preserve">
+    <value>The provided solution file has an invalid extension: {0}.</value>
+  </data>
+  <data name="CmdInvalidProjectFileExtensionErrorDescription" xml:space="preserve">
+    <value>The provided project file has an invalid extension: {0}.</value>
+  </data>
+  <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
+    <value>Specify either the project, solution or directory option.</value>
   </data>
 </root>

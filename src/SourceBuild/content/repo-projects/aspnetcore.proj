@@ -5,20 +5,34 @@
     <BuildScript>$(ProjectDirectory)eng\build$(ShellExtension)</BuildScript>
 
     <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(FlagParameterPrefix)restore $(FlagParameterPrefix)all $(FlagParameterPrefix)pack $(FlagParameterPrefix)publish</BuildActions>
+    <BuildActions Condition="'$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
     <!-- On windows, native tooling (JDK) is pre-installed on the machine. -->
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) -NativeToolsOnMachine</BuildActions>
     <!-- On non-windows, we don't have the JDK available and don't need to build those projects anyway because they are not consumed downstream. -->
     <BuildActions Condition="'$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)no-build-java</BuildActions>
+    <!-- Enable building installers on Windows and Linux. ASP.NET Core doesn't produce installers on Mac -->
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)BuildInstallers</BuildActions>
+    <BuildActions Condition="'$(BuildOS)' == 'linux'">$(BuildActions) $(FlagParameterPrefix)build-installers</BuildActions>
+    <!-- In a source-only build, we don't pass -all, so we need to explicitly opt-in to managed components here. -->
+    <BuildActions Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(BuildOS)' == 'linux'">$(BuildActions) $(FlagParameterPrefix)build-managed</BuildActions>
+
+    <!-- aspnetcore must be built with desktop msbuild but defaults to dotnet build. -->
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) -msbuildEngine vs</BuildArgs>
+    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
-    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
+    <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:CrossArchitectureInstallerBasePath=$(ArtifactsAssetsDir)</BuildArgs>
+    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
+
+    <!-- PackageValidation fails with desktop msbuild: https://github.com/dotnet/sdk/issues/45004. -->
+    <BuildArgs>$(BuildArgs) /p:EnablePackageValidation=false</BuildArgs>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)no-build-repo-tasks</BuildArgs>
   </PropertyGroup>
 

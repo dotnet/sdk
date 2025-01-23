@@ -133,7 +133,7 @@ public class CreateNewImageTests
     /// <summary>
     /// Creates a console app that outputs the environment variable added to the image.
     /// </summary>
-    [DockerAvailableFact()]
+    [DockerAvailableFact]
     public void Tasks_EndToEnd_With_EnvironmentVariable_Validation()
     {
         DirectoryInfo newProjectDir = new(GetTestDirectoryName());
@@ -150,6 +150,8 @@ public class CreateNewImageTests
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
+
+        EndToEndTests.ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
 
         File.WriteAllText(Path.Combine(newProjectDir.FullName, "Program.cs"), $"Console.Write(Environment.GetEnvironmentVariable(\"GoodEnvVar\"));");
 
@@ -191,7 +193,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = pcp.NewContainerRegistry;
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework, "linux-x64");
+        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", EndToEndTests._oldFramework, "linux-x64");
         cni.WorkingDirectory = "/app";
         cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
         cni.ImageTags = pcp.NewContainerTags;
@@ -295,6 +297,72 @@ public class CreateNewImageTests
 
         Assert.Equal(RootlessUser, imageBuilder.BaseImageConfig.GetUser());
     }
+
+
+    [DockerAvailableFact]
+    public void CanOverrideContainerImageFormat()
+    {
+        DirectoryInfo newProjectDir = new(GetTestDirectoryName());
+
+        if (newProjectDir.Exists)
+        {
+            newProjectDir.Delete(recursive: true);
+        }
+
+        newProjectDir.Create();
+
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "build", "--configuration", "release")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        ParseContainerProperties pcp = new();
+        (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
+        pcp.BuildEngine = buildEngine;
+
+        pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:9.0";
+        pcp.ContainerRegistry = "localhost:5010";
+        pcp.ContainerRepository = "dotnet/testimage";
+        pcp.ContainerImageTags = new[] { "5.0", "latest" };
+
+        Assert.True(pcp.Execute(), FormatBuildMessages(errors));
+        Assert.Equal("mcr.microsoft.com", pcp.ParsedContainerRegistry);
+        Assert.Equal("dotnet/runtime", pcp.ParsedContainerImage);
+        Assert.Equal("9.0", pcp.ParsedContainerTag);
+
+        Assert.Equal("dotnet/testimage", pcp.NewContainerRepository);
+        pcp.NewContainerTags.Should().BeEquivalentTo(new[] { "5.0", "latest" });
+
+        CreateNewImage cni = new();
+        (buildEngine, errors) = SetupBuildEngine();
+        cni.BuildEngine = buildEngine;
+
+        cni.BaseRegistry = pcp.ParsedContainerRegistry;
+        cni.BaseImageName = pcp.ParsedContainerImage;
+        cni.BaseImageTag = pcp.ParsedContainerTag;
+        cni.Repository = pcp.NewContainerRepository;
+        cni.OutputRegistry = "localhost:5010";
+        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework);
+        cni.WorkingDirectory = "app/";
+        cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
+        cni.ImageTags = pcp.NewContainerTags;
+        cni.ContainerRuntimeIdentifier = "linux-x64";
+        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
+
+        cni.ImageFormat = KnownImageFormats.OCI.ToString();
+
+        Assert.True(cni.Execute(), FormatBuildMessages(errors));
+
+        cni.GeneratedContainerMediaType.Should().Be(SchemaTypes.OciManifestV1);
+        newProjectDir.Delete(true);
+    }
+
 
     private static (IBuildEngine buildEngine, List<string?> errors) SetupBuildEngine()
     {

@@ -3,35 +3,40 @@
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
-    <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
-    <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
-
-    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
-    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(TargetArchitecture)</BaseOS>
-
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
-    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
-    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
+
+    <IsSpecialFlavorBuild Condition="'$(DotNetBuildRuntimeWasmEnableThreads)' == 'true'">true</IsSpecialFlavorBuild>
+    <IsSpecialFlavorBuild Condition="'$(DotNetBuildMonoEnableLLVM)' != ''">true</IsSpecialFlavorBuild>
+    <IsSpecialFlavorBuild Condition="'$(PgoInstrument)' == 'true'">true</IsSpecialFlavorBuild>
+    <!-- TODO: We may be able to use DotNetBuildAllRuntimePacks=true with wasm. Need to validate. -->
+    <IsSpecialFlavorBuild Condition="'$(TargetArchitecture)' == 'wasm'">true</IsSpecialFlavorBuild>
+    <!--
+      When building a vertical where we explicitly request using the Mono runtime, only build the Mono runtime.
+      This is generally used in source-build scenarios where the target RID is only supported on Mono.
+    -->
+    <IsSpecialFlavorBuild Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">true</IsSpecialFlavorBuild>
+
+    <!-- If this build is not a "special flavor" build, build everything that can be built for this target. -->
+    <BuildArgs Condition="'$(IsSpecialFlavorBuild)' != 'true'">$(BuildArgs) /p:DotNetBuildAllRuntimePacks=true</BuildArgs>
+
+    <!-- Pass the properties for this special build flavor down to the runtime repo build. -->
     <BuildArgs Condition="'$(DotNetBuildRuntimeWasmEnableThreads)' == 'true'">$(BuildArgs) /p:DotNetBuildRuntimeWasmEnableThreads=true</BuildArgs>
-    <BuildArgs Condition="'$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">$(BuildArgs) /p:DotNetBuildRuntimeNativeAOTRuntimePack=true</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildMonoEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoEnableLLVM=$(DotNetBuildMonoEnableLLVM)</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildMonoAOTEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoAOTEnableLLVM=$(DotNetBuildMonoAOTEnableLLVM)</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildMonoBundleLLVMOptimizer)' != ''">$(BuildArgs) /p:DotNetBuildMonoBundleLLVMOptimizer=$(DotNetBuildMonoBundleLLVMOptimizer)</BuildArgs>
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)pgoinstrument</BuildArgs>
+
     <BuildArgs Condition="'$(UseSystemLibs)' != ''">$(BuildArgs) /p:UseSystemLibs=$(UseSystemLibs)</BuildArgs>
+
+    <!-- Needed until https://github.com/dotnet/runtime/issues/109329 is fixed. -->
+    <BuildArgs>$(BuildArgs) /p:NetCoreAppToolCurrentVersion=10.0</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <BuildNonPortable>true</BuildNonPortable>
-    <BuildNonPortable Condition="'$(PortableBuild)' == 'true'">false</BuildNonPortable>
-
-    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:SourceBuildNonPortable=$(BuildNonPortable)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
   </PropertyGroup>
 

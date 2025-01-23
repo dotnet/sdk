@@ -4,6 +4,7 @@
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
     <RootRepo>dotnet</RootRepo>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Label="CalculateTargetOS">
@@ -19,7 +20,7 @@
     <HostOS Condition="'$(HostOS)' == ''">$(TargetOS)</HostOS>
   </PropertyGroup>
 
-  <!-- This is a list of cases where we aren't producing a whole SDK, just a runtime. This list should be kept in sync with https://github.com/dotnet/runtime/blob/main/eng/SourceBuild.props#L26 -->
+  <!-- This is a list of cases where we aren't producing a whole SDK, just a runtime. This list should be kept in sync with https://github.com/dotnet/runtime/blob/main/eng/DotNetBuild.props#L26 -->
   <PropertyGroup Label="ShortStacks">
     <ShortStack Condition="'$(TargetOS)' == 'wasi'">true</ShortStack>
     <ShortStack Condition="'$(TargetOS)' == 'browser'">true</ShortStack>
@@ -30,10 +31,8 @@
     <ShortStack Condition="'$(TargetOS)' == 'maccatalyst'">true</ShortStack>
     <ShortStack Condition="'$(TargetOS)' == 'android'">true</ShortStack>
     <ShortStack Condition="'$(TargetOS)' == 'linux-bionic'">true</ShortStack>
-    <!-- NativeAOT Mac builds are short -->
-    <ShortStack Condition="'$(TargetOS)' == 'osx' and '$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">true</ShortStack>
     <!-- Mono LLVM builds are short -->
-    <ShortStack Condition="'$(MonoEnableLLVM)' == 'true' or '$(MonoAOTEnableLLVM)' == 'true'">true</ShortStack>
+    <ShortStack Condition="'$(DotNetBuildMonoEnableLLVM)' == 'true' or '$(DotNetBuildMonoAOTEnableLLVM)' == 'true'">true</ShortStack>
     <!-- Short stack builds stop at runtime, not the whole SDK -->
     <RootRepo Condition="'$(ShortStack)' == 'true'">runtime</RootRepo>
   </PropertyGroup>
@@ -110,13 +109,15 @@
     <IntermediateOutputPath Condition="'$(PlatformName)' != 'AnyCPU'">$(BaseIntermediateOutputPath)$(PlatformName)\$(Configuration)\</IntermediateOutputPath>
 
     <!-- TargetFrameworkDefaults.props -->
-    <NetCurrent>net9.0</NetCurrent>
+    <NetCurrent>net10.0</NetCurrent>
   </PropertyGroup>
 
   <!-- Manually import the Versions.props file when the Arcade SDK isn't used. -->
   <Import Project="$(RepositoryEngineeringDir)Versions.props" Condition="'$(SkipArcadeSdkImport)' == 'true'" />
 
   <PropertyGroup>
+    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
+    <NetCurrent>net10.0</NetCurrent>
     <!-- We have no projects targeting multiple frameworks, so don't include in output path. -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <!-- This repo's projects are entirely infrastructure and do not ship. -->
@@ -127,6 +128,11 @@
     <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
     <!-- Don't use Arcade's ExcludeFrom* build infra in the VMR orchestrator. -->
     <DisableArcadeExcludeFromBuildSupport>true</DisableArcadeExcludeFromBuildSupport>
+    <LangVersion>latest</LangVersion>
+    <!-- Explicitly set NuGetAuditModel level as it's currently disabled in the product. -->
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Only upgrade NuGetAudit warnings to errors for official builds. -->
+    <WarningsNotAsErrors Condition="'$(OfficialBuildId)' == ''">$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -158,8 +164,11 @@
 
     <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
     <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
-    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'AssetManifests'))</AssetManifestsIntermediateDir>
+
+    <ArtifactsAssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'manifests', '$(Configuration)'))</ArtifactsAssetManifestsDir>
+    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'manifests', '$(Configuration)'))</AssetManifestsIntermediateDir>
     <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
+
     <DotNetSdkExtractDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'extracted-dotnet-sdk'))</DotNetSdkExtractDir>
 
     <PrebuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'prebuilt'))</PrebuiltPackagesPath>
@@ -171,8 +180,6 @@
 
     <PackageReportDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'prebuilt-report'))</PackageReportDir>
     <ResultingPrebuiltPackagesDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', 'prebuilt-packages'))</ResultingPrebuiltPackagesDir>
-    <DotNetBuildPrebuiltReportDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', '$(MSBuildProjectName)'))</DotNetBuildPrebuiltReportDir>
-    
     <SbrpRepoSrcDir>$([MSBuild]::NormalizeDirectory('$(SrcDir)', 'source-build-reference-packages', 'src'))</SbrpRepoSrcDir>
     <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
@@ -195,7 +202,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
+    <!-- Respect the VerticalName property which is set to a unique identifier in CI.
+         Don't use that when building source-only to allow the build to find the previously built manifest file regardless of the vertical name.
+         Default to VerticalManifest.xml. -->
+    <MergedAssetManifestName Condition="'$(VerticalName)' != ''">$(VerticalName).xml</MergedAssetManifestName>
+    <MergedAssetManifestName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(MergedAssetManifestName)' == ''">VerticalManifest.xml</MergedAssetManifestName>
+    <MergedAssetManifestOutputPath>$(ArtifactsAssetManifestsDir)$(MergedAssetManifestName)</MergedAssetManifestOutputPath>
   </PropertyGroup>
 
 </Project>

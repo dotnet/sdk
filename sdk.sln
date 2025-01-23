@@ -89,7 +89,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tool_nuget", "src\Layout\to
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist", "src\Layout\redist\redist.csproj", "{AA273ACB-56FE-4F0C-8CC9-C2C45D31491D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "toolset-tasks", "src\Layout\toolset-tasks\toolset-tasks.csproj", "{C687CA8D-9843-4045-BC20-917953F6C864}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sdk-tasks", "src\Tasks\sdk-tasks\sdk-tasks.csproj", "{C687CA8D-9843-4045-BC20-917953F6C864}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Msbuild.Tests.Utilities", "test\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj", "{64294C35-9001-4FF9-975F-43D283EE5FA9}"
 EndProject
@@ -261,8 +261,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.SdkResolve
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WorkloadManifestReader", "src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj", "{C22A85E0-C09F-4E2D-81F6-82AB97932FE2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkloadManifestValidator", "src\Resolvers\WorkloadManifestValidator\WorkloadManifestValidator.csproj", "{565411E4-E89D-4DF3-ADD5-55D3295F30EE}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WorkloadManifestReader.Tests", "test\Microsoft.NET.Sdk.WorkloadManifestReader.Tests\Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj", "{988D4839-B97F-42BB-A045-C79157CA7780}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver", "src\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj", "{56F189B0-6A8E-4A9D-B7AE-24241204E98D}"
@@ -380,7 +378,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "template_feed", "template_f
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Common.ItemTemplates", "template_feed\Microsoft.DotNet.Common.ItemTemplates\Microsoft.DotNet.Common.ItemTemplates.csproj", "{92F4E400-8C28-41B9-9D7D-8E9A4535636B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Common.ProjectTemplates.9.0", "template_feed\Microsoft.DotNet.Common.ProjectTemplates.9.0\Microsoft.DotNet.Common.ProjectTemplates.9.0.csproj", "{AB7ADCF8-48AC-4885-9C70-16D752B97168}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Common.ProjectTemplates.10.0", "template_feed\Microsoft.DotNet.Common.ProjectTemplates.10.0\Microsoft.DotNet.Common.ProjectTemplates.10.0.csproj", "{AB7ADCF8-48AC-4885-9C70-16D752B97168}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-new.IntegrationTests", "test\dotnet-new.Tests\dotnet-new.IntegrationTests.csproj", "{8868D816-C072-4B66-84D6-7E014EA16D48}"
 EndProject
@@ -411,6 +409,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Web.Tests", "test\Microsoft.NET.Sdk.Web.Tests\Microsoft.NET.Sdk.Web.Tests.csproj", "{B8A61A5C-A9A4-45C5-97E3-CB368358682F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StaticWebAssetsSdk", "StaticWebAssetsSdk", "{9E9F3BB2-6FED-47BC-869C-BFAF6E7C85FC}"
+	ProjectSection(SolutionItems) = preProject
+		src\StaticWebAssetsSdk\.editorconfig = src\StaticWebAssetsSdk\.editorconfig
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sdk", "Sdk", "{CA976F33-7BFA-4F56-8F86-AE132B3B4CBE}"
 	ProjectSection(SolutionItems) = preProject
@@ -488,17 +489,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{3FA6F1CB-295B-4414-B18F-93845917A8CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks", "src\Installer\core-sdk-tasks\core-sdk-tasks.csproj", "{5593C59B-442B-4783-8527-74F6E41668D9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer-build", "src\Installer\finalizer\finalizer-build.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Installer\redist-installer\redist-installer.csproj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SdkResolver", "src\Installer\redist-installer\projects\SdkResolver.csproj", "{27E399C0-6F91-45D6-A63D-041DA41CCFDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sdk", "src\Installer\pkg\dotnet-sdk.proj", "{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\Installer\redist-installer\projects\VSTemplateLocator.csproj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\VSTemplateLocator\VSTemplateLocator.proj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "test\core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sdk-tasks.Tests", "test\sdk-tasks.Tests\sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.WebTools.AspireService.Package", "src\BuiltInTools\AspireService\Microsoft.WebTools.AspireService.Package.csproj", "{19014C60-F87C-4CC7-AC0F-C41B6126EBCE}"
 EndProject
@@ -507,6 +506,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Sdk.Compilers.Toolset", "src\Microsoft.Net.Sdk.Compilers.Toolset\Microsoft.Net.Sdk.Compilers.Toolset.csproj", "{FA579C03-2EB4-4D47-88EE-BFF339E96FAF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.WebTools.AspireService.Tests", "test\Microsoft.WebTools.AspireService.Tests\Microsoft.WebTools.AspireService.Tests.csproj", "{1F0B4B3C-DC88-4740-B04F-1707102E9930}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSMSBuildExtensions", "src\VSMSBuildExtensions\VSMSBuildExtensions.proj", "{D9617F63-15F4-4CA2-8ECF-728A94B45D82}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.DotNet.HotReload.Agent", "src\BuiltInTools\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.shproj", "{418B10BD-CA42-49F3-8F4A-D8CC90C8A17D}"
 EndProject
@@ -702,10 +703,6 @@ Global
 		{C22A85E0-C09F-4E2D-81F6-82AB97932FE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C22A85E0-C09F-4E2D-81F6-82AB97932FE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C22A85E0-C09F-4E2D-81F6-82AB97932FE2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{565411E4-E89D-4DF3-ADD5-55D3295F30EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{565411E4-E89D-4DF3-ADD5-55D3295F30EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{565411E4-E89D-4DF3-ADD5-55D3295F30EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{565411E4-E89D-4DF3-ADD5-55D3295F30EE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{988D4839-B97F-42BB-A045-C79157CA7780}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{988D4839-B97F-42BB-A045-C79157CA7780}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{988D4839-B97F-42BB-A045-C79157CA7780}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -934,10 +931,6 @@ Global
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7495CE7-64E5-4715-9304-799A41EC1D71}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5593C59B-442B-4783-8527-74F6E41668D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5593C59B-442B-4783-8527-74F6E41668D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5593C59B-442B-4783-8527-74F6E41668D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5593C59B-442B-4783-8527-74F6E41668D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32DA04FF-A951-43EA-B2FA-86A825009A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -946,10 +939,6 @@ Global
 		{FAADC193-BA41-449D-97CE-0EF82836046A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAADC193-BA41-449D-97CE-0EF82836046A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAADC193-BA41-449D-97CE-0EF82836046A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{27E399C0-6F91-45D6-A63D-041DA41CCFDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{27E399C0-6F91-45D6-A63D-041DA41CCFDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{27E399C0-6F91-45D6-A63D-041DA41CCFDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{27E399C0-6F91-45D6-A63D-041DA41CCFDF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0CBA5FB8-71A3-457A-89F3-E52B9602164A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0CBA5FB8-71A3-457A-89F3-E52B9602164A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CBA5FB8-71A3-457A-89F3-E52B9602164A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -970,6 +959,14 @@ Global
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9617F63-15F4-4CA2-8ECF-728A94B45D82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9617F63-15F4-4CA2-8ECF-728A94B45D82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9617F63-15F4-4CA2-8ECF-728A94B45D82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9617F63-15F4-4CA2-8ECF-728A94B45D82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2FF79F82-60C1-349A-4726-7783D5A6D5DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -1058,7 +1055,6 @@ Global
 		{2207EE89-63BC-4498-A5BE-F285FBCC8FD9} = {8F22FBD6-BDC8-431E-8402-B7460D3A9724}
 		{29D14D1A-F236-4D11-8E2A-8DCEBC4FAEC0} = {8F22FBD6-BDC8-431E-8402-B7460D3A9724}
 		{C22A85E0-C09F-4E2D-81F6-82AB97932FE2} = {8F22FBD6-BDC8-431E-8402-B7460D3A9724}
-		{565411E4-E89D-4DF3-ADD5-55D3295F30EE} = {8F22FBD6-BDC8-431E-8402-B7460D3A9724}
 		{988D4839-B97F-42BB-A045-C79157CA7780} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{56F189B0-6A8E-4A9D-B7AE-24241204E98D} = {8F22FBD6-BDC8-431E-8402-B7460D3A9724}
 		{71A9F549-0EB6-41F9-BC16-4A6C5007FC91} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
@@ -1145,16 +1141,16 @@ Global
 		{7382A1CB-AA9A-4136-A548-17D7A67C6B0C} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{D7495CE7-64E5-4715-9304-799A41EC1D71} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{3FA6F1CB-295B-4414-B18F-93845917A8CD} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
-		{5593C59B-442B-4783-8527-74F6E41668D9} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{32DA04FF-A951-43EA-B2FA-86A825009A97} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{FAADC193-BA41-449D-97CE-0EF82836046A} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
-		{27E399C0-6F91-45D6-A63D-041DA41CCFDF} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{0CBA5FB8-71A3-457A-89F3-E52B9602164A} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{21C21975-84C1-4A24-8E21-F7EC790A4584} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{19014C60-F87C-4CC7-AC0F-C41B6126EBCE} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{94C8526E-DCC2-442F-9868-3DD0BA2688BE} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{FA579C03-2EB4-4D47-88EE-BFF339E96FAF} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
 		{1F0B4B3C-DC88-4740-B04F-1707102E9930} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{D9617F63-15F4-4CA2-8ECF-728A94B45D82} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
+		{8D6A9984-118D-4415-A8FA-AB1F26CF5C44} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{418B10BD-CA42-49F3-8F4A-D8CC90C8A17D} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{2FF79F82-60C1-349A-4726-7783D5A6D5DF} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}
 		{692B71D8-9C31-D1EE-6C1B-570A12B18E39} = {71A9F549-0EB6-41F9-BC16-4A6C5007FC91}

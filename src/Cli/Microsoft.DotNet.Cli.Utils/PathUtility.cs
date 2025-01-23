@@ -77,14 +77,13 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static void EnsureParentDirectoryExists(string filePath)
         {
-            string directory = Path.GetDirectoryName(filePath);
-
+            string? directory = Path.GetDirectoryName(filePath);
             EnsureDirectoryExists(directory);
         }
 
-        public static void EnsureDirectoryExists(string directoryPath)
+        public static void EnsureDirectoryExists(string? directoryPath)
         {
-            if (!Directory.Exists(directoryPath))
+            if (directoryPath is not null && !Directory.Exists(directoryPath))
             {
                 Directory.CreateDirectory(directoryPath);
             }
@@ -95,7 +94,6 @@ namespace Microsoft.DotNet.Tools.Common
             try
             {
                 Directory.Delete(directoryPath, true);
-
                 return true;
             }
             catch
@@ -121,7 +119,7 @@ namespace Microsoft.DotNet.Tools.Common
 
             int directoriesDeleted = 0;
 
-            while (!Directory.EnumerateFileSystemEntries(dir).Any() &&
+            while (dir is not null && !Directory.EnumerateFileSystemEntries(dir).Any() &&
                 directoriesDeleted < maxDirectoriesToDelete)
             {
                 Directory.Delete(dir);
@@ -272,7 +270,7 @@ namespace Microsoft.DotNet.Tools.Common
         public static string GetDirectoryName(string path)
         {
             path = path.TrimEnd(Path.DirectorySeparatorChar);
-            return path.Substring(Path.GetDirectoryName(path).Length).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            return path.Substring(Path.GetDirectoryName(path)?.Length ?? 0).Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 
         public static string GetPathWithForwardSlashes(string path)

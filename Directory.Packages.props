@@ -33,6 +33,7 @@
     <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
     <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.DarcLib" Version="$(MicrosoftDotNetDarcLibVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" />
     <PackageVersion Include="Microsoft.DotNet.SignCheck" Version="$(ArcadeSdkVersion)" />
     <PackageVersion Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsVersion)" />
@@ -44,8 +45,8 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
-    <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="$(MicrosoftIORedistPackageVersion)" />
+    <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
     <PackageVersion Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)" />
@@ -105,6 +106,7 @@
     <PackageVersion Include="System.Composition.TypedParts" Version="$(SystemCompositionTypedPartsPackageVersion)" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
     <PackageVersion Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" />
+    <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashingPackageVersion)" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <!-- System.Reflection.Metadata and System.Collections.Immutable cannot be pinned here because of hard dependencies within Roslyn on specific versions that have to work both here and in VS -->
     <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="$(SystemReflectionMetadataLoadContextVersion)" />

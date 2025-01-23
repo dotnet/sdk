@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
@@ -14,7 +16,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("net5.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void ItShouldSetDotnetRootToDirectoryOfMuxer(string targetFramework)
         {

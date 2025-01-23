@@ -12,6 +12,7 @@
 
     <BuildArgs>$(BuildArgs) /p:MicrosoftNetCoreIlasmPackageRuntimeId=$(NETCoreSdkRuntimeIdentifier)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:LocalNuGetPackageCacheDirectory=$(LocalNuGetPackageCacheDirectory)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:VmrReferencePackagesDir=$(ReferencePackagesDir)</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>

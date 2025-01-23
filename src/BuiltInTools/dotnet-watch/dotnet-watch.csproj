@@ -11,7 +11,6 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <UseAppHost>false</UseAppHost>
     <RuntimeIdentifier />
-    <Nullable>enable</Nullable>
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>

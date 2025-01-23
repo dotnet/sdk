@@ -14,6 +14,7 @@
     <_DefaultValueAttributeSupport>true</_DefaultValueAttributeSupport>
     <_DesignerHostSupport>true</_DesignerHostSupport>
     <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
+    <_DataSetXmlSerializationSupport>true</_DataSetXmlSerializationSupport>
     <_ComObjectDescriptorSupport>false</_ComObjectDescriptorSupport>
     <DebuggerSupport>true</DebuggerSupport>
     <MetricsSupport>false</MetricsSupport>
@@ -21,6 +22,7 @@
     <EventSourceSupport>false</EventSourceSupport>
     <_WinFormsUITypeEditorSupport>true</_WinFormsUITypeEditorSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantTimezone>true</InvariantTimezone>
     <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <ServerGarbageCollection>true</ServerGarbageCollection>

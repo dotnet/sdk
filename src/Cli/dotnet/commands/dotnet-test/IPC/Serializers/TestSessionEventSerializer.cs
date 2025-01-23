@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#nullable enable
-
 using System.Diagnostics;
 
 namespace Microsoft.DotNet.Tools.Test
@@ -10,48 +8,48 @@ namespace Microsoft.DotNet.Tools.Test
     /*
         |---FieldCount---| 2 bytes
 
-        |---Type Id---| 1 (2 bytes)
+        |---Type Id---| (2 bytes)
         |---Type Size---| (4 bytes)
         |---Type Value---| (n bytes)
 
-        |---SessionUid Id---| 1 (2 bytes)
+        |---SessionUid Id---| (2 bytes)
         |---SessionUid Size---| (4 bytes)
         |---SessionUid Value---| (n bytes)
 
-        |---ModulePath Id---| 1 (2 bytes)
-        |---ModulePath Size---| (4 bytes)
-        |---ModulePath Value---| (n bytes)
+        |---ExecutionId Id---| (2 bytes)
+        |---ExecutionId Size---| (4 bytes)
+        |---ExecutionId Value---| (n bytes)
     */
 
     internal sealed class TestSessionEventSerializer : BaseSerializer, INamedPipeSerializer
     {
-        public int Id => 8;
+        public int Id => TestSessionEventFieldsId.MessagesSerializerId;
 
         public object Deserialize(Stream stream)
         {
-            string? type = null;
+            byte? type = null;
             string? sessionUid = null;
-            string? modulePath = null;
+            string? executionId = null;
 
             ushort fieldCount = ReadShort(stream);
 
             for (int i = 0; i < fieldCount; i++)
             {
-                int fieldId = ReadShort(stream);
+                ushort fieldId = ReadShort(stream);
                 int fieldSize = ReadInt(stream);
 
                 switch (fieldId)
                 {
                     case TestSessionEventFieldsId.SessionType:
-                        type = ReadString(stream);
+                        type = ReadByte(stream);
                         break;
 
                     case TestSessionEventFieldsId.SessionUid:
-                        sessionUid = ReadString(stream);
+                        sessionUid = ReadStringValue(stream, fieldSize);
                         break;
 
-                    case TestSessionEventFieldsId.ModulePath:
-                        modulePath = ReadString(stream);
+                    case TestSessionEventFieldsId.ExecutionId:
+                        executionId = ReadStringValue(stream, fieldSize);
                         break;
 
                     default:
@@ -61,7 +59,7 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            return new TestSessionEvent(type, sessionUid, modulePath);
+            return new TestSessionEvent(type, sessionUid, executionId);
         }
 
         public void Serialize(object objectToSerialize, Stream stream)
@@ -74,12 +72,12 @@ namespace Microsoft.DotNet.Tools.Test
 
             WriteField(stream, TestSessionEventFieldsId.SessionType, testSessionEvent.SessionType);
             WriteField(stream, TestSessionEventFieldsId.SessionUid, testSessionEvent.SessionUid);
-            WriteField(stream, TestSessionEventFieldsId.ModulePath, testSessionEvent.ModulePath);
+            WriteField(stream, TestSessionEventFieldsId.ExecutionId, testSessionEvent.ExecutionId);
         }
 
         private static ushort GetFieldCount(TestSessionEvent testSessionEvent) =>
             (ushort)((testSessionEvent.SessionType is null ? 0 : 1) +
             (testSessionEvent.SessionUid is null ? 0 : 1) +
-            (testSessionEvent.ModulePath is null ? 0 : 1));
+            (testSessionEvent.ExecutionId is null ? 0 : 1));
     }
 }
