@@ -522,7 +522,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyAssemblyHasTypes(loggingAssemblyPath, new[] { "Microsoft.Extensions.Logging.Abstractions.NullLogger" });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
+        [Fact]
         public void Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
         {
             // Arrange
@@ -1128,7 +1128,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
+        [Fact]
         public void Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             var testAppName = "BlazorWasmWithLibrary";
