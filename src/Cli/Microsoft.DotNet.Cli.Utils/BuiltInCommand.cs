@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public string CommandName { get; }
         public string CommandArgs => string.Join(" ", _commandArgs);
+        public string CommandWorkingDirectory => _workingDirectory;
 
         public BuiltInCommand(string commandName, IEnumerable<string> commandArgs, Func<string[], int> builtInCommand)
             : this(commandName, commandArgs, builtInCommand, new BuiltInCommandEnvironment())

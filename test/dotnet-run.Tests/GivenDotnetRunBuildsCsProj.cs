@@ -564,6 +564,53 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
+        public void ItUsesTheValueOfWorkingDirectoryIfSet()
+        {
+            var testAppName = "AppWithWorkingDirectoryInLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+
+            Directory.CreateDirectory(Path.Combine(testProjectDirectory, "launchSubfolder"));
+
+            var cmd = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--launch-profile", "Second");
+
+            cmd.Should().Pass()
+                .And.HaveStdOutContaining("launchSubfolder");
+
+            cmd.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ItPrefersTheValueOfWorkingDirectoryFromLaunchSettingsOverProjectRunWorkingDirectory()
+        {
+            var testAppName = "AppWithWorkingDirectoryInLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource()
+                            .WithProjectChanges(p => {
+                                var ns = p.Root.Name.Namespace;
+                                var propertyGroup = p.Root.Elements(ns + "PropertyGroup").First();
+                                propertyGroup.Add(new XElement(ns + "RunWorkingDirectory", "expectThisSubfolderIsOverridden"));
+                            });
+
+            var testProjectDirectory = testInstance.Path;
+
+            Directory.CreateDirectory(Path.Combine(testProjectDirectory, "launchSubfolder"));
+
+            var cmd = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--launch-profile", "Second");
+
+            cmd.Should().Pass()
+                .And.HaveStdOutContaining("launchSubfolder");
+
+            cmd.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
         public void ItGivesAnErrorWhenTheLaunchProfileNotFound()
         {
             var testAppName = "AppWithLaunchSettings";

@@ -108,6 +108,10 @@ namespace Microsoft.DotNet.Tools.Run
                 {
                     targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
                 }
+                if (launchSettings.WorkingDirectory != null)
+                {
+                    targetCommand.WorkingDirectory(launchSettings.WorkingDirectory);
+                }
             }
             return targetCommand;
         }
