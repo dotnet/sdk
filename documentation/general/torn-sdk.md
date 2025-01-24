@@ -2,7 +2,7 @@
 
 ## Goals
 
-Visual Studio and the .NET SDK are separate products, but their experiences are tightly coupled. Changes to the .NET SDK version can influence Visual Studio's design-time behavior, while updating Visual Studio can impact command-line builds for .NET SDK projects. When the products are in sync these interactions are benign, but when they are not, they can cause compatibility and reliability issues. This document proposes a design to decouple these products, allowing each to provide a more defined and independent experience.
+Visual Studio and the .NET SDK are separate products, but their experiences are tightly coupled. Changes to the .NET SDK version can influence Visual Studio's design-time behavior, while updating Visual Studio can impact command-line builds for .NET SDK projects. When the products are in sync these interactions are benign, but when they are not, they lead to compatibility and reliability issues. This document proposes a design to decouple these products, allowing each to provide a more defined and independent experience.
 
 Design Goals:
 
@@ -18,13 +18,15 @@ Design Goals:
 
 ## Motivations
 
-Visual Studio and .NET SDK are separate products but they are intertwined in command line and design time build scenarios as different components are loaded from each product. This table represents how the products currently function:
+Visual Studio and .NET SDK are separate products but they are intertwined in command line and design time build scenarios as different components are loaded from each product. This table represents how intertwined Roslyn specifically is currently:
 
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
 | --- | --- | --- |
 | msbuild | From Visual Studio | From .NET SDK |
 | dotnet msbuild | From .NET SDK | From .NET SDK |
 | Visual Studio Design Time | From Visual Studio | From Both |
+
+There are other products that have similar intertwined behavior such as NuGet, MSBuild, Razor, etc ... Roslyn is generally the most impactful and the one we are focusing on in this document as it's path forward can be generalized to the other products.
 
 Generally this mixing of components is fine because Visual Studio will install a .NET SDK that is functionally paired with it. That is the compiler and analyzers are the same hence mixing poses no real issue. For example 17.10 installs .NET SDK 8.0.3xx, 17.9 installs .NET SDK 8.0.2xx, etc ... However when the .NET SDK is not paired with the Visual Studio version,then compatibility issues can, and will, arise. Particularly when the .NET SDK is _newer_ than Visual Studio customers will end up with the following style of error:
 
