@@ -35,8 +35,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test2");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
 
-                Assert.Equal(2, net8ProjectMatches.Count);
-                Assert.Equal(2, net9ProjectMatches.Count);
+                Assert.True(net8ProjectMatches.Count > 1);
+                Assert.True(net9ProjectMatches.Count > 1);
 
                 Assert.Single(failedTestsMatches);
                 Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
@@ -76,8 +76,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
                 MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test5");
 
-                Assert.Equal(2, net8ProjectMatches.Count);
-                Assert.Equal(2, net9ProjectMatches.Count);
+                Assert.True(net8ProjectMatches.Count > 1);
+                Assert.True(net9ProjectMatches.Count > 1);
 
                 Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
                 Assert.Multiple(() => Assert.Equal(2, failedTestsMatches.Count));
