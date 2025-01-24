@@ -22,6 +22,7 @@
     <EventSourceSupport>false</EventSourceSupport>
     <_WinFormsUITypeEditorSupport>true</_WinFormsUITypeEditorSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantTimezone>true</InvariantTimezone>
     <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <ServerGarbageCollection>true</ServerGarbageCollection>

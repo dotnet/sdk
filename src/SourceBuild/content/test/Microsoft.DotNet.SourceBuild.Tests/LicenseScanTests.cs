@@ -56,6 +56,7 @@ public class LicenseScanTests : TestBase
         "bsd-original", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bsd-original.LICENSE
         "bsd-original-uc", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bsd-original-uc.LICENSE
         "bsd-simplified", // https://opensource.org/license/bsd-2-clause/
+        "bsd-zero", // https://opensource.org/license/0bsd/
         "bytemark", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bytemark.LICENSE
         "bzip2-libbzip-2010", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bzip2-libbzip-2010.LICENSE
         "cc0-1.0", // https://creativecommons.org/publicdomain/zero/1.0/legalcode
@@ -103,6 +104,7 @@ public class LicenseScanTests : TestBase
         "sax-pd", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/sax-pd.LICENSE
         "unicode", // https://opensource.org/license/unicode-inc-license-agreement-data-files-and-software/
         "unicode-mappings", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/unicode-mappings.LICENSE
+        "unlicense", // https://opensource.org/license/unlicense/
         "uoi-ncsa", // https://opensource.org/license/uoi-ncsa-php/
         "w3c-software-19980720", // https://opensource.org/license/w3c/
         "w3c-software-doc-20150513", // https://opensource.org/license/w3c/
