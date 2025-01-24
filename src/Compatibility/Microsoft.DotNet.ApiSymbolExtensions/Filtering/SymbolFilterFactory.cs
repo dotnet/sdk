@@ -5,6 +5,9 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
+/// <summary>
+/// A factory class to create symbol filters.
+/// </summary>
 public static class SymbolFilterFactory
 {
     /// <summary>
