@@ -81,6 +81,9 @@
     <!-- Indicate that the build is being run from the orchestrator -->
     <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
 
+    <!-- Pass down configuration properties -->
+    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
+
     <!-- Pass through DotNetBuildPass for join point vertical support. -->
     <BuildArgs Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">$(BuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</BuildArgs>
 
@@ -229,6 +232,9 @@
 
     <!-- Used by installer partition in sdk repo to determine sdk version -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
+
+    <!-- Used by installer partition to determine the non-shipping runtime version -->
+    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreTargetingPackx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
 
     <!-- Used by sdk to determine msbuild version for fsharp -->
     <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />

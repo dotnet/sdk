@@ -24,7 +24,7 @@ public class SymbolsTests : SdkTests
     /// <summary>
     /// Verifies that all symbols have valid sourcelinks.
     /// </summary>
-    // [Fact(Skip="https://github.com/dotnet/sdk/issues/42920")]
+    [Fact]
     public void VerifySdkSymbols()
     {
         try
@@ -65,6 +65,10 @@ public class SymbolsTests : SdkTests
     private IList<string> VerifySdkFilesHaveMatchingSymbols(string symbolsRoot, string sdkRoot)
     {
         Assert.True(Directory.Exists(sdkRoot), $"Path, with SDK files to validate, does not exist: {sdkRoot}");
+
+        // Normalize paths, to ensure proper string replacement
+        symbolsRoot = symbolsRoot.TrimEnd(Path.DirectorySeparatorChar);
+        sdkRoot = sdkRoot.TrimEnd(Path.DirectorySeparatorChar);
 
         var failedFiles = new ConcurrentBag<string>();
 
