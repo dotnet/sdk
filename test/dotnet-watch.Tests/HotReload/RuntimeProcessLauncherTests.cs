@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -142,6 +141,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc", trigger);
 
+        var tfm = ToolsetInfo.CurrentTargetFramework;
+
         var workingDirectory = testAsset.Path;
         var hostDir = Path.Combine(testAsset.Path, "Host");
         var hostProject = Path.Combine(hostDir, "Host.csproj");
@@ -219,18 +220,18 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         {
             var hasUpdateSourceA = w.CreateCompletionSource();
             var hasUpdateSourceB = w.CreateCompletionSource();
-            w.Reporter.OnProjectProcessOutput += (projectPath, line) =>
+            w.Reporter.OnProcessOutput += line =>
             {
                 if (line.Content.Contains("<Updated Lib>"))
                 {
-                    if (projectPath == serviceProjectA)
+                    if (line.Content.StartsWith($"[A ({tfm})]"))
                     {
                         if (!hasUpdateSourceA.Task.IsCompleted)
                         {
                             hasUpdateSourceA.SetResult();
                         }
                     }
-                    else if (projectPath == serviceProjectB)
+                    else if (line.Content.StartsWith($"[B ({tfm})]"))
                     {
                         if (!hasUpdateSourceB.Task.IsCompleted)
                         {
@@ -239,7 +240,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                     }
                     else
                     {
-                        Assert.Fail("Only service projects should be updated");
+                        Assert.Fail($"Only service projects should be updated: '{line.Content}'");
                     }
                 }
             };
@@ -273,9 +274,9 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         async Task MakeRudeEditChange()
         {
             var hasUpdateSource = w.CreateCompletionSource();
-            w.Reporter.OnProjectProcessOutput += (projectPath, line) =>
+            w.Reporter.OnProcessOutput += line =>
             {
-                if (projectPath == serviceProjectA && line.Content.Contains("Started A: 2"))
+                if (line.Content.StartsWith($"[A ({tfm})]") && line.Content.Contains("Started A: 2"))
                 {
                     hasUpdateSource.SetResult();
                 }
@@ -300,6 +301,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc", sharedOutput);
+        var tfm = ToolsetInfo.CurrentTargetFramework;
 
         if (sharedOutput)
         {
@@ -325,21 +327,21 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var hasUpdateA = new SemaphoreSlim(initialCount: 0);
         var hasUpdateB = new SemaphoreSlim(initialCount: 0);
-        w.Reporter.OnProjectProcessOutput += (projectPath, line) =>
+        w.Reporter.OnProcessOutput += line =>
         {
             if (line.Content.Contains("<Updated Lib>"))
             {
-                if (projectPath == serviceProjectA)
+                if (line.Content.StartsWith($"[A ({tfm})]"))
                 {
                     hasUpdateA.Release();
                 }
-                else if (projectPath == serviceProjectB)
+                else if (line.Content.StartsWith($"[B ({tfm})]"))
                 {
                     hasUpdateB.Release();
                 }
                 else
                 {
-                    Assert.Fail("Only service projects should be updated");
+                    Assert.Fail($"Only service projects should be updated: '{line.Content}'");
                 }
             }
         };
@@ -398,6 +400,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     public async Task HostRestart(UpdateLocation updateLocation)
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc", updateLocation);
+        var tfm = ToolsetInfo.CurrentTargetFramework;
 
         var workingDirectory = testAsset.Path;
         var hostDir = Path.Combine(testAsset.Path, "Host");
@@ -414,17 +417,17 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var restartRequested = w.Reporter.RegisterSemaphore(MessageDescriptor.RestartRequested);
 
         var hasUpdate = new SemaphoreSlim(initialCount: 0);
-        w.Reporter.OnProjectProcessOutput += (projectPath, line) =>
+        w.Reporter.OnProcessOutput += line =>
         {
             if (line.Content.Contains("<Updated>"))
             {
-                if (projectPath == hostProject)
+                if (line.Content.StartsWith($"[Host ({tfm})]"))
                 {
                     hasUpdate.Release();
                 }
                 else
                 {
-                    Assert.Fail("Only service projects should be updated");
+                    Assert.Fail($"Only service projects should be updated: '{line.Content}'");
                 }
             }
         };
