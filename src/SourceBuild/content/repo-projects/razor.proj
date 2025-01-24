@@ -1,11 +1,5 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
-  <PropertyGroup>
-    <!-- The toolset compiler doesn't get killed with 'build-server shutdown'.
-         Instead of disabling shared compilation, disable the toolset compiler package. -->
-    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
-  </PropertyGroup>
-
   <ItemGroup>
     <RepositoryReference Include="arcade" />
   </ItemGroup>
