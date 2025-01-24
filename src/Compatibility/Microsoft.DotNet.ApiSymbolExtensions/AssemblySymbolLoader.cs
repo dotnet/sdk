@@ -420,8 +420,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
                     if (!found)
                     {
-                        _log.LogWarning(AssemblyReferenceNotFoundErrorCode,
-                            string.Format(Resources.CouldNotResolveReference, assemblyReferenceName, rootAssemblyDisplayString));
+                        // Temporarily downgrade assembly reference load warnings to messages: https://github.com/dotnet/sdk/issues/46236
+                        // _log.LogWarning(AssemblyReferenceNotFoundErrorCode,
+                        //     string.Format(Resources.CouldNotResolveReference, assemblyReferenceName, rootAssemblyDisplayString));
+                        _log.LogMessage(MessageImportance.High, string.Format(Resources.CouldNotResolveReference, assemblyReferenceName, rootAssemblyDisplayString));
                     }
                 }
             }

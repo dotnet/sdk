@@ -43,6 +43,13 @@ variables:
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
+- ${{ if eq(variables['System.TeamProject'], 'public') }}:
+  - name: skipComponentGovernanceDetection  # we run CG on internal builds only
+    value: true
+
+  - name: Codeql.Enabled  # we run CodeQL on internal builds only
+    value: false
+
 - template: /eng/common/templates-official/variables/pool-providers.yml@self
 - template: /src/sdk/eng/pipelines/templates/variables/vmr-build.yml@self
 
