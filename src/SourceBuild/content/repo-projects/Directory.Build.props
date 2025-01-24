@@ -235,6 +235,9 @@
     <!-- Used by installer partition in sdk repo to determine sdk version -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
 
+    <!-- Used by installer partition to determine the non-shipping runtime version -->
+    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreTargetingPackx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+
     <!-- Used by sdk to determine msbuild version for fsharp -->
     <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
