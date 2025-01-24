@@ -48,22 +48,6 @@ namespace Microsoft.DotNet.GenAPI
                 includeEffectivelyPrivateSymbols: true,
                 includeExplicitInterfaceImplementationSymbols: true);
 
-            // Configure the symbol filter
-            CompositeSymbolFilter symbolFilter = new();
-            if (excludeApiFiles is not null)
-            {
-                symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
-            }
-            symbolFilter.Add(new ImplicitSymbolFilter());
-            symbolFilter.Add(accessibilitySymbolFilter);
-
-            // Configure the attribute data symbol filter
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludeAttributesFiles is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
             // Invoke the CSharpFileBuilder for each directly loaded assembly.
             foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
@@ -75,8 +59,8 @@ namespace Microsoft.DotNet.GenAPI
                 textWriter.Write(headerFileText);
 
                 using CSharpFileBuilder fileBuilder = new(log,
-                    symbolFilter,
-                    attributeDataSymbolFilter,
+                    SymbolFilterFactory.GetFilterFromFiles(excludeApiFiles, respectInternals),
+                    SymbolFilterFactory.GetFilterFromFiles(excludeAttributesFiles, respectInternals),
                     textWriter,
                     exceptionMessage,
                     includeAssemblyAttributes,
