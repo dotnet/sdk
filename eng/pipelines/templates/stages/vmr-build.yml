@@ -94,7 +94,7 @@ stages:
         pool: ${{ parameters.pool_Linux }}
         container:
           name: ${{ variables.centOSStreamContainerName }}
-          image: ${{ variables.centOSStreamContainerImage }}
+          image: ${{ variables.centOSStreamContainerImage }}x
         buildFromArchive: false            # 🚫
         buildSourceOnly: true              # ✅
         enablePoison: false                # 🚫
