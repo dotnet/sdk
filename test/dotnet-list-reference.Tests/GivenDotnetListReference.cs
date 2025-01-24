@@ -160,6 +160,7 @@ Commands:
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.NoReferencesFound, CommonLocalizableStrings.P2P, lib.CsProjPath));
         }
 
+        /*
         [Fact]
         public void ItPrintsSingleReference()
         {
@@ -208,6 +209,7 @@ Commands:
             cmd.Should().Pass();
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
+        */
 
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {

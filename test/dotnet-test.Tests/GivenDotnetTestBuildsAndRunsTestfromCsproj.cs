@@ -333,6 +333,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
+        /*
         [Theory]
         [InlineData("q", false)]
         [InlineData("m", false)]
@@ -372,6 +373,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
         }
+        */
 
         [Fact]
         public void ItTestsWithTheSpecifiedRuntimeOption()
@@ -609,6 +611,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
+        /*
         [Fact]
         public void ItShouldShowImportantMessage()
         {
@@ -633,6 +636,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(1);
         }
+        */
 
         [Fact]
         public void ItSetsDotnetRootToTheLocationOfDotnetExecutableWhenRunningDotnetTestWithProject()

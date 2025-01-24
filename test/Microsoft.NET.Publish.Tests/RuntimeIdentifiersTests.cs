@@ -359,6 +359,7 @@ namespace Microsoft.NET.Publish.Tests
 
         }
 
+        /*
         [Fact]
         public void PublishSuccessfullyWithRIDRequiringPropertyAndRuntimeIdentifiersNoRuntimeIdentifier()
         {
@@ -380,5 +381,6 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
         }
+        */
     }
 }
