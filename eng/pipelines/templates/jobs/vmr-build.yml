@@ -142,9 +142,13 @@ jobs:
 
   ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
     ${{ if eq(parameters.buildPass, '') }}:
-      # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
+      # For PR builds, skip the stage 2 build if the stage 1 build fails.
+      # Otherwise, run the stage 2 build even if the stage 1 build fails so that we can get a complete assessment of the build status.
       # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
-      condition: succeededOrFailed()
+      ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        condition: succeeded()
+      ${{ else }}:
+        condition: succeededOrFailed()
     ${{ else }}:
       condition: succeeded()
     dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
