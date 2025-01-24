@@ -13,12 +13,40 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     {
         private readonly HashSet<string> _docIdsToExclude;
 
+        /// <summary>
+        /// Creates a filter to exclude APIs using the DocIDs provided in the specified files.
+        /// </summary>
+        /// <param name="filesWithDocIdsToExclude">A collection of files each containing multiple DocIDs to exclude.</param>
+        /// <returns>An instance of the symbol filter.</returns>
         public static DocIdSymbolFilter CreateFromFiles(params string[] filesWithDocIdsToExclude)
-            => new DocIdSymbolFilter(ReadDocIdsFromFiles(filesWithDocIdsToExclude));
+        {
+            List<string> docIds = new();
 
+            foreach (string docIdsToExcludeFile in filesWithDocIdsToExclude)
+            {
+                if (string.IsNullOrWhiteSpace(docIdsToExcludeFile))
+                {
+                    continue;
+                }
+
+                foreach (string docId in ReadDocIdsFromList(File.ReadAllLines(docIdsToExcludeFile)))
+                {
+                    docIds.Add(docId);
+                }
+            }
+
+            return new DocIdSymbolFilter(docIds);
+        }
+
+        /// <summary>
+        /// Creates a filter to exclude APIs using the DocIDs provided in the specified list.
+        /// </summary>
+        /// <param name="docIdsToExclude">A collection of DocIDs to exclude.</param>
+        /// <returns>An instance of the symbol filter.</returns>
         public static DocIdSymbolFilter CreateFromLists(params string[] docIdsToExclude)
             => new DocIdSymbolFilter(ReadDocIdsFromList(docIdsToExclude));
 
+        // Private constructor to avoid creating an instance with an empty list.
         private DocIdSymbolFilter(IEnumerable<string> docIdsToExclude)
             => _docIdsToExclude = [.. docIdsToExclude];
 
@@ -53,20 +81,5 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
             }
         }
 
-        private static IEnumerable<string> ReadDocIdsFromFiles(params string[] docIdsToExcludeFiles)
-        {
-            foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
-            {
-                if (string.IsNullOrWhiteSpace(docIdsToExcludeFile))
-                {
-                    continue;
-                }
-
-                foreach (string docId in ReadDocIdsFromList(File.ReadAllLines(docIdsToExcludeFile)))
-                {
-                    yield return docId;
-                }
-            }
-        }
     }
 }
