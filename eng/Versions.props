@@ -157,9 +157,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
-    <MicrosoftNETTestSdkPackageVersion>17.13.0-preview-25060-03</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftTestPlatformCLIPackageVersion>17.13.0-preview-25060-03</MicrosoftTestPlatformCLIPackageVersion>
-    <MicrosoftTestPlatformBuildPackageVersion>17.13.0-preview-25060-03</MicrosoftTestPlatformBuildPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>17.14.0-preview-25073-04</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftTestPlatformCLIPackageVersion>17.14.0-preview-25073-04</MicrosoftTestPlatformCLIPackageVersion>
+    <MicrosoftTestPlatformBuildPackageVersion>17.14.0-preview-25073-04</MicrosoftTestPlatformBuildPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/testfx -->
