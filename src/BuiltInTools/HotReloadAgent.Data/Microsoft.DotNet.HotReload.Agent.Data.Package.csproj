@@ -13,26 +13,17 @@
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
     <IsSourcePackage>true</IsSourcePackage>
-    <PackageId>Microsoft.DotNet.HotReload.Agent.PipeRpc</PackageId>
+    <PackageId>Microsoft.DotNet.HotReload.Agent.Data</PackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageDescription>
-      Package containing sources of Hot Reload agent pipe RPC.
+      Package containing sources of Hot Reload agent data types.
     </PackageDescription>
     <!-- Remove once https://github.com/NuGet/Home/issues/8583 is fixed -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- netstandard2.0 polyfills -->
-    <PackageReference Include="System.Buffers" />
-    <PackageReference Include="System.Memory" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-  </ItemGroup>
-
   <!-- Make sure the shared source files do not require any global usings -->
   <ItemGroup>
     <Using Remove="@(Using)" />
   </ItemGroup>
-  <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
 </Project>
