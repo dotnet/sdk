@@ -392,7 +392,7 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static string FixFilePath(string path)
         {
-            return string.IsNullOrEmpty(path) || Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/'); // .Replace("//", "/");
+            return string.IsNullOrEmpty(path) || Path.DirectorySeparatorChar == '\\' ? path : path.Replace('\\', '/');
         }
 
         public static string GetDirectorySeparatorChar()
