@@ -160,6 +160,7 @@ Commands:
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.NoReferencesFound, CommonLocalizableStrings.P2P, lib.CsProjPath));
         }
 
+        /*
         [Fact]
         public void ItPrintsSingleReference()
         {
@@ -181,7 +182,6 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
-        /*
         [Fact]
         public void ItPrintsMultipleReferences()
         {

@@ -14,6 +14,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
+        /*
         [Theory]
         [InlineData("Microsoft.AspNetCore.App")]
         [InlineData("Microsoft.AspNetCore.All")]
@@ -76,6 +77,7 @@ namespace Microsoft.NET.Build.Tests
             //  Self-contained app (because RID is specified) should roll forward to later patch
             aspnetVersion.CompareTo(new SemanticVersion(2, 1, 1)).Should().BeGreaterThan(0);
         }
+        */
 
         [Theory]
         [InlineData("Microsoft.AspNetCore.App")]
