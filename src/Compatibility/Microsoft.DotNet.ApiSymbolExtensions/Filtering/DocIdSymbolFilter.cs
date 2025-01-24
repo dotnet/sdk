@@ -80,6 +80,5 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
                 }
             }
         }
-
     }
 }
