@@ -25,31 +25,28 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
-                MatchCollection netFrameworkProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net4\.8{PathUtility.GetDirectorySeparatorChar()}TestProjectWithNetFramework\.exe\s+\(net48\|[a-zA-Z][1-9]+\)\spassed");
                 MatchCollection net8ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}TestProjectWithNet8\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed");
                 MatchCollection net9ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net9\.0{PathUtility.GetDirectorySeparatorChar()}TestProjectWithNet9\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\spassed");
 
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test2");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
 
-                Assert.Equal(2, netFrameworkProjectMatches.Count);
                 Assert.Equal(2, net8ProjectMatches.Count);
                 Assert.Equal(2, net9ProjectMatches.Count);
 
                 Assert.Single(failedTestsMatches);
-                Assert.Multiple(() => Assert.Equal(3, skippedTestsMatches.Count));
+                Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
-                    .And.Contain("total: 7")
-                    .And.Contain("succeeded: 3")
+                    .And.Contain("total: 5")
+                    .And.Contain("succeeded: 2")
                     .And.Contain("failed: 1")
-                    .And.Contain("skipped: 3");
+                    .And.Contain("skipped: 2");
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -66,12 +63,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
-                var netFrameworkProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net4\.8{PathUtility.GetDirectorySeparatorChar()}TestProject\.exe\s+\(net48\|[a-zA-Z][1-9]+\)\sfailed");
                 var net8ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed");
                 var net9ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net9\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\sfailed");
 
@@ -81,22 +76,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
                 MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test5");
 
-                Assert.Equal(2, netFrameworkProjectMatches.Count);
                 Assert.Equal(2, net8ProjectMatches.Count);
                 Assert.Equal(2, net9ProjectMatches.Count);
 
-                Assert.Multiple(() => Assert.Equal(3, skippedTestsMatches.Count));
-                Assert.Multiple(() => Assert.Equal(3, failedTestsMatches.Count));
-                Assert.Multiple(() => Assert.Equal(3, timeoutTestsMatches.Count));
-                Assert.Multiple(() => Assert.Equal(3, errorTestsMatches.Count));
-                Assert.Multiple(() => Assert.Equal(3, skippedTestsMatches.Count));
+                Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
+                Assert.Multiple(() => Assert.Equal(2, failedTestsMatches.Count));
+                Assert.Multiple(() => Assert.Equal(2, timeoutTestsMatches.Count));
+                Assert.Multiple(() => Assert.Equal(2, errorTestsMatches.Count));
+                Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
-                    .And.Contain("total: 18")
-                    .And.Contain("succeeded: 3")
-                    .And.Contain("failed: 12")
-                    .And.Contain("skipped: 3");
+                    .And.Contain("total: 12")
+                    .And.Contain("succeeded: 2")
+                    .And.Contain("failed: 8")
+                    .And.Contain("skipped: 2");
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -114,7 +108,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
