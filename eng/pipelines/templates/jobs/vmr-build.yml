@@ -249,7 +249,7 @@ jobs:
     ### Additional arguments
     - ${{ if eq(parameters.enableIBCOptimization, 'true') }}:
       - name: ibcArguments
-        value: '/p:EnableIBCOptimization=true /p:IBCDropAccessToken=$(dn-bot-devdiv-drop-rw-code-rw)
+        value: '/p:EnableIBCOptimization=true /p:IBCDropAccessToken=$(dn-bot-devdiv-drop-rw-code-rw)'
     - ${{ else }}:
       - name: ibcArguments
         value: ''
