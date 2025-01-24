@@ -142,9 +142,13 @@ jobs:
 
   ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
     ${{ if eq(parameters.buildPass, '') }}:
-      # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
+      # For PR builds, skip the stage 2 build if the stage 1 build fails.
+      # Otherwise, run the stage 2 build even if the stage 1 build fails so that we can get a complete assessment of the build status.
       # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
-      condition: succeededOrFailed()
+      ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        condition: succeeded()
+      ${{ else }}:
+        condition: succeededOrFailed()
     ${{ else }}:
       condition: succeeded()
     dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
@@ -160,13 +164,6 @@ jobs:
     value: ''
   - name: runTestsTimeout
     value: 30
-
-  - ${{ if or(eq(parameters.useDevVersions, 'True'), eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-    - name: _SignType
-      value: ''
-  - ${{ else }}:
-    - name: _SignType
-      value: real
 
   - ${{ if parameters.isBuiltFromVmr }}:
     - name: vmrPath
@@ -187,11 +184,65 @@ jobs:
   - name: artifactsStagingDir
     value: $(Build.ArtifactStagingDirectory)/artifacts
 
+  - name: successfulJobArtifactName
+    value: $(Agent.JobName)_Artifacts
+
+  - name: failedJobArtifactName
+    value: $(successfulJobArtifactName)_Attempt$(System.JobAttempt)
+
   # manually disable CodeQL until https://dev.azure.com/mseng/1ES/_workitems/edit/2211548 is implemented
   # CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary
   - ${{ if eq(parameters.pool.os, 'macOS') }}:
     - name: ONEES_ENFORCED_CODEQL_ENABLED
       value: false
+
+  # Build up the command line variables. We avoid doing this in the script sections below
+  # because AzDO will not echo command lines if they are more than a single line.
+
+  ## Build command line - Windows
+  - ${{ if eq(parameters.targetOS, 'windows') }}:
+    ## Basic arguments
+    - name: baseArguments
+      value:  -ci -cleanWhileBuilding -prepareMachine /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+
+    - name: configArguments
+      value: -c ${{ parameters.configuration }}
+
+    - name: targetArguments
+      value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+
+    ### Dev versions variables
+    - ${{ if eq(parameters.useDevVersions, 'True') }}:
+      - name: devArguments
+        value: -dev
+    - ${{ else }}:
+      - name: devArguments
+        value: ''
+
+    ### Signing variables
+    - ${{ if eq(parameters.sign, 'True') }}:
+      - ${{ if or(eq(parameters.useDevVersions, 'True'), eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+        # The _SignType variable is used by microbuild installation
+        - name: _SignType
+          value: ''
+        - name: signArguments
+          value: -sign /p:ForceDryRunSigning=true
+      - ${{ else }}:
+        - name: _SignType
+          value: real
+        - name: signArguments
+          value: -sign /p:DotNetSignType=real /p:TeamName=$(_TeamName)
+    - ${{ else }}:
+      - name: signArguments
+        value: ''
+
+    ### Build Pass
+    - ${{ if ne(parameters.buildPass, '') }}:
+      - name: buildPassArguments
+        value: /p:DotNetBuildPass=${{ parameters.buildPass }}
+    - ${{ else }}:
+      - name: buildPassArguments
+        value: ''
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -203,11 +254,21 @@ jobs:
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
       sbomEnabled: false
 
+    # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
+    # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
+    # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - output: pipelineArtifact
       path: $(artifactsStagingDir)
-      artifact: $(Agent.JobName)_Artifacts
-      displayName: Publish Artifacts
-      condition: succeededOrFailed()
+      artifact: $(successfulJobArtifactName)
+      displayName: Publish Artifacts (On Success)
+      condition: succeeded()
+      sbomEnabled: true
+
+    - output: pipelineArtifact
+      path: $(artifactsStagingDir)
+      artifact: $(failedJobArtifactName)
+      displayName: Publish Artifacts (On Failure)
+      condition: failed()
       sbomEnabled: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
@@ -307,7 +368,7 @@ jobs:
       parameters:
         enableMicrobuild: true
         enableMicrobuildForMacAndLinux: true
-  
+
   - ${{ if eq(parameters.targetOS, 'windows') }}:
     # Node 20.x is a toolset dependency to build aspnetcore
     # Keep in sync with aspnetcore: https://github.com/dotnet/aspnetcore/blob/7d5309210d8f7bae8fa074da495e9d009d67f1b4/.azure/pipelines/ci.yml#L719-L722
@@ -316,18 +377,14 @@ jobs:
       inputs:
         versionSpec: 20.x
 
-    - script: |
-        set extraBuildArguments=
-
-        set signArgs=/p:ForceDryRunSigning=true
-        if /I '$(_SignType)'=='real' set signArgs=/p:DotNetSignType=real /p:TeamName=$(_TeamName)
-        if /I '$(_SignType)'=='test' set signArgs=/p:DotNetSignType=test /p:TeamName=$(_TeamName)
-        if /I '${{ parameters.sign }}'=='True' if /I NOT '${{ parameters.buildSourceOnly }}'=='True' set extraBuildArguments=%extraBuildArguments% -sign %signArgs%
-
-        if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
-        set extraBuildProperties=
-        if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) %extraBuildProperties% ${{ parameters.extraProperties }}
+    - script: build.cmd
+        $(baseArguments)
+        $(configArguments)
+        $(targetArguments)
+        $(devArguments)
+        $(signArguments)
+        $(buildPassArguments)
+        ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
 
@@ -355,7 +412,7 @@ jobs:
           fi
 
           if [[ '${{ parameters.withPreviousSDK }}' == 'True' ]]; then
-            # Source-built artifacts are from CentOS 9 Stream or Alpine 3.19. We want to download them without
+            # Source-built artifacts are from CentOS 9 Stream. We want to download them without
             # downloading portable versions from the internet.
             customPrepArgs="${customPrepArgs} --no-sdk --no-bootstrap"
             prepSdk=false
@@ -602,10 +659,19 @@ jobs:
         testRunTitle: ScenarioTests_$(Agent.JobName)
 
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
+    # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
+    # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
+    # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - publish: $(artifactsStagingDir)
-      artifact: $(Agent.JobName)_Artifacts
-      displayName: Publish Artifacts
-      condition: succeededOrFailed()
+      artifact: $(successfulJobArtifactName)
+      displayName: Publish Artifacts (On Success)
+      condition: succeeded()
+      continueOnError: true
+
+    - publish: $(artifactsStagingDir)
+      artifact: $(failedJobArtifactName)
+      displayName: Publish Artifacts (On Failure)
+      condition: failed()
       continueOnError: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs

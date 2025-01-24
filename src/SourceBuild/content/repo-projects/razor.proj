@@ -1,13 +1,5 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
-  <PropertyGroup>
-    <!-- The toolset compiler doesn't get killed with 'build-server shutdown'.
-         Instead of disabling shared compilation, disable the toolset compiler package. -->
-    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
-    <!-- Pass down the target RID so we can create the correct apphost for the language servers. -->
-    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
-  </PropertyGroup>
-
   <ItemGroup>
     <RepositoryReference Include="arcade" />
   </ItemGroup>
