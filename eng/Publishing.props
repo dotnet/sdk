@@ -99,6 +99,7 @@
       <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)"
         RelativeBlobPath="$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))"
         IsShipping="false" />
+      <ToolsetAssetsToPushToBlobFeed ManifestArtifactData="Visibility=%(Visibility)" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(PostBuildSign)' == 'true'">
