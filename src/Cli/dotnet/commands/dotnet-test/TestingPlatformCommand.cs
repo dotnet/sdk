@@ -8,6 +8,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Testing.Platform.Helpers;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using Windows.Win32.Security.Cryptography;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -42,7 +43,7 @@ namespace Microsoft.DotNet.Cli
                 _args = [.. parseResult.UnmatchedTokens];
                 _isHelp = ContainsHelpOption(parseResult.GetArguments());
 
-                InitializeOutput(degreeOfParallelism);
+                InitializeOutput(degreeOfParallelism, _isHelp);
 
                 bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
                 if (_isHelp)
@@ -114,7 +115,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!_isHelp)
             {
-                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery);
+                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, _isHelp);
             }
         }
 
@@ -177,10 +178,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
             {
-                if (!_isHelp)
-                {
-                    _output?.TestExecutionCompleted(DateTimeOffset.Now);
-                }
+                _output?.TestExecutionCompleted(DateTimeOffset.Now);
             }
         }
 
