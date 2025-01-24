@@ -151,37 +151,50 @@
     <InstallersAssetManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(InstallersAssetManifestFileName).xml</InstallersAssetManifestFilePath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.zip" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.tar.gz" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.pkg" />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.exe" />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.deb" />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.rpm" />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.msi" />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.cab" />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.svg" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
-    <!-- Only publish this file from windows x64 so that we don't end up with duplicates -->
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)productVersion.txt"
-        Condition=" '$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt"
-        Condition=" '$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
-    <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
-    <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.swr" />
-    <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.msi" />
-    <SdkNonShippingAssetsToPublish Condition="'$(PublishBinariesAndBadge)' != 'false'" Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" />
-    <!-- dotnet-toolset zips are published in the PublishToolsetAssets target. -->
-    <SdkNonShippingAssetsToPublish Condition="'$(PublishBinariesAndBadge)' != 'false'" Include="$(ArtifactsNonShippingPackagesDir)*.zip" Exclude="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
-    <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.pkg" />
-    <CheckSumsToPublish Include="$(ArtifactsShippingPackagesDir)*.sha512" />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productCommit-*.json.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productCommit-*.txt.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productVersion.txt.sha512" Condition=" '$(OS)' != 'Windows_NT' or '$(Architecture)' != 'x64' " />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt.sha512" Condition=" '$(OS)' != 'Windows_NT' or '$(Architecture)' != 'x64' " />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.zip.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
-    <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.tar.gz.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
-  </ItemGroup>
+  <!-- When doing a PGO build in the VMR, only ship the SDK's PGO archives -->
+  <Choose>
+    <When Condition="'$(PgoInstrument)' == 'true' and '$(DotNetBuildOrchestrator)' == 'true'">
+      <ItemGroup>
+        <SdkAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*.zip" />
+        <SdkAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*.tar.gz" />
+        <CheckSumsToPublish Include="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*.zip.sha512" />
+        <CheckSumsToPublish Include="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*.tar.gz.sha512" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.zip" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.tar.gz" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.pkg" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.exe" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.deb" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.rpm" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.msi" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.cab" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)*.svg" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+        <!-- Only publish this file from windows x64 so that we don't end up with duplicates -->
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)productVersion.txt"
+            Condition=" '$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt"
+            Condition=" '$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+        <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.swr" />
+        <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.msi" />
+        <SdkNonShippingAssetsToPublish Condition="'$(PublishBinariesAndBadge)' != 'false'" Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" />
+        <!-- dotnet-toolset zips are published in the PublishToolsetAssets target. -->
+        <SdkNonShippingAssetsToPublish Condition="'$(PublishBinariesAndBadge)' != 'false'" Include="$(ArtifactsNonShippingPackagesDir)*.zip" Exclude="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
+        <SdkNonShippingAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)*.pkg" />
+        <CheckSumsToPublish Include="$(ArtifactsShippingPackagesDir)*.sha512" />
+        <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productCommit-*.json.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
+        <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productCommit-*.txt.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
+        <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)productVersion.txt.sha512" Condition=" '$(OS)' != 'Windows_NT' or '$(Architecture)' != 'x64' " />
+        <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt.sha512" Condition=" '$(OS)' != 'Windows_NT' or '$(Architecture)' != 'x64' " />
+        <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.zip.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
+        <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.tar.gz.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
 
   <!-- Publish the sdk and the checksums only in the initial build pass. -->
   <Target Name="PublishSdkAssetsAndChecksums"
