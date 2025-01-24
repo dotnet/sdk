@@ -207,9 +207,23 @@ namespace Microsoft.DotNet.Cli
 
             foreach (var property in args.Handshake.Properties)
             {
-                VSTestTrace.SafeWriteTrace(() => $"{property.Key}: {property.Value}");
+                VSTestTrace.SafeWriteTrace(() => $"{GetHandshakePropertyName(property.Key)}: {property.Value}");
             }
         }
+
+        private static string GetHandshakePropertyName(byte propertyId) =>
+            propertyId switch
+            {
+                HandshakeMessagePropertyNames.PID => nameof(HandshakeMessagePropertyNames.PID),
+                HandshakeMessagePropertyNames.Architecture => nameof(HandshakeMessagePropertyNames.Architecture),
+                HandshakeMessagePropertyNames.Framework => nameof(HandshakeMessagePropertyNames.Framework),
+                HandshakeMessagePropertyNames.OS => nameof(HandshakeMessagePropertyNames.OS),
+                HandshakeMessagePropertyNames.SupportedProtocolVersions => nameof(HandshakeMessagePropertyNames.SupportedProtocolVersions),
+                HandshakeMessagePropertyNames.HostType => nameof(HandshakeMessagePropertyNames.HostType),
+                HandshakeMessagePropertyNames.ModulePath => nameof(HandshakeMessagePropertyNames.ModulePath),
+                HandshakeMessagePropertyNames.ExecutionId => nameof(HandshakeMessagePropertyNames.ExecutionId),
+                _ => string.Empty,
+            };
 
         private void OnDiscoveredTestsReceived(object sender, DiscoveredTestEventArgs args)
         {
