@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Foo Bar" />
+    <BuildType Name="Release" />
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ProjectWithoutMatchingConfigs/ProjectWithoutMatchingConfigs.csproj" >
+    <BuildType Solution="Foo Bar|*" Project="Debug" />
+  </Project>
+</Solution>

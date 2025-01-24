@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Tests;
+namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
@@ -25,8 +20,7 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
 
         var factory = new MSBuildFileSetFactory(
             rootProjectFile: options.ProjectPath,
-            targetFramework: null,
-            buildProperties: [],
+            buildArguments: [],
             environmentOptions: new EnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
             reporter);
 

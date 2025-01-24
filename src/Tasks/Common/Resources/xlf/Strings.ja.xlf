@@ -646,9 +646,14 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1115: 現在の .NET SDK では、.NET SDK の既定値を使用せずに .NET Framework をサポートすることはできません。これは、C++/CLI プロジェクトの CLRSupport プロパティと TargetFramework の間の不一致が原因と考えられます。</target>
         <note>{StrBegins="NETSDK1115: "}</note>
       </trans-unit>
+      <trans-unit id="NativeCompilationRequiresPublishing">
+        <source>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</source>
+        <target state="new">NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</target>
+        <note>{StrBegins="NETSDK1225: "}</note>
+      </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
         <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
-        <target state="new">NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</target>
+        <target state="translated">NETSDK1223: Visual Studio 2022 17.11 では .NET 9.0 以上をターゲットにすることはできません。</target>
         <note>{StrBegins="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">

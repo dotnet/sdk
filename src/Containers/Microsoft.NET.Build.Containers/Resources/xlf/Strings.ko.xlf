@@ -57,6 +57,13 @@
         <target state="needs-review-translation">CONTAINER1001: {0}을(를) 사용하여 Blob을 업로드하지 못했습니다. '{1}' 상태 코드를 수신했습니다.</target>
         <note>{StrBegins="CONTAINER1001: "}</note>
       </trans-unit>
+      <trans-unit id="BuildingImageIndex">
+        <source>Building image index '{0}' on top of manifests {1}.</source>
+        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <note>
+      {0} is the name of the image index and its tag, {1} is the list of manifests digests
+    </note>
+      </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
         <source>Pushed image '{0}' to {1}.</source>
         <target state="translated">'{0}' 이미지를 {1}에 푸시했습니다.</target>
@@ -152,6 +159,11 @@
         <target state="translated">호스트 개체가 검색되지 않았습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageIndexUploadedToRegistry">
+        <source>Pushed image index '{0}' to registry '{1}'.</source>
+        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="needs-review-translation">CONTAINER1009: 로컬 레지스트리에서 이미지를 로드하지 못했습니다. stdout: {0}</target>
@@ -162,10 +174,25 @@
         <target state="needs-review-translation">CONTAINER1010: 로컬 레지스트리에서 이미지 끌어오기가 지원되지 않습니다.</target>
         <note>{StrBegins="CONTAINER1010: "}</note>
       </trans-unit>
+      <trans-unit id="ImagesEmpty">
+        <source>Cannot create manifest list (image index) because no images were provided.</source>
+        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidContainerImageFormat">
+        <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
+        <target state="new">CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</target>
+        <note>{StrBegins="CONTAINER2031: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="needs-review-translation">CONTAINER2015: {0}: '{1}'은(는) 유효한 환경 변수가 아닙니다. 무시 중.</target>
         <note>{StrBegins="CONTAINER2015: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidImageMetadata">
+        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
+        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
         <source>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</source>
@@ -212,6 +239,11 @@
         <target state="needs-review-translation">CONTAINER2010: 잘못된 {0}이(가) 제공됨: {1}. {0}은(는) 세미콜론으로 구분된 유효한 이미지 태그 목록이어야 합니다. 이미지 태그는 영숫자, 밑줄, 하이픈 또는 마침표여야 합니다.</target>
         <note>{StrBegins="CONTAINER2010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTargetRuntimeIdentifiers">
+        <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
+        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidTokenResponse">
         <source>CONTAINER1003: Token response had neither token nor access_token.</source>
         <target state="needs-review-translation">CONTAINER1003: 토큰 응답에 토큰이나 access_token이 없습니다.</target>
@@ -247,6 +279,11 @@
         <target state="needs-review-translation">CONTAINER2016: ContainerPort 항목 '{0}'이(가) 포트 번호를 지정하지 않습니다. 항목의 포함이 포트 번호인지 확인하세요(예: '&lt;ContainerPort Include="80" /&gt;').</target>
         <note>{StrBegins="CONTAINER2016: "}</note>
       </trans-unit>
+      <trans-unit id="MixedMediaTypes">
+        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
+        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
         <source>CONTAINER1004: No RequestUri specified.</source>
         <target state="needs-review-translation">CONTAINER1004: RequestUri가 지정되지 않았습니다.</target>
@@ -255,6 +292,11 @@
       <trans-unit id="NormalizedContainerName">
         <source>'{0}' was not a valid container image name, it was normalized to '{1}'</source>
         <target state="translated">'{0}'은(는) 유효한 컨테이너 이미지 이름이 아닙니다. '{1}'(으)로 정규화되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OciImageMultipleTagsNotSupported">
+        <source>Unable to create tarball for oci image with multiple tags.</source>
+        <target state="translated">태그가 여러 개 있는 OCI 이미지에 대한 tarball을 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
@@ -376,6 +418,16 @@
         <source>CONTAINER2001: Unrecognized mediaType '{0}'.</source>
         <target state="needs-review-translation">CONTAINER2001: 미디어 유형 '{0}'을(를) 인식할 수 없습니다.</target>
         <note>{StrBegins="CONTAINER2001: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedMediaType">
+        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
+        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnsupportedMediaTypeForTarball">
+        <source>Unable to create tarball for mediaType '{0}'.</source>
+        <target state="translated">mediaType '{0}' 대한 tarball을 만들 수 없습니다.</target>
+        <note />
       </trans-unit>
       <trans-unit id="_Test">
         <source>CONTAINER0000: Value for unit test {0}</source>

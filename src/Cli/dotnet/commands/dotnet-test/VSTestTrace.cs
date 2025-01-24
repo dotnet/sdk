@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             try
             {
-                string message = $"[dotnet test - {DateTimeOffset.UtcNow}]{messageLog()}";
+                string message = $"[dotnet test - {DateTimeOffset.UtcNow.ToString(format: "MM/dd/yyyy HH:mm:ss.fff")}]{messageLog()}";
                 if (!string.IsNullOrEmpty(s_traceFilePath))
                 {
                     lock (s_traceFilePath)

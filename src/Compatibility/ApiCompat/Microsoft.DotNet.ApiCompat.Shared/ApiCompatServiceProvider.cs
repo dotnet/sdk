@@ -32,8 +32,7 @@ namespace Microsoft.DotNet.ApiCompat
 
                 // The attribute data symbol filter is a composite that contains both the accessibility
                 // symbol filter and the doc id symbol filter.
-                CompositeSymbolFilter attributeDataSymbolFilter = new CompositeSymbolFilter()
-                    .Add(accessibilitySymbolFilter);
+                CompositeSymbolFilter attributeDataSymbolFilter = new(accessibilitySymbolFilter);
                 if (excludeAttributesFiles is not null)
                 {
                     attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
@@ -50,7 +49,7 @@ namespace Microsoft.DotNet.ApiCompat
                 return new ApiCompatRunner(SuppressibleLog,
                     SuppressionEngine,
                     new ApiComparerFactory(ruleFactory(SuppressibleLog), apiComparerSettings),
-                    new AssemblySymbolLoaderFactory(respectInternals));
+                    new AssemblySymbolLoaderFactory(SuppressibleLog, respectInternals));
             });
         }
 

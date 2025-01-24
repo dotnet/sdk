@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
@@ -397,10 +399,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             public string CssScope { get; }
         }
 
-        private class StaticTagHelperFeature : ITagHelperFeature
+        private class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
         {
-            public RazorEngine Engine { get; set; }
-
             public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
 
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;

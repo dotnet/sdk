@@ -977,10 +977,13 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</value>
     <comment>{StrBegins="NETSDK1223: "}</comment>
   </data>
-  <!-- The latest message added is Net9NotCompatibleWithDev1711. Please update this value with each PR to catch parallel PRs both adding a new message -->
   <data name="AspNetCorePackUnsupportedTargetFramework" xml:space="preserve">
     <value>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</value>
     <comment>{StrBegins="NETSDK1224: "}</comment>
   </data>
-  <!-- The latest message added is AspNetCorePackUnsupportedTargetFramework. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <!-- The latest message added is NativeCompilationRequiresPublishing. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="NativeCompilationRequiresPublishing" xml:space="preserve">
+    <value>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</value>
+    <comment>{StrBegins="NETSDK1225: "}</comment>
+  </data>
 </root>

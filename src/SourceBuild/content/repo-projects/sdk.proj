@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets">
+<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
@@ -6,7 +6,6 @@
     <BuildArgs Condition="'$(TargetOS)' == 'windows'">$(BuildArgs) -nativeToolsOnMachine</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PortableRid=$(PortableRid)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
 
@@ -29,8 +28,8 @@
     <!-- sdk always wants to build portable on FreeBSD etc. -->
     <BuildArgs Condition="('$(TargetOS)' == 'freebsd' or '$(TargetOS)' == 'solaris') and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:NetRuntimeRid=$(TargetRid)</BuildArgs>
-    <!-- https://github.com/dotnet/source-build/issues/4138 -->
-    <BuildArgs Condition="'$(TargetOS)' != 'windows' and '$(TargetOS)' != 'osx'">$(BuildArgs) /p:SkipBuildingInstallers=true</BuildArgs>
+
+    <BuildArgs Condition="'$(TargetRid)' == 'linux-x64' or '$(TargetRid)' == 'linux-arm64' ">$(BuildArgs) /p:BuildSdkDeb=true /p:BuildSdkRpm=true</BuildArgs>
     <!-- https://github.com/dotnet/source-build/issues/4693 -->
     <BuildArgs Condition="'$(TargetOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'true'">$(BuildArgs) /p:SkipBuildingInstallers=true /p:SkipBuildingSdkBundle=true</BuildArgs>
 
@@ -60,7 +59,6 @@
     <RepositoryReference Include="sourcelink" />
     <RepositoryReference Include="symreader" />
     <RepositoryReference Include="templating" />
-    <RepositoryReference Include="test-templates" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
     <RepositoryReference Include="xdt" />
@@ -69,6 +67,11 @@
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2'">
+    <RepositoryReference Remove="@(RepositoryReference)" />
+    <RepositoryReference Include="aspnetcore" DotNetBuildPass="2" />
   </ItemGroup>
 
   <!--
@@ -85,16 +88,5 @@
     <!-- https://github.com/dotnet/source-build/issues/4115. -->
     <EnvironmentVariables Include="PublishWindowsPdb=false" />
   </ItemGroup>
-
-  <!-- Copy SDK archive to assets root. -->
-  <Target Name="CopySdkArchive"
-          AfterTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion"
-          Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">
-    <Copy SourceFiles="$(SdkTarballPath)"
-          DestinationFolder="$(ArtifactsAssetsDir)"
-          SkipUnchangedFiles="true"
-          UseHardlinksIfPossible="true" />
-  </Target>
 
 </Project>

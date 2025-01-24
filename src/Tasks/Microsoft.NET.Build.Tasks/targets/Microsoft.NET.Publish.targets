@@ -32,6 +32,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportSingleFile)'))</_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectCapability Condition="'$(IsAotCompatible)' == 'true'" Include="IsAotCompatible" />
+    <ProjectCapability Condition="'$(IsTrimmable)' == 'true'" Include="IsTrimmable" />
+    <ProjectCapability Condition="'$(PublishAot)' == 'true'" Include="PublishAot" />
+    <ProjectCapability Condition="'$(PublishReadyToRun)' == 'true'" Include="PublishReadyToRun" />
+    <ProjectCapability Condition="'$(PublishSingleFile)' == 'true'" Include="PublishSingleFile" />
+    <ProjectCapability Condition="'$(PublishTrimmed)' == 'true'" Include="PublishTrimmed" />
+  </ItemGroup>
+
   <ItemDefinitionGroup>
     <ResolvedFileToPublish>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
@@ -218,6 +227,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                             '$(_SolutionLevelPublishRelease)' != '$(PublishRelease)'"
                  ResourceName="SolutionProjectConfigurationsConflict"
                  FormatArguments="PublishRelease;$(ProjectName)"/>
+
+    <NETSdkError Condition="'$(PublishAot)' == 'true' and
+                            '$(_IsPublishing)' != 'true' and
+                            '$(PublishAotUsingRuntimePack)' == 'true' and
+                            '$(_TargetFrameworkVersionWithoutV)' >= '10.0'"
+                 ResourceName="NativeCompilationRequiresPublishing" />
 
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
@@ -1236,6 +1251,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"
                       CompilerOptions="@(DependencyFileCompilerOptions)"
+                      ExcludeFromPublishPackageReferences="@(_ExcludeFromPublishPackageReference)"
                       RuntimeStorePackages="@(RuntimeStorePackages)"
                       CompileReferences="@(ResolvedCompileFileDefinitions)"
                       ResolvedNuGetFiles="@(_ResolvedNuGetFilesForPublish)"

@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         protected const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids ";
         private readonly HashSet<Suppression> _baselineSuppressions = [];
         private readonly HashSet<Suppression> _suppressions = [];
-        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new HashSet<string>(noWarn!.Split(';'));
+        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new(noWarn!.Split(';'), StringComparer.OrdinalIgnoreCase);
 
         /// <inheritdoc/>
         public bool BaselineAllErrors { get; } = baselineAllErrors;

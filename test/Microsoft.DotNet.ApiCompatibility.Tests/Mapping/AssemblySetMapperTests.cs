@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
+#nullable disable
 
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Mapping;
@@ -126,7 +126,7 @@ namespace NamespaceInAssemblyD
             Assert.Equal(4, assemblySetMapper.AssemblyCount);
 
             Assert.Equal(4, assemblyMappers.Count());
-            Assert.Equal(new string?[] {
+            Assert.Equal(new string[] {
                     nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-0",
                     nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-1",
                     nameof(AssemblySetMapper_GetAssemblies_ReturnsExpected) + "-2",

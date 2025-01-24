@@ -2,9 +2,6 @@
 ### If run in an sdk PR, new changes are applied to a local copy of the VMR, then it is built and tested
 
 parameters:
-- name: architecture
-  type: string
-
 - name: artifactsRid
   type: string
   default: ''
@@ -16,9 +13,15 @@ parameters:
   type: string
   default: ''
 
-- name: container
+- name: configuration
   type: string
-  default: ''
+  default: 'Release'
+
+- name: container
+  type: object
+  default:
+    image: ''
+    name: ''
 
 - name: crossRootFs
   type: string
@@ -111,8 +114,24 @@ parameters:
   type: string
 
 jobs:
-- job: ${{ parameters.buildName }}_${{ parameters.architecture }}${{ replace(format('_BuildPass{0}', coalesce(parameters.buildPass, '1')), '_BuildPass1', '') }}
+- job: ${{ parameters.buildName }}_${{ parameters.targetArchitecture }}${{ replace(format('_BuildPass{0}', coalesce(parameters.buildPass, '1')), '_BuildPass1', '') }}
   pool: ${{ parameters.pool }}
+
+  # 1ES pipeline template requires that the container is specified in the job level.
+  # If we are using a container image, we set the container to correct name.
+  # Otherwise, we set the container to host so that the job runs on the host agent.
+  ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+    ${{ if ne(parameters.container.name, '') }}:
+      container: ${{ parameters.container.name }}
+    ${{ else }}:
+      container: host
+
+  # For public projects, we always use the container image if it is specified.
+  ${{ else }}:
+    ${{ if ne(parameters.container.image, '') }}:
+      container:
+        image: ${{ parameters.container.image }}
+        options: $(defaultContainerOptions)
 
   # Currently, CodeQL slows the build down too much
   # https://github.com/dotnet/source-build/issues/4276
@@ -153,10 +172,73 @@ jobs:
   # We either build the repo directly, or we extract them outside (which is what partners do)
   - ${{ if parameters.buildFromArchive }}:
     - name: sourcesPath
-      value: $(Build.ArtifactStagingDirectory)/dotnet-sources/
+      value: $(Agent.TempDirectory)/dotnet-sources/
   - ${{ else }}:
     - name: sourcesPath
       value: $(vmrPath)
+
+  - name: artifactsStagingDir
+    value: $(Build.ArtifactStagingDirectory)/artifacts
+
+  - name: successfulJobArtifactName
+    value: $(Agent.JobName)_Artifacts
+
+  - name: failedJobArtifactName
+    value: $(successfulJobArtifactName)_Attempt$(System.JobAttempt)
+
+  # manually disable CodeQL until https://dev.azure.com/mseng/1ES/_workitems/edit/2211548 is implemented
+  # CodeQL doesn't work on arm64 macOS, see https://portal.microsofticm.com/imp/v5/incidents/details/532165079/summary
+  - ${{ if eq(parameters.pool.os, 'macOS') }}:
+    - name: ONEES_ENFORCED_CODEQL_ENABLED
+      value: false
+
+  # Build up the command line variables. We avoid doing this in the script sections below
+  # because AzDO will not echo command lines if they are more than a single line.
+
+  ## Build command line - Windows
+  - ${{ if eq(parameters.targetOS, 'windows') }}:
+    ## Basic arguments
+    - name: baseArguments
+      value:  -ci -cleanWhileBuilding -prepareMachine /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+
+    - name: configArguments
+      value: -c ${{ parameters.configuration }}
+
+    - name: targetArguments
+      value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+
+    ### Dev versions variables
+    - ${{ if eq(parameters.useDevVersions, 'True') }}:
+      - name: devArguments
+        value: -dev
+    - ${{ else }}:
+      - name: devArguments
+        value: ''
+
+    ### Signing variables
+    - ${{ if eq(parameters.sign, 'True') }}:
+      - ${{ if or(eq(parameters.useDevVersions, 'True'), eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+        # The _SignType variable is used by microbuild installation
+        - name: _SignType
+          value: ''
+        - name: signArguments
+          value: -sign /p:ForceDryRunSigning=true
+      - ${{ else }}:
+        - name: _SignType
+          value: real
+        - name: signArguments
+          value: -sign /p:DotNetSignType=real /p:TeamName=$(_TeamName)
+    - ${{ else }}:
+      - name: signArguments
+        value: ''
+
+    ### Build Pass
+    - ${{ if ne(parameters.buildPass, '') }}:
+      - name: buildPassArguments
+        value: /p:DotNetBuildPass=${{ parameters.buildPass }}
+    - ${{ else }}:
+      - name: buildPassArguments
+        value: ''
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -168,18 +250,30 @@ jobs:
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
       sbomEnabled: false
 
+    # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
+    # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
+    # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - output: pipelineArtifact
-      path: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts
-      displayName: Publish Artifacts
+      path: $(artifactsStagingDir)
+      artifact: $(successfulJobArtifactName)
+      displayName: Publish Artifacts (On Success)
+      condition: succeeded()
+      sbomEnabled: true
+
+    - output: pipelineArtifact
+      path: $(artifactsStagingDir)
+      artifact: $(failedJobArtifactName)
+      displayName: Publish Artifacts (On Failure)
+      condition: failed()
       sbomEnabled: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
-    - output: buildArtifacts
-      PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
-      ArtifactName: VerticalManifests
-      displayName: Publish Vertical Manifest
-      sbomEnabled: false
+    - ${{ if ne(parameters.buildSourceOnly, true) }}:
+      - output: buildArtifacts
+        PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+        ArtifactName: VerticalManifests
+        displayName: Publish Vertical Manifest
+        sbomEnabled: false
 
   steps:
   - ${{ if not(parameters.isBuiltFromVmr) }}:
@@ -254,7 +348,7 @@ jobs:
 
         if [[ $archiveVersionLine =~ $versionPattern ]]; then
           archiveVersion="${BASH_REMATCH[1]}"
-          archiveUrl="https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-$archiveVersion-${{ parameters.artifactsRid }}.tar.gz"
+          archiveUrl="https://builds.dotnet.microsoft.com/source-built-artifacts/sdks/dotnet-sdk-$archiveVersion-${{ parameters.artifactsRid }}.tar.gz"
           downloadDir="$(sourcesPath)/prereqs/packages/archive/"
 
           echo "Downloading source-built SDK from $archiveUrl..."
@@ -265,6 +359,12 @@ jobs:
         fi
       displayName: Setup Previously Source-Built SDK
 
+  - ${{ if and(eq(parameters.sign, 'True'), ne(parameters.buildSourceOnly, 'True'), eq(variables['System.TeamProject'], 'internal')) }}:
+    - template: ${{ variables['Build.SourcesDirectory'] }}/eng/common/core-templates/steps/install-microbuild.yml
+      parameters:
+        enableMicrobuild: true
+        enableMicrobuildForMacAndLinux: true
+
   - ${{ if eq(parameters.targetOS, 'windows') }}:
     # Node 20.x is a toolset dependency to build aspnetcore
     # Keep in sync with aspnetcore: https://github.com/dotnet/aspnetcore/blob/7d5309210d8f7bae8fa074da495e9d009d67f1b4/.azure/pipelines/ci.yml#L719-L722
@@ -273,19 +373,20 @@ jobs:
       inputs:
         versionSpec: 20.x
 
-    - script: |
-        set extraBuildArguments=
-        if /I '${{ parameters.sign }}'=='True' (if /I NOT '${{ parameters.buildSourceOnly }}'=='True' (set extraBuildArguments=%extraBuildArguments% -sign))
-        if /I '${{ parameters.useDevVersions }}'=='True' set extraBuildArguments=%extraBuildArguments% -dev
-        set extraBuildProperties=
-        if not [${{ parameters.buildPass }}]==[] set extraBuildProperties=%extraBuildProperties% /p:DotNetBuildPass=${{ parameters.buildPass }}
-        call build.cmd -ci -cleanWhileBuilding -prepareMachine %extraBuildArguments% /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) %extraBuildProperties% ${{ parameters.extraProperties }}
+    - script: build.cmd
+        $(baseArguments)
+        $(configArguments)
+        $(targetArguments)
+        $(devArguments)
+        $(signArguments)
+        $(buildPassArguments)
+        ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: |
-          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) ${{ parameters.extraProperties }}
+          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) ${{ parameters.extraProperties }}
         displayName: Run Tests
         workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
@@ -307,7 +408,7 @@ jobs:
           fi
 
           if [[ '${{ parameters.withPreviousSDK }}' == 'True' ]]; then
-            # Source-built artifacts are from CentOS 9 Stream or Alpine 3.19. We want to download them without
+            # Source-built artifacts are from CentOS 9 Stream. We want to download them without
             # downloading portable versions from the internet.
             customPrepArgs="${customPrepArgs} --no-sdk --no-bootstrap"
             prepSdk=false
@@ -322,20 +423,25 @@ jobs:
             eval tar -ozxf "$previousSdkPath" -C "$(sourcesPath)/.dotnet"
             eval rm -f "$previousSdkPath"
 
-            echo "##vso[task.setvariable variable=additionalBuildArgs]--with-sdk /vmr/.dotnet"
+            echo "##vso[task.setvariable variable=additionalBuildArgs]--with-sdk $(sourcesPath)/.dotnet"
           fi
 
-          docker run --rm -v "$(sourcesPath):/vmr" -w /vmr ${{ parameters.container }} ./prep-source-build.sh $customPrepArgs
+          ./prep-source-build.sh $customPrepArgs
         displayName: Prep the Build
+        workingDirectory: $(sourcesPath)
 
     - script: |
         set -ex
         df -h
 
         customEnvVars=""
-        customBuildArgs="--ci --clean-while-building --prepareMachine"
+        customPreBuildArgs=""
+        customBuildArgs="--ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }}"
+
         if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --online"
+        else
+          customPreBuildArgs="$customPreBuildArgs sudo unshare -n"
         fi
 
         if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
@@ -362,6 +468,12 @@ jobs:
 
         if [[ '${{ parameters.sign }}' == 'True' ]] && [[ '${{ parameters.buildSourceOnly }}' != 'True' ]]; then
           customBuildArgs="$customBuildArgs --sign"
+          if [[ '$(_SignType)' == 'real' ]] || [[ '$(_SignType)' == 'test' ]]; then
+            # Force dry run signing until https://github.com/dotnet/source-build/issues/4793 is resolved - https://github.com/dotnet/source-build/issues/4678
+            extraBuildProperties="$extraBuildProperties /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:ForceDryRunSigning=true"
+          else
+            extraBuildProperties="$extraBuildProperties /p:ForceDryRunSigning=true"
+          fi
         fi
 
         if [[ -n "${{ parameters.targetRid }}" ]]; then
@@ -392,35 +504,25 @@ jobs:
         fi
 
         extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+        extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
 
-        # Only use Docker when a container is specified
-        if [[ -n "${{ parameters.container }}" ]]; then
-          # Allows Arcade to have access to the commit for the build, pass it through to the container
-          customEnvVars="$customEnvVars BUILD_SOURCEVERSION=$BUILD_SOURCEVERSION"
+        for envVar in $customEnvVars; do
+          customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
+        done
 
-          customEnvVars="$customEnvVars BUILD_BUILDNUMBER=$(Build.BuildNumber)"
-
-          customDockerRunArgs=""
-          for envVar in $customEnvVars; do
-            customDockerRunArgs="$customDockerRunArgs -e $envVar"
-          done
-
-          if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
-            customDockerRunArgs="$customDockerRunArgs --network none"
-          fi
-
-          docker run --rm -v "$(sourcesPath):/vmr" -w /vmr $customDockerRunArgs ${{ parameters.container }} ./build.sh $buildArgs
-        else
-          for envVar in $customEnvVars; do
-            customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
-          done
-          cd $(sourcesPath)
-          eval $customEnvVarsWithBashSyntax
-          ./build.sh $buildArgs
-        fi
+        eval $customEnvVarsWithBashSyntax
+        $customPreBuildArgs ./build.sh $buildArgs
       displayName: Build
+      workingDirectory: $(sourcesPath)
+
+    - ${{ if ne(parameters.runOnline, 'True' )}}:
+      - script: |
+          set -ex
+          # Update the owner of the staging directory to the current user
+          sudo chown -R $(whoami) $(artifactsStagingDir)
+        displayName: Update owner of artifacts staging directory
 
     # Only run tests if enabled
     - ${{ if eq(parameters.runTests, 'True') }}:
@@ -441,9 +543,14 @@ jobs:
       - script: |
           set -ex
 
-          dockerVolumeArgs="-v $(sourcesPath):/vmr"
+          customPreBuildArgs=''
           customBuildArgs=''
           extraBuildProperties=''
+          customBuildArgs="--ci --prepareMachine -c ${{ parameters.configuration }}"
+
+          if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
+            customPreBuildArgs="$customPreBuildArgs sudo"
+          fi
 
           if [[ ! -z '${{ parameters.targetOS }}' ]]; then
             extraBuildProperties="$extraBuildProperties /p:TargetOS=${{ parameters.targetOS }}"
@@ -469,92 +576,48 @@ jobs:
           fi
 
           extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
+          extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
 
           if [[ -n "${{ parameters.extraProperties }}" ]]; then
             extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
           fi
 
-          # Only use Docker when a container is specified
-          if [[ -n "${{ parameters.container }}" ]]; then
-            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
-          else
-            cd $(sourcesPath)
-            ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
-          fi
+          cd $(sourcesPath)
+          $customPreBuildArgs ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
 
         displayName: Run Tests
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
 
-  - ${{ if eq(parameters.targetOS, 'windows') }}:
+  - ${{ if and(eq(parameters.sign, 'True'), ne(parameters.buildSourceOnly, 'True'), eq(variables['System.TeamProject'], 'internal')) }}:
+    - template: ${{ variables['Build.SourcesDirectory'] }}/eng/common/core-templates/steps/cleanup-microbuild.yml
+      parameters:
+        enableMicrobuild: true
+        enableMicrobuildForMacAndLinux: true
 
-    # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
-    - powershell: |
-        function CopyWithRelativeFolders($sourcePath, $targetFolder, $filter) {
-          Get-ChildItem -Path $sourcePath -Filter $filter -Recurse | ForEach-Object {
-            $targetPath = Join-Path $targetFolder (Resolve-Path -Relative $_.FullName)
-            New-Item -ItemType Directory -Path (Split-Path -Parent $targetPath) -Force | Out-Null
-            Copy-Item $_.FullName -Destination $targetPath -Force
-            Write-Host "Copied $_ to $targetPath"
-          }
-        }
+  - task: CopyFiles@2
+    displayName: Prepare BuildLogs staging directory
+    inputs:
+      SourceFolder: '$(sourcesPath)'
+      Contents: |
+        artifacts/log/**
+        artifacts/scenario-tests/**/*.binlog
+        artifacts/TestResults/**/*.binlog
+        artifacts/TestResults/**/*.diff
+        artifacts/TestResults/**/Updated*.txt
+        artifacts/TestResults/**/*.trx
+        artifacts/TestResults/**/*.xml
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/BuildLogs'
+      CleanTargetFolder: true
+    continueOnError: true
+    condition: succeededOrFailed()
 
-        $targetFolder = "$(Build.ArtifactStagingDirectory)/BuildLogs/"
-        New-Item -ItemType Directory -Path $targetFolder -Force | Out-Null
-
-        cd "$(sourcesPath)"
-
-        CopyWithRelativeFolders "artifacts/log/"             $targetFolder "*"
-
-        if (Test-Path "artifacts/scenario-tests/") {
-            CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
-            echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
-        }
-
-        if (Test-Path "artifacts/TestResults/*") {
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.binlog"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.diff"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "Updated*.txt"
-            CopyWithRelativeFolders "artifacts/TestResults/"     $targetFolder "*.trx"
-        }
-      displayName: Prepare BuildLogs staging directory and check assets
-      continueOnError: true
-      condition: succeededOrFailed()
-
-  - ${{ else }}:
-
-    # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
-    - script: |
-        set -ex
-
-        targetFolder=$(Build.ArtifactStagingDirectory)/BuildLogs/
-        mkdir -p ${targetFolder}
-
-        # Download rsync if using mariner
-        if grep -qE "CBL-Mariner|Azure Linux" /etc/os-release; then
-          sudo tdnf install -y rsync
-          sudo tdnf clean all
-        fi
-
-        cd "$(sourcesPath)"
-
-        find artifacts/log/ -exec rsync -R {} -t ${targetFolder} \;
-
-        if [ -d "artifacts/scenario-tests/" ]; then
-          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-          echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
-        fi
-
-        if [ -d "artifacts/TestResults/" ]; then
-          find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
-          find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
-        fi
-
-        if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
-          find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
-        fi
-      displayName: Prepare BuildLogs staging directory and check assets
+  - ${{ if eq(parameters.buildSourceOnly, 'True') }}:
+    - task: CopyFiles@2
+      displayName: Copy prebuilt-report to BuildLogs
+      inputs:
+        SourceFolder: '$(sourcesPath)'
+        Contents: artifacts/prebuilt-report/**
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/BuildLogs'
       continueOnError: true
       condition: succeededOrFailed()
 
@@ -591,45 +654,26 @@ jobs:
         publishRunAttachments: true
         testRunTitle: ScenarioTests_$(Agent.JobName)
 
-  - task: CopyFiles@2
-    inputs:
-      SourceFolder: $(sourcesPath)/artifacts
-      Contents: |
-        assets/**
-        manifests/**
-      TargetFolder: $(Build.ArtifactStagingDirectory)/publishing
-    displayName: Copy artifacts to Artifact Staging Directory
-
-  - ${{ if eq(parameters.targetOS, 'windows') }}:
-    - powershell: |
-        $sourcePath = "$(sourcesPath)/artifacts/manifests/VerticalManifest.xml"
-        $targetPath = "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
-        New-Item -ItemType Directory -Path "$(Build.ArtifactStagingDirectory)/manifests" -Force | Out-Null
-        Copy-Item $sourcePath -Destination $targetPath -Force
-      displayName: Copy vertical manifest to Artifact Staging Directory
-  - ${{ else }}:
-    - script: |
-        mkdir -p "$(Build.ArtifactStagingDirectory)/manifests"
-        cp "$(sourcesPath)/artifacts/manifests/VerticalManifest.xml" "$(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml"
-      displayName: Copy vertical manifest to Artifact Staging Directory
-
-  # When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages
-  - ${{ if ne(parameters.buildSourceOnly, 'true') }}:
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: $(sourcesPath)/artifacts/packages
-        TargetFolder: $(Build.ArtifactStagingDirectory)/publishing/packages
-      displayName: Copy packages to Artifact Staging Directory
-
   - ${{ if or(ne(variables['System.TeamProject'], 'internal'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    - publish: $(Build.ArtifactStagingDirectory)/publishing
-      artifact: $(Agent.JobName)_Artifacts
-      displayName: Publish Artifacts
+    # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
+    # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
+    # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
+    - publish: $(artifactsStagingDir)
+      artifact: $(successfulJobArtifactName)
+      displayName: Publish Artifacts (On Success)
+      condition: succeeded()
+      continueOnError: true
+
+    - publish: $(artifactsStagingDir)
+      artifact: $(failedJobArtifactName)
+      displayName: Publish Artifacts (On Failure)
+      condition: failed()
       continueOnError: true
 
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
-    - task: PublishBuildArtifacts@1
-      inputs:
-        PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/$(Agent.JobName).xml
-        ArtifactName: VerticalManifests
-      displayName: Publish Vertical Manifest
+    - ${{ if ne(parameters.buildSourceOnly, true) }}:
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+          ArtifactName: VerticalManifests
+        displayName: Publish Vertical Manifest

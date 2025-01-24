@@ -4,10 +4,8 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// Used to collect a set of files to watch.
@@ -20,8 +18,7 @@ namespace Microsoft.DotNet.Watcher.Tools
     /// </summary>
     internal class MSBuildFileSetFactory(
         string rootProjectFile,
-        string? targetFramework,
-        IReadOnlyList<(string name, string value)> buildProperties,
+        IEnumerable<string> buildArguments,
         EnvironmentOptions environmentOptions,
         IReporter reporter)
     {
@@ -58,28 +55,17 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 var exitCode = await ProcessRunner.RunAsync(processSpec, reporter, isUserApplication: false, launchResult: null, cancellationToken);
 
-                if (exitCode != 0 || !File.Exists(watchList))
+                var success = exitCode == 0 && File.Exists(watchList);
+
+                if (!success)
                 {
-                    reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'");
-
+                    reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'.");
                     reporter.Output($"MSBuild output from target '{TargetName}':");
-                    reporter.Output(string.Empty);
+                }
 
-                    foreach (var (line, isError) in capturedOutput)
-                    {
-                        var message = "   " + line;
-                        if (isError)
-                        {
-                            reporter.Error(message);
-                        }
-                        else
-                        {
-                            reporter.Output(message);
-                        }
-                    }
-
-                    reporter.Output(string.Empty);
-
+                BuildUtilities.ReportBuildOutput(reporter, capturedOutput, success, projectDisplay: null);
+                if (!success)
+                {
                     return null;
                 }
 
@@ -167,10 +153,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
 #endif
             {
-                arguments.Add("/bl:DotnetWatch.GenerateWatchList.binlog");
+                arguments.Add($"/bl:{Path.Combine(environmentOptions.TestOutput, "DotnetWatch.GenerateWatchList.binlog")}");
             }
 
-            arguments.AddRange(buildProperties.Select(p => $"/p:{p.name}={p.value}"));
+            arguments.AddRange(buildArguments);
 
             // Set dotnet-watch reserved properties after the user specified propeties,
             // so that the former take precedence.
@@ -178,11 +164,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             if (environmentOptions.SuppressHandlingStaticContentFiles)
             {
                 arguments.Add("/p:DotNetWatchContentFiles=false");
-            }
-
-            if (targetFramework != null)
-            {
-                arguments.Add("/p:TargetFramework=" + targetFramework);
             }
 
             arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
@@ -215,12 +196,8 @@ namespace Microsoft.DotNet.Watcher.Tools
         internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired)
         {
             var globalOptions = new Dictionary<string, string>();
-            if (targetFramework != null)
-            {
-                globalOptions.Add("TargetFramework", targetFramework);
-            }
 
-            foreach (var (name, value) in buildProperties)
+            foreach (var (name, value) in CommandLineOptions.ParseBuildProperties(buildArguments))
             {
                 globalOptions[name] = value;
             }
