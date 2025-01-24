@@ -36,31 +36,31 @@ stages:
   displayName: Build
   jobs:
   ############### WINDOWS ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
-    parameters:
-      pool:
-        name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
-        os: windows
-      helixTargetQueue: windows.amd64.vs2022.pre.open
+  # - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+  #   parameters:
+  #     pool:
+  #       name: $(DncEngPublicBuildPool)
+  #       demands: ImageOverride -equals windows.vs2022.amd64.open
+  #       os: windows
+  #    helixTargetQueue: windows.amd64.vs2022.pre.scout.open
 
   ############### LINUX ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-    parameters:
-      pool:
-        name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.ubuntu.2204.amd64.open
-        os: linux
-      helixTargetQueue: ubuntu.2204.amd64.open
+  # - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+  #   parameters:
+  #     pool:
+  #       name: $(DncEngPublicBuildPool)
+  #       demands: ImageOverride -equals build.ubuntu.2204.amd64.open
+  #       os: linux
+  #     helixTargetQueue: ubuntu.2204.amd64.open
 
   ############### MACOS ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-    parameters:
-      pool:
-        name: Azure Pipelines
-        vmImage: macOS-latest
-        os: macOS
-      helixTargetQueue: osx.15.amd64.open
+  # - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+  #   parameters:
+  #     pool:
+  #       name: Azure Pipelines
+  #       vmImage: macOS-latest
+  #       os: macOS
+  #    helixTargetQueue: osx.13.amd64.open
   ### ARM64 ###
   - ${{ if eq(parameters.enableArm64Job, true) }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -76,4 +76,4 @@ stages:
           runtimeIdentifier: osx-arm64
 
   ############### DOTNET-FORMAT ###############
-  - template: /eng/dotnet-format/dotnet-format-integration.yml
+  # - template: /eng/dotnet-format/dotnet-format-integration.yml
