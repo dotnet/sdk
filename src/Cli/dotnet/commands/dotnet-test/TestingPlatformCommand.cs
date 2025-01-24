@@ -8,7 +8,6 @@ using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Testing.Platform.Helpers;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
-using Windows.Win32.Security.Cryptography;
 
 namespace Microsoft.DotNet.Cli
 {
