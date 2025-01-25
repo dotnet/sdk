@@ -91,44 +91,39 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return result;
     }
 
-    // Iterate over the list of assets with the same Identity and choose the one closest to the asset kind we've been given:
+    // Iterate over the list of assets with the same relative path and choose the one closest to the asset kind we've been given:
     // The given asset kind here will always be Build or Publish.
-    // We need to iterate over the assets, the moment we detect one asset for our specific kind, we return that asset
-    // While we iterate over the list of assets we keep any asset of the `All` kind we find on a variable.
-    // * If we find a more specific asset, we will ignore it in favor of the specific one.
-    // * If we don't find a more specific (Build or Publish) asset we will return the `All` asset.
-    // We assume that the manifest is correct and don't try to deal with errors at this level, if for some reason we find more
-    // than one type of asset we will just return all of them.
-    // One exception to this is the `All` kind of assets, where we will just return the first two we find. The reason for it is
-    // to avoid having to allocate a buffer to collect all the `All` assets.
-    internal static IEnumerable<StaticWebAsset> ChooseNearestAssetKind(IEnumerable<StaticWebAsset> group, string assetKind)
+    // We want either the asset(s) of the given kind or the asset(s) with Kind=All.
+    // Either we have an asset of a given kind or we have an asset of kind All.
+    // The result must always contain a single asset, but we want to return a list so that we can report errors
+    // if we find more than one asset of the same kind.
+    // It is only valid to have more than one asset if they are of different kinds.
+    // Specific kinds take precedence over 'All' which is the default and is used as a fallback.
+    internal static void ChooseNearestAssetKind(List<StaticWebAsset> group, string assetKind)
     {
-        StaticWebAsset allKindAssetCandidate = null;
-
-        var ignoreAllKind = false;
-        foreach (var item in group)
+        var foundKind = false;
+        for (var i = group.Count - 1; i >= 0; i--)
         {
-            if (item.HasKind(assetKind))
-            {
-                ignoreAllKind = true;
+            var item = group[i];
 
-                yield return item;
-            }
-            else if (!ignoreAllKind && item.IsBuildAndPublish())
+            switch (item.HasKind(assetKind))
             {
-                if (allKindAssetCandidate != null)
-                {
-                    yield return allKindAssetCandidate;
-                    yield return item;
-                    yield break;
-                }
-                allKindAssetCandidate = item;
+                case true:
+                    // We found an item of the given kind, we can remove all the other items that we've inspected before
+                    if (!foundKind)
+                    {
+                        foundKind = true;
+                        group.RemoveRange(i + 1, group.Count - i - 1);
+                    }
+                    break;
+                case false when !foundKind && item.IsBuildAndPublish():
+                    // We found an item of kind 'All' and we haven't found an item of the given kind yet, so we preserve it
+                    break;
+                case false:
+                    // We found an item of a different kind, we can remove it
+                    group.RemoveAt(i);
+                    break;
             }
-        }
-
-        if (!ignoreAllKind)
-        {
-            yield return allKindAssetCandidate;
         }
     }
 
@@ -320,7 +315,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
-        };
+        }
+        ;
 
         if (string.IsNullOrEmpty(SourceId))
         {
@@ -355,7 +351,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset kind '{AssetKind}' for '{Identity}'.");
-        };
+        }
+        ;
 
         switch (AssetMode)
         {
@@ -365,7 +362,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}' for '{Identity}'.");
-        };
+        }
+        ;
 
         switch (AssetRole)
         {
@@ -375,7 +373,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset role '{AssetRole}' for '{Identity}'.");
-        };
+        }
+        ;
 
         if (!IsPrimaryAsset() && string.IsNullOrEmpty(RelatedAsset))
         {
