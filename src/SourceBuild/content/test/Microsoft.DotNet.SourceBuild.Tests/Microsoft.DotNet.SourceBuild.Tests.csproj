@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" ReferenceOutputAssembly="false" Condition="'$(SkipPrepareSdkArchive)' != 'true'" />
     <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)tools\ExclusionsLibrary\ExclusionsLibrary.csproj" />
   </ItemGroup>
 
   <ItemGroup>
