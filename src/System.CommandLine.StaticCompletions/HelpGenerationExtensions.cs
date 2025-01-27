@@ -92,12 +92,9 @@ public static class HelpExtensions
     {
         foreach (var o in c.Options)
         {
-            if (o.Recursive)
+            if (o.Recursive && !o.Hidden)
             {
-                if (!o.Hidden)
-                {
-                    yield return o;
-                }
+                yield return o;
             }
         }
         foreach (var p in c.Parents.OfType<CliCommand>())
