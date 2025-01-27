@@ -8,7 +8,7 @@ Register-ArgumentCompleter -Native -CommandName 'mycommand' -ScriptBlock {
     $command = @(
         'mycommand'
         for ($i = 1; $i -lt $commandElements.Count; $i++) {
-        $element = $commandElements[$i]
+            $element = $commandElements[$i]
             if ($element -isnot [StringConstantExpressionAst] -or
                 $element.StringConstantType -ne [StringConstantType]::BareWord -or
                 $element.Value.StartsWith('-') -or
@@ -27,5 +27,5 @@ Register-ArgumentCompleter -Native -CommandName 'mycommand' -ScriptBlock {
             break
         }
     }
-    $completions.Where{ $_.CompletionText -like "$wordToComplete*" } | Sort-Object -Property ListItemText
+    $completions | Where-Object -FilterScript { $_.CompletionText -like "$wordToComplete*" } | Sort-Object -Property ListItemText
 }

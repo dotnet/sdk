@@ -39,7 +39,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     $command = @(
         '{{{binaryName}}}'
         for ($i = 1; $i -lt $commandElements.Count; $i++) {
-        $element = $commandElements[$i]
+            $element = $commandElements[$i]
             if ($element -isnot [StringConstantExpressionAst] -or
                 $element.StringConstantType -ne [StringConstantType]::BareWord -or
                 $element.Value.StartsWith('-') -or
@@ -59,9 +59,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
 
         writer.Indent--;
         writer.WriteLine("}");
-
-        // spacing is critical here - the open brace { must be directly adjacent to the Where member name, or else it's a pwsh syntax error
-        writer.WriteLine("$completions.Where{ $_.CompletionText -like \"$wordToComplete*\" } | Sort-Object -Property ListItemText");
+        writer.WriteLine("$completions | Where-Object -FilterScript { $_.CompletionText -like \"$wordToComplete*\" } | Sort-Object -Property ListItemText");
 
         writer.Indent--;
         writer.WriteLine("}");
