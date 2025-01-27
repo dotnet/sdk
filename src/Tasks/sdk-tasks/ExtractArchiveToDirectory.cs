@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Build.Tasks
                             {
                                 if (ShouldExtractItem(entry.FullName))
                                 {
-                                    string destinationPath = Path.Combine(DestinationDirectory, entry.FullName);
+                                    string destinationPath = Path.Combine(DestinationDirectory, entry.FullName); // codeql [SM02729] This is checked in the CheckDestinationPath method below before being used
                                     string destinationFileName = GetFullDirectoryPathWithSeperator(destinationPath);
                                     string fullDestDirPath = GetFullDirectoryPathWithSeperator(DestinationDirectory);
 
@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             string fullDirectoryPath = Path.GetFullPath(directory);
 
-            if (!fullDirectoryPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            if (!fullDirectoryPath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 fullDirectoryPath = string.Concat(fullDirectoryPath, Path.DirectorySeparatorChar);
             }
