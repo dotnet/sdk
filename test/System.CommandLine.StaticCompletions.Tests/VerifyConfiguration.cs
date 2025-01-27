@@ -4,7 +4,6 @@
 namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.Runtime.CompilerServices;
-using DiffEngine;
 
 public static class VerifyConfiguration
 {
@@ -13,7 +12,7 @@ public static class VerifyConfiguration
     {
         VerifyDiffPlex.Initialize(VerifyTests.DiffPlex.OutputType.Compact);
 
-        if (BuildServerDetector.Detected)
+        if (Environment.GetEnvironmentVariable("CI") is string ci && ci.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
             Verifier.DerivePathInfo((sourceFile, projectDirectory, type, method) => new(
                 directory: Path.Combine(Environment.CurrentDirectory, "snapshots"),
