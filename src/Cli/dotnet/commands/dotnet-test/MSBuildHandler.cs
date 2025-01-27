@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -38,28 +41,28 @@ namespace Microsoft.DotNet.Cli
                 return false;
             }
 
-            int msbuildExitCode;
+            int msBuildExitCode;
             string path;
 
             if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
             {
                 path = PathUtility.GetFullPath(buildPathOptions.ProjectPath);
-                msbuildExitCode = await RunBuild(path, isSolution: false, buildPathOptions);
+                msBuildExitCode = await RunBuild(path, isSolution: false, buildPathOptions);
             }
             else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
             {
                 path = PathUtility.GetFullPath(buildPathOptions.SolutionPath);
-                msbuildExitCode = await RunBuild(path, isSolution: true, buildPathOptions);
+                msBuildExitCode = await RunBuild(path, isSolution: true, buildPathOptions);
             }
             else
             {
                 path = PathUtility.GetFullPath(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
-                msbuildExitCode = await RunBuild(path, buildPathOptions);
+                msBuildExitCode = await RunBuild(path, buildPathOptions);
             }
 
-            if (msbuildExitCode != ExitCodes.Success)
+            if (msBuildExitCode != ExitCodes.Success)
             {
-                _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msbuildExitCode));
+                _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
                 return false;
             }
 
@@ -176,6 +179,7 @@ namespace Microsoft.DotNet.Cli
 
         private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildPathsOptions buildPathOptions)
         {
+            Debugger.Launch();
             bool isBuiltOrRestored = true;
             var allProjects = new ConcurrentBag<Module>();
             var projectCollection = new ProjectCollection();
@@ -191,7 +195,9 @@ namespace Microsoft.DotNet.Cli
                 var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
 
                 MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings = new(GetCommands(buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild), buildPathOptions.Configuration, buildPathOptions.RuntimeIdentifier, allowBinLog, binLogFileName);
-                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, msBuildBuildAndRestoreSettings);
+                CreateSlnfFile(projects.ToList(), "Projects.slnf", solutionOrProjectFilePath);
+
+                isBuiltOrRestored = BuildOrRestoreProjectOrSolution("Projects.slnf", projectCollection, msBuildBuildAndRestoreSettings);
 
                 ProcessProjectsInParallel(projectCollection, projects, allProjects);
             }
@@ -219,6 +225,53 @@ namespace Microsoft.DotNet.Cli
             LogProjectProperties(allProjects);
 
             return (allProjects, isBuiltOrRestored);
+        }
+
+
+        public void CreateSlnfFile(List<string> projectFilePaths, string slnfFilePath, string solutionPath)
+        {
+            if (projectFilePaths == null || projectFilePaths.Count == 0)
+            {
+                throw new ArgumentException("Project file paths list cannot be null or empty.", nameof(projectFilePaths));
+            }
+
+            var slnfContent = GenerateSlnfContent(projectFilePaths, solutionPath);
+            File.WriteAllText(slnfFilePath, slnfContent);
+        }
+
+        private string GenerateSlnfContent(List<string> projectFilePaths, string solutionPath)
+        {
+            var slnf = new Slnf
+            {
+                Solution = new Solution
+                {
+                    Path = solutionPath,
+                    Projects = projectFilePaths
+                }
+            };
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            };
+
+            return JsonSerializer.Serialize(slnf, options);
+        }
+
+        private class Slnf
+        {
+            [JsonPropertyName("solution")]
+            public Solution Solution { get; set; }
+        }
+
+        private class Solution
+        {
+            [JsonPropertyName("path")]
+            public string Path { get; set; }
+
+            [JsonPropertyName("projects")]
+            public List<string> Projects { get; set; }
         }
 
         public static string[] GetCommands(bool hasNoRestore, bool hasNoBuild)
@@ -259,12 +312,12 @@ namespace Microsoft.DotNet.Cli
             return ExtractModulesFromProject(project);
         }
 
-        private static bool BuildOrRestoreProjectOrSolution(string projectFilePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
+        private static bool BuildOrRestoreProjectOrSolution(string filePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
         {
             var parameters = GetBuildParameters(projectCollection, msBuildBuildAndRestoreSettings);
             var globalProperties = GetGlobalProperties(msBuildBuildAndRestoreSettings);
 
-            var buildRequestData = new BuildRequestData(projectFilePath, globalProperties, null, msBuildBuildAndRestoreSettings.Commands, null);
+            var buildRequestData = new BuildRequestData(filePath, globalProperties, null, msBuildBuildAndRestoreSettings.Commands, null);
 
             BuildResult buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
 
