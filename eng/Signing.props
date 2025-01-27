@@ -96,6 +96,13 @@
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'true'">
+    <Artifact Include="$(ArtifactsPackagesDir)**\VS.Tools.*.nupkg;
+                       $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
+              IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
+              PublishFlatContainer="false" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(DotNetPublishUsingPipelines)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
