@@ -17,7 +17,6 @@ namespace Microsoft.NET.TestFramework.Utilities
             }
 
             int majorVersion = int.Parse(match.Groups[1].Value);
-            int minorVersion = int.Parse(match.Groups[2].Value);
 
             if (majorVersion > 0)
             {
@@ -28,7 +27,7 @@ namespace Microsoft.NET.TestFramework.Utilities
                 throw new InvalidOperationException($"Cannot determine previous version for target framework: {currentFramework}");
             }
 
-            return $"net{majorVersion}.{minorVersion}";
+            return $"net{majorVersion}.0";
         }
     }
 }
