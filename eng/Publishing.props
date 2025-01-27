@@ -49,7 +49,7 @@
 
   <!-- The PGO sdk should always have External visibility, even if someone changes the default artifact visibility -->
   <ItemGroup>
-    <Artifact Update="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*" Visibility="External" />
+    <Artifact Update="$(ArtifactsShippingPackagesDir)/dotnet-sdk-pgo-*" Visibility="External" />
   </ItemGroup>
 
   <ItemGroup>
@@ -155,10 +155,10 @@
   <Choose>
     <When Condition="'$(PgoInstrument)' == 'true' and '$(DotNetBuildOrchestrator)' == 'true'">
       <ItemGroup>
-        <SdkAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*.zip" />
-        <SdkAssetsToPublish Include="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*.tar.gz" />
-        <CheckSumsToPublish Include="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*.zip.sha512" />
-        <CheckSumsToPublish Include="$(ArtifactsNonShippingPackagesDir)/dotnet-sdk-pgo-*.tar.gz.sha512" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)/dotnet-sdk-pgo-*.zip" />
+        <SdkAssetsToPublish Include="$(ArtifactsShippingPackagesDir)/dotnet-sdk-pgo-*.tar.gz" />
+        <CheckSumsToPublish Include="$(ArtifactsShippingPackagesDir)/dotnet-sdk-pgo-*.zip.sha512" />
+        <CheckSumsToPublish Include="$(ArtifactsShippingPackagesDir)/dotnet-sdk-pgo-*.tar.gz.sha512" />
       </ItemGroup>
     </When>
     <Otherwise>
