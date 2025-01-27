@@ -21,4 +21,9 @@
                         $(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
               PublishFlatContainer="false" />
   </ItemGroup>
+
+  <!-- The PGO sdk should always have External visibility, even if someone changes the default artifact visibility -->
+  <ItemGroup>
+    <Artifact Update="$(ArtifactsShippingPackagesDir)/dotnet-sdk-pgo-*" Visibility="External" />
+  </ItemGroup>
 </Project>
