@@ -203,10 +203,7 @@ jobs:
   - ${{ if eq(parameters.targetOS, 'windows') }}:
     ## Basic arguments
     - name: baseArguments
-      value:  -ci -cleanWhileBuilding -prepareMachine /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
-
-    - name: configArguments
-      value: -c ${{ parameters.configuration }}
+      value:  -ci -cleanWhileBuilding -prepareMachine -c ${{ parameters.configuration }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
 
     - name: targetArguments
       value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
@@ -379,7 +376,6 @@ jobs:
 
     - script: build.cmd
         $(baseArguments)
-        $(configArguments)
         $(targetArguments)
         $(devArguments)
         $(signArguments)
@@ -389,8 +385,15 @@ jobs:
       workingDirectory: ${{ variables.sourcesPath }}
 
     - ${{ if eq(parameters.runTests, 'True') }}:
-      - script: |
-          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) ${{ parameters.extraProperties }}
+      - script: build.cmd
+          $(baseArguments)
+          $(targetArguments)
+          $(devArguments)
+          $(buildPassArguments)
+          ${{ parameters.extraProperties }}
+          -test
+          -excludeCIBinarylog
+          /bl:artifacts/log/Release/Test.binlog
         displayName: Run Tests
         workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
