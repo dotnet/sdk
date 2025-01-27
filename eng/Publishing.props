@@ -77,11 +77,7 @@
        To achieve this, we find the FSharp compiler package, then the stable or non-stable FSharp.Core and Compiler service
        package contained within, depending on the stability switch of the SDK. The SDK then treats these packages as its own outputs,
        which means they get automatically pushed on release day. -->
-  <PropertyGroup>
-    <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishFSharpNuGetPackages</PublishDependsOnTargets>
-  </PropertyGroup>
-
-  <Target Name="_ResolvePublishFSharpNuGetPackages" Condition="'$(EnableDefaultArtifacts)' == 'true'">
+  <Target Name="_ResolvePublishFSharpNuGetPackages" Condition="'$(EnableDefaultArtifacts)' == 'true'" BeforeTargets="BeforePublish">
     <PropertyGroup>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
