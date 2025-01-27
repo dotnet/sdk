@@ -3,28 +3,14 @@
   <PropertyGroup>
     <Product>Sdk</Product>
     <BlobStoragePartialRelativePath>$(Product)</BlobStoragePartialRelativePath>
-    <BlobStoragePartialRelativePath Condition="'$(IsNotOrchestratedPublish)' == 'false'">assets/$(Product)</BlobStoragePartialRelativePath>
     <BlobStorageVersion>$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version'))</BlobStorageVersion>
     <BlobStoragePartialRelativePath>$(BlobStoragePartialRelativePath)/$(BlobStorageVersion)</BlobStoragePartialRelativePath>
     <PublishBinariesAndBadge Condition=" '$(PublishBinariesAndBadge)' == '' ">true</PublishBinariesAndBadge>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
-    <ItemsToSign Remove="@(ItemsToSign)" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
-  </ItemGroup>
-
   <PropertyGroup>
     <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
     <InternalCertificateId Condition="'$(InternalCertificateId)' == ''">MicrosoftDotNet500</InternalCertificateId>
-
-    <!-- Signing of shipping artifacts (layout, msi, bundle) are handled separately. It is therefore expected that <ItemsToSign> could be an empty set. -->
-    <AllowEmptySignList>true</AllowEmptySignList>
-    <AllowEmptySignPostBuildList>true</AllowEmptySignPostBuildList>
-
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
