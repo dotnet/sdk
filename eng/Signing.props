@@ -1,5 +1,14 @@
 <Project>
 
+  <PropertyGroup>
+    <Product>Sdk</Product>
+    <BlobStoragePartialRelativePath>$(Product)</BlobStoragePartialRelativePath>
+    <BlobStoragePartialRelativePath Condition="'$(IsNotOrchestratedPublish)' == 'false'">assets/$(Product)</BlobStoragePartialRelativePath>
+    <BlobStorageVersion>$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version'))</BlobStorageVersion>
+    <BlobStoragePartialRelativePath>$(BlobStoragePartialRelativePath)/$(BlobStorageVersion)</BlobStoragePartialRelativePath>
+    <PublishBinariesAndBadge Condition=" '$(PublishBinariesAndBadge)' == '' ">true</PublishBinariesAndBadge>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
     <ItemsToSign Remove="@(ItemsToSign)" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
@@ -85,6 +94,39 @@
   <ItemGroup>
     <ItemsToSignPostBuild Remove="*tests*.nupkg" />
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetPublishUsingPipelines)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.exe" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.deb" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.rpm" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.svg" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+    <!-- Only publish this file from windows x64 so that we don't end up with duplicates -->
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt"
+        Condition=" '$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt"
+        Condition=" '$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.swr" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.msi" />
+    <SdkArtifact Condition="'$(PublishBinariesAndBadge)' != 'false'" Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" />
+    <!-- dotnet-toolset zips are added above for specific builds only. -->
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip"
+                 Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" Condition="'$(PublishBinariesAndBadge)' != 'false'" Exclude="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.pkg" />
+
+    <Artifact Include="@(SdkArtifact)"
+              IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))">
+      <RelativeBlobPath>$(BlobStoragePartialRelativePath)/%(Filename)%(Extension)</RelativeBlobPath>
+      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </Artifact>
   </ItemGroup>
 
 </Project>
