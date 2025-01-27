@@ -19,6 +19,12 @@ public interface IShellProvider
     string Extension { get; }
 
     /// <summary>
+    /// This will be used when specifying the shell in CLI completions and help text. Use it to provide any specific details about the shell.
+    /// For example, the PowershellShellProvider will clarify that it only works for PowerShell Core.
+    /// </summary>
+    string? HelpDescription { get; }
+
+    /// <summary>
     /// Generates a shell-specific completions script for the given command tree.
     /// </summary>
     /// <param name="command"></param>
