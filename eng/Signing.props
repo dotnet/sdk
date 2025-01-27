@@ -1,11 +1,9 @@
 <Project>
 
   <PropertyGroup>
-    <Product>Sdk</Product>
-    <BlobStoragePartialRelativePath>$(Product)</BlobStoragePartialRelativePath>
     <BlobStorageVersion>$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version'))</BlobStorageVersion>
-    <BlobStoragePartialRelativePath>$(BlobStoragePartialRelativePath)/$(BlobStorageVersion)</BlobStoragePartialRelativePath>
-    <PublishBinariesAndBadge Condition=" '$(PublishBinariesAndBadge)' == '' ">true</PublishBinariesAndBadge>
+    <BlobStoragePartialRelativePath>Sdk/$(BlobStorageVersion)</BlobStoragePartialRelativePath>
+    <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -89,7 +87,7 @@
               PublishFlatContainer="false" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetPublishUsingPipelines)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" />
