@@ -239,7 +239,7 @@
         linux-musl-loongarch64;
         " />
 
-      <Net10RuntimePackRids Include="
+      <Net100RuntimePackRids Include="
         @(Net90RuntimePackRids);
         android-arm64;
         android-x64;
@@ -247,7 +247,7 @@
 
       <NetCoreAppHostRids Include="@(Net90AppHostRids)" />
 
-      <NetCoreRuntimePackRids Include="@(Net10RuntimePackRids)" />
+      <NetCoreRuntimePackRids Include="@(Net100RuntimePackRids)" />
 
       <!--
         In source-only builds, we build the current RID from source, which may be
