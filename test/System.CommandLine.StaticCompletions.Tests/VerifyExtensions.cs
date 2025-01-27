@@ -13,13 +13,20 @@ public static class VerifyExtensions
         // Can't use sourceFile directly because in CI the file may be rooted at a different location than the compile-time location
         // We do have the source code available, just at a different root, so we can use that compute
         var settings = new VerifySettings();
-        var runtimeSnapshotDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
-        var closestExistingDirectory = GetClosestExistingDirectory(runtimeSnapshotDir);
-        if (!runtimeSnapshotDir.Exists)
+        if (IsCI())
         {
-            throw new DirectoryNotFoundException($"The directory ({runtimeSnapshotDir}) containing the source file ({sourceFile}) does not exist.\nVerify is going to try to recreate the directory and that won't work in CI.\nThe closest existing directory is ({closestExistingDirectory}). The current directory is ({Environment.CurrentDirectory}).");
+            var runtimeSnapshotDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
+            var closestExistingDirectory = GetClosestExistingDirectory(runtimeSnapshotDir);
+            if (!runtimeSnapshotDir.Exists)
+            {
+                throw new DirectoryNotFoundException($"The directory ({runtimeSnapshotDir}) containing the source file ({sourceFile}) does not exist.\nVerify is going to try to recreate the directory and that won't work in CI.\nThe closest existing directory is ({closestExistingDirectory}). The current directory is ({Environment.CurrentDirectory}).");
+            }
+            settings.UseDirectory(runtimeSnapshotDir.FullName);
         }
-        settings.UseDirectory(runtimeSnapshotDir.FullName);
+        else
+        {
+            settings.UseDirectory(Path.Combine("snapshots", provider.ArgumentName));
+        }
         var completions = provider.GenerateCompletions(command);
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings, sourceFile: sourceFile);
     }
@@ -32,4 +39,7 @@ public static class VerifyExtensions
         }
         return path;
     }
+
+    private static bool IsCI() => Environment.GetEnvironmentVariable("CI") is not null;
+
 }
