@@ -45,12 +45,6 @@
       <SharedFrameworkInstallerFileRid>$(NetRuntimeRid)</SharedFrameworkInstallerFileRid>
       <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
 
-      <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
-      <RuntimeDepsInstallerFileRid>$(NetRuntimeRid)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(Architecture)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(IsRPMBasedDistro)' == 'true' And '$(UsePortableLinuxSharedFramework)' != 'true' ">$(OSName)-$(InstallerTargetArchitecture)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(NetRuntimeRid)' == 'rhel.7-x64' And '$(Architecture)' == 'Arm64' And '$(UsePortableLinuxSharedFramework)' == 'true' ">rhel.7-aarch64</RuntimeDepsInstallerFileRid>
-
       <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
       <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
       <DownloadedSharedHostInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
