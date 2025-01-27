@@ -29,7 +29,12 @@
     <Compile Include="..\dotnet-build.Tests\**\*.cs" LinkBase="dotnet-build" />
     <Compile Include="..\dotnet-clean.Tests\**\*.cs" LinkBase="dotnet-clean" />
     <Compile Include="..\dotnet-completions.Tests\**\*.cs" Exclude="..\dotnet-completions.Tests\snapshots\**\*" LinkBase="dotnet-completions" />
-    <Content Include="..\dotnet-completions.Tests\snapshots/**/*" LinkBase="snapshots" CopyToOutputDirectory="PreserveNewest" />
+    <!--
+      Adding the snapshots to the build output triggers the diff-comparison logic on them,
+      instead of the ones in the project dir. This is required for CI scenarios, but
+      hinders the local developer experience. So we just don't add them for local builds.
+    -->
+    <Content Condition="'$(CI)' == 'true'" Include="..\dotnet-completions.Tests\snapshots/**/*" LinkBase="snapshots" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\dotnet-format.Tests\*.cs" LinkBase="dotnet-format" />
     <Compile Include="..\dotnet-fsi.Tests\**\*.cs" LinkBase="dotnet-fsi" />
     <Compile Include="..\dotnet-help.Tests\**\*.cs" LinkBase="dotnet-help" />
