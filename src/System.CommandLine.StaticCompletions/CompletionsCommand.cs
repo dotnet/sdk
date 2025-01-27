@@ -4,6 +4,7 @@
 namespace System.CommandLine.StaticCompletions;
 
 using System.CommandLine;
+using System.CommandLine.StaticCompletions.Resources;
 using System.CommandLine.StaticCompletions.Shells;
 using System.Linq;
 
@@ -23,14 +24,14 @@ public class CompletionsCommand : CliCommand
     /// <param name="supportedShells">The shells to support in the completions command. If null, <see cref="DefaultShells"/> will be used.</param>
     /// <param name="commandName">The name of the completions command. Default is "completions". This value is what users will type to activate the command on the command line.</param>
     /// <param name="commandDescription">The description of the completions command. Default is "Commands for generating and registering completions for supported shells".</param>
-    public CompletionsCommand(IEnumerable<IShellProvider>? supportedShells = null, string commandName = "completions", string commandDescription = "Commands for generating and registering completions for supported shells") : this((supportedShells ?? DefaultShells).ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase), commandName, commandDescription)
+    public CompletionsCommand(IEnumerable<IShellProvider>? supportedShells = null, string commandName = "completions", string? commandDescription = null) : this((supportedShells ?? DefaultShells).ToDictionary(s => s.ArgumentName, StringComparer.OrdinalIgnoreCase), commandName, commandDescription ?? Strings.CompletionsCommand_Description)
     { }
 
     private CompletionsCommand(Dictionary<string, IShellProvider> shellMap, string commandName, string commandDescription) : base(commandName, commandDescription)
     {
         var shellArg = new CliArgument<IShellProvider>("shell")
         {
-            Description = "The shell for which to generate or register completions",
+            Description = Strings.CompletionsCommand_ShellArgument_Description,
             Arity = ArgumentArity.ZeroOrOne,
             // called when no token is presented at all
             DefaultValueFactory = (argResult) => LookupShellFromEnvironment(shellMap),
@@ -39,17 +40,16 @@ public class CompletionsCommand : CliCommand
             {
                 return argResult.Tokens switch
                 {
-                // shouldn't be required because of the DefaultValueFactory above
-                [] => LookupShellFromEnvironment(shellMap),
-                [var shellToken] => shellMap[shellToken.Value],
-                    _ => throw new InvalidOperationException("Unexpected number of tokens")
+                    // shouldn't be required because of the DefaultValueFactory above
+                    [] => LookupShellFromEnvironment(shellMap),
+                    [var shellToken] => shellMap[shellToken.Value],
+                    _ => throw new InvalidOperationException("Unexpected number of tokens") // this is impossible because of the Arity set above, no need to translate
                 };
             }
         };
 
         shellArg.AcceptOnlyFromAmong(shellMap.Keys.ToArray());
         Subcommands.Add(new GenerateScriptCommand(shellArg));
-        Subcommands.Add(new RegisterScriptCommand(shellArg));
 
         static IShellProvider LookupShellFromEnvironment(Dictionary<string, IShellProvider> shellMap)
         {
@@ -60,7 +60,7 @@ public class CompletionsCommand : CliCommand
             var shellPath = Environment.GetEnvironmentVariable("SHELL");
             if (shellPath is null)
             {
-                throw new InvalidOperationException("Could not determine the shell from the environment");
+                throw new InvalidOperationException(Strings.ShellDiscovery_ShellEnvironmentNotSet);
             }
             var shellName = Path.GetFileName(shellPath);
             if (shellMap.TryGetValue(shellPath, out var shellProvider))
@@ -69,7 +69,7 @@ public class CompletionsCommand : CliCommand
             }
             else
             {
-                throw new InvalidOperationException($"Shell '{shellPath}' is not supported");
+                throw new InvalidOperationException(String.Format(Strings.ShellDiscovery_ShellNotSupported, shellName, string.Join(", ", shellMap.Keys)));
             }
         }
     }
@@ -78,27 +78,14 @@ public class CompletionsCommand : CliCommand
 public class GenerateScriptCommand : CliCommand
 {
     public GenerateScriptCommand(CliArgument<IShellProvider> shellArg)
-        : base("script", "Generate the completion script for a supported shell")
+        : base("script", Strings.GenerateCommand_Description)
     {
         Arguments.Add(shellArg);
         SetAction(args =>
         {
-            var shell = args.GetValue(shellArg);
-            if (shell is null)
-            {
-                throw new InvalidOperationException("No shell was provided");
-            }
+            IShellProvider shell = args.GetValue(shellArg)!; // this cannot be null due to the way the shellArg is defined/configured
             var script = shell.GenerateCompletions(args.RootCommandResult.Command);
             args.Configuration.Output.Write(script);
         });
-    }
-}
-
-public class RegisterScriptCommand : CliCommand
-{
-    public RegisterScriptCommand(CliArgument<IShellProvider> shellArg)
-        : base("register", "Register the completion script for a supported shell")
-    {
-        Arguments.Add(shellArg);
     }
 }
