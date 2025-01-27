@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli
                 _args = [.. parseResult.UnmatchedTokens];
                 _isHelp = ContainsHelpOption(parseResult.GetArguments());
 
-                InitializeOutput(degreeOfParallelism, _isHelp);
+                InitializeOutput(degreeOfParallelism);
 
                 bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
                 if (_isHelp)
