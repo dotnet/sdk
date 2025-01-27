@@ -1274,7 +1274,6 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('script', 'script', [CompletionResultType]::ParameterValue, "Generate the completion script for a supported shell")
-                [CompletionResult]::new('register', 'register', [CompletionResultType]::ParameterValue, "Register the completion script for a supported shell")
             )
             $completions += $staticCompletions
             break
@@ -1283,24 +1282,11 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('bash', 'bash', [CompletionResultType]::ParameterValue, "bash")
-                [CompletionResult]::new('fish', 'fish', [CompletionResultType]::ParameterValue, "fish")
-                [CompletionResult]::new('nushell', 'nushell', [CompletionResultType]::ParameterValue, "nushell")
-                [CompletionResult]::new('pwsh', 'pwsh', [CompletionResultType]::ParameterValue, "pwsh")
-                [CompletionResult]::new('zsh', 'zsh', [CompletionResultType]::ParameterValue, "zsh")
-            )
-            $completions += $staticCompletions
-            break
-        }
-        'testhost;completions;register' {
-            $staticCompletions = @(
-                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('bash', 'bash', [CompletionResultType]::ParameterValue, "bash")
-                [CompletionResult]::new('fish', 'fish', [CompletionResultType]::ParameterValue, "fish")
-                [CompletionResult]::new('nushell', 'nushell', [CompletionResultType]::ParameterValue, "nushell")
-                [CompletionResult]::new('pwsh', 'pwsh', [CompletionResultType]::ParameterValue, "pwsh")
-                [CompletionResult]::new('zsh', 'zsh', [CompletionResultType]::ParameterValue, "zsh")
+                [CompletionResult]::new('bash', 'bash', [CompletionResultType]::ParameterValue, "Generates a completion script for the Bourne Again SHell (bash).")
+                [CompletionResult]::new('fish', 'fish', [CompletionResultType]::ParameterValue, "Generates a completion script for the Fish shell.")
+                [CompletionResult]::new('nushell', 'nushell', [CompletionResultType]::ParameterValue, "Generates a completion script for the NuShell shell.")
+                [CompletionResult]::new('pwsh', 'pwsh', [CompletionResultType]::ParameterValue, "Generates a completion script for PowerShell Core. These scripts will not work on Windows Powershell.")
+                [CompletionResult]::new('zsh', 'zsh', [CompletionResultType]::ParameterValue, "Generates a completion script for the Zsh shell.")
             )
             $completions += $staticCompletions
             break
