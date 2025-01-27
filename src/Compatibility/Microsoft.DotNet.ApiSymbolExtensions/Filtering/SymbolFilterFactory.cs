@@ -24,7 +24,7 @@ public static class SymbolFilterFactory
                                                                  bool includeExplicitInterfaceImplementationSymbols = true)
     {
         DocIdSymbolFilter? docIdSymbolFilter =
-            apiExclusionFilePaths?.Count() > 0 ?
+            apiExclusionFilePaths?.Length > 0 ?
             DocIdSymbolFilter.CreateFromFiles(apiExclusionFilePaths) : null;
 
         return GetCompositeSymbolFilter(docIdSymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, withImplicitSymbolFilter: true);
