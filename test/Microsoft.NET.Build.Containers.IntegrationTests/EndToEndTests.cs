@@ -1410,7 +1410,7 @@ public class EndToEndTests : IDisposable
         catch (UnableToDownloadFromRepositoryException e)
         {
             sawMyException = true;
-            Assert.Contains("The load of the image from repository some_random_image has failed", e.ToString());
+            Assert.Contains("CONTAINER1018", e.ToString());
         }
         Assert.True(sawMyException);
 
