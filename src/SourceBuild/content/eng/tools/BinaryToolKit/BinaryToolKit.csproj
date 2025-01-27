@@ -22,4 +22,8 @@
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="$(RepositoryEngineeringDir)tools/ExclusionsLibrary/ExclusionsLibrary.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -5,6 +5,7 @@
 
 # Well known non-checked in infrastructure
 artifacts/*/BinaryToolKit/
+artifacts/*/ExclusionsLibrary/
 .dotnet/
 .git/
 .packages/
