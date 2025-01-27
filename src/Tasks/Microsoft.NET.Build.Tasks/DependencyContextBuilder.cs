@@ -22,7 +22,6 @@ namespace Microsoft.NET.Build.Tasks
         private Dictionary<string, List<ReferenceInfo>> _compileReferences;
         private Dictionary<string, List<ResolvedFile>> _resolvedNuGetFiles;
         private Dictionary<string, SingleProjectInfo> _referenceProjectInfos;
-        private IEnumerable<string> _excludeFromPublishPackageIds;
         private Dictionary<string, List<RuntimePackAssetInfo>> _runtimePackAssets;
         private CompilationOptions _compilationOptions;
         private string _referenceAssembliesPath;
@@ -202,12 +201,6 @@ namespace Microsoft.NET.Build.Tasks
         public DependencyContextBuilder WithReferenceProjectInfos(Dictionary<string, SingleProjectInfo> referenceProjectInfos)
         {
             _referenceProjectInfos = referenceProjectInfos;
-            return this;
-        }
-
-        public DependencyContextBuilder WithExcludeFromPublishAssets(IEnumerable<string> excludeFromPublishPackageIds)
-        {
-            _excludeFromPublishPackageIds = excludeFromPublishPackageIds;
             return this;
         }
 
@@ -820,37 +813,6 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var packageToExcludeFromRuntime in runtimeExclusionList)
             {
                 _dependencyLibraries[packageToExcludeFromRuntime].ExcludeFromRuntime = true;
-            }
-
-            //  Include transitive dependencies of all top-level dependencies
-            Dictionary<string, DependencyLibrary> includedDependencies = new(StringComparer.OrdinalIgnoreCase);
-            Stack<string> dependencyListToWalk = new(_mainProjectDependencies);
-
-            while (dependencyListToWalk.Count != 0)
-            {
-                var dependencyName = dependencyListToWalk.Pop();
-                //  There may not be a library in the assets file if a referenced project has
-                //  PrivateAssets="all" for a package reference, and there is a package in the graph
-                //  that depends on the same package.
-                if (!includedDependencies.ContainsKey(dependencyName) &&
-                    _excludeFromPublishPackageIds?.Contains(dependencyName) != true &&
-                    _dependencyLibraries.TryGetValue(dependencyName, out var dependencyLibrary))
-                {
-                    includedDependencies.Add(dependencyName, dependencyLibrary);
-                    foreach (var newDependency in _libraryDependencies[dependencyName])
-                    {
-                        dependencyListToWalk.Push(newDependency.Name);
-                    }
-                }
-            }
-
-            foreach (var dependencyLibrary in _dependencyLibraries.Values)
-            {
-                if (!includedDependencies.ContainsKey(dependencyLibrary.Name))
-                {
-                    dependencyLibrary.ExcludeFromCompilation = true;
-                    dependencyLibrary.ExcludeFromRuntime = true;
-                }
             }
         }
 
