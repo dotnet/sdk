@@ -7,7 +7,7 @@
 		<!-- We need to produce an executable and not a DLL -->
 		<OutputType>Exe</OutputType>
 
-		<TargetFrameworks></TargetFrameworks>
+		<TargetFrameworks>$(CurrentTargetFramework)</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
