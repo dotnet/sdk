@@ -53,6 +53,15 @@ index ------------
  ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/
  ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/WorkloadManifest.Aspire.targets
 @@ ------------ @@
+ ./sdk/x.y.z/es/vstest.console.resources.dll
+ ./sdk/x.y.z/Extensions/
+ ./sdk/x.y.z/Extensions/Microsoft.Diagnostics.NETCore.Client.dll
+-./sdk/x.y.z/Extensions/Microsoft.TestPlatform.Extensions.BlameDataCollector.dll
+-./sdk/x.y.z/Extensions/Microsoft.TestPlatform.Extensions.EventLogCollector.dll
+ ./sdk/x.y.z/Extensions/Microsoft.TestPlatform.TestHostRuntimeProvider.dll
+ ./sdk/x.y.z/Extensions/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.dll
+ ./sdk/x.y.z/Extensions/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.dll
+@@ ------------ @@
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
  ./sdk/x.y.z/Microsoft.Build.Utilities.Core.dll
