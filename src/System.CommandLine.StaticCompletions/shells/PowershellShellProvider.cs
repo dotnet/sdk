@@ -6,6 +6,7 @@ namespace System.CommandLine.StaticCompletions.Shells;
 using System.CodeDom.Compiler;
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.StaticCompletions.Resources;
 
 public class PowershellShellProvider : IShellProvider
 {
@@ -14,6 +15,11 @@ public class PowershellShellProvider : IShellProvider
     public string ArgumentName => PowershellShellProvider.PowerShell;
 
     public string Extension => "ps1";
+
+    public string HelpDescription => Strings.PowershellShellProvider_HelpDescription;
+
+    // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
+    public override string ToString() => ArgumentName;
 
     public string GenerateCompletions(CliCommand command)
     {

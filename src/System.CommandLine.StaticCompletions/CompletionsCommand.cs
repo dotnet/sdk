@@ -4,6 +4,7 @@
 namespace System.CommandLine.StaticCompletions;
 
 using System.CommandLine;
+using System.CommandLine.Completions;
 using System.CommandLine.StaticCompletions.Resources;
 using System.CommandLine.StaticCompletions.Shells;
 using System.Linq;
@@ -48,6 +49,12 @@ public class CompletionsCommand : CliCommand
             }
         };
 
+        shellArg.Validators.Clear();
+        shellArg.Validators.Add(OnlyAcceptSupportedShells(shellMap));
+        shellArg.CompletionSources.Clear();
+        shellArg.CompletionSources.Add(CreateCompletions(shellMap));
+
+
         shellArg.AcceptOnlyFromAmong(shellMap.Keys.ToArray());
         Subcommands.Add(new GenerateScriptCommand(shellArg));
 
@@ -71,6 +78,30 @@ public class CompletionsCommand : CliCommand
             {
                 throw new InvalidOperationException(String.Format(Strings.ShellDiscovery_ShellNotSupported, shellName, string.Join(", ", shellMap.Keys)));
             }
+        }
+
+        static Action<Parsing.ArgumentResult> OnlyAcceptSupportedShells(Dictionary<string, IShellProvider> shellMap)
+        {
+            return (Parsing.ArgumentResult argumentResult) =>
+            {
+                if (argumentResult.Tokens.Count == 0)
+                {
+                    return;
+                }
+                var singleToken = argumentResult.Tokens[0];
+                if (!shellMap.ContainsKey(singleToken.Value))
+                {
+                    argumentResult.AddError(String.Format(Strings.ShellDiscovery_ShellNotSupported, singleToken.Value, string.Join(", ", shellMap.Keys)));
+                }
+            };
+        }
+
+        static Func<CompletionContext, IEnumerable<CompletionItem>> CreateCompletions(Dictionary<string, IShellProvider> shellMap)
+        {
+            return (CompletionContext context) =>
+            {
+                return shellMap.Values.Select(shellProvider => new CompletionItem(shellProvider.ArgumentName, detail: shellProvider.HelpDescription));
+            };
         }
     }
 }

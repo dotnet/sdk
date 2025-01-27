@@ -6,6 +6,7 @@ namespace System.CommandLine.StaticCompletions.Shells;
 using System.CodeDom.Compiler;
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.StaticCompletions.Resources;
 using System.IO;
 
 public class BashShellProvider : IShellProvider
@@ -13,6 +14,11 @@ public class BashShellProvider : IShellProvider
     public string ArgumentName => "bash";
 
     public string Extension => "sh";
+
+    public string HelpDescription => Strings.BashShellProvider_HelpDescription;
+
+    // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
+    public override string ToString() => ArgumentName;
 
     public string GenerateCompletions(CliCommand command)
     {

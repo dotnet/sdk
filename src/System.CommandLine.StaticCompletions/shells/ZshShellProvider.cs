@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CodeDom.Compiler;
+using System.CommandLine.StaticCompletions.Resources;
 
 namespace System.CommandLine.StaticCompletions.Shells;
 
@@ -10,6 +11,11 @@ public class ZshShellProvider : IShellProvider
     public string ArgumentName => "zsh";
 
     public string Extension => "zsh";
+
+    public string HelpDescription => Strings.ZshShellProvider_HelpDescription;
+
+    // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
+    public override string ToString() => ArgumentName;
 
     public string GenerateCompletions(CliCommand command)
     {
