@@ -25,6 +25,112 @@ public class DiscoverPrecompressedAssetsTest
     }
 
     [Fact]
+    public void HandlesDuplicateAssetsCorrectly()
+    {
+        // Arrange
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        // Create base uncompressed asset
+        var uncompressedCandidate = new StaticWebAsset
+        {
+            Identity = Path.Combine(Environment.CurrentDirectory, "wwwroot", "js", "site.js"),
+            RelativePath = "js/site#[.{fingerprint}]?.js",
+            BasePath = "_content/Test",
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            Fingerprint = "uncompressed",
+            ContentRoot = Path.Combine(Environment.CurrentDirectory,"wwwroot"),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest,
+            SourceId = "TestSource",
+            OriginalItemSpec = Path.Combine("wwwroot", "js", "site.js"),
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            AssetMergeBehavior = string.Empty,
+            AssetTraitValue = string.Empty,
+            AssetTraitName = string.Empty,
+            AssetMergeSource = string.Empty,
+            RelatedAsset = string.Empty,
+            Integrity = "uncompressed-integrity"
+        };
+
+        // Create duplicate asset with the same identity
+        var duplicateUncompressedCandidate = new StaticWebAsset
+        {
+            Identity = Path.Combine(Environment.CurrentDirectory, "wwwroot", "js", "site.js"),
+            RelativePath = "js/site#[.{fingerprint}]?.js",
+            BasePath = "_content/Test",
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            Fingerprint = "duplicate-uncompressed",
+            ContentRoot = Path.Combine(Environment.CurrentDirectory,"wwwroot"),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest,
+            SourceId = "TestSource",
+            OriginalItemSpec = Path.Combine("wwwroot", "js", "site.js"),
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            AssetMergeBehavior = string.Empty,
+            AssetTraitValue = string.Empty,
+            AssetTraitName = string.Empty,
+            AssetMergeSource = string.Empty,
+            RelatedAsset = string.Empty,
+            Integrity = "uncompressed-integrity"
+        };
+
+        // Create compressed version of the asset
+        var compressedCandidate = new StaticWebAsset
+        {
+            Identity = Path.Combine(Environment.CurrentDirectory, "wwwroot", "js", "site.js.gz"),
+            RelativePath = "js/site.js#[.{fingerprint}]?.gz",
+            BasePath = "_content/Test",
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            Fingerprint = "compressed",
+            ContentRoot = Path.Combine(Environment.CurrentDirectory, "wwwroot"),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest,
+            SourceId = "TestSource",
+            OriginalItemSpec = Path.Combine("wwwroot", "js", "site.js.gz"),
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            AssetMergeBehavior = string.Empty,
+            AssetTraitValue = string.Empty,
+            AssetTraitName = string.Empty,
+            AssetMergeSource = string.Empty,
+            RelatedAsset = string.Empty,
+            Integrity = "compressed-integrity"
+        };
+
+        var task = new DiscoverPrecompressedAssets
+        {
+            CandidateAssets = [
+                uncompressedCandidate.ToTaskItem(), 
+                duplicateUncompressedCandidate.ToTaskItem(), 
+                compressedCandidate.ToTaskItem()
+            ],
+            BuildEngine = buildEngine.Object
+        };
+
+        // Act
+        var result = task.Execute();
+        var discoveredAssets = task.DiscoveredCompressedAssets;
+
+        // Assert
+        // Verify task completed successfully despite duplicate keys
+        result.Should().BeTrue();
+
+        // Verify only one compressed asset was discovered
+        discoveredAssets.Should().ContainSingle();
+
+        var discoveredAsset = discoveredAssets[0];
+
+        // Verify the first (non-duplicate) asset was used as related asset
+        discoveredAsset.GetMetadata("RelatedAsset").Should().Be(uncompressedCandidate.Identity);
+        discoveredAsset.GetMetadata("Fingerprint").Should().Be("compressed");
+    }
+
+    [Fact]
     public void DiscoversPrecompressedAssetsCorrectly()
     {
         var errorMessages = new List<string>();
