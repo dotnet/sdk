@@ -2191,7 +2191,7 @@ _testhost_completions() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="script register --help" 
+    opts="script --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -2204,35 +2204,12 @@ _testhost_completions() {
             return
             ;;
             
-        (register)
-            _testhost_completions_register $(($1+1))
-            return
-            ;;
-            
     esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
 _testhost_completions_script() {
-
-    cur="${COMP_WORDS[COMP_CWORD]}" 
-    prev="${COMP_WORDS[COMP_CWORD-1]}" 
-    COMPREPLY=()
-    
-    opts="--help" 
-    opts="$opts (bash fish nushell pwsh zsh)" 
-    
-    if [[ $COMP_CWORD == "$1" ]]; then
-        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-        return
-    fi
-    
-    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-}
-
-
-_testhost_completions_register() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 

@@ -54,8 +54,6 @@ public class CompletionsCommand : CliCommand
         shellArg.CompletionSources.Clear();
         shellArg.CompletionSources.Add(CreateCompletions(shellMap));
 
-
-        shellArg.AcceptOnlyFromAmong(shellMap.Keys.ToArray());
         Subcommands.Add(new GenerateScriptCommand(shellArg));
 
         static IShellProvider LookupShellFromEnvironment(Dictionary<string, IShellProvider> shellMap)
@@ -100,7 +98,7 @@ public class CompletionsCommand : CliCommand
         {
             return (CompletionContext context) =>
             {
-                return shellMap.Values.Select(shellProvider => new CompletionItem(shellProvider.ArgumentName, detail: shellProvider.HelpDescription));
+                return shellMap.Values.Select(shellProvider => new CompletionItem(shellProvider.ArgumentName, documentation: shellProvider.HelpDescription));
             };
         }
     }

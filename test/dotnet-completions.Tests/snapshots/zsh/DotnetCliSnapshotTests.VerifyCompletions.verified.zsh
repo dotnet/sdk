@@ -1353,14 +1353,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::shell -- The shell for which to generate or register completions:((bash\:"bash" fish\:"fish" nushell\:"nushell" pwsh\:"pwsh" zsh\:"zsh" ))' \
-                                            && ret=0
-                                        ;;
-                                    (register)
-                                        _arguments "${_arguments_options[@]}" : \
-                                            '--help[Show command line help.]' \
-                                            '-h[Show command line help.]' \
-                                            '::shell -- The shell for which to generate or register completions:((bash\:"bash" fish\:"fish" nushell\:"nushell" pwsh\:"pwsh" zsh\:"zsh" ))' \
+                                            '::shell -- The shell for which to generate or register completions:((bash\:"Generates a completion script for the Bourne Again SHell (bash)." fish\:"Generates a completion script for the Fish shell." nushell\:"Generates a completion script for the NuShell shell." pwsh\:"Generates a completion script for PowerShell Core. These scripts will not work on Windows Powershell." zsh\:"Generates a completion script for the Zsh shell." ))' \
                                             && ret=0
                                         ;;
                                 esac
@@ -1929,7 +1922,6 @@ _testhost__workload__history_commands() {
 _testhost__completions_commands() {
     local commands; commands=(
         'script:Generate the completion script for a supported shell' \
-        'register:Register the completion script for a supported shell' \
     )
     _describe -t commands 'testhost completions commands' commands "$@"
 }
@@ -1938,12 +1930,6 @@ _testhost__completions_commands() {
 _testhost__completions__script_commands() {
     local commands; commands=()
     _describe -t commands 'testhost completions script commands' commands "$@"
-}
-
-(( $+functions[_testhost__completions__register_commands] )) ||
-_testhost__completions__register_commands() {
-    local commands; commands=()
-    _describe -t commands 'testhost completions register commands' commands "$@"
 }
 
 if [ "$funcstack[1]" = "_testhost" ]; then
