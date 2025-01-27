@@ -240,7 +240,7 @@
         " />
 
       <Net10RuntimePackRids Include="
-        @(Net80RuntimePackRids);
+        @(Net90RuntimePackRids);
         android-arm64;
         android-x64;
         " />
