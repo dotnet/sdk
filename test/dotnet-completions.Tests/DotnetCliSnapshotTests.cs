@@ -4,7 +4,6 @@
 namespace Microsoft.DotNet.Cli.Completions.Tests;
 
 using System.CommandLine.StaticCompletions.Shells;
-using DiffEngine;
 using VerifyXunit;
 using Xunit.Abstractions;
 
@@ -19,7 +18,7 @@ public class DotnetCliSnapshotTests : SdkTest
         var provider = System.CommandLine.StaticCompletions.CompletionsCommand.DefaultShells.Single(x => x.ArgumentName == shellName);
         var completions = provider.GenerateCompletions(Microsoft.DotNet.Cli.Parser.RootCommand);
         var settings = new VerifySettings();
-        if (BuildServerDetector.Detected)
+        if (Environment.GetEnvironmentVariable("CI") is string ci && ci.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
             settings.UseDirectory(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
         }

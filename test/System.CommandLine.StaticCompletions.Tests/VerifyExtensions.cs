@@ -3,7 +3,6 @@
 
 using System.CommandLine.StaticCompletions.Shells;
 using System.Runtime.CompilerServices;
-using DiffEngine;
 
 namespace System.CommandLine.StaticCompletions.Tests;
 
@@ -14,7 +13,7 @@ public static class VerifyExtensions
         // Can't use sourceFile directly because in CI the file may be rooted at a different location than the compile-time location
         // We do have the source code available, just at a different root, so we can use that compute
         var settings = new VerifySettings();
-        if (BuildServerDetector.Detected)
+        if (Environment.GetEnvironmentVariable("CI") is string ci && ci.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
             var runtimeSnapshotDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
             var closestExistingDirectory = GetClosestExistingDirectory(runtimeSnapshotDir);
