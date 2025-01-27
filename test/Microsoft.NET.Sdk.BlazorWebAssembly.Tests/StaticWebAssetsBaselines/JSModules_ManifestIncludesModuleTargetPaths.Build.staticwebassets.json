@@ -1811,6 +1811,27 @@
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.IO.wasm"
     },
     {
+      "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Linq.AsyncEnumerable.wasm",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/System.Linq.AsyncEnumerable.wasm",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "WasmResource",
+      "AssetTraitValue": "runtime",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Linq.AsyncEnumerable.wasm"
+    },
+    {
       "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Linq.Expressions.wasm",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -6156,6 +6177,27 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.IO.wasm.gz"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Linq.AsyncEnumerable.wasm.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/System.Linq.AsyncEnumerable.wasm.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Linq.AsyncEnumerable.wasm",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Linq.AsyncEnumerable.wasm.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Linq.Expressions.wasm.gz",
@@ -12257,6 +12299,43 @@
     {
       "Route": "_framework/System.IO.wasm",
       "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.IO.wasm",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/System.Linq.AsyncEnumerable.wasm",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Linq.AsyncEnumerable.wasm",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -25127,6 +25206,106 @@
     {
       "Route": "_framework/System.IO.wasm",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.IO.wasm.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/System.Linq.AsyncEnumerable.wasm.gz",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Linq.AsyncEnumerable.wasm.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/System.Linq.AsyncEnumerable.wasm",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\System.Linq.AsyncEnumerable.wasm.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
