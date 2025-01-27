@@ -34,7 +34,7 @@
   <!-- Make sure that the sdk archive is extracted before running the scenario-tests. Need to do this here as it's hard
        to define the dependency directly in scenario-tests.proj. -->
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" BuildInParallel="false" Condition="'$(SkipPrepareSdkArchive)' != 'true'" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" BuildInParallel="false" Condition="'$(_RunScenarioTests)' == 'true' and '$(SkipPrepareSdkArchive)' != 'true'" />
     <ProjectReference Include="$(RepoProjectsDir)scenario-tests.proj" Condition="'$(_RunScenarioTests)' == 'true'" BuildInParallel="false" />
   </ItemGroup>
 
