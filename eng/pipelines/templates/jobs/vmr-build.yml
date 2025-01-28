@@ -49,7 +49,7 @@ parameters:
   default: false
 
 - name: sign
-  displayName: True when build output should be signed
+  displayName: True when build output should be signed (includes dry runs)
   type: boolean
   default: true
 

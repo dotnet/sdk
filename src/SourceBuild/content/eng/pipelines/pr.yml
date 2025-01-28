@@ -45,6 +45,7 @@ stages:
   parameters:
     isBuiltFromVmr: true
     isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+    # Send 'default' signing value. We'll usually call -sign (dryrun) when running PRs in non-source-only scenarios.
     ${{ if or(eq(variables.isScheduleTrigger, 'true'), contains(variables['Build.DefinitionName'], '-full')) }}:
       scope: full
     ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
