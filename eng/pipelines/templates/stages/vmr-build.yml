@@ -402,7 +402,7 @@ stages:
         buildName: Windows
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        sign: ${{ variables.sign }}
+        sign: ${{ variables.signEnabled }}
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
@@ -412,7 +412,7 @@ stages:
         buildName: Android_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        sign: ${{ variables.sign }}
+        sign: ${{ variables.signEnabled }}
         pool: ${{ parameters.pool_Linux_Shortstack }}
         container:
           name: ${{ variables.androidCrossContainerName }}
@@ -425,7 +425,7 @@ stages:
         buildName: Browser_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        sign: ${{ variables.sign }}
+        sign: ${{ variables.signEnabled }}
         pool: ${{ parameters.pool_Linux_Shortstack }}
         container:
           name: ${{ variables.browserCrossContainerName }}
@@ -439,7 +439,7 @@ stages:
         buildName: iOSSimulator_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
-        sign: ${{ variables.sign }}
+        sign: ${{ variables.signEnabled }}
         pool: ${{ parameters.pool_Mac }}
         targetOS: iossimulator
         targetArchitecture: arm64
@@ -452,7 +452,7 @@ stages:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.androidCrossContainerName }}
@@ -465,7 +465,7 @@ stages:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.androidCrossContainerName }}
@@ -478,7 +478,7 @@ stages:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.androidCrossContainerName }}
@@ -491,7 +491,7 @@ stages:
             buildName: Browser_Multithreaded_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.browserCrossContainerName }}
@@ -506,7 +506,7 @@ stages:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
@@ -520,7 +520,7 @@ stages:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
@@ -534,7 +534,7 @@ stages:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
@@ -548,7 +548,7 @@ stages:
             buildName: iOS_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: ios
             targetArchitecture: arm64
@@ -558,7 +558,7 @@ stages:
             buildName: iOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: iossimulator
             targetArchitecture: x64
@@ -568,7 +568,7 @@ stages:
             buildName: MacCatalyst_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: arm64
@@ -579,7 +579,7 @@ stages:
             buildName: MacCatalyst_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: x64
@@ -589,7 +589,7 @@ stages:
             buildName: tvOS_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvos
             targetArchitecture: arm64
@@ -599,7 +599,7 @@ stages:
             buildName: tvOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: arm64
@@ -609,7 +609,7 @@ stages:
             buildName: tvOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: x64
@@ -619,7 +619,7 @@ stages:
             buildName: Wasi_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.wasiCrossContainerName }}
@@ -633,7 +633,7 @@ stages:
             buildName: OSX
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: x64
@@ -643,7 +643,7 @@ stages:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxX64CrossContainerName }}
@@ -672,7 +672,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Shortstack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.azurelinuxX64CrossContainerName }}
@@ -688,7 +688,7 @@ stages:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArmCrossContainerName }}
@@ -702,7 +702,7 @@ stages:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArm64CrossContainerName }}
@@ -731,7 +731,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxX64AlpineCrossContainerName }}
@@ -746,7 +746,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArmAlpineCrossContainerName }}
@@ -761,7 +761,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArm64AlpineCrossContainerName }}
@@ -776,7 +776,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Shortstack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.azurelinuxArm64CrossContainerName }}
@@ -792,7 +792,7 @@ stages:
             buildName: OSX
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: arm64
@@ -802,7 +802,7 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
@@ -812,7 +812,7 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86
@@ -857,7 +857,7 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.sign }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64

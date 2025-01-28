@@ -24,30 +24,30 @@ variables:
   value: --privileged
 
 - ${{ if eq(parameters.desiredSigning, 'Signed') }}:
-  - name: sign
+  - name: signEnabled
     value: true
 - ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
-  - name: sign
+  - name: signEnabled
     value: false
 - ${{ if or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
   # Always sign on the public project (will be dry-run signing)
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
-    - name: sign
+    - name: signEnabled
       value: true
   # Always sign in pull requests (dry run)
   - ${{ elseif eq(variables['Build.Reason'], 'PullRequest') }}:
-    - name: sign
+    - name: signEnabled
       value: true
   # Pass sign on the internal project if the, branch is a main or release branch
   - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranchName'], 'refs/heads/release/'))) }}:
-    - name: sign
+    - name: signEnabled
       value: true
   # Do not sign otherwise.
   - ${{ else }}:
-    - name: sign
+    - name: signEnabled
       value: false
 - ${{ else }}:
-  - name: sign
+  - name: signEnabled
     value: false
 
 - name: almaLinuxContainerName
