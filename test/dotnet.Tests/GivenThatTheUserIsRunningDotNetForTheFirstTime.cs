@@ -27,14 +27,12 @@ namespace Microsoft.DotNet.Tests
 
             var command = new DotnetCommand(log)
                 .WithWorkingDirectory(TestDirectory)
-                .WithEnvironmentVariable("HOME", testNuGetHome)
-                .WithEnvironmentVariable("USERPROFILE", testNuGetHome)
                 .WithEnvironmentVariable("APPDATA", testNuGetHome)
                 .WithEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER", cliTestFallbackFolder)
                 .WithEnvironmentVariable("DOTNET_CLI_TEST_LINUX_PROFILED_PATH", profiled)
                 .WithEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH", pathsd)
                 .WithEnvironmentVariable("SkipInvalidConfigurations", "true")
-                .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, "");
+                .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, testNuGetHome);
 
             NugetFallbackFolder = new DirectoryInfo(cliTestFallbackFolder);
             DotDotnetFolder = new DirectoryInfo(Path.Combine(testNuGetHome, ".dotnet"));
