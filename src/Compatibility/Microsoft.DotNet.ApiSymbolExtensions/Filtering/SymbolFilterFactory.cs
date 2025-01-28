@@ -14,49 +14,58 @@ public static class SymbolFilterFactory
     /// Creates a composite filter to exclude APIs using the DocIDs provided in the specifed file paths.
     /// </summary>
     /// <param name="apiExclusionFilePaths">A collection of paths where the exclusion files should be searched.</param>
+    /// <param name="accessibilitySymbolFilter">An optional custom accessibility symbol filter to use.</param>
     /// <param name="respectInternals">Whether to include internal symbols or not.</param>
     /// <param name="includeEffectivelyPrivateSymbols">Whether to include effectively private symbols or not.</param>
     /// <param name="includeExplicitInterfaceImplementationSymbols">Whether to include explicit interface implementation symbols or not.</param>
+    /// <param name="includeImplicitSymbolFilter">Whether to include implicit symbols or not.</param>
     /// <returns>An instance of the symbol filter.</returns>
     public static ISymbolFilter GetFilterFromFiles(string[]? apiExclusionFilePaths,
-                                                                 bool respectInternals = false,
-                                                                 bool includeEffectivelyPrivateSymbols = true,
-                                                                 bool includeExplicitInterfaceImplementationSymbols = true)
+                                                   AccessibilitySymbolFilter? accessibilitySymbolFilter = null,
+                                                   bool respectInternals = false,
+                                                   bool includeEffectivelyPrivateSymbols = true,
+                                                   bool includeExplicitInterfaceImplementationSymbols = true,
+                                                   bool includeImplicitSymbolFilter = true)
     {
         DocIdSymbolFilter? docIdSymbolFilter =
             apiExclusionFilePaths?.Length > 0 ?
             DocIdSymbolFilter.CreateFromFiles(apiExclusionFilePaths) : null;
 
-        return GetCompositeSymbolFilter(docIdSymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, withImplicitSymbolFilter: true);
+        return GetCompositeSymbolFilter(docIdSymbolFilter, accessibilitySymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, includeImplicitSymbolFilter);
     }
 
     /// <summary>
     /// Creates a composite filter to exclude APIs using the DocIDs provided in the specifed list.
     /// </summary>
     /// <param name="apiExclusionList">A collection of exclusion list.</param>
+    /// <param name="accessibilitySymbolFilter">An optional custom accessibility symbol filter to use.</param>
     /// <param name="respectInternals">Whether to include internal symbols or not.</param>
     /// <param name="includeEffectivelyPrivateSymbols">Whether to include effectively private symbols or not.</param>
     /// <param name="includeExplicitInterfaceImplementationSymbols">Whether to include explicit interface implementation symbols or not.</param>
+    /// <param name="includeImplicitSymbolFilter">Whether to include implicit symbols or not.</param>
     /// <returns>An instance of the symbol filter.</returns>
     public static ISymbolFilter GetFilterFromList(string[]? apiExclusionList,
-                                                                bool respectInternals = false,
-                                                                bool includeEffectivelyPrivateSymbols = true,
-                                                                bool includeExplicitInterfaceImplementationSymbols = true)
+                                                  AccessibilitySymbolFilter? accessibilitySymbolFilter = null,
+                                                  bool respectInternals = false,
+                                                  bool includeEffectivelyPrivateSymbols = true,
+                                                  bool includeExplicitInterfaceImplementationSymbols = true,
+                                                  bool includeImplicitSymbolFilter = true)
     {
         DocIdSymbolFilter? docIdSymbolFilter =
             apiExclusionList?.Count() > 0 ?
             DocIdSymbolFilter.CreateFromLists(apiExclusionList) : null;
 
-        return GetCompositeSymbolFilter(docIdSymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, withImplicitSymbolFilter: true);
+        return GetCompositeSymbolFilter(docIdSymbolFilter, accessibilitySymbolFilter, respectInternals, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, includeImplicitSymbolFilter);
     }
 
     private static ISymbolFilter GetCompositeSymbolFilter(DocIdSymbolFilter? customFilter,
-                                                                  bool respectInternals,
-                                                                  bool includeEffectivelyPrivateSymbols,
-                                                                  bool includeExplicitInterfaceImplementationSymbols,
-                                                                  bool withImplicitSymbolFilter)
+                                                          AccessibilitySymbolFilter? accessibilitySymbolFilter,
+                                                          bool respectInternals,
+                                                          bool includeEffectivelyPrivateSymbols,
+                                                          bool includeExplicitInterfaceImplementationSymbols,
+                                                          bool includeImplicitSymbolFilter)
     {
-        AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+        accessibilitySymbolFilter ??= new(
                 respectInternals,
                 includeEffectivelyPrivateSymbols,
                 includeExplicitInterfaceImplementationSymbols);
@@ -67,7 +76,7 @@ public static class SymbolFilterFactory
         {
             filter.Add(customFilter);
         }
-        if (withImplicitSymbolFilter)
+        if (includeImplicitSymbolFilter)
         {
             filter.Add(new ImplicitSymbolFilter());
         }

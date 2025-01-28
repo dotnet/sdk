@@ -59,8 +59,8 @@ namespace Microsoft.DotNet.GenAPI
                 textWriter.Write(headerFileText);
 
                 using CSharpFileBuilder fileBuilder = new(log,
-                    SymbolFilterFactory.GetFilterFromFiles(excludeApiFiles, respectInternals),
-                    SymbolFilterFactory.GetFilterFromFiles(excludeAttributesFiles, respectInternals),
+                    SymbolFilterFactory.GetFilterFromFiles(excludeApiFiles, respectInternals: respectInternals),
+                    SymbolFilterFactory.GetFilterFromFiles(excludeAttributesFiles, respectInternals: respectInternals),
                     textWriter,
                     exceptionMessage,
                     includeAssemblyAttributes,

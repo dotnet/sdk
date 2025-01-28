@@ -16,6 +16,35 @@ public class SymbolFilterFactoryTests
     [InlineData(false)]
     public void Test_FilterFromFiles(bool includeCustomType)
     {
+        Test_FilterFromFiles_Internal(includeCustomType, accessibilitySymbolFilter: null);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Test_FilterFromFiles_CustomAccessibilityFilter(bool includeCustomType)
+    {
+        Test_FilterFromFiles_Internal(includeCustomType, new AccessibilitySymbolFilter(includeInternalSymbols: true));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Test_FilterFromList(bool includeCustomType)
+    {
+        Test_FilterFromList_Internal(includeCustomType, accessibilitySymbolFilter: null);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Test_FilterFromList_WithCustomAccessibilityFilter(bool includeCustomType)
+    {
+        Test_FilterFromList_Internal(includeCustomType, new AccessibilitySymbolFilter(includeInternalSymbols: true));
+    }
+
+    private void Test_FilterFromFiles_Internal(bool includeCustomType, AccessibilitySymbolFilter accessibilitySymbolFilter)
+    {
         using TempDirectory root = new();
         string filePath = Path.Combine(root.DirPath, "exclusions.txt");
         using (FileStream fileStream = File.Create(filePath))
@@ -31,6 +60,7 @@ public class SymbolFilterFactoryTests
 
         CompositeSymbolFilter filter = SymbolFilterFactory.GetFilterFromFiles(
             apiExclusionFilePaths: [filePath],
+            accessibilitySymbolFilter: accessibilitySymbolFilter,
             respectInternals: true,
             includeEffectivelyPrivateSymbols: true,
             includeExplicitInterfaceImplementationSymbols: true) as CompositeSymbolFilter;
@@ -38,10 +68,7 @@ public class SymbolFilterFactoryTests
         Test_GetFilter_Internal(filter, includeCustomType);
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void Test_FilterFromList(bool includeCustomType)
+    private void Test_FilterFromList_Internal(bool includeCustomType, AccessibilitySymbolFilter accessibilitySymbolFilter)
     {
         List<string> exclusions = ["T:System.Int32", "T:System.String"];
         if (!includeCustomType)
@@ -51,6 +78,7 @@ public class SymbolFilterFactoryTests
 
         CompositeSymbolFilter filter = SymbolFilterFactory.GetFilterFromList(
             apiExclusionList: exclusions.ToArray(),
+            accessibilitySymbolFilter: accessibilitySymbolFilter,
             respectInternals: true,
             includeEffectivelyPrivateSymbols: true,
             includeExplicitInterfaceImplementationSymbols: true) as CompositeSymbolFilter;
@@ -58,19 +86,19 @@ public class SymbolFilterFactoryTests
         Test_GetFilter_Internal(filter, includeCustomType);
     }
 
-    private void Test_GetFilter_Internal(CompositeSymbolFilter filter, bool includeCustomType)
+    private void Test_GetFilter_Internal(CompositeSymbolFilter compositeFilter, bool includeCustomType)
     {
-        Assert.NotNull(filter);
+        Assert.NotNull(compositeFilter);
 
-        Assert.Equal(3, filter.Filters.Count);
+        Assert.Equal(3, compositeFilter.Filters.Count);
 
-        DocIdSymbolFilter docIdFilter = filter.Filters[0] as DocIdSymbolFilter;
+        DocIdSymbolFilter docIdFilter = compositeFilter.Filters[0] as DocIdSymbolFilter;
         Assert.NotNull(docIdFilter);
 
-        ImplicitSymbolFilter implicitFilter = filter.Filters[1] as ImplicitSymbolFilter;
+        ImplicitSymbolFilter implicitFilter = compositeFilter.Filters[1] as ImplicitSymbolFilter;
         Assert.NotNull(implicitFilter);
 
-        AccessibilitySymbolFilter accessibilityFilter = filter.Filters[2] as AccessibilitySymbolFilter;
+        AccessibilitySymbolFilter accessibilityFilter = compositeFilter.Filters[2] as AccessibilitySymbolFilter;
         Assert.NotNull(accessibilityFilter);
 
         IAssemblySymbol assemblySymbol = SymbolFactory.GetAssemblyFromSyntax(@"
