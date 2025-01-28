@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli
 
         public override int Execute()
         {
-            string slnFileFullPath = SlnCommandParser.GetSlnFileFullPath(_slnFileOrDirectory);
+            string slnFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_slnFileOrDirectory);
             if (slnFileFullPath.HasExtension(".slnx"))
             {
                 throw new GracefulException(LocalizableStrings.CannotMigrateSlnx);
@@ -50,8 +50,7 @@ namespace Microsoft.DotNet.Cli
 
         private async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
         {
-            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(filePath);
-            SolutionModel solution = await serializer.OpenAsync(filePath, cancellationToken);
+            SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(filePath);
             await SolutionSerializers.SlnXml.SaveAsync(slnxFilePath, solution, cancellationToken);
             _reporter.WriteLine(LocalizableStrings.SlnxGenerated, slnxFilePath);
         }

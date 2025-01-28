@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!_isHelp)
             {
-                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery);
+                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, _isHelp);
             }
         }
 
@@ -177,10 +177,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
             {
-                if (!_isHelp)
-                {
-                    _output?.TestExecutionCompleted(DateTimeOffset.Now);
-                }
+                _output?.TestExecutionCompleted(DateTimeOffset.Now);
             }
         }
 

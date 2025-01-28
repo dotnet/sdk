@@ -423,16 +423,16 @@
       <Sha>1156b9aac00609107c21cf3458b797c76db6be7a</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25074.5">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25076.4">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
       <Sha>3746107f6c9e0a2f1cae7e37a78a9d9de249857a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.12.0-beta1.25074.5">
+    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.12.0-beta1.25076.4">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
       <Sha>3746107f6c9e0a2f1cae7e37a78a9d9de249857a</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.12.0-beta1.25074.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.12.0-beta1.25076.4">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
       <Sha>3746107f6c9e0a2f1cae7e37a78a9d9de249857a</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
@@ -604,34 +604,34 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25074.4">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25076.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e89f8b1239360cafca490aa3bfee89e84df72186</Sha>
+      <Sha>fe17712bedb95a55d5af00c5191772c81393745f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.25074.4">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.25076.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e89f8b1239360cafca490aa3bfee89e84df72186</Sha>
+      <Sha>fe17712bedb95a55d5af00c5191772c81393745f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.25074.4">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.25076.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e89f8b1239360cafca490aa3bfee89e84df72186</Sha>
+      <Sha>fe17712bedb95a55d5af00c5191772c81393745f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="10.0.0-beta.25074.4">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="10.0.0-beta.25076.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e89f8b1239360cafca490aa3bfee89e84df72186</Sha>
+      <Sha>fe17712bedb95a55d5af00c5191772c81393745f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="10.0.0-beta.25074.4">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="10.0.0-beta.25076.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e89f8b1239360cafca490aa3bfee89e84df72186</Sha>
+      <Sha>fe17712bedb95a55d5af00c5191772c81393745f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.25074.4">
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.25076.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e89f8b1239360cafca490aa3bfee89e84df72186</Sha>
+      <Sha>fe17712bedb95a55d5af00c5191772c81393745f</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="10.0.0-beta.25074.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="10.0.0-beta.25076.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e89f8b1239360cafca490aa3bfee89e84df72186</Sha>
+      <Sha>fe17712bedb95a55d5af00c5191772c81393745f</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="10.0.0-alpha.1.25073.13">
