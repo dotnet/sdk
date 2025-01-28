@@ -29,13 +29,15 @@ namespace Microsoft.DotNet.ApiCompat
             {
                 SymbolEqualityComparer symbolEqualityComparer = new();
 
+                ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromFiles(excludeAttributesFiles, respectInternals);
+                AttributeDataEqualityComparer attributeDataEqualityComparer = new(symbolEqualityComparer,
+                        new TypedConstantEqualityComparer(symbolEqualityComparer));
+
                 ApiComparerSettings apiComparerSettings = new(
-                    symbolFilter: null, // Gets a default value inside the constructor
-                    symbolEqualityComparer,
-                    SymbolFilterFactory.GetFilterFromFiles(excludeAttributesFiles, respectInternals),
-                    new AttributeDataEqualityComparer(symbolEqualityComparer,
-                        new TypedConstantEqualityComparer(symbolEqualityComparer)),
-                    respectInternals);
+                    symbolEqualityComparer: symbolEqualityComparer,
+                    attributeDataSymbolFilter: attributeDataSymbolFilter,
+                    attributeDataEqualityComparer: attributeDataEqualityComparer,
+                    includeInternalSymbols: respectInternals);
 
                 return new ApiCompatRunner(SuppressibleLog,
                     SuppressionEngine,
