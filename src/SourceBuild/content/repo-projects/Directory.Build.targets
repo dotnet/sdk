@@ -763,6 +763,10 @@
     CleanupRepo" />
 
   <Target Name="RepoTest">
+    <PropertyGroup>
+      <TestCommand>$(BuildScript) $(TestActions) $(TestArgs)</TestCommand>
+    </PropertyGroup>
+
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
     <Message Importance="High" Text="  $(TestCommand)" />
