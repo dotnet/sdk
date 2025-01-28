@@ -38,28 +38,28 @@ namespace Microsoft.DotNet.Cli
                 return false;
             }
 
-            int msbuildExitCode;
+            int msBuildExitCode;
             string path;
 
             if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
             {
                 path = PathUtility.GetFullPath(buildPathOptions.ProjectPath);
-                msbuildExitCode = await RunBuild(path, isSolution: false, buildPathOptions);
+                msBuildExitCode = await RunBuild(path, isSolution: false, buildPathOptions);
             }
             else if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
             {
                 path = PathUtility.GetFullPath(buildPathOptions.SolutionPath);
-                msbuildExitCode = await RunBuild(path, isSolution: true, buildPathOptions);
+                msBuildExitCode = await RunBuild(path, isSolution: true, buildPathOptions);
             }
             else
             {
                 path = PathUtility.GetFullPath(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
-                msbuildExitCode = await RunBuild(path, buildPathOptions);
+                msBuildExitCode = await RunBuild(path, buildPathOptions);
             }
 
-            if (msbuildExitCode != ExitCodes.Success)
+            if (msBuildExitCode != ExitCodes.Success)
             {
-                _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msbuildExitCode));
+                _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
                 return false;
             }
 
@@ -259,12 +259,12 @@ namespace Microsoft.DotNet.Cli
             return ExtractModulesFromProject(project);
         }
 
-        private static bool BuildOrRestoreProjectOrSolution(string projectFilePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
+        private static bool BuildOrRestoreProjectOrSolution(string filePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
         {
             var parameters = GetBuildParameters(projectCollection, msBuildBuildAndRestoreSettings);
             var globalProperties = GetGlobalProperties(msBuildBuildAndRestoreSettings);
 
-            var buildRequestData = new BuildRequestData(projectFilePath, globalProperties, null, msBuildBuildAndRestoreSettings.Commands, null);
+            var buildRequestData = new BuildRequestData(filePath, globalProperties, null, msBuildBuildAndRestoreSettings.Commands, null);
 
             BuildResult buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
 

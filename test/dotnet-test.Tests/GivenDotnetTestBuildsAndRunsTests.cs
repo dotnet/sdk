@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using dotnet.Tests;
-using Microsoft.DotNet.Tools.Common;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -13,8 +11,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunTestProjectWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -39,8 +37,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunMultipleTestProjectsWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -65,8 +63,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunTestProjectWithTests_ShouldReturnZeroAsExitCode(string configuration)
         {
@@ -92,8 +90,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunMultipleTestProjectsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -118,8 +116,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -134,9 +132,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches($@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 8", result.StdOut);
-                Assert.Matches($@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}OtherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 2", result.StdOut);
-                Assert.Matches($@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}AnotherTestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed.*\s+Exit code: 9", result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, "8"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "failed", true, "2"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", "failed", true, "9"), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -149,8 +147,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -164,14 +162,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain("Test application(s) that support VSTest are not supported.");
+                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunOnEmptyFolder_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -185,14 +183,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain("Specify a project or solution file. The current working directory does not contain a project or solution file.");
+                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -206,14 +204,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain("Specify a project or solution file. The current working directory does not contain a project or solution file.");
+                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunOnProjectWithSolutionFile_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -227,14 +225,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain("Specify which project or solution file to use because this folder contains more than one project or solution file.");
+                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunOnProjectWithClassLibrary_ShouldReturnOneAsExitCode(string configuration)
         {

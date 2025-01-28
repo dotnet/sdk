@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
-using dotnet.Tests;
-using Microsoft.DotNet.Tools.Common;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -14,13 +12,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunMultipleProjectWithDifferentTFMsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("ProjectSolutionForMultipleTFMs", Guid.NewGuid().ToString())
                 .WithSource();
+            testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -29,14 +28,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                MatchCollection net8ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}TestProjectWithNet8\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed");
-                MatchCollection net9ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net9\.0{PathUtility.GetDirectorySeparatorChar()}TestProjectWithNet9\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\spassed");
+                MatchCollection previousDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: false));
+                MatchCollection currentDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, useCurrentVersion: true));
 
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test2");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
 
-                Assert.True(net8ProjectMatches.Count > 1);
-                Assert.True(net9ProjectMatches.Count > 1);
+                Assert.True(previousDotnetProjectMatches.Count > 1);
+                Assert.True(currentDotnetProjectMatches.Count > 1);
 
                 Assert.Single(failedTestsMatches);
                 Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
@@ -52,13 +51,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunProjectWithMultipleTFMsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -67,8 +67,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                var net8ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed");
-                var net9ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net9\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\sfailed");
+                MatchCollection previousDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: false));
+                MatchCollection currentDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: true));
 
                 MatchCollection skippedTestsMatches = Regex.Matches(result.StdOut!, "skipped Test1");
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test2");
@@ -76,8 +76,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection errorTestsMatches = Regex.Matches(result.StdOut!, "failed Test4");
                 MatchCollection canceledTestsMatches = Regex.Matches(result.StdOut!, @"failed \(canceled\) Test5");
 
-                Assert.True(net8ProjectMatches.Count > 1);
-                Assert.True(net9ProjectMatches.Count > 1);
+                Assert.True(previousDotnetProjectMatches.Count > 1);
+                Assert.True(currentDotnetProjectMatches.Count > 1);
 
                 Assert.Multiple(() => Assert.Equal(2, skippedTestsMatches.Count));
                 Assert.Multiple(() => Assert.Equal(2, failedTestsMatches.Count));
@@ -97,13 +97,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunProjectWithMSTestMetaPackageAndMultipleTFMsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -112,13 +113,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                MatchCollection net8ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net8\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net8.0\|[a-zA-Z][1-9]+\)\sfailed");
-                MatchCollection net9ProjectMatches = Regex.Matches(result.StdOut!, $@".+{PathUtility.GetDirectorySeparatorChar()}net9\.0{PathUtility.GetDirectorySeparatorChar()}TestProject\.dll\s+\(net9.0\|[a-zA-Z][1-9]+\)\sfailed");
+                MatchCollection previousDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: false));
+                MatchCollection currentDotnetProjectMatches = Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, useCurrentVersion: true));
 
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed TestMethod3");
 
-                Assert.True(net8ProjectMatches.Count > 1);
-                Assert.True(net9ProjectMatches.Count > 1);
+                Assert.True(previousDotnetProjectMatches.Count > 1);
+                Assert.True(currentDotnetProjectMatches.Count > 1);
 
                 Assert.Multiple(() => Assert.Equal(2, failedTestsMatches.Count));
 

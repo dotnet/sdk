@@ -399,5 +399,23 @@ namespace Microsoft.DotNet.Tools.Common
         {
             return Regex.Escape(Path.DirectorySeparatorChar.ToString());
         }
+
+        public static string? FindFileInParentDirectories(string startDirectory, string relativeFilePath)
+        {
+            var directory = new DirectoryInfo(startDirectory);
+
+            while (directory != null)
+            {
+                var filePath = Path.Combine(directory.FullName, relativeFilePath);
+                if (File.Exists(filePath))
+                {
+                    return filePath;
+                }
+
+                directory = directory.Parent;
+            }
+
+            return null;
+        }
     }
 }
