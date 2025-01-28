@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
         {
-            return GetCurrentInstallState(sdkFeatureBand, dotnetDir).UseWorkloadSets ?? false;
+            return GetCurrentInstallState(sdkFeatureBand, dotnetDir).ShouldUseWorkloadSets();
         }
 
         protected void UpdateWorkloadManifests(WorkloadHistoryRecorder recorder, ITransactionContext context, DirectoryPath? offlineCache)
