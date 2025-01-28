@@ -1400,7 +1400,7 @@ public class EndToEndTests : IDisposable
         BuiltImage builtImage = imageBuilder.Build();
 
         // Load the image into the local registry
-        var sourceReference = new SourceImageReference(registry, "some_random_image", DockerRegistryManager.Net9ImageTag);
+        var sourceReference = new SourceImageRegistry(registry, "some_random_image", DockerRegistryManager.Net9ImageTag, null);
         var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { rid });
         var sawMyException = false;
         try
