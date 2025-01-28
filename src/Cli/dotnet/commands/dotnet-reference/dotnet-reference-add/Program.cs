@@ -8,7 +8,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Tools.Add.ProjectToProjectReference
+namespace Microsoft.DotNet.Tools.Reference.Add
 {
     internal class AddProjectToProjectReferenceCommand : CommandBase
     {
@@ -16,21 +16,23 @@ namespace Microsoft.DotNet.Tools.Add.ProjectToProjectReference
 
         public AddProjectToProjectReferenceCommand(ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(AddCommandParser.ProjectArgument);
+            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
+                parseResult.GetValue(AddCommandParser.ProjectArgument);
         }
 
         public override int Execute()
         {
             using var projects = new ProjectCollection();
-            bool interactive = _parseResult.GetValue(AddProjectToProjectReferenceParser.InteractiveOption);
+            bool interactive = _parseResult.GetValue(ReferenceAddCommandParser.InteractiveOption);
             MsbuildProject msbuildProj = MsbuildProject.FromFileOrDirectory(
                 projects,
                 _fileOrDirectory,
                 interactive);
 
-            var frameworkString = _parseResult.GetValue(AddProjectToProjectReferenceParser.FrameworkOption);
+            var frameworkString = _parseResult.GetValue(ReferenceAddCommandParser.FrameworkOption);
 
-            var arguments = _parseResult.GetValue(AddProjectToProjectReferenceParser.ProjectPathArgument).ToList().AsReadOnly();
+            var arguments = _parseResult.GetValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
             PathUtility.EnsureAllPathsExist(arguments,
                 CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
             List<MsbuildProject> refs =

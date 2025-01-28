@@ -6,7 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.List.ProjectToProjectReferences
+namespace Microsoft.DotNet.Tools.Reference.List
 {
     internal class ListProjectToProjectReferencesCommand : CommandBase
     {
@@ -17,7 +17,9 @@ namespace Microsoft.DotNet.Tools.List.ProjectToProjectReferences
         {
             ShowHelpOrErrorIfAppropriate(parseResult);
 
-            _fileOrDirectory = parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
+            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
+                parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
         }
 
         public override int Execute()
