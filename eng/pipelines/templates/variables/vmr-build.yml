@@ -29,7 +29,7 @@ variables:
 - ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
   - name: sign
     value: false
-- ${{ if or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }:
+- ${{ if or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
     # Always sign on the public project (will be dry-run signing)
     - ${{ if eq(variables['System.TeamProject'], 'public') }}:
       - name: sign
