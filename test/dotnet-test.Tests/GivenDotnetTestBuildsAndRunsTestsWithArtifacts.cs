@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
 
             // Read MSTestVersion from Versions.props and update the .csproj file
-            var testAssetsPath = Path.Combine(TestContext.GetRepoRoot()!, "eng", "Versions.props");
+            var testAssetsPath = Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "eng", "Versions.props");
             string msTestVersion = testInstance.ReadMSTestVersionFromProps(testAssetsPath);
 
             testInstance.UpdateProjectFileWithMSTestVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
