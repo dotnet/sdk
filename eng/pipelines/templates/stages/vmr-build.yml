@@ -370,7 +370,6 @@ stages:
         targetOS: linux
         targetArchitecture: x64
         useDevVersions: true # Use dev versions for CI validation of the experience.
-        runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -381,7 +380,6 @@ stages:
         targetOS: windows
         targetArchitecture: x86
         useDevVersions: true # Use dev versions for CI validation of the experience.
-        runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
 
 #### VERTICAL BUILD (Official) ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
@@ -414,7 +412,6 @@ stages:
           image: ${{ variables.androidCrossContainerImage }}
         targetOS: android
         targetArchitecture: arm64
-        runTests: false
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -428,7 +425,6 @@ stages:
         crossRootFs: '/crossrootfs/x64'
         targetOS: browser
         targetArchitecture: wasm
-        runTests: false
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -438,7 +434,6 @@ stages:
         pool: ${{ parameters.pool_Mac }}
         targetOS: iossimulator
         targetArchitecture: arm64
-        runTests: false
 
     ### Additional jobs for full build ###
     - ${{ if in(parameters.scope, 'full') }}:
@@ -454,7 +449,6 @@ stages:
               image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: arm
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -467,7 +461,6 @@ stages:
               image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -480,7 +473,6 @@ stages:
               image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: x86
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -495,7 +487,6 @@ stages:
             targetOS: browser
             targetArchitecture: wasm
             extraProperties: /p:DotNetBuildRuntimeWasmEnableThreads=true
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -509,7 +500,6 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -523,7 +513,6 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -537,7 +526,6 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -547,7 +535,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: ios
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -557,7 +544,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: iossimulator
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -567,7 +553,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -577,7 +562,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -587,7 +571,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvos
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -597,7 +580,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -607,7 +589,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -621,7 +602,6 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: wasi
             targetArchitecture: wasm
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -658,7 +638,6 @@ stages:
             targetOS: linux
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
-            runTests: false
             sign: false
 
         - template: ../jobs/vmr-build.yml
@@ -675,7 +654,6 @@ stages:
             targetOS: linux
             targetArchitecture: x64
             extraProperties: /p:DotNetBuildMonoEnableLLVM=true /p:DotNetBuildMonoAOTEnableLLVM=true /p:DotNetBuildMonoBundleLLVMOptimizer=true
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -716,7 +694,6 @@ stages:
             targetOS: linux
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
-            runTests: false
             sign: false
 
         - template: ../jobs/vmr-build.yml
@@ -775,7 +752,6 @@ stages:
             targetOS: linux
             targetArchitecture: arm64
             extraProperties: /p:DotNetBuildMonoEnableLLVM=true /p:DotNetBuildMonoAOTEnableLLVM=true /p:DotNetBuildMonoBundleLLVMOptimizer=true
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -813,7 +789,6 @@ stages:
             targetOS: windows
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
-            runTests: false
             sign: false
 
         - template: ../jobs/vmr-build.yml
@@ -825,7 +800,6 @@ stages:
             targetOS: windows
             targetArchitecture: x86
             extraProperties: /p:PgoInstrument=true
-            runTests: false
             sign: false
 
         - template: ../jobs/vmr-build.yml
@@ -837,7 +811,6 @@ stages:
             targetOS: windows
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
-            runTests: false
             sign: false
 
         # Build Pass 2 verticals
