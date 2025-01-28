@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testAssetsPath = Path.Combine(TestContext.GetRepoRoot()!, "eng", "Versions.props");
             string msTestVersion = testInstance.ReadMSTestVersionFromProps(testAssetsPath);
 
-            testInstance.UpdateProjectFileWithMSTestVersion(Path.Combine($@"{testInstance.Path}\TestProject", "TestProject.csproj"), msTestVersion);
+            testInstance.UpdateProjectFileWithMSTestVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)

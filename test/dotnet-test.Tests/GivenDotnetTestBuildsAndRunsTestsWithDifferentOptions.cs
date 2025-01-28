@@ -311,7 +311,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithEnableTestingPlatform()
                                     .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            Assert.True(File.Exists(string.Format("{0}\\{1}", testInstance.TestRoot, CliConstants.BinLogFileName)));
+            Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
 
             result.ExitCode.Should().Be(0);
         }
