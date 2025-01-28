@@ -22,7 +22,7 @@ internal sealed partial class TestProgressStateAwareTerminal : IDisposable
     private readonly Func<bool?> _showProgress;
     private readonly bool _writeProgressImmediatelyAfterOutput;
     private readonly int _updateEvery;
-    private TestProgressState?[] _progressItems = [];
+    private ProgressStateBase?[] _progressItems = [];
     private bool? _showProgressCached;
 
     /// <summary>
@@ -76,7 +76,7 @@ internal sealed partial class TestProgressStateAwareTerminal : IDisposable
         _updateEvery = updateEvery;
     }
 
-    public int AddWorker(TestProgressState testWorker)
+    public int AddWorker(ProgressStateBase testWorker)
     {
         if (GetShowProgress())
         {
@@ -99,7 +99,7 @@ internal sealed partial class TestProgressStateAwareTerminal : IDisposable
     {
         if (GetShowProgress())
         {
-            _progressItems = new TestProgressState[workerCount];
+            _progressItems = new ProgressStateBase[workerCount];
             _terminal.StartBusyIndicator();
             // If we crash unexpectedly without completing this thread we don't want it to keep the process running.
             _refresher = new Thread(ThreadProc) { IsBackground = true };
@@ -178,7 +178,7 @@ internal sealed partial class TestProgressStateAwareTerminal : IDisposable
             // instance and compare that, but that means more objects floating around.
             _counter++;
 
-            TestProgressState? progress = _progressItems[slotIndex];
+            ProgressStateBase? progress = _progressItems[slotIndex];
             if (progress != null)
             {
                 progress.Version = _counter;

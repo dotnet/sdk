@@ -177,6 +177,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
             {
+                _output?.BuildCompleted();
                 _output?.TestExecutionCompleted(DateTimeOffset.Now);
             }
         }
