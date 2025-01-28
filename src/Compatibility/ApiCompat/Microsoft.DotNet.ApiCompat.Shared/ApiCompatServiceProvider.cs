@@ -30,21 +30,20 @@ namespace Microsoft.DotNet.ApiCompat
                 AccessibilitySymbolFilter accessibilitySymbolFilter = new(respectInternals);
                 SymbolEqualityComparer symbolEqualityComparer = new();
 
-                // The attribute data symbol filter is a composite that contains both the accessibility
-                // symbol filter and the doc id symbol filter.
-                CompositeSymbolFilter attributeDataSymbolFilter = new(accessibilitySymbolFilter);
-                if (excludeAttributesFiles is not null)
-                {
-                    attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
-                }
+                ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromFiles(
+                    apiExclusionFilePaths: excludeAttributesFiles,
+                    accessibilitySymbolFilter: accessibilitySymbolFilter,
+                    respectInternals: respectInternals);
+
+                AttributeDataEqualityComparer attributeDataEqualityComparer = new(symbolEqualityComparer,
+                        new TypedConstantEqualityComparer(symbolEqualityComparer));
 
                 ApiComparerSettings apiComparerSettings = new(
-                    accessibilitySymbolFilter,
-                    symbolEqualityComparer,
-                    attributeDataSymbolFilter,
-                    new AttributeDataEqualityComparer(symbolEqualityComparer,
-                        new TypedConstantEqualityComparer(symbolEqualityComparer)),
-                    respectInternals);
+                    symbolFilter: accessibilitySymbolFilter,
+                    symbolEqualityComparer: symbolEqualityComparer,
+                    attributeDataSymbolFilter: attributeDataSymbolFilter,
+                    attributeDataEqualityComparer: attributeDataEqualityComparer,
+                    includeInternalSymbols: respectInternals);
 
                 return new ApiCompatRunner(SuppressibleLog,
                     SuppressionEngine,

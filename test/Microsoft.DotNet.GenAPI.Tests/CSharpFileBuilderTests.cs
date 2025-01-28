@@ -32,34 +32,17 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
-            string excludedAttributeFile = null,
+            string[] excludedAttributeList = null,
             [CallerMemberName] string assemblyName = "")
         {
             StringWriter stringWriter = new();
-
-            // Configure symbol filters
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                includeInternalSymbols,
-                includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols);
-
-            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(accessibilitySymbolFilter);
-
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludedAttributeFile is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
             Mock<ILog> log = new();
 
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
                 log.Object,
-                symbolFilter,
-                attributeDataSymbolFilter,
+                SymbolFilterFactory.GetFilterFromList([], includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols),
+                SymbolFilterFactory.GetFilterFromList(excludedAttributeList ?? [], includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols),
                 stringWriter,
                 null,
                 false,
@@ -2764,10 +2747,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestAttributesExcludedWithFilter()
         {
-            using TempDirectory root = new();
-            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
-            File.WriteAllText(filePath, "T:A.AnyTestAttribute");
-
             RunTest(original: """
                     namespace A
                     {
@@ -2803,7 +2782,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false,
-                excludedAttributeFile: filePath);
+                excludedAttributeList: ["T:A.AnyTestAttribute"]);
         }
 
         [Fact]
