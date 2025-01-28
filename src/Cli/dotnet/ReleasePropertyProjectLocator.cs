@@ -4,11 +4,13 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Execution;
-using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.NET.Build.Tasks;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Model;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -129,7 +131,7 @@ namespace Microsoft.DotNet.Cli
                     }
                     catch (GracefulException)  // Fall back to looking for a solution if multiple project files are found, or there's no project in the directory.
                     {
-                        string? potentialSln = Directory.GetFiles(arg, "*.sln", SearchOption.TopDirectoryOnly).FirstOrDefault();
+                        string? potentialSln = SlnFileFactory.ListSolutionFilesInDirectory(arg, false).FirstOrDefault();
 
                         if (!string.IsNullOrEmpty(potentialSln))
                         {
@@ -145,10 +147,15 @@ namespace Microsoft.DotNet.Cli
         /// Throws exception if two+ projects disagree in PublishRelease, PackRelease, or whatever _propertyToCheck is, and have it defined.</returns>
         public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, Dictionary<string, string> globalProps)
         {
-            SlnFile sln;
+            string slnFullPath = Path.GetFullPath(slnPath);
+            if (!Path.Exists(slnFullPath))
+            {
+                return null;
+            }
+            SolutionModel sln;
             try
             {
-                sln = SlnFileFactory.CreateFromFileOrDirectory(slnPath);
+                sln = SlnFileFactory.CreateFromFileOrDirectory(slnFullPath, false, false);
             }
             catch (GracefulException)
             {
@@ -163,13 +170,13 @@ namespace Microsoft.DotNet.Cli
             if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))
             {
                 // Evaluate only one project for speed if this environment variable is used. Will break more customers if enabled (adding 8.0 project to SLN with other project TFMs with no Publish or PackRelease.)
-                return GetSingleProjectFromSolution(sln, globalProps);
+                return GetSingleProjectFromSolution(sln, slnFullPath, globalProps);
             }
 
-            Parallel.ForEach(sln.Projects.AsEnumerable(), (project, state) =>
+            Parallel.ForEach(sln.SolutionProjects.AsEnumerable(), (project, state) =>
             {
 #pragma warning disable CS8604 // Possible null reference argument.
-                string projectFullPath = Path.Combine(Path.GetDirectoryName(sln.FullPath), project.FilePath);
+                string projectFullPath = Path.Combine(Path.GetDirectoryName(slnFullPath), project.FilePath);
 #pragma warning restore CS8604 // Possible null reference argument.
                 if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                     return;
@@ -208,12 +215,12 @@ namespace Microsoft.DotNet.Cli
         /// <param name="solution">The solution to get an arbitrary project from.</param>
         /// <param name="globalProps">The global properties to load into the project.</param>
         /// <returns>null if no project exists in the solution that can be evaluated properly. Else, the first project in the solution that can be.</returns>
-        private ProjectInstance? GetSingleProjectFromSolution(SlnFile sln, Dictionary<string, string> globalProps)
+        private ProjectInstance? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, Dictionary<string, string> globalProps)
         {
-            foreach (var project in sln.Projects.AsEnumerable())
+            foreach (var project in sln.SolutionProjects.AsEnumerable())
             {
 #pragma warning disable CS8604 // Possible null reference argument.
-                string projectFullPath = Path.Combine(Path.GetDirectoryName(sln.FullPath), project.FilePath);
+                string projectFullPath = Path.Combine(Path.GetDirectoryName(slnPath), project.FilePath);
 #pragma warning restore CS8604 // Possible null reference argument.
                 if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                     continue;
@@ -234,9 +241,9 @@ namespace Microsoft.DotNet.Cli
         /// <param name="project">The project under a solution to evaluate.</param>
         /// <param name="projectFullPath">The full hard-coded path of the project.</param>
         /// <returns>True if the project is not supported by ProjectInstance class or appears to be invalid.</returns>
-        private bool IsUnanalyzableProjectInSolution(SlnProject project, string projectFullPath)
+        private bool IsUnanalyzableProjectInSolution(SolutionProjectModel project, string projectFullPath)
         {
-            return project.TypeGuid == solutionFolderGuid || project.TypeGuid == sharedProjectGuid || !IsValidProjectFilePath(projectFullPath);
+            return project.TypeId.ToString() == solutionFolderGuid || project.TypeId.ToString() == sharedProjectGuid || !IsValidProjectFilePath(projectFullPath);
         }
 
         /// <returns>Creates a ProjectInstance if the project is valid, elsewise, fails.</returns>
@@ -262,7 +269,7 @@ namespace Microsoft.DotNet.Cli
         /// <returns>Returns true if the path exists and is a sln file type.</returns>
         private bool IsValidSlnFilePath(string path)
         {
-            return File.Exists(path) && Path.GetExtension(path).EndsWith("sln");
+            return File.Exists(path) && (Path.GetExtension(path).Equals(".sln")|| Path.GetExtension(path).Equals(".slnx"));
         }
 
         /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>

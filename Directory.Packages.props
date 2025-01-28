@@ -1,5 +1,5 @@
 <Project>
-  <Import Project="$(RepositoryEngineeringDir)\dependabot\Packages.props" Condition="'$(RepositoryEngineeringDir)' != ''"/>
+  <Import Project="$(RepositoryEngineeringDir)\dependabot\Packages.props" Condition="'$(RepositoryEngineeringDir)' != ''" />
   <PropertyGroup>
     <!-- Using multiple feeds isn't supported by Maestro: https://github.com/dotnet/arcade/issues/14155. -->
     <NoWarn>$(NoWarn);NU1507</NoWarn>
@@ -12,7 +12,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)"/>
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
@@ -42,7 +42,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)"/>
+    <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="$(MicrosoftIORedistPackageVersion)" />
@@ -66,6 +66,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" />
+    <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.28" />
     <PackageVersion Include="Microsoft.Web.Deployment" Version="$(WebDeploymentPackageVersion)" />
     <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
@@ -90,15 +91,18 @@
     <PackageVersion Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
+    <PackageVersion Include="System.Buffers" Version="$(SystemBuffersVersion)" />
+    <PackageVersion Include="System.Memory" Version="$(SystemMemoryVersion)" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsVersion)" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.CommandLine.Rendering" Version="$(SystemCommandLineRenderingVersion)" />
     <PackageVersion Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <PackageVersion Include="System.Composition.AttributedModel" Version="$(SystemCompositionAttributedModelPackageVersion)"/>
-    <PackageVersion Include="System.Composition.Convention" Version="$(SystemCompositionConventionPackageVersion)"/>
-    <PackageVersion Include="System.Composition.Hosting" Version="$(SystemCompositionHostingPackageVersion)"/>
-    <PackageVersion Include="System.Composition.Runtime" Version="$(SystemCompositionRuntimePackageVersion)"/>
-    <PackageVersion Include="System.Composition.TypedParts" Version="$(SystemCompositionTypedPartsPackageVersion)"/>
+    <PackageVersion Include="System.Composition.AttributedModel" Version="$(SystemCompositionAttributedModelPackageVersion)" />
+    <PackageVersion Include="System.Composition.Convention" Version="$(SystemCompositionConventionPackageVersion)" />
+    <PackageVersion Include="System.Composition.Hosting" Version="$(SystemCompositionHostingPackageVersion)" />
+    <PackageVersion Include="System.Composition.Runtime" Version="$(SystemCompositionRuntimePackageVersion)" />
+    <PackageVersion Include="System.Composition.TypedParts" Version="$(SystemCompositionTypedPartsPackageVersion)" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
     <PackageVersion Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
@@ -115,10 +119,10 @@
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="$(SystemTextEncodingCodePagesPackageVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <PackageVersion Include="System.Windows.Extensions" Version="$(SystemWindowsExtensionsPackageVersion)" />
-    <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.1" />
+    <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.4" />
     <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
-    <PackageVersion Include="xunit.console" Version="$(XUnitVersion)"/>
+    <PackageVersion Include="xunit.console" Version="$(XUnitVersion)" />
   </ItemGroup>
 
   <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in

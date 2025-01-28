@@ -78,6 +78,31 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenPassingRestoreActionConfigOptions()
+        {
+            var parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources");
+            var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(parseResult);
+            toolInstallCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+        }
+
+        [Fact]
+        public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
+            var parseResult = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources");
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                parseResult,
+                _packageId,
+                _createToolPackageStoreDownloaderUninstaller,
+                _createShellShimRepository,
+                _environmentPathInstructionMock,
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
+        }
+
+        [Fact]
         public void WhenRunWithPackageIdItShouldCreateValidShim()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -967,6 +992,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             {
             }
         }
+
+        private string _nugetConfigWithInvalidSources = @"{
+<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget"" value=""https://api.nuget.org/v3/index.json"" />
+    <add key=""invalid_source"" value=""https://api.nuget.org/v3/invalid.json"" />
+  </packageSources>
+</configuration>
+}";
     }
 }
 

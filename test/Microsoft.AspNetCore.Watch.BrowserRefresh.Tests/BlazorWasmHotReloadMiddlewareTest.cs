@@ -3,16 +3,25 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
     public class BlazorWasmHotReloadMiddlewareTest
     {
+        private readonly ILogger<BlazorWasmHotReloadMiddleware> _logger;
+        private BlazorWasmHotReloadMiddleware _middleware;
+
+        public BlazorWasmHotReloadMiddlewareTest()
+        {
+            var loggerFactory = LoggerFactory.Create(_ => { });
+            _logger = loggerFactory.CreateLogger<BlazorWasmHotReloadMiddleware>();
+            _middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException(), _logger);
+        }
+
         [Fact]
         public async Task DeltasAreSavedOnPost()
         {
-            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
-
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
             var update = new BlazorWasmHotReloadMiddleware.Update
@@ -41,16 +50,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             context.Request.Body = GetJson(update);
 
-            await middleware.InvokeAsync(context);
+            await _middleware.InvokeAsync(context);
 
-            AssertUpdates([update], middleware.Updates);
+            AssertUpdates([update], _middleware.Updates);
         }
 
         [Fact]
         public async Task DuplicateDeltasOnPostAreIgnored()
         {
-            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
-
             var updates = new BlazorWasmHotReloadMiddleware.Update[]
             {
                 new()
@@ -89,22 +96,19 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             context.Request.Method = "post";
             context.Request.Body = GetJson(updates[0]);
 
-            await middleware.InvokeAsync(context);
+            await _middleware.InvokeAsync(context);
 
             context = new DefaultHttpContext();
             context.Request.Method = "post";
             context.Request.Body = GetJson(updates[1]);
-            await middleware.InvokeAsync(context);
+            await _middleware.InvokeAsync(context);
 
-            // Assert
-            AssertUpdates(updates, middleware.Updates);
+            AssertUpdates(updates, _middleware.Updates);
         }
 
         [Fact]
         public async Task MultipleDeltaPayloadsCanBeAccepted()
         {
-            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
-
             var update = new BlazorWasmHotReloadMiddleware.Update()
             {
                 Id = 0,
@@ -132,7 +136,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var context = new DefaultHttpContext();
             context.Request.Method = "post";
             context.Request.Body = GetJson(update);
-            await middleware.InvokeAsync(context);
+            await _middleware.InvokeAsync(context);
 
             var newUpdate = new BlazorWasmHotReloadMiddleware.Update()
             {
@@ -169,35 +173,29 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             context = new DefaultHttpContext();
             context.Request.Method = "post";
             context.Request.Body = GetJson(newUpdate);
-            await middleware.InvokeAsync(context);
+            await _middleware.InvokeAsync(context);
 
-            AssertUpdates([update, newUpdate], middleware.Updates);
+            AssertUpdates([update, newUpdate], _middleware.Updates);
         }
 
         [Fact]
         public async Task Get_Returns204_IfNoDeltasPresent()
         {
-            // Arrange
             var context = new DefaultHttpContext();
             context.Request.Method = "get";
-            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
+            
+            await _middleware.InvokeAsync(context);
 
-            // Act
-            await middleware.InvokeAsync(context);
-
-            // Assert
             Assert.Equal(204, context.Response.StatusCode);
         }
 
         [Fact]
         public async Task GetReturnsDeltas()
         {
-            // Arrange
             var context = new DefaultHttpContext();
             context.Request.Method = "get";
             var stream = new MemoryStream();
             context.Response.Body = stream;
-            var middleware = new BlazorWasmHotReloadMiddleware(context => throw new TimeZoneNotFoundException());
             var updates = new List<BlazorWasmHotReloadMiddleware.Update>
             {
                 new()
@@ -224,12 +222,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ]
                 }
             };
-            middleware.Updates.AddRange(updates);
+            _middleware.Updates.AddRange(updates);
 
-            // Act
-            await middleware.InvokeAsync(context);
+            await _middleware.InvokeAsync(context);
 
-            // Assert
             Assert.Equal(200, context.Response.StatusCode);
             Assert.Equal(
                 JsonSerializer.SerializeToUtf8Bytes(updates, new JsonSerializerOptions(JsonSerializerDefaults.Web)),

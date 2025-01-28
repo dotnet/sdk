@@ -2,6 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
+using Microsoft.VisualStudio.SolutionPersistence;
+using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
@@ -37,10 +41,12 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(SlnAddParser.GetCommand());
             command.Subcommands.Add(SlnListParser.GetCommand());
             command.Subcommands.Add(SlnRemoveParser.GetCommand());
+            command.Subcommands.Add(SlnMigrateCommandParser.GetCommand());
 
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
             return command;
         }
     }
+
 }

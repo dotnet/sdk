@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems" Label="Shared" />
+  <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
+  <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
   <PropertyGroup>
     <!--
       dotnet-watch may inject this assembly to .NET 6.0+ app, so we can't target a newer version.
@@ -7,16 +10,18 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
-    <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+
+     <!-- NuGet -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.DotNet.HotReload.Agent.Host</PackageId>
+    <PackageDescription>
+      Package containing Hot Reload agent host.
+    </PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\dotnet-watch\EnvironmentVariables_StartupHook.cs" Link="EnvironmentVariables_StartupHook.cs" />
-    <Compile Include="..\dotnet-watch\HotReload\NamedPipeContract.cs" />
-    <Compile Include="..\dotnet-watch\HotReload\AgentMessageSeverity.cs" />
-    <Compile Include="..\dotnet-watch\HotReload\ResponseLoggingLevel.cs" />
-    <Compile Include="..\dotnet-watch\HotReload\UpdateDelta.cs" />
+    <InternalsVisibleTo Include="Microsoft.Extensions.DotNetDeltaApplier.Tests" />
   </ItemGroup>
 
 </Project>

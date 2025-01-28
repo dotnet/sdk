@@ -65,6 +65,75 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
+        /// <summary>
+        /// Unchanged project doesn't build. Wait for source change and rebuild.
+        /// </summary>
+        [Fact]
+        public async Task BaselineCompilationError()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            File.WriteAllText(programPath,
+                """
+                Console.Write
+                """);
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
+
+            UpdateSourceFile(programPath, """
+                System.Console.WriteLine("<Updated>");
+                """);
+
+            await App.AssertOutputLineStartsWith("<Updated>", failure: _ => false);
+        }
+
+        /// <summary>
+        /// We currently do not support applying project changes.
+        /// The workaround is to restart via Ctrl+R.
+        /// </summary>
+        [Fact]
+        public async Task ProjectChangeAndRestart()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
+
+            App.Start(testAsset, ["--no-exit"], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            // missing System.Linq import:
+            UpdateSourceFile(programPath, content => content.Replace("""
+                Console.WriteLine("Started");
+                """,
+                """
+                Console.WriteLine($">>> {typeof(Enumerable)}");
+                """));
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+
+            UpdateSourceFile(projectPath, content => content.Replace("""
+                <!-- add item -->
+                """,
+                """
+                <Using Include="System.Linq" />
+                """));
+
+            // project change not applied:
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+
+            // Ctlr+R rebuilds and restarts:
+            App.SendControlR();
+
+            await App.AssertOutputLineStartsWith(">>> System.Linq.Enumerable", failure: _ => false);
+        }
+
         [Fact]
         public async Task ChangeFileInFSharpProject()
         {
@@ -179,7 +248,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated");
 
             await App.WaitUntilOutputContains(
-                "dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Expected to find a static method 'ClearCache' or 'UpdateApplication' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
+                $"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
         }
 
         [Theory]
@@ -218,11 +287,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("Updated");
 
-            await App.WaitUntilOutputContains("dotnet watch ⚠ [WatchHotReloadApp (net9.0)] Exception from 'System.Action`1[System.Type[]]': System.InvalidOperationException: Bug!");
+            await App.WaitUntilOutputContains($"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exception from 'AppUpdateHandler.ClearCache': System.InvalidOperationException: Bug!");
 
             if (verbose)
             {
-                App.AssertOutputContains("dotnet watch 🕵️ [WatchHotReloadApp (net9.0)] Deltas applied.");
+                await App.WaitUntilOutputContains($"dotnet watch 🕵️ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Deltas applied.");
             }
             else
             {
@@ -231,11 +300,24 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Fact]
-        public async Task BlazorWasm()
+        [Theory]
+        [CombinatorialData]
+        public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
+            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: projectSpecifiesCapabilities.ToString())
                 .WithSource();
+
+            if (projectSpecifiesCapabilities)
+            {
+                testAsset = testAsset.WithProjectChanges(proj =>
+                {
+                    proj.Root.Descendants()
+                        .First(e => e.Name.LocalName == "PropertyGroup")
+                        .Add(XElement.Parse("""
+                            <WebAssemblyHotReloadCapabilities>Baseline;AddMethodToExistingType</WebAssemblyHotReloadCapabilities>
+                            """));
+                });
+            }
 
             var port = TestOptions.GetTestPort();
             App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
@@ -244,7 +326,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}/");
+
+            // Browser is launched based on blazor-devserver output "Now listening on: ...".
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+
+            // Middleware should have been loaded to blazor-devserver before the browser is launched:
+            App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
+            App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware[0]");
+            App.AssertOutputContains("Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js");
+            App.AssertOutputContains("Middleware loaded. Script /_framework/blazor-hotreload.js");
+            App.AssertOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware");
+            App.AssertOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
             AssertEx.DoesNotContain("🕵️", App.Process.Output);
@@ -255,7 +347,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 """;
 
             UpdateSourceFile(Path.Combine(testAsset.Path, "Pages", "Index.razor"), newSource);
-            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, "blazorwasm (net9.0)");
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"blazorwasm ({ToolsetInfo.CurrentTargetFramework})");
+
+            // check project specified capapabilities:
+            if (projectSpecifiesCapabilities)
+            {
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType.");
+            }
+            else
+            {
+                App.AssertOutputContains("dotnet watch 🔥 Hot reload capabilities: Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType.");
+            }
         }
 
         [Fact]
@@ -278,6 +380,94 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("dotnet watch ⚠ msbuild: [Warning] Duplicate source file");
             await App.AssertWaitingForChanges();
+        }
+
+        [Fact]
+        public async Task Razor_Component_ScopedCssAndStaticAssets()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
+                .WithSource();
+
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.MockBrowser);
+
+            await App.AssertWaitingForChanges();
+
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+            App.Process.ClearOutput();
+
+            var scopedCssPath = Path.Combine(testAsset.Path, "RazorClassLibrary", "Components", "Example.razor.css");
+
+            var newCss = """
+                .example {
+                    color: blue;
+                }
+                """;
+
+            UpdateSourceFile(scopedCssPath, newCss);
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'RazorApp.css'.");
+            App.AssertOutputContains($"dotnet watch 🔥 Hot reload of scoped css succeeded.");
+            App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
+            App.Process.ClearOutput();
+
+            var cssPath = Path.Combine(testAsset.Path, "RazorApp", "wwwroot", "app.css");
+            UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'app.css'.");
+            App.AssertOutputContains($"dotnet watch 🔥 Hot reload of static files succeeded.");
+            App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
+            App.Process.ClearOutput();
+        }
+
+        /// <summary>
+        /// Currently only works on Windows.
+        /// Add TestPlatforms.OSX once https://github.com/dotnet/sdk/issues/45521 is fixed.
+        /// </summary>
+        [PlatformSpecificFact(TestPlatforms.Windows)]
+        public async Task MauiBlazor()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchMauiBlazor")
+                .WithSource();
+
+            var workloadInstallCommandSpec = new DotnetCommand(Logger, ["workload", "install", "maui", "--include-previews"])
+            {
+                WorkingDirectory = testAsset.Path,
+            };
+
+            var result = workloadInstallCommandSpec.Execute();
+            Assert.Equal(0, result.ExitCode);
+
+            var platform = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows10.0.19041.0" : "maccatalyst";
+            var tfm = $"{ToolsetInfo.CurrentTargetFramework}-{platform}";
+            App.Start(testAsset, ["-f", tfm]);
+
+            await App.AssertWaitingForChanges();
+
+            // update code file:
+            var razorPath = Path.Combine(testAsset.Path, "Components", "Pages", "Home.razor");
+            UpdateSourceFile(razorPath, content => content.Replace("Hello, world!", "Updated"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+
+            // TODO: Warning is currently reported because UpdateContent is not recognized
+            App.AssertOutputContains("Updates applied: 1 out of 1.");
+            App.AssertOutputContains("Microsoft.AspNetCore.Components.HotReload.HotReloadManager.UpdateApplication");
+            App.Process.ClearOutput();
+
+            // update static asset:
+            var cssPath = Path.Combine(testAsset.Path, "wwwroot", "css", "app.css");
+            UpdateSourceFile(cssPath, content => content.Replace("background-color: white;", "background-color: red;"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+            App.AssertOutputContains("Updates applied: 1 out of 1.");
+            App.AssertOutputContains("Microsoft.AspNetCore.Components.WebView.StaticContentHotReloadManager.UpdateContent");
+            App.AssertOutputContains("No C# changes to apply.");
         }
 
         // Test is timing out on .NET Framework: https://github.com/dotnet/sdk/issues/41669
@@ -427,6 +617,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task Aspire()
         {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
             var testAsset = TestAssets.CopyTestAsset("WatchAspire")
                 .WithSource();
 
@@ -452,8 +643,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
             App.AssertOutputContains("Using Aspire process launcher.");
-            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.AppHost (net9.0)");
-            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, "WatchAspire.ApiService (net9.0)");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.AppHost ({tfm})");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.ApiService ({tfm})");
 
             // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
             Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
@@ -479,16 +670,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                App.AssertOutputContains("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code -1");
+                App.AssertOutputContains($"dotnet watch ❌ [WatchAspire.ApiService ({tfm})] Exited with error code -1");
             }
             else
             {
                 // Unix process may return exit code = 128 + SIGTERM
-                // dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code 143
-                App.AssertOutputContains("[WatchAspire.ApiService (net9.0)] Exited");
+                // Exited with error code 143
+                App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
             }
 
-            App.AssertOutputContains($"dotnet watch ⌚ Building '{serviceProjectPath}' ...");
+            App.AssertOutputContains($"dotnet watch ⌚ Building {serviceProjectPath} ...");
             App.AssertOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
             App.Process.ClearOutput();
 
@@ -497,12 +688,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 serviceSourcePath,
                 originalSource.Replace("WeatherForecast", "WeatherForecast2"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ [WatchAspire.ApiService (net9.0)] Capabilities");
+            await App.AssertOutputLineStartsWith($"dotnet watch ⌚ [WatchAspire.ApiService ({tfm})] Capabilities");
 
-            App.AssertOutputContains("dotnet watch ⌚ Build succeeded.");
+            App.AssertOutputContains($"dotnet watch 🔨 Build succeeded: {serviceProjectPath}");
             App.AssertOutputContains("dotnet watch 🔥 Project baselines updated.");
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
 
+            // Note: sending Ctrl+C via standard input is not the same as sending real Ctrl+C.
+            // The latter terminates the processes gracefully on Windows, so exit codes -1 are actually not reported.
             App.SendControlC();
 
             await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");
@@ -510,15 +703,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code -1");
-                await App.AssertOutputLineStartsWith("dotnet watch ❌ [WatchAspire.AppHost (net9.0)] Exited with error code -1");
+                await App.AssertOutputLineStartsWith($"dotnet watch ❌ [WatchAspire.ApiService ({tfm})] Exited with error code -1");
+                await App.AssertOutputLineStartsWith($"dotnet watch ❌ [WatchAspire.AppHost ({tfm})] Exited with error code -1");
             }
             else
             {
                 // Unix process may return exit code = 128 + SIGTERM
-                // dotnet watch ❌ [WatchAspire.ApiService (net9.0)] Exited with error code 143
-                await App.AssertOutputLine(line => line.Contains("[WatchAspire.ApiService (net9.0)] Exited"), failure: _ => false);
-                await App.AssertOutputLine(line => line.Contains("[WatchAspire.AppHost (net9.0)] Exited"), failure: _ => false);
+                // Exited with error code 143
+                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.ApiService ({tfm})] Exited"));
+                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.AppHost ({tfm})] Exited"));
             }
 
             await App.AssertOutputLineStartsWith("dotnet watch ⭐ Waiting for server to shutdown ...");

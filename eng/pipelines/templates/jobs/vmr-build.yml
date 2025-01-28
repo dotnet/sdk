@@ -227,7 +227,7 @@ jobs:
 
         if [[ $archiveVersionLine =~ $versionPattern ]]; then
           archiveVersion="${BASH_REMATCH[1]}"
-          archiveUrl="https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-$archiveVersion-${{ parameters.artifactsRid }}.tar.gz"
+          archiveUrl="https://builds.dotnet.microsoft.com/source-built-artifacts/sdks/dotnet-sdk-$archiveVersion-${{ parameters.artifactsRid }}.tar.gz"
           downloadDir="$(sourcesPath)/prereqs/packages/archive/"
 
           echo "Downloading source-built SDK from $archiveUrl..."

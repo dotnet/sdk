@@ -57,6 +57,13 @@
         <target state="translated">CONTAINER1001: не удалось отправить BLOB-объект с помощью {0}; получен код состояния "{1}".</target>
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
+      <trans-unit id="BuildingImageIndex">
+        <source>Building image index '{0}' on top of manifests {1}.</source>
+        <target state="translated">Построение индекса '{0}' поверх манифестов {1}.</target>
+        <note>
+      {0} is the name of the image index and its tag, {1} is the list of manifests digests
+    </note>
+      </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
         <source>Pushed image '{0}' to {1}.</source>
         <target state="translated">Изображение "{0}" отправлено в {1}.</target>
@@ -152,6 +159,11 @@
         <target state="translated">Объект узла не обнаружен.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageIndexUploadedToRegistry">
+        <source>Pushed image index '{0}' to registry '{1}'.</source>
+        <target state="translated">Индекс изображения "{0}" отправлен в реестр "{1}".</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: не удалось загрузить образ из локального реестра. stdout: {0}</target>
@@ -162,10 +174,20 @@
         <target state="translated">CONTAINER1010: извлечение образов из локального реестра не поддерживается.</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
+      <trans-unit id="ImagesEmpty">
+        <source>Cannot create manifest list (image index) because no images were provided.</source>
+        <target state="translated">Не удается создать список манифестов (индекс образа), так как изображения не предоставлены.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="translated">CONTAINER2015: {0}: "{1}" не является допустимой переменной среды. Пропуск.</target>
         <note>{StrBegin="CONTAINER2015: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidImageMetadata">
+        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
+        <target state="translated">Не удается создать список манифестов (индекс образа), так как предоставленные образы недопустимы. Элементы должны иметь метаданные "Config", "Manifest", "ManifestMediaType" и "ManifestDigest".</target>
+        <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
         <source>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</source>
@@ -212,6 +234,11 @@
         <target state="translated">CONTAINER2010: предоставлен недопустимый {0}: {1}. {0} должен быть списком допустимых тегов изображений, разделенных точкой с запятой. В качестве тегов изображений допускаются буквы, цифры, символы подчеркивания, дефисы и точки.</target>
         <note>{StrBegin="CONTAINER2010: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidTargetRuntimeIdentifiers">
+        <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
+        <target state="translated">Недопустимая строка[] TargetRuntimeIdentifiers. Все должны быть либо "linux-маскали", либо нет.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidTokenResponse">
         <source>CONTAINER1003: Token response had neither token nor access_token.</source>
         <target state="translated">CONTAINER1003: ответ токена не содержит маркера и access_token.</target>
@@ -247,6 +274,11 @@
         <target state="translated">CONTAINER2016: элемент ContainerPort "{0}" не указывает номер порта. Убедитесь, что include элемента является номером порта, например "&lt;ContainerPort Include="80" /&gt;"</target>
         <note>{StrBegin="CONTAINER2016: "}</note>
       </trans-unit>
+      <trans-unit id="MixedMediaTypes">
+        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
+        <target state="translated">MediaType манифестов должен быть одинаковым в списке манифестов (индексе образа).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
         <source>CONTAINER1004: No RequestUri specified.</source>
         <target state="translated">CONTAINER1004: не указан RequestUri.</target>
@@ -259,7 +291,7 @@
       </trans-unit>
       <trans-unit id="OciImageMultipleTagsNotSupported">
         <source>Unable to create tarball for oci image with multiple tags.</source>
-        <target state="new">Unable to create tarball for oci image with multiple tags.</target>
+        <target state="translated">Невозможно создать tarball для образа oci с несколькими тегами.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
@@ -382,9 +414,14 @@
         <target state="translated">CONTAINER2001: нераспознанный тип мультимедиа "{0}".</target>
         <note>{StrBegin="CONTAINER2001: "}</note>
       </trans-unit>
+      <trans-unit id="UnsupportedMediaType">
+        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
+        <target state="translated">Не удается создать список манифестов (индекс образа) для указанного "mediaType" = '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
         <source>Unable to create tarball for mediaType '{0}'.</source>
-        <target state="new">Unable to create tarball for mediaType '{0}'.</target>
+        <target state="translated">Не удалось создать tarball для mediaType "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="_Test">
