@@ -399,6 +399,11 @@
         <target state="needs-review-translation">CONTAINER1016: Nelze získat přístup k úložišti „{0}“ v registru „{1}“. Ověřte prosím správnost vašich přihlašovacích údajů a to, že máte přístup k tomuto úložišti a registru.</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: Neznámé AppCommandInstruction „{0}“. Platné pokyny jsou {1}.</target>

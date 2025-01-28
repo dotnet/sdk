@@ -399,6 +399,11 @@
         <target state="needs-review-translation">CONTAINER1016: 無法存取登錄 '{1}' 中的存放庫 '{0}'。請確認您的認證正確，且您擁有此存放庫和登錄的存取權。</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: 未知的 AppCommandInstruction '{0}'。有效的指示為 {1}。</target>

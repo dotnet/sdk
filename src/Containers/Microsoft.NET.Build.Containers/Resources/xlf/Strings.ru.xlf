@@ -399,6 +399,11 @@
         <target state="needs-review-translation">CONTAINER1016: не удается получить доступ к репозиторию "{0}" в реестре "{1}". Убедитесь, что ваши учетные данные верны и что у вас есть доступ к этому репозиторию и реестру.</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: неизвестный элемент AppCommandInstruction "{0}". Допустимые инструкции: {1}.</target>

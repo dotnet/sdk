@@ -399,6 +399,11 @@
         <target state="needs-review-translation">CONTAINER1016: nous n’avons pas pu accéder au référentiel '{0}' dans le Registre '{1}'. Confirmez que vos informations d’identification sont correctes et que vous avez accès à ce référentiel et à ce Registre.</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: instruction de commande d'application inconnue '{0}'. Les instructions valides sont {1}.</target>

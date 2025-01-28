@@ -399,6 +399,11 @@
         <target state="needs-review-translation">CONTAINER1016: 无法访问注册表“{1}”中的存储库“{0}”。请确认你的凭据正确无误，并且你有权访问此存储库和注册表。</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: AppCommandInstruction“{0}”未知。有效的说明为 {1}。</target>
