@@ -19,7 +19,8 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "RegularPublishToSingleExe",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = "win-x86",
+                SelfContained = "true"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -58,7 +59,8 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "PublishSingleFile1",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = "win-x86",
+                SelfContained = "true"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -100,7 +102,8 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "PublishSingleExe",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = "win-x86",
+                SelfContained = "true"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -199,7 +202,7 @@ namespace Microsoft.NET.Publish.Tests
 
             // Publish as a single file
             new PublishCommand(Log, Path.Combine(testDir.Path, assetName))
-                .Execute(@"/p:RuntimeIdentifier=win-x86;PublishSingleFile=true")
+                .Execute(@"/p:RuntimeIdentifier=win-x86;PublishSingleFile=true;SelfContained=true")
                 .Should()
                 .Pass();
             CheckPublishOutput(publishDir, expectedSingleFiles.Append("UserData.txt"), expectedRegularFiles);
@@ -214,7 +217,8 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "PublishToCustomDir",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = "win-x86",
+                SelfContained = "true"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -249,7 +253,8 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "PublishToMultipleDirs",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = "win-x86",
+                SelfContained = "true"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 

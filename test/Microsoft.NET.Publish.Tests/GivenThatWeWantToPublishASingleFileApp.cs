@@ -292,6 +292,7 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "SingleFileTest",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
+                SelfContained = "true"
             };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -325,6 +326,7 @@ namespace Microsoft.NET.Publish.Tests
                 Name = projName,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
+                SelfContained = "true"
             };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -769,7 +771,8 @@ namespace Microsoft.NET.Publish.Tests
             {
                 Name = projectName,
                 TargetFrameworks = targetFramework,
-                IsExe = isExecutable
+                IsExe = isExecutable,
+                SelfContained = "true"
             };
 
             testProject.SourceFiles[$"{projectName}.cs"] = @"
@@ -850,6 +853,7 @@ class C
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 RuntimeIdentifier = rid,
                 IsExe = true,
+                SelfContained = "true"
             };
             if (cetCompat.HasValue)
             {
@@ -981,6 +985,7 @@ class C
                 Name = "SingleFileTest",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
+                SelfContained = "true"
             };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
