@@ -89,4 +89,21 @@
     <EnvironmentVariables Include="PublishWindowsPdb=false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion" Version="%24(MicrosoftWindowsDesktopAppRefPackageVersion)" />
+
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimePackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostwinx64PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+
+    <!-- we don't produce the Windows version of this package but that's the one sdk keys off of for the ASP.NET version -->
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
+
+    <!-- Used by installer partition to determine the non-shipping runtime version -->
+    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreTargetingPackx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+
+    <!-- Used by installer partition in sdk repo to determine sdk version -->
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
+  </ItemGroup>
+
 </Project>

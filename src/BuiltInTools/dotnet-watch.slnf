@@ -9,6 +9,8 @@
       "src\\BuiltInTools\\DotNetWatchTasks\\DotNetWatchTasks.csproj",
       "src\\BuiltInTools\\HotReloadAgent\\Microsoft.DotNet.HotReload.Agent.Package.csproj",
       "src\\BuiltInTools\\HotReloadAgent\\Microsoft.DotNet.HotReload.Agent.shproj",
+      "src\\BuiltInTools\\HotReloadAgent.PipeRpc\\Microsoft.DotNet.HotReload.Agent.PipeRpc.Package.csproj",
+      "src\\BuiltInTools\\HotReloadAgent.PipeRpc\\Microsoft.DotNet.HotReload.Agent.PipeRpc.shproj",
       "src\\BuiltInTools\\dotnet-watch\\dotnet-watch.csproj",
       "test\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests\\Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.csproj",
       "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",

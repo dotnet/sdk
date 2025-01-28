@@ -895,3 +895,18 @@ stages:
           dotNetBuildPass: final
           primaryDependentJob: Windows_x64
           outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
+  
+### VALIDATION ###
+- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal')) }}:
+  - stage: VMR_Validation
+    displayName: VMR Validation
+    dependsOn: VMR_Final_Join
+    jobs:
+    - job: ValidateSigning
+      displayName: Validate Signing
+      pool: ${{ parameters.pool_Windows }}
+      timeoutInMinutes: 240
+      steps:
+      - template: ../steps/vmr-validate-signing.yml
+        parameters:
+          continueOnError: true
