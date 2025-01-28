@@ -8,6 +8,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.Testing.Platform.Helpers;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 
@@ -56,6 +57,8 @@ namespace Microsoft.DotNet.Cli
                 path = PathUtility.GetFullPath(buildPathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
                 msbuildExitCode = await RunBuild(path, buildPathOptions);
             }
+
+            _output.BuildCompleted();
 
             if (msbuildExitCode != ExitCodes.Success)
             {
@@ -259,9 +262,12 @@ namespace Microsoft.DotNet.Cli
             return ExtractModulesFromProject(project);
         }
 
-        private static bool BuildOrRestoreProjectOrSolution(string projectFilePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
+        private bool BuildOrRestoreProjectOrSolution(string projectFilePath, ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
         {
-            var parameters = GetBuildParameters(projectCollection, msBuildBuildAndRestoreSettings);
+            var task = _output.BuildStarted($"Building {projectFilePath}");
+            var logger = new NodeLogger(task);
+
+            var parameters = GetBuildParameters(projectCollection, msBuildBuildAndRestoreSettings, logger);
             var globalProperties = GetGlobalProperties(msBuildBuildAndRestoreSettings);
 
             var buildRequestData = new BuildRequestData(projectFilePath, globalProperties, null, msBuildBuildAndRestoreSettings.Commands, null);
@@ -271,11 +277,11 @@ namespace Microsoft.DotNet.Cli
             return buildResult.OverallResult == BuildResultCode.Success;
         }
 
-        private static BuildParameters GetBuildParameters(ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings)
+        private static BuildParameters GetBuildParameters(ProjectCollection projectCollection, MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings, NodeLogger nodeLogger)
         {
             BuildParameters parameters = new(projectCollection)
             {
-                Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet)]
+                Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet), nodeLogger]
             };
 
             if (!msBuildBuildAndRestoreSettings.AllowBinLog)
@@ -424,6 +430,60 @@ namespace Microsoft.DotNet.Cli
             {
                 testApplication.Dispose();
             }
+        }
+        private class NodeLogger : INodeLogger
+        {
+            private readonly TaskProgressState _task;
+            private int _counter;
+
+            public NodeLogger(TaskProgressState task)
+            {
+                _task = task;
+            }
+
+            public LoggerVerbosity Verbosity { get; set; }
+            public string? Parameters { get; set; }
+
+            public void Initialize(IEventSource eventSource, int nodeCount)
+            {
+                //eventSource.BuildStarted += EventSource_BuildStarted;
+                eventSource.ProjectStarted += EventSource_ProjectStarted;
+                eventSource.ProjectFinished += EventSource_ProjectFinished;
+                //eventSource.BuildFinished += EventSource_BuildFinished;
+            }
+
+            private void EventSource_ProjectFinished(object sender, ProjectFinishedEventArgs e)
+            {
+                _task.TestNodeResultsState?.RemoveRunningTestNode(e.ProjectFile);
+            }
+            private void EventSource_ProjectStarted(object sender, ProjectStartedEventArgs e)
+            {
+                if (e.ProjectFile.EndsWith(".sln") || e.ProjectFile.EndsWith(".slnf"))
+                {
+                    return;
+                }
+
+                var sw = SystemStopwatch.StartNew();
+                _task.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
+                _task.TestNodeResultsState.AddRunningTestNode(
+                    Interlocked.Increment(ref _counter), e.ProjectFile, e.ProjectFile, sw);
+            }
+
+            private void EventSource_BuildFinished(object sender, BuildFinishedEventArgs e)
+            {
+
+            }
+            private void EventSource_BuildStarted(object sender, BuildStartedEventArgs e)
+            {
+
+            }
+
+            public void Initialize(IEventSource eventSource)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Shutdown() { }
         }
     }
 }

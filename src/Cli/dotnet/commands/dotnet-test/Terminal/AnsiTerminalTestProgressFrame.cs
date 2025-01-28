@@ -23,8 +23,25 @@ internal sealed class AnsiTerminalTestProgressFrame
         Width = Math.Min(width, MaxColumn);
         Height = height;
     }
+    private void AppendProgress(ProgressStateBase progress, RenderedProgressItem currentLine, AnsiTerminal terminal)
+    {
+        switch (progress)
+        {
+            case TaskProgressState taskProgressState:
+                AppendTaskProgress(taskProgressState, currentLine, terminal);
+                break;
+            case TestDetailState testDetailState:
+                AppendTestWorkerDetail(testDetailState, currentLine, terminal);
+                break;
+            case TestProgressState testProgressState:
+                AppendTestWorkerProgress(testProgressState, currentLine, terminal);
+                break;
+            default:
+                break;
+        }
+    }
 
-    public void AppendTestWorkerProgress(TestProgressState progress, RenderedProgressItem currentLine, AnsiTerminal terminal)
+    private void AppendTestWorkerProgress(TestProgressState progress, RenderedProgressItem currentLine, AnsiTerminal terminal)
     {
         string durationString = HumanReadableDurationFormatter.Render(progress.Stopwatch.Elapsed);
 
@@ -121,7 +138,7 @@ internal sealed class AnsiTerminalTestProgressFrame
         terminal.Append(durationString);
     }
 
-    public void AppendTestWorkerDetail(TestDetailState detail, RenderedProgressItem currentLine, AnsiTerminal terminal)
+    private void AppendTestWorkerDetail(TestDetailState detail, RenderedProgressItem currentLine, AnsiTerminal terminal)
     {
         string durationString = HumanReadableDurationFormatter.Render(detail.Stopwatch?.Elapsed);
 
@@ -134,6 +151,21 @@ internal sealed class AnsiTerminalTestProgressFrame
         charsTaken += 2;
 
         AppendToWidth(terminal, detail.Text, nonReservedWidth, ref charsTaken);
+
+        terminal.SetCursorHorizontal(Width - durationString.Length);
+        terminal.Append(durationString);
+    }
+
+    private void AppendTaskProgress(TaskProgressState task, RenderedProgressItem currentLine, AnsiTerminal terminal)
+    {
+        string durationString = HumanReadableDurationFormatter.Render(task.Stopwatch?.Elapsed);
+
+        currentLine.RenderedDurationLength = durationString.Length;
+
+        int nonReservedWidth = Width - (durationString.Length + 2);
+        int charsTaken = 0;
+
+        AppendToWidth(terminal, task.Text, nonReservedWidth, ref charsTaken);
 
         terminal.SetCursorHorizontal(Width - durationString.Length);
         terminal.Append(durationString);
@@ -163,7 +195,7 @@ internal sealed class AnsiTerminalTestProgressFrame
     /// <summary>
     /// Render VT100 string to update from current to next frame.
     /// </summary>
-    public void Render(AnsiTerminalTestProgressFrame previousFrame, TestProgressState?[] progress, AnsiTerminal terminal)
+    public void Render(AnsiTerminalTestProgressFrame previousFrame, ProgressStateBase?[] progress, AnsiTerminal terminal)
     {
         // Clear everything if Terminal width or height have changed.
         if (Width != previousFrame.Width || Height != previousFrame.Height)
@@ -198,98 +230,51 @@ internal sealed class AnsiTerminalTestProgressFrame
 
         int i = 0;
         RenderedLines = new List<RenderedProgressItem>(progress.Length * 2);
-        List<object> progresses = GenerateLinesToRender(progress);
+        List<ProgressStateBase> progresses = GenerateLinesToRender(progress);
 
-        foreach (object item in progresses)
+        foreach (ProgressStateBase item in progresses)
         {
             if (previousFrame.RenderedLines != null && previousFrame.RenderedLines.Count > i)
             {
-                if (item is TestProgressState progressItem)
+
+                var currentLine = new RenderedProgressItem(item.Id, item.Version);
+                RenderedLines.Add(currentLine);
+
+                // We have a line that was rendered previously, compare it and decide how to render.
+                RenderedProgressItem previouslyRenderedLine = previousFrame.RenderedLines[i];
+                if (previouslyRenderedLine.ProgressId == item.Id && false)
                 {
-                    var currentLine = new RenderedProgressItem(progressItem.Id, progressItem.Version);
-                    RenderedLines.Add(currentLine);
+                    // This is the same progress item and it was not updated since we rendered it, only update the timestamp if possible to avoid flicker.
+                    string durationString = HumanReadableDurationFormatter.Render(item.Stopwatch.Elapsed);
 
-                    // We have a line that was rendered previously, compare it and decide how to render.
-                    RenderedProgressItem previouslyRenderedLine = previousFrame.RenderedLines[i];
-                    if (previouslyRenderedLine.ProgressId == progressItem.Id && false)
+                    if (previouslyRenderedLine.RenderedDurationLength == durationString.Length)
                     {
-                        // This is the same progress item and it was not updated since we rendered it, only update the timestamp if possible to avoid flicker.
-                        string durationString = HumanReadableDurationFormatter.Render(progressItem.Stopwatch.Elapsed);
-
-                        if (previouslyRenderedLine.RenderedDurationLength == durationString.Length)
-                        {
-                            // Duration is the same length rewrite just it.
-                            terminal.SetCursorHorizontal(MaxColumn);
-                            terminal.Append($"{AnsiCodes.SetCursorHorizontal(MaxColumn)}{AnsiCodes.MoveCursorBackward(durationString.Length)}{durationString}");
-                            currentLine.RenderedDurationLength = durationString.Length;
-                        }
-                        else
-                        {
-                            // Duration is not the same length (it is longer because time moves only forward), we need to re-render the whole line
-                            // to avoid writing the duration over the last portion of text: my.dll (1s) -> my.d (1m 1s)
-                            terminal.Append($"{AnsiCodes.CSI}{AnsiCodes.EraseInLine}");
-                            AppendTestWorkerProgress(progressItem, currentLine, terminal);
-                        }
+                        // Duration is the same length rewrite just it.
+                        terminal.SetCursorHorizontal(MaxColumn);
+                        terminal.Append($"{AnsiCodes.SetCursorHorizontal(MaxColumn)}{AnsiCodes.MoveCursorBackward(durationString.Length)}{durationString}");
+                        currentLine.RenderedDurationLength = durationString.Length;
                     }
                     else
                     {
-                        // These lines are different or the line was updated. Render the whole line.
+                        // Duration is not the same length (it is longer because time moves only forward), we need to re-render the whole line
+                        // to avoid writing the duration over the last portion of text: my.dll (1s) -> my.d (1m 1s)
                         terminal.Append($"{AnsiCodes.CSI}{AnsiCodes.EraseInLine}");
-                        AppendTestWorkerProgress(progressItem, currentLine, terminal);
+                        AppendProgress(item, currentLine, terminal);
                     }
                 }
-
-                if (item is TestDetailState detailItem)
+                else
                 {
-                    var currentLine = new RenderedProgressItem(detailItem.Id, detailItem.Version);
-                    RenderedLines.Add(currentLine);
-
-                    // We have a line that was rendered previously, compare it and decide how to render.
-                    RenderedProgressItem previouslyRenderedLine = previousFrame.RenderedLines[i];
-                    if (previouslyRenderedLine.ProgressId == detailItem.Id && previouslyRenderedLine.ProgressVersion == detailItem.Version)
-                    {
-                        // This is the same progress item and it was not updated since we rendered it, only update the timestamp if possible to avoid flicker.
-                        string durationString = HumanReadableDurationFormatter.Render(detailItem.Stopwatch?.Elapsed);
-
-                        if (previouslyRenderedLine.RenderedDurationLength == durationString.Length)
-                        {
-                            // Duration is the same length rewrite just it.
-                            terminal.SetCursorHorizontal(MaxColumn);
-                            terminal.Append($"{AnsiCodes.SetCursorHorizontal(MaxColumn)}{AnsiCodes.MoveCursorBackward(durationString.Length)}{durationString}");
-                            currentLine.RenderedDurationLength = durationString.Length;
-                        }
-                        else
-                        {
-                            // Duration is not the same length (it is longer because time moves only forward), we need to re-render the whole line
-                            // to avoid writing the duration over the last portion of text: my.dll (1s) -> my.d (1m 1s)
-                            terminal.Append($"{AnsiCodes.CSI}{AnsiCodes.EraseInLine}");
-                            AppendTestWorkerDetail(detailItem, currentLine, terminal);
-                        }
-                    }
-                    else
-                    {
-                        // These lines are different or the line was updated. Render the whole line.
-                        terminal.Append($"{AnsiCodes.CSI}{AnsiCodes.EraseInLine}");
-                        AppendTestWorkerDetail(detailItem, currentLine, terminal);
-                    }
+                    // These lines are different or the line was updated. Render the whole line.
+                    terminal.Append($"{AnsiCodes.CSI}{AnsiCodes.EraseInLine}");
+                    AppendProgress(item, currentLine, terminal);
                 }
             }
             else
             {
                 // We are rendering more lines than we rendered in previous frame
-                if (item is TestProgressState progressItem)
-                {
-                    var currentLine = new RenderedProgressItem(progressItem.Id, progressItem.Version);
-                    RenderedLines.Add(currentLine);
-                    AppendTestWorkerProgress(progressItem, currentLine, terminal);
-                }
-
-                if (item is TestDetailState detailItem)
-                {
-                    var currentLine = new RenderedProgressItem(detailItem.Id, detailItem.Version);
-                    RenderedLines.Add(currentLine);
-                    AppendTestWorkerDetail(detailItem, currentLine, terminal);
-                }
+                var currentLine = new RenderedProgressItem(item.Id, item.Version);
+                RenderedLines.Add(currentLine);
+                AppendProgress(item, currentLine, terminal);
             }
 
             // This makes the progress not stick to the last line on the command line, which is
@@ -305,14 +290,14 @@ internal sealed class AnsiTerminalTestProgressFrame
         }
     }
 
-    private List<object> GenerateLinesToRender(TestProgressState?[] progress)
+    private List<ProgressStateBase> GenerateLinesToRender(ProgressStateBase?[] progress)
     {
-        var linesToRender = new List<object>(progress.Length);
+        var linesToRender = new List<ProgressStateBase>(progress.Length);
 
         // Note: We want to render the list of active tests, but this can easily fill up the full screen.
         // As such, we should balance the number of active tests shown per project.
         // We do this by distributing the remaining lines for each projects.
-        TestProgressState[] progressItems = progress.OfType<TestProgressState>().ToArray();
+        ProgressStateBase[] progressItems = progress.OfType<ProgressStateBase>().ToArray();
         int linesToDistribute = (int)(Height * 0.7) - 1 - progressItems.Length;
         var detailItems = new IEnumerable<TestDetailState>[progressItems.Length];
         IEnumerable<int> sortedItemsIndices = Enumerable.Range(0, progressItems.Length).OrderBy(i => progressItems[i].TestNodeResultsState?.Count ?? 0);
@@ -351,4 +336,6 @@ internal sealed class AnsiTerminalTestProgressFrame
 
         public int RenderedDurationLength { get; set; }
     }
+
+
 }
