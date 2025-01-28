@@ -193,9 +193,7 @@ namespace Microsoft.DotNet.Cli
                 var projects = await SolutionAndProjectUtility.ParseSolution(solutionOrProjectFilePath, rootDirectory);
 
                 MSBuildBuildAndRestoreSettings msBuildBuildAndRestoreSettings = new(GetCommands(buildPathOptions.HasNoRestore, buildPathOptions.HasNoBuild), buildPathOptions.Configuration, buildPathOptions.RuntimeIdentifier, allowBinLog, binLogFileName);
-                CreateSlnfFile(projects.ToList(), "Projects.slnf", solutionOrProjectFilePath);
-
-                isBuiltOrRestored = BuildOrRestoreProjectOrSolution("Projects.slnf", projectCollection, msBuildBuildAndRestoreSettings);
+                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionOrProjectFilePath, projectCollection, msBuildBuildAndRestoreSettings);
 
                 ProcessProjectsInParallel(projectCollection, projects, allProjects);
             }
