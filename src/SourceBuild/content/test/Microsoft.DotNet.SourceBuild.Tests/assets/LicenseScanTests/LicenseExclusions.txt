@@ -190,6 +190,9 @@ src/source-build-externals/src/xunit/README.md|free-unknown
 src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unknown
 src/source-build-externals/src/xunit/tools/builder/common/README.md|free-unknown
 
+# Configuration, doesn't apply to source directly
+src/source-build-externals/src/vs-solutionpersistence/stylecop.json
+
 # Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
 # relying on the Spectre.Console distribution.
 # See https://github.com/dotnet/dotnet/blob/c6a7278fbb7d79fa3d1f386ef0dc8474043ed06c/src/source-build-externals/src/spectre-console/README.md?plain=1#L104
