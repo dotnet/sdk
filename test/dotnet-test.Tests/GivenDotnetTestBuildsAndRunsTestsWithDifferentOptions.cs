@@ -56,7 +56,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-
             var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern)
                                    .Select(match => match.Value.Split(TestApplicationArgsSeparator)[0])
                                    .ToList();

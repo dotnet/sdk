@@ -54,7 +54,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             // Read MSTestVersion from Versions.props and update the .csproj file
             // Search for Versions.props file from the current directory up to the root
-            string? versionsPropsPath = PathUtility.FindFileInParentDirectories(AppContext.BaseDirectory, $"eng{Path.DirectorySeparatorChar}Versions.props") ?? throw new FileNotFoundException("Versions.props file not found.");
+
+            Console.WriteLine($"CurrentDirectory: {Directory.GetCurrentDirectory()}");
+            Console.WriteLine($"BaseDirectory : {AppContext.BaseDirectory}");
+            Console.WriteLine($"testInstance.Path : {testInstance.Path}");
+            Console.WriteLine($"TestContext.Current.TestExecutionDirectory : {TestContext.Current.TestExecutionDirectory}");
+            string? versionsPropsPath = PathUtility.FindFileInParentDirectories(TestContext.Current.TestExecutionDirectory, $"eng{Path.DirectorySeparatorChar}Versions.props") ?? throw new FileNotFoundException("Versions.props file not found.");
             string msTestVersion = testInstance.ReadMSTestVersionFromProps(versionsPropsPath);
             testInstance.UpdateProjectFileWithMSTestVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
