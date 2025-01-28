@@ -15,9 +15,14 @@
     <RepositoryReference Include="scenario-tests" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '2'">
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
     <RepositoryReference Remove="@(RepositoryReference)" />
     <RepositoryReference Include="sdk" DotNetBuildPass="2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x86'">
+    <RepositoryReference Remove="@(RepositoryReference)" />
+    <RepositoryReference Include="runtime" DotNetBuildPass="2" />
   </ItemGroup>
 
 </Project>

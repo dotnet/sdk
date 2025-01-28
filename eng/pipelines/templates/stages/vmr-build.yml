@@ -857,6 +857,24 @@ stages:
             - Windows_x86
             - Windows_arm64
 
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x86
+            runTests: false
+            buildPass: 2
+            reuseBuildArtifactsFrom:
+            - AzureLinux_x64_Cross_x64
+            - AzureLinux_x64_Cross_Alpine_x64
+            - AzureLinux_x64_Cross_arm64
+            - AzureLinux_x64_Cross_Alpine_arm64
+            - AzureLinux_x64_Cross_arm
+            - AzureLinux_x64_Cross_Alpine_arm
+
 ### FINAL JOIN ###
 - ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), ne(variables['Build.Reason'], 'PullRequest')) }}:
   - stage: VMR_Final_Join
