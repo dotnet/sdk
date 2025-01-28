@@ -10,7 +10,7 @@ namespace Microsoft.NET.TestFramework.Utilities
         public static string GetPreviousDotnetVersion()
         {
             string currentFramework = ToolsetInfo.CurrentTargetFramework;
-            var match = Regex.Match(currentFramework, @"net(\d+)\.(\d+)");
+            var match = Regex.Match(currentFramework, @"^net(\d+)\.(\d+)$");
             if (!match.Success)
             {
                 throw new InvalidOperationException($"Invalid target framework format: {currentFramework}");
