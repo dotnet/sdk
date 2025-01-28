@@ -3,8 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -225,53 +223,6 @@ namespace Microsoft.DotNet.Cli
             LogProjectProperties(allProjects);
 
             return (allProjects, isBuiltOrRestored);
-        }
-
-
-        public void CreateSlnfFile(List<string> projectFilePaths, string slnfFilePath, string solutionPath)
-        {
-            if (projectFilePaths == null || projectFilePaths.Count == 0)
-            {
-                throw new ArgumentException("Project file paths list cannot be null or empty.", nameof(projectFilePaths));
-            }
-
-            var slnfContent = GenerateSlnfContent(projectFilePaths, solutionPath);
-            File.WriteAllText(slnfFilePath, slnfContent);
-        }
-
-        private string GenerateSlnfContent(List<string> projectFilePaths, string solutionPath)
-        {
-            var slnf = new Slnf
-            {
-                Solution = new Solution
-                {
-                    Path = solutionPath,
-                    Projects = projectFilePaths
-                }
-            };
-
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            };
-
-            return JsonSerializer.Serialize(slnf, options);
-        }
-
-        private class Slnf
-        {
-            [JsonPropertyName("solution")]
-            public Solution Solution { get; set; }
-        }
-
-        private class Solution
-        {
-            [JsonPropertyName("path")]
-            public string Path { get; set; }
-
-            [JsonPropertyName("projects")]
-            public List<string> Projects { get; set; }
         }
 
         public static string[] GetCommands(bool hasNoRestore, bool hasNoBuild)
