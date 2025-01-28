@@ -1,8 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <BlobStorageVersion>$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version'))</BlobStorageVersion>
-    <BlobStorageVersion>$([System.Text.RegularExpressions.Regex]::Split('$(BlobStorageVersion)', '\r\n|\r|\n')[0])</BlobStorageVersion>
+    <BlobStorageVersion>$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version').Trim())</BlobStorageVersion>
     <RelativeBlobPathParent>Sdk/$(BlobStorageVersion)</RelativeBlobPathParent>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
