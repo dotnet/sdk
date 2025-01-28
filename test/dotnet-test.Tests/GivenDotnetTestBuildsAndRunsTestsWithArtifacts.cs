@@ -53,9 +53,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
 
             // Read MSTestVersion from Versions.props and update the .csproj file
-            var testAssetsPath = Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "eng", "Versions.props");
-            string msTestVersion = testInstance.ReadMSTestVersionFromProps(testAssetsPath);
-
+            // Search for Versions.props file from the current directory up to the root
+            string? versionsPropsPath = PathUtility.FindFileInParentDirectories(Directory.GetCurrentDirectory(), $"eng{Path.DirectorySeparatorChar}Versions.props") ?? throw new FileNotFoundException("Versions.props file not found.");
+            string msTestVersion = testInstance.ReadMSTestVersionFromProps(versionsPropsPath);
             testInstance.UpdateProjectFileWithMSTestVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
