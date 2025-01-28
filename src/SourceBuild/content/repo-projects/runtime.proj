@@ -32,6 +32,9 @@
 
     <BuildArgs Condition="'$(UseSystemLibs)' != ''">$(BuildArgs) /p:UseSystemLibs=$(UseSystemLibs)</BuildArgs>
 
+    <!-- When we're actually doing signing and the ESRP tool is available, forward down the path to the repo builds. -->
+    <BuildArgs Condition="'$(Sign)' == 'true' and '$(ForceDryRunSigning)' == '' and '$(DotNetEsrpToolPath)' != ''">$(BuildArgs) /p:DotNetEsrpToolPath=$(DotNetEsrpToolPath)</BuildArgs>
+
     <!-- Needed until https://github.com/dotnet/runtime/issues/109329 is fixed. -->
     <BuildArgs>$(BuildArgs) /p:NetCoreAppToolCurrentVersion=10.0</BuildArgs>
   </PropertyGroup>
