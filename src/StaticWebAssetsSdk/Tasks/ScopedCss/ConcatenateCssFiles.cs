@@ -6,7 +6,6 @@
 #if NET9_0_OR_GREATER
 using System.Globalization;
 #endif
-using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -106,31 +105,7 @@ public class ConcatenateCssFiles : Task
 
     private static bool SameContent(string content, string outputFilePath)
     {
-        var contentHash = GetContentHash(content);
-
         var outputContent = File.ReadAllText(outputFilePath);
-        var outputContentHash = GetContentHash(outputContent);
-
-        for (var i = 0; i < outputContentHash.Length; i++)
-        {
-            if (outputContentHash[i] != contentHash[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-
-        static byte[] GetContentHash(string content)
-        {
-            var data = Encoding.UTF8.GetBytes(content);
-#if !NET9_0_OR_GREATER
-            using var sha256 = SHA256.Create();
-            var result = sha256.ComputeHash(data);
-#else
-            var result = SHA256.HashData(data);
-#endif
-            return result;
-        }
+        return string.Equals(content, outputContent);
     }
 }
