@@ -14,6 +14,14 @@ index ------------
  ./packs/Microsoft.AspNetCore.App.Ref/
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/
 @@ ------------ @@
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipelines.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipes.AccessControl.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipes.xml
++./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Linq.AsyncEnumerable.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Linq.Expressions.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Linq.Parallel.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Linq.Queryable.xml
+@@ ------------ @@
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XmlSerializer.xml
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XPath.XDocument.xml
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Xml.XPath.xml
