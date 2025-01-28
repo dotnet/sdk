@@ -180,6 +180,9 @@
   <data name="PackDefinition" xml:space="preserve">
     <value>Create a NuGet package.</value>
   </data>
+  <data name="PackageDefinition" xml:space="preserve">
+    <value>Provides additional package commands.</value>
+  </data>
   <data name="StoreDefinition" xml:space="preserve">
     <value>Store the specified assemblies in the runtime package store.</value>
   </data>
