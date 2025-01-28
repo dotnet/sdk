@@ -41,8 +41,17 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
                 log.Object,
-                SymbolFilterFactory.GetFilterFromList([], includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols),
-                SymbolFilterFactory.GetFilterFromList(excludedAttributeList ?? [], includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols),
+                SymbolFilterFactory.GetFilterFromList(
+                    apiExclusionList: [],
+                    accessibilitySymbolFilter: null,
+                    includeInternalSymbols,
+                    includeEffectivelyPrivateSymbols,
+                    includeExplicitInterfaceImplementationSymbols),
+                SymbolFilterFactory.GetFilterFromList(
+                    apiExclusionList: excludedAttributeList ?? [],  accessibilitySymbolFilter: null,
+                    includeInternalSymbols,
+                    includeEffectivelyPrivateSymbols,
+                    includeExplicitInterfaceImplementationSymbols),
                 stringWriter,
                 null,
                 false,
