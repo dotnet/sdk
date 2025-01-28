@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -177,7 +176,6 @@ namespace Microsoft.DotNet.Cli
 
         private async Task<(IEnumerable<Module>, bool Restored)> GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildPathsOptions buildPathOptions)
         {
-            Debugger.Launch();
             bool isBuiltOrRestored = true;
             var allProjects = new ConcurrentBag<Module>();
             var projectCollection = new ProjectCollection();
