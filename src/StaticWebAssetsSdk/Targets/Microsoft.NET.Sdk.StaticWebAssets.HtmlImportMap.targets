@@ -1,0 +1,81 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.StaticWebAssets.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="14.0">
+    
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.WriteImportMapToHtml" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+
+    <PropertyGroup>
+    <ResolveBuildRelatedStaticWebAssetsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _UpdateHtmlFiles;
+    </ResolveBuildRelatedStaticWebAssetsDependsOn>
+    <ResolveCompressedFilesDependsOn>
+      $(ResolveCompressedFilesDependsOn);
+      _UpdateHtmlFiles
+    </ResolveCompressedFilesDependsOn>
+  </PropertyGroup>
+  <ItemGroup>
+    <StaticWebAssetFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
+    <StaticWebAssetFingerprintPattern Include="Css" Pattern="*.css" Expression="#[.{fingerprint}]!" />
+  </ItemGroup>
+
+  <Target Name="_UpdateHtmlFiles">
+    <PropertyGroup>
+      <_WasmBuildImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(IntermediateOutputPath), 'importmaphtml', 'build'))</_WasmBuildImportMapHtmlPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_WasmBuildImportMapHtmlPath)"/>
+
+    <!-- Find HTML swa -->
+    <ItemGroup>
+      <_HtmlStaticWebAssets Include="@(StaticWebAsset)" Condition="'%(Extension)' == '.html'" />
+    </ItemGroup>
+
+    <!-- Write import map and fingerprinted assets to html files -->
+    <WriteImportMapToHtml
+      Source="$(PackageId)"
+      ManifestType="Build"
+      Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      HtmlFiles="@(_HtmlStaticWebAssets)"
+      OutputPath="$(_WasmBuildImportMapHtmlPath)">
+      <Output TaskParameter="HtmlCandidates" ItemName="_HtmlCandidates" />
+      <Output TaskParameter="HtmlFilesToRemove" ItemName="_HtmlFilesToRemove" />
+      <Output TaskParameter="FileWrites" ItemName="FileWrites" />
+    </WriteImportMapToHtml>
+
+    <!-- Replace modified HTML swa -->
+    <ItemGroup>
+      <_HtmlCandidatesNoMetadata
+        Include="@(_HtmlCandidates)"
+        RemoveMetadata="Integrity;Fingerprint" />
+      <_HtmlCandidatesNoMetadata ContentRoot="$(_WasmBuildImportMapHtmlPath)" />
+    </ItemGroup>
+    <DefineStaticWebAssets CandidateAssets="@(_HtmlCandidatesNoMetadata)">
+      <Output TaskParameter="Assets" ItemName="_UpdatedHtmlStaticWebAssets" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_UpdatedHtmlStaticWebAssets)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_UpdatedHtmlStaticWebAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+    <ItemGroup>
+      <StaticWebAsset Remove="@(_HtmlFilesToRemove)" />
+      <StaticWebAsset Include="@(_UpdatedHtmlStaticWebAssets)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedHtmlStaticWebAssetsEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
