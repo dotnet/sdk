@@ -113,8 +113,8 @@
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.pkg" />
 
     <Artifact Include="@(SdkArtifact)"
-              IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))">
-      <RelativeBlobPath>$(RelativeBlobPathParent)/%(Filename)%(Extension)</RelativeBlobPath>
+              IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
+              RelativeBlobPath="$(RelativeBlobPathParent)/%(Filename)%(Extension)">
       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>
