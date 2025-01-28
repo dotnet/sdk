@@ -16,7 +16,9 @@ namespace Microsoft.DotNet.Tools.Reference.Add
 
         public AddProjectToProjectReferenceCommand(ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(AddCommandParser.ProjectArgument);
+            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
+                parseResult.GetValue(AddCommandParser.ProjectArgument);
         }
 
         public override int Execute()

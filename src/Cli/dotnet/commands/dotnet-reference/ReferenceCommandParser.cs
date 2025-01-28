@@ -11,10 +11,10 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-reference";
 
-        public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CommonLocalizableStrings.ProjectArgumentName)
+        public static readonly CliOption<string> ProjectOption = new CliOption<string>(CommonLocalizableStrings.ProjectArgumentName)
         {
             Description = CommonLocalizableStrings.ProjectArgumentDescription
-        }.DefaultToCurrentDirectory();
+        };
 
         private static readonly CliCommand Command = ConstructCommand();
 
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("reference", DocsLink, LocalizableStrings.NetRemoveCommand);
 
-            command.Arguments.Add(ProjectArgument);
+            command.Options.Add(ProjectOption);
             command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
             command.Subcommands.Add(ReferenceListCommandParser.GetCommand());
             command.Subcommands.Add(ReferenceRemoveCommandParser.GetCommand());

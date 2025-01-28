@@ -16,7 +16,9 @@ namespace Microsoft.DotNet.Tools.Package.Remove
         public RemovePackageReferenceCommand(
             ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(PackageCommandParser.ProjectOption);
+            _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
+                parseResult.GetValue(PackageCommandParser.ProjectOption) :
+                parseResult.GetValue(RemoveCommandParser.ProjectArgument);
             _arguments = parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument).ToList().AsReadOnly();
             if (_fileOrDirectory == null)
             {

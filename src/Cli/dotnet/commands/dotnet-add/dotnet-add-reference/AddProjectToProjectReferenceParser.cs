@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli
             command.Arguments.Add(ReferenceAddCommandParser.ProjectPathArgument);
             command.Options.Add(ReferenceAddCommandParser.FrameworkOption);
             command.Options.Add(ReferenceAddCommandParser.InteractiveOption);
+            command.Options.Add(ReferenceCommandParser.ProjectOption);
 
             command.SetAction((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
 

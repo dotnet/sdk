@@ -17,7 +17,9 @@ namespace Microsoft.DotNet.Tools.Reference.Remove
         public RemoveProjectToProjectReferenceCommand(
             ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectOption);
+            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
+                parseResult.GetValue(RemoveCommandParser.ProjectArgument);
             _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
 
             if (_arguments.Count == 0)

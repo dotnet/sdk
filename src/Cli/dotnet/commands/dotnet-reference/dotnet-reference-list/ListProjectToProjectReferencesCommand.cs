@@ -17,7 +17,9 @@ namespace Microsoft.DotNet.Tools.Reference.List
         {
             ShowHelpOrErrorIfAppropriate(parseResult);
 
-            _fileOrDirectory = parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
+            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
+                parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
         }
 
         public override int Execute()

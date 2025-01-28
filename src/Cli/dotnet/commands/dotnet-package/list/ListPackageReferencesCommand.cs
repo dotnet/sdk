@@ -18,6 +18,8 @@ namespace Microsoft.DotNet.Tools.Package.List
             ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
+                parseResult.HasOption(PackageCommandParser.ProjectOption) ?
+                parseResult.GetValue(PackageCommandParser.ProjectOption) :
                 parseResult.GetValue(ListCommandParser.SlnOrProjectArgument));
         }
 

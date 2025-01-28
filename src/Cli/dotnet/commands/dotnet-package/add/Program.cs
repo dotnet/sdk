@@ -17,7 +17,9 @@ namespace Microsoft.DotNet.Tools.Package.Add
 
         public AddPackageReferenceCommand(ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.GetValue(AddCommandParser.ProjectArgument);
+            _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
+                parseResult.GetValue(PackageCommandParser.ProjectOption) :
+                parseResult.GetValue(AddCommandParser.ProjectArgument);
             _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
         }
 

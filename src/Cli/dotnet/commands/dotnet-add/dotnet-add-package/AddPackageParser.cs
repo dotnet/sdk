@@ -28,6 +28,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(PackageAddCommandParser.PackageDirOption);
             command.Options.Add(PackageAddCommandParser.InteractiveOption);
             command.Options.Add(PackageAddCommandParser.PrereleaseOption);
+            command.Options.Add(PackageCommandParser.ProjectOption);
 
             command.SetAction((parseResult) => new AddPackageReferenceCommand(parseResult).Execute());
 

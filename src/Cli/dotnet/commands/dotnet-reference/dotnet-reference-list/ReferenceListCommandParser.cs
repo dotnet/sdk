@@ -11,8 +11,6 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly CliArgument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
-        public static readonly CliOption<string> ProjectOption = new("--project");
-
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -25,7 +23,7 @@ namespace Microsoft.DotNet.Cli
             var command = new CliCommand("list", LocalizableStrings.AppFullName);
 
             command.Arguments.Add(Argument);
-            command.Options.Add(ProjectOption);
+            command.Options.Add(ReferenceCommandParser.ProjectOption);
 
             command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
 
