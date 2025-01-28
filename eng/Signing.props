@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <BlobStorageVersion>$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version'))</BlobStorageVersion>
-    <BlobStoragePartialRelativePath>Sdk/$(BlobStorageVersion)</BlobStoragePartialRelativePath>
+    <RelativeBlobPathParent>Sdk/$(BlobStorageVersion)</RelativeBlobPathParent>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
 
@@ -114,7 +114,7 @@
 
     <Artifact Include="@(SdkArtifact)"
               IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))">
-      <RelativeBlobPath>$(BlobStoragePartialRelativePath)/%(Filename)%(Extension)</RelativeBlobPath>
+      <RelativeBlobPath>$(RelativeBlobPathParent)/%(Filename)%(Extension)</RelativeBlobPath>
       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>
