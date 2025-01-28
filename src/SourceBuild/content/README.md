@@ -77,6 +77,9 @@ For the latest information about Source-Build support, please watch for announce
 The dependencies for building can be found [here](https://github.com/dotnet/runtime/blob/main/docs/workflow/requirements/).
 In case you don't want to / cannot prepare your environment per the requirements, consider [using Docker](#building-using-docker).
 
+> [!NOTE]
+> For building the VMR on Windows, it is recommended to put the enlistment under a short path, i.e. `C:\dotnet`. Also, [long path support must be enabled](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry#enable-long-paths-in-windows-10-version-1607-and-later). This is necessary as some of the tools used don't support long paths (WiX Toolset v3 and cl.exe).
+
 ### Building
 
 1. **Clone the repository**
