@@ -56,6 +56,9 @@
       <UnpackedSourceBuildReferencePackage Include="$(PrebuiltSourceBuiltPackagesPath)SourceBuildReferencePackages/*" />
     </ItemGroup>
 
+    <!-- When building iteratively (e.g. making infra changes), the directory may already exist and needs to be cleaned up. -->
+    <RemoveDir Directories="$(ReferencePackagesDir)" />
+
     <!-- Either move or copy the unpacked SBRP packages.
          Don't move when the packages directory is externally provided. -->
     <Move SourceFiles="@(UnpackedSourceBuildReferencePackage)"
