@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Tools.Common
             {
                 JsonNode? jsonNode = JsonNode.Parse(File.ReadAllText(filteredSolutionPath));
                 originalSolutionPath = jsonNode?["solution"]?["path"]?.ToString();
-                filteredSolutionProjectPaths = jsonNode?["solution"]?["projects"]?.GetValue<string[]>();
+                filteredSolutionProjectPaths = jsonNode["solution"]?["projects"]?.AsArray()?.GetValues<string>();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
             }
             catch (Exception ex) {
