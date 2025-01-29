@@ -28,11 +28,12 @@ namespace Microsoft.DotNet.Cli
         public const string RuntimeIdentifier = "RuntimeIdentifier";
 
         public static readonly string[] ProjectExtensions = { ".proj", ".csproj", ".vbproj", ".fsproj" };
-        public static readonly string[] SolutionExtensions = { ".sln", ".slnx" };
+        public static readonly string[] SolutionExtensions = { ".sln", ".slnx", ".slnf" };
 
         public const string ProjectExtensionPattern = "*.*proj";
         public const string SolutionExtensionPattern = "*.sln";
         public const string SolutionXExtensionPattern = "*.slnx";
+        public const string SolutionFilterExtensionPattern = "*.slnf";
 
         public const string BinLogFileName = "msbuild.binlog";
 
