@@ -20,7 +20,7 @@ variables:
 - ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
   - name: ibcEnabled
     value: true
-- ${{ else }}
+- ${{ else }}:
   - name: ibcEnabled
     value: false
 
