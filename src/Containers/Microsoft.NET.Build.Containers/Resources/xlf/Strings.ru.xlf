@@ -400,8 +400,8 @@
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
       <trans-unit id="UnableToDownloadFromRepository">
-        <source>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</source>
-        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</target>
+        <source>CONTAINER1018: Unable to download image from the repository '{0}'.</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}'.</target>
         <note>{StrBegins="CONTAINER1018:" }</note>
       </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
