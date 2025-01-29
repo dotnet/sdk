@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
                 var formatOptions = parseResult.ParseVerbosityOption(FormatOptions.Instance);
-                var logger = SetupLogging(minimalLogLevel: formatOptions.LogLevel);
+                var logger = SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
                 formatOptions = parseResult.ParseCommonOptions(formatOptions, logger);
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
