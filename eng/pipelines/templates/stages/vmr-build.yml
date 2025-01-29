@@ -908,7 +908,7 @@ stages:
           outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
 
 ### VALIDATION ###
-- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal')) }}:
+- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), eq(variables.signEnabled, 'true')) }}:
   - stage: VMR_Validation
     displayName: VMR Validation
     dependsOn: VMR_Final_Join
