@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Tools.Common
             {
                 JsonNode? jsonNode = JsonNode.Parse(File.ReadAllText(filteredSolutionPath));
                 originalSolutionPath = jsonNode?["solution"]?["path"]?.ToString();
-                filteredSolutionProjectPaths = jsonNode["solution"]?["projects"]?.AsArray()?.GetValues<string>();
+                filteredSolutionProjectPaths = jsonNode["solution"]?["projects"]?.AsArray()?.GetValues<string>().ToArray() ?? [];
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
             }
             catch (Exception ex) {
@@ -104,9 +104,15 @@ namespace Microsoft.DotNet.Tools.Common
                 .Select(path => originalSolution.FindProject(path) ?? throw new GracefulException(
                         CommonLocalizableStrings.ProjectNotFoundInTheSolution,
                         path,
-                        originalSolutionPath))
-                .Select(project =>
-                    filteredSolution.AddProject(project.FilePath, project.Type, project.Parent is null ? null : filteredSolution.AddFolder(project.Parent.Path)));
+                        originalSolutionPath));
+
+            foreach (var project in projects)
+            {
+                _ = filteredSolution.AddProject(
+                    project.FilePath,
+                    project.Type,
+                    project.Parent is null ? null : filteredSolution.AddFolder(project.Parent.Path));
+            }
 
             return filteredSolution;
         }
