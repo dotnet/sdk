@@ -14,10 +14,10 @@ internal class RegistrySettings
 
         ChunkedUploadSizeBytes = environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytes) ??
             environment.GetEnvironmentVariableAsNullableInt(EnvVariables.ChunkedUploadSizeBytesLegacy);
-        ForceChunkedUpload = Environment.GetEnvironmentVariable(EnvVariables.ForceChunkedUpload) is not null ?
+        ForceChunkedUpload = environment.GetEnvironmentVariable(EnvVariables.ForceChunkedUpload) is not null ?
             environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUpload, defaultValue: false) :
             environment.GetEnvironmentVariableAsBool(EnvVariables.ForceChunkedUploadLegacy, defaultValue: false);
-        ParallelUploadEnabled = Environment.GetEnvironmentVariable(EnvVariables.ParallelUploadEnabled) is not null ?
+        ParallelUploadEnabled = environment.GetEnvironmentVariable(EnvVariables.ParallelUploadEnabled) is not null ?
             environment.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabled, defaultValue: true) :
             environment.GetEnvironmentVariableAsBool(EnvVariables.ParallelUploadEnabledLegacy, defaultValue: true);
 
