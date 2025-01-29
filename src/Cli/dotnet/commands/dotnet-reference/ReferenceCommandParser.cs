@@ -13,7 +13,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> ProjectOption = new CliOption<string>("--project")
         {
-            Description = CommonLocalizableStrings.ProjectArgumentDescription
+            Description = CommonLocalizableStrings.ProjectArgumentDescription,
+            Recursive = true
         };
 
         private static readonly CliCommand Command = ConstructCommand();

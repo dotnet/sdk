@@ -9,7 +9,10 @@ namespace Microsoft.DotNet.Cli
     {
         private const string DocsLink = "https://aka.ms/dotnet-package";
 
-        public static readonly CliOption<string> ProjectOption = new("--project");
+        public static readonly CliOption<string> ProjectOption = new("--project")
+        {
+            Recursive = true
+        };
 
         public static CliCommand GetCommand()
         {
