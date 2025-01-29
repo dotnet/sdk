@@ -15,8 +15,10 @@ Design Goals:
 - **msbuild**: refers the .NET Framework based msbuild included with Visual Studio.
 - **dotnet msbuild**: refers to the .NET Core based msbuild included with the .NET SDK.
 - **analyzers**: this document will use analyzers to refer to both analyzers and generators.
+- **torn state**: when the .NET SDK and Visual Studio are not in sync.
+- **.NET SDK project**: a project that uses the .NET SDK project format.
 
-## Motivations
+## Summary
 
 Visual Studio and .NET SDK are separate products but they are intertwined in command line and design time build scenarios as different components are loaded from each product. This table represents how intertwined Roslyn specifically is currently:
 
@@ -28,7 +30,7 @@ Visual Studio and .NET SDK are separate products but they are intertwined in com
 
 There are other products that have similar intertwined behavior such as NuGet, MSBuild, Razor, etc ... Roslyn is generally the most impactful and the one we are focusing on in this document as it's path forward can be generalized to the other products.
 
-Generally this mixing of components is fine because Visual Studio will install a .NET SDK that is functionally paired with it. For example 17.10 installs .NET SDK 8.0.3xx, 17.9 installs .NET SDK 8.0.2xx, etc ... In that scenario the components are the same versio and the mixing is largely benign. However when the .NET SDK is not paired with the Visual Studio version,then compatibility issues can, and will, arise. Particularly when the .NET SDK is _newer_ than Visual Studio customers will end up with the following style of error:
+Generally this mixing of components is fine because Visual Studio will install a .NET SDK that is functionally paired with it. For example 17.10 installs .NET SDK 8.0.3xx, 17.9 installs .NET SDK 8.0.2xx, etc ... In that scenario the components are the same versio and the mixing is largely benign. However when the customer is in a torn state, .NET SDK used is not paired with the Visual Studio version, then compatibility issues can, and **will**, arise. Particularly when the .NET SDK is _newer_ than Visual Studio customers will end up with the following style of error:
 
 > CSC : warning CS9057: The analyzer assembly '..\dotnet\sdk\8.0.200\Sdks\Microsoft.NET.Sdk.Razor\source-
 > generators\Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators.dll' references version '4.9.0.0' of the compiler, which is newer
@@ -45,7 +47,7 @@ This torn state is a common customer setup:
 | 17.7 | 94.9% | 2.2% | 3% |
 | 17.8 | 96% | 0% | 4% |
 
-To address this issue we are going to separate Visual Studio and the .NET SDK in build scenarios. That will change our matrix to _logically_ be the following:
+To address this issue we are going to separate Visual Studio and the .NET SDK in build scenarios. That will change our matrix to be the following:
 
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
 | --- | --- | --- |
@@ -55,12 +57,12 @@ To address this issue we are going to separate Visual Studio and the .NET SDK in
 
 Specifically we will be
 
-1. Changing msbuild to use a compiler at least as new as the .NET SDKs compiler
-2. Changing Visual Studio to use analyzers from Visual Studio
+1. Changing msbuild to use tools and tasks from the .NET SDK when building .NET SDK projects.
+2. Changing Visual Studio to use analyzers installed with Visual Studio.
 
-In addition to making our builds more reliable this will also massively simplify our [analyzer Development strategy][sdk-lifecycle]. Analyzers in the SDK following this model can always target the latest Roslyn version without the need for complicated multi-targeting.
+In addition to making our builds more reliable this will also massively simplify our [analyzer Development strategy][sdk-lifecycle]. Analyzers in the SDK following this model can always target the latest Roslyn version without the need for complicated multi-targeting. Further it will allow Visual Studio the ability to NGEN or R2R analyzers which is a long standing request from the Visual Studio perf team.
 
-## Motivations
+## Torn State Scenarios
 
 There are a number of scenarios where customers end up in a torn state. The most common is when customers have a CI setup with the following items:
 
@@ -69,9 +71,10 @@ There are a number of scenarios where customers end up in a torn state. The most
 
 This means that CI systems are updated to the latest .NET SDK virtually as soon as we release them. However the version of Visual Studio is updated much later as CI images usually take several weeks to upgrade to a new Visual Studio version. This is a very common CI setup and means a significant number of our customers end up in a torn state for several weeks.
 
-Another reason is that teams use older Visual Studio versions due to internal constraints: like an organizational policy. At the same time they install the latest .NET SDK which puts them into a torn state.
+Teams also get into this state when the Visual Studio used for developement is older than the .NET SDK they are using:
 
-This also hits any customer that uses a preview version of .NET SDK. These inherently represent a torn SDK state because they almost never match the compiler in Visual Studio. This results in blockers for big teams like Bing from testing out our previews.
+1. Teams can get locked into older Visual Studio via org policy but freely update to newer .NET SDKs.
+2. Using a preview version of the .NET SDK. These inherently represent a torn SDK state because they almost never match the compiler in Visual Studio. This results in blockers for big teams like Bing from testing out our previews.
 
 ## MSBuild using .NET SDK Compiler
 
