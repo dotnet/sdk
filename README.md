@@ -29,7 +29,7 @@ You can download the .NET SDK as either an installer (MSI, PKG) or a zip (zip, t
 ```xml
 <configuration>
   <packageSources>
-    <add key="dotnet9" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json" />
+    <add key="dotnet10" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json" />
   </packageSources>
 </configuration>
 ```
