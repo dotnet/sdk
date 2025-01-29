@@ -16,11 +16,13 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
+    <!-- Building Windows Bundle Installers-->
     <RepositoryReference Remove="@(RepositoryReference)" />
     <RepositoryReference Include="sdk" DotNetBuildPass="2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x86'">
+    <!-- Building the cross-OS DACs -->
     <RepositoryReference Remove="@(RepositoryReference)" />
     <RepositoryReference Include="runtime" DotNetBuildPass="2" />
   </ItemGroup>
