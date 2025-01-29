@@ -5,6 +5,8 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI.Tool
@@ -97,15 +99,28 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
-                GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal),
-                    parseResult.GetValue(assembliesOption)!,
-                    parseResult.GetValue(assemblyReferencesOption),
+                bool respectInternals = parseResult.GetValue(respectInternalsOption);
+
+                ILog log = new ConsoleLog(MessageImportance.Normal);
+
+                string[]? assemblies = parseResult.GetValue(assembliesOption);
+                Debug.Assert(assemblies != null, "Assemblies cannot be null.");
+
+                (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
+                    log,
+                    assembliesPaths: assemblies,
+                    assemblyReferencesPaths: parseResult.GetValue(assemblyReferencesOption),
+                    respectInternals);
+
+                GenAPIApp.Run(log,
+                    loader,
+                    assemblySymbols,
                     parseResult.GetValue(outputPathOption),
                     parseResult.GetValue(headerFileOption),
                     parseResult.GetValue(exceptionMessageOption),
                     parseResult.GetValue(excludeApiFilesOption),
                     parseResult.GetValue(excludeAttributesFilesOption),
-                    parseResult.GetValue(respectInternalsOption),
+                    respectInternals,
                     parseResult.GetValue(includeAssemblyAttributesOption)
                 );
             });

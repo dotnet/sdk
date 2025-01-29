@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.NET.Build.Tasks;
 
@@ -62,17 +65,25 @@ namespace Microsoft.DotNet.GenAPI.Task
         /// <inheritdoc />
         protected override void ExecuteCore()
         {
-            GenAPIApp.Run(new MSBuildLog(Log),
-                Assemblies!,
-                AssemblyReferences,
-                OutputPath,
-                HeaderFile,
-                ExceptionMessage,
-                ExcludeApiFiles,
-                ExcludeAttributesFiles,
-                RespectInternals,
-                IncludeAssemblyAttributes
-            );
+            Debug.Assert(Assemblies != null, "Assemblies cannot be null.");
+
+            ILog log = new MSBuildLog(Log);
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
+                log,
+                assembliesPaths: Assemblies,
+                assemblyReferencesPaths: AssemblyReferences,
+                RespectInternals);
+
+            GenAPIApp.Run(log,
+                          loader,
+                          assemblySymbols,
+                          OutputPath,
+                          HeaderFile,
+                          ExceptionMessage,
+                          ExcludeApiFiles,
+                          ExcludeAttributesFiles,
+                          RespectInternals,
+                          IncludeAssemblyAttributes);
         }
     }
 }
