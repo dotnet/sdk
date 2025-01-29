@@ -1,20 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
 {
     internal sealed class StaticFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector)
     {
-        private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web)
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-
         public async ValueTask<bool> HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {
             var allFilesHandled = true;
@@ -67,20 +59,11 @@ namespace Microsoft.DotNet.Watch
                 return allFilesHandled;
             }
 
-            var tasks = refreshRequests.Select(async request =>
-            {
-                // Serialize all requests sent to a single server:
-                foreach (var path in request.Value)
-                {
-                    reporter.Verbose($"Sending static file update request for asset '{path}'.");
-                    var message = JsonSerializer.SerializeToUtf8Bytes(new UpdateStaticFileMessage { Path = path }, s_jsonSerializerOptions);
-                    await request.Key.SendAsync(message, cancellationToken);
-                }
-            });
+            var tasks = refreshRequests.Select(request => request.Key.UpdateStaticAssetsAsync(request.Value, cancellationToken).AsTask());
 
             await Task.WhenAll(tasks).WaitAsync(cancellationToken);
 
-            reporter.Output("Hot Reload of static files succeeded.", emoji: "🔥");
+            reporter.Output("Hot reload of static files succeeded.", emoji: "🔥");
 
             return allFilesHandled;
         }

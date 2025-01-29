@@ -7,6 +7,10 @@ parameters:
   type: string
   default: $(Build.SourceBranch)
 
+- name: desiredSigning
+  type: string
+  default: ''
+
 # Scope of jobs which are executed
 - name: scope
   type: string
@@ -370,7 +374,6 @@ stages:
         targetOS: linux
         targetArchitecture: x64
         useDevVersions: true # Use dev versions for CI validation of the experience.
-        runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -381,7 +384,6 @@ stages:
         targetOS: windows
         targetArchitecture: x86
         useDevVersions: true # Use dev versions for CI validation of the experience.
-        runTests: false # Temporarily do not run tests. The nuget comparison fails for some non-obvious reason and needs further investigation. Mostly, I'm not sure why it ever passed. https://github.com/dotnet/sdk/issues/42920
 
 #### VERTICAL BUILD (Official) ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
@@ -392,6 +394,7 @@ stages:
     - template: ../variables/vmr-build.yml
       parameters:
         vmrBranch: ${{ parameters.vmrBranch }}
+        desiredSigning: ${{ parameters.desiredSigning }}
     jobs:
 
     - template: ../jobs/vmr-build.yml
@@ -399,6 +402,7 @@ stages:
         buildName: Windows
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
+        sign: ${{ variables.signEnabled }}
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
@@ -409,19 +413,20 @@ stages:
         buildName: Android_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
+        sign: ${{ variables.signEnabled }}
         pool: ${{ parameters.pool_Linux_Shortstack }}
         container:
           name: ${{ variables.androidCrossContainerName }}
           image: ${{ variables.androidCrossContainerImage }}
         targetOS: android
         targetArchitecture: arm64
-        runTests: false
 
     - template: ../jobs/vmr-build.yml
       parameters:
         buildName: Browser_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
+        sign: ${{ variables.signEnabled }}
         pool: ${{ parameters.pool_Linux_Shortstack }}
         container:
           name: ${{ variables.browserCrossContainerName }}
@@ -429,17 +434,16 @@ stages:
         crossRootFs: '/crossrootfs/x64'
         targetOS: browser
         targetArchitecture: wasm
-        runTests: false
 
     - template: ../jobs/vmr-build.yml
       parameters:
         buildName: iOSSimulator_Shortstack
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
+        sign: ${{ variables.signEnabled }}
         pool: ${{ parameters.pool_Mac }}
         targetOS: iossimulator
         targetArchitecture: arm64
-        runTests: false
 
     ### Additional jobs for full build ###
     - ${{ if in(parameters.scope, 'full') }}:
@@ -449,45 +453,46 @@ stages:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.androidCrossContainerName }}
               image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: arm
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.androidCrossContainerName }}
               image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Android_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.androidCrossContainerName }}
               image: ${{ variables.androidCrossContainerImage }}
             targetOS: android
             targetArchitecture: x86
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Browser_Multithreaded_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.browserCrossContainerName }}
@@ -496,13 +501,13 @@ stages:
             targetOS: browser
             targetArchitecture: wasm
             extraProperties: /p:DotNetBuildRuntimeWasmEnableThreads=true
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
@@ -510,13 +515,13 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
@@ -524,13 +529,13 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: LinuxBionic_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
@@ -538,33 +543,33 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: iOS_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: ios
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: iOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: iossimulator
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: MacCatalyst_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: arm64
@@ -575,46 +580,47 @@ stages:
             buildName: MacCatalyst_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: tvOS_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvos
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: tvOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: tvOSSimulator_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: tvossimulator
             targetArchitecture: x64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Wasi_Shortstack
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.wasiCrossContainerName }}
@@ -622,13 +628,13 @@ stages:
             crossRootFs: '/crossrootfs/x64'
             targetOS: wasi
             targetArchitecture: wasm
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: OSX
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: x64
@@ -638,6 +644,7 @@ stages:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxX64CrossContainerName }}
@@ -651,6 +658,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: false
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxX64CrossContainerName }}
@@ -659,14 +667,13 @@ stages:
             targetOS: linux
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
-            runTests: false
-            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: AzureLinux_x64_Cross_Shortstack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.azurelinuxX64CrossContainerName }}
@@ -676,13 +683,13 @@ stages:
             targetOS: linux
             targetArchitecture: x64
             extraProperties: /p:DotNetBuildMonoEnableLLVM=true /p:DotNetBuildMonoAOTEnableLLVM=true /p:DotNetBuildMonoBundleLLVMOptimizer=true
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArmCrossContainerName }}
@@ -696,6 +703,7 @@ stages:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArm64CrossContainerName }}
@@ -709,6 +717,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: false
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArm64CrossContainerName }}
@@ -717,14 +726,13 @@ stages:
             targetOS: linux
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
-            runTests: false
-            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxX64AlpineCrossContainerName }}
@@ -739,6 +747,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArmAlpineCrossContainerName }}
@@ -753,6 +762,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Alpine
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
               name: ${{ variables.azurelinuxArm64AlpineCrossContainerName }}
@@ -767,6 +777,7 @@ stages:
             buildName: AzureLinux_x64_Cross_Shortstack_Mono_LLVMAOT
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux_Shortstack }}
             container:
               name: ${{ variables.azurelinuxArm64CrossContainerName }}
@@ -776,13 +787,13 @@ stages:
             targetOS: linux
             targetArchitecture: arm64
             extraProperties: /p:DotNetBuildMonoEnableLLVM=true /p:DotNetBuildMonoAOTEnableLLVM=true /p:DotNetBuildMonoBundleLLVMOptimizer=true
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: OSX
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Mac }}
             targetOS: osx
             targetArchitecture: arm64
@@ -792,6 +803,7 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
@@ -801,6 +813,7 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86
@@ -810,36 +823,33 @@ stages:
             buildName: Windows_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: false
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64
             extraProperties: /p:PgoInstrument=true
-            runTests: false
-            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Windows_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: false
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86
             extraProperties: /p:PgoInstrument=true
-            runTests: false
-            sign: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Windows_Pgo
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: false
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
-            runTests: false
-            sign: false
 
         # Build Pass 2 verticals
 
@@ -848,6 +858,7 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64
@@ -896,3 +907,18 @@ stages:
           dotNetBuildPass: final
           primaryDependentJob: Windows_x64
           outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
+
+### VALIDATION ###
+- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), eq(variables.signEnabled, 'true')) }}:
+  - stage: VMR_Validation
+    displayName: VMR Validation
+    dependsOn: VMR_Final_Join
+    jobs:
+    - job: ValidateSigning
+      displayName: Validate Signing
+      pool: ${{ parameters.pool_Windows }}
+      timeoutInMinutes: 240
+      steps:
+      - template: ../steps/vmr-validate-signing.yml
+        parameters:
+          continueOnError: true

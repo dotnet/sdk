@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Watch
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
         ProjectOptions options,
+        EnvironmentOptions environmentOptions,
         DeltaApplier deltaApplier,
         IReporter reporter,
         BrowserRefreshServer? browserRefreshServer,
@@ -21,13 +22,13 @@ namespace Microsoft.DotNet.Watch
         CancellationTokenSource processTerminationSource,
         RestartOperation restartOperation,
         IReadOnlyList<IDisposable> disposables,
-        Task<ImmutableArray<string>> capabilityProvider) : IDisposable
+        ImmutableArray<string> capabilities) : IDisposable
     {
         public readonly ProjectGraphNode ProjectNode = projectNode;
         public readonly ProjectOptions Options = options;
         public readonly BrowserRefreshServer? BrowserRefreshServer = browserRefreshServer;
         public readonly DeltaApplier DeltaApplier = deltaApplier;
-        public readonly Task<ImmutableArray<string>> CapabilityProvider = capabilityProvider;
+        public readonly ImmutableArray<string> Capabilities = capabilities;
         public readonly IReporter Reporter = reporter;
         public readonly Task<int> RunningProcess = runningProcess;
         public readonly int ProcessId = processId;
@@ -67,6 +68,25 @@ namespace Microsoft.DotNet.Watch
         public async ValueTask WaitForProcessRunningAsync(CancellationToken cancellationToken)
         {
             await DeltaApplier.WaitForProcessRunningAsync(cancellationToken);
+        }
+
+        public async ValueTask<int> TerminateAsync(CancellationToken shutdownCancellationToken)
+        {
+            if (shutdownCancellationToken.IsCancellationRequested)
+            {
+                // Ctrl+C sent, wait for the process to exit
+                try
+                {
+                    _ = await RunningProcess.WaitAsync(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
+                }
+                catch (TimeoutException)
+                {
+                    // nop
+                }
+            }
+
+            ProcessTerminationSource.Cancel();
+            return await RunningProcess;
         }
     }
 }

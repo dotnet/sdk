@@ -37,6 +37,36 @@
         <target state="translated">`-r|--runtime` および `-os` オプションの両方を指定することはサポートされていません。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">環境変数の値を設定します。
+変数が存在しない場合は作成され、存在する場合はオーバーライドされます。
+これにより、テストは強制的に分離プロセスで実行されます。
+この引数は、複数の変数を指定するために複数回指定できます。
+
+例:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="translated">NAME="VALUE"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">コマンドを停止して、ユーザーの入力またはアクション (認証の完了など) を待機できるようにします。</target>
@@ -130,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">アプリケーションをフレームワーク依存アプリケーションとして公開します。アプリケーションを実行するには、対象のコンピューターで互換性のある .NET ランタイムをインストールする必要があります。</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="translated">環境変数の形式が正しくありません: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">.NET CLI オプション:</target>
@@ -221,6 +256,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">アプリケーションと一緒に .NET ランタイムを発行して、ランタイムをターゲット マシンにインストールする必要がないようにします。
 既定値は 'false' です。しかし、.NET 7 以前が対象の場合、ランタイム識別子が指定されていれば、既定値は 'true' です。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="translated">利用可能なワークロード バージョン、またはワークロード バージョンを構成するものを検索します。詳細については、'dotnet workload search version --help' を使用してください。</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
       </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>

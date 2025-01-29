@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using dotnet.Tests;
 using Microsoft.DotNet.Tools.Common;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
@@ -14,8 +13,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunTestProjectWithFailingTestsAndFileArtifacts_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -46,12 +45,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunTestProjectWithCodeCoverage_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
+
+            // Read MSTestVersion from Versions.props and update the .csproj file
+            // Search for Versions.props file from the current directory up to the root
+
+            Console.WriteLine($"CurrentDirectory: {Directory.GetCurrentDirectory()}");
+            Console.WriteLine($"BaseDirectory : {AppContext.BaseDirectory}");
+            Console.WriteLine($"testInstance.Path : {testInstance.Path}");
+            Console.WriteLine($"TestContext.Current.TestExecutionDirectory : {TestContext.Current.TestExecutionDirectory}");
+            string? versionsPropsPath = PathUtility.FindFileInParentDirectories(TestContext.Current.TestExecutionDirectory, $"eng{Path.DirectorySeparatorChar}Versions.props") ?? throw new FileNotFoundException("Versions.props file not found.");
+            string msTestVersion = testInstance.ReadMSTestVersionFromProps(versionsPropsPath);
+            testInstance.UpdateProjectFileWithMSTestVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)

@@ -119,6 +119,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.NotHaveStdErr();
 
             new ListPackageCommand(Log)
+                .WithProject("App.sln")
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
                 .Should()

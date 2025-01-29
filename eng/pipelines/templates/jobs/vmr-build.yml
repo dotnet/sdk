@@ -49,7 +49,7 @@ parameters:
   default: false
 
 - name: sign
-  displayName: True when build output should be signed
+  displayName: True when build output should be signed (includes dry runs)
   type: boolean
   default: true
 
@@ -147,9 +147,13 @@ jobs:
 
   ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
     ${{ if eq(parameters.buildPass, '') }}:
-      # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
+      # For PR builds, skip the stage 2 build if the stage 1 build fails.
+      # Otherwise, run the stage 2 build even if the stage 1 build fails so that we can get a complete assessment of the build status.
       # The build shortcuts when stage 1 build fails and doesn't produce the SDK.
-      condition: succeededOrFailed()
+      ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        condition: succeeded()
+      ${{ else }}:
+        condition: succeededOrFailed()
     ${{ else }}:
       condition: succeeded()
     dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
@@ -205,10 +209,7 @@ jobs:
   - ${{ if eq(parameters.targetOS, 'windows') }}:
     ## Basic arguments
     - name: baseArguments
-      value:  -ci -cleanWhileBuilding -prepareMachine /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
-
-    - name: configArguments
-      value: -c ${{ parameters.configuration }}
+      value:  -ci -cleanWhileBuilding -prepareMachine -c ${{ parameters.configuration }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
 
     - name: targetArguments
       value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
@@ -397,7 +398,6 @@ jobs:
 
     - script: build.cmd
         $(baseArguments)
-        $(configArguments)
         $(targetArguments)
         $(devArguments)
         $(signArguments)
@@ -408,8 +408,15 @@ jobs:
       workingDirectory: ${{ variables.sourcesPath }}
 
     - ${{ if eq(parameters.runTests, 'True') }}:
-      - script: |
-          call build.cmd -ci -prepareMachine -test -excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog -c ${{ parameters.configuration }} /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir) ${{ parameters.extraProperties }}
+      - script: build.cmd
+          $(baseArguments)
+          $(targetArguments)
+          $(devArguments)
+          $(buildPassArguments)
+          ${{ parameters.extraProperties }}
+          -test
+          -excludeCIBinarylog
+          /bl:artifacts/log/Release/Test.binlog
         displayName: Run Tests
         workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
@@ -623,7 +630,6 @@ jobs:
       SourceFolder: '$(sourcesPath)'
       Contents: |
         artifacts/log/**
-        artifacts/scenario-tests/**/*.binlog
         artifacts/TestResults/**/*.binlog
         artifacts/TestResults/**/*.diff
         artifacts/TestResults/**/Updated*.txt
