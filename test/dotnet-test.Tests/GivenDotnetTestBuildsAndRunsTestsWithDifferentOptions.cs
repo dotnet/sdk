@@ -87,6 +87,26 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
+        public void RunWithSolutionFilterPathInOtherDirectory_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory($"{testInstance.Path}{Path.DirectorySeparatorChar}SolutionFilter")
+                                    .WithEnableTestingPlatform()
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            // Assert that only TestProject ran
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true), result.StdOut);
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
         public void RunWithInvalidProjectExtension_ShouldReturnOneAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
