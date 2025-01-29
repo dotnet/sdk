@@ -2,7 +2,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
 
 	<PropertyGroup>
-		<TargetFramework>net8</TargetFramework>
+		<TargetFramework>$(CurrentTargetFramework)</TargetFramework>
 		<GenerateTestingPlatformEntryPoint>False</GenerateTestingPlatformEntryPoint>
 		<MicrosoftTestingExtensionsCodeCoverageVersion>17.12.6</MicrosoftTestingExtensionsCodeCoverageVersion>
 		

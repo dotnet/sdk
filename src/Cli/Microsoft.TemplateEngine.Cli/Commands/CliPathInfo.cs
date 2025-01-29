@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 throw new ArgumentException($"{nameof(host.Version)} of {nameof(host)} cannot be null or whitespace.", nameof(host));
             }
 
-            UserProfileDir = GetUserProfileDir(environment);
+            UserProfileDir = CliFolderPathCalculator.DotnetHomePath;
             GlobalSettingsDir = GetGlobalSettingsDir(settingsLocation);
             HostSettingsDir = Path.Combine(GlobalSettingsDir, host.HostIdentifier);
             HostVersionSettingsDir = Path.Combine(GlobalSettingsDir, host.HostIdentifier, host.Version);
@@ -37,13 +37,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         public string HostSettingsDir { get; }
 
         public string HostVersionSettingsDir { get; }
-
-        private static string GetUserProfileDir(IEnvironment environment) => environment.GetEnvironmentVariable(
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? "USERPROFILE"
-                : "HOME")
-            ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
-            ?? throw new NotSupportedException("HOME or USERPROFILE environment variable is not defined, the environment is not supported");
 
         private static string GetGlobalSettingsDir(string? settingsLocation)
         {
