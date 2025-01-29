@@ -39,7 +39,7 @@ variables:
     - name: signEnabled
       value: true
   # Pass sign on the internal project if the, branch is a main or release branch
-  - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranchName'], 'refs/heads/release/'))) }}:
+  - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
     - name: signEnabled
       value: true
   # Do not sign otherwise.
