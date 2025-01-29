@@ -193,6 +193,9 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.ListTestsOption);
             command.Options.Add(TestingPlatformOptions.SolutionOption);
             command.Options.Add(TestingPlatformOptions.DirectoryOption);
+            command.Options.Add(TestingPlatformOptions.NoAnsiOption);
+            command.Options.Add(TestingPlatformOptions.NoProgressOption);
+            command.Options.Add(TestingPlatformOptions.OutputOption);
 
             return command;
         }

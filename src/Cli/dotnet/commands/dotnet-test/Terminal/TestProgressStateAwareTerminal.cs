@@ -16,7 +16,7 @@ internal sealed partial class TestProgressStateAwareTerminal : IDisposable
     /// <summary>
     /// Protects access to state shared between the logger callbacks and the rendering thread.
     /// </summary>
-    private readonly Lock _lock = new();
+    private readonly object _lock = Console.Out;
 
     private readonly ITerminal _terminal;
     private readonly Func<bool?> _showProgress;

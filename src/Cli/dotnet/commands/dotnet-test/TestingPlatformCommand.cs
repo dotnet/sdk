@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Cli
                 _args = [.. parseResult.UnmatchedTokens];
                 _isHelp = ContainsHelpOption(parseResult.GetArguments());
 
-                InitializeOutput(degreeOfParallelism);
+                InitializeOutput(degreeOfParallelism, parseResult);
 
                 bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
                 if (_isHelp)
@@ -100,14 +100,17 @@ namespace Microsoft.DotNet.Cli
             };
         }
 
-        private void InitializeOutput(int degreeOfParallelism)
+        private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult)
         {
             var console = new SystemConsole();
+            var showPassedTests = parseResult.GetValue<OutputOptions>(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
+            var noProgress = parseResult.HasOption(TestingPlatformOptions.NoProgressOption);
+            var noAnsi = parseResult.HasOption(TestingPlatformOptions.NoAnsiOption);
             _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
             {
-                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1" ? () => true : () => false,
-                ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
-                UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
+                ShowPassedTests = () => showPassedTests,
+                ShowProgress = () => !noProgress,
+                UseAnsi = !noAnsi,
                 ShowAssembly = true,
                 ShowAssemblyStartAndComplete = true,
             });
