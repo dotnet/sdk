@@ -235,9 +235,10 @@ public class EndToEndTests : IDisposable
             Config = builtImage.Config,
             ImageDigest = builtImage.ImageDigest,
             ImageSha = builtImage.ImageSha,
-            ImageSize = builtImage.ImageSize,
             Manifest = builtImage.Manifest,
+            ManifestDigest = builtImage.ManifestDigest,
             ManifestMediaType = SchemaTypes.OciManifestV1,
+            Layers = builtImage.Layers
         };
 
         return ociImage;

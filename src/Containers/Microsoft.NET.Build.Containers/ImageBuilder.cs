@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -86,9 +87,10 @@ internal sealed class ImageBuilder
             Config = imageJsonStr,
             ImageDigest = imageDigest,
             ImageSha = imageSha,
-            ImageSize = imageSize,
-            Manifest = newManifest,
-            ManifestMediaType = ManifestMediaType
+            Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
+            ManifestDigest = newManifest.GetDigest(),
+            ManifestMediaType = ManifestMediaType,
+            Layers = _manifest.Layers
         };
     }
 

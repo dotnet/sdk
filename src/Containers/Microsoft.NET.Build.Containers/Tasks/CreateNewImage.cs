@@ -170,9 +170,9 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
-        GeneratedContainerManifest = JsonSerializer.Serialize(builtImage.Manifest);
+        GeneratedContainerManifest = builtImage.Manifest;
         GeneratedContainerConfiguration = builtImage.Config;
-        GeneratedContainerDigest = builtImage.Manifest.GetDigest();
+        GeneratedContainerDigest = builtImage.ManifestDigest;
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();

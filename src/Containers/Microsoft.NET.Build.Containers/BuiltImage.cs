@@ -24,19 +24,24 @@ internal readonly struct BuiltImage
     internal required string ImageSha { get; init; }
 
     /// <summary>
-    /// Gets image size.
-    /// </summary>
-    internal required long ImageSize { get; init; }
-
-    /// <summary>
     /// Gets image manifest.
     /// </summary>
-    internal required ManifestV2 Manifest { get; init; }
+    internal required string Manifest { get; init; } 
+
+    /// <summary>
+    /// Gets manifest digest.
+    /// </summary>
+    internal required string ManifestDigest { get; init; }
 
     /// <summary>
     /// Gets manifest mediaType.
     /// </summary>
     internal required string ManifestMediaType { get; init; }
+
+    /// <summary>
+    /// Gets image layers.
+    /// </summary>
+    internal required List<ManifestLayer> Layers { get; init; }
 
     /// <summary>
     /// Gets layers descriptors.
@@ -45,7 +50,7 @@ internal readonly struct BuiltImage
     {
         get
         {
-            List<ManifestLayer> layersNode = Manifest.Layers ?? throw new NotImplementedException("Tried to get layer information but there is no layer node?");
+            List<ManifestLayer> layersNode = Layers ?? throw new NotImplementedException("Tried to get layer information but there is no layer node?");
             foreach (ManifestLayer layer in layersNode)
             {
                 yield return new(layer.mediaType, layer.digest, layer.size);

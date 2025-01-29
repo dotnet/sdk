@@ -279,7 +279,7 @@ internal sealed class DockerCli
         }
         else
         {
-            throw new ArgumentException(Resource.FormatString(nameof(Strings.UnsupportedMediaTypeForTarball), image.Manifest.MediaType));
+            throw new ArgumentException(Resource.FormatString(nameof(Strings.UnsupportedMediaTypeForTarball), image.ManifestMediaType));
         }
     }
 
@@ -441,12 +441,9 @@ internal sealed class DockerCli
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        string manifestContent = JsonSerializer.SerializeToNode(image.Manifest)!.ToJsonString();
-        string manifestDigest = image.Manifest.GetDigest();
-
         // 1. add manifest to blobs
-        string manifestPath = $"{_blobsPath}/{manifestDigest.Substring("sha256:".Length)}";
-        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(manifestContent)))
+        string manifestPath = $"{_blobsPath}/{image.ManifestDigest.Substring("sha256:".Length)}";
+        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Manifest)))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, manifestPath)
             {
@@ -467,8 +464,8 @@ internal sealed class DockerCli
                 new PlatformSpecificOciManifest
                 {
                     mediaType = SchemaTypes.OciManifestV1,
-                    size = manifestContent.Length,
-                    digest = manifestDigest,
+                    size = image.Manifest.Length,
+                    digest = image.ManifestDigest,
                     annotations = new Dictionary<string, string> { { "org.opencontainers.image.ref.name", $"{destinationReference.Repository}:{destinationReference.Tags[0]}" } }
                 }
             ]
