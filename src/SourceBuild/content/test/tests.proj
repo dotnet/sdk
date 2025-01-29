@@ -4,9 +4,12 @@
     <_RunScenarioTests>true</_RunScenarioTests>
 
     <!-- Skip scenario tests if the host architecture is different from the target architecture since the tests
-        require the ability to execute the built SDK. But the CLI is not capable of running on a host with a
-        different architecture (i.e. "cannot execute binary file: Exec format error"). -->
-    <_RunScenarioTests Condition="'$(BuildArchitecture.ToLowerInvariant())' != '$(TargetArchitecture.ToLowerInvariant())'">false</_RunScenarioTests>
+         require the ability to execute the built SDK. The dotnet target is not capable of running on a host with a
+         different architecture if the host doesn't have an emulation layer for the target. (i.e. "cannot execute
+         binary file: Exec format error"). -->
+    <_RunScenarioTests Condition="'$(BuildArchitecture.ToLowerInvariant())' != '$(TargetArchitecture.ToLowerInvariant())' and
+                                  '$(TargetOS)' != 'windows' and
+                                  '$(TargetOS)' != 'osx'">false</_RunScenarioTests>
 
     <!-- Skip scenario tests if the portable OS (determined from the host machine) is different from the target OS
         since the tests require the ability to execute the built SDK. An example of where this would be disabled is
@@ -20,9 +23,11 @@
   <ItemGroup>
     <!-- Shared tests - applicable to unified-build and source-build. -->
     <ProjectReference Include="Microsoft.DotNet.Tests\Microsoft.DotNet.Tests.csproj" />
+
     <!-- Source-build specific tests. -->
     <ProjectReference Include="Microsoft.DotNet.SourceBuild.Tests\Microsoft.DotNet.SourceBuild.Tests.csproj"
                       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+
     <!-- Unified-build specific tests. -->
     <!-- TODO: Re-enable the asset comparison tests when building in the final stage build with the final merged manifest as an input.
                Disabling the tests meanwhile as the current mechanism doesn't work with unique official build ids for which there is no
