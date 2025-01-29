@@ -11,6 +11,8 @@ namespace Microsoft.DotNet.Watch
 {
     internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable, IStaticAssetChangeApplierProvider
     {
+        private readonly record struct ProjectKey(string projectPath, string targetFramework);
+
         // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
         private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
 
@@ -23,11 +25,11 @@ namespace Microsoft.DotNet.Watch
         [GeneratedRegex(@"Login to the dashboard at (?<url>.*)\s*$", RegexOptions.Compiled)]
         private static partial Regex GetAspireDashboardUrlRegex();
 
-        private readonly object _serversGuard = new();
-        private readonly Dictionary<ProjectGraphNode, BrowserRefreshServer?> _servers = [];
+        private readonly Lock _serversGuard = new();
+        private readonly Dictionary<ProjectKey, BrowserRefreshServer?> _servers = [];
 
         // interlocked
-        private ImmutableHashSet<ProjectGraphNode> _browserLaunchAttempted = [];
+        private ImmutableHashSet<ProjectKey> _browserLaunchAttempted = [];
 
         public async ValueTask DisposeAsync()
         {
@@ -48,6 +50,9 @@ namespace Microsoft.DotNet.Watch
             }));
         }
 
+        private static ProjectKey GetProjectKey(ProjectGraphNode projectNode)
+            => new(projectNode.ProjectInstance.FullPath, projectNode.GetTargetFramework());
+
         /// <summary>
         /// A single browser refresh server is created for each project that supports browser launching.
         /// When the project is rebuilt we reuse the same refresh server and browser instance.
@@ -63,13 +68,15 @@ namespace Microsoft.DotNet.Watch
             BrowserRefreshServer? server;
             bool hasExistingServer;
 
+            var key = GetProjectKey(projectNode);
+
             lock (_serversGuard)
             {
-                hasExistingServer = _servers.TryGetValue(projectNode, out server);
+                hasExistingServer = _servers.TryGetValue(key, out server);
                 if (!hasExistingServer)
                 {
                     server = IsServerSupported(projectNode) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
-                    _servers.Add(projectNode, server);
+                    _servers.Add(key, server);
                 }
             }
 
@@ -108,9 +115,11 @@ namespace Microsoft.DotNet.Watch
 
         public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)
         {
+            var key = GetProjectKey(projectNode);
+
             lock (_serversGuard)
             {
-                return _servers.TryGetValue(projectNode, out server) && server != null;
+                return _servers.TryGetValue(key, out server) && server != null;
             }
         }
 
@@ -156,7 +165,7 @@ namespace Microsoft.DotNet.Watch
                 matchFound = true;
 
                 if (projectOptions.IsRootProject &&
-                    ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode))
+                    ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), GetProjectKey(projectNode)))
                 {
                     // first build iteration of a root project:
                     var launchUrl = GetLaunchUrl(launchProfile.LaunchUrl, match.Groups["url"].Value);

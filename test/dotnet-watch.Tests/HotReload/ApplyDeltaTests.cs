@@ -383,6 +383,28 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
+        public async Task BlazorWasm_Restart()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
+                .WithSource();
+
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.ReadKeyFromStdin | TestFlags.MockBrowser);
+
+            await App.AssertWaitingForChanges();
+
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+
+            // Browser is launched based on blazor-devserver output "Now listening on: ...".
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+
+            App.SendControlR();
+
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Reloading browser.");
+        }
+
+        [Fact]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")

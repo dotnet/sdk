@@ -57,6 +57,7 @@ namespace Microsoft.DotNet.Watch
                 Context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
+            await using var browserConnector = new BrowserConnector(Context);
             using var fileWatcher = new FileWatcher(Context.Reporter);
 
             for (var iteration = 0; !shutdownCancellationToken.IsCancellationRequested; iteration++)
@@ -98,7 +99,6 @@ namespace Microsoft.DotNet.Watch
                         Context.Reporter.Verbose("Using Aspire process launcher.");
                     }
 
-                    await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
                     compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, shutdownCancellationToken);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);

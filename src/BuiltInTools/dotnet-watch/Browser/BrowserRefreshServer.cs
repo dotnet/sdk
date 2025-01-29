@@ -21,12 +21,15 @@ namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// Communicates with aspnetcore-browser-refresh.js loaded in the browser.
+    /// Associated with a project instance.
     /// </summary>
     internal sealed class BrowserRefreshServer : IAsyncDisposable, IStaticAssetChangeApplier
     {
         private static readonly ReadOnlyMemory<byte> s_reloadMessage = Encoding.UTF8.GetBytes("Reload");
         private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
+        private static bool? s_lazyTlsSupported;
 
         private readonly List<BrowserConnection> _activeConnections = [];
         private readonly RSA _rsa;
@@ -326,16 +329,25 @@ namespace Microsoft.DotNet.Watch
 
         private async Task<bool> SupportsTlsAsync()
         {
+            var result = s_lazyTlsSupported;
+            if (result.HasValue)
+            {
+                return result.Value;
+            }
+
             try
             {
                 using var process = Process.Start(Options.MuxerPath, "dev-certs https --check --quiet");
                 await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
-                return process.ExitCode == 0;
+                result = process.ExitCode == 0;
             }
             catch
             {
-                return false;
+                result = false;
             }
+
+            s_lazyTlsSupported = result;
+            return result.Value;
         }
 
         public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
