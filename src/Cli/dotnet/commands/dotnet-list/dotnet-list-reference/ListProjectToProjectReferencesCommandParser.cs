@@ -20,8 +20,6 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new CliCommand("reference", LocalizableStrings.AppFullName);
 
-            command.Arguments.Add(ReferenceListCommandParser.Argument);
-
             command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
 
             return command;

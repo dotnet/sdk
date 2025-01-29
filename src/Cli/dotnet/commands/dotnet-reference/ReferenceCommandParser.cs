@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-reference";
 
-        public static readonly CliOption<string> ProjectOption = new CliOption<string>(CommonLocalizableStrings.ProjectArgumentName)
+        public static readonly CliOption<string> ProjectOption = new CliOption<string>("--project")
         {
             Description = CommonLocalizableStrings.ProjectArgumentDescription
         };

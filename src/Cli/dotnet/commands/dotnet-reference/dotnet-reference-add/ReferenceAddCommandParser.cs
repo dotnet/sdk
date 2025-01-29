@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Reference.Add;
 using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Add.LocalizableStrings;
@@ -13,7 +14,12 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ProjectPathArgumentName)
         {
             Description = LocalizableStrings.ProjectPathArgumentDescription,
-            Arity = ArgumentArity.OneOrMore
+            Arity = ArgumentArity.OneOrMore,
+            CustomParser = arguments => {
+                var result = arguments.Tokens.TakeWhile(t => File.Exists(t.Value));
+                arguments.OnlyTake(result.Count());
+                return result.Select(t => t.Value);
+            }
         };
 
         public static readonly CliOption<string> FrameworkOption = new CliOption<string>("--framework", "-f")
