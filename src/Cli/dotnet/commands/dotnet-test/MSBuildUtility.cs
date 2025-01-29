@@ -20,7 +20,19 @@ namespace Microsoft.DotNet.Cli
 
             SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
 
-            // TO DO: for the case of .slnf file, we need to pass the solution file (.sln) path in order to build/restore the whole solution
+            if (solutionFilePath.HasExtension(".slnf"))
+            {
+                string solution = SlnFileFactory.GetSolutionPathFromFilteredSolutionFile(solutionFilePath);
+
+                // Resolve the solution path relative to the .slnf file directory
+                string slnfDirectory = Path.GetDirectoryName(solutionFilePath);
+                string solutionFullPath = Path.GetFullPath(solution, slnfDirectory);
+                rootDirectory = Path.GetDirectoryName(solutionFullPath);
+
+                // Use the solution file path instead of the filtered solution file path for building the solution
+                solutionFilePath = solutionFullPath;
+            }
+
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
                 solutionFilePath,
                 projectCollection,

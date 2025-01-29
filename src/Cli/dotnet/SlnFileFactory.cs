@@ -94,7 +94,8 @@ namespace Microsoft.DotNet.Tools.Common
                     .Select(project => project.GetString())
                     .ToArray();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 throw new GracefulException(
                     CommonLocalizableStrings.InvalidSolutionFormatString,
                     filteredSolutionPath, ex.Message);
@@ -125,6 +126,24 @@ namespace Microsoft.DotNet.Tools.Common
             }
 
             return filteredSolution;
+        }
+
+        public static string GetSolutionPathFromFilteredSolutionFile(string filteredSolutionPath)
+        {
+            try
+            {
+                using JsonDocument jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath));
+                JsonElement jsonElement = jsonDocument.RootElement;
+                JsonElement filteredSolutionJsonElement = jsonElement.GetProperty("solution");
+                string originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
+                return originalSolutionPath;
+            }
+            catch (Exception ex)
+            {
+                throw new GracefulException(
+                    CommonLocalizableStrings.InvalidSolutionFormatString,
+                    filteredSolutionPath, ex.Message);
+            }
         }
     }
 }
