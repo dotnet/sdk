@@ -13,11 +13,9 @@
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildOS)' == 'windows'">
-    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'false'">
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(EnableIBCOptimization)' != 'true'">
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName placeholder</BuildArgs>
