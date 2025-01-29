@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
@@ -27,7 +26,6 @@ namespace Microsoft.DotNet.Cli
 
         public bool RunMSBuild(BuildOptions buildOptions)
         {
-            Debugger.Launch();
             if (!ValidationUtility.ValidateBuildPathOptions(buildOptions, _output))
             {
                 return false;
