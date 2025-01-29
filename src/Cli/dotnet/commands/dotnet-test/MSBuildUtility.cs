@@ -22,15 +22,7 @@ namespace Microsoft.DotNet.Cli
 
             if (solutionFilePath.HasExtension(".slnf"))
             {
-                string solution = SlnFileFactory.GetSolutionPathFromFilteredSolutionFile(solutionFilePath);
-
-                // Resolve the solution path relative to the .slnf file directory
-                string slnfDirectory = Path.GetDirectoryName(solutionFilePath);
-                string solutionFullPath = Path.GetFullPath(solution, slnfDirectory);
-                rootDirectory = Path.GetDirectoryName(solutionFullPath);
-
-                // Use the solution file path instead of the filtered solution file path for building the solution
-                solutionFilePath = solutionFullPath;
+                solutionFilePath = HandleFilteredSolutionFile(solutionFilePath, out rootDirectory);
             }
 
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
@@ -109,6 +101,19 @@ namespace Microsoft.DotNet.Cli
                 });
 
             return allProjects;
+        }
+
+        private static string HandleFilteredSolutionFile(string solutionFilterFilePath, out string rootDirectory)
+        {
+            string solution = SlnFileFactory.GetSolutionPathFromFilteredSolutionFile(solutionFilterFilePath);
+
+            // Resolve the solution path relative to the .slnf file directory
+            string solutionFilterDirectory = Path.GetDirectoryName(solutionFilterFilePath);
+            string solutionFullPath = Path.GetFullPath(solution, solutionFilterDirectory);
+            rootDirectory = Path.GetDirectoryName(solutionFullPath);
+
+            // Return the resolved solution file path
+            return solutionFullPath;
         }
 
         internal static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
