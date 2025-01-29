@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
@@ -228,8 +229,14 @@ namespace Microsoft.DotNet.Tools.Test
                 noRestore,
                 msbuildPath);
 
-            // Apply environment variables provided by the user via --environment (-e) parameter, if present
-            SetEnvironmentVariablesFromParameters(testCommand, result);
+            // Apply environment variables provided by the user via --environment (-e) option, if present
+            if (result.GetValue(CommonOptions.EnvOption) is { } environmentVariables)
+            {
+                foreach (var (name, value) in environmentVariables)
+                {
+                    testCommand.EnvironmentVariable(name, value);
+                }
+            }
 
             // Set DOTNET_PATH if it isn't already set in the environment as it is required
             // by the testhost which uses the apphost feature (Windows only).
@@ -301,31 +308,6 @@ namespace Microsoft.DotNet.Tools.Test
             }
 
             return false;
-        }
-
-        private static void SetEnvironmentVariablesFromParameters(TestCommand testCommand, ParseResult parseResult)
-        {
-            Option<IEnumerable<string>> option = TestCommandParser.EnvOption;
-
-            if (parseResult.GetResult(option) is null)
-            {
-                return;
-            }
-
-            foreach (string env in parseResult.GetValue(option))
-            {
-                string name = env;
-                string value = string.Empty;
-
-                int equalsIndex = env.IndexOf('=');
-                if (equalsIndex > 0)
-                {
-                    name = env.Substring(0, equalsIndex);
-                    value = env.Substring(equalsIndex + 1);
-                }
-
-                testCommand.EnvironmentVariable(name, value);
-            }
         }
 
         /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>

@@ -71,6 +71,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Diagnostics.Tracing.EventSource.IsSupported"": false,
             ""System.Drawing.Design.UITypeEditor.IsSupported"": true,
             ""System.Globalization.Invariant"": true,
+            ""System.TimeZoneInfo.Invariant"": true,
             ""System.Globalization.PredefinedCulturesOnly"": true,
             ""System.GC.Concurrent"": false,
             ""System.GC.Server"": true,

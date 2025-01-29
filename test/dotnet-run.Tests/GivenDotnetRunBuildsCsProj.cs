@@ -836,13 +836,32 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
-        public void ItIncludesCommandArgumentsSpecifiedInLaunchSettings()
+        public void EnvVariablesSpecifiedInLaunchProfileOverrideImplicitlySetVariables()
         {
-            var expectedValue = "TestAppCommandLineArguments";
-            var secondExpectedValue = "SecondTestAppCommandLineArguments";
             var testAppName = "TestAppWithLaunchSettings";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
+
+            // Profile2 defines env variable DOTNET_LAUNCH_PROFILE=XYZ and ASPNETCORE_URLS=XYZ
+
+            new DotnetCommand(Log, "run", "-lp", "Profile2")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining("env: DOTNET_LAUNCH_PROFILE=XYZ")
+               .And
+               .HaveStdOutContaining("env: ASPNETCORE_URLS=XYZ");
+        }
+
+        [Fact]
+        public void ItIncludesCommandArgumentsSpecifiedInLaunchSettings()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            // launchSettings.json specifies commandLineArgs="TestAppCommandLineArguments SecondTestAppCommandLineArguments"
 
             new DotnetCommand(Log, "run")
                .WithWorkingDirectory(testInstance.Path)
@@ -850,9 +869,28 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Should()
                .Pass()
                .And
-               .HaveStdOutContaining(expectedValue)
+               .HaveStdOutContaining("TestAppCommandLineArguments")
                .And
-               .HaveStdOutContaining(secondExpectedValue);
+               .HaveStdOutContaining("SecondTestAppCommandLineArguments");
+        }
+
+        [Fact]
+        public void ItIgnoresCommandArgumentsSpecifiedInLaunchSettings()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            // launchSettings.json specifies commandLineArgs="TestAppCommandLineArguments SecondTestAppCommandLineArguments"
+
+            new DotnetCommand(Log, "run", "--no-launch-profile-arguments")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .NotHaveStdOutContaining("TestAppCommandLineArguments")
+               .And
+               .NotHaveStdOutContaining("SecondTestAppCommandLineArguments");
         }
 
         [Fact]
@@ -873,6 +911,75 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .NotHaveStdOutContaining(expectedValue)
                .And
                .NotHaveStdOutContaining(secondExpectedValue);
+        }
+
+        [Fact]
+        public void ItIncludesApplicationUrlSpecifiedInLaunchSettings()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining("env: ASPNETCORE_URLS=http://localhost:5000");
+        }
+
+        [Theory]
+        [InlineData("-e")]
+        [InlineData("--environment")]
+        public void EnvOptionOverridesCommandArgumentsSpecifiedInLaunchSettings(string optionName)
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            new DotnetCommand(Log, "run", optionName, "MyCoolEnvironmentVariableKey=OverriddenEnvironmentVariableValue")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining("env: MyCoolEnvironmentVariableKey=OverriddenEnvironmentVariableValue");
+        }
+
+        [Fact]
+        public void EnvOptionOverridesImplicitlySetVariables()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            // 
+            var dotnetLaunchProfile = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? "DOTNET_LAUNCH_profile"
+                : "DOTNET_LAUNCH_PROFILE";
+
+            new DotnetCommand(Log, "run", "-e", $"{dotnetLaunchProfile}=1", "-e", "ASPNETCORE_URLS=2")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining("env: DOTNET_LAUNCH_PROFILE=1")
+               .And
+               .HaveStdOutContaining("env: ASPNETCORE_URLS=2");
+        }
+
+        [Fact]
+        public void EnvOptionNotAppliedToBuild()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+
+            new DotnetCommand(Log, "run", "-e", "Configuration=XYZ")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining("env: Configuration=XYZ");
         }
     }
 }

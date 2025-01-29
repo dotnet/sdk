@@ -10,10 +10,10 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadSearchVersionsCommandParser
     {
-        public static readonly Argument<string> WorkloadVersionArgument =
+        public static readonly Argument<IEnumerable<string>> WorkloadVersionArgument =
             new(LocalizableStrings.WorkloadVersionArgument)
             {
-                Arity = ArgumentArity.ZeroOrOne,
+                Arity = ArgumentArity.ZeroOrMore,
                 Description = LocalizableStrings.WorkloadVersionArgumentDescription
             };
 
@@ -60,9 +60,9 @@ namespace Microsoft.DotNet.Cli
             command.Validators.Add(result =>
             {
                 var versionArgument = result.GetValue(WorkloadVersionArgument);
-                if (versionArgument is not null && !WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument))
+                if (versionArgument is not null && !versionArgument.All(v => v.Contains('@')) && !WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument.SingleOrDefault(defaultValue: string.Empty)))
                 {
-                    result.AddError(string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, versionArgument));
+                    result.AddError(string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
                 }
             });
 

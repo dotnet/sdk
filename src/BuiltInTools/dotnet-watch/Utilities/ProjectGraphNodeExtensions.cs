@@ -36,6 +36,9 @@ internal static class ProjectGraphNodeExtensions
     public static string? GetOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue("TargetPath") is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(projectNode.ProjectInstance.Directory, path)) : null;
 
+    public static string GetAssemblyName(this ProjectGraphNode projectNode)
+        => projectNode.ProjectInstance.GetPropertyValue("TargetName");
+
     public static string? GetIntermediateOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue("IntermediateOutputPath") is { Length: >0 } path ? Path.Combine(projectNode.ProjectInstance.Directory, path) : null;
 

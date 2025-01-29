@@ -3,7 +3,11 @@
 
 #nullable disable
 
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -259,6 +263,97 @@ namespace Microsoft.NET.Build.Tests
                 .Execute()
                 .Should()
                 .Pass();
+        }
+
+        //  Should also run on full framework, but needs the right version of NuGet, which isn't on CI yet
+        [CoreMSBuildOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PlatformPackagesCanBePruned(bool prunePackages)
+        {
+            var referencedProject = new TestProject("ReferencedProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = false
+            };
+            referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "8.0.0"));
+
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = prunePackages.ToString();
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: prunePackages.ToString());
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand.Execute().Should().Pass();
+
+            var assetsFilePath = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "project.assets.json");
+            var lockFile = LockFileUtilities.GetLockFile(assetsFilePath, new NullLogger());
+            var lockFileTarget = lockFile.GetTarget(NuGetFramework.Parse(ToolsetInfo.CurrentTargetFramework), runtimeIdentifier: null);
+            
+            if (prunePackages)
+            {
+                lockFileTarget.Libraries.Should().NotContain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                lockFileTarget.Libraries.Should().Contain(library => library.Name.Equals("System.Text.Json", StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        [Fact]
+        public void TransitiveFrameworkReferencesDoNotAffectPruning()
+        {
+            var referencedProject = new TestProject("ReferencedProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = false
+            };
+            referencedProject.PackageReferences.Add(new TestPackageReference("System.Text.Json", "8.0.0"));
+            referencedProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
+
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
+            testProject.ReferencedProjects.Add(referencedProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            new BuildCommand(testAsset).Execute().Should().Pass();
+
+            var getItemsCommand1 = new MSBuildCommand(testAsset, "AddPrunePackageReferences");
+            var itemsResult1 = getItemsCommand1.Execute("-getItem:PrunePackageReference");
+            itemsResult1.Should().Pass();
+
+            var items1 = ParseItemsJson(itemsResult1.StdOut);
+
+            var getItemsCommand2 = new MSBuildCommand(testAsset, "ResolvePackageAssets;AddTransitiveFrameworkReferences;AddPrunePackageReferences");
+            var itemsResult2 = getItemsCommand2.Execute("-getItem:PrunePackageReference");
+            itemsResult2.Should().Pass();
+
+            var items2 = ParseItemsJson(itemsResult2.StdOut);
+
+            items2.Should().BeEquivalentTo(items1);
+
+            static List<KeyValuePair<string,string>> ParseItemsJson(string json)
+            {
+                List<KeyValuePair<string, string>> ret = new();
+                var root = JsonNode.Parse(json);
+                var items = (JsonArray) root["Items"]["PrunePackageReference"];
+                foreach (var item in items)
+                {
+                    ret.Add(new KeyValuePair<string, string>((string)item["Identity"], (string)item["Version"]));
+                }
+                return ret;
+            }
         }
     }
 }

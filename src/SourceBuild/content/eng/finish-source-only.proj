@@ -25,8 +25,13 @@
   <Target Name="ReportSbrpUsage"
           BeforeTargets="Build"
           Condition="'$(ReportSbrpUsage)' == 'true'">
+    <ItemGroup>
+      <ProjectAssetsJsonFile Include="$(ArtifactsDir)**/project.assets.json" />
+      <ProjectAssetsJsonFile Include="$(SrcDir)**/project.assets.json" />
+    </ItemGroup>
+
     <WriteSbrpUsageReport SbrpRepoSrcPath="$(SbrpRepoSrcDir)"
-                          SrcPath="$(SrcDir)"
+                          ProjectAssetsJsons="@(ProjectAssetsJsonFile)"
                           OutputPath="$(ArtifactsLogDir)" />
   </Target>
 

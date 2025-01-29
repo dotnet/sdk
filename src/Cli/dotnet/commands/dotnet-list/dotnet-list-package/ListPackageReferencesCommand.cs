@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.NuGet;
 
 namespace Microsoft.DotNet.Tools.List.PackageReferences
@@ -71,7 +72,7 @@ namespace Microsoft.DotNet.Tools.List.PackageReferences
 
             if (Directory.Exists(resultPath))
             {
-                var possibleSolutionPath = Directory.GetFiles(resultPath, "*.sln", SearchOption.TopDirectoryOnly);
+                string[] possibleSolutionPath = SlnFileFactory.ListSolutionFilesInDirectory(resultPath, false);
 
                 //If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
                 if (possibleSolutionPath.Count() > 1)

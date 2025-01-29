@@ -335,7 +335,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"
                       CompilerOptions="@(DependencyFileCompilerOptions)"
-                      ExcludeFromPublishPackageReferences="@(_ExcludeFromPublishPackageReference)"
                       CompileReferences="@(ResolvedCompileFileDefinitions)"
                       ResolvedNuGetFiles="@(NativeCopyLocalItems);@(ResourceCopyLocalItems);@(RuntimeCopyLocalItems)"
                       UserRuntimeAssemblies="@(UserRuntimeAssembly)"
@@ -600,6 +599,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant"
                                     Condition="'$(InvariantGlobalization)' != ''"
                                     Value="$(InvariantGlobalization)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.TimeZoneInfo.Invariant"
+                                    Condition="'$(InvariantTimezone)' != ''"
+                                    Value="$(InvariantTimezone)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Globalization.Hybrid"
