@@ -146,18 +146,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.14.0-preview.1.14</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.14.0-preview.1.14</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.14.0-preview.1.14</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.14.0-preview.1.14</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.14.0-preview.1.14</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.14.0-preview.1.14</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.14.0-preview.1.14</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.14.0-preview.1.14</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.14.0-preview.1.14</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.14.0-preview.1.14</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.14.0-preview.1.14</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.14.0-preview.1.14</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.14.0-preview.1.15</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.14.0-preview.1.15</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.14.0-preview.1.15</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.14.0-preview.1.15</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.14.0-preview.1.15</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.14.0-preview.1.15</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.14.0-preview.1.15</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.14.0-preview.1.15</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.14.0-preview.1.15</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.14.0-preview.1.15</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.14.0-preview.1.15</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.14.0-preview.1.15</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
