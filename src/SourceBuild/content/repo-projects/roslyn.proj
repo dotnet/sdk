@@ -2,7 +2,9 @@
 
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
-    <DoNotBuildTests>true</DoNotBuildTests>
+
+    <!-- Tests are failing to build: https://github.com/dotnet/roslyn/issues/76960 -->
+    <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
 
     <!-- Roslyn's build.cmd adds -build automatically. On non-windows, use the default -->
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore</BuildActions>

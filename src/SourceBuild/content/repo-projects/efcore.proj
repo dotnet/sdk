@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <DoNotBuildTests>true</DoNotBuildTests>
+    <!-- Tests are failing to build: https://github.com/dotnet/efcore/issues/35547 -->
+    <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
   </PropertyGroup>
 
   <ItemGroup>
