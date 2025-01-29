@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
@@ -379,7 +380,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         static readonly List<string> nugetRoots = new()
         {
             TestContext.Current.NuGetCachePath,
-            Path.Combine(FileConstants.UserProfileFolder, ".dotnet", "NuGetFallbackFolder")
+            Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder")
         };
 
         static string RelativeNuGetPath(string absoluteNuGetPath)

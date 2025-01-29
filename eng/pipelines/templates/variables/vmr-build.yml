@@ -4,6 +4,11 @@ parameters:
   type: string
   default: ''
 
+- name: desiredSigning
+  displayName: Signed/unsigned/default signing parameters
+  type: string
+  default: ''
+
 variables:
 - ${{ if ne(parameters.vmrBranch, '') }}:
   - name: VmrBranch
@@ -17,6 +22,33 @@ variables:
 
 - name: defaultContainerOptions
   value: --privileged
+
+- ${{ if eq(parameters.desiredSigning, 'Signed') }}:
+  - name: signEnabled
+    value: true
+- ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
+  - name: signEnabled
+    value: false
+- ${{ if or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
+  # Always sign on the public project (will be dry-run signing)
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: signEnabled
+      value: true
+  # Always sign in pull requests (dry run)
+  - ${{ elseif eq(variables['Build.Reason'], 'PullRequest') }}:
+    - name: signEnabled
+      value: true
+  # Pass sign on the internal project if the, branch is a main or release branch
+  - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+    - name: signEnabled
+      value: true
+  # Do not sign otherwise.
+  - ${{ else }}:
+    - name: signEnabled
+      value: false
+- ${{ else }}:
+  - name: signEnabled
+    value: false
 
 - name: almaLinuxContainerName
   value: almaLinuxContainer
