@@ -424,7 +424,7 @@ internal sealed class Registry
                 await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             throw new UnableToDownloadFromRepositoryException(repository);
         }

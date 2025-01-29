@@ -238,7 +238,7 @@ internal static class ContainerBuilder
                 cancellationToken)).ConfigureAwait(false);
             logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference, destinationImageReference.RemoteRegistry.RegistryName);
         }
-        catch (UnableToDownloadFromRepositoryException e)
+        catch (UnableToDownloadFromRepositoryException)
         {
             logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
             return 1;
