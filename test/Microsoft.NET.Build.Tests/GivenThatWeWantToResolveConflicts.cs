@@ -116,6 +116,10 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Mvc.Razor", "2.1.0"));
 
+            //  This test relies on a package that would be pruned.  This doesn't seem to be a customer scenario, it looks like it was
+            //  an easier way to test that files that were removed 
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
