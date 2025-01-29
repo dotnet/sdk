@@ -437,7 +437,7 @@
     <comment>{StrBegins="CONTAINER1015: "}</comment>
   </data>
   <data name="UnableToDownloadFromRepository" xml:space="preserve">
-    <value>CONTAINER1018: Unable to download image from the repository '{0}''. Stack trace: {1}</value>
+    <value>CONTAINER1018: Unable to download image from the repository '{0}'.</value>
     <comment>{StrBegins="CONTAINER1018:" }</comment>
   </data>
   <data name="UnableToAccessRepository" xml:space="preserve">
