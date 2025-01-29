@@ -2,7 +2,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
 
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFramework>$(CurrentTargetFramework)</TargetFramework>
 		<OutputType>Exe</OutputType>
 
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -16,5 +16,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />
+		<PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="$(MicrosoftTestingPlatformVersion)" />
 	</ItemGroup>
 </Project>

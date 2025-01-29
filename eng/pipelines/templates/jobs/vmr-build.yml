@@ -607,7 +607,6 @@ jobs:
       SourceFolder: '$(sourcesPath)'
       Contents: |
         artifacts/log/**
-        artifacts/scenario-tests/**/*.binlog
         artifacts/TestResults/**/*.binlog
         artifacts/TestResults/**/*.diff
         artifacts/TestResults/**/Updated*.txt
