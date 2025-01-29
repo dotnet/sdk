@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
-    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\int\</SdkInternalLayoutPath>
+    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\i\</SdkInternalLayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
 
