@@ -369,6 +369,7 @@ jobs:
         versionSpec: 20.x
 
     - ${{ if eq(variables['_EnableDacSigning'], 'true') }}:
+      # TODO: Once we turn off the dotnet/runtime official build, move these templates into the VMR's eng folder.
       - template: ${{ variables['Build.SourcesDirectory'] }}/src/runtime/eng/pipelines/coreclr/templates/install-diagnostic-certs.yml
         parameters:
           isOfficialBuild: true
@@ -377,6 +378,7 @@ jobs:
           - 'dotnet-diagnostics-esrp-pki-onecert'
           vaultName: 'clrdiag-esrp-id'
           azureSubscription: 'diagnostics-esrp-kvcertuser'
+          scriptRoot: '$(Build.SourcesDirectory)/src/runtime'
 
     - script: build.cmd
         $(baseArguments)
@@ -389,9 +391,11 @@ jobs:
       workingDirectory: ${{ variables.sourcesPath }}
 
     - ${{ if eq(variables['_EnableDacSigning'], 'true') }}:
+      # TODO: Once we turn off the dotnet/runtime official build, move these templates into the VMR's eng folder.
       - template: ${{ variables['Build.SourcesDirectory'] }}/src/runtime/eng/pipelines/coreclr/templates/remove-diagnostic-certs.yml
         parameters:
           isOfficialBuild: true
+          scriptRoot: '$(Build.SourcesDirectory)/src/runtime'
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: build.cmd
