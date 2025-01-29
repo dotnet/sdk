@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <DoNotBuildTests>true</DoNotBuildTests>
+  </PropertyGroup>
+
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="runtime" />

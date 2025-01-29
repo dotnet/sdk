@@ -30,6 +30,7 @@
     <BuildArgs>$(BuildArgs) /p:EnablePackageValidation=false</BuildArgs>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <DoNotBuildTests>true</DoNotBuildTests>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">

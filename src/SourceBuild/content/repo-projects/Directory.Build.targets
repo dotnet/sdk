@@ -459,6 +459,9 @@
            ProcessFrameworkReferences not be able to restore for the given RID.  -->
       <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true' and '@(TransitiveRepositoryReference->AnyHaveMetadataValue('Identity', 'runtime'))' == 'true'">$(BuildArgs) /p:DotNetBuildTargetRidOnly=true</BuildArgs>
 
+      <!-- Only pass when enabled to reduce command line noise. -->
+      <BuildArgs Condition="'$(DotNetBuildTests)' == 'true' and '$(DoNotBuildTests)' != 'true'">$(BuildArgs) /p:DotNetBuildTests=true</BuildArgs>
+
       <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
     </PropertyGroup>
   </Target>

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+    <DoNotBuildTests>true</DoNotBuildTests>
   </PropertyGroup>
 
   <ItemGroup>
