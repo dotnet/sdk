@@ -1,3 +1,4 @@
+<!-- Use TreatAsLocalProperty to make the globally passed-in OfficialBuildId property mutable. -->
 <Project TreatAsLocalProperty="OfficialBuildId">
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
