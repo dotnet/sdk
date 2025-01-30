@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli
 
             if (solutionFilePath.HasExtension(".slnf"))
             {
-                solutionFilePath = HandleFilteredSolutionFile(solutionFilePath, out rootDirectory);
+                solutionFilePath = HandleFilteredSolutionFilePath(solutionFilePath, out rootDirectory);
             }
 
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
