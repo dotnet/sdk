@@ -552,7 +552,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             IEnumerable<(PackageSource source, IPackageSearchMetadata package)> accumulativeSearchResults =
                 foundPackagesBySource
-                    .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
+                    .SelectMany(result => result.foundPackages.Select(package => (result.source, package)))
+                    .Distinct();
 
             if (!accumulativeSearchResults.Any())
             {
@@ -570,7 +571,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
                 if (stableVersions.Any())
                 {
-                    return stableVersions.OrderByDescending(r => r.package.Identity.Version).Take(numberOfResults);
+                    var results = stableVersions.OrderByDescending(r => r.package.Identity.Version);
+                    return numberOfResults > 0 /* 0 indicates 'all' */ ? results.Take(numberOfResults) : results;
                 }
             }
 

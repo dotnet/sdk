@@ -96,8 +96,12 @@
     <!-- Pass locations for assets -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
-    <BuildArgs Condition="'$(OfficialBuildId)' != ''">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
+    <BuildArgs Condition="'$(OfficialBuildId)' != '' and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
+    <!-- Add 100 to patch version for Unified Build -->
+    <BuildArgs Condition="'$(OfficialBuildId)' != '' and '$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId.Split('.')[0]).$([MSBuild]::Add($(OfficialBuildId.Split('.')[1]), 100))</BuildArgs>
     <BuildArgs Condition="'$(ForceDryRunSigning)' != ''">$(BuildArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</BuildArgs>
+    <!-- PGO assets by default are "Vertical" visibilty. Each repo will enable the specific artifacts it must publish externally -->
+    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:DefaultArtifactVisibility=Vertical</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -114,8 +118,6 @@
     <TestArgs Condition="'$(UseOfficialBuildVersioning)' != 'false'">$(FlagParameterPrefix)ci</TestArgs>
     <TestArgs>$(TestArgs) $(FlagParameterPrefix)configuration $(Configuration)</TestArgs>
     <TestArgs>$(TestArgs) /bl:artifacts/log/$(Configuration)/Test.binlog</TestArgs>
-
-    <TestCommand>$(BuildScript) $(TestActions) $(TestArgs)</TestCommand>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableExtraDebugging)' == 'true'">
@@ -197,47 +199,13 @@
     <WindowsDesktopSdkOverride Include="Microsoft.Net.Sdk.WindowsDesktop" Group="WINDOWS_DESKTOP" Location="$(ToolsDir)EmptySdk" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
-    <!-- CLI internal version is statically set by us to a version that will never show up in the wild.
-       This ensures we will never restore a public version instead of our source-built version.  We
-       invlude the version number because it is used both by CLI.proj and the core-sdk build and they
-       have to be synced up.  ExtraPackageVersionPropsPackageInfo doesn't work in cli.proj because
-       toolset is between CLI and core-sdk, and the extra package version info is lost.               -->
-  <PropertyGroup>
-    <CliInternalReleaseTag>source</CliInternalReleaseTag>
-    <CliInternalBuildVersion>30000001-1</CliInternalBuildVersion>
-  </PropertyGroup>
-
+  <!-- Additional pseudo-versions that **multiple** repos depend on. -->
   <ItemGroup>
-    <ExtraPackageVersionPropsPackageInfo Include="DotnetCliInternalVersion" Version="3.0.100-$(CliInternalReleaseTag)-$(CliInternalBuildVersion)" />
-  </ItemGroup>
-
-  <!-- Additional pseudo-versions that some repos depend on -->
-  <ItemGroup>
-    <!-- we don't produce the Windows version of this package but that's the one sdk keys off of for the ASP.NET version -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
-    <!-- same thing here for CLI -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64Version" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-    <!-- same thing here for toolset -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-    <!-- same thing here for sdk -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimePackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostwinx64PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
 
-    <!-- Used by windowsdesktop to determine msi version -->
     <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion" Version="%24(MicrosoftWindowsDesktopAppRefPackageVersion)" />
-
-    <!-- Used by installer partition in sdk repo to determine sdk version -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
-
-    <!-- Used by installer partition to determine the non-shipping runtime version -->
-    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreTargetingPackx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-
-    <!-- Used by sdk to determine msbuild version for fsharp -->
-    <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,26 @@
+parameters:
+- name: continueOnError
+  type: boolean
+  default: false
+
+steps:
+- task: DownloadBuildArtifacts@1
+  inputs:
+    artifactName: 'PackageArtifacts'
+    downloadPath: $(Build.ArtifactStagingDirectory)
+    checkDownloadedFiles: true
+  displayName: Download Package Artifacts
+
+# This is necessary whenever we want to publish/restore to an AzDO private feed
+# Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+# otherwise it'll complain about accessing a private feed.
+- task: NuGetAuthenticate@1
+  displayName: 'Authenticate to AzDO Feeds'
+
+- task: PowerShell@2
+  inputs:
+    filePath: eng\common\sdk-task.ps1
+    arguments: -task SigningValidation -restore -msbuildEngine vs
+      /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
+  displayName: Validate Signing of Packages
+  continueOnError: ${{ parameters.continueOnError }}

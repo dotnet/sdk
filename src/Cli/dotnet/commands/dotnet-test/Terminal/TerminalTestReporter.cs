@@ -47,6 +47,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
+    private bool _isHelp;
     private DateTimeOffset? _testExecutionStartTime;
 
     private DateTimeOffset? _testExecutionEndTime;
@@ -147,9 +148,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress = terminalWithProgress;
     }
 
-    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery)
+    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp)
     {
         _isDiscovery = isDiscovery;
+        _isHelp = isHelp;
         _testExecutionStartTime = testStartTime;
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
@@ -189,7 +191,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
 
-        _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+        if (!_isHelp)
+        {
+            _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+        }
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
@@ -757,7 +762,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         _terminalWithProgress.RemoveWorker(assemblyRun.SlotIndex);
 
-        if (!_isDiscovery && _options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
+        if (!_isHelp && !_isDiscovery && _options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
             _terminalWithProgress.WriteToTerminal(terminal => AppendAssemblySummary(assemblyRun, terminal));
         }
