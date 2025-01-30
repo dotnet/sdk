@@ -43,11 +43,6 @@ parameters:
   type: boolean
   default: false
 
-- name: useDevVersions
-  displayName: True when build output uses dev/CI versioning instead of official build versioning
-  type: boolean
-  default: false
-
 - name: sign
   displayName: True when build output should be signed (includes dry runs)
   type: boolean
@@ -208,17 +203,9 @@ jobs:
     - name: targetArguments
       value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
 
-    ### Dev versions variables
-    - ${{ if eq(parameters.useDevVersions, 'True') }}:
-      - name: devArguments
-        value: -dev
-    - ${{ else }}:
-      - name: devArguments
-        value: ''
-
     ### Signing variables
     - ${{ if eq(parameters.sign, 'True') }}:
-      - ${{ if or(eq(parameters.useDevVersions, 'True'), eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+      - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
         # The _SignType variable is used by microbuild installation
         - name: _SignType
           value: ''
@@ -469,10 +456,6 @@ jobs:
           customBuildArgs="$customBuildArgs --use-mono-runtime"
         fi
 
-        if [[ '${{ parameters.useDevVersions }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --dev"
-        fi
-
         if [[ '${{ parameters.sign }}' == 'True' ]] && [[ '${{ parameters.buildSourceOnly }}' != 'True' ]]; then
           customBuildArgs="$customBuildArgs --sign"
           if [[ '$(_SignType)' == 'real' ]] || [[ '$(_SignType)' == 'test' ]]; then
@@ -565,10 +548,6 @@ jobs:
 
           if [[ ! -z '${{ parameters.targetArchitecture }}' ]]; then
             extraBuildProperties="$extraBuildProperties /p:TargetArchitecture=${{ parameters.targetArchitecture }}"
-          fi
-
-          if [[ '${{ parameters.useDevVersions }}' == 'True' ]]; then
-            customBuildArgs="$customBuildArgs --dev"
           fi
 
           if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
