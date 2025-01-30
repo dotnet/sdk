@@ -147,7 +147,7 @@ namespace Microsoft.DotNet.Tools.Common
         {
             try
             {
-                using JsonDocument jsonDocument = JsonDocument.Parse(File.ReadAllText(solutionFilterFilePath));
+                JsonDocument jsonDocument = JsonDocument.Parse(File.ReadAllText(solutionFilterFilePath));
                 return jsonDocument.RootElement;
             }
             catch (Exception ex)
