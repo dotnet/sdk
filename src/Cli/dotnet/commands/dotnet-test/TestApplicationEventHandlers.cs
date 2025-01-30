@@ -8,7 +8,7 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal class TestApplicationsEventHandlers
+    internal sealed class TestApplicationsEventHandlers
     {
         private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions;
         private readonly TerminalTestReporter _output;
