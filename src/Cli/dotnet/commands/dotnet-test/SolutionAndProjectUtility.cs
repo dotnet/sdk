@@ -4,7 +4,7 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
-
+using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -79,14 +79,15 @@ namespace Microsoft.DotNet.Cli
 
         private static string[] GetSolutionFilePaths(string directory)
         {
-            return Directory.EnumerateFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly)
-                .Concat(Directory.EnumerateFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly))
-                .ToArray();
+            string[] solutionFiles = Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly);
+            solutionFiles.AddRange(Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly));
+
+            return solutionFiles;
         }
 
         private static string[] GetSolutionFilterFilePaths(string directory)
         {
-            return Directory.EnumerateFiles(directory, CliConstants.SolutionFilterExtensionPattern, SearchOption.TopDirectoryOnly).ToArray();
+            return Directory.GetFiles(directory, CliConstants.SolutionFilterExtensionPattern, SearchOption.TopDirectoryOnly);
         }
 
         private static string[] GetProjectFilePaths(string directory) => [.. Directory.EnumerateFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly).Where(IsProjectFile)];

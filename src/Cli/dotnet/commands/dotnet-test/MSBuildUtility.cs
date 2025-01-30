@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -13,7 +14,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class MSBuildUtility
     {
-        public static (IEnumerable<Module>, bool) HandleSolution(string solutionFilePath, BuildOptions buildOptions)
+        public static (IEnumerable<Module>, bool) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
         {
             var projectCollection = new ProjectCollection();
             string rootDirectory = SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
@@ -35,7 +36,7 @@ namespace Microsoft.DotNet.Cli
             return (allProjects, isBuiltOrRestored);
         }
 
-        public static (IEnumerable<Module>, bool) HandleProject(string projectFilePath, BuildOptions buildOptions)
+        public static (IEnumerable<Module>, bool) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
         {
             var projectCollection = new ProjectCollection();
             bool isBuiltOrRestored = true;
@@ -91,7 +92,7 @@ namespace Microsoft.DotNet.Cli
             Parallel.ForEach(
                 projects,
                 new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism },
-                (project, state) =>
+                (project) =>
                 {
                     IEnumerable<Module> relatedProjects = SolutionAndProjectUtility.GetProjectPropertiesInternal(project, projectCollection);
                     foreach (var relatedProject in relatedProjects)
@@ -200,7 +201,7 @@ namespace Microsoft.DotNet.Cli
 
         private static string[] GetCommands(bool hasNoRestore, bool hasNoBuild)
         {
-            var commands = new List<string>();
+            var commands = ImmutableArray.CreateBuilder<string>();
 
             if (!hasNoRestore)
             {
@@ -212,7 +213,7 @@ namespace Microsoft.DotNet.Cli
                 commands.Add(CliConstants.BuildCommand);
             }
 
-            return commands.ToArray();
+            return [.. commands];
         }
     }
 }

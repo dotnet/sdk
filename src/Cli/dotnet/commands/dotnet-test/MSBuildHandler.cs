@@ -124,8 +124,8 @@ namespace Microsoft.DotNet.Cli
         private (IEnumerable<Module>, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
         {
             (IEnumerable<Module> allProjects, bool isBuiltOrRestored) = isSolution ?
-                MSBuildUtility.HandleSolution(solutionOrProjectFilePath, buildOptions) :
-                MSBuildUtility.HandleProject(solutionOrProjectFilePath, buildOptions);
+                MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, buildOptions) :
+                MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, buildOptions);
 
             LogProjectProperties(allProjects);
 
@@ -143,11 +143,11 @@ namespace Microsoft.DotNet.Cli
             {
                 Console.WriteLine();
 
-                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.ProjectFullPath}: {module.ProjectPath}");
+                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
                 VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
                 VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
                 VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.TargetPath}: {module.DllOrExePath}");
+                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.TargetPath}: {module.TargetPath}");
                 VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
 
                 Console.WriteLine();

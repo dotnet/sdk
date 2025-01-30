@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli
             var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
             var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
             var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
-            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.DllOrExePath, tfm, arch, executionId);
+            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.TargetPath, tfm, arch, executionId);
             _executions[testApplication] = appInfo;
             _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
 
@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                _output.AssemblyRunCompleted(testApplication.Module.DllOrExePath ?? testApplication.Module.ProjectPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
+                _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
             }
 
             if (!VSTestTrace.TraceEnabled) return;
