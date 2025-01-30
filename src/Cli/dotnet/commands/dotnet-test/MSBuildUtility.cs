@@ -104,7 +104,6 @@ namespace Microsoft.DotNet.Cli
             string solutionFullPath = Path.GetFullPath(solution, solutionFilterDirectory);
             rootDirectory = Path.GetDirectoryName(solutionFullPath);
 
-            // Return the resolved solution file path
             return solutionFullPath;
         }
 
