@@ -1,0 +1,50 @@
+name: Label PRs
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+jobs:
+  add-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Add label to PRs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine the third Tuesday of the current month
+          third_tuesday=$(date -d "third Tuesday of $(date +%Y-%m)" +%Y-%m-%d)
+          
+          # Determine the first Tuesday of the current month
+          first_tuesday=$(date -d "first Tuesday of $(date +%Y-%m)" +%Y-%m-%d)
+
+          # Get current date
+          current_date=$(date +%Y-%m-%d)
+
+          echo "Current Date: $current_date"
+          echo "Third Tuesday of the month: $third_tuesday"
+          echo "First Tuesday of the month: $first_tuesday"
+
+          # Check if the current date is after the third Tuesday of this month or before the first Tuesday of this month
+          if [[ "$current_date" > "$third_tuesday" || "$current_date" < "$first_tuesday" ]]; then
+            echo "Within the label period. Adding labels to PRs..."
+
+            # Get all open PRs created by app/dotnet-maestro and targeting branches release/8* and release/9* excluding release/9.0.3xx
+            prs=$(gh pr list --state open --json number,headRefName,author --jq '.[] | select(.author.login == "app/dotnet-maestro") | select(.headRefName | test("^release/[89].*")) | select(.headRefName | test("^release/9.0.3xx") | not) | .number')
+
+            # Loop through PRs and add label
+            for pr in $prs; do
+              echo "Adding label to PR #$pr"
+              gh pr edit $pr --add-label "Branch Lockdown"
+            done
+          else
+            echo "Outside the label period. No labels added."
+          fi
