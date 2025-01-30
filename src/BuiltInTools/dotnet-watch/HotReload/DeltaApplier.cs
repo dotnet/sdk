@@ -24,7 +24,10 @@ namespace Microsoft.DotNet.Watch
 
         public abstract Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken);
 
-        public abstract Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken);
+        public abstract Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken);
+        public abstract Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken);
+
+        public abstract Task InitialUpdatesApplied(CancellationToken cancellationToken);
 
         public abstract void Dispose();
 

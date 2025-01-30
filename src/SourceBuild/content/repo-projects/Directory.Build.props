@@ -1,10 +1,12 @@
-<Project>
+<!-- Use TreatAsLocalProperty to make the globally passed-in OfficialBuildId property mutable. -->
+<Project TreatAsLocalProperty="OfficialBuildId">
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
 
   <PropertyGroup>
     <RepositoryName>$(MSBuildProjectName)</RepositoryName>
-    <GitInfoRepoPropsFile>$(GitInfoDir)$(RepositoryName).props</GitInfoRepoPropsFile>
+
+    <GitInfoRepoPropsFile>$([MSBuild]::NormalizePath('$(PrereqsDir)', 'git-info', '$(RepositoryName).props'))</GitInfoRepoPropsFile>
     <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
     <RunEachTargetSeparately>false</RunEachTargetSeparately>
     <!-- If this is a dev build with parallelism enabled, ensure that RunEachTargetSeparately is true so that StopOnFirstFailure will be honored.
@@ -13,7 +15,9 @@
     <RunEachTargetSeparately Condition="'$(BuildInParallel)' == 'true' and '$(ContinuousIntegrationBuild)' != 'true'">true</RunEachTargetSeparately>
   </PropertyGroup>
 
-  <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)') and '$(UseOfficialBuildVersioning)' != 'false'" />
+    <!-- TODO: Remove this import when the default build behavior for source-only builds changes to dev.
+         https://github.com/dotnet/source-build/issues/4855 -->
+  <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)') and '$(DotNetBuildSourceOnly)' == 'true'" />
 
   <PropertyGroup>
     <!-- Fake, to satisfy the SDK. -->
@@ -62,6 +66,13 @@
     <ArcadeFalseBoolBuildArg>false</ArcadeFalseBoolBuildArg>
   </PropertyGroup>
 
+  <!-- Add 100 to the revision number for non-source-only builds to avoid clashing with the existing msft official builds.
+       Source-only builds don't update the revision as the assets don't get published to the same locations as the msft build and
+       still use the OfficialBuildId from repositories, not the pipeline. -->
+  <PropertyGroup Condition="'$(OfficialBuildId)' != '' and '$(DotNetBuildSourceOnly)' != 'true'">
+    <OfficialBuildId>$(OfficialBuildId.Split('.')[0]).$([MSBuild]::Add($(OfficialBuildId.Split('.')[1]), 100))</OfficialBuildId>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- By default, use the eng/common/build.cmd/sh script -->
     <BuildScript>$([MSBuild]::NormalizePath('$(ProjectDirectory)', 'eng', 'common', 'build$(ShellExtension)'))</BuildScript>
@@ -72,7 +83,8 @@
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
     <BuildActions Condition="'$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
-    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior for source-only builds changes to dev.
+         https://github.com/dotnet/source-build/issues/4855 -->
     <BuildArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildArgs>
     <BuildArgs>$(BuildArgs) -bl</BuildArgs>
@@ -87,17 +99,19 @@
     <!-- Pass through DotNetBuildPass for join point vertical support. -->
     <BuildArgs Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">$(BuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</BuildArgs>
 
+    <!-- Only pass these properites through when necessary to reduce command line noise. -->
     <BuildArgs Condition="'$(CrossBuild)' == 'true'">$(BuildArgs) /p:CrossBuild=true</BuildArgs>
-    <!-- Only pass when enabled to reduce command line noise. -->
-    <BuildArgs Condition="'$(DotNetBuildTests)' == 'true'">$(BuildArgs) /p:DotNetBuildTests=true</BuildArgs>
     <BuildArgs Condition="'$(NuGetConfigFile)' != ''">$(BuildArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</BuildArgs>
-    <!-- TODO rename this property https://github.com/dotnet/source-build/issues/4165 -->
     <BuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(BuildArgs) /p:DotNetBuildUseMonoRuntime=$(DotNetBuildUseMonoRuntime)</BuildArgs>
+    <BuildArgs Condition="'$(OfficialBuildId)' != ''">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
+    <BuildArgs Condition="'$(ForceDryRunSigning)' != ''">$(BuildArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</BuildArgs>
+
     <!-- Pass locations for assets -->
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
-    <BuildArgs Condition="'$(OfficialBuildId)' != ''">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
-    <BuildArgs Condition="'$(ForceDryRunSigning)' != ''">$(BuildArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</BuildArgs>
+
+    <!-- PGO assets by default are "Vertical" visibilty. Each repo will enable the specific artifacts it must publish externally -->
+    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:DefaultArtifactVisibility=Vertical</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -111,11 +125,11 @@
     <TestActions>$(FlagParameterPrefix)restore</TestActions>
     <TestActions>$(TestActions) $(FlagParameterPrefix)test</TestActions>
 
-    <TestArgs Condition="'$(UseOfficialBuildVersioning)' != 'false'">$(FlagParameterPrefix)ci</TestArgs>
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior for source-only builds changes to dev.
+         https://github.com/dotnet/source-build/issues/4855 -->
+    <TestArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</TestArgs>
     <TestArgs>$(TestArgs) $(FlagParameterPrefix)configuration $(Configuration)</TestArgs>
     <TestArgs>$(TestArgs) /bl:artifacts/log/$(Configuration)/Test.binlog</TestArgs>
-
-    <TestCommand>$(BuildScript) $(TestActions) $(TestArgs)</TestCommand>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableExtraDebugging)' == 'true'">
@@ -141,8 +155,9 @@
     <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj"
                           Condition="'$(UseBootstrapArcade)' != 'true'" />
 
-    <!-- We pass '-ci', but also apply ci mode via env var for edge cases. (E.g. misbehaving inner builds.) -->
-    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
+    <!-- We pass '-ci', but also apply ci mode via env var for edge cases. (E.g. misbehaving inner builds.).
+         TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior for source-only builds changes to dev.
+         https://github.com/dotnet/source-build/issues/4855 -->
     <EnvironmentVariables Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'" Include="ContinuousIntegrationBuild=true" />
 
     <!-- Turn off node reuse for source build because repos use conflicting versions
@@ -197,47 +212,13 @@
     <WindowsDesktopSdkOverride Include="Microsoft.Net.Sdk.WindowsDesktop" Group="WINDOWS_DESKTOP" Location="$(ToolsDir)EmptySdk" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
-    <!-- CLI internal version is statically set by us to a version that will never show up in the wild.
-       This ensures we will never restore a public version instead of our source-built version.  We
-       invlude the version number because it is used both by CLI.proj and the core-sdk build and they
-       have to be synced up.  ExtraPackageVersionPropsPackageInfo doesn't work in cli.proj because
-       toolset is between CLI and core-sdk, and the extra package version info is lost.               -->
-  <PropertyGroup>
-    <CliInternalReleaseTag>source</CliInternalReleaseTag>
-    <CliInternalBuildVersion>30000001-1</CliInternalBuildVersion>
-  </PropertyGroup>
-
+  <!-- Additional pseudo-versions that **multiple** repos depend on. -->
   <ItemGroup>
-    <ExtraPackageVersionPropsPackageInfo Include="DotnetCliInternalVersion" Version="3.0.100-$(CliInternalReleaseTag)-$(CliInternalBuildVersion)" />
-  </ItemGroup>
-
-  <!-- Additional pseudo-versions that some repos depend on -->
-  <ItemGroup>
-    <!-- we don't produce the Windows version of this package but that's the one sdk keys off of for the ASP.NET version -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
-    <!-- same thing here for CLI -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64Version" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-    <!-- same thing here for toolset -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-    <!-- same thing here for sdk -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimePackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostwinx64PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
 
-    <!-- Used by windowsdesktop to determine msi version -->
     <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion" Version="%24(MicrosoftWindowsDesktopAppRefPackageVersion)" />
-
-    <!-- Used by installer partition in sdk repo to determine sdk version -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
-
-    <!-- Used by installer partition to determine the non-shipping runtime version -->
-    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreTargetingPackx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-
-    <!-- Used by sdk to determine msbuild version for fsharp -->
-    <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
 
 </Project>

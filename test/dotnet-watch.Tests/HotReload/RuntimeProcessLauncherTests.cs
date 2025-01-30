@@ -98,7 +98,10 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args, "--project", projectPath]),
            console,
-           TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
+           TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset) with
+           {
+               ProcessCleanupTimeout = TimeSpan.FromSeconds(0),
+           },
            reporter,
            out var errorCode);
 
@@ -587,7 +590,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var ignoringChangeInHiddenDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInHiddenDirectory);
         var ignoringChangeInOutputDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInOutputDirectory);
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
-        var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoHotReloadChangesToApply);
+        var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoCSharpChangesToApply);
 
         Log("Waiting for changes...");
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);

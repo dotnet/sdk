@@ -37,6 +37,9 @@
     <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
     <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
     <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
+
+    <!-- Only pass when enabled to reduce command line noise. -->
+    <BuildArgs Condition="'$(DotNetBuildTests)' == 'true' and '$(DotNetBuildTestsOptOut)' != 'true'">$(BuildArgs) /p:DotNetBuildTests=true</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -763,6 +766,10 @@
     CleanupRepo" />
 
   <Target Name="RepoTest">
+    <PropertyGroup>
+      <TestCommand>$(BuildScript) $(TestActions) $(TestArgs)</TestCommand>
+    </PropertyGroup>
+
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
     <Message Importance="High" Text="  $(TestCommand)" />

@@ -323,9 +323,7 @@ $@"<ItemGroup>
                 .Path;
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
-            var options = new EnvironmentOptions(
-                MuxerPath: MuxerPath,
-                WorkingDirectory: testDirectory);
+            var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
 
             var output = new List<string>();
             _reporter.OnProcessOutput += line => output.Add(line.Content);
@@ -384,9 +382,7 @@ $@"<ItemGroup>
 
             var project1Path = GetTestProjectPath(project1);
 
-            var options = new EnvironmentOptions(
-                MuxerPath: MuxerPath,
-                WorkingDirectory: Path.GetDirectoryName(project1Path)!);
+            var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
 
             var output = new List<string>();
             _reporter.OnProcessOutput += line => output.Add($"{(line.IsError ? "[stderr]" : "[stdout]")} {line.Content}");
@@ -406,10 +402,7 @@ $@"<ItemGroup>
 
         private async Task<EvaluationResult> Evaluate(string projectPath)
         {
-            var options = new EnvironmentOptions(
-                MuxerPath: MuxerPath,
-                WorkingDirectory: Path.GetDirectoryName(projectPath)!);
-
+            var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(projectPath)!, muxerPath: MuxerPath);
             var factory = new MSBuildFileSetFactory(projectPath, buildArguments: [], options, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
