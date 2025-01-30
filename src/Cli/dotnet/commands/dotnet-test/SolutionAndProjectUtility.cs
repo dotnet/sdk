@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Cli
             return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
         }
 
-        public static IEnumerable<Module> GetProjectPropertiesInternal(string projectFilePath, ProjectCollection projectCollection)
+        public static IEnumerable<Module> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection)
         {
             var project = projectCollection.LoadProject(projectFilePath);
             return ExtractModulesFromProject(project);

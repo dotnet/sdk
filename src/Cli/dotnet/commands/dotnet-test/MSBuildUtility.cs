@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli
                 buildOptions,
                 GetCommands(buildOptions.HasNoRestore, buildOptions.HasNoBuild));
 
-            ConcurrentBag<Module> allProjects = ReadProjectsMetadata(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions.DegreeOfParallelism);
+            ConcurrentBag<Module> allProjects = GetProjectsProperies(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions.DegreeOfParallelism);
             return (allProjects, isBuiltOrRestored);
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli
                     [CliConstants.BuildCommand]);
             }
 
-            var allProjects = GetRelatedProjects(projectFilePath, projectCollection);
+            IEnumerable<Module> allProjects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, projectCollection);
 
             return (allProjects, isBuiltOrRestored);
         }
@@ -76,16 +76,7 @@ namespace Microsoft.DotNet.Cli
             return buildResult.OverallResult == BuildResultCode.Success;
         }
 
-        private static List<Module> GetRelatedProjects(string solutionOrProjectFilePath, ProjectCollection projectCollection)
-        {
-            var allProjects = new List<Module>();
-            IEnumerable<Module> relatedProjects = SolutionAndProjectUtility.GetProjectPropertiesInternal(solutionOrProjectFilePath, projectCollection);
-            allProjects.AddRange(relatedProjects);
-
-            return allProjects;
-        }
-
-        private static ConcurrentBag<Module> ReadProjectsMetadata(ProjectCollection projectCollection, IEnumerable<string> projects, int degreeOfParallelism)
+        private static ConcurrentBag<Module> GetProjectsProperies(ProjectCollection projectCollection, IEnumerable<string> projects, int degreeOfParallelism)
         {
             var allProjects = new ConcurrentBag<Module>();
 
@@ -94,7 +85,7 @@ namespace Microsoft.DotNet.Cli
                 new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism },
                 (project) =>
                 {
-                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectPropertiesInternal(project, projectCollection);
+                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);
