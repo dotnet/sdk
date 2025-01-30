@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             };
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
             File.WriteAllText(installStatePath, oldInstallState.ToString());
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().BeTrue();
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
             updateCommand.Execute();
             var newInstallState = InstallStateContents.FromPath(installStatePath);
             newInstallState.Manifests.Should().BeNull();
