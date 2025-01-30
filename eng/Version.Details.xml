@@ -97,47 +97,47 @@
       <Sha>7abe97c385a57f3d43941c50259e24cd90997156</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-2.25080.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-2.25080.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d4b2aef9a652a72fce25e53db1ce6ae1f26968ef</Sha>
+      <Sha>ecb4ca55d3a9024df8c6fd51cf4396d8a67a4a5c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-alpha.2.25073.4">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
