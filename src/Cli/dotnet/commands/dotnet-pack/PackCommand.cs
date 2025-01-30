@@ -38,13 +38,13 @@ namespace Microsoft.DotNet.Tools.Pack
 
             msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()));
 
-            ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
-                new ReleasePropertyProjectLocator.DependentCommandOptions(
+            CustomPropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
+                new CustomPropertyProjectLocator.DependentCommandOptions(
                         parseResult.GetValue(PackCommandParser.SlnOrProjectArgument),
                         parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
                     )
             );
-            msbuildArgs.AddRange(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
+            msbuildArgs.AddRange(projectLocator.GetCustomPropertyValue());
 
             msbuildArgs.AddRange(slnOrProjectArgs ?? Array.Empty<string>());
 

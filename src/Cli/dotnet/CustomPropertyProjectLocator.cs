@@ -16,9 +16,9 @@ namespace Microsoft.DotNet.Cli
     /// This class is used to enable properties that edit the Configuration property inside of a .*proj file.
     /// Properties such as DebugSymbols are evaluated based on the Configuration set before a project file is evaluated, and the project file may have dependencies on the configuration.
     /// Because of this, it is 'impossible' for the project file to correctly influence the value of Configuration.
-    /// This class allows evaluation of Configuration properties set in the project file before build time by giving back a global Configuration property to inject while building.
+    /// This class allows evaluation of properties set in the project file which influence the Configuration before build time by giving back a global property to inject while building.
     /// </summary>
-    class ReleasePropertyProjectLocator
+    class CustomPropertyProjectLocator
     {
         public struct DependentCommandOptions
         {
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli
         // <summary>
         /// <param name="propertyToCheck">The boolean property to check the project for. Ex: PublishRelease, PackRelease.</param>
         /// </summary>
-        public ReleasePropertyProjectLocator(
+        public CustomPropertyProjectLocator(
             ParseResult parseResult,
             string propertyToCheck,
             DependentCommandOptions commandOptions
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli
         /// ... a boolean that may or may not exist in the targeted project.
         /// </summary>
         /// <returns>Returns a string such as -property:configuration=value for a projects desired config. May be empty string.</returns>
-        public IEnumerable<string> GetCustomDefaultConfigurationValueIfSpecified()
+        public IEnumerable<string> GetCustomPropertyValue()
         {
             // Setup
             Debug.Assert(_propertyToCheck == MSBuildPropertyNames.PUBLISH_RELEASE || _propertyToCheck == MSBuildPropertyNames.PACK_RELEASE, "Only PackRelease or PublishRelease are currently expected.");
@@ -82,22 +82,15 @@ namespace Microsoft.DotNet.Cli
             if (project != null)
             {
                 string propertyToCheckValue = project.GetPropertyValue(_propertyToCheck);
-                if (!string.IsNullOrEmpty(propertyToCheckValue))
+                bool hasValue = !string.IsNullOrEmpty(propertyToCheckValue);
+                string propertyBooleanValue = hasValue && propertyToCheckValue.Equals("true", StringComparison.OrdinalIgnoreCase)
+                    ? "true" : "false";
+                var newArgs = new List<string> { $"-property:{_propertyToCheck}={propertyBooleanValue}" };
+                if (hasValue && _isHandlingSolution) // This will allow us to detect conflicting configuration values during evaluation.
                 {
-                    var newConfigurationArgs = new List<string>();
-
-                    if (propertyToCheckValue.Equals("true", StringComparison.OrdinalIgnoreCase))
-                    {
-                        newConfigurationArgs.Add($"-property:{MSBuildPropertyNames.CONFIGURATION}={MSBuildPropertyNames.CONFIGURATION_RELEASE_VALUE}");
-                    }
-
-                    if (_isHandlingSolution) // This will allow us to detect conflicting configuration values during evaluation.
-                    {
-                        newConfigurationArgs.Add($"-property:_SolutionLevel{_propertyToCheck}={propertyToCheckValue}");
-                    }
-
-                    return newConfigurationArgs;
+                    newArgs.Add($"-property:_SolutionLevel{_propertyToCheck}={propertyToCheckValue}");
                 }
+                return newArgs;
             }
             return nothing;
         }
