@@ -22,7 +22,10 @@ namespace Microsoft.DotNet.Cli
 
         public const string TestSectionKey = "test";
 
-        public const string RestoreCommand = "restore";
+        public const string RestoreCommand = "Restore";
+        public const string BuildCommand = "Build";
+        public const string Configuration = "Configuration";
+        public const string RuntimeIdentifier = "RuntimeIdentifier";
 
         public static readonly string[] ProjectExtensions = { ".proj", ".csproj", ".vbproj", ".fsproj" };
         public static readonly string[] SolutionExtensions = { ".sln", ".slnx" };
