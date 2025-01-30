@@ -30,6 +30,9 @@
     <BuildArgs>$(BuildArgs) /p:EnablePackageValidation=false</BuildArgs>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <!-- Tests are failing to build: https://github.com/dotnet/aspnetcore/issues/60095 -->
+    <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
