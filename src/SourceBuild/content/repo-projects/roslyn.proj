@@ -13,7 +13,7 @@
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'false'">
+  <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(OfficialBuildId)' != ''">
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData true</BuildArgs>
