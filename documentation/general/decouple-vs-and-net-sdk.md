@@ -6,14 +6,14 @@ Visual Studio and the .NET SDK are separate products, but their experiences are 
 
 Design Goals:
 
-1. **Consistent Build Experiences**: The `msbuild` and `dotnet msbuild` command line build experience for a solution should be functionally equivalent.
+1. **Consistent Build Experiences**: The `msbuild` and `dotnet build` command line build experience for a solution should be functionally equivalent.
 2. **Independent Design Time Behavior**: Visual Studio's design-time experience should be independent of the .NET SDK used by the solution.
 3. **Clear Handling of Divergence**: To make explicit that it is okay, and even expected, that the design time and command line build experiences can differ when the two products are not in sync.
 
 ## Terminology
 
 - **msbuild**: refers the .NET Framework based msbuild included with Visual Studio.
-- **dotnet msbuild**: refers to the .NET Core based msbuild included with the .NET SDK.
+- **dotnet build**: refers to the .NET Core based msbuild included with the .NET SDK.
 - **analyzers**: this document will use analyzers to refer to both analyzers and generators.
 - **torn state**: when the .NET SDK and Visual Studio are not in sync.
 - **.NET SDK project**: a project that uses the .NET SDK project format.
@@ -26,18 +26,20 @@ Visual Studio and .NET SDK are separate products but they are intertwined in com
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
 | --- | --- | --- |
 | msbuild | From Visual Studio | From .NET SDK |
-| dotnet msbuild | From .NET SDK | From .NET SDK |
+| dotnet build | From .NET SDK | From .NET SDK |
 | Visual Studio Design Time | From Visual Studio | From Both |
 
 There are other products that have similar intertwined behavior such as NuGet, MSBuild, Razor, etc ... Roslyn is generally the most impactful and the one we are focusing on in this document as it's path forward can be generalized to the other products.
 
-Generally this mixing of components is fine because Visual Studio will install a .NET SDK that is functionally paired with it. For example 17.10 installs .NET SDK 8.0.3xx, 17.9 installs .NET SDK 8.0.2xx, etc ... In that scenario the components are the same versio and the mixing is largely benign. However when the customer is in a torn state, .NET SDK used is not paired with the Visual Studio version, then compatibility issues can, and **will**, arise. Particularly when the .NET SDK is _newer_ than Visual Studio customers will end up with the following style of error:
+Generally this mixing of components is fine because Visual Studio will install a .NET SDK that is functionally paired with it. For example 17.10 installs .NET SDK 8.0.3xx, 17.9 installs .NET SDK 8.0.2xx, etc ... In that scenario the components are the same versio and the mixing is largely benign. However when the customer is in a torn state, that is the .NET SDK used is not paired with the Visual Studio version, then compatibility issues can, and **will**, arise. Particularly when the .NET SDK is _newer_ than Visual Studio customers will end up with the following style of error:
 
 > CSC : warning CS9057: The analyzer assembly '..\dotnet\sdk\8.0.200\Sdks\Microsoft.NET.Sdk.Razor\source-
 > generators\Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators.dll' references version '4.9.0.0' of the compiler, which is newer
 > than the currently running version '4.8.0.0'.
 
-This torn state is a common customer setup:
+These bugs slip by because even though a given .NET SDK is supported in many Visual Studio versions, we do not fully validate it's correctness. Specifically consider that when releasing the .NET 8.0.400 SDK it is supported in 17.8-17.11 but only fully validated in 17.11. Likewise when Visual Studio releases servicing fixes it does not attempt to fully validate all the supported .NET SDKs. This work on both sides would be prohibitively expensive. Instead we seek to decouple these experiences so that such testing is not necessary.
+
+Customers existing in a torn state is a common scenario:
 
 |Visual Studio Version | Match% | Float % | Torn % |
 | --- | --- | --- | --- |
@@ -53,12 +55,12 @@ To address this issue we are going to separate Visual Studio and the .NET SDK in
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
 | --- | --- | --- |
 | msbuild | From .NET SDK | From .NET SDK |
-| dotnet msbuild | From .NET SDK | From .NET SDK |
+| dotnet build | From .NET SDK | From .NET SDK |
 | Visual Studio Design Time | From Visual Studio | From Visual Studio |
 
-Specifically we will be
+Specifically we will be:
 
-1. Changing msbuild to use tools and tasks from the .NET SDK when building .NET SDK projects.
+1. Changing `msbuild` to use tools and tasks from the .NET SDK when building .NET SDK projects.
 2. Changing Visual Studio to use analyzers installed with Visual Studio.
 
 In addition to making our builds more reliable this will also massively simplify our [analyzer Development strategy][sdk-lifecycle]. Analyzers in the SDK following this model can always target the latest Roslyn version without the need for complicated multi-targeting. Further it will allow Visual Studio the ability to NGEN or R2R analyzers which is a long standing request from the Visual Studio perf team.
@@ -76,16 +78,17 @@ Teams also get into this state when the Visual Studio used for developement is o
 
 1. Teams can get locked into older Visual Studio via org policy but freely update to newer .NET SDKs.
 2. Using a preview version of the .NET SDK. These inherently represent a torn SDK state because they almost never match the compiler in Visual Studio. This results in blockers for big teams like Bing from testing out our previews.
+3. Using a global.json that specifies a different version of the .NET SDK than the Visual Studio version.
 
 ## Solution
 
 ### MSBuild will use the .NET SDK tools for SDK projects
 
-When building .NET SDK projects, msbuild will load tasks from the .NET SDK instead of Visual Studio. Specifically it will load the Roslyn compiler task from the .NET SDK. That task will then function the same as it does when launched from dotnet build.
+When building .NET SDK projects, `msbuild` will load tasks from the .NET SDK instead of Visual Studio. Specifically it will load the Roslyn compiler task from the .NET SDK. That task will then function the same as it does when launched from `dotnet build`.
 
-To facilitate tasks from the .NET SDK launching .NET Core based processes, the msbuild host will [set the environment variable][dotnet-host-path] `DOTNET_HOST_PATH`. This will point to the same .NET Core host that the .NET SDK uses. This will allow tasks to launch .NET Core based processes with the same behavior as the .NET SDK would.
+To facilitate tasks from the .NET SDK launching .NET Core based processes, the `msbuild` host will [set the environment variable][dotnet-host-path] `DOTNET_HOST_PATH`. This will point to the same .NET Core host that the .NET SDK uses. This will allow tasks to launch .NET Core based processes with the same behavior as the .NET SDK would.
 
-This change will allow for msbuild to have a consistent build experience with dotnet build for .NET SDK projects. It will have no impact on non-SDK projects as they will continue to use the compiler tasks that come from Visual Studio.
+This change will allow for `msbuild` to have a consistent build experience with `dotnet build` for .NET SDK projects. It will have no impact on non-SDK projects as they will continue to use the compiler tasks that come from Visual Studio.
 
 ## .NET SDK analyzers will load from Visual Studio
 
@@ -105,7 +108,7 @@ This does mean that our design time experience can differ from our command line 
 
 Analyzers which ship via NuGet will continue to following the existing [support policies][matrix-of-paine]. This means that they will either need to target a sufficiently old version of Roslyn or implement multi-targeting support to function in Visual Studio.
 
-In the case of [multi-targeting][issue-analyzer-mt] this proposal is effectively a no-op. Analyzer multi-targeting is already based off of Roslyn versions, not .NET SDK versions, hence the proper version of the analyzer will still load in a torn state. The version of the Roslyn compiler in a torn state for msbuild is the same used for dotnet build hence it's already a scenario the analyzer needs to support.
+In the case of [multi-targeting][issue-analyzer-mt] this proposal is effectively a no-op. Analyzer multi-targeting is already based off of Roslyn versions, not .NET SDK versions, hence the proper version of the analyzer will still load in a torn state. The version of the Roslyn compiler in a torn state for `msbuild` is the same used for `dotnet build` hence it's already a scenario the analyzer needs to support.
 
 There is nothing preventing NuGet based analyzers from following the same model as .NET SDK based analyzers. The mechanism for redirection is extensible. This is not a requirement for this proposal and is left as a future work item.
 
@@ -115,7 +118,7 @@ There is nothing preventing NuGet based analyzers from following the same model 
 
 Solutions that mix .NET SDK and Visual Studio projects will end up with multiple compiler servers running. This is a result of the .NET SDK projects using the compiler from the .NET SDK and non-SDK projects using the compiler from Visual Studio. There is nothing functionally wrong with this but it's possible customers will notice this and ask questions about it.
 
-The compiler will offer an msbuild property that allows non-SDK projects to opt into using the .NET SDK based compiler: `<RoslynUseSdkCompiler>true</RoslynUseSdkCompiler>`. This can be added to a `Directory.Build.props` file to impact the entire solution.
+The compiler will offer an MSBuild property that allows non-SDK projects to opt into using the .NET SDK based compiler: `<RoslynUseSdkCompiler>true</RoslynUseSdkCompiler>`. This can be added to a `Directory.Build.props` file to impact the entire solution.
 
 ### .NET Framework based analyzers
 
@@ -129,9 +132,9 @@ However, it is not our intent to support this inperpetuity. The documentation ar
 
 ### Make the compiler in Visual Studio pluggable
 
-An alternative approach is to allow the compiler inside Visual Studio, both the design time and msbuild copy, to be pluggable. Essentially for a given .NET SDK, grab the equivalent .NET Framework bits and have Visual Studio load them at startup.
+An alternative approach is to allow the compiler inside Visual Studio, both the design time and MSBuild copy, to be pluggable. Essentially for a given .NET SDK, grab the equivalent .NET Framework bits and have Visual Studio load them at startup.
 
-This proposal is deemed very unlikley to be successful. Visual Studio is **highly** sensitive to the version of Roslyn it usses. Keeping Visual Studio perf neutral on every Roslyn insertion requires active work by both the Roslyn and Visual Studio teams. It is very unlikely that we could load arbitrary versions of Roslyn into Visual Studio and expect to get equvialent performance.
+This proposal is deemed very unlikley to be successful. Visual Studio is **highly** sensitive to the version of Roslyn it usses. Keeping Visual Studio perf neutral on every Roslyn insertion requires active work by both the Roslyn and Visual Studio teams. It is very unlikely that we could load arbitrary versions of Roslyn into Visual Studio and expect to get equvialent performance.  Consider that concretely this would mean that switching between solutions that used different .NET SDK versions would require a Visual Studio restart as well as rebuilding the MEF cache.
 
 Further Visual Studio supports loading many different versions of the .NET SDK. For this to work Visual Studio would need to be tolerant of loading much older Roslyns into current shipping versions. That is a significant engineering effort that is unlikely to be successful.
 
@@ -152,7 +155,7 @@ This is how Visual Studio Code fits into our matrix after this work is complete:
 | Scenario | Loads Roslyn | Loads Analyzers / Generators |
 | --- | --- | --- |
 | msbuild | From .NET SDK | From .NET SDK |
-| dotnet msbuild | From .NET SDK | From .NET SDK |
+| dotnet build | From .NET SDK | From .NET SDK |
 | Visual Studio Design Time | From Visual Studio | From Visual Studio |
 | DevKit | From DevKit | From .NET SDK |
 
