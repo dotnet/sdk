@@ -32,8 +32,8 @@ namespace Microsoft.DotNet.Cli
                 buildOptions,
                 GetCommands(buildOptions.HasNoRestore, buildOptions.HasNoBuild));
 
-            ConcurrentBag<Module> allProjects = GetProjectsProperies(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions.DegreeOfParallelism);
-            return (allProjects, isBuiltOrRestored);
+            ConcurrentBag<Module> projects = GetProjectsProperties(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions.DegreeOfParallelism);
+            return (projects, isBuiltOrRestored);
         }
 
         public static (IEnumerable<Module>, bool) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
@@ -59,9 +59,9 @@ namespace Microsoft.DotNet.Cli
                     [CliConstants.BuildCommand]);
             }
 
-            IEnumerable<Module> allProjects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, projectCollection);
+            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, projectCollection);
 
-            return (allProjects, isBuiltOrRestored);
+            return (projects, isBuiltOrRestored);
         }
 
         private static bool BuildOrRestoreProjectOrSolution(string filePath, ProjectCollection projectCollection, BuildOptions buildOptions, string[] commands)
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Cli
             return buildResult.OverallResult == BuildResultCode.Success;
         }
 
-        private static ConcurrentBag<Module> GetProjectsProperies(ProjectCollection projectCollection, IEnumerable<string> projects, int degreeOfParallelism)
+        private static ConcurrentBag<Module> GetProjectsProperties(ProjectCollection projectCollection, IEnumerable<string> projects, int degreeOfParallelism)
         {
             var allProjects = new ConcurrentBag<Module>();
 

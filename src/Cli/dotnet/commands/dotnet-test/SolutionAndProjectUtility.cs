@@ -103,10 +103,10 @@ namespace Microsoft.DotNet.Cli
         public static IEnumerable<Module> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection)
         {
             var project = projectCollection.LoadProject(projectFilePath);
-            return ExtractModulesFromProject(project);
+            return GetModulesFromProject(project);
         }
 
-        private static IEnumerable<Module> ExtractModulesFromProject(Project project)
+        private static List<Module> GetModulesFromProject(Project project)
         {
             _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
 
