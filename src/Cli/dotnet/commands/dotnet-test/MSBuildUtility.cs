@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli
                 buildOptions,
                 GetCommands(buildOptions.HasNoRestore, buildOptions.HasNoBuild));
 
-            ConcurrentBag<Module> allProjects = ProcessProjectsInParallel(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions.DegreeOfParallelism);
+            ConcurrentBag<Module> allProjects = ReadProjectsMetadata(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions.DegreeOfParallelism);
             return (allProjects, isBuiltOrRestored);
         }
 
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Cli
             return allProjects;
         }
 
-        private static ConcurrentBag<Module> ProcessProjectsInParallel(ProjectCollection projectCollection, IEnumerable<string> projects, int degreeOfParallelism)
+        private static ConcurrentBag<Module> ReadProjectsMetadata(ProjectCollection projectCollection, IEnumerable<string> projects, int degreeOfParallelism)
         {
             var allProjects = new ConcurrentBag<Module>();
 
