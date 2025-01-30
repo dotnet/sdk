@@ -95,6 +95,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory($"{testInstance.Path}{Path.DirectorySeparatorChar}SolutionFilter")
                                     .WithEnableTestingPlatform()
+                                    .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that only TestProject ran

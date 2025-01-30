@@ -71,7 +71,6 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionPath)
         {
-            JsonDocument jsonDocument;
             JsonElement jsonElement;
             JsonElement filteredSolutionJsonElement;
             string originalSolutionPath;
@@ -80,8 +79,7 @@ namespace Microsoft.DotNet.Tools.Common
 
             try
             {
-                jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath));
-                jsonElement = jsonDocument.RootElement;
+                jsonElement = ParseSolutionFilterFile(filteredSolutionPath);
                 filteredSolutionJsonElement = jsonElement.GetProperty("solution");
                 originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
@@ -132,8 +130,7 @@ namespace Microsoft.DotNet.Tools.Common
         {
             try
             {
-                using JsonDocument jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath));
-                JsonElement jsonElement = jsonDocument.RootElement;
+                JsonElement jsonElement = ParseSolutionFilterFile(filteredSolutionPath);
                 JsonElement filteredSolutionJsonElement = jsonElement.GetProperty("solution");
                 string originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
                 return originalSolutionPath;
@@ -143,6 +140,21 @@ namespace Microsoft.DotNet.Tools.Common
                 throw new GracefulException(
                     CommonLocalizableStrings.InvalidSolutionFormatString,
                     filteredSolutionPath, ex.Message);
+            }
+        }
+
+        private static JsonElement ParseSolutionFilterFile(string solutionFilterFilePath)
+        {
+            try
+            {
+                using JsonDocument jsonDocument = JsonDocument.Parse(File.ReadAllText(solutionFilterFilePath));
+                return jsonDocument.RootElement;
+            }
+            catch (Exception ex)
+            {
+                throw new GracefulException(
+                    CommonLocalizableStrings.InvalidSolutionFormatString,
+                    solutionFilterFilePath, ex.Message);
             }
         }
     }
