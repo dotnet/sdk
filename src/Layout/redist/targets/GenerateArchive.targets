@@ -14,8 +14,6 @@
       <ArtifactNameWithVersionSdk>$(ArtifactNameSdk)-$(Version)</ArtifactNameWithVersionSdk>
 
       <ArtifactNameWithVersionSdkLanguagePack>$(ArtifactNameSdkLanguagePack)-$(Version)</ArtifactNameWithVersionSdkLanguagePack>
-
-      <VersionFilePath>$(ArtifactsBinDir)version.txt</VersionFilePath>
     </PropertyGroup>
 
     <ZipFileCreateFromDirectory
@@ -27,10 +25,5 @@
         SourceDirectory="$(SdkLanguagePackOutputDirectory)"
         DestinationArchive="$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdkLanguagePack).zip"
         OverwriteDestination="true" />
-
-    <WriteLinesToFile
-        File="$(VersionFilePath)"
-        Lines="$(Version)"
-        Overwrite="true" />
   </Target>
 </Project>

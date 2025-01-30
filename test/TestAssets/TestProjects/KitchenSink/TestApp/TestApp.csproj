@@ -22,6 +22,7 @@
     <EventSourceSupport>false</EventSourceSupport>
     <_WinFormsUITypeEditorSupport>true</_WinFormsUITypeEditorSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantTimezone>true</InvariantTimezone>
     <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <ServerGarbageCollection>true</ServerGarbageCollection>
@@ -49,6 +50,7 @@
     <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
     <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
     <UseWindowsThreadPool>true</UseWindowsThreadPool>
+    <UseSizeOptimizedLinq>true</UseSizeOptimizedLinq>
     <_ActiveXImplSupport>true</_ActiveXImplSupport>
     <_WinFormsBindingSupport>true</_WinFormsBindingSupport>
     <_WinFormsDesignTimeFeaturesSupport>true</_WinFormsDesignTimeFeaturesSupport>
