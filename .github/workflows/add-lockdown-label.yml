@@ -47,12 +47,16 @@ jobs:
             echo "Within the label period. Adding labels to PRs..."
 
             # Get all open PRs created by app/dotnet-maestro and targeting branches release/8* and release/9* excluding release/9.0.3xx
-            prs=$(gh pr list --state open --json number,headRefName,author --jq '.[] | select(.author.login == "app/dotnet-maestro") | select(.headRefName | test("^release/[89].*")) | select(.headRefName | test("^release/9.0.3xx") | not) | .number')
+            echo "Running gh pr list query..."
+            prs=$(gh pr list --state open --json number,headRefName,author)
+            echo "PRs JSON: $prs"
+            filtered_prs=$(echo "$prs" | jq '.[] | select(.author.login == "app/dotnet-maestro") | select(.headRefName | test("^release/[89].*")) | select(.headRefName | test("^release/9.0.3xx") | not) | .number')
+            echo "Filtered PRs JSON: $filtered_prs"
 
             # Loop through PRs and add label
-            for pr in $prs; do
+            for pr in $filtered_prs; do
               echo "Adding label to PR #$pr"
-              # gh pr edit $pr --add-label "Branch Lockdown"
+              gh pr edit $pr --add-label "Branch Lockdown"
             done
           else
             echo "Outside the label period. No labels added."
