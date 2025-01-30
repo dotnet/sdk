@@ -94,10 +94,10 @@ namespace Microsoft.DotNet.Cli
                 new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism },
                 (project) =>
                 {
-                    IEnumerable<Module> relatedProjects = SolutionAndProjectUtility.GetProjectPropertiesInternal(project, projectCollection);
-                    foreach (var relatedProject in relatedProjects)
+                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectPropertiesInternal(project, projectCollection);
+                    foreach (var projectMetadata in projectsMetadata)
                     {
-                        allProjects.Add(relatedProject);
+                        allProjects.Add(projectMetadata);
                     }
                 });
 
