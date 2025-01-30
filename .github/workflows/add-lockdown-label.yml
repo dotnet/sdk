@@ -5,6 +5,9 @@ on:
     # Run daily at 00:00 UTC
     - cron: '0 0 * * *'
   workflow_dispatch: # Allows manual triggering of the workflow
+  pull_request:
+    branches:
+      - main
 
 jobs:
   add-label:
@@ -43,7 +46,7 @@ jobs:
             # Loop through PRs and add label
             for pr in $prs; do
               echo "Adding label to PR #$pr"
-              gh pr edit $pr --add-label "Branch Lockdown"
+              # gh pr edit $pr --add-label "Branch Lockdown"
             done
           else
             echo "Outside the label period. No labels added."
