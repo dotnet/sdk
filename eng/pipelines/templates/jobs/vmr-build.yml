@@ -372,7 +372,7 @@ jobs:
       # TODO: Once we turn off the dotnet/runtime official build, move these templates into the VMR's eng folder.
       - template: ${{ variables['Build.SourcesDirectory'] }}/src/runtime/eng/pipelines/coreclr/templates/install-diagnostic-certs.yml
         parameters:
-          isOfficialBuild: true
+          isOfficialBuild: ${{ variables.isOfficialBuild }}
           certNames:
           - 'dotnetesrp-diagnostics-aad-ssl-cert'
           - 'dotnet-diagnostics-esrp-pki-onecert'
@@ -394,7 +394,7 @@ jobs:
       # TODO: Once we turn off the dotnet/runtime official build, move these templates into the VMR's eng folder.
       - template: ${{ variables['Build.SourcesDirectory'] }}/src/runtime/eng/pipelines/coreclr/templates/remove-diagnostic-certs.yml
         parameters:
-          isOfficialBuild: true
+          isOfficialBuild: ${{ variables.isOfficialBuild }}
           scriptRoot: '$(Build.SourcesDirectory)/src/runtime'
 
     - ${{ if eq(parameters.runTests, 'True') }}:
