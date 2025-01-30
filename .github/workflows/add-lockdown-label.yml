@@ -48,7 +48,7 @@ jobs:
 
             # Get all open PRs created by app/dotnet-maestro and targeting branches release/8* and release/9* excluding release/9.0.3xx
             echo "Running gh pr list query..."
-            prs=$(gh pr list --state open --json number,headRefName,author)
+            prs=$(gh pr list --state open --json number,baseRefName,author)
             echo "Total PRs Count: $(echo "$prs" | jq length)"
             echo "PRs JSON: $prs"
 
@@ -58,7 +58,7 @@ jobs:
             echo "Count of PRs by app/dotnet-maestro: $(echo "$prs_by_author" | jq length)"
 
             echo "Filtering PRs targeting release/8* and release/9* excluding release/9.0.3xx..."
-            filtered_prs=$(echo "$prs_by_author" | jq '[.[] | select(.headRefName | test("^release/[89].*")) | select(.headRefName | test("^release/9.0.3xx") | not) | .number]')
+            filtered_prs=$(echo "$prs_by_author" | jq '[.[] | select(.baseRefName | test("^release/[89].*")) | select(.baseRefName | test("^release/9.0.3xx") | not) | .number]')
             echo "Filtered PRs JSON: $filtered_prs"
             echo "Count of Filtered PRs: $(echo "$filtered_prs" | jq length)"
 
