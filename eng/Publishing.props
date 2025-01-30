@@ -94,7 +94,8 @@
     <ItemGroup>
       <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)"
         RelativeBlobPath="$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))"
-        IsShipping="false" />
+        IsShipping="false"
+        PublishFlatContainer="true" />
       <ToolsetAssetsToPushToBlobFeed ManifestArtifactData="Visibility=%(Visibility)" />
     </ItemGroup>
 
@@ -104,16 +105,10 @@
     </ItemGroup>
 
     <PushToBuildStorage
-      PublishFlatContainer="true"
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
       AzureDevOpsBuildId="$(BUILD_BUILDID)"
       ItemsToPush="@(ToolsetAssetsToPushToBlobFeed)"
-      ItemsToSign="@(ItemsToSignPostBuild)"
-      StrongNameSignInfo="@(StrongNameSignInfo)"
-      CertificatesSignInfo="@(CertificatesSignInfo)"
-      FileSignInfo="@(FileSignInfo)"
-      FileExtensionSignInfo="@(FileExtensionSignInfo)"
       ManifestBuildData="@(ManifestBuildData)"
       ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
       ManifestBranch="$(BUILD_SOURCEBRANCH)"
