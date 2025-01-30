@@ -198,7 +198,7 @@ jobs:
   - ${{ if eq(parameters.targetOS, 'windows') }}:
     ## Basic arguments
     - name: baseArguments
-      value:  -ci -cleanWhileBuilding -prepareMachine -c ${{ parameters.configuration }} /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+      value: -ci -cleanWhileBuilding -prepareMachine -c ${{ parameters.configuration }} $(officialBuildParameter) /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
 
     - name: targetArguments
       value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
@@ -428,7 +428,7 @@ jobs:
 
         customEnvVars=""
         customPreBuildArgs=""
-        customBuildArgs="--ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }}"
+        customBuildArgs="--ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }} $(officialBuildParameter)"
 
         if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --online"
@@ -534,7 +534,7 @@ jobs:
           customPreBuildArgs=''
           customBuildArgs=''
           extraBuildProperties=''
-          customBuildArgs="--ci --prepareMachine -c ${{ parameters.configuration }}"
+          customBuildArgs="--ci --prepareMachine -c ${{ parameters.configuration }} $(officialBuildParameter)"
 
           if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
             customPreBuildArgs="$customPreBuildArgs sudo"
