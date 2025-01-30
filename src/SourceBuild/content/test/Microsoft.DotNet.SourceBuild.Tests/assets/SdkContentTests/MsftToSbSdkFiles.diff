@@ -53,7 +53,7 @@ index ------------
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
 @@ ------------ @@
- ./sdk-manifests/
+ ./sdk-manifests/x.y.z/
  ./sdk-manifests/x.y.z/
  ./sdk-manifests/x.y.z/
 -./sdk-manifests/x.y.z/
