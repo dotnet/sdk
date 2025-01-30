@@ -2,7 +2,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using Microsoft.Extensions.Logging;
 using static Microsoft.CodeAnalysis.Tools.FormatCommandCommon;
@@ -11,21 +10,6 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 {
     internal static class FormatWhitespaceCommand
     {
-        // This delegate should be kept in Sync with the FormatCommand options and argument names
-        // so that values bind correctly.
-        internal delegate Task<int> Handler(
-            bool folder,
-            string? workspace,
-            bool noRestore,
-            bool check,
-            string[] include,
-            string[] exclude,
-            bool includeGenerated,
-            string? verbosity,
-            string? binarylog,
-            string? report,
-            IConsole console);
-
         private static readonly FormatWhitespaceHandler s_formattingHandler = new();
 
         internal static CliCommand GetCommand()
@@ -66,7 +50,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
                 var formatOptions = parseResult.ParseVerbosityOption(FormatOptions.Instance);
-                var logger = new SystemConsole().SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
+                var logger = SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
                 formatOptions = parseResult.ParseCommonOptions(formatOptions, logger);
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
