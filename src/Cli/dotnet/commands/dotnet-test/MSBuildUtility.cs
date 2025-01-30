@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Cli
             return allProjects;
         }
 
-        private static string HandleFilteredSolutionFile(string solutionFilterFilePath, out string rootDirectory)
+        private static string HandleFilteredSolutionFilePath(string solutionFilterFilePath, out string rootDirectory)
         {
             string solution = SlnFileFactory.GetSolutionPathFromFilteredSolutionFile(solutionFilterFilePath);
 
