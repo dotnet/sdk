@@ -199,17 +199,20 @@
       <!-- Always publish blobs to a suffixed directory. -->
       <SdkAssetsToPushToBlobFeed Include="@(SdkAssetsToPublish)">
         <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(FullNugetVersion)/$([System.String]::Copy('%(Filename)%(Extension)'))</RelativeBlobPath>
+        <PublishFlatContainer>true</PublishFlatContainer>
         <ManifestArtifactData>DotNetReleaseShipping=true</ManifestArtifactData>
       </SdkAssetsToPushToBlobFeed>
 
       <SdkAssetsToPushToBlobFeed Include="@(SdkNonShippingAssetsToPublish)">
         <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(FullNugetVersion)/$([System.String]::Copy('%(Filename)%(Extension)'))</RelativeBlobPath>
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
+        <PublishFlatContainer>true</PublishFlatContainer>
       </SdkAssetsToPushToBlobFeed>
 
       <ChecksumsToPushToBlobFeed Include="@(CheckSumsToPublish)">
         <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(FullNugetVersion)/$([System.String]::Copy('%(Filename)%(Extension)'))</RelativeBlobPath>
         <ManifestArtifactData>DotNetReleaseShipping=true</ManifestArtifactData>
+        <PublishFlatContainer>true</PublishFlatContainer>
       </ChecksumsToPushToBlobFeed>
     </ItemGroup>
 
@@ -225,7 +228,6 @@
     </ItemGroup>
 
     <PushToBuildStorage
-      PublishFlatContainer="true"
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
       AzureDevOpsBuildId="$(BUILD_BUILDID)"
