@@ -364,7 +364,6 @@ jobs:
     - script: build.cmd
         $(baseArguments)
         $(targetArguments)
-        $(devArguments)
         $(signArguments)
         $(buildPassArguments)
         ${{ parameters.extraProperties }}
@@ -375,7 +374,6 @@ jobs:
       - script: build.cmd
           $(baseArguments)
           $(targetArguments)
-          $(devArguments)
           $(buildPassArguments)
           ${{ parameters.extraProperties }}
           -test
