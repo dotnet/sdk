@@ -24,10 +24,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Determine the third Tuesday of the current month
-          third_tuesday=$(date -d "third Tuesday of $(date +%Y-%m)" +%Y-%m-%d)
+          third_tuesday=$(date -d "$(date +%Y-%m-01) +14 days" +%Y-%m-%d)
+          while [ $(date -d "$third_tuesday" +%u) -ne 2 ]; do
+            third_tuesday=$(date -d "$third_tuesday + 1 day" +%Y-%m-%d)
+          done
           
           # Determine the first Tuesday of the current month
-          first_tuesday=$(date -d "first Tuesday of $(date +%Y-%m)" +%Y-%m-%d)
+          first_tuesday=$(date -d "$(date +%Y-%m-01)" +%Y-%m-%d)
+          while [ $(date -d "$first_tuesday" +%u) -ne 2 ]; do
+            first_tuesday=$(date -d "$first_tuesday + 1 day" +%Y-%m-%d)
+          done
 
           # Get current date
           current_date=$(date +%Y-%m-%d)
