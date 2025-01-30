@@ -29,6 +29,16 @@
 #   - PR: lite build
 #   - CI: release/*, internal/release/* and main only, every batched commit, full build
 
+parameters:
+- name: desiredSigning
+  displayName: 'Sign?'
+  type: string
+  default: 'Default (unsigned for manual and non-main/release builds)'
+  values:
+    - Signed
+    - Unsigned
+    - Default (unsigned for manual and non-main/release builds)
+
 variables:
 # enable source-only build for pipelines that contain the -source-build string
 - name: isSourceOnlyBuild

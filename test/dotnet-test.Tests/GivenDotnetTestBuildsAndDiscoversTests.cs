@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using dotnet.Tests;
-using Microsoft.DotNet.Tools.Common;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -13,8 +11,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void DiscoverTestProjectWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -28,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches($@"Discovered 0 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)", result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, "Discovered 0 tests"), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Discovered 0 tests.");
@@ -37,8 +35,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void DiscoverMultipleTestProjectsWithNoTests_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -52,17 +50,17 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches($@"Discovered 0 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)", result.StdOut);
-                Assert.Matches($@"Discovered 0 tests.*{PathUtility.GetDirectorySeparatorChar()}OtherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)", result.StdOut);
-                Assert.Matches($@"Discovered 0 tests.*{PathUtility.GetDirectorySeparatorChar()}AnotherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)", result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, "Discovered 0 tests"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", true, "Discovered 0 tests"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", true, "Discovered 0 tests"), result.StdOut);
                 Assert.Matches(@"Discovered 0 tests.*", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void DiscoverTestProjectWithTests_ShouldReturnZeroAsExitCode(string configuration)
         {
@@ -76,15 +74,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches($@"Discovered 1 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test0", result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, "Discovered 1 tests", ["Test0"]), result.StdOut);
                 Assert.Matches(@"Discovered 1 tests.*", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void DiscoverMultipleTestProjectsWithTests_ShouldReturnZeroAsExitCode(string configuration)
         {
@@ -98,21 +96,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches($@"Discovered 2 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test0\s+Test2", result.StdOut);
-                Assert.Matches($@"Discovered 1 tests.*{PathUtility.GetDirectorySeparatorChar()}OtherTestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+Test1", result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, "Discovered 2 tests", ["Test0", "Test2"]), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", true, "Discovered 1 tests", ["Test1"]), result.StdOut);
                 Assert.Matches(@"Discovered 3 tests.*", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
@@ -121,15 +120,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches($@"Discovered 3 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net8.0\|[a-zA-Z][0-9]+\)\s+TestMethod1\s+TestMethod2\s+TestMethod3", result.StdOut);
-                Assert.Matches($@"Discovered 2 tests.*{PathUtility.GetDirectorySeparatorChar()}TestProject.dll\s\(net9.0\|[a-zA-Z][0-9]+\)\s+TestMethod1\s+TestMethod3", result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", false, "Discovered 3 tests", ["TestMethod1", "TestMethod2", "TestMethod3"]), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, "Discovered 2 tests", ["TestMethod1", "TestMethod3"]), result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void DiscoverTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -143,7 +142,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain("Test application(s) that support VSTest are not supported.");
+                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);

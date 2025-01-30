@@ -335,7 +335,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"
                       CompilerOptions="@(DependencyFileCompilerOptions)"
-                      ExcludeFromPublishPackageReferences="@(_ExcludeFromPublishPackageReference)"
                       CompileReferences="@(ResolvedCompileFileDefinitions)"
                       ResolvedNuGetFiles="@(NativeCopyLocalItems);@(ResourceCopyLocalItems);@(RuntimeCopyLocalItems)"
                       UserRuntimeAssemblies="@(UserRuntimeAssembly)"
@@ -615,6 +614,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Globalization.PredefinedCulturesOnly"
                                     Condition="'$(PredefinedCulturesOnly)' != ''"
                                     Value="$(PredefinedCulturesOnly)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Linq.Enumerable.IsSizeOptimized"
+                                    Condition="'$(UseSizeOptimizedLinq)' != ''"
+                                    Value="$(UseSizeOptimizedLinq)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Net.Http.EnableActivityPropagation"

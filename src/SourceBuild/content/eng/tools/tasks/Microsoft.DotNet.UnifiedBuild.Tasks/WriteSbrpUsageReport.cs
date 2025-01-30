@@ -31,10 +31,12 @@ public class WriteSbrpUsageReport : Task
     public required string SbrpRepoSrcPath { get; set; }
 
     /// <summary>
-    /// Path to the VMR src directory.
+    /// Paths to the project.assets.json files produced by the build.
+    ///
+    /// %(Identity): project.assets.json file path.
     /// </summary>
     [Required]
-    public required string SrcPath { get; set; }
+    public required ITaskItem[] ProjectAssetsJsons { get; set; }
 
     /// <summary>
     /// Path to the usage report to.
@@ -61,6 +63,12 @@ public class WriteSbrpUsageReport : Task
         PackageInfo[] existingSbrps = [.. _sbrpPackages.Values.OrderBy(pkg => pkg.Id)];
         PurgeNonReferencedReferences();
         IEnumerable<string> unreferencedSbrps = GetUnreferencedSbrps().Select(pkg => pkg.Path).OrderBy(id => id);
+
+        if (unreferencedSbrps.Count() == existingSbrps.Length)
+        {
+            Log.LogError("No SBRP packages are detected as being referenced.");
+        }
+
         Report report = new(existingSbrps, unreferencedSbrps);
 
         string reportFilePath = Path.Combine(OutputPath, "sbrpPackageUsage.json");
@@ -144,7 +152,13 @@ public class WriteSbrpUsageReport : Task
 
     private void ScanProjectReferences()
     {
-        foreach (string projectJsonFile in Directory.GetFiles(SrcPath, "project.assets.json", SearchOption.AllDirectories))
+        if (ProjectAssetsJsons.Length == 0)
+        {
+            Log.LogError($"No project.assets.json files were specified.");
+            return;
+        }
+
+        foreach (string projectJsonFile in ProjectAssetsJsons.Select(item => item.GetMetadata("Identity")))
         {
             LockFile lockFile = new LockFileFormat().Read(projectJsonFile);
             foreach (LockFileTargetLibrary lib in lockFile.Targets.SelectMany(t => t.Libraries))

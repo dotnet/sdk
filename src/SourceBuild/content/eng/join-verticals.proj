@@ -23,7 +23,7 @@
       <ItemGroup>
         <VerticalManifest
           Include="$(VerticalManifestsPath)\*.xml"
-          Exclude="$(VerticalManifestsPath)\*Pgo*.xml;$(VerticalManifestsPath)\*Shortstack*.xml;$(VerticalManifestsPath)\*DevVersions*.xml" />
+          Exclude="$(VerticalManifestsPath)\*Shortstack*.xml" />
       </ItemGroup>
 
       <!-- AzureDevOpsToken shouldn't be set when running in dnceng-public -->
