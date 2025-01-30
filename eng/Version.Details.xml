@@ -441,10 +441,6 @@
       <Uri>https://github.com/dotnet/command-line-api</Uri>
       <Sha>060374e56c1b2e741b6525ca8417006efb54fbd7</Sha>
     </Dependency>
-    <Dependency Name="System.CommandLine.Rendering" Version="0.4.0-alpha.25072.1">
-      <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>060374e56c1b2e741b6525ca8417006efb54fbd7</Sha>
-    </Dependency>
     <!-- Microsoft.CodeAnalysis.Workspaces.MSBuild transitively references M.Bcl.AsyncInterfaces.
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
          one under source build. -->
