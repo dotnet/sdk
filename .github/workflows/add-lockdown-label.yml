@@ -52,7 +52,7 @@ jobs:
 
             # Get all open PRs created by app/dotnet-maestro and targeting branches release/8* and release/9* excluding release/9.0.3xx
             echo "Running gh pr list query..."
-            prs=$(gh pr list --state open --json number,baseRefName,author)
+            prs=$(gh pr list --state open --json number,baseRefName,author --limit 200)
             echo "Total PRs Count: $(echo "$prs" | jq length)"
             echo "PRs JSON: $prs"
 
