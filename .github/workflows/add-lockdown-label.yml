@@ -1,4 +1,4 @@
-name: Label PRs
+name: Add Branch Lockdown Label to PRs
 
 on:
   schedule:
@@ -8,6 +8,10 @@ on:
   pull_request:
     branches:
       - main
+
+permissions:
+  actions: write # For managing the operation state cache
+  issues: write
 
 jobs:
   add-label:
