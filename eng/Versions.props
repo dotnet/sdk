@@ -150,9 +150,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
-    <MicrosoftNETTestSdkPackageVersion>17.14.0-preview-25078-02</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftTestPlatformCLIPackageVersion>17.14.0-preview-25078-02</MicrosoftTestPlatformCLIPackageVersion>
-    <MicrosoftTestPlatformBuildPackageVersion>17.14.0-preview-25078-02</MicrosoftTestPlatformBuildPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>17.14.0-preview-25079-01</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftTestPlatformCLIPackageVersion>17.14.0-preview-25079-01</MicrosoftTestPlatformCLIPackageVersion>
+    <MicrosoftTestPlatformBuildPackageVersion>17.14.0-preview-25079-01</MicrosoftTestPlatformBuildPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
