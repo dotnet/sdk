@@ -68,7 +68,7 @@
   <!-- Add 100 to the revision number for non-source-only builds to avoid clashing with the existing msft official builds.
        Source-only builds don't update the revision as the assets don't get published to the same locations as the msft build and
        still use the OfficialBuildId from repositories, not the pipeline. -->
-  <PropertyGroup Condition="'$(OfficialBuildId)' != ''">
+  <PropertyGroup Condition="'$(OfficialBuildId)' != '' and '$(DotNetBuildSourceOnly)' != 'true'">
     <OfficialBuildId>$(OfficialBuildId.Split('.')[0]).$([MSBuild]::Add($(OfficialBuildId.Split('.')[1]), 100))</OfficialBuildId>
   </PropertyGroup>
 
