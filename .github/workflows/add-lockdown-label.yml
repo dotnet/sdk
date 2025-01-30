@@ -52,7 +52,7 @@ jobs:
 
             # Get all open PRs created by app/dotnet-maestro and targeting branches release/8* and release/9* excluding release/9.0.3xx
             echo "Running gh pr list query..."
-            prs=$(gh pr list --state open --json number,baseRefName,author --limit 200)
+            prs=$(gh pr list --state open --limit 100 --json number,baseRefName,author,labels)
             echo "Total PRs Count: $(echo "$prs" | jq length)"
             echo "PRs JSON: $prs"
 
@@ -62,9 +62,14 @@ jobs:
             echo "Count of PRs by app/dotnet-maestro: $(echo "$prs_by_author" | jq length)"
 
             echo "Filtering PRs targeting release/8* and release/9* excluding release/9.0.3xx..."
-            filtered_prs=$(echo "$prs_by_author" | jq '[.[] | select(.baseRefName | test("^release/[89].*")) | select(.baseRefName | test("^release/9.0.3xx") | not) | .number]')
-            echo "Filtered PRs JSON: $filtered_prs"
-            echo "Count of Filtered PRs: $(echo "$filtered_prs" | jq length)"
+            prs_targeting_branches=$(echo "$prs_by_author" | jq '[.[] | select(.baseRefName | test("^release/[89].*")) | select(.baseRefName | test("^release/9.0.3xx") | not)]')
+            echo "Filtered PRs targeting specific branches JSON: $prs_targeting_branches"
+            echo "Count of PRs targeting specific branches: $(echo "$prs_targeting_branches" | jq length)"
+
+            echo "Filtering PRs without Branch Lockdown label..."
+            filtered_prs=$(echo "$prs_targeting_branches" | jq '[.[] | select(.labels | map(.name) | index("Branch Lockdown") | not) | .number]')
+            echo "Filtered PRs without Branch Lockdown label JSON: $filtered_prs"
+            echo "Count of Filtered PRs without Branch Lockdown label: $(echo "$filtered_prs" | jq length)"
 
             # Loop through filtered PRs and add label
             for pr in $(echo "$filtered_prs" | jq -r '.[]'); do
