@@ -374,6 +374,17 @@ stages:
         targetOS: linux
         targetArchitecture: x64
 
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        buildName: Windows_BuildTests
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        pool: ${{ parameters.pool_Windows }}
+        targetOS: windows
+        targetArchitecture: x64
+        extraProperties: /p:DotNetBuildTests=true
+        runTests: false
+
 #### VERTICAL BUILD (Official) ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
   - stage: VMR_Vertical_Build
@@ -395,18 +406,6 @@ stages:
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
-
-    - template: ../jobs/vmr-build.yml
-      parameters:
-        buildName: Windows_BuildTests
-        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        vmrBranch: ${{ variables.VmrBranch }}
-        sign: ${{ variables.signEnabled }}
-        pool: ${{ parameters.pool_Windows }}
-        targetOS: windows
-        targetArchitecture: x64
-        extraProperties: /p:DotNetBuildTests=true
-        runTests: false
 
     - template: ../jobs/vmr-build.yml
       parameters:
