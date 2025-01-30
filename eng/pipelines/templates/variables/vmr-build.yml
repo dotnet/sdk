@@ -30,6 +30,15 @@ variables:
 - name: defaultContainerOptions
   value: --privileged
 
+- name: isOfficialBuild
+  value: ${{ and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}
+
+- name: officialBuildParameter
+  ${{ if eq(variables['isOfficialBuild'], true) }}:
+    value: /p:OfficialBuildId=$(Build.BuildNumber)
+  ${{ else }}:
+    value: ''
+
 - ${{ if eq(parameters.desiredSigning, 'Signed') }}:
   - name: signEnabled
     value: true
