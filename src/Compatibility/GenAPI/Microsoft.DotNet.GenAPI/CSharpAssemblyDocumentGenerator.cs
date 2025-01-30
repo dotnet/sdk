@@ -149,7 +149,7 @@ public sealed class CSharpAssemblyDocumentGenerator
         return namespaceNode;
     }
 
-    // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes.This type of name hiding takes one of the following forms:
+    // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes. This type of name hiding takes one of the following forms:
     // - A constant, field, property, event, or type introduced in a class or struct hides all base class members with the same name.
     // - A method introduced in a class or struct hides all non-method base class members with the same name, and all base class methods with the same signature(§7.6).
     // - An indexer introduced in a class or struct hides all base class indexers with the same signature(§7.6) .

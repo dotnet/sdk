@@ -18,7 +18,39 @@ namespace Microsoft.DotNet.GenAPI
     public static class GenAPIApp
     {
         /// <summary>
-        /// Initialize and run Roslyn-based GenAPI tool.
+        /// Initialize and run Roslyn-based GenAPI tool specifying the assemblies to load.
+        /// </summary>
+        public static void Run(ILog log,
+            string[] assembliesPaths,
+            string[]? assemblyReferencesPaths,
+            string? outputPath,
+            string? headerFile,
+            string? exceptionMessage,
+            string[]? excludeApiFiles,
+            string[]? excludeAttributesFiles,
+            bool respectInternals,
+            bool includeAssemblyAttributes)
+        {
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
+                log,
+                assembliesPaths,
+                assemblyReferencesPaths,
+                respectInternals);
+
+            Run(log,
+                loader,
+                assemblySymbols,
+                outputPath,
+                headerFile,
+                exceptionMessage,
+                excludeApiFiles,
+                excludeAttributesFiles,
+                respectInternals,
+                includeAssemblyAttributes);
+        }
+
+        /// <summary>
+        /// Initialize and run Roslyn-based GenAPI tool using an assembly symbol loader that pre-loaded the assemblies separately.
         /// </summary>
         public static void Run(ILog log,
             IAssemblySymbolLoader loader,

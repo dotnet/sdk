@@ -5,8 +5,6 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Reflection;
-using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
 namespace Microsoft.DotNet.GenAPI.Tool
@@ -106,15 +104,9 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 string[]? assemblies = parseResult.GetValue(assembliesOption);
                 Debug.Assert(assemblies != null, "Assemblies cannot be null.");
 
-                (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
-                    log,
-                    assembliesPaths: assemblies,
-                    assemblyReferencesPaths: parseResult.GetValue(assemblyReferencesOption),
-                    respectInternals);
-
                 GenAPIApp.Run(log,
-                    loader,
-                    assemblySymbols,
+                    assemblies,
+                    parseResult.GetValue(assemblyReferencesOption),
                     parseResult.GetValue(outputPathOption),
                     parseResult.GetValue(headerFileOption),
                     parseResult.GetValue(exceptionMessageOption),
