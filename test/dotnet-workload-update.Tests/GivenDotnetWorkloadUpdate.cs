@@ -255,6 +255,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             };
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
             File.WriteAllText(installStatePath, oldInstallState.ToString());
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().BeTrue();
             updateCommand.Execute();
             var newInstallState = InstallStateContents.FromPath(installStatePath);
             newInstallState.Manifests.Should().BeNull();
@@ -473,7 +474,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     };
             (var dotnetPath, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
-            parseResult = Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "loose-manifests"]);
+            parseResult = Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]);
             WorkloadConfigCommand configCommand = new(parseResult);
             configCommand.Execute().Should().Be(0);
             updateCommand.Execute()

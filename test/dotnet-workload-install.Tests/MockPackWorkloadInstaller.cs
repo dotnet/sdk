@@ -67,9 +67,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
-        {
-            throw new NotImplementedException();
-        }
+        { }
 
         public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
         {
