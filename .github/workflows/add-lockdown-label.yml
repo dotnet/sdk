@@ -1,9 +1,10 @@
 name: Add Branch Lockdown Label to PRs
 
 on:
-  schedule:
-    # Run daily at 00:00 UTC
-    - cron: '0 23 * * *'
+  pull_request:
+    branches-ignore:
+      - main
+      - release/9.0.3xx
   workflow_dispatch: # Allows manual triggering of the workflow
 
 permissions:
@@ -47,32 +48,21 @@ jobs:
           if [[ "$current_date" > "$third_tuesday" || "$current_date" < "$first_tuesday" ]]; then
             echo "Within the label period. Adding labels to PRs..."
 
-            # Get all open PRs created by app/dotnet-maestro and targeting branches release/8* and release/9* excluding release/9.0.3xx
-            echo "Running gh pr list query..."
-            prs=$(gh pr list --state open --limit 100 --json number,baseRefName,author,labels)
-            echo "Total PRs Count: $(echo "$prs" | jq length)"
-            echo "PRs JSON: $prs"
+            # List of known branches
+            known_branches=("release/8.*" "release/9.*")
+            exclude_branch="release/9.0.3xx"
 
-            echo "Filtering PRs created by app/dotnet-maestro..."
-            prs_by_author=$(echo "$prs" | jq '[.[] | select(.author.login == "app/dotnet-maestro")]')
-            echo "PRs by app/dotnet-maestro JSON: $prs_by_author"
-            echo "Count of PRs by app/dotnet-maestro: $(echo "$prs_by_author" | jq length)"
+            # Get the target branch of the PR
+            pr_branch="${{ github.event.pull_request.base.ref }}"
 
-            echo "Filtering PRs targeting release/8* and release/9* excluding release/9.0.3xx..."
-            prs_targeting_branches=$(echo "$prs_by_author" | jq '[.[] | select(.baseRefName | test("^release/[89].*")) | select(.baseRefName | test("^release/9.0.3xx") | not)]')
-            echo "Filtered PRs targeting specific branches JSON: $prs_targeting_branches"
-            echo "Count of PRs targeting specific branches: $(echo "$prs_targeting_branches" | jq length)"
-
-            echo "Filtering PRs without Branch Lockdown label..."
-            filtered_prs=$(echo "$prs_targeting_branches" | jq '[.[] | select(.labels | map(.name) | index("Branch Lockdown") | not) | .number]')
-            echo "Filtered PRs without Branch Lockdown label JSON: $filtered_prs"
-            echo "Count of Filtered PRs without Branch Lockdown label: $(echo "$filtered_prs" | jq length)"
-
-            # Loop through filtered PRs and add label
-            for pr in $(echo "$filtered_prs" | jq -r '.[]'); do
-              echo "Adding label to PR #$pr"
-              gh pr edit $pr --add-label "Branch Lockdown"
-            done
+            # Check if the PR branch is in the list of known branches and not the excluded branch, and if the current date is within the specified range
+            for branch in "${known_branches[@]}"; do
+              if [[ "$pr_branch" =~ $branch && "$pr_branch" != "$exclude_branch" && "$current_date" > "$start_date" && "$current_date" < "$end_date" ]]; then
+                echo "Adding Branch Lockdown label to PR #${{ github.event.pull_request.number }} targeting branch $pr_branch"
+                gh pr edit ${{ github.event.pull_request.number }} --add-label "Branch Lockdown"
+                break
+              fi
+          done
           else
             echo "Outside the label period. No labels added."
           fi
