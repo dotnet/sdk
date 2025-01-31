@@ -49,7 +49,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
 
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="System.CommandLine.Rendering" />
   </ItemGroup>
 
   <ItemGroup>
