@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Cli
         public const string BinLogFileName = "msbuild.binlog";
 
         public const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
-        public const string DLLExtension = "dll";
+        public const string DLLExtension = ".dll";
     }
 
     internal static class TestStates

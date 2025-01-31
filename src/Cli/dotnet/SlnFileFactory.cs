@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -71,6 +72,7 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionPath)
         {
+            JsonDocument jsonDocument;
             JsonElement jsonElement;
             JsonElement filteredSolutionJsonElement;
             string originalSolutionPath;
@@ -79,7 +81,8 @@ namespace Microsoft.DotNet.Tools.Common
 
             try
             {
-                jsonElement = ParseSolutionFilterFile(filteredSolutionPath);
+                jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath));
+                jsonElement = jsonDocument.RootElement;
                 filteredSolutionJsonElement = jsonElement.GetProperty("solution");
                 originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
@@ -130,31 +133,15 @@ namespace Microsoft.DotNet.Tools.Common
         {
             try
             {
-                JsonElement jsonElement = ParseSolutionFilterFile(filteredSolutionPath);
-                JsonElement filteredSolutionJsonElement = jsonElement.GetProperty("solution");
-                string originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
-                return originalSolutionPath;
+                JsonNode? jsonNode = JsonNode.Parse(File.ReadAllText(filteredSolutionPath));
+                string? originalSolutionPath = jsonNode?["solution"]?["path"]?.GetValue<string>();
+                return originalSolutionPath!;
             }
             catch (Exception ex)
             {
                 throw new GracefulException(
                     CommonLocalizableStrings.InvalidSolutionFormatString,
                     filteredSolutionPath, ex.Message);
-            }
-        }
-
-        private static JsonElement ParseSolutionFilterFile(string solutionFilterFilePath)
-        {
-            try
-            {
-                JsonDocument jsonDocument = JsonDocument.Parse(File.ReadAllText(solutionFilterFilePath));
-                return jsonDocument.RootElement;
-            }
-            catch (Exception ex)
-            {
-                throw new GracefulException(
-                    CommonLocalizableStrings.InvalidSolutionFormatString,
-                    solutionFilterFilePath, ex.Message);
             }
         }
     }
