@@ -202,6 +202,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         [InlineData(false)]
         public void GivenWorkloadUpdateAcrossFeatureBandsItUpdatesPacks(bool userLocal)
         {
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
+
             var testDirectory = _testAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");

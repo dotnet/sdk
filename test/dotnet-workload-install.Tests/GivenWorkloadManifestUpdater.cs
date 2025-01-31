@@ -41,6 +41,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public async Task GivenAdvertisingManifestUpdateItUpdatesWhenNoSentinelExists()
         {
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
+
             (var manifestUpdater, var nugetDownloader, var sentinelPath) = GetTestUpdater();
 
             await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
@@ -51,6 +53,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public async Task GivenAdvertisingManifestUpdateItUpdatesWhenDue()
         {
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
+
             Func<string, string> getEnvironmentVariable = (envVar) => envVar.Equals(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS) ? "0" : string.Empty;
             (var manifestUpdater, var nugetDownloader, var sentinelPath) = GetTestUpdater(getEnvironmentVariable: getEnvironmentVariable);
 
@@ -643,6 +647,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public async Task TestSideBySideUpdateChecks()
         {
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
+
             // this test checks that different version bands don't interfere with each other's update check timers
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
