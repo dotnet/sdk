@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
@@ -40,7 +39,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             Mock<ILog> log = new();
 
             (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
-                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe);
+                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
 
             ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
             ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);

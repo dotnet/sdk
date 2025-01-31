@@ -14,6 +14,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     {
         /// <inheritdoc />
         public IAssemblySymbolLoader Create(bool shouldResolveReferences) =>
-            new AssemblySymbolLoader(log, shouldResolveReferences, includeInternalSymbols);
+            new AssemblySymbolLoader(log, resolveAssemblyReferences: shouldResolveReferences, includeInternalSymbols: includeInternalSymbols);
     }
 }
