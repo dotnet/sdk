@@ -127,7 +127,7 @@ variables:
 - name: linuxBionicCrossContainerName
   value: linuxBionicCrossContainer
 - name: linuxBionicCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-android-openssl
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-android-openssl-amd64
 
 - name: browserCrossContainerName
   value: browserCrossContainer
