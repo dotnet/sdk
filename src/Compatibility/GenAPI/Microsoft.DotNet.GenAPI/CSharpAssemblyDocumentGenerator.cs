@@ -35,6 +35,7 @@ public sealed class CSharpAssemblyDocumentGenerator
     private readonly IEnumerable<MetadataReference>? _metadataReferences;
     private readonly bool _addPartialModifier;
     private readonly bool _hideImplicitDefaultConstructors;
+    private readonly CSharpCompilationOptions _compilationOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CSharpAssemblyDocumentGenerator"/> class.
@@ -46,6 +47,7 @@ public sealed class CSharpAssemblyDocumentGenerator
     /// <param name="exceptionMessage">The optional exception message to use.</param>
     /// <param name="includeAssemblyAttributes">Whether to include assembly attributes or not.</param>
     /// <param name="metadataReferences">The metadata references to use. The default value is <see langword="null"/>.</param>
+    /// <param name="diagnosticOptions">The optional diagnostic options to use. The default value is <see langword="null"/>.</param>
     /// <param name="addPartialModifier">Whether to add the partial modifier or not. The default value is <see langword="true"/>.</param>
     /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors or not. The default value is <see langword="true"/>.</param>
     public CSharpAssemblyDocumentGenerator(ILog log,
@@ -55,6 +57,7 @@ public sealed class CSharpAssemblyDocumentGenerator
                                  string? exceptionMessage,
                                  bool includeAssemblyAttributes,
                                  IEnumerable<MetadataReference>? metadataReferences = null,
+                                 IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null,
                                  bool addPartialModifier = true,
                                  bool hideImplicitDefaultConstructors = true)
     {
@@ -69,6 +72,11 @@ public sealed class CSharpAssemblyDocumentGenerator
         _metadataReferences = metadataReferences;
         _addPartialModifier = addPartialModifier;
         _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
+
+        _compilationOptions = new CSharpCompilationOptions(
+            OutputKind.DynamicallyLinkedLibrary,
+            nullableContextOptions: NullableContextOptions.Enable,
+            specificDiagnosticOptions: diagnosticOptions);
     }
 
     /// <summary>
@@ -78,11 +86,9 @@ public sealed class CSharpAssemblyDocumentGenerator
     /// <returns>The source code document instance of the specified assembly symbol.</returns>
     public Document GetDocumentForAssembly(IAssemblySymbol assemblySymbol)
     {
-        CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary,
-               nullableContextOptions: NullableContextOptions.Enable);
         Project project = _adhocWorkspace.AddProject(ProjectInfo.Create(
             ProjectId.CreateNewId(), VersionStamp.Create(), assemblySymbol.Name, assemblySymbol.Name, LanguageNames.CSharp,
-            compilationOptions: compilationOptions));
+            compilationOptions: _compilationOptions));
         project = project.AddMetadataReferences(_metadataReferences ?? _loader.MetadataReferences);
 
         IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_symbolFilter.Include);

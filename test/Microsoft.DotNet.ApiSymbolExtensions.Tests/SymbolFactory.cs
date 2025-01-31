@@ -31,12 +31,13 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
         }
 
         public static Stream EmitAssemblyStreamFromSyntax(string syntax,
+            IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null,
             bool enableNullable = false,
             byte[] publicKey = null,
             [CallerMemberName] string assemblyName = "",
             bool allowUnsafe = false)
         {
-            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe);
+            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
 
             Assert.Empty(compilation.GetDiagnostics());
 
@@ -76,9 +77,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             return compilation.Assembly;
         }
 
-        private static CSharpCompilation CreateCSharpCompilationFromSyntax(string syntax, string name, bool enableNullable, byte[] publicKey, bool allowUnsafe)
+        private static CSharpCompilation CreateCSharpCompilationFromSyntax(string syntax, string name, bool enableNullable, byte[] publicKey, bool allowUnsafe, IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null)
         {
-            CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe);
+            CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
             return compilation.AddSyntaxTrees(GetSyntaxTree(syntax));
         }
 
@@ -94,7 +95,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             return CSharpSyntaxTree.ParseText(syntax, ParseOptions);
         }
 
-        private static CSharpCompilation CreateCSharpCompilation(string name, bool enableNullable, byte[] publicKey, bool allowUnsafe)
+        private static CSharpCompilation CreateCSharpCompilation(string name, bool enableNullable, byte[] publicKey, bool allowUnsafe, IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null)
         {
             bool publicSign = publicKey != null ? true : false;
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
@@ -102,7 +103,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
                                                                   cryptoPublicKey: publicSign ? publicKey.ToImmutableArray() : default,
                                                                   nullableContextOptions: enableNullable ? NullableContextOptions.Enable : NullableContextOptions.Disable,
                                                                   allowUnsafe: allowUnsafe,
-                                                                  specificDiagnosticOptions: DiagnosticOptions);
+                                                                  specificDiagnosticOptions: diagnosticOptions ?? DiagnosticOptions);
 
             return CSharpCompilation.Create(name, options: compilationOptions, references: DefaultReferences);
         }
