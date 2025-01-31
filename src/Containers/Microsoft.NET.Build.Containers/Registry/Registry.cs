@@ -3,11 +3,9 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
-using NuGet.Packaging;
 using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers;

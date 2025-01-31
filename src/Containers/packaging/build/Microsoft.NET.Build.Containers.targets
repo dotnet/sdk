@@ -340,16 +340,15 @@
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainers" />
     </MSBuild>
 
-    <PropertyGroup>
-      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
-      <_SkipCreateImageIndex Condition="'$(ContainerRegistry)' == ''">true</_SkipCreateImageIndex>
-    </PropertyGroup>
-
-    <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
-                      GeneratedContainers="@(GeneratedContainers)"
+    <CreateImageIndex GeneratedContainers="@(GeneratedContainers)"
+                      LocalRegistry="$(LocalRegistry)"
                       OutputRegistry="$(ContainerRegistry)"
+                      ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                       Repository="$(ContainerRepository)"
-                      ImageTags="@(ContainerImageTags)">
+                      ImageTags="@(ContainerImageTags)"
+                      BaseRegistry="$(ContainerBaseRegistry)"
+                      BaseImageName="$(ContainerBaseName)"
+                      BaseImageTag="$(ContainerBaseTag)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
     </CreateImageIndex>
   </Target>

@@ -1010,9 +1010,9 @@ public class EndToEndTests : IDisposable
         commandResult.Should().Pass()
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
-            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to registry")
-            .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to registry")
-            .And.HaveStdOutContaining($"Pushed image index '{imageIndex}' to registry '{registry}'");
+            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to registry '{registry}'.")
+            .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to registry '{registry}'.")
+            .And.HaveStdOutContaining($"Pushed image index '{imageIndex}' to registry '{registry}'.");
 
 
         // Check that the containers can be run

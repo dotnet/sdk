@@ -41,7 +41,7 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image layers.
     /// </summary>
-    internal required List<ManifestLayer> Layers { get; init; }
+    internal List<ManifestLayer>? Layers { get; init; }
 
     /// <summary>
     /// Gets image OS.

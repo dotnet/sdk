@@ -23,31 +23,31 @@ internal static class ImageIndexGenerator
     /// <summary>
     /// Generates an image index from the given images.
     /// </summary>
-    /// <param name="imageInfos"></param>
+    /// <param name="images"></param>
     /// <returns>Returns json string of image index and image index mediaType.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    internal static (string, string) GenerateImageIndex(ImageInfo[] imageInfos)
+    internal static (string, string) GenerateImageIndex(BuiltImage[] images)
     {
-        if (imageInfos.Length == 0)
+        if (images.Length == 0)
         {
             throw new ArgumentException(string.Format(Strings.ImagesEmpty));
         }
 
-        string manifestMediaType = imageInfos[0].ManifestMediaType;
+        string manifestMediaType = images[0].ManifestMediaType;
 
-        if (!imageInfos.All(image => string.Equals(image.ManifestMediaType, manifestMediaType, StringComparison.OrdinalIgnoreCase)))
+        if (!images.All(image => string.Equals(image.ManifestMediaType, manifestMediaType, StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(Strings.MixedMediaTypes);
         }
 
         if (manifestMediaType == SchemaTypes.DockerManifestV2)
         {
-            return GenerateImageIndex(imageInfos, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2);
+            return GenerateImageIndex(images, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2);
         }
         else if (manifestMediaType == SchemaTypes.OciManifestV1)
         {
-            return GenerateImageIndex(imageInfos, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1);
+            return GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1);
         }
         else
         {
@@ -55,10 +55,10 @@ internal static class ImageIndexGenerator
         }
     }
 
-    private static (string, string) GenerateImageIndex(ImageInfo[] images, string manifestMediaType, string imageIndexMediaType)
+    private static (string, string) GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
     {
         // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
-        // We are filling the same fiels, so we can use the same struct.
+        // We are filling the same fields, so we can use the same struct.
         var manifests = new PlatformSpecificManifest[images.Length];
         for (int i = 0; i < images.Length; i++)
         {
@@ -69,32 +69,22 @@ internal static class ImageIndexGenerator
                 mediaType = manifestMediaType,
                 size = image.Manifest.Length,
                 digest = image.ManifestDigest,
-                platform = GetArchitectureAndOsFromConfig(image)
+                platform = new PlatformInformation
+                {
+                    architecture = image.Architecture,
+                    os = image.OS
+                }
             };
             manifests[i] = manifest;
         }
 
-        var dockerManifestList = new ManifestListV2
+        var manifestList = new ManifestListV2
         {
             schemaVersion = 2,
             mediaType = imageIndexMediaType,
             manifests = manifests
         };
 
-        return (JsonSerializer.SerializeToNode(dockerManifestList)?.ToJsonString() ?? "", dockerManifestList.mediaType);
-    }
-
-    private static PlatformInformation GetArchitectureAndOsFromConfig(ImageInfo image)
-    {
-        var configJson = JsonNode.Parse(image.Config) as JsonObject ??
-            throw new ArgumentException($"{nameof(image.Config)} should be a JSON object.", nameof(image.Config));
-
-        var architecture = configJson["architecture"]?.ToString() ??
-            throw new ArgumentException($"{nameof(image.Config)} should contain 'architecture'.", nameof(image.Config));
-
-        var os = configJson["os"]?.ToString() ??
-            throw new ArgumentException($"{nameof(image.Config)} should contain 'os'.", nameof(image.Config));
-
-        return new PlatformInformation { architecture = architecture, os = os };
+        return (JsonSerializer.SerializeToNode(manifestList)?.ToJsonString() ?? "", manifestList.mediaType);
     }
 }

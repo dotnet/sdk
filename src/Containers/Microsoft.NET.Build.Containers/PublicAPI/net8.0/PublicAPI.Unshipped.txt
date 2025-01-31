@@ -19,6 +19,18 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseRegistry.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageName.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageName.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageTag.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageTag.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedArchiveOutputPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedArchiveOutputPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Cancel() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.CreateImageIndex() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Dispose() -> void
