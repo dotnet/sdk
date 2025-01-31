@@ -572,6 +572,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
                          TargetFramework="net10.0"
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
+                         ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
