@@ -3428,6 +3428,26 @@
             ]
           }
         },
+        "CA1873": {
+          "id": "CA1873",
+          "shortDescription": "Avoid potentially expensive logging",
+          "fullDescription": "In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1873",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidPotentiallyExpensiveCallWhenLoggingAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",

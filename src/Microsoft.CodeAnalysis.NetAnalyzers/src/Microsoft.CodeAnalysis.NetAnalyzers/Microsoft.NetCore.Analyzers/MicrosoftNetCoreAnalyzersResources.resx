@@ -2132,6 +2132,15 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="UseStringMethodCharOverloadWithSingleCharactersTitle" xml:space="preserve">
     <value>Use char overload</value>
   </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingDescription" xml:space="preserve">
+    <value>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingMessage" xml:space="preserve">
+    <value>Evaluation of this argument may be expensive and unnecessary if logging is disabled</value>
+  </data>
+  <data name="AvoidPotentiallyExpensiveCallWhenLoggingTitle" xml:space="preserve">
+    <value>Avoid potentially expensive logging</value>
+  </data>
   <data name="AvoidSingleUseOfLocalJsonSerializerOptionsMessage" xml:space="preserve">
     <value>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</value>
   </data>

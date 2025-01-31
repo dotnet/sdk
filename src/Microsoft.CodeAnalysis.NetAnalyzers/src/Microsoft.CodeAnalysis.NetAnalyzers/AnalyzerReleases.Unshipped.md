@@ -4,5 +4,6 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+CA1873 | Performance | Info | AvoidPotentiallyExpensiveCallWhenLoggingAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1873)
 CA2023 | Reliability | Warning | LoggerMessageDefineAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2023)
 CA2024 | Reliability | Warning | DoNotUseEndOfStreamInAsyncMethods, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2024)

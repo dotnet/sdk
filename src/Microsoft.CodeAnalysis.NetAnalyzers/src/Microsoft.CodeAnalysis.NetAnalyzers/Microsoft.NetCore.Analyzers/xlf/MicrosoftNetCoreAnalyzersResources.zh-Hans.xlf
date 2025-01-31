@@ -67,6 +67,21 @@
         <target state="translated">不要将常量数组作为参数</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingDescription">
+        <source>In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</source>
+        <target state="new">In many situations, logging is disabled or set to a log level that results in an unnecessary evaluation for this argument.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingMessage">
+        <source>Evaluation of this argument may be expensive and unnecessary if logging is disabled</source>
+        <target state="new">Evaluation of this argument may be expensive and unnecessary if logging is disabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidPotentiallyExpensiveCallWhenLoggingTitle">
+        <source>Avoid potentially expensive logging</source>
+        <target state="new">Avoid potentially expensive logging</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
         <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
         <target state="translated">避免为每个序列化操作创建新的“JsonSerializerOptions”实例。请改为缓存和重用实例。仅使用“JsonSerializerOptions”实例可能会显著降低应用程序的性能。</target>
