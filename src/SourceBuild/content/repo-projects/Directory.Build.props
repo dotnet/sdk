@@ -180,11 +180,9 @@
     <EnvironmentVariables Include="RestoreConfigFile=$(NuGetConfigFile)" Condition="'$(NuGetConfigFile)' != ''" />
 
     <!-- Need to be passed in here so that outer and inner builds don't restore into the orchestrator package cache (CI builds)
-         or the user package cache (local dev builds).
-         Don't set NUGET_PACKAGES when building source-only as NUGET_PACKAGES is already explicitly set in the build invocation
-         when running tests, in order for pre-built detection to work. -->
+         or the user package cache (local dev builds). -->
     <EnvironmentVariables Include="NUGET_PACKAGES=$(RepoArtifactsPackageCache)" />
-    <TestEnvironmentVariable Include="NUGET_PACKAGES=$(RepoArtifactsPackageCache)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <TestEnvironmentVariable Include="NUGET_PACKAGES=$(RepoArtifactsPackageCache)" />
   </ItemGroup>
 
   <ItemGroup  Condition="'$(DotNetBuildSourceOnly)' == 'true'">

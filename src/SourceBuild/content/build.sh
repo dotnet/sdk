@@ -294,13 +294,6 @@ if [[ "$sourceOnly" == "true" ]]; then
   export NUGET_PACKAGES="$scriptroot/.packages/"
   export RESTORENOHTTPCACHE=true
 
-  if [[ "$test" == true ]]; then
-    # Use a custom package cache for tests to make prebuilt detection work.
-    export NUGET_PACKAGES="${NUGET_PACKAGES}tests/"
-  fi
-
-  echo "NuGet packages cache: '${NUGET_PACKAGES}'."
-
   # For build purposes, we need to make sure we have all the SourceLink information
   if [ "$test" != "true" ]; then
     GIT_DIR="$scriptroot/.git"
