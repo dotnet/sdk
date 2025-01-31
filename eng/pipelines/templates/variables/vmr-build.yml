@@ -17,13 +17,6 @@ variables:
   - name: VmrBranch
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
-- ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
-  - name: ibcEnabled
-    value: true
-- ${{ else }}:
-  - name: ibcEnabled
-    value: false
-
 - name: _TeamName
   value: DotNetCore
 
@@ -32,6 +25,13 @@ variables:
 
 - name: isOfficialBuild
   value: ${{ and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}
+
+- ${{ if eq(variables['isOfficialBuild'], true) }}:
+  - name: ibcEnabled
+    value: true
+- ${{ else }}:
+  - name: ibcEnabled
+    value: false
 
 - name: officialBuildParameter
   ${{ if eq(variables['isOfficialBuild'], true) }}:
