@@ -61,8 +61,6 @@ while [[ -h "$source" ]]; do
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
-packagesRestoredDir="$scriptroot/.packages/"
-
 # Common settings
 binary_log=false
 configuration='Release'
@@ -242,20 +240,6 @@ function Build {
     ExitWithExitCode 0
 
   else
-    # Don't use the global nuget cache folder when building source-only which
-    # restores prebuilt packages that should never get into the global nuget cache.
-    use_global_nuget_cache=false
-    GetNuGetPackageCachePath
-
-    if [[ "$test" == true ]]; then
-      # When building source-only, use a custom package cache for tests to make prebuilt detection work.
-      if [[ "$sourceOnly" == "true" ]]; then
-        export NUGET_PACKAGES="${NUGET_PACKAGES}tests"
-      fi
-    fi
-
-    echo "$NUGET_PACKAGES"
-
     if [ "$ci" == "true" ]; then
       properties+=( "/p:ContinuousIntegrationBuild=true" )
     fi
@@ -305,6 +289,18 @@ fi
 
 # Source-only settings
 if [[ "$sourceOnly" == "true" ]]; then
+  # Don't use the global nuget cache folder when building source-only which
+  # restores prebuilt packages that should never get into the global nuget cache.
+  export NUGET_PACKAGES="$scriptroot/.packages/"
+  export RESTORENOHTTPCACHE=true
+
+  if [[ "$test" == true ]]; then
+    # Use a custom package cache for tests to make prebuilt detection work.
+    export NUGET_PACKAGES="${NUGET_PACKAGES}tests/"
+  fi
+
+  echo "NuGet packages cache: '${NUGET_PACKAGES}'."
+
   # For build purposes, we need to make sure we have all the SourceLink information
   if [ "$test" != "true" ]; then
     GIT_DIR="$scriptroot/.git"
@@ -417,7 +413,7 @@ if [[ "$sourceOnly" == "true" ]]; then
 
     export SOURCE_BUILT_SDK_ID_ARCADE=Microsoft.DotNet.Arcade.Sdk
     export SOURCE_BUILT_SDK_VERSION_ARCADE=$ARCADE_BOOTSTRAP_VERSION
-    export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/BootstrapPackages/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_ARCADE=${NUGET_PACKAGES}BootstrapPackages/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
   fi
 
   # 2. Microsoft.Build.NoTargets
@@ -428,7 +424,7 @@ if [[ "$sourceOnly" == "true" ]]; then
 
     export SOURCE_BUILT_SDK_ID_NOTARGETS=Microsoft.Build.NoTargets
     export SOURCE_BUILT_SDK_VERSION_NOTARGETS=$NOTARGETS_BOOTSTRAP_VERSION
-    export SOURCE_BUILT_SDK_DIR_NOTARGETS=$packagesRestoredDir/BootstrapPackages/microsoft.build.notargets/$NOTARGETS_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_NOTARGETS=${NUGET_PACKAGES}BootstrapPackages/microsoft.build.notargets/$NOTARGETS_BOOTSTRAP_VERSION
   fi
 
   # 3. Microsoft.Build.Traversal
@@ -439,7 +435,7 @@ if [[ "$sourceOnly" == "true" ]]; then
 
     export SOURCE_BUILT_SDK_ID_TRAVERSAL=Microsoft.Build.Traversal
     export SOURCE_BUILT_SDK_VERSION_TRAVERSAL=$TRAVERSAL_BOOTSTRAP_VERSION
-    export SOURCE_BUILT_SDK_DIR_TRAVERSAL=$packagesRestoredDir/BootstrapPackages/microsoft.build.traversal/$TRAVERSAL_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_TRAVERSAL=${NUGET_PACKAGES}BootstrapPackages/microsoft.build.traversal/$TRAVERSAL_BOOTSTRAP_VERSION
   fi
 
   echo "Found bootstrap versions: SDK $SDK_VERSION, Arcade $ARCADE_BOOTSTRAP_VERSION, NoTargets $NOTARGETS_BOOTSTRAP_VERSION and Traversal $TRAVERSAL_BOOTSTRAP_VERSION"
