@@ -151,113 +151,14 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
             return false;
         }
 
+        GeneratedArchiveOutputPath = ArchiveOutputPath;
+
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
-        switch (destinationImageReference.Kind)
-        {
-            case DestinationImageReferenceKind.LocalRegistry:
-                await PushToLocalRegistryAsync(images,
-                    sourceImageReference,
-                    destinationImageReference,
-                    telemetry,
-                    cancellationToken).ConfigureAwait(false);
-                break;
-            case DestinationImageReferenceKind.RemoteRegistry:
-                await PushToRemoteRegistryAsync(images,
-                    destinationImageReference,
-                    cancellationToken).ConfigureAwait(false);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-
-        telemetry.LogPublishSuccess();
+        await ImagePublisher.PublishImage(images, sourceImageReference, destinationImageReference, Log, BuildEngine, telemetry, cancellationToken)
+            .ConfigureAwait(false);
 
         return !Log.HasLoggedErrors;
-    }
-
-    private async Task PushToLocalRegistryAsync(BuiltImage[] images, SourceImageReference sourceImageReference,
-        DestinationImageReference destinationImageReference,
-        Telemetry telemetry,
-        CancellationToken cancellationToken)
-    {
-        ILocalRegistry localRegistry = destinationImageReference.LocalRegistry!;
-        if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
-        {
-            telemetry.LogMissingLocalBinary();
-            Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
-            return;
-        }
-        try
-        {
-            await localRegistry.LoadAsync(images, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-            SafeLog(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
-
-            if (localRegistry is ArchiveFileRegistry archive)
-            {
-                GeneratedArchiveOutputPath = archive.ArchiveOutputPath;
-            }
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
-        {
-            telemetry.LogLocalLoadError();
-            Log.LogErrorFromException(dle, showStackTrace: false);
-        }
-        catch (ArgumentException argEx)
-        {
-            Log.LogErrorFromException(argEx, showStackTrace: false);
-        }
-    }
-
-    private async Task PushToRemoteRegistryAsync(BuiltImage[] images,
-        DestinationImageReference destinationImageReference,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
-            await destinationImageReference.RemoteRegistry!.PushManifestListAsync(
-                destinationImageReference.Repository,
-                destinationImageReference.Tags,
-                imageIndex,
-                mediaType,
-                cancellationToken).ConfigureAwait(false);
-            SafeLog(Strings.ImageIndexUploadedToRegistry, destinationImageReference, OutputRegistry);
-        }
-        catch (UnableToAccessRepositoryException)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
-            }
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (Exception e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
-                Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
-            }
-        }
-    }
-
-    private void SafeLog(string message, params object[] formatParams)
-    {
-        if (BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
     }
 
     private BuiltImage[] ParseImages(DestinationImageReferenceKind destinationKind)
