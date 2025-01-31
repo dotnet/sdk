@@ -176,8 +176,6 @@
     <PrebuiltSourceBuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previously-source-built'))</PrebuiltSourceBuiltPackagesPath>
     <PrebuiltSourceBuiltPackagesPath Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(CustomPrebuiltSourceBuiltPackagesPath)'))</PrebuiltSourceBuiltPackagesPath>
 
-    <GitInfoDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'git-info'))</GitInfoDir>
-
     <PackageReportDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'prebuilt-report'))</PackageReportDir>
     <ResultingPrebuiltPackagesDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', 'prebuilt-packages'))</ResultingPrebuiltPackagesDir>
     <SbrpRepoSrcDir>$([MSBuild]::NormalizeDirectory('$(SrcDir)', 'source-build-reference-packages', 'src'))</SbrpRepoSrcDir>
