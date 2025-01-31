@@ -9,10 +9,10 @@ Backport: https://github.com/dotnet/winforms/pull/12837
  .../Private/Windows/Core/Nrbf/SerializationRecordExtensions.cs  | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/src/System.Private.Windows.Core/src/System/Private/Windows/Core/Nrbf/SerializationRecordExtensions.cs b/src/System.Private.Windows.Core/src/System/Private/Windows/Core/Nrbf/SerializationRecordExtensions.cs
+diff --git a/src/System.Private.Windows.Core/src/System/Private/Windows/Nrbf/SerializationRecordExtensions.cs b/src/System.Private.Windows.Core/src/System/Private/Windows/Nrbf/SerializationRecordExtensions.cs
 index 7f9ba95a7..6537c9da0 100644
---- a/src/System.Private.Windows.Core/src/System/Private/Windows/Core/Nrbf/SerializationRecordExtensions.cs
-+++ b/src/System.Private.Windows.Core/src/System/Private/Windows/Core/Nrbf/SerializationRecordExtensions.cs
+--- a/src/System.Private.Windows.Core/src/System/Private/Windows/Nrbf/SerializationRecordExtensions.cs
++++ b/src/System.Private.Windows.Core/src/System/Private/Windows/Nrbf/SerializationRecordExtensions.cs
 @@ -349,7 +349,7 @@ internal static class SerializationRecordExtensions
                  || !classInfo.HasMember("_size")
                  || classInfo.GetRawValue("_size") is not int size

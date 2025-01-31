@@ -582,7 +582,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -861,7 +860,6 @@ stages:
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64
-            runTests: false
             buildPass: 2
             reuseBuildArtifactsFrom:
             - Windows_x64

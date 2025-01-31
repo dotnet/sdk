@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -94,7 +95,8 @@ namespace Microsoft.DotNet.Tools.Common
                     .Select(project => project.GetString())
                     .ToArray();
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 throw new GracefulException(
                     CommonLocalizableStrings.InvalidSolutionFormatString,
                     filteredSolutionPath, ex.Message);
@@ -125,6 +127,22 @@ namespace Microsoft.DotNet.Tools.Common
             }
 
             return filteredSolution;
+        }
+
+        public static string GetSolutionPathFromFilteredSolutionFile(string filteredSolutionPath)
+        {
+            try
+            {
+                JsonNode? jsonNode = JsonNode.Parse(File.ReadAllText(filteredSolutionPath));
+                string? originalSolutionPath = jsonNode?["solution"]?["path"]?.GetValue<string>();
+                return originalSolutionPath!;
+            }
+            catch (Exception ex)
+            {
+                throw new GracefulException(
+                    CommonLocalizableStrings.InvalidSolutionFormatString,
+                    filteredSolutionPath, ex.Message);
+            }
         }
     }
 }

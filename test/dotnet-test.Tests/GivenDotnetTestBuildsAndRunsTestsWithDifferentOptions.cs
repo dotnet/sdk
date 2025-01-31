@@ -52,21 +52,55 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern)
-                                   .Select(match => match.Value.Split(TestApplicationArgsSeparator)[0])
-                                   .ToList();
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true), result.StdOut);
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true), result.StdOut);
 
-            string expectedProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}TestProject{Path.DirectorySeparatorChar}TestProject.csproj";
-            string otherExpectedProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}OtherTestProject{Path.DirectorySeparatorChar}OtherTestProject.csproj";
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
 
-            bool containsExpectedPath = testAppArgs.Any(arg => arg.Contains(expectedProjectPath) || arg.Contains(otherExpectedProjectPath));
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunWithSolutionFilterPathWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
 
-            Assert.True(containsExpectedPath,
-                        $"Expected either '{expectedProjectPath}' or '{otherExpectedProjectPath}' to be present in the test application arguments.");
+            string testSolutionPath = "TestProjects.slnf";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            // Assert that only TestProject ran
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true), result.StdOut);
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunWithSolutionFilterPathInOtherDirectory_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory($"{testInstance.Path}{Path.DirectorySeparatorChar}SolutionFilter")
+                                    .WithEnableTestingPlatform()
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            // Assert that only TestProject ran
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
