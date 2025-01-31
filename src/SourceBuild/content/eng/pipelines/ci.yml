@@ -120,14 +120,14 @@ extends:
       ${{ variables.azurelinuxArm64CrossContainerName }}:
         image: ${{ variables.azurelinuxArm64CrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxX64AlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
+      ${{ variables.azurelinuxX64MuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxX64MuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxArmAlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxArmAlpineCrossContainerImage }}
+      ${{ variables.azurelinuxArmMuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxArmMuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxArm64AlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxArm64AlpineCrossContainerImage }}
+      ${{ variables.azurelinuxArm64MuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxArm64MuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
       ${{ variables.androidCrossContainerName }}:
         image: ${{ variables.androidCrossContainerImage }}
