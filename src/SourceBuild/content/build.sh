@@ -207,9 +207,6 @@ if [[ "$ci" == true ]]; then
   fi
 fi
 
-# Never use the global nuget cache folder
-use_global_nuget_cache=false
-
 . "$scriptroot/eng/common/tools.sh"
 
 project="$scriptroot/build.proj"
@@ -230,10 +227,6 @@ function Build {
 
     InitializeToolset
 
-    # Manually unset NUGET_PACKAGES as InitializeToolset sets it unconditionally.
-    # The env var shouldn't be set so that the RestorePackagesPath msbuild property is respected.
-    unset NUGET_PACKAGES
-
     local bl=""
     if [[ "$binary_log" == true ]]; then
       bl="/bl:\"$log_dir/Build.binlog\""
@@ -249,6 +242,17 @@ function Build {
     ExitWithExitCode 0
 
   else
+    # Don't use the global nuget cache folder when building source-only which
+    # restores prebuilt packages that should never get into the global nuget cache.
+    use_global_nuget_cache=false
+    GetNuGetPackageCachePath
+
+    if [[ "$test" == true ]]; then
+      # When building source-only, use a custom package cache for tests to make prebuilt detection work.
+      if [[ "$sourceOnly" == "true" ]]; then
+        export NUGET_PACKAGES="${NUGET_PACKAGES}tests"
+      fi
+    fi
 
     if [ "$ci" == "true" ]; then
       properties+=( "/p:ContinuousIntegrationBuild=true" )
