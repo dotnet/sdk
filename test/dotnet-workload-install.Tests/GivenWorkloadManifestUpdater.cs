@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public async Task GivenWorkloadManifestUpdateItCanUpdateAdvertisingManifests()
         {
-            (var manifestUpdater, var nugetDownloader, _) = GetTestUpdater();
+            (var manifestUpdater, var nugetDownloader, _, _) = GetTestUpdater();
 
             await manifestUpdater.UpdateAdvertisingManifestsAsync(true);
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
@@ -42,10 +42,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public async Task GivenAdvertisingManifestUpdateItUpdatesWhenNoSentinelExists()
         {
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater();
 
-            (var manifestUpdater, var nugetDownloader, var sentinelPath) = GetTestUpdater();
-
+            configCommand.Execute().Should().Be(0);
             await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
             File.Exists(sentinelPath).Should().BeTrue();
@@ -54,14 +53,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public async Task GivenAdvertisingManifestUpdateItUpdatesWhenDue()
         {
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
-
             Func<string, string> getEnvironmentVariable = (envVar) => envVar.Equals(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS) ? "0" : string.Empty;
-            (var manifestUpdater, var nugetDownloader, var sentinelPath) = GetTestUpdater(getEnvironmentVariable: getEnvironmentVariable);
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater(getEnvironmentVariable: getEnvironmentVariable);
 
             File.WriteAllText(sentinelPath, string.Empty);
             var createTime = DateTime.Now;
 
+            configCommand.Execute().Should().Be(0);
             await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
 
             nugetDownloader.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages());
@@ -72,7 +70,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public async Task GivenAdvertisingManifestUpdateItDoesNotUpdateWhenNotDue()
         {
-            (var manifestUpdater, var nugetDownloader, var sentinelPath) = GetTestUpdater();
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, _) = GetTestUpdater();
 
             File.Create(sentinelPath).Close();
             var createTime = DateTime.Now;
@@ -86,7 +84,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public async Task GivenAdvertisingManifestUpdateItHonorsDisablingEnvVar()
         {
             Func<string, string> getEnvironmentVariable = (envVar) => envVar.Equals(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE) ? "true" : string.Empty;
-            (var manifestUpdater, var nugetDownloader, _) = GetTestUpdater(getEnvironmentVariable: getEnvironmentVariable);
+            (var manifestUpdater, var nugetDownloader, _, _) = GetTestUpdater(getEnvironmentVariable: getEnvironmentVariable);
 
             await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             nugetDownloader.DownloadCallParams.Should().BeEmpty();
@@ -648,19 +646,23 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public async Task TestSideBySideUpdateChecks()
         {
-            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
-
             // this test checks that different version bands don't interfere with each other's update check timers
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
-            (var updater1, var downloader1, var sentinelPath1) = GetTestUpdater(testDir: testDir, featureBand: "6.0.100");
-            (var updater2, var downloader2, var sentinelPath2) = GetTestUpdater(testDir: testDir, featureBand: "6.0.200");
+            (var updater1, var downloader1, var sentinelPath1, var resolver1) = GetTestUpdater(testDir: testDir, featureBand: "6.0.100");
+            (var updater2, var downloader2, var sentinelPath2, var resolver2) = GetTestUpdater(testDir: testDir, featureBand: "6.0.200");
 
+            new WorkloadConfigCommand(
+                Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.100", resolver1)).Execute().Should().Be(0);
             await updater1.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             File.Exists(sentinelPath2).Should().BeFalse();
 
             downloader1.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages("6.0.100"));
 
+            new WorkloadConfigCommand(
+                Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, "6.0.200", resolver2)).Execute().Should().Be(0);
             await updater2.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             File.Exists(sentinelPath2).Should().BeTrue();
             downloader2.DownloadCallParams.Should().BeEquivalentTo(GetExpectedDownloadedPackages("6.0.200"));
@@ -685,16 +687,20 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return expectedDownloadedPackages;
         }
 
-        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string) GetTestUpdater([CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null)
+        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, WorkloadConfigCommand) GetTestUpdater([CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null)
         {
             var testDir = _testAssetsManager.CreateTestDirectory(testName: testName).Path;
 
             var featureBand = "6.0.100";
 
-            return GetTestUpdater(testDir, featureBand, testName, getEnvironmentVariable);
+            (var manifestUpdater, var packageDownloader, var sentinelPath, var workloadResolver) = GetTestUpdater(testDir, featureBand, testName, getEnvironmentVariable);
+            var configCommand = new WorkloadConfigCommand(
+                Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, featureBand, workloadResolver));
+            return (manifestUpdater, packageDownloader, sentinelPath, configCommand);
         }
 
-        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string) GetTestUpdater(string testDir, string featureBand, [CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null)
+        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, IWorkloadResolver) GetTestUpdater(string testDir, string featureBand, [CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null)
         {
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
@@ -722,7 +728,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, new MockPackWorkloadInstaller(dotnetRoot), getEnvironmentVariable: getEnvironmentVariable);
 
             var sentinelPath = Path.Combine(testDir, _manifestSentinelFileName + featureBand);
-            return (manifestUpdater, nugetDownloader, sentinelPath);
+            return (manifestUpdater, nugetDownloader, sentinelPath, workloadResolver);
         }
 
         internal static string GetManifestContent(ManifestVersion version)
