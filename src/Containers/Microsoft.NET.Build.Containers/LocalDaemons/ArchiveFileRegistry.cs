@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.LocalDaemons;
@@ -15,9 +14,9 @@ internal class ArchiveFileRegistry : ILocalRegistry
         ArchiveOutputPath = archiveOutputPath;
     }
 
-    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference,
-        DestinationImageReference destinationReference,
-        CancellationToken cancellationToken)
+    private async Task LoadAsync<T>(T image, SourceImageReference sourceReference, 
+        DestinationImageReference destinationReference, CancellationToken cancellationToken,
+        Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc)
     {
         var fullPath = Path.GetFullPath(ArchiveOutputPath);
 
@@ -36,18 +35,26 @@ internal class ArchiveFileRegistry : ILocalRegistry
 
         ArchiveOutputPath = fullPath;
         await using var fileStream = File.Create(fullPath);
-        await DockerCli.WriteImageToStreamAsync(
-            image,
-            sourceReference,
-            destinationReference,
-            fileStream,
-            cancellationToken).ConfigureAwait(false);
+
+        // Call the delegate to write the image to the stream
+        await writeStreamFunc(image, sourceReference, destinationReference, fileStream, cancellationToken).ConfigureAwait(false);
     }
+
+    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken) 
+        => await LoadAsync(image, sourceReference, destinationReference, cancellationToken,
+            DockerCli.WriteImageToStreamAsync);
+
+    public async Task LoadAsync(BuiltImage[] images, SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken) 
+        => await LoadAsync(images, sourceReference, destinationReference, cancellationToken,
+            DockerCli.WriteMultiArchOciImageToStreamAsync);
 
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
     public bool IsAvailable() => true;
-
 
     public override string ToString()
     {

@@ -83,7 +83,12 @@ internal sealed class DockerCli
         return _fullCommandPath;
     }
 
-    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
+    private async Task LoadAsync<T>(
+        T image,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -95,16 +100,12 @@ internal sealed class DockerCli
         loadInfo.RedirectStandardOutput = true;
         loadInfo.RedirectStandardError = true;
 
-        using Process? loadProcess = Process.Start(loadInfo);
-
-        if (loadProcess is null)
-        {
+        using Process? loadProcess = Process.Start(loadInfo) ??
             throw new NotImplementedException(Resource.FormatString(Strings.ContainerRuntimeProcessCreationFailed, commandPath));
-        }
 
-        // Create new stream tarball
-        // We want to be able to export to docker, even oci images.
-        await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, loadProcess.StandardInput.BaseStream, cancellationToken).ConfigureAwait(false);
+        // Call the delegate to write the image to the stream
+        await writeStreamFunc(image, sourceReference, destinationReference, loadProcess.StandardInput.BaseStream, cancellationToken)
+            .ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -120,6 +121,12 @@ internal sealed class DockerCli
         }
     }
 
+    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
+        => await LoadAsync(image, sourceReference, destinationReference, WriteDockerImageToStreamAsync, cancellationToken);
+
+    public async Task LoadAsync(BuiltImage[] images, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
+        => await LoadAsync(images, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken);
+    
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
         bool commandPathWasUnknown = this._command is null; // avoid running the version command twice.
@@ -390,6 +397,35 @@ internal sealed class DockerCli
         }
     }
 
+    public static async Task WriteMultiArchOciImageToStreamAsync(
+        BuiltImage[] images,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Stream imageStream,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (destinationReference.Tags.Length > 1)
+        {
+            throw new ArgumentException(Resource.FormatString(nameof(Strings.OciImageMultipleTagsNotSupported)));
+        }
+
+        using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
+
+        foreach (var image in images)
+        {
+            await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken)
+            .ConfigureAwait(false);
+        }
+
+        await WriteIndexJsonForMultiArchOciImage(writer, images, destinationReference, cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteOciLayout(writer, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     private static async Task WriteOciImageToStreamAsync(
         BuiltImage image,
         SourceImageReference sourceReference,
@@ -406,9 +442,22 @@ internal sealed class DockerCli
 
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-        await WriteOciLayout(writer, cancellationToken)
+        await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken)
             .ConfigureAwait(false);
 
+        await WriteIndexJsonForOciImage(writer, image, destinationReference, cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteOciLayout(writer, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private static async Task WriteOciImageToBlobs(
+        TarWriter writer,
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        CancellationToken cancellationToken)
+    {
         await WriteImageLayers(writer, image, sourceReference, d => $"{_blobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
             .ConfigureAwait(false);
 
@@ -416,9 +465,6 @@ internal sealed class DockerCli
             .ConfigureAwait(false);
 
         await WriteManifestForOciImage(writer, image, cancellationToken)
-            .ConfigureAwait(false);
-
-        await WriteIndexJsonForOciImage(writer, image, destinationReference, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -453,6 +499,88 @@ internal sealed class DockerCli
                 DataStream = manifestStream
             };
             await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private static async Task WriteIndexJsonForMultiArchOciImage(
+        TarWriter writer,
+        BuiltImage[] images,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+    {
+        // 1. create manifest list for the blobs
+        cancellationToken.ThrowIfCancellationRequested();
+
+        string tag = destinationReference.Tags[0];
+
+        var manifests = new PlatformSpecificOciManifest[images.Length];
+        for (int i = 0; i < images.Length; i++)
+        {
+            var manifest = new PlatformSpecificOciManifest
+            {
+                mediaType = SchemaTypes.OciManifestV1,
+                size = images[i].Manifest.Length,
+                digest = images[i].ManifestDigest,
+                platform = new PlatformInformation { architecture = images[i].Architecture, os = images[i].OS }
+            };
+            manifests[i] = manifest;
+        }
+
+        var manifestList = new ImageIndexV1
+        {
+            schemaVersion = 2,
+            mediaType = SchemaTypes.OciImageIndexV1,
+            manifests = manifests
+        };
+
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        var manifestListJson = JsonSerializer.SerializeToNode(manifestList, options)!.ToJsonString();
+        var manifestListDigest = DigestUtils.GetDigest(manifestListJson);
+        var manifestListSha = DigestUtils.GetShaFromDigest(manifestListDigest);
+        var manifestListPath = $"{_blobsPath}/{manifestListSha}";
+        
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(manifestListJson)))
+        {
+            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, manifestListPath)
+            {
+                DataStream = indexStream
+            };
+            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
+        }
+
+        // 2. create index json that points to manifest list in the blobs
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var index = new ImageIndexV1
+        {
+            schemaVersion = 2,
+            mediaType = SchemaTypes.OciImageIndexV1,
+            manifests = 
+            [
+                new PlatformSpecificOciManifest
+                {
+                    mediaType = SchemaTypes.OciImageIndexV1,
+                    size = manifestListJson.Length,
+                    digest = manifestListDigest,
+                    annotations = new Dictionary<string, string> 
+                    {
+                        { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
+                        { "org.opencontainers.image.ref.name", tag } 
+                    },
+                }
+            ]
+        };
+
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index, options)!.ToJsonString())))
+        {
+            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
+            {
+                DataStream = indexStream
+            };
+            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
         }
     }
 

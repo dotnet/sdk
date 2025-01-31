@@ -44,6 +44,16 @@ internal readonly struct BuiltImage
     internal required List<ManifestLayer> Layers { get; init; }
 
     /// <summary>
+    /// Gets image OS.
+    /// </summary>
+    internal string OS { get; init; }
+
+    /// <summary>
+    /// Gets image architecture.
+    /// </summary>
+    internal string Architecture { get; init; }
+
+    /// <summary>
     /// Gets layers descriptors.
     /// </summary>
     internal IEnumerable<Descriptor> LayerDescriptors
