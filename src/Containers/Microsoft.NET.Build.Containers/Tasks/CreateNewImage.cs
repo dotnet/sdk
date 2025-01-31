@@ -178,7 +178,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
 
-        await ImagePublisher.PublishImage(builtImage, sourceImageReference, destinationImageReference, Log, BuildEngine, telemetry, cancellationToken)
+        await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, BuildEngine, telemetry, cancellationToken)
             .ConfigureAwait(false);
 
         return !Log.HasLoggedErrors;

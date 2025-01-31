@@ -8,8 +8,8 @@ namespace Microsoft.NET.Build.Containers;
 
 internal static class ImagePublisher
 {
-    public static async Task PublishImage(
-        BuiltImage image,
+    public static async Task PublishImageAsync(
+        BuiltImage singleArchImage,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
@@ -23,22 +23,26 @@ internal static class ImagePublisher
         {
             case DestinationImageReferenceKind.LocalRegistry:
                 await PushToLocalRegistryAsync(
-                    image,
+                    singleArchImage,
                     sourceImageReference,
                     destinationImageReference,
                     Log,
                     BuildEngine,
                     telemetry,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken,
+                    destinationImageReference.LocalRegistry!.LoadAsync,
+                    Strings.ContainerBuilder_ImageUploadedToLocalDaemon).ConfigureAwait(false);
                 break;
             case DestinationImageReferenceKind.RemoteRegistry:
                 await PushToRemoteRegistryAsync(
-                    image,
+                    singleArchImage,
                     sourceImageReference,
                     destinationImageReference,
                     Log,
                     BuildEngine,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken,
+                    destinationImageReference.RemoteRegistry!.PushAsync,
+                    Strings.ContainerBuilder_ImageUploadedToRegistry).ConfigureAwait(false);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -47,8 +51,8 @@ internal static class ImagePublisher
         telemetry.LogPublishSuccess();
     }
 
-    public static async Task PublishImage(
-        BuiltImage[] images,
+    public static async Task PublishImageAsync(
+        BuiltImage[] multiArchImage,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
@@ -62,22 +66,35 @@ internal static class ImagePublisher
         {
             case DestinationImageReferenceKind.LocalRegistry:
                 await PushToLocalRegistryAsync(
-                    images,
+                    multiArchImage,
                     sourceImageReference,
                     destinationImageReference,
                     Log,
                     BuildEngine,
                     telemetry,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken,
+                    destinationImageReference.LocalRegistry!.LoadAsync,
+                    Strings.ContainerBuilder_ImageUploadedToLocalDaemon).ConfigureAwait(false);
                 break;
             case DestinationImageReferenceKind.RemoteRegistry:
                 await PushToRemoteRegistryAsync(
-                    images,
+                    multiArchImage,
                     sourceImageReference,
                     destinationImageReference,
                     Log,
                     BuildEngine,
-                    cancellationToken).ConfigureAwait(false);
+                    cancellationToken,
+                    async (images, source, destination, token) =>
+                    {
+                        (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
+                        await destinationImageReference.RemoteRegistry!.PushManifestListAsync(
+                            destinationImageReference.Repository,
+                            destinationImageReference.Tags,
+                            imageIndex,
+                            mediaType,
+                            cancellationToken).ConfigureAwait(false);
+                    },
+                    Strings.ImageIndexUploadedToRegistry).ConfigureAwait(false);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -86,14 +103,16 @@ internal static class ImagePublisher
         telemetry.LogPublishSuccess();
     }
 
-    private static async Task PushToLocalRegistryAsync(
-        BuiltImage image,
+    private static async Task PushToLocalRegistryAsync<T>(
+        T image,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
         IBuildEngine? BuildEngine,
         Telemetry telemetry,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<T, SourceImageReference, DestinationImageReference, CancellationToken, Task> loadFunc,
+        string successMessage)
     {
         ILocalRegistry localRegistry = destinationImageReference.LocalRegistry!;
         if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
@@ -104,10 +123,10 @@ internal static class ImagePublisher
         }
         try
         {
-            await localRegistry.LoadAsync(image, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
+            await loadFunc(image, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
             if (BuildEngine != null) 
             {
-                Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
+                Log.LogMessage(MessageImportance.High, successMessage, destinationImageReference, localRegistry);
             }
         }
         catch (ContainerHttpException e)
@@ -128,112 +147,26 @@ internal static class ImagePublisher
         }
     }
 
-    private static async Task PushToLocalRegistryAsync(
-        BuiltImage[] images,
+    private static async Task PushToRemoteRegistryAsync<T>(
+        T image,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
         IBuildEngine? BuildEngine,
-        Telemetry telemetry,
-        CancellationToken cancellationToken)
-    {
-        ILocalRegistry localRegistry = destinationImageReference.LocalRegistry!;
-        if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
-        {
-            telemetry.LogMissingLocalBinary();
-            Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
-            return;
-        }
-        try
-        {
-            await localRegistry.LoadAsync(images, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-            if (BuildEngine != null) 
-            {
-                Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
-            }
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
-        {
-            telemetry.LogLocalLoadError();
-            Log.LogErrorFromException(dle, showStackTrace: false);
-        }
-        catch (ArgumentException argEx)
-        {
-            Log.LogErrorFromException(argEx, showStackTrace: false);
-        }
-    }
-
-    private static async Task PushToRemoteRegistryAsync(
-        BuiltImage image,
-        SourceImageReference sourceImageReference,
-        DestinationImageReference destinationImageReference,
-        Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        IBuildEngine? BuildEngine,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<T, SourceImageReference, DestinationImageReference, CancellationToken, Task> pushFunc,
+        string successMessage)
     {
         try
         {
-            await destinationImageReference.RemoteRegistry!.PushAsync(
+            await pushFunc(
                 image,
                 sourceImageReference,
                 destinationImageReference,
                 cancellationToken).ConfigureAwait(false);
             if (BuildEngine != null) 
             {
-                Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference, destinationImageReference.RemoteRegistry!.RegistryName);
-            }
-        }
-        catch (UnableToAccessRepositoryException)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
-            }
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (Exception e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
-                Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
-            }
-        }
-    }
-
-    private static async Task PushToRemoteRegistryAsync(
-        BuiltImage[] images,
-        SourceImageReference sourceImageReference,
-        DestinationImageReference destinationImageReference,
-        Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        IBuildEngine? BuildEngine,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
-            await destinationImageReference.RemoteRegistry!.PushManifestListAsync(
-                destinationImageReference.Repository,
-                destinationImageReference.Tags,
-                imageIndex,
-                mediaType,
-                cancellationToken).ConfigureAwait(false);
-            if (BuildEngine != null) 
-            {
-                Log.LogMessage(MessageImportance.High, Strings.ImageIndexUploadedToRegistry, destinationImageReference, destinationImageReference.RemoteRegistry!.RegistryName);
+                Log.LogMessage(MessageImportance.High, successMessage, destinationImageReference, destinationImageReference.RemoteRegistry!.RegistryName);
             }
         }
         catch (UnableToAccessRepositoryException)

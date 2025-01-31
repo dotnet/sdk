@@ -155,7 +155,7 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
-        await ImagePublisher.PublishImage(images, sourceImageReference, destinationImageReference, Log, BuildEngine, telemetry, cancellationToken)
+        await ImagePublisher.PublishImageAsync(images, sourceImageReference, destinationImageReference, Log, BuildEngine, telemetry, cancellationToken)
             .ConfigureAwait(false);
 
         return !Log.HasLoggedErrors;
