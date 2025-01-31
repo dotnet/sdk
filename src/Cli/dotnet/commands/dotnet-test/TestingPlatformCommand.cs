@@ -55,8 +55,9 @@ namespace Microsoft.DotNet.Cli
                         return ExitCodes.GenericFailure;
                     }
 
-                    if (!EnqueueTestApplications())
+                    if (!_msBuildHandler.EnqueueTestApplications())
                     {
+                        _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
                         return ExitCodes.GenericFailure;
                     }
                 }
@@ -98,17 +99,6 @@ namespace Microsoft.DotNet.Cli
             {
                 InitializeTestExecutionActionQueue(degreeOfParallelism, testOptions);
             }
-        }
-
-        private bool EnqueueTestApplications()
-        {
-            if (!_msBuildHandler.EnqueueTestApplications())
-            {
-                _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
-                return false;
-            }
-
-            return true;
         }
 
         private void SetupCancelKeyPressHandler()
