@@ -83,15 +83,22 @@ namespace Microsoft.NET.Build.Tasks
             var existingResult = BuildEngine4.GetRegisteredTaskObject(key, RegisteredTaskObjectLifetime.Build);
             if (existingResult != null)
             {
-                PackagesToPrune = (ITaskItem[])existingResult;
+                PackagesToPrune = (TaskItem[])existingResult;
                 return;
             }
 
-            var nugetFramework = new NuGetFramework(TargetFrameworkIdentifier, Version.Parse(TargetFrameworkVersion));
+            PackagesToPrune = LoadPackagesToPrune(key, TargetingPackRoot);
+
+            BuildEngine4.RegisterTaskObject(key, PackagesToPrune, RegisteredTaskObjectLifetime.Build, true);
+        }
+
+        static TaskItem[] LoadPackagesToPrune(CacheKey key, string targetingPackRoot)
+        {
+            var nugetFramework = new NuGetFramework(key.TargetFrameworkIdentifier, Version.Parse(key.TargetFrameworkVersion));
 
             Dictionary<string, NuGetVersion> packagesToPrune = new();
 
-            var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, filteredFrameworkReferences.Select(fr => fr.ItemSpec).ToArray(), TargetingPackRoot)
+            var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, key.FrameworkReferences.ToArray(), targetingPackRoot)
                 .SelectMany(packages => packages);
 
             foreach (var kvp in frameworkPackages)
@@ -109,14 +116,12 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            PackagesToPrune = packagesToPrune.Select(p =>
+            return packagesToPrune.Select(p =>
             {
                 var item = new TaskItem(p.Key);
                 item.SetMetadata("Version", p.Value.ToString());
                 return item;
             }).ToArray();
-
-            BuildEngine4.RegisterTaskObject(key, PackagesToPrune, RegisteredTaskObjectLifetime.Build, true);
         }
     }
 }
