@@ -24,9 +24,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       _UpdateHtmlFiles
     </ResolveCompressedFilesDependsOn>
   </PropertyGroup>
-  <ItemGroup>
-    <StaticWebAssetFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
-  </ItemGroup>
 
   <Target Name="_UpdateHtmlFiles">
     <PropertyGroup>
