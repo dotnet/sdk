@@ -104,19 +104,19 @@ variables:
 - name: azurelinuxArm64CrossContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
 
-- name: azurelinuxX64AlpineCrossContainerName
-  value: azurelinuxX64AlpineCrossContainer
-- name: azurelinuxX64AlpineCrossContainerImage
+- name: azurelinuxX64MuslCrossContainerName
+  value: azurelinuxX64MuslCrossContainer
+- name: azurelinuxX64MuslCrossContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64-musl
 
-- name: azurelinuxArmAlpineCrossContainerName
-  value: azurelinuxArmAlpineCrossContainer
-- name: azurelinuxArmAlpineCrossContainerImage
+- name: azurelinuxArmMuslCrossContainerName
+  value: azurelinuxArmMuslCrossContainer
+- name: azurelinuxArmMuslCrossContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm-musl
 
-- name: azurelinuxArm64AlpineCrossContainerName
-  value: azurelinuxArm64AlpineCrossContainer
-- name: azurelinuxArm64AlpineCrossContainerImage
+- name: azurelinuxArm64MuslCrossContainerName
+  value: azurelinuxArm64MuslCrossContainer
+- name: azurelinuxArm64MuslCrossContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64-musl
 
 - name: androidCrossContainerName
