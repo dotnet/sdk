@@ -3,7 +3,7 @@
 
 using Microsoft.NET.Build.Containers.LocalDaemons;
 
-namespace Microsoft.NET.Build.Containers.Tasks;
+namespace Microsoft.NET.Build.Containers;
 
 internal class Telemetry
 {
