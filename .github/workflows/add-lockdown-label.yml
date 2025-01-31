@@ -2,9 +2,6 @@ name: Add Branch Lockdown Label to PRs
 
 on:
   pull_request:
-    branches-ignore:
-      - main
-      - release/9.0.3xx
   workflow_dispatch: # Allows manual triggering of the workflow
 
 permissions:
