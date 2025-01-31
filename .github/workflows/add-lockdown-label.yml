@@ -1,7 +1,7 @@
 name: Add Branch Lockdown Label to PRs
 
 on:
-  pull_request:
+  pull_request_target:
   workflow_dispatch: # Allows manual triggering of the workflow
 
 permissions:
@@ -43,7 +43,7 @@ jobs:
 
           # Check if the current date is after the third Tuesday of this month or before the first Tuesday of this month
           if [[ "$current_date" > "$third_tuesday" || "$current_date" < "$first_tuesday" ]]; then
-            echo "Within the label period. Adding labels to PRs..."
+            echo "Within the label period. Checking if the branch matches..."
 
             # List of known branches
             known_branches=("release/8.*" "release/9.*")
@@ -58,6 +58,8 @@ jobs:
                 echo "Adding Branch Lockdown label to PR #${{ github.event.pull_request.number }} targeting branch $pr_branch"
                 gh pr edit ${{ github.event.pull_request.number }} --add-label "Branch Lockdown"
                 break
+              else
+                echo "PR branch $pr_branch does not match $branch. No labels added."
               fi
           done
           else
