@@ -2,9 +2,6 @@ name: Add Branch Lockdown Label to PRs
 
 on:
   pull_request:
-    branches-ignore:
-      - main
-      - release/9.0.3xx
   workflow_dispatch: # Allows manual triggering of the workflow
 
 permissions:
@@ -54,10 +51,10 @@ jobs:
 
             # Get the target branch of the PR
             pr_branch="${{ github.event.pull_request.base.ref }}"
-
+            
             # Check if the PR branch is in the list of known branches and not the excluded branch, and if the current date is within the specified range
             for branch in "${known_branches[@]}"; do
-              if [[ "$pr_branch" =~ $branch && "$pr_branch" != "$exclude_branch" && "$current_date" > "$start_date" && "$current_date" < "$end_date" ]]; then
+              if [[ "$pr_branch" =~ $branch && "$pr_branch" != "$exclude_branch" ]]; then
                 echo "Adding Branch Lockdown label to PR #${{ github.event.pull_request.number }} targeting branch $pr_branch"
                 gh pr edit ${{ github.event.pull_request.number }} --add-label "Branch Lockdown"
                 break
