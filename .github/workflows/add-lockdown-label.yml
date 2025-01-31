@@ -5,14 +5,10 @@ on:
     # Run daily at 00:00 UTC
     - cron: '0 23 * * *'
   workflow_dispatch: # Allows manual triggering of the workflow
-  pull_request_target:
-    branches:
-      - main
 
 permissions:
   actions: write # For managing the operation state cache
   issues: write
-  pull-requests: write # Adding this to allow label addition
 
 jobs:
   add-label:
