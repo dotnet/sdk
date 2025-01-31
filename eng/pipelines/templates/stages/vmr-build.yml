@@ -373,17 +373,6 @@ stages:
           image: ${{ variables.ubuntuContainerImage }}
         targetOS: linux
         targetArchitecture: x64
-        useDevVersions: true # Use dev versions for CI validation of the experience.
-
-    - template: ../jobs/vmr-build.yml
-      parameters:
-        buildName: Windows_DevVersions
-        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        vmrBranch: ${{ variables.VmrBranch }}
-        pool: ${{ parameters.pool_Windows }}
-        targetOS: windows
-        targetArchitecture: x86
-        useDevVersions: true # Use dev versions for CI validation of the experience.
 
 #### VERTICAL BUILD (Official) ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
@@ -406,6 +395,16 @@ stages:
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
+
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        buildName: Windows
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        sign: ${{ variables.signEnabled }}
+        pool: ${{ parameters.pool_Windows }}
+        targetOS: windows
+        targetArchitecture: x86
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -806,16 +805,6 @@ stages:
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
-
-        - template: ../jobs/vmr-build.yml
-          parameters:
-            buildName: Windows
-            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-            vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.signEnabled }}
-            pool: ${{ parameters.pool_Windows }}
-            targetOS: windows
-            targetArchitecture: x86
 
         - template: ../jobs/vmr-build.yml
           parameters:
