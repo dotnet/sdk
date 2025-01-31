@@ -41,7 +41,7 @@ public class WriteImportMapToHtml : Task
     private static readonly Regex _assetsRegex = new Regex(@"@Assets\['([^']*)'\]");
 
     [SuppressMessage("Performance", "SYSLIB1045:Convert to 'GeneratedRegexAttribute'.", Justification = "The assembly targets .NET framework as well")]
-    private static readonly Regex _importMapRegex = new Regex(@"<!--\s*ImportMap\s*-->");
+    private static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s>\s</script>");
 
     public override bool Execute()
     {
