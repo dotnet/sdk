@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.GenAPI
                 log,
                 assembliesPaths,
                 assemblyReferencesPaths,
-                respectInternals);
+                respectInternals: respectInternals);
 
             Run(log,
                 loader,
