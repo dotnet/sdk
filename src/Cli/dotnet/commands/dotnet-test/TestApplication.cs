@@ -46,15 +46,15 @@ namespace Microsoft.DotNet.Cli
             _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
         }
 
-        public async Task<int> RunAsync(bool hasFilterMode, bool enableHelp, TestOptions testOptions)
+        public async Task<int> RunAsync(TestOptions testOptions)
         {
-            if (hasFilterMode && !ModulePathExists())
+            if (testOptions.HasFilterMode && !ModulePathExists())
             {
                 return 1;
             }
 
             bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
-            var processStartInfo = CreateProcessStartInfo(hasFilterMode, isDll, testOptions, enableHelp);
+            var processStartInfo = CreateProcessStartInfo(isDll, testOptions);
 
             _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
             var testProcessResult = await StartProcess(processStartInfo);
@@ -64,12 +64,12 @@ namespace Microsoft.DotNet.Cli
             return testProcessResult;
         }
 
-        private ProcessStartInfo CreateProcessStartInfo(bool hasFilterMode, bool isDll, TestOptions testOptions, bool enableHelp)
+        private ProcessStartInfo CreateProcessStartInfo(bool isDll, TestOptions testOptions)
         {
             var processStartInfo = new ProcessStartInfo
             {
-                FileName = GetFileName(hasFilterMode, isDll, testOptions),
-                Arguments = GetArguments(hasFilterMode, isDll, testOptions, enableHelp),
+                FileName = GetFileName(testOptions.HasFilterMode, isDll, testOptions),
+                Arguments = GetArguments(testOptions.HasFilterMode, isDll, testOptions, testOptions.IsHelp),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };

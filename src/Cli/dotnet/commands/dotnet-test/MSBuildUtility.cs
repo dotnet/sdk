@@ -8,7 +8,6 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Tools.Common;
-using Microsoft.Testing.TestInfrastructure;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
 namespace Microsoft.DotNet.Cli
@@ -175,7 +174,6 @@ namespace Microsoft.DotNet.Cli
 
         private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
         {
-            DebuggerUtility.AttachCurrentProcessToVSProcessPID(24736);
             var globalProperties = new Dictionary<string, string>();
 
             if (!string.IsNullOrEmpty(buildOptions.Configuration))
