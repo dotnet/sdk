@@ -69,18 +69,18 @@ namespace Microsoft.DotNet.Cli
                 return ExitCodes.GenericFailure;
             }
 
-            (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
+            (IEnumerable<Module> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
 
-            InitializeTestApplications(modules);
+            InitializeTestApplications(projects);
 
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
         private int RunBuild(string filePath, bool isSolution, BuildOptions buildOptions)
         {
-            (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
+            (IEnumerable<Module> projects, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
 
-            InitializeTestApplications(modules);
+            InitializeTestApplications(projects);
 
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
@@ -121,15 +121,15 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private (IEnumerable<Module>, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
+        private (IEnumerable<Module> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
         {
-            (IEnumerable<Module> allProjects, bool isBuiltOrRestored) = isSolution ?
+            (IEnumerable<Module> projects, bool isBuiltOrRestored) = isSolution ?
                 MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, buildOptions) :
                 MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, buildOptions);
 
-            LogProjectProperties(allProjects);
+            LogProjectProperties(projects);
 
-            return (allProjects, isBuiltOrRestored);
+            return (projects, isBuiltOrRestored);
         }
 
         private void LogProjectProperties(IEnumerable<Module> modules)

@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli
                 SetupCancelKeyPressHandler();
 
                 _degreeOfParallelism = GetDegreeOfParallelism(parseResult);
-                BuildConfigurationOptions buildConfigurationOptions = GetBuildConfigurationOptions(parseResult);
+                TestOptions testOptions = GetTestOptions(parseResult);
 
                 _isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
                 _args = [.. parseResult.UnmatchedTokens];
@@ -48,11 +48,11 @@ namespace Microsoft.DotNet.Cli
                 bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
                 if (_isHelp)
                 {
-                    InitializeHelpActionQueue(_degreeOfParallelism, buildConfigurationOptions, filterModeEnabled);
+                    InitializeHelpActionQueue(_degreeOfParallelism, testOptions, filterModeEnabled);
                 }
                 else
                 {
-                    InitializeTestExecutionActionQueue(_degreeOfParallelism, buildConfigurationOptions, filterModeEnabled);
+                    InitializeTestExecutionActionQueue(_degreeOfParallelism, testOptions, filterModeEnabled);
                 }
 
                 _msBuildHandler = new(_args, _actionQueue, _output);
@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private void InitializeHelpActionQueue(int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions, bool filterModeEnabled)
+        private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions buildConfigurationOptions, bool filterModeEnabled)
         {
             _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
             {
@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Cli
             });
         }
 
-        private void InitializeTestExecutionActionQueue(int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions, bool filterModeEnabled)
+        private void InitializeTestExecutionActionQueue(int degreeOfParallelism, TestOptions buildConfigurationOptions, bool filterModeEnabled)
         {
             _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
             {
@@ -157,7 +157,7 @@ namespace Microsoft.DotNet.Cli
             return degreeOfParallelism;
         }
 
-        private static BuildConfigurationOptions GetBuildConfigurationOptions(ParseResult parseResult) =>
+        private static TestOptions GetTestOptions(ParseResult parseResult) =>
             new(parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
                 parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
                 parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));

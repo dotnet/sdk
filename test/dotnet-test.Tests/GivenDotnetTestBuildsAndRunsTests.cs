@@ -132,9 +132,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, "8"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "failed", true, "2"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", "failed", true, "9"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, configuration, "8"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "failed", true, configuration, "2"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", "failed", true, configuration, "9"), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")

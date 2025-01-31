@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli
 
         private Task _testAppPipeConnectionLoop;
         private readonly List<NamedPipeServer> _testAppPipeConnections = new();
-        private ConcurrentDictionary<string, string> _executionIds = [];
+        private readonly ConcurrentDictionary<string, string> _executionIds = [];
 
         public event EventHandler<HandshakeArgs> HandshakeReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli
             _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
         }
 
-        public async Task<int> RunAsync(bool hasFilterMode, bool enableHelp, BuildConfigurationOptions buildConfigurationOptions)
+        public async Task<int> RunAsync(bool hasFilterMode, bool enableHelp, TestOptions testOptions)
         {
             if (hasFilterMode && !ModulePathExists())
             {
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
-            var processStartInfo = CreateProcessStartInfo(hasFilterMode, isDll, buildConfigurationOptions, enableHelp);
+            var processStartInfo = CreateProcessStartInfo(hasFilterMode, isDll, testOptions, enableHelp);
 
             _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
             var testProcessResult = await StartProcess(processStartInfo);
@@ -64,23 +64,52 @@ namespace Microsoft.DotNet.Cli
             return testProcessResult;
         }
 
-
-        private ProcessStartInfo CreateProcessStartInfo(bool hasFilterMode, bool isDll, BuildConfigurationOptions buildConfigurationOptions, bool enableHelp)
+        private ProcessStartInfo CreateProcessStartInfo(bool hasFilterMode, bool isDll, TestOptions testOptions, bool enableHelp)
         {
             var processStartInfo = new ProcessStartInfo
             {
-                FileName = hasFilterMode ? (isDll ? Environment.ProcessPath : _module.TargetPath) : Environment.ProcessPath,
-                Arguments = hasFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(enableHelp, buildConfigurationOptions),
+                FileName = GetFileName(hasFilterMode, isDll, testOptions),
+                Arguments = GetArguments(hasFilterMode, isDll, testOptions, enableHelp),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
 
+            AddRunSettingsFileToEnvironment(processStartInfo);
+
+            return processStartInfo;
+        }
+
+        private string GetFileName(bool hasFilterMode, bool isDll, TestOptions testOptions)
+        {
+            if (hasFilterMode || !IsArchitectureSpecified(testOptions))
+            {
+                return isDll ? Environment.ProcessPath : _module.TargetPath;
+            }
+
+            return Environment.ProcessPath;
+        }
+
+        private string GetArguments(bool hasFilterMode, bool isDll, TestOptions testOptions, bool enableHelp)
+        {
+            if (hasFilterMode || !IsArchitectureSpecified(testOptions))
+            {
+                return BuildArgs(isDll);
+            }
+
+            return BuildArgsWithDotnetRun(enableHelp, testOptions);
+        }
+
+        private void AddRunSettingsFileToEnvironment(ProcessStartInfo processStartInfo)
+        {
             if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
             {
                 processStartInfo.EnvironmentVariables.Add(CliConstants.TestingPlatformVsTestBridgeRunSettingsFileEnvVar, _module.RunSettingsFilePath);
             }
+        }
 
-            return processStartInfo;
+        private static bool IsArchitectureSpecified(TestOptions testOptions)
+        {
+            return !string.IsNullOrEmpty(testOptions.Architecture);
         }
 
         private void WaitOnTestApplicationPipeConnectionLoop()
@@ -254,7 +283,7 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private string BuildArgsWithDotnetRun(bool hasHelp, BuildConfigurationOptions buildConfigurationOptions)
+        private string BuildArgsWithDotnetRun(bool hasHelp, TestOptions buildConfigurationOptions)
         {
             StringBuilder builder = new();
 
@@ -368,18 +397,18 @@ namespace Microsoft.DotNet.Cli
 
             if (!string.IsNullOrEmpty(_module.TargetPath))
             {
-                builder.Append($"DLL: {_module.TargetPath}");
+                builder.Append($"{ProjectProperties.TargetPath}: {_module.TargetPath}");
             }
 
             if (!string.IsNullOrEmpty(_module.ProjectFullPath))
             {
-                builder.Append($"Project: {_module.ProjectFullPath}");
+                builder.Append($"{ProjectProperties.ProjectFullPath}: {_module.ProjectFullPath}");
             }
             ;
 
             if (!string.IsNullOrEmpty(_module.TargetFramework))
             {
-                builder.Append($"Target Framework: {_module.TargetFramework}");
+                builder.Append($"{ProjectProperties.TargetFramework} : {_module.TargetFramework}");
             }
             ;
 

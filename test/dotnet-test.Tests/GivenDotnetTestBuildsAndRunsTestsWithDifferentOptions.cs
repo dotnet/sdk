@@ -55,8 +55,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true), result.StdOut);
-            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true), result.StdOut);
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, configuration), result.StdOut);
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true, configuration), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -78,8 +78,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that only TestProject ran
-            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true), result.StdOut);
-            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true), result.StdOut);
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, configuration), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true, configuration), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -99,8 +99,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that only TestProject ran
-            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true), result.StdOut);
-            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true), result.StdOut);
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, configuration), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true, configuration), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }

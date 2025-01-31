@@ -7,17 +7,17 @@ namespace Microsoft.NET.TestFramework.Utilities
 {
     public static class RegexPatternHelper
     {
-        public static string GenerateProjectRegexPattern(string projectName, string result, bool useCurrentVersion, string? exitCode = null)
+        public static string GenerateProjectRegexPattern(string projectName, string result, bool useCurrentVersion, string configuration, string? exitCode = null)
         {
             string version = useCurrentVersion ? ToolsetInfo.CurrentTargetFramework : DotnetVersionHelper.GetPreviousDotnetVersion();
             string exitCodePattern = exitCode == null ? string.Empty : $@".*\s+Exit code: {exitCode}";
-            return $@".+{PathUtility.GetDirectorySeparatorChar()}{version}{PathUtility.GetDirectorySeparatorChar()}{projectName}\.dll\s+\({version}\|[a-zA-Z][1-9]+\)\s{result}{exitCodePattern}";
+            return $@".+{configuration}{PathUtility.GetDirectorySeparatorChar()}{version}{PathUtility.GetDirectorySeparatorChar()}{projectName}\.dll\s+\({version}\|[a-zA-Z][1-9]+\)\s{result}{exitCodePattern}";
         }
 
-        public static string GenerateProjectRegexPattern(string projectName, bool useCurrentVersion, string prefix, List<string>? suffix = null)
+        public static string GenerateProjectRegexPattern(string projectName, bool useCurrentVersion, string configuration, string prefix, List<string>? suffix = null)
         {
             string version = useCurrentVersion ? ToolsetInfo.CurrentTargetFramework : DotnetVersionHelper.GetPreviousDotnetVersion();
-            string pattern = $@"{prefix}.*{PathUtility.GetDirectorySeparatorChar()}{projectName}\.dll\s+\({version}\|[a-zA-Z][1-9]+\)";
+            string pattern = $@"{prefix}.*{configuration}{PathUtility.GetDirectorySeparatorChar()}{version}{PathUtility.GetDirectorySeparatorChar()}{projectName}\.dll\s+\({version}\|[a-zA-Z][1-9]+\)";
 
             if (suffix == null)
             {
