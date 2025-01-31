@@ -254,6 +254,8 @@ function Build {
       fi
     fi
 
+    echo "$NUGET_PACKAGES"
+
     if [ "$ci" == "true" ]; then
       properties+=( "/p:ContinuousIntegrationBuild=true" )
     fi
