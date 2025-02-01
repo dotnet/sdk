@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(NetToolMinimum)</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Verify.DiffPlex" />
+    <ProjectReference Include="..\..\GenAPI\Microsoft.DotNet.GenAPI\Microsoft.DotNet.GenAPI.csproj" />
+    <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx" GenerateSource="True" />
+  </ItemGroup>
+
+</Project>

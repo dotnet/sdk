@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetToolMinimum)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <!-- <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>genapidiff</ToolCommandName> -->
+    <PackageDescription>Tool to emit markdown diffs between sets of assemblies.</PackageDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\GenAPI\Microsoft.DotNet.GenAPI\Microsoft.DotNet.GenAPI.csproj" />
+    <ProjectReference Include="..\..\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.ApiDiff\Microsoft.DotNet.ApiDiff.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" VersionOverride="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+
+</Project>
