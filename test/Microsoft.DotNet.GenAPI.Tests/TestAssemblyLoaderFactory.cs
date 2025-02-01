@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.GenAPI.Tests;
 
 public class TestAssemblyLoaderFactory
 {
-    public static (IAssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromTexts(ILog log, (string, string)[] assemblyTexts, IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null, bool respectInternals = false, bool allowUnsafe = false)
+    public static (IAssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromTexts(ILog log, (string, string)[] assemblyTexts, bool respectInternals = false, bool allowUnsafe = false, IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
     {
         if (assemblyTexts.Length == 0)
         {
