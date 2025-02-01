@@ -274,6 +274,7 @@
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                    SkipPublishing="$(_SkipContainerPublishing)"
                     GenerateLabels="$(ContainerGenerateLabels)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
@@ -302,6 +303,17 @@
                  !$(ContainerArchiveOutputPath.EndsWith('\\')) and
                  $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
 
+    <PropertyGroup>
+      <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
+      <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
+      <!--We don't want to skip publishing individual images in case of local daemon podman because podman loads multi-arch tarball differently - only individual image for the current platform.-->
+      <_IsTarballPublishing Condition="'$(ContainerArchiveOutputPath)' != ''">true</_IsTarballPublishing>
+      <_IsLocalDockerPublishing Condition="$(ContainerRegistry) == '' and ($(LocalRegistry) == '' or $(LocalRegistry) == 'Docker')">true</_IsLocalDockerPublishing>
+     
+      <_SkipContainerPublishing>false</_SkipContainerPublishing>
+      <_SkipContainerPublishing Condition="'$(_IsTarballPublishing)' == 'true' or '$(_IsLocalDockerPublishing)' == 'true'">true</_SkipContainerPublishing>
+    </PropertyGroup>
+
     <ItemGroup>
       <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
@@ -328,7 +340,8 @@
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerUser=$(ContainerUser);
           ContainerGenerateLabels=$(ContainerGenerateLabels);
-          ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest)
+          ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
+          _SkipContainerPublishing=$(_SkipContainerPublishing)
         "/>
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
