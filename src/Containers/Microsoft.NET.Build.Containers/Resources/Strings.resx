@@ -358,6 +358,10 @@
     <value>Building image '{0}' with tags '{1}' on top of base image '{2}'.</value>
     <comment/>
   </data>
+  <data name="ContainerBuilder_StartBuildingImageForRid" xml:space="preserve">
+    <value>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</value>
+    <comment/>
+  </data>
   <data name="BuildingImageIndex" xml:space="preserve">
     <value>Building image index '{0}' on top of manifests {1}.</value>
     <comment>
@@ -369,15 +373,19 @@
     <comment/>
   </data>
   <data name="UnsupportedMediaType" xml:space="preserve">
-    <value>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</value>
+    <value>Cannot create image index for the provided 'mediaType' = '{0}'.</value>
     <comment/>
   </data>
   <data name="ImagesEmpty" xml:space="preserve">
-    <value>Cannot create manifest list (image index) because no images were provided.</value>
+    <value>Cannot create image index because no images were provided.</value>
     <comment/>
   </data>
   <data name="InvalidImageMetadata" xml:space="preserve">
-    <value>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</value>
+    <value>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</value>
+    <comment/>
+  </data>
+  <data name="InvalidImageManifest" xml:space="preserve">
+    <value>Cannot create image index because at least one of the provided images manifest is invalid.</value>
     <comment/>
   </data>
   <data name="ImageIndex_PodmanNotSupported" xml:space="preserve">

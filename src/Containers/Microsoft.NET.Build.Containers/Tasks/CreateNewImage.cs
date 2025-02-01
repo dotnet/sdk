@@ -122,7 +122,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         if (BuildEngine != null) 
         {
-            Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_StartBuildingImage, Repository, String.Join(",", ImageTags), sourceImageReference);
+            (string message, object[] parameters) = SkipPublishing ?
+                ( Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
+                ( Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
+            Log.LogMessage(MessageImportance.High, message, parameters);
         }
 
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);

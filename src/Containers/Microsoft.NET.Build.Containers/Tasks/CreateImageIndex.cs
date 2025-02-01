@@ -12,88 +12,8 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
-public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
+public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
 {
-    #region Parameters
-    /// <summary>
-    /// The base registry to pull from.
-    /// Ex: mcr.microsoft.com
-    /// </summary>
-    [Required]
-    public string BaseRegistry { get; set; }
-
-    /// <summary>
-    /// The base image to pull.
-    /// Ex: dotnet/runtime
-    /// </summary>
-    [Required]
-    public string BaseImageName { get; set; }
-
-    /// <summary>
-    /// The base image tag.
-    /// Ex: 6.0
-    /// </summary>
-    [Required]
-    public string BaseImageTag { get; set; }
-
-    /// <summary>
-    /// Manifests to include in the image index.
-    /// </summary>
-    [Required]
-    public ITaskItem[] GeneratedContainers { get; set; }
-
-    /// <summary>
-    /// The registry to push the image index to.
-    /// </summary>
-    public string OutputRegistry { get; set; }
-
-    /// <summary>
-    /// The file path to which to write a tar.gz archive of the container image.
-    /// </summary>
-    public string ArchiveOutputPath { get; set; }
-
-    /// <summary>
-    /// The kind of local registry to use, if any.
-    /// </summary>
-    public string LocalRegistry { get; set; }
-
-    /// <summary>
-    /// The name of the output image index (manifest list) that will be pushed to the registry.
-    /// </summary>
-    [Required]
-    public string Repository { get; set; }
-
-    /// <summary>
-    /// The tag to associate with the new image index (manifest list).
-    /// </summary>
-    [Required]
-    public string[] ImageTags { get; set; }
-
-    [Output]
-    public string GeneratedArchiveOutputPath { get; set; }
-
-    /// <summary>
-    /// The generated image index (manifest list) in JSON format.
-    /// </summary>
-    [Output]
-    public string GeneratedImageIndex { get; set; }
-
-    public CreateImageIndex()
-    {
-        BaseRegistry = string.Empty;
-        BaseImageName = string.Empty;
-        BaseImageTag = string.Empty;
-        GeneratedContainers = Array.Empty<ITaskItem>();
-        OutputRegistry = string.Empty;
-        ArchiveOutputPath = string.Empty;
-        LocalRegistry = string.Empty;
-        Repository = string.Empty;
-        ImageTags = Array.Empty<string>();
-        GeneratedArchiveOutputPath = string.Empty;
-        GeneratedImageIndex = string.Empty;
-    }
-    #endregion
-
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public void Cancel() => _cancellationTokenSource.Cancel();
@@ -178,18 +98,16 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
             string manifest = unparsedImage.GetMetadata("Manifest");
             string manifestMediaType = unparsedImage.GetMetadata("ManifestMediaType");
 
-            //TODO: add manifestmedia type to the error message
-            if (string.IsNullOrEmpty(config) || string.IsNullOrEmpty(manifestDigest) || string.IsNullOrEmpty(manifest))
+            if (string.IsNullOrEmpty(config) || string.IsNullOrEmpty(manifestDigest) || string.IsNullOrEmpty(manifest) || string.IsNullOrEmpty(manifestMediaType))
             {
-                Log.LogError(Strings.InvalidImageMetadata, unparsedImage.ItemSpec);
+                Log.LogError(Strings.InvalidImageMetadata);
                 break;
             }
 
             var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest);
             if (manifestV2 == null)
             {
-                //TODO: log new error about manifest not deserealized
-                Log.LogError(Strings.InvalidImageMetadata, unparsedImage.ItemSpec);
+                Log.LogError(Strings.InvalidImageManifest);
                 break;
             }
 

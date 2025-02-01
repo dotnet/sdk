@@ -205,6 +205,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Building image &apos;{0}&apos; for runtime identifier &apos;{1}&apos; on top of base image &apos;{2}&apos;..
+        /// </summary>
+        internal static string ContainerBuilder_StartBuildingImageForRid {
+            get {
+                return ResourceManager.GetString("ContainerBuilder_StartBuildingImageForRid", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER3001: Failed creating {0} process..
         /// </summary>
         internal static string ContainerRuntimeProcessCreationFailed {
@@ -376,7 +385,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot create manifest list (image index) because no images were provided..
+        ///   Looks up a localized string similar to Cannot create image index because no images were provided..
         /// </summary>
         internal static string ImagesEmpty {
             get {
@@ -394,7 +403,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot create manifest list (image index) because provided images are invalid. Items must have &apos;Config&apos;, &apos;Manifest&apos;, &apos;ManifestMediaType&apos; and &apos;ManifestDigest&apos; metadata..
+        ///   Looks up a localized string similar to Cannot create image index because provided images are invalid. Items must have &apos;Config&apos;, &apos;Manifest&apos;, &apos;ManifestMediaType&apos; and &apos;ManifestDigest&apos; metadata..
         /// </summary>
         internal static string InvalidImageMetadata {
             get {
@@ -402,6 +411,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create image index because at least one of the provided images manifest is invalid..
+        /// </summary>
+        internal static string InvalidImageManifest {
+            get {
+                return ResourceManager.GetString("InvalidImageManifest", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Image index creation for Podman is not supported..
         /// </summary>
@@ -565,7 +583,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;mediaType&apos; of manifests should be the same in manifest list (image index)..
+        ///   Looks up a localized string similar to &apos;mediaType&apos; of manifests should be the same in image index..
         /// </summary>
         internal static string MixedMediaTypes {
             get {
@@ -817,7 +835,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot create manifest list (image index) for the provided &apos;mediaType&apos; = &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Cannot create image index for the provided &apos;mediaType&apos; = &apos;{0}&apos;..
         /// </summary>
         internal static string UnsupportedMediaType {
             get {

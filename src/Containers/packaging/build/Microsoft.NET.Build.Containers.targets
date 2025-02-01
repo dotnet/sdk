@@ -363,9 +363,7 @@
                       ImageTags="@(ContainerImageTags)"
                       BaseRegistry="$(ContainerBaseRegistry)"
                       BaseImageName="$(ContainerBaseName)"
-                      BaseImageTag="$(ContainerBaseTag)">
-      <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
-    </CreateImageIndex>
+                      BaseImageTag="$(ContainerBaseTag)" />
   </Target>
 
   <Target Name="_ParseItemsForPublishingSingleContainer">

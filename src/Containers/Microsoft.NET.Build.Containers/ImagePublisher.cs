@@ -74,7 +74,8 @@ internal static class ImagePublisher
                     telemetry,
                     cancellationToken,
                     destinationImageReference.LocalRegistry!.LoadAsync,
-                    Strings.ContainerBuilder_ImageUploadedToLocalDaemon).ConfigureAwait(false);
+                    Strings.ContainerBuilder_ImageUploadedToLocalDaemon,
+                    logWarningForMultiArch : true).ConfigureAwait(false);
                 break;
             case DestinationImageReferenceKind.RemoteRegistry:
                 await PushToRemoteRegistryAsync(
@@ -112,7 +113,8 @@ internal static class ImagePublisher
         Telemetry telemetry,
         CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, CancellationToken, Task> loadFunc,
-        string successMessage)
+        string successMessage,
+        bool logWarningForMultiArch = false)
     {
         ILocalRegistry localRegistry = destinationImageReference.LocalRegistry!;
         if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
@@ -144,6 +146,15 @@ internal static class ImagePublisher
         catch (ArgumentException argEx)
         {
             Log.LogErrorFromException(argEx, showStackTrace: false);
+        }
+        catch (DockerLoadException dle)
+        {
+            telemetry.LogLocalLoadError();
+            Log.LogErrorFromException(dle, showStackTrace: false);
+            if (logWarningForMultiArch && dle.Message.Contains("no such file or directory"))
+            {
+                Log.LogMessage(MessageImportance.High, "Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.");
+            }
         }
     }
 

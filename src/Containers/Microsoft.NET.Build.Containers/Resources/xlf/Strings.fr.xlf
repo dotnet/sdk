@@ -79,6 +79,11 @@
         <target state="translated">Génération de l’image «{0}» avec des balises «{1}» au-dessus de l’image de base «{2}».</target>
         <note />
       </trans-unit>
+      <trans-unit id="ContainerBuilder_StartBuildingImageForRid">
+        <source>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</source>
+        <target state="new">Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
         <source>CONTAINER1007: Could not deserialize token from JSON.</source>
         <target state="translated">CONTAINER1007: impossible de désérialiser le jeton à partir de JSON.</target>
@@ -180,8 +185,8 @@
         <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="ImagesEmpty">
-        <source>Cannot create manifest list (image index) because no images were provided.</source>
-        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <source>Cannot create image index because no images were provided.</source>
+        <target state="new">Cannot create image index because no images were provided.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
@@ -189,9 +194,14 @@
         <target state="translated">CONTAINER2015: {0} : '{1}' n’était pas une variable d’environnement valide. Ignorant.</target>
         <note>{StrBegin="CONTAINER2015: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidImageManifest">
+        <source>Cannot create image index because at least one of the provided images manifest is invalid.</source>
+        <target state="new">Cannot create image index because at least one of the provided images manifest is invalid.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidImageMetadata">
-        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
+        <target state="new">Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -420,8 +430,8 @@
         <note>{StrBegin="CONTAINER2001: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
-        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <source>Cannot create image index for the provided 'mediaType' = '{0}'.</source>
+        <target state="new">Cannot create image index for the provided 'mediaType' = '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
