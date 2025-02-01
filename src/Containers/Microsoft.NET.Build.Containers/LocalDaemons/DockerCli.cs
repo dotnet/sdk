@@ -122,6 +122,7 @@ internal sealed class DockerCli
     }
 
     public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
+        // For loading to the local registry, we use the Docker format. Two reasons: one - compatibility with previous behavior before oci formatted publishing was available, two - Podman cannot load multi tag oci image tarball.
         => await LoadAsync(image, sourceReference, destinationReference, WriteDockerImageToStreamAsync, cancellationToken);
 
     public async Task LoadAsync(BuiltImage[] images, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
@@ -406,11 +407,6 @@ internal sealed class DockerCli
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (destinationReference.Tags.Length > 1)
-        {
-            throw new ArgumentException(Resource.FormatString(nameof(Strings.OciImageMultipleTagsNotSupported)));
-        }
-
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
         foreach (var image in images)
@@ -434,11 +430,6 @@ internal sealed class DockerCli
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        if (destinationReference.Tags.Length > 1)
-        {
-            throw new ArgumentException(Resource.FormatString(nameof(Strings.OciImageMultipleTagsNotSupported)));
-        }
 
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
@@ -511,8 +502,6 @@ internal sealed class DockerCli
         // 1. create manifest list for the blobs
         cancellationToken.ThrowIfCancellationRequested();
 
-        string tag = destinationReference.Tags[0];
-
         var manifests = new PlatformSpecificOciManifest[images.Length];
         for (int i = 0; i < images.Length; i++)
         {
@@ -554,24 +543,28 @@ internal sealed class DockerCli
         // 2. create index json that points to manifest list in the blobs
         cancellationToken.ThrowIfCancellationRequested();
 
+        var manifestsIndexJson = new PlatformSpecificOciManifest[destinationReference.Tags.Length];
+        for (int i = 0; i < destinationReference.Tags.Length; i++)
+        {
+            var tag = destinationReference.Tags[i];
+            manifestsIndexJson[i] = new PlatformSpecificOciManifest
+            {
+                mediaType = SchemaTypes.OciImageIndexV1,
+                size = manifestListJson.Length,
+                digest = manifestListDigest,
+                annotations = new Dictionary<string, string> 
+                {
+                    { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
+                    { "org.opencontainers.image.ref.name", tag } 
+                }
+            };
+        }
+
         var index = new ImageIndexV1
         {
             schemaVersion = 2,
             mediaType = SchemaTypes.OciImageIndexV1,
-            manifests = 
-            [
-                new PlatformSpecificOciManifest
-                {
-                    mediaType = SchemaTypes.OciImageIndexV1,
-                    size = manifestListJson.Length,
-                    digest = manifestListDigest,
-                    annotations = new Dictionary<string, string> 
-                    {
-                        { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
-                        { "org.opencontainers.image.ref.name", tag } 
-                    },
-                }
-            ]
+            manifests = manifestsIndexJson
         };
 
         using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index, options)!.ToJsonString())))
@@ -592,26 +585,28 @@ internal sealed class DockerCli
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        string tag = destinationReference.Tags[0];
+        var manifests = new PlatformSpecificOciManifest[destinationReference.Tags.Length];
+        for (int i = 0; i < destinationReference.Tags.Length; i++)
+        {
+            var tag = destinationReference.Tags[i];
+            manifests[i] = new PlatformSpecificOciManifest
+            {
+                mediaType = SchemaTypes.OciManifestV1,
+                size = image.Manifest.Length,
+                digest = image.ManifestDigest,
+                annotations = new Dictionary<string, string> 
+                {
+                    { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
+                    { "org.opencontainers.image.ref.name", tag } 
+                }
+            };
+        }
 
         var index = new ImageIndexV1
         {
             schemaVersion = 2,
             mediaType = SchemaTypes.OciImageIndexV1,
-            manifests =
-            [
-                new PlatformSpecificOciManifest
-                {
-                    mediaType = SchemaTypes.OciManifestV1,
-                    size = image.Manifest.Length,
-                    digest = image.ManifestDigest,
-                    annotations = new Dictionary<string, string> 
-                    {
-                        { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
-                        { "org.opencontainers.image.ref.name", tag } 
-                    }
-                }
-            ]
+            manifests = manifests
         };
 
         var options = new JsonSerializerOptions

@@ -304,11 +304,6 @@
         <target state="translated">Nazwa „{0}” nie była prawidłową nazwą obrazu kontenera, została znormalizowana do „{1}”</target>
         <note />
       </trans-unit>
-      <trans-unit id="OciImageMultipleTagsNotSupported">
-        <source>Unable to create tarball for oci image with multiple tags.</source>
-        <target state="new">Unable to create tarball for oci image with multiple tags.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
         <source>CONTAINER2011: {0} '{1}' does not exist</source>
         <target state="translated">CONTAINER2011: {0} „{1}” nie istnieje</target>
