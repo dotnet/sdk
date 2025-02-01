@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore,
             CustomParser = arguments => {
-                var result = arguments.Tokens.TakeWhile(t => File.Exists(t.Value));
+                var result = arguments.Tokens.TakeWhile(t => !t.Value.StartsWith("-"));
                 arguments.OnlyTake(result.Count());
                 return result.Select(t => t.Value);
             }
