@@ -1,12 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -127,6 +125,12 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
     internal async Task<bool> ExecuteAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (LocalRegistry == "Podman")
+        {
+            Log.LogError(Strings.ImageIndex_PodmanNotSupported);
+            return false;
+        }
 
         using MSBuildLoggerProvider loggerProvider = new(Log);
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });

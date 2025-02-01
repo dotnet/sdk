@@ -164,6 +164,11 @@
         <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageIndex_PodmanNotSupported">
+        <source>Image index creation for Podman is not supported.</source>
+        <target state="new">Image index creation for Podman is not supported.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: Échec du chargement de l'image à partir du registre local. sortie standard : {0}</target>

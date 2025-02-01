@@ -403,6 +403,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Image index creation for Podman is not supported..
+        /// </summary>
+        internal static string ImageIndex_PodmanNotSupported {
+            get {
+                return ResourceManager.GetString("ImageIndex_PodmanNotSupported", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2005: The inferred image name &apos;{0}&apos; contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character..
         /// </summary>
         internal static string InvalidImageName_EntireNameIsInvalidCharacters {
