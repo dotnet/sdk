@@ -455,8 +455,9 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
+        // We used to emit NETSDK1219 while UWP support on .NET 9 was not GA yet, make sure it's gone now
         [WindowsOnlyFact]
-        public void ItWarnsWhenBuildingAProjectWithUseUwpProperty()
+        public void ItDoesNotWarnAnymoreWhenBuildingAProjectWithUseUwpProperty()
         {
             TestProject testProject = new()
             {
@@ -474,7 +475,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("NETSDK1219");
+                .NotHaveStdOutContaining("NETSDK1219");
         }
 
         [WindowsOnlyFact]

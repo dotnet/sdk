@@ -125,6 +125,10 @@
     <UpToDateCheckInput Include="@(None)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="FrameworkPackages\" />
+  </ItemGroup>
+
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
     <PropertyGroup>
       <_NugetBuildTasksPackPath>$(NuGetPackageRoot)nuget.build.tasks.pack\$(NuGetBuildTasksPackageVersion)</_NugetBuildTasksPackPath>
