@@ -22,6 +22,8 @@ namespace Microsoft.DotNet.Cli
             }
         };
 
+        public static readonly CliOption<string> ProjectOption = ReferenceCommandParser.ProjectOption;
+
         public static readonly CliOption<string> FrameworkOption = new CliOption<string>("--framework", "-f")
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
@@ -45,6 +47,7 @@ namespace Microsoft.DotNet.Cli
             command.Arguments.Add(ProjectPathArgument);
             command.Options.Add(FrameworkOption);
             command.Options.Add(InteractiveOption);
+            command.Options.Add(ProjectOption);
 
             command.SetAction((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
 

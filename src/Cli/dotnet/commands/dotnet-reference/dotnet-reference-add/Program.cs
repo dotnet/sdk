@@ -16,8 +16,8 @@ namespace Microsoft.DotNet.Tools.Reference.Add
 
         public AddProjectToProjectReferenceCommand(ParseResult parseResult) : base(parseResult)
         {
-            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
+            _fileOrDirectory = parseResult.HasOption(ReferenceAddCommandParser.ProjectOption) ?
+                parseResult.GetValue(ReferenceAddCommandParser.ProjectOption) :
                 parseResult.GetValue(AddCommandParser.ProjectArgument);
         }
 

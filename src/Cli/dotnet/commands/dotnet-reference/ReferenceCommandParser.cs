@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("reference", DocsLink, LocalizableStrings.NetRemoveCommand);
 
-            command.Options.Add(ProjectOption);
             command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
             command.Subcommands.Add(ReferenceListCommandParser.GetCommand());
             command.Subcommands.Add(ReferenceRemoveCommandParser.GetCommand());

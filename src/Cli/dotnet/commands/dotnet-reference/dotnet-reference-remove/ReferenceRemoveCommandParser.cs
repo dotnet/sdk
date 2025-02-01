@@ -22,6 +22,8 @@ namespace Microsoft.DotNet.Cli
             HelpName = CommonLocalizableStrings.CmdFramework
         };
 
+        public static readonly CliOption<string> ProjectOption = ReferenceCommandParser.ProjectOption;
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -35,6 +37,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Arguments.Add(ProjectPathArgument);
             command.Options.Add(FrameworkOption);
+            command.Options.Add(ProjectOption);
 
             command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
 
