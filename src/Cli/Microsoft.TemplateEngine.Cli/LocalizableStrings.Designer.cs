@@ -1878,7 +1878,7 @@ namespace Microsoft.TemplateEngine.Cli {
         {
             get
             {
-                return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_PackageIsAvailable ", resourceCulture);
+                return ResourceManager.GetString("TemplatePackageCoordinator_Install_Info_PackageIsAvailable", resourceCulture);
             }
         }
 

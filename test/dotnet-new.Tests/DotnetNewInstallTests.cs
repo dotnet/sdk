@@ -135,11 +135,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Install command are expected to output the requested version literally as they got it on input,
             //  but otherwise the outputs are expected to be equal
             string? command1Out = command1.StdOut?.Replace(
-                "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.*",
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
 
             string? command2Out = command2.StdOut?.Replace(
-                "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.*",
+                "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
 
             Assert.Equal(command1Out, command2Out);
