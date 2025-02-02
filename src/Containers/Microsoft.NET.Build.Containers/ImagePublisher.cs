@@ -30,8 +30,7 @@ internal static class ImagePublisher
                     BuildEngine,
                     telemetry,
                     cancellationToken,
-                    destinationImageReference.LocalRegistry!.LoadAsync,
-                    Strings.ContainerBuilder_ImageUploadedToLocalDaemon).ConfigureAwait(false);
+                    destinationImageReference.LocalRegistry!.LoadAsync).ConfigureAwait(false);
                 break;
             case DestinationImageReferenceKind.RemoteRegistry:
                 await PushToRemoteRegistryAsync(
@@ -74,7 +73,6 @@ internal static class ImagePublisher
                     telemetry,
                     cancellationToken,
                     destinationImageReference.LocalRegistry!.LoadAsync,
-                    Strings.ContainerBuilder_ImageUploadedToLocalDaemon,
                     logWarningForMultiArch : true).ConfigureAwait(false);
                 break;
             case DestinationImageReferenceKind.RemoteRegistry:
@@ -113,7 +111,6 @@ internal static class ImagePublisher
         Telemetry telemetry,
         CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, CancellationToken, Task> loadFunc,
-        string successMessage,
         bool logWarningForMultiArch = false)
     {
         ILocalRegistry localRegistry = destinationImageReference.LocalRegistry!;
@@ -128,7 +125,7 @@ internal static class ImagePublisher
             await loadFunc(image, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
             if (BuildEngine != null) 
             {
-                Log.LogMessage(MessageImportance.High, successMessage, destinationImageReference, localRegistry);
+                Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
             }
         }
         catch (ContainerHttpException e)
