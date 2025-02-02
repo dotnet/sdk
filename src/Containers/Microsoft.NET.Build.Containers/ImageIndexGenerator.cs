@@ -71,8 +71,8 @@ internal static class ImageIndexGenerator
                 digest = image.ManifestDigest,
                 platform = new PlatformInformation
                 {
-                    architecture = image.Architecture,
-                    os = image.OS
+                    architecture = image.Architecture!,
+                    os = image.OS!
                 }
             };
             manifests[i] = manifest;

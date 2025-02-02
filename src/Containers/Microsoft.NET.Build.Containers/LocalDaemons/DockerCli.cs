@@ -510,7 +510,7 @@ internal sealed class DockerCli
                 mediaType = SchemaTypes.OciManifestV1,
                 size = images[i].Manifest.Length,
                 digest = images[i].ManifestDigest,
-                platform = new PlatformInformation { architecture = images[i].Architecture, os = images[i].OS }
+                platform = new PlatformInformation { architecture = images[i].Architecture!, os = images[i].OS! }
             };
             manifests[i] = manifest;
         }

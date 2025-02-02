@@ -6,7 +6,7 @@ namespace Microsoft.NET.Build.Containers;
 /// <summary>
 /// Represents constructed image ready for further processing.
 /// </summary>
-internal readonly struct BuiltImage
+internal sealed class BuiltImage
 {
     /// <summary>
     /// Gets image configuration in JSON format.
@@ -46,12 +46,12 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image OS.
     /// </summary>
-    internal string OS { get; init; }
+    internal string? OS { get; init; }
 
     /// <summary>
     /// Gets image architecture.
     /// </summary>
-    internal string Architecture { get; init; }
+    internal string? Architecture { get; init; }
 
     /// <summary>
     /// Gets layers descriptors.
