@@ -746,8 +746,7 @@ public class EndToEndTests : IDisposable
             .Execute();
 
         // Check that the app was published for each RID,
-        // images were created locally for each RID
-        // and image index was NOT created
+        // one image was created locally
         commandResult.Should().Pass()
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
@@ -755,7 +754,7 @@ public class EndToEndTests : IDisposable
             .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-arm64'")
             .And.HaveStdOutContaining($"Pushed image '{image}' to local registry");
 
-        //Multi-arch oci images that are loaded to docker can only be run by their image id
+        //Multi-arch oci tarballs that are loaded to docker can only be run by their image id
         string imageId = GetImageId(image);
 
         // Check that the containers can be run
@@ -927,12 +926,10 @@ public class EndToEndTests : IDisposable
     public void EndToEndMultiArch_ArchivePublishing()
     {
         string imageName = NewImageName();
-        string imageTag = "1.0";
-        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
-        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+        string tag = "1.0";
+        string image = $"{imageName}:{tag}";
         string archiveOutput = Path.Combine(TestSettings.TestArtifactsDirectory, "tarballs-output");
-        string imageX64Tarball = Path.Combine(archiveOutput, $"{imageName}-linux-x64.tar.gz");
-        string imageArm64Tarball = Path.Combine(archiveOutput, $"{imageName}-linux-arm64.tar.gz");
+        string imageTarball = Path.Combine(archiveOutput, $"{imageName}.tar.gz");
 
         // Create a new console project
         DirectoryInfo newProjectDir = CreateNewProject("console");
@@ -946,49 +943,51 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerArchiveOutputPath={archiveOutput}",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
-            $"/p:ContainerImageTag={imageTag}",
+            $"/p:ContainerImageTag={tag}",
             "/p:EnableSdkContainerSupport=true")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
 
         // Check that the app was published for each RID,
-        // images were created locally for each RID
-        // and image index was NOT created
+        // one image was created in local archive
         commandResult.Should().Pass()
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
-            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local archive at '{imageX64Tarball}'")
-            .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to local archive at '{imageArm64Tarball}'")
-            .And.NotHaveStdOutContaining("Pushed image index");
+            .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-x64'")
+            .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-arm64'")
+            .And.HaveStdOutContaining($"Pushed image '{image}' to local archive at '{imageTarball}'");
 
         // Check that tarballs were created
-        File.Exists(imageX64Tarball).Should().BeTrue();
-        File.Exists(imageArm64Tarball).Should().BeTrue();
+        File.Exists(imageTarball).Should().BeTrue();
 
-        // Load the images from the tarballs
-        ContainerCli.LoadCommand(_testOutput, "--input", imageX64Tarball)
+        // Load the multi-arch image from the tarball
+        ContainerCli.LoadCommand(_testOutput, "--input", imageTarball)
            .Execute()
            .Should().Pass();
-        ContainerCli.LoadCommand(_testOutput, "--input", imageArm64Tarball)
-           .Execute()
-           .Should().Pass();
+
+        //Multi-arch oci tarballs that are loaded to docker can only be run by their image id
+        string imageId = GetImageId(image);
 
         // Check that the containers can be run
         CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/amd64",
             "--name",
             $"test-container-{imageName}-x64",
-            imageX64)
+            imageId)
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
 
         CommandResult processResultArm64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/arm64",
             "--name",
             $"test-container-{imageName}-arm64",
-            imageArm64)
+            imageId)
         .Execute();
         processResultArm64.Should().Pass().And.HaveStdOut("Hello, World!");
 
@@ -1118,8 +1117,8 @@ public class EndToEndTests : IDisposable
         commandResult.Should().Pass()
             .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
-            .And.NotHaveStdOutContaining($"Pushed image '{imageName}:{imageTag}-linux-x64' to local registry")
-            .And.HaveStdOutContaining($"Pushed image '{imageName}:{imageTag}-linux-arm64' to local registry");
+            .And.NotHaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-x64'")
+            .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-arm64'");
 
         // Cleanup
         newProjectDir.Delete(true);
@@ -1129,9 +1128,8 @@ public class EndToEndTests : IDisposable
     public void EndToEndMultiArch_EnvVariables()
     {
         string imageName = NewImageName();
-        string imageTag = "1.0";
-        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
-        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+        string tag = "1.0";
+        string image = $"{imageName}:{tag}";
 
         // Create new console app, set ContainerEnvironmentVariables, and set to output env variable
         DirectoryInfo newProjectDir = CreateNewProject("console");
@@ -1160,31 +1158,37 @@ public class EndToEndTests : IDisposable
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
-            $"/p:ContainerImageTag={imageTag}",
+            $"/p:ContainerImageTag={tag}",
             "/p:EnableSdkContainerSupport=true")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
-        // Check that the env var is printed
+        string imageId = GetImageId(image);
+
+        // Check that the env var is printed for linux/amd64 platform
         string containerNameX64 = $"test-container-{imageName}-x64";
         CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/amd64",
             "--name",
             containerNameX64,
-            imageX64)
+            imageId)
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("FooBar");
 
-        // Check that the env var is printed
+        // Check that the env var is printed for linux/arm64 platform
         string containerNameArm64 = $"test-container-{imageName}-arm64";
         CommandResult processResultArm64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/arm64",
             "--name",
             containerNameArm64,
-            imageArm64)
+            imageId)
         .Execute();
         processResultArm64.Should().Pass().And.HaveStdOut("FooBar");
 
@@ -1196,9 +1200,8 @@ public class EndToEndTests : IDisposable
     public void EndToEndMultiArch_Ports()
     {
         string imageName = NewImageName();
-        string imageTag = "1.0";
-        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
-        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+        string tag = "1.0";
+        string image = $"{imageName}:{tag}";
 
         // Create new web app, set ContainerPort
         DirectoryInfo newProjectDir = CreateNewProject("webapp");
@@ -1222,38 +1225,44 @@ public class EndToEndTests : IDisposable
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
-            $"/p:ContainerImageTag={imageTag}",
+            $"/p:ContainerImageTag={tag}",
             "/p:EnableSdkContainerSupport=true")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
-        // Check that the ports are correct
+        string imageId = GetImageId(image);
+
+        // Check that the ports are correct for linux/amd64 platform
         var containerNameX64 = $"test-container-{imageName}-x64";
         CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/amd64",
             "--name",
             containerNameX64,
             "-P",
             "--detach",
-            imageX64)
+            imageId)
         .Execute();
         processResultX64.Should().Pass();
 
         // 8080 is the default port
         CheckPorts(containerNameX64, [8080, 8082, 8083], [8081]);
 
-        // Check that the ports are correct
+        // Check that the ports are correct for linux/arm64 platform
         var containerNameArm64 = $"test-container-{imageName}-arm64";
         CommandResult processResultArm64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/arm64",
             "--name",
             containerNameArm64,
             "-P",
             "--detach",
-            imageArm64)
+            imageId)
         .Execute();
         processResultArm64.Should().Pass();
 
@@ -1291,8 +1300,8 @@ public class EndToEndTests : IDisposable
     public void EndToEndMultiArch_Labels()
     {
         string imageName = NewImageName();
-        string imageTag = "1.0";
-        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
+        string tag = "1.0";
+        string image = $"{imageName}:{tag}";
 
         // Create new console app
         DirectoryInfo newProjectDir = CreateNewProject("webapp");
@@ -1305,17 +1314,19 @@ public class EndToEndTests : IDisposable
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
-            $"/p:ContainerImageTag={imageTag}",
+            $"/p:ContainerImageTag={tag}",
             "/p:EnableSdkContainerSupport=true")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
+        string imageId = GetImageId(image);
+
         // Check that labels are set
         CommandResult inspectResult = ContainerCli.InspectCommand(
             _testOutput,
             "--format={{json .Config.Labels}}",
-            imageX64)
+            imageId)
         .Execute();
         inspectResult.Should().Pass();
         var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(inspectResult.StdOut);
