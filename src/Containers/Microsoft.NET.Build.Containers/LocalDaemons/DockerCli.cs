@@ -453,6 +453,52 @@ internal sealed class DockerCli
         }
     }
 
+    private static async Task WriteIndexJsonForOciImage(
+        TarWriter writer,
+        BuiltImage image,
+        DestinationImageReference destinationReference,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var manifests = new PlatformSpecificOciManifest[destinationReference.Tags.Length];
+        for (int i = 0; i < destinationReference.Tags.Length; i++)
+        {
+            var tag = destinationReference.Tags[i];
+            manifests[i] = new PlatformSpecificOciManifest
+            {
+                mediaType = SchemaTypes.OciManifestV1,
+                size = image.Manifest.Length,
+                digest = image.ManifestDigest,
+                annotations = new Dictionary<string, string> 
+                {
+                    { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
+                    { "org.opencontainers.image.ref.name", tag } 
+                }
+            };
+        }
+
+        var index = new ImageIndexV1
+        {
+            schemaVersion = 2,
+            mediaType = SchemaTypes.OciImageIndexV1,
+            manifests = manifests
+        };
+
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index, options)!.ToJsonString())))
+        {
+            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
+            {
+                DataStream = indexStream
+            };
+            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
     private static async Task WriteOciImageToBlobs(
         TarWriter writer,
         BuiltImage image,
@@ -567,52 +613,6 @@ internal sealed class DockerCli
             manifests = manifestsIndexJson
         };
 
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index, options)!.ToJsonString())))
-        {
-            PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
-            {
-                DataStream = indexStream
-            };
-            await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    private static async Task WriteIndexJsonForOciImage(
-        TarWriter writer,
-        BuiltImage image,
-        DestinationImageReference destinationReference,
-        CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var manifests = new PlatformSpecificOciManifest[destinationReference.Tags.Length];
-        for (int i = 0; i < destinationReference.Tags.Length; i++)
-        {
-            var tag = destinationReference.Tags[i];
-            manifests[i] = new PlatformSpecificOciManifest
-            {
-                mediaType = SchemaTypes.OciManifestV1,
-                size = image.Manifest.Length,
-                digest = image.ManifestDigest,
-                annotations = new Dictionary<string, string> 
-                {
-                    { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
-                    { "org.opencontainers.image.ref.name", tag } 
-                }
-            };
-        }
-
-        var index = new ImageIndexV1
-        {
-            schemaVersion = 2,
-            mediaType = SchemaTypes.OciImageIndexV1,
-            manifests = manifests
-        };
-
-        var options = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
         using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index, options)!.ToJsonString())))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
