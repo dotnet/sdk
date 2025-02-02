@@ -468,7 +468,6 @@
                             GenerateVersionFile;
                             CopyKnownWorkloadManifestFile;
                             GenerateBundledVersions;
-                            GeneratePackagePruneData;
                             LayoutRuntimeGraph;
                             LayoutTemplates;
                             LayoutManifests;

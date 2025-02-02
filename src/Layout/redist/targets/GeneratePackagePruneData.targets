@@ -1,11 +1,9 @@
 <Project>
 
-  <Target Name="GeneratePackagePruneData"
-          DependsOnTargets="GenerateBundledVersionsProps">
-
+  <Target Name="GeneratePackagePruneData">
 
     <GenerateTargetingPackDownloads
-          NETCoreAppTargetFrameworkVersion="$(_NETCoreAppTargetFrameworkVersion)">
+          NETCoreAppTargetFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
        <Output TaskParameter="TargetingPackDownloads" ItemName="TargetingPackForPruneData" />
     </GenerateTargetingPackDownloads>
 
@@ -47,7 +45,7 @@
     <ItemGroup>
       <PrunePackageCopyData Include="@(TargetingPackForPruneData)">
         <Source>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(PackageVersion)/data/PackageOverrides.txt</Source>
-        <Destination>$(SdkOutputDirectory)PrunePackageData/%(TargetFrameworkVersion)/%(FrameworkName)/PackageOverrides.txt</Destination>
+        <Destination>$(OutputPath)/PrunePackageData/%(TargetFrameworkVersion)/%(FrameworkName)/PackageOverrides.txt</Destination>
       </PrunePackageCopyData>
     </ItemGroup>
 
