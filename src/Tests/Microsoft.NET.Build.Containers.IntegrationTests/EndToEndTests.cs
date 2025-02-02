@@ -726,9 +726,8 @@ public class EndToEndTests : IDisposable
     public void EndToEndMultiArch_LocalRegistry()
     {
         string imageName = NewImageName();
-        string imageTag = "1.0";
-        string imageX64 = $"{imageName}:{imageTag}-linux-x64";
-        string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
+        string tag = "1.0";
+        string image = $"{imageName}:{tag}";
 
         // Create a new console project
         DirectoryInfo newProjectDir = CreateNewProject("console");
@@ -741,7 +740,7 @@ public class EndToEndTests : IDisposable
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
-            $"/p:ContainerImageTag={imageTag}",
+            $"/p:ContainerImageTag={tag}",
             "/p:EnableSdkContainerSupport=true")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
@@ -752,31 +751,51 @@ public class EndToEndTests : IDisposable
         commandResult.Should().Pass()
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
             .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
-            .And.HaveStdOutContaining($"Pushed image '{imageX64}' to local registry")
-            .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to local registry")
-            .And.NotHaveStdOutContaining("Pushed image index");
+            .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-x64'")
+            .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-arm64'")
+            .And.HaveStdOutContaining($"Pushed image '{image}' to local registry");
+
+        //Multi-arch oci images that are loaded to docker can only be run by their image id
+        string imageId = GetImageId(image);
 
         // Check that the containers can be run
         CommandResult processResultX64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/amd64",
             "--name",
             $"test-container-{imageName}-x64",
-            imageX64)
+            imageId)
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
 
         CommandResult processResultArm64 = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
+            "--platform",
+            "linux/arm64",
             "--name",
             $"test-container-{imageName}-arm64",
-            imageArm64)
+            imageId)
         .Execute();
         processResultArm64.Should().Pass().And.HaveStdOut("Hello, World!");
 
         // Cleanup
         newProjectDir.Delete(true);
+    }
+
+    private string GetImageId(string image)
+    {
+        CommandResult commandResult = ContainerCli.ImagesCommand(_testOutput, "--format", "\"{{.ID}}\"", image)
+            .Execute();
+        commandResult.Should().Pass();
+
+        var output = commandResult.StdOut.Split("\n").Select(s => s.Trim('"')).ToList();
+
+        output.Should().NotBeNullOrEmpty().And.OnlyContain(s => s == output[0]);
+
+        return output[0];
     }
 
     [DockerAvailableFact]
