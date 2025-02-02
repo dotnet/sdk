@@ -366,7 +366,7 @@
     </comment>
   </data>
   <data name="MixedMediaTypes" xml:space="preserve">
-    <value>'mediaType' of manifests should be the same in manifest list (image index).</value>
+    <value>'mediaType' of manifests should be the same in image index.</value>
     <comment/>
   </data>
   <data name="UnsupportedMediaType" xml:space="preserve">
@@ -382,11 +382,27 @@
     <comment/>
   </data>
   <data name="InvalidImageManifest" xml:space="preserve">
-    <value>Cannot create image index because at least one of the provided images manifest is invalid.</value>
+    <value>Cannot create image index because at least one of the provided images' manifest is invalid.</value>
+    <comment/>
+  </data>
+  <data name="InvalidImageConfig" xml:space="preserve">
+    <value>Cannot create image index because at least one of the provided images' config is invalid.</value>
+    <comment/>
+  </data>
+  <data name="ImageConfigMissingArchitecture" xml:space="preserve">
+    <value>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</value>
+    <comment/>
+  </data>
+  <data name="ImageConfigMissingOs" xml:space="preserve">
+    <value>Cannot create image index because at least one of the provided images' config is missing 'os'.</value>
     <comment/>
   </data>
   <data name="ImageIndex_PodmanNotSupported" xml:space="preserve">
     <value>Image index creation for Podman is not supported.</value>
+    <comment/>
+  </data>
+  <data name="TipToEnableContainerdForMultiArch" xml:space="preserve">
+    <value>Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">

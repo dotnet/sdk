@@ -164,6 +164,16 @@
         <target state="translated">未偵測到主機物件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageConfigMissingArchitecture">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</source>
+        <target state="new">Cannot create image index because at least one of the provided images' config is missing 'architecture'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageConfigMissingOs">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'os'.</source>
+        <target state="new">Cannot create image index because at least one of the provided images' config is missing 'os'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
         <source>Pushed image index '{0}' to registry '{1}'.</source>
         <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
@@ -194,9 +204,14 @@
         <target state="translated">CONTAINER2015: {0}: '{1}' 不是有效的環境變數。正在忽略。</target>
         <note>{StrBegin="CONTAINER2015: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidImageConfig">
+        <source>Cannot create image index because at least one of the provided images' config is invalid.</source>
+        <target state="new">Cannot create image index because at least one of the provided images' config is invalid.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidImageManifest">
-        <source>Cannot create image index because at least one of the provided images manifest is invalid.</source>
-        <target state="new">Cannot create image index because at least one of the provided images manifest is invalid.</target>
+        <source>Cannot create image index because at least one of the provided images' manifest is invalid.</source>
+        <target state="new">Cannot create image index because at least one of the provided images' manifest is invalid.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
@@ -290,8 +305,8 @@
         <note>{StrBegin="CONTAINER2016: "}</note>
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
-        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
-        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <source>'mediaType' of manifests should be the same in image index.</source>
+        <target state="new">'mediaType' of manifests should be the same in image index.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -393,6 +408,11 @@
         <source>CONTAINER4001: Required property '{0}' was not set or empty.</source>
         <target state="translated">CONTAINER4001: 必要的屬性 '{0}' 未設定或是空的。</target>
         <note>{StrBegin="CONTAINER4001: "}</note>
+      </trans-unit>
+      <trans-unit id="TipToEnableContainerdForMultiArch">
+        <source>Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</source>
+        <target state="new">Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</target>
+        <note />
       </trans-unit>
       <trans-unit id="TooManyRetries">
         <source>CONTAINER1006: Too many retries, stopping.</source>

@@ -135,17 +135,26 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         return images;
     }
 
-    private static (string, string) GetArchitectureAndOsFromConfig(string config)
+    private (string, string) GetArchitectureAndOsFromConfig(string config)
     {
-        var configJson = JsonNode.Parse(config) as JsonObject ??
-            throw new ArgumentException("Image config should be a JSON object.");
-
-        var architecture = configJson["architecture"]?.ToString() ??
-            throw new ArgumentException("Image config should contain 'architecture'.");
-
-        var os = configJson["os"]?.ToString() ??
-            throw new ArgumentException("Image config should contain 'os'.");
-
+        var configJson = JsonNode.Parse(config) as JsonObject;
+        if (configJson is null)
+        {
+            Log.LogError(Strings.InvalidImageConfig);
+            return (string.Empty, string.Empty);
+        }
+        var architecture = configJson["architecture"]?.ToString();
+        if (architecture is null)
+        {
+            Log.LogError(Strings.ImageConfigMissingArchitecture);
+            return (string.Empty, string.Empty);
+        } 
+        var os = configJson["os"]?.ToString();
+        if (os is null)
+        {
+            Log.LogError(Strings.ImageConfigMissingOs);
+            return (string.Empty, string.Empty);
+        }
         return (architecture, os);
     }
 }

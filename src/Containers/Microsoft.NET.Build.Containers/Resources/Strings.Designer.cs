@@ -421,11 +421,47 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create image index because at least one of the provided images config is invalid..
+        /// </summary>
+        internal static string InvalidImageConfig {
+            get {
+                return ResourceManager.GetString("InvalidImageConfig", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create image index because at least one of the provided images' config is missing 'architecture'..
+        /// </summary>
+        internal static string ImageConfigMissingArchitecture {
+            get {
+                return ResourceManager.GetString("ImageConfigMissingArchitecture", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot create image index because at least one of the provided images' config is missing 'os'..
+        /// </summary>
+        internal static string ImageConfigMissingOs {
+            get {
+                return ResourceManager.GetString("ImageConfigMissingOs", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Image index creation for Podman is not supported..
         /// </summary>
         internal static string ImageIndex_PodmanNotSupported {
             get {
                 return ResourceManager.GetString("ImageIndex_PodmanNotSupported", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings..
+        /// </summary>
+        internal static string TipToEnableContainerdForMultiArch {
+            get {
+                return ResourceManager.GetString("TipToEnableContainerdForMultiArch", resourceCulture);
             }
         }
 
