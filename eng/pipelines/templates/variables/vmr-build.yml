@@ -92,52 +92,52 @@ variables:
 - name: azurelinuxX64CrossContainerName
   value: azurelinuxX64CrossContainer
 - name: azurelinuxX64CrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64
 
 - name: azurelinuxArmCrossContainerName
   value: azurelinuxArmCrossContainer
 - name: azurelinuxArmCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm
 
 - name: azurelinuxArm64CrossContainerName
   value: azurelinuxArm64CrossContainer
 - name: azurelinuxArm64CrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
 
-- name: azurelinuxX64AlpineCrossContainerName
-  value: azurelinuxX64AlpineCrossContainer
-- name: azurelinuxX64AlpineCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64-alpine
+- name: azurelinuxX64MuslCrossContainerName
+  value: azurelinuxX64MuslCrossContainer
+- name: azurelinuxX64MuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64-musl
 
-- name: azurelinuxArmAlpineCrossContainerName
-  value: azurelinuxArmAlpineCrossContainer
-- name: azurelinuxArmAlpineCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
+- name: azurelinuxArmMuslCrossContainerName
+  value: azurelinuxArmMuslCrossContainer
+- name: azurelinuxArmMuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm-musl
 
-- name: azurelinuxArm64AlpineCrossContainerName
-  value: azurelinuxArm64AlpineCrossContainer
-- name: azurelinuxArm64AlpineCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64-alpine
+- name: azurelinuxArm64MuslCrossContainerName
+  value: azurelinuxArm64MuslCrossContainer
+- name: azurelinuxArm64MuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64-musl
 
 - name: androidCrossContainerName
   value: androidCrossContainer
 - name: androidCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-android-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-android-amd64
 
 - name: linuxBionicCrossContainerName
   value: linuxBionicCrossContainer
 - name: linuxBionicCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-android-openssl
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-android-openssl-amd64
 
 - name: browserCrossContainerName
   value: browserCrossContainer
 - name: browserCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-webassembly-amd64
 
 - name: wasiCrossContainerName
   value: wasiCrossContainer
 - name: wasiCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-webassembly-amd64
 
 - name: almaLinuxName
   value: AlmaLinux8
