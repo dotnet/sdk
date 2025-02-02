@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using NuGet.Versioning;
+
 namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>
@@ -35,7 +37,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 targetingPackDownloads.Add(CreateDownload("Microsoft.WindowsDesktop.App", netVersion));
             }
 
-            int maxNetVersion = System.Version.Parse(NETCoreAppTargetFrameworkVersion).Major;
+            int maxNetVersion = NuGetVersion.Parse(NETCoreAppTargetFrameworkVersion).Major;
 
             //  We don't download the targeting pack for the maximum .NET version here, as we may still be in preview.
             //  Rather, the GetPackagesToPrune task will load the package prune data for the current version from the
