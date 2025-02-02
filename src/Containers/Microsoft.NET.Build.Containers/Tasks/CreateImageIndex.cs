@@ -69,18 +69,19 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             LocalRegistry);
 
         var images = ParseImages(destinationImageReference.Kind);
-
         if (Log.HasLoggedErrors)
         {
             return false;
         }
 
-        GeneratedArchiveOutputPath = ArchiveOutputPath;
+        logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
         await ImagePublisher.PublishImageAsync(images, sourceImageReference, destinationImageReference, Log, BuildEngine, telemetry, cancellationToken)
             .ConfigureAwait(false);
+
+        GeneratedArchiveOutputPath = ArchiveOutputPath;
 
         return !Log.HasLoggedErrors;
     }
