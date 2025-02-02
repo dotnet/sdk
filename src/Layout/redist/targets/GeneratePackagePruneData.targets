@@ -2,10 +2,10 @@
 
   <Target Name="GeneratePackagePruneData">
 
-    <GenerateTargetingPackDownloads
+    <GeneratePackagePruneDataDownloads
           NETCoreAppTargetFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
        <Output TaskParameter="TargetingPackDownloads" ItemName="TargetingPackForPruneData" />
-    </GenerateTargetingPackDownloads>
+    </GeneratePackagePruneDataDownloads>
 
     <CollatePackageDownloads Packages="@(TargetingPackForPruneData)">
       <Output TaskParameter="PackageDownloads" ItemName="TargetingPackForPruneDataCollated" />

@@ -6,10 +6,9 @@ using NuGet.Versioning;
 namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>
-    /// Gets version and commit of a dependency by its name
-    /// from eng/Version.Details.xml
+    /// Generates a list of targeting packs to download.  The package prune data will be extracted from these targeting packs
     /// </summary>
-    public class GenerateTargetingPackDownloads : Task
+    public class GeneratePackagePruneDataDownloads : Task
     {
         [Required]
         public string NETCoreAppTargetFrameworkVersion { get; set; }
@@ -39,24 +38,18 @@ namespace Microsoft.DotNet.Build.Tasks
 
             int maxNetVersion = NuGetVersion.Parse(NETCoreAppTargetFrameworkVersion).Major;
 
+
+            //  Add targeting packs for .NET Core 3.0 and 3.1
+            AddTargetingPackDownloads("3.0");
+            AddTargetingPackDownloads("3.1");
+
+            //  Add targeting packs for .NET 5 and higher.
             //  We don't download the targeting pack for the maximum .NET version here, as we may still be in preview.
             //  Rather, the GetPackagesToPrune task will load the package prune data for the current version from the
             //  targeting packs that ship with the SDK.
-
-            for (int netVersion = 3; netVersion < maxNetVersion; netVersion++)
+            for (int netVersion = 5; netVersion < maxNetVersion; netVersion++)
             {
-                if (netVersion == 4)
-                {
-                    //  No .NET 4
-                    continue;
-                }
-
                 AddTargetingPackDownloads($"{netVersion}.0");
-                if (netVersion == 3)
-                {
-                    //  Special case .NET Core 3.1
-                    AddTargetingPackDownloads("3.1");
-                }
             }
 
             TargetingPackDownloads = targetingPackDownloads.ToArray();
