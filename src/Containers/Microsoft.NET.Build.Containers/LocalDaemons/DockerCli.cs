@@ -398,30 +398,6 @@ internal sealed class DockerCli
         }
     }
 
-    public static async Task WriteMultiArchOciImageToStreamAsync(
-        BuiltImage[] images,
-        SourceImageReference sourceReference,
-        DestinationImageReference destinationReference,
-        Stream imageStream,
-        CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
-
-        foreach (var image in images)
-        {
-            await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken)
-            .ConfigureAwait(false);
-        }
-
-        await WriteIndexJsonForMultiArchOciImage(writer, images, destinationReference, cancellationToken)
-            .ConfigureAwait(false);
-
-        await WriteOciLayout(writer, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
     private static async Task WriteOciImageToStreamAsync(
         BuiltImage image,
         SourceImageReference sourceReference,
@@ -440,22 +416,6 @@ internal sealed class DockerCli
             .ConfigureAwait(false);
 
         await WriteOciLayout(writer, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    private static async Task WriteOciImageToBlobs(
-        TarWriter writer,
-        BuiltImage image,
-        SourceImageReference sourceReference,
-        CancellationToken cancellationToken)
-    {
-        await WriteImageLayers(writer, image, sourceReference, d => $"{_blobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
-            .ConfigureAwait(false);
-
-        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.ImageSha}", cancellationToken)
-            .ConfigureAwait(false);
-
-        await WriteManifestForOciImage(writer, image, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -491,6 +451,46 @@ internal sealed class DockerCli
             };
             await writer.WriteEntryAsync(manifestEntry, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private static async Task WriteOciImageToBlobs(
+        TarWriter writer,
+        BuiltImage image,
+        SourceImageReference sourceReference,
+        CancellationToken cancellationToken)
+    {
+        await WriteImageLayers(writer, image, sourceReference, d => $"{_blobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.ImageSha}", cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteManifestForOciImage(writer, image, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public static async Task WriteMultiArchOciImageToStreamAsync(
+        BuiltImage[] images,
+        SourceImageReference sourceReference,
+        DestinationImageReference destinationReference,
+        Stream imageStream,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
+
+        foreach (var image in images)
+        {
+            await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken)
+            .ConfigureAwait(false);
+        }
+
+        await WriteIndexJsonForMultiArchOciImage(writer, images, destinationReference, cancellationToken)
+            .ConfigureAwait(false);
+
+        await WriteOciLayout(writer, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static async Task WriteIndexJsonForMultiArchOciImage(
