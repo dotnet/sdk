@@ -314,7 +314,7 @@
       Text="Invalid PackageVersionPropsFlowType '$(PackageVersionPropsFlowType)'. Must be 'AllPackages' or 'DependenciesOnly'." />
 
     <PropertyGroup>
-      <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)/eng/Version.Details.xml</_VersionDetailsXml>
+      <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)eng/Version.Details.xml</_VersionDetailsXml>
     </PropertyGroup>
 
     <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
