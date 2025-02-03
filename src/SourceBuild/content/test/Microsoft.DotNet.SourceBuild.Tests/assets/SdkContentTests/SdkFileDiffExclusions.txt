@@ -53,6 +53,9 @@
 ./sdk-manifests/x.y.z/microsoft.net.sdk.maui/|msft
 ./sdk-manifests/x.y.z/microsoft.net.sdk.tvos/|msft
 
+# ref pack unintentionally missing from the msft sdk - https://github.com/dotnet/runtime/issues/112102
+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Linq.AsyncEnumerable.xml|sb
+
 # linux runtimes are included in source-build for self-contained apps - https://github.com/dotnet/source-build/issues/3507
 ./packs/Microsoft.AspNetCore.App.Runtime.*/|sb
 ./packs/Microsoft.NETCore.App.Runtime.*/|sb
