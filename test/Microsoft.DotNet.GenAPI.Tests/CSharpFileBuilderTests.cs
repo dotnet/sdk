@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
@@ -35,36 +34,29 @@ namespace Microsoft.DotNet.GenAPI.Tests
             string[] excludedAttributeList = null,
             [CallerMemberName] string assemblyName = "")
         {
-            StringWriter stringWriter = new();
+            using StringWriter stringWriter = new();
 
             Mock<ILog> log = new();
 
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
+                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
+
+            ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
+            ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
+
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
                 log.Object,
-                SymbolFilterFactory.GetFilterFromList(
-                    apiExclusionList: [],
-                    accessibilitySymbolFilter: null,
-                    includeInternalSymbols,
-                    includeEffectivelyPrivateSymbols,
-                    includeExplicitInterfaceImplementationSymbols),
-                SymbolFilterFactory.GetFilterFromList(
-                    apiExclusionList: excludedAttributeList ?? [],  accessibilitySymbolFilter: null,
-                    includeInternalSymbols,
-                    includeEffectivelyPrivateSymbols,
-                    includeExplicitInterfaceImplementationSymbols),
                 stringWriter,
-                null,
-                false,
+                loader,
+                symbolFilter,
+                attributeDataSymbolFilter,
+                header: string.Empty,
+                exceptionMessage: null,
+                includeAssemblyAttributes: false,
                 MetadataReferences,
                 addPartialModifier: true);
 
-            using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            AssemblySymbolLoader assemblySymbolLoader = new(log.Object, resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
-            IAssemblySymbol assemblySymbol = assemblySymbolLoader.LoadAssembly(assemblyName, assemblyStream);
-
-            csharpFileBuilder.WriteAssembly(assemblySymbol);
+            csharpFileBuilder.WriteAssembly(assemblySymbols.First().Value);
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
             string resultedString = stringBuilder.ToString();

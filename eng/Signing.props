@@ -1,8 +1,8 @@
 <Project>
 
   <PropertyGroup>
-    <BlobStorageVersion>$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version').Trim())</BlobStorageVersion>
-    <RelativeBlobPathParent>Sdk/$(BlobStorageVersion)</RelativeBlobPathParent>
+    <!-- The FullNugetVersion.version file only gets produced in the initial build pass. -->
+    <RelativeBlobPathParent Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">Sdk/$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version').Trim())</RelativeBlobPathParent>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
 
