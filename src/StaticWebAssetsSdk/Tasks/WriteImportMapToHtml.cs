@@ -13,16 +13,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 public partial class WriteImportMapToHtml : Task
 {
     [Required]
-    public ITaskItem[] Assets { get; set; } = [];
-
-    [Required]
     public ITaskItem[] Endpoints { get; set; } = [];
-
-    [Required]
-    public string ManifestType { get; set; } = string.Empty;
-
-    [Required]
-    public string Source { get; set; } = string.Empty;
 
     [Required]
     public string OutputPath { get; set; } = string.Empty;
