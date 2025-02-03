@@ -53,12 +53,10 @@ jobs:
 
             echo "Filtering PRs created by app/dotnet-maestro..."
             prs_by_author=$(echo "$prs" | jq '[.[] | select(.author.login == "app/dotnet-maestro")]')
-            echo "PRs by app/dotnet-maestro JSON: $prs_by_author"
             echo "Count of PRs by app/dotnet-maestro: $(echo "$prs_by_author" | jq length)"
 
             echo "Filtering PRs targeting release/8* and release/9* excluding release/9.0.3xx..."
             prs_targeting_branches=$(echo "$prs_by_author" | jq '[.[] | select(.baseRefName | test("^release/[89].*")) | select(.baseRefName | test("^release/9.0.3xx") | not)]')
-            echo "Filtered PRs targeting specific branches JSON: $prs_targeting_branches"
             echo "Count of PRs targeting specific branches: $(echo "$prs_targeting_branches" | jq length)"
 
             echo "Filtering PRs without Branch Lockdown label..."
