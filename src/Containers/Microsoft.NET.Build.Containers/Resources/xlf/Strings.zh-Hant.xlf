@@ -410,8 +410,8 @@
         <note>{StrBegin="CONTAINER4001: "}</note>
       </trans-unit>
       <trans-unit id="TipToEnableContainerdForMultiArch">
-        <source>Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</source>
-        <target state="new">Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</target>
+        <source>Tip: For multi-arch image publishing, ensure that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</source>
+        <target state="new">Tip: For multi-arch image publishing, ensure that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</target>
         <note />
       </trans-unit>
       <trans-unit id="TooManyRetries">

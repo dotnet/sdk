@@ -402,7 +402,7 @@
     <comment/>
   </data>
   <data name="TipToEnableContainerdForMultiArch" xml:space="preserve">
-    <value>Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</value>
+    <value>Tip: For multi-arch image publishing, ensure that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">

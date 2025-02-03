@@ -457,7 +457,7 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Tip: For multi-arch image publishing, ensude that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings..
+        ///   Looks up a localized string similar to Tip: For multi-arch image publishing, ensure that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings..
         /// </summary>
         internal static string TipToEnableContainerdForMultiArch {
             get {
