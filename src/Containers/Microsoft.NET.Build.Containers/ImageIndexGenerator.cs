@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.NET.Build.Containers.Resources;
-using Microsoft.NET.Build.Containers.Tasks;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -43,11 +42,11 @@ internal static class ImageIndexGenerator
 
         if (manifestMediaType == SchemaTypes.DockerManifestV2)
         {
-            return GenerateImageIndex(images, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2);
+            return (GenerateImageIndex(images, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2), SchemaTypes.DockerManifestListV2);
         }
         else if (manifestMediaType == SchemaTypes.OciManifestV1)
         {
-            return GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1);
+            return (GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1), SchemaTypes.OciImageIndexV1);
         }
         else
         {
@@ -55,36 +54,73 @@ internal static class ImageIndexGenerator
         }
     }
 
-    private static (string, string) GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
+    internal static string GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
     {
         // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
         // We are filling the same fields, so we can use the same struct.
         var manifests = new PlatformSpecificManifest[images.Length];
+        
         for (int i = 0; i < images.Length; i++)
         {
-            var image = images[i];
-
-            var manifest = new PlatformSpecificManifest
+            manifests[i] = new PlatformSpecificManifest
             {
                 mediaType = manifestMediaType,
-                size = image.Manifest.Length,
-                digest = image.ManifestDigest,
+                size = images[i].Manifest.Length,
+                digest = images[i].ManifestDigest,
                 platform = new PlatformInformation
                 {
-                    architecture = image.Architecture!,
-                    os = image.OS!
+                    architecture = images[i].Architecture!,
+                    os = images[i].OS!
                 }
             };
-            manifests[i] = manifest;
         }
 
-        var manifestList = new ManifestListV2
+        var imageIndex = new ManifestListV2
         {
             schemaVersion = 2,
             mediaType = imageIndexMediaType,
             manifests = manifests
         };
 
-        return (JsonSerializer.SerializeToNode(manifestList)?.ToJsonString() ?? "", manifestList.mediaType);
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        
+        return JsonSerializer.SerializeToNode(imageIndex, options)?.ToJsonString() ?? "";
+    }
+
+    internal static string GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
+    {
+        var manifests = new PlatformSpecificOciManifest[tags.Length];
+        for (int i = 0; i < tags.Length; i++)
+        {
+            var tag = tags[i];
+            manifests[i] = new PlatformSpecificOciManifest
+            {
+                mediaType = manifestMediaType,
+                size = manifestSize,
+                digest = manifestDigest,
+                annotations = new Dictionary<string, string> 
+                {
+                    { "io.containerd.image.name", $"{repository}:{tag}" },
+                    { "org.opencontainers.image.ref.name", tag } 
+                }
+            };
+        }
+
+        var index = new ImageIndexV1
+        {
+            schemaVersion = 2,
+            mediaType = SchemaTypes.OciImageIndexV1,
+            manifests = manifests
+        };
+
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        return JsonSerializer.SerializeToNode(index, options)?.ToJsonString() ?? "";
     }
 }

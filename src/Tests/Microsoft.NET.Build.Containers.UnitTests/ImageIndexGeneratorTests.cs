@@ -96,7 +96,7 @@ public class ImageIndexGeneratorTests
         ];
 
         var (imageIndex, mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
-        Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.docker.distribution.manifest.list.v2\\u002Bjson\",\"manifests\":[{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\",\"variant\":null,\"features\":null,\"os.version\":null}},{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\",\"variant\":null,\"features\":null,\"os.version\":null}}]}", imageIndex);
+        Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.docker.distribution.manifest.list.v2\\u002Bjson\",\"manifests\":[{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}},{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\"}}]}", imageIndex);
         Assert.Equal(SchemaTypes.DockerManifestListV2, mediaType);
     }
 
@@ -130,7 +130,7 @@ public class ImageIndexGeneratorTests
         ];
 
         var (imageIndex, mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
-        Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1\\u002Bjson\",\"manifests\":[{\"mediaType\":\"application/vnd.oci.image.manifest.v1\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\",\"variant\":null,\"features\":null,\"os.version\":null}},{\"mediaType\":\"application/vnd.oci.image.manifest.v1\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\",\"variant\":null,\"features\":null,\"os.version\":null}}]}", imageIndex);
+        Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1\\u002Bjson\",\"manifests\":[{\"mediaType\":\"application/vnd.oci.image.manifest.v1\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}},{\"mediaType\":\"application/vnd.oci.image.manifest.v1\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\"}}]}", imageIndex);
         Assert.Equal(SchemaTypes.OciImageIndexV1, mediaType);
     }
 }

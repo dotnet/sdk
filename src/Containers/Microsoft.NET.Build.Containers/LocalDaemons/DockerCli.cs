@@ -7,7 +7,6 @@ using System.Formats.Tar;
 #endif
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
@@ -461,35 +460,14 @@ internal sealed class DockerCli
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var manifests = new PlatformSpecificOciManifest[destinationReference.Tags.Length];
-        for (int i = 0; i < destinationReference.Tags.Length; i++)
-        {
-            var tag = destinationReference.Tags[i];
-            manifests[i] = new PlatformSpecificOciManifest
-            {
-                mediaType = SchemaTypes.OciManifestV1,
-                size = image.Manifest.Length,
-                digest = image.ManifestDigest,
-                annotations = new Dictionary<string, string> 
-                {
-                    { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
-                    { "org.opencontainers.image.ref.name", tag } 
-                }
-            };
-        }
+        string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
+            SchemaTypes.OciManifestV1,
+            image.ManifestDigest,
+            image.Manifest.Length,
+            destinationReference.Repository,
+            destinationReference.Tags);
 
-        var index = new ImageIndexV1
-        {
-            schemaVersion = 2,
-            mediaType = SchemaTypes.OciImageIndexV1,
-            manifests = manifests
-        };
-
-        var options = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index, options)!.ToJsonString())))
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson)))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
@@ -548,31 +526,9 @@ internal sealed class DockerCli
         // 1. create manifest list for the blobs
         cancellationToken.ThrowIfCancellationRequested();
 
-        var manifests = new PlatformSpecificOciManifest[images.Length];
-        for (int i = 0; i < images.Length; i++)
-        {
-            var manifest = new PlatformSpecificOciManifest
-            {
-                mediaType = SchemaTypes.OciManifestV1,
-                size = images[i].Manifest.Length,
-                digest = images[i].ManifestDigest,
-                platform = new PlatformInformation { architecture = images[i].Architecture!, os = images[i].OS! }
-            };
-            manifests[i] = manifest;
-        }
+        // For multi-arch we publish only oci-formatted image tarballs.
+        string manifestListJson = ImageIndexGenerator.GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1);
 
-        var manifestList = new ImageIndexV1
-        {
-            schemaVersion = 2,
-            mediaType = SchemaTypes.OciImageIndexV1,
-            manifests = manifests
-        };
-
-        var options = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-        var manifestListJson = JsonSerializer.SerializeToNode(manifestList, options)!.ToJsonString();
         var manifestListDigest = DigestUtils.GetDigest(manifestListJson);
         var manifestListSha = DigestUtils.GetShaFromDigest(manifestListDigest);
         var manifestListPath = $"{_blobsPath}/{manifestListSha}";
@@ -586,34 +542,17 @@ internal sealed class DockerCli
             await writer.WriteEntryAsync(indexEntry, cancellationToken).ConfigureAwait(false);
         }
 
-        // 2. create index json that points to manifest list in the blobs
+        // 2. create index.json that points to manifest list in the blobs
         cancellationToken.ThrowIfCancellationRequested();
 
-        var manifestsIndexJson = new PlatformSpecificOciManifest[destinationReference.Tags.Length];
-        for (int i = 0; i < destinationReference.Tags.Length; i++)
-        {
-            var tag = destinationReference.Tags[i];
-            manifestsIndexJson[i] = new PlatformSpecificOciManifest
-            {
-                mediaType = SchemaTypes.OciImageIndexV1,
-                size = manifestListJson.Length,
-                digest = manifestListDigest,
-                annotations = new Dictionary<string, string> 
-                {
-                    { "io.containerd.image.name", $"{destinationReference.Repository}:{tag}" },
-                    { "org.opencontainers.image.ref.name", tag } 
-                }
-            };
-        }
+        string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
+            SchemaTypes.OciImageIndexV1, 
+            manifestListDigest, 
+            manifestListJson.Length, 
+            destinationReference.Repository, 
+            destinationReference.Tags);
 
-        var index = new ImageIndexV1
-        {
-            schemaVersion = 2,
-            mediaType = SchemaTypes.OciImageIndexV1,
-            manifests = manifestsIndexJson
-        };
-
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.SerializeToNode(index, options)!.ToJsonString())))
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson)))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
