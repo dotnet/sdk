@@ -12,7 +12,7 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
     private readonly Option<bool> _optionAddPartialModifier;
     private readonly Option<string> _optionAfterAssembliesFolderPath;
     private readonly Option<string> _optionAfterAssemblyReferencesFolderPath;
-    private readonly Option<string[]> _optionAttributesToExclude;
+    private readonly Option<string[]?> _optionAttributesToExclude;
     private readonly Option<string> _optionBeforeAssembliesFolderPath;
     private readonly Option<string> _optionBeforeAssemblyReferencesFolderPath;
     private readonly Option<bool> _optionDebug;
@@ -23,7 +23,7 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
     internal GenAPIDiffConfigurationBinder(Option<bool> optionAddPartialModifier,
                                            Option<string> optionAfterAssembliesFolderPath,
                                            Option<string> optionAfterAssemblyReferencesFolderPath,
-                                           Option<string[]> optionAttributesToExclude,
+                                           Option<string[]?> optionAttributesToExclude,
                                            Option<string> optionBeforeAssembliesFolderPath,
                                            Option<string> optionBeforeAssemblyReferencesFolderPath,
                                            Option<bool> optionDebug,
@@ -44,17 +44,16 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
     }
 
     protected override DiffConfiguration GetBoundValue(BindingContext bindingContext) =>
-        new DiffConfiguration()
-        {
-            AddPartialModifier = bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
-            AfterAssembliesFolderPath = bindingContext.ParseResult.GetValueForOption(_optionAfterAssembliesFolderPath) ?? throw new NullReferenceException("Null after assemblies directory."),
-            AfterAssemblyReferencesFolderPath = bindingContext.ParseResult.GetValueForOption(_optionAfterAssemblyReferencesFolderPath),
-            AttributesToExclude = bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude) ?? throw new NullReferenceException("Null attributes to exclude."),
-            BeforeAssembliesFolderPath = bindingContext.ParseResult.GetValueForOption(_optionBeforeAssembliesFolderPath) ?? throw new NullReferenceException("Null before assemblies directory."),
-            BeforeAssemblyReferencesFolderPath = bindingContext.ParseResult.GetValueForOption(_optionBeforeAssemblyReferencesFolderPath),
-            Debug = bindingContext.ParseResult.GetValueForOption(_optionDebug),
-            HideImplicitDefaultConstructors = bindingContext.ParseResult.GetValueForOption(_optionHideImplicitDefaultConstructors),
-            IncludeTableOfContents = bindingContext.ParseResult.GetValueForOption(_optionIncludeTableOfContents),
-            OutputFolderPath = bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory.")
-        };
+        new DiffConfiguration(
+            AddPartialModifier: bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
+            AfterAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssembliesFolderPath) ?? throw new NullReferenceException("Null after assemblies directory."),
+            AfterAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssemblyReferencesFolderPath),
+            AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
+            BeforeAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionBeforeAssembliesFolderPath) ?? throw new NullReferenceException("Null before assemblies directory."),
+            BeforeAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionBeforeAssemblyReferencesFolderPath),
+            Debug: bindingContext.ParseResult.GetValueForOption(_optionDebug),
+            HideImplicitDefaultConstructors: bindingContext.ParseResult.GetValueForOption(_optionHideImplicitDefaultConstructors),
+            IncludeTableOfContents: bindingContext.ParseResult.GetValueForOption(_optionIncludeTableOfContents),
+            OutputFolderPath: bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory.")
+        );
 }
