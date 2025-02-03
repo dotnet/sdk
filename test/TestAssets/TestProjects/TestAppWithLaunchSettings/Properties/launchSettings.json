@@ -3,9 +3,19 @@
     "TestAppWithLaunchSettings": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
+      "applicationUrl": "http://localhost:5000",
       "commandLineArgs": "TestAppCommandLineArguments SecondTestAppCommandLineArguments",
       "environmentVariables": {
         "MyCoolEnvironmentVariableKey": "MyCoolEnvironmentVariableValue"
+      }
+    },
+    "Profile2": {
+      "commandName": "Project",
+      "dotnetRunMessages": "true",
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "DOTNET_LAUNCH_PROFILE": "XYZ",
+        "ASPNETCORE_URLS": "XYZ"
       }
     }
   }

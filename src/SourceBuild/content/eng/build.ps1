@@ -17,7 +17,6 @@ Param(
   [switch][Alias('cwb')]$cleanWhileBuilding,
   [switch][Alias('nobl')]$excludeCIBinarylog,
   [switch] $prepareMachine,
-  [switch] $dev,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
@@ -41,7 +40,6 @@ function Get-Usage() {
   Write-Host "  -cleanWhileBuilding     Cleans each repo after building (reduces disk space usage, short: -cwb)"
   Write-Host "  -excludeCIBinarylog     Don't output binary log (short: -nobl)"
   Write-Host "  -prepareMachine         Prepare machine for CI run, clean up processes after build"
-  Write-Host "  -dev                    Use -dev or -ci versioning instead of .NET official build versions"
   Write-Host ""
 }
 
@@ -76,10 +74,6 @@ if ($buildRepoTests) {
 
 if ($cleanWhileBuilding) {
   $arguments += "/p:CleanWhileBuilding=true"
-}
-
-if ($dev) {
-  $arguments += "/p:UseOfficialBuildVersioning=false"
 }
 
 function Build {

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
-    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\internal\</SdkInternalLayoutPath>
+    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\i\</SdkInternalLayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
 
@@ -45,19 +45,12 @@
       <SharedFrameworkInstallerFileRid>$(NetRuntimeRid)</SharedFrameworkInstallerFileRid>
       <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
 
-      <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
-      <RuntimeDepsInstallerFileRid>$(NetRuntimeRid)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(Architecture)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(IsRPMBasedDistro)' == 'true' And '$(UsePortableLinuxSharedFramework)' != 'true' ">$(OSName)-$(InstallerTargetArchitecture)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(NetRuntimeRid)' == 'rhel.7-x64' And '$(Architecture)' == 'Arm64' And '$(UsePortableLinuxSharedFramework)' == 'true' ">rhel.7-aarch64</RuntimeDepsInstallerFileRid>
-
       <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
       <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
       <DownloadedSharedHostInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
       <DownloadedHostFxrInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' != 'true' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' == 'true' ">dotnet-runtime$(InstallerStartSuffix)$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
-      <DownloadedRuntimeDepsInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime-deps-$(SharedHostVersion)-$(RuntimeDepsInstallerFileRid)$(InstallerExtension)</DownloadedRuntimeDepsInstallerFileName>
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(MicrosoftNETCoreAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
       <DownloadedNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppHostPackInstallerFileName>
@@ -208,12 +201,6 @@
       <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.DotNet.ILCompiler.$(MicrosoftNETCoreAppRuntimePackageVersion).nupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'" />
 
       <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.NET.ILLink.Tasks.$(MicrosoftNETILLinkTasksPackageVersion).nupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'" />
-
-      <BundledInstallerComponent Include="DownloadedRuntimeDepsInstallerFile"
-                                 Condition="('$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true') And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
-        <DownloadFileName>$(DownloadedRuntimeDepsInstallerFileName)</DownloadFileName>
-      </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedSharedFrameworkInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">

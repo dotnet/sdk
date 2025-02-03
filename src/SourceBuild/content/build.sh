@@ -37,8 +37,6 @@ usage()
 
   echo "Non-source-only settings:"
   echo "  --build-repo-tests              Build repository tests"
-  echo "  --dev                           Use -dev or -ci versioning instead of .NET official build versions"
-
 
   echo "Advanced settings:"
   echo "  --ci                            Set when running on CI server"
@@ -89,7 +87,6 @@ packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 ci=false
 exclude_ci_binary_log=false
 prepare_machine=false
-use_dev_versioning=false
 target_rid=
 system_libs=
 
@@ -196,9 +193,6 @@ while [[ $# > 0 ]]; do
     -use-mono-runtime)
       properties+=( "/p:DotNetBuildUseMonoRuntime=true" )
       ;;
-    -dev)
-      use_dev_versioning=true
-      ;;
     *)
       properties+=( "$1" )
       ;;
@@ -211,10 +205,6 @@ if [[ "$ci" == true ]]; then
   if [[ "$exclude_ci_binary_log" == false ]]; then
     binary_log=true
   fi
-fi
-
-if [[ "$use_dev_versioning" == true && "$sourceOnly" != true ]]; then
-  properties+=( "/p:UseOfficialBuildVersioning=false" )
 fi
 
 # Never use the global nuget cache folder

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.DotNet.Watch;
+namespace Microsoft.DotNet.HotReload;
 
 internal readonly struct UpdateDelta(Guid moduleId, byte[] metadataDelta, byte[] ilDelta, byte[] pdbDelta, int[] updatedTypes)
 {

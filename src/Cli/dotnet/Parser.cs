@@ -237,6 +237,8 @@ namespace Microsoft.DotNet.Cli
                     };
                     builder.CustomizeSymbol(option, secondColumnText: descriptionCallback);
                 }
+
+                builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CommonLocalizableStrings.ShortWorkloadSearchVersionDescription);
             }
 
             public void additionalOption(HelpContext context)

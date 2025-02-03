@@ -3,6 +3,9 @@
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
+    <!-- Tests are failing to build: https://github.com/dotnet/roslyn/issues/76960 -->
+    <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
+
     <!-- Roslyn's build.cmd adds -build automatically. On non-windows, use the default -->
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
@@ -12,15 +15,16 @@
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'false'">
+
+  <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(OfficialBuildId)' != ''">
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData true</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName placeholder</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)officialVisualStudioDropAccessToken placeholder</BuildArgs>
   </PropertyGroup>
+
   <PropertyGroup>
-    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:ApplyPartialNgenOptimization=false</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:EnablePartialNgenOptimization=false</BuildArgs>
