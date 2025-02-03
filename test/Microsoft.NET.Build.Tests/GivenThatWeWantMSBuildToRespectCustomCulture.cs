@@ -47,6 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("warning MSB3002:");
         }
 
+        [Theory]
         [InlineData("net7.0")]
         [InlineData("net6.0")]
         // Is this Failing? Check if WarnOnCultureOverwritten hasn't been made a default opt-in in sdk or MSBuild.
