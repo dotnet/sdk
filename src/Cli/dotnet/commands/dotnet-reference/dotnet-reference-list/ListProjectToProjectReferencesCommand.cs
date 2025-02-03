@@ -17,8 +17,8 @@ namespace Microsoft.DotNet.Tools.Reference.List
         {
             ShowHelpOrErrorIfAppropriate(parseResult);
 
-            _fileOrDirectory = parseResult.HasOption(ReferenceListCommandParser.ProjectOption) ?
-                parseResult.GetValue(ReferenceListCommandParser.ProjectOption) :
+            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
                 parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
         }
 

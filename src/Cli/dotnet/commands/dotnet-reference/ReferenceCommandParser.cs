@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
             command.Subcommands.Add(ReferenceListCommandParser.GetCommand());
             command.Subcommands.Add(ReferenceRemoveCommandParser.GetCommand());
-
+            command.Options.Add(ProjectOption);
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
             return command;
