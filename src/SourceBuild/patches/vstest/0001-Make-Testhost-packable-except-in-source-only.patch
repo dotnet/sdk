@@ -18,7 +18,7 @@ index b23cfbab5..af4e6f1e5 100644
    <PropertyGroup>
      <!-- Don't produce this package when building from source or inside the VMR as it doesn't build correctly on non-Windows. -->
 -    <IsPackable Condition="'$(DotNetBuild)' != 'true'">true</IsPackable>
-+    <IsPackable Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</IsPackable>
++    <IsPackable Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(OS)' == 'Windows_NT'">true</IsPackable>
      <NuspecFile>Microsoft.TestPlatform.TestHost.nuspec</NuspecFile>
      <NuspecBasePath>$(OutputPath)</NuspecBasePath>
      <PackageId>Microsoft.TestPlatform.TestHost</PackageId>
