@@ -25,9 +25,19 @@ public sealed class DiffGenerator
     private readonly bool _hideImplicitDefaultConstructors;
     private readonly ISymbolFilter _symbolFilter;
     private readonly ISymbolFilter _attributeSymbolFilter;
-    private readonly SyntaxTriviaList TwoSpacesTrivia;
-    private readonly SyntaxList<AttributeListSyntax> EmptyAttributeList;
+    private readonly SyntaxTriviaList _twoSpacesTrivia;
+    private readonly SyntaxList<AttributeListSyntax> _emptyAttributeList;
     private readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>> _diagnosticOptions;
+
+    /// <summary>
+    /// The default attributes to exclude from the diff.
+    /// </summary>
+    public static readonly string[] DefaultAttributesToExclude = [
+        "T:System.AttributeUsageAttribute",
+        "T:System.ComponentModel.EditorBrowsableAttribute",
+        "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
+        "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute"
+    ];
 
     /// <summary>
     /// The default diagnostic options to use when generating the diff.
@@ -41,7 +51,7 @@ public sealed class DiffGenerator
     /// Generates a markdown diff of two different versions of the same collections of assembly paths.
     /// </summary>
     /// <param name="log">A logger to log messages.</param>
-    /// <param name="attributesToExclude">The attributes to exclude from the diff.</param>
+    /// <param name="attributesToExclude">The optional attributes to exclude from the diff. If <see langword="null"/>, then <see cref="DefaultAttributesToExclude"/> is used.</param>
     /// <param name="beforeAssembliesFolderPath">The path to the folder containing the old (before) assemblies.</param>
     /// <param name="beforeAssemblyReferencesFolderPath">The path to the folder containing the old (before) reference assemblies.</param>
     /// <param name="afterAssembliesFolderPath">The path to the folder containing the new (after) assemblies.</param>
@@ -51,7 +61,7 @@ public sealed class DiffGenerator
     /// <param name="diagnosticOptions">The optional diagnostic options to use when generating the diff. If <see langword="null"/> is passed, the default value <see cref="DefaultDiagnosticOptions"/> is used.</param>
     /// <returns>A dictionary with the assembly names as the keys and their diffs as the values.</returns>
     public static Dictionary<string, string> Run(ILog log,
-                                                 string[] attributesToExclude,
+                                                 string[]? attributesToExclude,
                                                  string beforeAssembliesFolderPath,
                                                  string? beforeAssemblyReferencesFolderPath,
                                                  string afterAssembliesFolderPath,
@@ -60,6 +70,8 @@ public sealed class DiffGenerator
                                                  bool hideImplicitDefaultConstructors,
                                                 IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
     {
+        attributesToExclude = (attributesToExclude != null && attributesToExclude.Length > 0) ? attributesToExclude : DefaultAttributesToExclude;
+
         diagnosticOptions = diagnosticOptions ?? DefaultDiagnosticOptions;
 
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols) =
@@ -126,8 +138,8 @@ public sealed class DiffGenerator
         _symbolFilter = SymbolFilterFactory.GetFilterFromList([], includeExplicitInterfaceImplementationSymbols: true);
         _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude, includeExplicitInterfaceImplementationSymbols: true);
 
-        TwoSpacesTrivia = SyntaxFactory.TriviaList(SyntaxFactory.Space, SyntaxFactory.Space);
-        EmptyAttributeList = SyntaxFactory.List<AttributeListSyntax>();
+        _twoSpacesTrivia = SyntaxFactory.TriviaList(SyntaxFactory.Space, SyntaxFactory.Space);
+        _emptyAttributeList = SyntaxFactory.List<AttributeListSyntax>();
     }
 
     private Dictionary<string, string> GenerateDiff(IAssemblySymbolLoader beforeLoader,
@@ -350,11 +362,11 @@ public sealed class DiffGenerator
 
         if (node is MemberDeclarationSyntax memberNode)
         {
-            return memberNode.WithAttributeLists(EmptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
+            return memberNode.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
         }
         else if (node is BaseNamespaceDeclarationSyntax namespaceNode)
         {
-            return namespaceNode.WithAttributeLists(EmptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
+            return namespaceNode.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
         }
 
         throw new InvalidOperationException($"Unsupported node for removing attributes.");
@@ -490,7 +502,7 @@ public sealed class DiffGenerator
     private string GetCodeOfNodeOpening(SyntaxNode childlessNode)
     {
         SyntaxToken openBrace = SyntaxFactory.Token(
-            leading: TwoSpacesTrivia.AddRange(childlessNode.GetLeadingTrivia()),
+            leading: _twoSpacesTrivia.AddRange(childlessNode.GetLeadingTrivia()),
             kind: SyntaxKind.OpenBraceToken,
             trailing: SyntaxFactory.TriviaList(SyntaxFactory.CarriageReturnLineFeed));
 
@@ -523,11 +535,11 @@ public sealed class DiffGenerator
         SyntaxToken closeBrace = childlessNode switch
         {
             BaseTypeDeclarationSyntax typeDecl => typeDecl.CloseBraceToken
-                        .WithLeadingTrivia(typeDecl.CloseBraceToken.LeadingTrivia.AddRange(TwoSpacesTrivia))
+                        .WithLeadingTrivia(typeDecl.CloseBraceToken.LeadingTrivia.AddRange(_twoSpacesTrivia))
                         .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
 
             NamespaceDeclarationSyntax nsDecl => nsDecl.CloseBraceToken
-                        .WithLeadingTrivia(nsDecl.CloseBraceToken.LeadingTrivia.AddRange(TwoSpacesTrivia))
+                        .WithLeadingTrivia(nsDecl.CloseBraceToken.LeadingTrivia.AddRange(_twoSpacesTrivia))
                         .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
 
             _ => throw new InvalidOperationException("Unexpected node type.")
