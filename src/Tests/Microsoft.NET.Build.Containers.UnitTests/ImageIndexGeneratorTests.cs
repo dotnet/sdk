@@ -16,6 +16,14 @@ public class ImageIndexGeneratorTests
     }
 
     [Fact]
+    public void ImagesCannotBeEmpty_SpecifiedMediaType()
+    {
+        BuiltImage[] images = Array.Empty<BuiltImage>();
+        var ex = Assert.Throws<ArgumentException>(() => ImageIndexGenerator.GenerateImageIndex(images, "manifestMediaType", "imageIndexMediaType"));
+        Assert.Equal(Strings.ImagesEmpty, ex.Message);
+    }
+
+    [Fact]
     public void UnsupportedMediaTypeThrows()
     {
         BuiltImage[] images = 
@@ -132,5 +140,12 @@ public class ImageIndexGeneratorTests
         var (imageIndex, mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
         Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1\\u002Bjson\",\"manifests\":[{\"mediaType\":\"application/vnd.oci.image.manifest.v1\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}},{\"mediaType\":\"application/vnd.oci.image.manifest.v1\\u002Bjson\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\"}}]}", imageIndex);
         Assert.Equal(SchemaTypes.OciImageIndexV1, mediaType);
+    }
+
+    [Fact]
+    public void GenerateImageIndexWithAnnotations()
+    {
+        string imageIndex = ImageIndexGenerator.GenerateImageIndexWithAnnotations("mediaType", "sha256:digest", 3, "repository", ["1.0", "2.0"]);
+        Assert.Equal("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1\\u002Bjson\",\"manifests\":[{\"mediaType\":\"mediaType\",\"size\":3,\"digest\":\"sha256:digest\",\"platform\":{},\"annotations\":{\"io.containerd.image.name\":\"repository:1.0\",\"org.opencontainers.image.ref.name\":\"1.0\"}},{\"mediaType\":\"mediaType\",\"size\":3,\"digest\":\"sha256:digest\",\"platform\":{},\"annotations\":{\"io.containerd.image.name\":\"repository:2.0\",\"org.opencontainers.image.ref.name\":\"2.0\"}}]}", imageIndex);
     }
 }
