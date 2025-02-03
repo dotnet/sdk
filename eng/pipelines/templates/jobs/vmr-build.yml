@@ -234,6 +234,9 @@ jobs:
       - ${{ else }}:
         - name: signArguments
           value: -sign /p:DotNetSignType=real /p:TeamName=$(_TeamName) /p:ForceDryRunSigning=true
+  - ${{ else }}:
+    - name: signArguments
+      value: ''
 
   ### BuildPass args
   - ${{ if ne(parameters.buildPass, '') }}:
