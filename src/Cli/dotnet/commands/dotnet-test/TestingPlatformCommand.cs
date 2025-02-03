@@ -36,8 +36,9 @@ namespace Microsoft.DotNet.Cli
 
                 InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
-                _msBuildHandler = new(args, _actionQueue, _output);
-                TestModulesFilterHandler testModulesFilterHandler = new(args, _actionQueue);
+                BuildOptions buildOptions = GetBuildOptions(parseResult, degreeOfParallelism);
+                _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
+                TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue);
 
                 _eventHandlers = new TestApplicationsEventHandlers(_executions, _output);
 
@@ -50,7 +51,7 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
-                    if (!_msBuildHandler.RunMSBuild(GetBuildOptions(parseResult, degreeOfParallelism)))
+                    if (!_msBuildHandler.RunMSBuild(buildOptions))
                     {
                         return ExitCodes.GenericFailure;
                     }
@@ -174,7 +175,8 @@ namespace Microsoft.DotNet.Cli
 
         private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
         {
-            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled([.. parseResult.UnmatchedTokens], out string binLogFileName);
+            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled(ref unmatchedTokens, out string binLogFileName);
 
             return new BuildOptions(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
@@ -187,7 +189,8 @@ namespace Microsoft.DotNet.Cli
                     string.Empty,
                 allowBinLog,
                 binLogFileName,
-                degreeOfParallelism);
+                degreeOfParallelism,
+                unmatchedTokens);
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));

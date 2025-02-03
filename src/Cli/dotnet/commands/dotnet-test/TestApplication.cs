@@ -68,8 +68,8 @@ namespace Microsoft.DotNet.Cli
         {
             var processStartInfo = new ProcessStartInfo
             {
-                FileName = GetFileName(testOptions.HasFilterMode, isDll, testOptions),
-                Arguments = GetArguments(testOptions.HasFilterMode, isDll, testOptions, testOptions.IsHelp),
+                FileName = GetFileName(isDll, testOptions),
+                Arguments = GetArguments(isDll, testOptions),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
@@ -79,9 +79,9 @@ namespace Microsoft.DotNet.Cli
             return processStartInfo;
         }
 
-        private string GetFileName(bool hasFilterMode, bool isDll, TestOptions testOptions)
+        private string GetFileName(bool isDll, TestOptions testOptions)
         {
-            if (hasFilterMode || !IsArchitectureSpecified(testOptions))
+            if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
             {
                 return isDll ? Environment.ProcessPath : _module.TargetPath;
             }
@@ -89,14 +89,14 @@ namespace Microsoft.DotNet.Cli
             return Environment.ProcessPath;
         }
 
-        private string GetArguments(bool hasFilterMode, bool isDll, TestOptions testOptions, bool enableHelp)
+        private string GetArguments(bool isDll, TestOptions testOptions)
         {
-            if (hasFilterMode || !IsArchitectureSpecified(testOptions))
+            if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
             {
-                return BuildArgs(isDll);
+                return BuildArgs(isDll, testOptions);
             }
 
-            return BuildArgsWithDotnetRun(enableHelp, testOptions);
+            return BuildArgsWithDotnetRun(testOptions);
         }
 
         private void AddRunSettingsFileToEnvironment(ProcessStartInfo processStartInfo)
@@ -283,7 +283,21 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private string BuildArgsWithDotnetRun(bool hasHelp, TestOptions buildConfigurationOptions)
+        private string BuildArgs(bool isDll, TestOptions testOptions)
+        {
+            StringBuilder builder = new();
+
+            if (isDll)
+            {
+                builder.Append($"exec {_module.TargetPath} ");
+            }
+
+            AppendCommonArgs(builder, testOptions);
+
+            return builder.ToString();
+        }
+
+        private string BuildArgsWithDotnetRun(TestOptions testOptions)
         {
             StringBuilder builder = new();
 
@@ -293,19 +307,14 @@ namespace Microsoft.DotNet.Cli
             builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
             builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
 
-            if (buildConfigurationOptions.HasListTests)
+            if (!string.IsNullOrEmpty(testOptions.Architecture))
             {
-                builder.Append($" {TestingPlatformOptions.ListTestsOption.Name}");
+                builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {testOptions.Architecture}");
             }
 
-            if (!string.IsNullOrEmpty(buildConfigurationOptions.Architecture))
+            if (!string.IsNullOrEmpty(testOptions.Configuration))
             {
-                builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {buildConfigurationOptions.Architecture}");
-            }
-
-            if (!string.IsNullOrEmpty(buildConfigurationOptions.Configuration))
-            {
-                builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {buildConfigurationOptions.Configuration}");
+                builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {testOptions.Configuration}");
             }
 
             if (!string.IsNullOrEmpty(_module.TargetFramework))
@@ -315,7 +324,19 @@ namespace Microsoft.DotNet.Cli
 
             builder.Append($" {CliConstants.ParametersSeparator} ");
 
-            if (hasHelp)
+            AppendCommonArgs(builder, testOptions);
+
+            return builder.ToString();
+        }
+
+        private void AppendCommonArgs(StringBuilder builder, TestOptions testOptions)
+        {
+            if (testOptions.HasListTests)
+            {
+                builder.Append($" {TestingPlatformOptions.ListTestsOption.Name}");
+            }
+
+            if (testOptions.IsHelp)
             {
                 builder.Append($" {CliConstants.HelpOptionKey} ");
             }
@@ -325,26 +346,6 @@ namespace Microsoft.DotNet.Cli
                 : string.Empty);
 
             builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
-
-            return builder.ToString();
-        }
-
-        private string BuildArgs(bool isDll)
-        {
-            StringBuilder builder = new();
-
-            if (isDll)
-            {
-                builder.Append($"exec {_module.TargetPath} ");
-            }
-
-            builder.Append(_args.Count != 0
-                ? _args.Aggregate((a, b) => $"{a} {b}")
-                : string.Empty);
-
-            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
-
-            return builder.ToString();
         }
 
         public void OnHandshakeMessage(HandshakeMessage handshakeMessage)

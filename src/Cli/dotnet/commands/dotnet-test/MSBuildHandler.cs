@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli
     {
         private readonly List<string> _args;
         private readonly TestApplicationActionQueue _actionQueue;
-        private TerminalTestReporter _output;
+        private readonly TerminalTestReporter _output;
 
         private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;

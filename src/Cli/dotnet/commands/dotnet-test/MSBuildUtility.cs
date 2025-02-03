@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Cli
             return solutionFullPath;
         }
 
-        internal static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
+        internal static bool IsBinaryLoggerEnabled(ref List<string> args, out string binLogFileName)
         {
             binLogFileName = string.Empty;
             var binLogArgs = new List<string>();
