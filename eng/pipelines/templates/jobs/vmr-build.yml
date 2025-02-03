@@ -303,7 +303,7 @@ jobs:
       value: ''
 
   ### PreBuild args
-  - $	{{ if and(eq(parameters.buildSourceOnly, true), ne(parameters.runOnline, true)) }}:
+  - ${{ if and(eq(parameters.buildSourceOnly, true), ne(parameters.runOnline, true)) }}:
     - name: preBuildArguments
       value: sudo unshare -n
     - name: testPreBuildArguments
