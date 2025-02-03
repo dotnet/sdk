@@ -87,9 +87,15 @@ internal sealed class DockerCli
         SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool checkContainerdStore = false)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (checkContainerdStore && !IsContainerdStoreEnabledForDocker())
+        {
+            throw new DockerLoadException(Strings.ImageLoadFailed_ContainerdStoreDisabled);
+        }
 
         string commandPath = await FindFullCommandPath(cancellationToken);
 
@@ -125,7 +131,7 @@ internal sealed class DockerCli
         => await LoadAsync(image, sourceReference, destinationReference, WriteDockerImageToStreamAsync, cancellationToken);
 
     public async Task LoadAsync(BuiltImage[] images, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
-        => await LoadAsync(images, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken);
+        => await LoadAsync(images, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken, checkContainerdStore: true);
     
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
@@ -618,6 +624,37 @@ internal sealed class DockerCli
             return false;
         }
     }
+
+    private static bool IsContainerdStoreEnabledForDocker()
+    {
+        try
+        {
+            // We don't need to check if this is docker, because there is no "DriverStatus" for podman
+            if (!GetDockerConfig().RootElement.TryGetProperty("DriverStatus", out var driverStatus) || driverStatus.ValueKind != JsonValueKind.Array)
+            {
+                return false;
+            }
+
+            foreach (var item in driverStatus.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Array || item.GetArrayLength() != 2) continue;
+
+                var array = item.EnumerateArray().ToArray();
+                // The usual output is [driver-type io.containerd.snapshotter.v1]
+                if (array[0].GetString() == "driver-type" && array[1].GetString()!.StartsWith("io.containerd.snapshotter"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 
 #if NET
     private async Task<bool> TryRunVersionCommandAsync(string command, CancellationToken cancellationToken)

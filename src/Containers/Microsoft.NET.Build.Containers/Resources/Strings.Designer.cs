@@ -457,11 +457,11 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Tip: For multi-arch image publishing, ensure that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings..
+        ///   Looks up a localized string similar to CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings..
         /// </summary>
-        internal static string TipToEnableContainerdForMultiArch {
+        internal static string ImageLoadFailed_ContainerdStoreDisabled {
             get {
-                return ResourceManager.GetString("TipToEnableContainerdForMultiArch", resourceCulture);
+                return ResourceManager.GetString("ImageLoadFailed_ContainerdStoreDisabled", resourceCulture);
             }
         }
 

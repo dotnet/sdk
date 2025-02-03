@@ -189,6 +189,10 @@
     <value>CONTAINER1009: Failed to load image from local registry. stdout: {0}</value>
     <comment>{StrBegin="CONTAINER1009: "}</comment>
   </data>
+  <data name="ImageLoadFailed_ContainerdStoreDisabled" xml:space="preserve">
+    <value>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</value>
+    <comment>{StrBegin="CONTAINER1020: "}</comment>
+  </data>
   <data name="InvalidEnvVar" xml:space="preserve">
     <value>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</value>
     <comment>{StrBegin="CONTAINER2015: "}</comment>
@@ -399,10 +403,6 @@
   </data>
   <data name="ImageIndex_PodmanNotSupported" xml:space="preserve">
     <value>Image index creation for Podman is not supported.</value>
-    <comment/>
-  </data>
-  <data name="TipToEnableContainerdForMultiArch" xml:space="preserve">
-    <value>Tip: For multi-arch image publishing, ensure that 'Use containerd for pulling and storing images' is checked in Docker Desktop settings.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">
