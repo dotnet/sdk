@@ -208,9 +208,9 @@ jobs:
       value: -ci -cleanWhileBuilding -prepareMachine -c ${{ parameters.configuration }}
   - ${{ else }}:
     - name: buildScript
-      value: build.sh
+      value: ./build.sh
     - name: buildArguments
-      value: --ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }} --target-rid ${{ parameters.targetRid }}
+      value: --ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }}
 
   ## MSBuild args
   - name: msbuildArguments
@@ -244,6 +244,14 @@ jobs:
       value: /p:DotNetBuildPass=${{ parameters.buildPass }}
   - ${{ else }}:
     - name: buildPassArguments
+      value: ''
+
+  ### targetRid args
+  - ${{ if ne(parameters.targetRid, '') }}:
+    - name: targetRidArguments
+      value: --target-rid ${{ parameters.targetRid }}
+  - ${{ else }}:
+    - name: targetRidArguments
       value: ''
 
   ### Cross build args
@@ -294,19 +302,27 @@ jobs:
     - name: poisonArguments
       value: ''
 
-  ### runOnline args
-  - ${{ if and(eq(parameters.buildSourceOnly, true), ne(parameters.runOnline, true)) }}:
+  ### preBuild args
+  - $	{{ if and(eq(parameters.buildSourceOnly, true), ne(parameters.runOnline, true)) }}:
     - name: preBuildArguments
       value: sudo unshare -n
     - name: testPreBuildArguments
       value: sudo
-    - name: onlineArguments
-      value: --online
   - ${{ else }}:
     - name: preBuildArguments
       value: ''
     - name: testPreBuildArguments
       value: ''
+
+  ### online args
+  - ${{ if and(eq(parameters.buildSourceOnly, true), ne(parameters.runOnline, true)) }}:
+    - ${{ if eq(parameters.runOnline, true) }}:
+      - name: onlineArguments
+        value: '--online'
+    - ${{ else }}:
+      - name: onlineArguments
+        value: ''
+  - ${{ else }}:
     - name: onlineArguments
       value: ''
 
