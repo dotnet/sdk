@@ -1,14 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class WriteImportMapToHtml : Task
+public partial class WriteImportMapToHtml : Task
 {
     [Required]
     public ITaskItem[] Assets { get; set; } = [];
@@ -37,17 +39,15 @@ public class WriteImportMapToHtml : Task
     [Output]
     public string[] FileWrites { get; set; } = [];
 
-    [SuppressMessage("Performance", "SYSLIB1045:Convert to 'GeneratedRegexAttribute'.", Justification = "The assembly targets .NET framework as well")]
     private static readonly Regex _assetsRegex = new Regex(@"@Assets\['([^']*)'\]");
-
-    [SuppressMessage("Performance", "SYSLIB1045:Convert to 'GeneratedRegexAttribute'.", Justification = "The assembly targets .NET framework as well")]
-    private static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s>\s</script>");
+    private static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s*>\s*</script>");
 
     public override bool Execute()
     {
-        var manifest = GenerateStaticWebAssetEndpointsManifest.CreateManifest(Log, Assets, Endpoints, ManifestType, Source);
-        var resources = ResourceCollectionResolver.ResolveResourceCollection(manifest);
-        var importMap = ImportMapDefinition.FromResourceCollection(resources);
+        var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints).Where(e => e.AssetFile.EndsWith(".js") || e.AssetFile.EndsWith(".mjs"));
+        var resources = CreateResourcesFromEndpoints(endpoints);
+        var urlMappings = GroupResourcesByLabel(resources);
+        var importMap = CreateImportMapFromResources(resources);
 
         var htmlFilesToRemove = new List<ITaskItem>();
         var htmlCandidates = new List<ITaskItem>();
@@ -68,14 +68,14 @@ public class WriteImportMapToHtml : Task
                 string outputContent = _importMapRegex.Replace(content, e =>
                 {
                     Log.LogMessage("Writing importmap to '{0}'", item.ItemSpec);
-                    return $"<script type='importmap'>{importMap.ToJson()}</script>";
+                    return $"<script type=\"importmap\">{JsonSerializer.Serialize(importMap, ImportMapSerializerContext.CustomEncoder.Options)}</script>";
                 });
 
                 // Fingerprint all assets used in html
                 outputContent = _assetsRegex.Replace(outputContent, e =>
                 {
                     string assetPath = e.Groups[1].Value;
-                    string fingerprintedAssetPath = resources[assetPath];
+                    string fingerprintedAssetPath = urlMappings.TryGetValue(assetPath, out var value) ? value.Url : assetPath;
                     Log.LogMessage("Replacing asset '{0}' with fingerprinted version '{1}'", assetPath, fingerprintedAssetPath);
                     return fingerprintedAssetPath;
                 });
@@ -98,4 +98,110 @@ public class WriteImportMapToHtml : Task
         FileWrites = fileWrites.ToArray();
         return true;
     }
+
+    internal static List<ResourceAsset> CreateResourcesFromEndpoints(IEnumerable<StaticWebAssetEndpoint> endpoints)
+    {
+        var resources = new List<ResourceAsset>();
+
+        // We are converting a subset of the descriptors to resources and including a subset of the properties exposed by the
+        // descriptors that are useful for the resources in the context of Blazor. Specifically, we pass in the `label` property
+        // which contains the human-readable identifier for fingerprinted assets, and the integrity, which can be used to apply
+        // subresource integrity to things like images, script tags, etc.
+        foreach (var descriptor in endpoints)
+        {
+            string? label = null;
+            string? integrity = null;
+
+            // If there's a selector this means that this is an alternative representation for a resource, so skip it.
+            if (descriptor.Selectors?.Length == 0)
+            {
+                for (var i = 0; i < descriptor.EndpointProperties?.Length; i++)
+                {
+                    var property = descriptor.EndpointProperties[i];
+                    if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
+                    {
+                        label = property.Value;
+                    }
+                    else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
+                    {
+                        integrity = property.Value;
+                    }
+                }
+
+                resources.Add(new ResourceAsset(descriptor.Route, label, integrity));
+            }
+        }
+
+        return resources;
+    }
+
+    private static ImportMap CreateImportMapFromResources(List<ResourceAsset> assets)
+    {
+        Dictionary<string, string>? imports = new();
+        Dictionary<string, Dictionary<string, string>>? scopes = new(); ;
+        Dictionary<string, string>? integrity = new();
+
+        foreach (var asset in assets)
+        {
+            if (asset.Integrity != null)
+            {
+                integrity ??= [];
+                integrity[$"./{asset.Url}"] = asset.Integrity;
+            }
+
+            if (asset.Label != null)
+            {
+                imports ??= [];
+                imports[$"./{asset.Label}"] = $"./{asset.Url}";
+            }
+        }
+
+        return new ImportMap(imports, scopes, integrity);
+    }
+
+    private static Dictionary<string, ResourceAsset> GroupResourcesByLabel(List<ResourceAsset> resources)
+    {
+        var mappings = new Dictionary<string, ResourceAsset>(StringComparer.OrdinalIgnoreCase);
+        foreach (var resource in resources)
+        {
+            if (resource.Label != null)
+            {
+                if (mappings.TryGetValue(resource.Label, out var value))
+                {
+                    throw new InvalidOperationException($"The static asset '{resource.Label}' is already mapped to {value.Url}.");
+                }
+                mappings[resource.Label] = resource;
+            }
+        }
+
+        return mappings;
+    }
+}
+
+internal sealed class ResourceAsset(string url, string? label, string? integrity)
+{
+    public string Url { get; } = url;
+    public string? Label { get; set; } = label;
+    public string? Integrity { get; set; } = integrity;
+}
+
+internal class ImportMap(Dictionary<string, string> imports, Dictionary<string, Dictionary<string, string>> scopes, Dictionary<string, string> integrity)
+{
+    public Dictionary<string, string> Imports { get; set; } = imports;
+    public Dictionary<string, Dictionary<string, string>> Scopes { get; set; } = scopes;
+    public Dictionary<string, string> Integrity { get; set; } = integrity;
+}
+
+[JsonSerializable(typeof(ImportMap))]
+internal sealed partial class ImportMapSerializerContext : JsonSerializerContext
+{
+    private static ImportMapSerializerContext? _customEncoder;
+
+    public static ImportMapSerializerContext CustomEncoder => _customEncoder ??= new(new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    });
 }

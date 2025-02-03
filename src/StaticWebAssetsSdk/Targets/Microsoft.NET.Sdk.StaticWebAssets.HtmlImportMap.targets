@@ -14,7 +14,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.WriteImportMapToHtml" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
-    <PropertyGroup>
+  <PropertyGroup>
     <ResolveBuildRelatedStaticWebAssetsDependsOn>
       $(ResolveStaticWebAssetsInputsDependsOn);
       _UpdateHtmlFiles;
@@ -39,9 +39,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Write import map and fingerprinted assets to html files -->
     <WriteImportMapToHtml
-      Source="$(PackageId)"
-      ManifestType="Build"
-      Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
       HtmlFiles="@(_HtmlStaticWebAssets)"
       OutputPath="$(_BuildImportMapHtmlPath)">
