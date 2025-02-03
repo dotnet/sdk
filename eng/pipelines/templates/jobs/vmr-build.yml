@@ -485,28 +485,28 @@ jobs:
         displayName: Prep the Build
         workingDirectory: $(sourcesPath)
 
-      - ${{ if eq(parameters.buildFromArchive, true) }}:
-        - script: echo "##vso[task.setvariable variable=additionalBuildArgs]$(additionalBuildArgs) --source-repository https://github.com/dotnet/dotnet --source-version $(git -C "$(vmrPath)" rev-parse HEAD)"
-          displayName: Set source-repository and source-version args
+    - ${{ if eq(parameters.buildFromArchive, true) }}:
+      - script: echo "##vso[task.setvariable variable=additionalBuildArgs]$(additionalBuildArgs) --source-repository https://github.com/dotnet/dotnet --source-version $(git -C "$(vmrPath)" rev-parse HEAD)"
+        displayName: Set source-repository and source-version args
 
-      - script: $(preBuildArguments)
-          $(buildScript)
-          $(buildArguments)
-          $(msbuildArguments)
-          $(signArguments)
-          $(buildPassArguments)
-          $(crossBuildArgs)
-          $(monoArgs)
-          $(sourceOnlyBaseArguments)
-          $(onlineArguments)
-          $(poisonArguments)
-          $(additionalBuildArgs)
-          ${{ parameters.extraProperties }}
-        displayName: Build
-        workingDirectory: ${{ variables.sourcesPath }}
-        ${{ if ne(parameters.crossRootFs, '') }}:
-          env:
-            ROOTFS_DIR: ${{ parameters.crossRootFs}}
+    - script: $(preBuildArguments)
+        $(buildScript)
+        $(buildArguments)
+        $(msbuildArguments)
+        $(signArguments)
+        $(buildPassArguments)
+        $(crossBuildArgs)
+        $(monoArgs)
+        $(sourceOnlyBaseArguments)
+        $(onlineArguments)
+        $(poisonArguments)
+        $(additionalBuildArgs)
+        ${{ parameters.extraProperties }}
+      displayName: Build
+      workingDirectory: ${{ variables.sourcesPath }}
+      ${{ if ne(parameters.crossRootFs, '') }}:
+        env:
+          ROOTFS_DIR: ${{ parameters.crossRootFs}}
 
     - ${{ if ne(parameters.runOnline, 'True') }}:
       - script: |
