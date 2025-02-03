@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli
                 return 1;
             }
 
-            bool isDll = _module.DllOrExePath.HasExtension(CliConstants.DLLExtension);
+            bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
             var processStartInfo = CreateProcessStartInfo(hasFilterMode, isDll, buildConfigurationOptions, enableHelp);
 
             _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli
         {
             var processStartInfo = new ProcessStartInfo
             {
-                FileName = hasFilterMode ? (isDll ? Environment.ProcessPath : _module.DllOrExePath) : Environment.ProcessPath,
+                FileName = hasFilterMode ? (isDll ? Environment.ProcessPath : _module.TargetPath) : Environment.ProcessPath,
                 Arguments = hasFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(enableHelp, buildConfigurationOptions),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
@@ -246,9 +246,9 @@ namespace Microsoft.DotNet.Cli
 
         private bool ModulePathExists()
         {
-            if (!File.Exists(_module.DllOrExePath))
+            if (!File.Exists(_module.TargetPath))
             {
-                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.DllOrExePath}' not found. Build the test application before or run 'dotnet test'." });
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.TargetPath}' not found. Build the test application before or run 'dotnet test'." });
                 return false;
             }
             return true;
@@ -258,7 +258,7 @@ namespace Microsoft.DotNet.Cli
         {
             StringBuilder builder = new();
 
-            builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectPath}\"");
+            builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectFullPath}\"");
 
             // Because we restored and built before in MSHandler, we will skip those with dotnet run
             builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
@@ -306,7 +306,7 @@ namespace Microsoft.DotNet.Cli
 
             if (isDll)
             {
-                builder.Append($"exec {_module.DllOrExePath} ");
+                builder.Append($"exec {_module.TargetPath} ");
             }
 
             builder.Append(_args.Count != 0
@@ -323,7 +323,7 @@ namespace Microsoft.DotNet.Cli
             if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
             {
                 AddExecutionId(executionId);
-                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.DllOrExePath, ExecutionId = executionId });
+                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.TargetPath, ExecutionId = executionId });
             }
             HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
         }
@@ -366,14 +366,14 @@ namespace Microsoft.DotNet.Cli
         {
             StringBuilder builder = new();
 
-            if (!string.IsNullOrEmpty(_module.DllOrExePath))
+            if (!string.IsNullOrEmpty(_module.TargetPath))
             {
-                builder.Append($"DLL: {_module.DllOrExePath}");
+                builder.Append($"DLL: {_module.TargetPath}");
             }
 
-            if (!string.IsNullOrEmpty(_module.ProjectPath))
+            if (!string.IsNullOrEmpty(_module.ProjectFullPath))
             {
-                builder.Append($"Project: {_module.ProjectPath}");
+                builder.Append($"Project: {_module.ProjectFullPath}");
             }
             ;
 

@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var args = new List<string> { "--binaryLogger" };
 
             // Act
-            var result = MSBuildHandler.IsBinaryLoggerEnabled(args, out string binLogFileName);
+            var result = MSBuildUtility.IsBinaryLoggerEnabled(args, out string binLogFileName);
 
             // Assert
             Assert.True(result);
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var args = new List<string> { "--binaryLogger:custom.binlog" };
 
             // Act
-            var result = MSBuildHandler.IsBinaryLoggerEnabled(args, out string binLogFileName);
+            var result = MSBuildUtility.IsBinaryLoggerEnabled(args, out string binLogFileName);
 
             // Assert
             Assert.True(result);
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var args = new List<string> { "--someOtherArg" };
 
             // Act
-            var result = MSBuildHandler.IsBinaryLoggerEnabled(args, out string binLogFileName);
+            var result = MSBuildUtility.IsBinaryLoggerEnabled(args, out string binLogFileName);
 
             // Assert
             Assert.False(result);
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var args = new List<string> { "--binaryLogger", "--someOtherArg" };
 
             // Act
-            var result = MSBuildHandler.IsBinaryLoggerEnabled(args, out string binLogFileName);
+            var result = MSBuildUtility.IsBinaryLoggerEnabled(args, out string binLogFileName);
 
             // Assert
             Assert.True(result);
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var args = new List<string> { "--binaryLogger", "--binaryLogger:custom1.binlog", "--binaryLogger:custom2.binlog" };
 
             // Act
-            var result = MSBuildHandler.IsBinaryLoggerEnabled(args, out string binLogFileName);
+            var result = MSBuildUtility.IsBinaryLoggerEnabled(args, out string binLogFileName);
 
             // Assert
             Assert.True(result);
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var args = new List<string> { "--binaryLogger:" };
 
             // Act
-            var result = MSBuildHandler.IsBinaryLoggerEnabled(args, out string binLogFileName);
+            var result = MSBuildUtility.IsBinaryLoggerEnabled(args, out string binLogFileName);
 
             // Assert
             Assert.True(result);
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var args = new List<string> { "--binaryLogger:" };
 
             // Act
-            var result = MSBuildHandler.IsBinaryLoggerEnabled(args, out string binLogFileName);
+            var result = MSBuildUtility.IsBinaryLoggerEnabled(args, out string binLogFileName);
 
             // Assert
             Assert.True(result);
