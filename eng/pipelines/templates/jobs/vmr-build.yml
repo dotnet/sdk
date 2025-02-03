@@ -246,7 +246,7 @@ jobs:
     - name: buildPassArguments
       value: ''
 
-  ### targetRid args
+  ### TargetRid args
   - ${{ if ne(parameters.targetRid, '') }}:
     - name: targetRidArguments
       value: --target-rid ${{ parameters.targetRid }}
@@ -302,7 +302,7 @@ jobs:
     - name: poisonArguments
       value: ''
 
-  ### preBuild args
+  ### PreBuild args
   - $	{{ if and(eq(parameters.buildSourceOnly, true), ne(parameters.runOnline, true)) }}:
     - name: preBuildArguments
       value: sudo unshare -n
@@ -314,7 +314,7 @@ jobs:
     - name: testPreBuildArguments
       value: ''
 
-  ### online args
+  ### Online args
   - ${{ if and(eq(parameters.buildSourceOnly, true), ne(parameters.runOnline, true)) }}:
     - ${{ if eq(parameters.runOnline, true) }}:
       - name: onlineArguments
