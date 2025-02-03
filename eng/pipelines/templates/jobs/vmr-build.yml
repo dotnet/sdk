@@ -447,8 +447,7 @@ jobs:
 
     # Install dependencies
     - ${{ if eq(parameters.targetOS, 'osx') }}:
-      - script: |
-          $(sourcesPath)/eng/common/native/install-dependencies.sh osx
+      - script: $(sourcesPath)/eng/common/native/install-dependencies.sh osx
         displayName: Install dependencies
 
     # Prep the build
@@ -505,7 +504,7 @@ jobs:
           ${{ parameters.extraProperties }}
         displayName: Build
         workingDirectory: ${{ variables.sourcesPath }}
-        - ${{ if ne(parameters.crossRootFs, '') }}:
+        ${{ if ne(parameters.crossRootFs, '') }}:
           env:
             ROOTFS_DIR: ${{ parameters.crossRootFs}}
 
