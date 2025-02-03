@@ -342,7 +342,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             var scanResults = new ScanResult?[allTemplatePackages.Count];
-            Parallel.For(0, allTemplatePackages.Count, async (int index) =>
+            Parallel.For(0, allTemplatePackages.Count, async (index) =>
             {
                 try
                 {

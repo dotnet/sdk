@@ -104,7 +104,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Options.Add(_diffOverrideNonPackagesOption);
 
             TreatUnmatchedTokensAsErrors = true;
-            SetAction(async (ParseResult parseResult, CancellationToken cancellationToken) =>
+            SetAction(async (parseResult, cancellationToken) =>
             {
                 var config = new CommandArgs(parseResult.GetValue(_basePathOption) ?? throw new Exception("Output path is not set"))
                 {
