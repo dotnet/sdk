@@ -53,6 +53,11 @@ parameters:
   type: string
   default: ''
 
+# Enables IBC data on when building internally.
+- name: enableIBCOptimization
+  type: boolean
+  default: false
+
 #### SOURCE-ONLY parameters ####
 
 # Instead of building the VMR directly, exports the sources into a tarball and builds from that
@@ -150,6 +155,8 @@ jobs:
   variables:
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
     - group: AzureDevOps-Artifact-Feeds-Pats
+  - ${{ if eq(parameters.enableIBCOptimization, 'true') }}:
+    - group: DotNet-VSTS-Infra-Access
   - ${{ if and(not(parameters.isBuiltFromVmr), eq(variables['System.TeamProject'], 'internal'), not(startswith(parameters.vmrBranch, 'internal/release/')), ne(variables['Build.Reason'], 'PullRequest')) }}:
     - group: DotNetBot-GitHub
   - ${{ else }}:
@@ -268,6 +275,14 @@ jobs:
         value: --online
 
 ### END: Build up the command line variables. ###
+
+    ### Additional arguments
+    - ${{ if eq(parameters.enableIBCOptimization, 'true') }}:
+      - name: ibcArguments
+        value: '/p:EnableIBCOptimization=true /p:IBCDropAccessToken=$(dn-bot-devdiv-drop-r-code-r)'
+    - ${{ else }}:
+      - name: ibcArguments
+        value: ''
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -394,6 +409,14 @@ jobs:
         enableMicrobuild: true
         enableMicrobuildForMacAndLinux: true
 
+  # When building internal, authenticate to internal feeds that may be in use
+  # We do not need these for source-only builds
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), ne(parameters.buildSourceOnly, 'True')) }}:
+    # Authenticate with service connections to be able to pull packages to external nuget feeds.
+    - task: NuGetAuthenticate@1
+      inputs:
+        nuGetServiceConnections: devdiv/engineering, devdiv/dotnet-core-internal-tooling
+
   - ${{ if eq(parameters.targetOS, 'windows') }}:
     # Node 20.x is a toolset dependency to build aspnetcore
     # Keep in sync with aspnetcore: https://github.com/dotnet/aspnetcore/blob/7d5309210d8f7bae8fa074da495e9d009d67f1b4/.azure/pipelines/ci.yml#L719-L722
@@ -407,6 +430,7 @@ jobs:
         $(msbuildArguments)
         $(signArguments)
         $(buildPassArguments)
+        $(ibcArguments)
         ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
