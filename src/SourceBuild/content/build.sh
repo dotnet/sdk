@@ -244,17 +244,15 @@ function Build {
       properties+=( "/p:ContinuousIntegrationBuild=true" )
     fi
 
-    if [ "$test" != "true" ]; then
-      initSourceOnlyBinaryLog=""
-      if [[ "$binary_log" == true ]]; then
-        initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
-      fi
-
-      "$CLI_ROOT/dotnet" build-server shutdown --msbuild
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog "${properties[@]}"
-      # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
-      "$CLI_ROOT/dotnet" build-server shutdown --msbuild
+    initSourceOnlyBinaryLog=""
+    if [[ "$binary_log" == true ]]; then
+      initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
     fi
+
+    "$CLI_ROOT/dotnet" build-server shutdown --msbuild
+    "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog "${properties[@]}"
+    # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
+    "$CLI_ROOT/dotnet" build-server shutdown --msbuild
 
     # Point MSBuild to the custom SDK resolvers folder, so it will pick up our custom SDK Resolver
     export MSBUILDADDITIONALSDKRESOLVERSFOLDER="$scriptroot/artifacts/toolset/VSSdkResolvers/"
