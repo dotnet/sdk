@@ -58,6 +58,8 @@ $targets = "/t:Build"
 if ($test) {
   $project = Join-Path (Join-Path $RepoRoot "test") "tests.proj"
   $targets += ";VSTest"
+  $arguments += "/p:_IsTesting=true"
+
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"
 }
