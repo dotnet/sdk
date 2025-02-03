@@ -8,12 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Tasks.Core" IncludeAssets="all" ExcludeAssets="none" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" IncludeAssets="all" ExcludeAssets="none" />
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" IncludeAssets="all" ExcludeAssets="none" />
-    <PackageReference Include="Newtonsoft.Json" IncludeAssets="all" ExcludeAssets="none" />
-    <PackageReference Include="NuGet.ProjectModel" IncludeAssets="all" ExcludeAssets="none" />
-    <PackageReference Include="NuGet.Protocol" IncludeAssets="all" ExcludeAssets="none" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NuGet.ProjectModel" />
+    <PackageReference Include="NuGet.Protocol" />
 
     <ProjectReference Include="$(RepositoryEngineeringDir)tools/tasks/Microsoft.DotNet.UnifiedBuild.Tasks/Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
   </ItemGroup>
