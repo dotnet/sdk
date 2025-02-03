@@ -17,14 +17,6 @@ namespace Microsoft.DotNet.ApiDiff.Tool;
 /// </summary>
 public static class Program
 {
-    private static readonly string[] defaultAttributesToExclude = new[]
-    {
-        "T:System.AttributeUsageAttribute",
-        "T:System.ComponentModel.EditorBrowsableAttribute",
-        "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
-        "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute"
-    };
-
     public static async Task Main(string[] args)
     {
         RootCommand rootCommand = new("genapidiff");
@@ -48,7 +40,7 @@ public static class Program
             IsRequired = false
         };
 
-        Option<string[]> optionAttributesToExclude = new(["--attributesToExclude", "-ate"], () => defaultAttributesToExclude)
+        Option<string[]?> optionAttributesToExclude = new(["--attributesToExclude", "-ate"], () => null)
         {
             Description = "Attributes to exclude from the diff.",
             Arity = ArgumentArity.ZeroOrMore,
@@ -122,14 +114,16 @@ public static class Program
     {
         var log = new ConsoleLog(MessageImportance.Normal);
 
-        // Custom ordering to match help menu.
-        log.LogMessage("Selected options:");
+        string attributesToExclude = diffConfig.AttributesToExclude != null ? string.Join(", ", diffConfig.AttributesToExclude) : string.Empty;
+
+    // Custom ordering to match help menu.
+    log.LogMessage("Selected options:");
         log.LogMessage($" - 'Before' assemblies:                {diffConfig.BeforeAssembliesFolderPath}");
         log.LogMessage($" - 'Before' reference assemblies:      {diffConfig.BeforeAssemblyReferencesFolderPath}");
         log.LogMessage($" - 'After' assemblies:                 {diffConfig.AfterAssembliesFolderPath}");
         log.LogMessage($" - 'After' ref assemblies:             {diffConfig.AfterAssemblyReferencesFolderPath}");
         log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
-        log.LogMessage($" - Attributes to exclude:              {string.Join(", ", diffConfig.AttributesToExclude)}");
+        log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
         log.LogMessage($" - Include table of contents:          {diffConfig.IncludeTableOfContents}");
         log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
         log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
