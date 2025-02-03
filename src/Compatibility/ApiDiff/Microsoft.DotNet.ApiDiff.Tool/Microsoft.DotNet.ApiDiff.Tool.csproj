@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>$(NetToolMinimum)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <!-- <IsPackable>true</IsPackable>
+    <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>genapidiff</ToolCommandName> -->
+    <ToolCommandName>genapidiff</ToolCommandName>
     <PackageDescription>Tool to emit markdown diffs between sets of assemblies.</PackageDescription>
   </PropertyGroup>
 
