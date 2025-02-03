@@ -5,7 +5,8 @@
     <CleanWhileBuilding>false</CleanWhileBuilding>
 
     <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
-
+    
+    <TestArgs>$(TestArgs) /p:TestBinlogDir=$(ArtifactsLogRepoDir)</TestArgs>
     <!-- Pass the path of the updated NuGet.config file in which contains the live source-built feeds. Skip this when building source-only
          as in that configuration we currently don't want to use the live generated NuGet packages from the various repositories. -->
     <TestArgs Condition="'$(NuGetConfigFile)' != '' and '$(DotNetBuildSourceOnly)' != 'true'">$(TestArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</TestArgs>

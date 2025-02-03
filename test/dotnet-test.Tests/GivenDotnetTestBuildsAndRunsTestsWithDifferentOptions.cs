@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
-using dotnet.Tests;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -16,8 +15,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithProjectPathWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -33,15 +32,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern);
-            string fullProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{testProjectPath}";
-            Assert.Contains($"{TestingPlatformOptions.ProjectOption.Name} \"{fullProjectPath}\"", testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
+            Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "exec", addVersionAndArchPattern: false));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithSolutionPathWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -53,28 +50,61 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-
-            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern)
-                                   .Select(match => match.Value.Split(TestApplicationArgsSeparator)[0])
-                                   .ToList();
-
-            string expectedProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}TestProject{Path.DirectorySeparatorChar}TestProject.csproj";
-            string otherExpectedProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}OtherTestProject{Path.DirectorySeparatorChar}OtherTestProject.csproj";
-
-            bool containsExpectedPath = testAppArgs.Any(arg => arg.Contains(expectedProjectPath) || arg.Contains(otherExpectedProjectPath));
-
-            Assert.True(containsExpectedPath,
-                        $"Expected either '{expectedProjectPath}' or '{otherExpectedProjectPath}' to be present in the test application arguments.");
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, configuration), result.StdOut);
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true, configuration), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunWithSolutionFilterPathWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            string testSolutionPath = "TestProjects.slnf";
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
+                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            // Assert that only TestProject ran
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, configuration), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true, configuration), result.StdOut);
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunWithSolutionFilterPathInOtherDirectory_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory($"{testInstance.Path}{Path.DirectorySeparatorChar}SolutionFilter")
+                                    .WithEnableTestingPlatform()
+                                    .WithTraceOutput()
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            // Assert that only TestProject ran
+            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, configuration), result.StdOut);
+            Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "passed", true, configuration), result.StdOut);
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithInvalidProjectExtension_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -89,12 +119,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, invalidProjectPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain($"The provided project file has an invalid extension: {invalidProjectPath}.");
+            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription, invalidProjectPath));
+
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithInvalidSolutionExtension_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -109,12 +140,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, invalidSolutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain($"The provided solution file has an invalid extension: {invalidSolutionPath}.");
+            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription, invalidSolutionPath));
+
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithBothProjectAndSolutionAndDirectoryOptions_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -133,12 +165,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.DirectoryOption.Name, testDirectoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut?.Contains("Specify either the project, solution or directory option.");
+            result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithBothProjectAndSolutionOptions_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -155,12 +188,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut?.Contains("Specify either the project or solution option.");
+            result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithNonExistentProjectPath_ShouldReturnZeroAsExitCode(string configuration)
         {
@@ -176,13 +210,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             string fullProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{testProjectPath}";
-            result.StdOut?.Contains($"The provided file path does not exist: {fullProjectPath}.");
+            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentFileErrorDescription, fullProjectPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithNonExistentSolutionPath_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -198,13 +232,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             string fullSolutionPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{solutionPath}";
-            result.StdOut.Should().Contain($"The provided file path does not exist: {fullSolutionPath}.");
+            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentFileErrorDescription, fullSolutionPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunWithNonExistentDirectoryPath_ShouldReturnOneAsExitCode(string configuration)
         {
@@ -219,32 +253,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.DirectoryOption.Name, directoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain($"The provided directory path does not exist: {directoryPath}.");
+            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentDirectoryErrorDescription, directoryPath));
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
-        [Theory]
-        public void RunTestProjectSolutionWithConfigurationOption_ShouldReturnZeroAsExitCode(string configuration)
-        {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
-                .WithSource();
-
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
-                                    .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
-
-            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern);
-            Assert.Contains($"{TestingPlatformOptions.ConfigurationOption.Name} {configuration}", testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
-
-            result.ExitCode.Should().Be(ExitCodes.Success);
-        }
-
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunTestProjectSolutionWithArchOption_ShouldReturnZeroAsExitCode(string configuration)
         {
@@ -265,8 +279,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(Constants.Debug)]
-        [InlineData(Constants.Release)]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunSpecificCSProjRunsWithNoBuildAndNoRestoreOptions_ShouldReturnZeroAsExitCode(string configuration)
         {
@@ -283,7 +297,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .WithTraceOutput()
-                                    .Execute(TestingPlatformOptions.ProjectOption.Name, @"TestProject.csproj",
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
+                                            TestingPlatformOptions.ArchitectureOption.Name, "x64",
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             // Assert that the bin folder hasn't been modified
@@ -293,6 +308,24 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.Contains($"{TestingPlatformOptions.NoRestoreOption.Name} {TestingPlatformOptions.NoBuildOption.Name}", testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
 
             result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunTestProjectSolutionWithBinLogOption_ShouldReturnZeroAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
+
+            result.ExitCode.Should().Be(0);
         }
     }
 }

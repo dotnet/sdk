@@ -616,6 +616,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(PredefinedCulturesOnly)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Linq.Enumerable.IsSizeOptimized"
+                                    Condition="'$(UseSizeOptimizedLinq)' != ''"
+                                    Value="$(UseSizeOptimizedLinq)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Net.Http.EnableActivityPropagation"
                                     Condition="'$(HttpActivityPropagationSupport)' != ''"
                                     Value="$(HttpActivityPropagationSupport)"
