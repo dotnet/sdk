@@ -214,7 +214,7 @@ targets="/t:Build"
 if [[ "$test" == true ]]; then
   project="$scriptroot/test/tests.proj"
   targets="$targets;VSTest"
-  properties+=( "/p:_IsTesting=true" )
+  properties+=( "/p:Test=true" )
 
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   export MSBUILDENSURESTDOUTFORTASKPROCESSES=1
