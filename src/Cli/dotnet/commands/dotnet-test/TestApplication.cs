@@ -68,8 +68,8 @@ namespace Microsoft.DotNet.Cli
         {
             var processStartInfo = new ProcessStartInfo
             {
-                FileName = GetFileName(isDll, testOptions),
-                Arguments = GetArguments(isDll, testOptions),
+                FileName = GetFileName(testOptions, isDll),
+                Arguments = GetArguments(testOptions, isDll),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli
             return processStartInfo;
         }
 
-        private string GetFileName(bool isDll, TestOptions testOptions)
+        private string GetFileName(TestOptions testOptions, bool isDll)
         {
             if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
             {
@@ -89,11 +89,11 @@ namespace Microsoft.DotNet.Cli
             return Environment.ProcessPath;
         }
 
-        private string GetArguments(bool isDll, TestOptions testOptions)
+        private string GetArguments(TestOptions testOptions, bool isDll)
         {
             if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
             {
-                return BuildArgs(isDll, testOptions);
+                return BuildArgs(testOptions, isDll);
             }
 
             return BuildArgsWithDotnetRun(testOptions);
@@ -283,7 +283,7 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private string BuildArgs(bool isDll, TestOptions testOptions)
+        private string BuildArgs(TestOptions testOptions, bool isDll)
         {
             StringBuilder builder = new();
 

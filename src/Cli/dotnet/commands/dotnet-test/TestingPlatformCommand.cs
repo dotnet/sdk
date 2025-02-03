@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli
             bool hasFailed = false;
             try
             {
-                PrepareEnvironment(parseResult, out TestOptions testOptions, out List<string> args, out int degreeOfParallelism);
+                PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
                 InitializeOutput(degreeOfParallelism, testOptions.IsHelp);
 
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
-        private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out List<string> args, out int degreeOfParallelism)
+        private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
         {
             SetupCancelKeyPressHandler();
 
@@ -86,7 +86,6 @@ namespace Microsoft.DotNet.Cli
 
             testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp);
 
-            args = [.. parseResult.UnmatchedTokens];
             _isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
         }
 
