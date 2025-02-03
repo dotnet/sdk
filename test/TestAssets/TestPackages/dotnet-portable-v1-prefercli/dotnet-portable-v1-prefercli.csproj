@@ -6,6 +6,8 @@
     <OutputType>Exe</OutputType>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <RollForward>LatestMajor</RollForward>
+    <!-- Disable NuGetAudit as this project intentionally tests with older versions. -->
+    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,4 +17,5 @@
   <ItemGroup>
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
   </ItemGroup>
+
 </Project>
