@@ -13,13 +13,9 @@ namespace Microsoft.DotNet.Cli
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
         private MSBuildHandler _msBuildHandler;
-        private TestModulesFilterHandler _testModulesFilterHandler;
         private TerminalTestReporter _output;
-        private bool _isHelp;
-        private int _degreeOfParallelism;
         private TestApplicationActionQueue _actionQueue;
-        private List<string> _args;
-        private ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
+        private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
         private byte _cancelled;
         private bool _isDiscovery;
         private TestApplicationsEventHandlers _eventHandlers;
@@ -34,42 +30,28 @@ namespace Microsoft.DotNet.Cli
             bool hasFailed = false;
             try
             {
-                SetupCancelKeyPressHandler();
+                PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
-                _degreeOfParallelism = GetDegreeOfParallelism(parseResult);
-                BuildConfigurationOptions buildConfigurationOptions = GetBuildConfigurationOptions(parseResult);
+                InitializeOutput(degreeOfParallelism, testOptions.IsHelp);
 
-                _isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
-                _args = [.. parseResult.UnmatchedTokens];
-                _isHelp = ContainsHelpOption(parseResult.GetArguments());
+                InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
-                InitializeOutput(_degreeOfParallelism);
-
-                bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
-                if (_isHelp)
-                {
-                    InitializeHelpActionQueue(_degreeOfParallelism, buildConfigurationOptions, filterModeEnabled);
-                }
-                else
-                {
-                    InitializeTestExecutionActionQueue(_degreeOfParallelism, buildConfigurationOptions, filterModeEnabled);
-                }
-
-                _msBuildHandler = new(_args, _actionQueue, _output);
-                _testModulesFilterHandler = new(_args, _actionQueue);
+                BuildOptions buildOptions = GetBuildOptions(parseResult, degreeOfParallelism);
+                _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
+                TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue);
 
                 _eventHandlers = new TestApplicationsEventHandlers(_executions, _output);
 
-                if (filterModeEnabled)
+                if (testOptions.HasFilterMode)
                 {
-                    if (!_testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
+                    if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                     {
                         return ExitCodes.GenericFailure;
                     }
                 }
                 else
                 {
-                    if (!_msBuildHandler.RunMSBuild(GetBuildOptions(parseResult)))
+                    if (!_msBuildHandler.RunMSBuild(buildOptions))
                     {
                         return ExitCodes.GenericFailure;
                     }
@@ -93,6 +75,32 @@ namespace Microsoft.DotNet.Cli
             return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
         }
 
+        private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
+        {
+            SetupCancelKeyPressHandler();
+
+            degreeOfParallelism = GetDegreeOfParallelism(parseResult);
+
+            bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
+            bool isHelp = ContainsHelpOption(parseResult.GetArguments());
+
+            testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp);
+
+            _isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
+        }
+
+        private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, bool isHelp)
+        {
+            if (isHelp)
+            {
+                InitializeHelpActionQueue(degreeOfParallelism, testOptions);
+            }
+            else
+            {
+                InitializeTestExecutionActionQueue(degreeOfParallelism, testOptions);
+            }
+        }
+
         private void SetupCancelKeyPressHandler()
         {
             Console.CancelKeyPress += (s, e) =>
@@ -102,7 +110,7 @@ namespace Microsoft.DotNet.Cli
             };
         }
 
-        private void InitializeOutput(int degreeOfParallelism)
+        private void InitializeOutput(int degreeOfParallelism, bool isHelp)
         {
             var console = new SystemConsole();
             _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
@@ -114,13 +122,13 @@ namespace Microsoft.DotNet.Cli
                 ShowAssemblyStartAndComplete = true,
             });
 
-            if (!_isHelp)
+            if (!isHelp)
             {
-                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, _isHelp);
+                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
             }
         }
 
-        private void InitializeHelpActionQueue(int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions, bool filterModeEnabled)
+        private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions)
         {
             _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
             {
@@ -129,11 +137,11 @@ namespace Microsoft.DotNet.Cli
                 testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
                 testApp.ExecutionIdReceived += _eventHandlers.OnExecutionIdReceived;
 
-                return await testApp.RunAsync(filterModeEnabled, enableHelp: true, buildConfigurationOptions);
+                return await testApp.RunAsync(testOptions);
             });
         }
 
-        private void InitializeTestExecutionActionQueue(int degreeOfParallelism, BuildConfigurationOptions buildConfigurationOptions, bool filterModeEnabled)
+        private void InitializeTestExecutionActionQueue(int degreeOfParallelism, TestOptions testOptions)
         {
             _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
             {
@@ -146,7 +154,7 @@ namespace Microsoft.DotNet.Cli
                 testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
                 testApp.ExecutionIdReceived += _eventHandlers.OnExecutionIdReceived;
 
-                return await testApp.RunAsync(filterModeEnabled, enableHelp: false, buildConfigurationOptions);
+                return await testApp.RunAsync(testOptions);
             });
         }
 
@@ -157,14 +165,17 @@ namespace Microsoft.DotNet.Cli
             return degreeOfParallelism;
         }
 
-        private static BuildConfigurationOptions GetBuildConfigurationOptions(ParseResult parseResult) =>
+        private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
             new(parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
                 parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption));
+                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption),
+                hasFilterMode,
+                isHelp);
 
-        private BuildOptions GetBuildOptions(ParseResult parseResult)
+        private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
         {
-            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled([.. parseResult.UnmatchedTokens], out string binLogFileName);
+            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled(ref unmatchedTokens, out string binLogFileName);
 
             return new BuildOptions(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
@@ -177,7 +188,8 @@ namespace Microsoft.DotNet.Cli
                     string.Empty,
                 allowBinLog,
                 binLogFileName,
-                _degreeOfParallelism);
+                degreeOfParallelism,
+                unmatchedTokens);
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));

@@ -100,9 +100,9 @@ namespace Microsoft.DotNet.Cli
             return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
         }
 
-        public static IEnumerable<Module> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection)
+        public static IEnumerable<Module> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
         {
-            var project = projectCollection.LoadProject(projectFilePath);
+            var project = projectCollection.LoadProject(projectFilePath, globalProperties, null);
             return GetModulesFromProject(project);
         }
 
