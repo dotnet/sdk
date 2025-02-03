@@ -239,45 +239,73 @@ jobs:
   - ${{ if ne(parameters.buildPass, '') }}:
     - name: buildPassArguments
       value: /p:DotNetBuildPass=${{ parameters.buildPass }}
+  - ${{ else }}:
+    - name: buildPassArguments
+      value: ''
 
   ### Cross build args
   - ${{ if and(ne(parameters.crossRootFs, ''), ne(parameters.targetArchitecture, 'wasm')) }}:
     - name: crossBuildArgs
       value: /p:CrossBuild=true
+  - ${{ else }}:
+    - name: crossBuildArgs
+      value: ''
 
   ### Mono args
   - ${{ if eq(parameters.useMonoRuntime, true) }}:
     - name: monoArgs
       value: --use-mono-runtime
+  - ${{ else }}:
+    - name: monoArgs
+      value: ''
 
-  ### Additional arguments
+  ### IBC arguments
   - ${{ if eq(parameters.enableIBCOptimization, 'true') }}:
     - name: ibcArguments
       value: '/p:EnableIBCOptimization=true /p:IBCDropAccessToken=$(dn-bot-devdiv-drop-r-code-r)'
+  - ${{ else }}:
+    - name: ibcArguments
+      value: ''
 
   ### Test args
   - name: testArguments
     value: -test -excludeCIBinarylog /bl:artifacts/log/${{ parameters.configuration }}/Test.binlog
 
   ### Source-only args
-  - ${{ if ne(parameters.buildSourceOnly, true) }}:
+  - ${{ if eq(parameters.buildSourceOnly, true) }}:
     - name: sourceOnlyBaseArguments
       value: --source-only /p:ReportSbrpUsage=true
-
-    - ${{ if eq(parameters.enablePoison, true) }}:
-      - name: poisonArguments
-        value: --poison
-
     - name: sourceOnlyTestArguments
       value: /p:SourceBuildTestsExcludeOmniSharpTests=${{ parameters.excludeOmniSharpTests }}
+  - ${{ else }}:
+    - name: sourceOnlyBaseArguments
+      value: ''
+    - name: sourceOnlyTestArguments
+      value: ''
 
-    - ${{ if ne(parameters.runOnline, true) }}:
-      - name: preBuildArguments
-        value: sudo unshare -n
-      - name: testPreBuildArguments
-        value: sudo
-      - name: onlineArguments
-        value: --online
+  ### Poison args
+  - ${{ if and(eq(parameters.buildSourceOnly, true), eq(parameters.enablePoison, true)) }}:
+    - name: poisonArguments
+      value: --poison
+  - ${{ else }}:
+    - name: poisonArguments
+      value: ''
+
+  ### runOnline args
+  - ${{ if and(eq(parameters.buildSourceOnly, true), ne(parameters.runOnline, true)) }}:
+    - name: preBuildArguments
+      value: sudo unshare -n
+    - name: testPreBuildArguments
+      value: sudo
+    - name: onlineArguments
+      value: --online
+  - ${{ else }}:
+    - name: preBuildArguments
+      value: ''
+    - name: testPreBuildArguments
+      value: ''
+    - name: onlineArguments
+      value: ''
 
 ### END: Build up the command line variables. ###
 
