@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/9.0.2xx
+    - release/9.0.3xx
     - internal/release/*
     - exp/*
 
@@ -20,6 +20,10 @@ parameters:
 # When true, runs the pipeline in the same way as the PR pipeline.
 - name: runTestBuild
   displayName: Run A Test Build
+  type: boolean
+  default: false
+- name: enableArm64Job
+  displayName: Enables the ARM64 job
   type: boolean
   default: false
 
@@ -297,7 +301,7 @@ extends:
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
       ### ARM64 TESTBUILD ###
-      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+      - ${{ if and(or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')), eq(parameters.enableArm64Job, true)) }}:
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
             pool:

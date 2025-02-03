@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
+using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
@@ -31,45 +31,32 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
-            string excludedAttributeFile = null,
+            string[] excludedAttributeList = null,
             [CallerMemberName] string assemblyName = "")
         {
-            StringWriter stringWriter = new();
+            using StringWriter stringWriter = new();
 
-            // Configure symbol filters
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                includeInternalSymbols,
-                includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols);
+            Mock<ILog> log = new();
 
-            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(accessibilitySymbolFilter);
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
+                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
 
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludedAttributeFile is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+            ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
+            ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
 
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
-                new ConsoleLog(MessageImportance.Low),
+                log.Object,
+                stringWriter,
+                loader,
                 symbolFilter,
                 attributeDataSymbolFilter,
-                stringWriter,
-                null,
-                false,
+                header: string.Empty,
+                exceptionMessage: null,
+                includeAssemblyAttributes: false,
                 MetadataReferences,
                 addPartialModifier: true);
 
-            using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            AssemblySymbolLoader assemblySymbolLoader = new(resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
-            IAssemblySymbol assemblySymbol = assemblySymbolLoader.LoadAssembly(assemblyName, assemblyStream);
-
-            csharpFileBuilder.WriteAssembly(assemblySymbol);
+            csharpFileBuilder.WriteAssembly(assemblySymbols.First().Value);
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
             string resultedString = stringBuilder.ToString();
@@ -2761,10 +2748,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestAttributesExcludedWithFilter()
         {
-            using TempDirectory root = new();
-            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
-            File.WriteAllText(filePath, "T:A.AnyTestAttribute");
-
             RunTest(original: """
                     namespace A
                     {
@@ -2800,7 +2783,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false,
-                excludedAttributeFile: filePath);
+                excludedAttributeList: ["T:A.AnyTestAttribute"]);
         }
 
         [Fact]

@@ -239,9 +239,15 @@
         linux-musl-loongarch64;
         " />
 
+      <Net100RuntimePackRids Include="
+        @(Net90RuntimePackRids);
+        android-arm64;
+        android-x64;
+        " />
+
       <NetCoreAppHostRids Include="@(Net90AppHostRids)" />
 
-      <NetCoreRuntimePackRids Include="@(Net90RuntimePackRids)" />
+      <NetCoreRuntimePackRids Include="@(Net100RuntimePackRids)" />
 
       <!--
         In source-only builds, we build the current RID from source, which may be
@@ -385,9 +391,13 @@
         win-x86;
         " />
 
-      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
+      <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (OutputRID). See:
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
-      <ILCompilerSupportedRids Include="@(Net90ILCompilerSupportedRids)" />
+      <ILCompilerSupportedRids Include="
+        @(Net90ILCompilerSupportedRids);
+        linux-riscv64;
+        linux-musl-riscv64;
+        " />
 
       <Net80NativeAOTRuntimePackRids Include="
         ios-arm64;

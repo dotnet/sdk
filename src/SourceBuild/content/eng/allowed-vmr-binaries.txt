@@ -152,3 +152,4 @@ src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/Resources/Hyphenation
 src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/Resources/Hyphenation/Hyphen_en.hdict
 src/wpf/src/Microsoft.DotNet.Wpf/src/Shared/Tracing/resources/*.BIN
 src/wpf/src/Microsoft.DotNet.Wpf/src/Shared/Tracing/resources/*.bin
+src/wpf/src/Microsoft.DotNet.Wpf/tests/UnitTests/WindowsBase.Tests/Resources/Invalid_1.xps

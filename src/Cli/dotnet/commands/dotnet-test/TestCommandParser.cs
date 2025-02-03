@@ -22,12 +22,6 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdListTestsDescription
         }.ForwardAs("-property:VSTestListTests=true");
 
-        public static readonly CliOption<IEnumerable<string>> EnvOption = new CliOption<IEnumerable<string>>("--environment", "-e")
-        {
-            Description = LocalizableStrings.CmdEnvironmentVariableDescription,
-            HelpName = LocalizableStrings.CmdEnvironmentVariableExpression
-        }.AllowSingleArgPerToken();
-
         public static readonly CliOption<string> FilterOption = new ForwardedOption<string>("--filter")
         {
             Description = LocalizableStrings.CmdTestCaseFilterDescription,
@@ -168,9 +162,6 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-#if RELEASE
-            return GetVSTestCliCommand();
-#else
             bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
             string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
 
@@ -184,13 +175,12 @@ namespace Microsoft.DotNet.Cli
             }
 
             throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
-#endif
         }
 
         private static CliCommand GetTestingPlatformCliCommand()
         {
             var command = new TestingPlatformCommand("test");
-            command.SetAction(async (parseResult) => await command.Run(parseResult));
+            command.SetAction(parseResult => command.Run(parseResult));
             command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
             command.Options.Add(TestingPlatformOptions.AdditionalMSBuildParametersOption);
             command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
@@ -200,6 +190,9 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.ArchitectureOption);
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.ProjectOption);
+            command.Options.Add(TestingPlatformOptions.ListTestsOption);
+            command.Options.Add(TestingPlatformOptions.SolutionOption);
+            command.Options.Add(TestingPlatformOptions.DirectoryOption);
 
             return command;
         }
@@ -216,7 +209,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Options.Add(SettingsOption);
             command.Options.Add(ListTestsOption);
-            command.Options.Add(EnvOption);
+            command.Options.Add(CommonOptions.EnvOption);
             command.Options.Add(FilterOption);
             command.Options.Add(AdapterOption);
             command.Options.Add(LoggerOption);

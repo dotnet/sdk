@@ -58,7 +58,8 @@ namespace Microsoft.DotNet.Watch
             switch (descriptor.Severity)
             {
                 case MessageSeverity.Error:
-                    WriteLine(console.Error, message, ConsoleColor.Red, descriptor.Emoji);
+                    // Use stdout for error messages to preserve ordering with respect to other output.
+                    WriteLine(console.Out, message, ConsoleColor.Red, descriptor.Emoji);
                     break;
 
                 case MessageSeverity.Warning:

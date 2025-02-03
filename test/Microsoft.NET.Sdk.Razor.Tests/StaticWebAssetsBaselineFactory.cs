@@ -56,6 +56,8 @@ public partial class StaticWebAssetsBaselineFactory
 
     public IList<string> KnownFilePrefixesWithHashOrVersion { get; } =
     [
+        "blazor.web.",
+        "blazor.server",
         "dotnet.runtime",
         "dotnet.native",
         "dotnet"
@@ -425,6 +427,10 @@ public partial class StaticWebAssetsBaselineFactory
     private string RemovePossibleHash(string fileNameAndExtension)
     {
         var filename = KnownFilePrefixesWithHashOrVersion.FirstOrDefault(p => fileNameAndExtension.StartsWith(p));
+        if (filename != null && filename.EndsWith("."))
+        {
+            filename = filename[..^1];
+        }
         var extension = KnownExtensions.FirstOrDefault(f => fileNameAndExtension.EndsWith(f, StringComparison.OrdinalIgnoreCase));
         if (filename != null && extension != null)
         {

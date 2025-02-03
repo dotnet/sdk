@@ -4,7 +4,6 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -81,12 +80,13 @@ namespace Microsoft.DotNet.Watch
             {
                 if (browserConnector.TryGetRefreshServer(projectNode, out var browserRefreshServer))
                 {
-                    reporter.Verbose($"[{projectNode.GetDisplayName()}] Refreshing browser.");
-                    await HandleBrowserRefresh(browserRefreshServer, projectNode.ProjectInstance.FullPath, cancellationToken);
-                }
-                else
-                {
-                    reporter.Verbose($"[{projectNode.GetDisplayName()}] No refresh server.");
+                    // We'd like an accurate scoped css path, but this needs a lot of work to wire-up now.
+                    // We'll handle this as part of https://github.com/dotnet/aspnetcore/issues/31217.
+                    // For now, we'll make it look like some css file which would cause JS to update a
+                    // single file if it's from the current project, or all locally hosted css files if it's a file from
+                    // referenced project.
+                    var relativeUrl = Path.GetFileNameWithoutExtension(projectNode.ProjectInstance.FullPath) + ".css";
+                    await browserRefreshServer.UpdateStaticAssetsAsync([relativeUrl], cancellationToken);
                 }
             });
 
@@ -106,25 +106,6 @@ namespace Microsoft.DotNet.Watch
             {
                 reporter.Output("Hot reload of scoped css failed.", emoji: "🔥");
             }
-        }
-
-        private static async Task HandleBrowserRefresh(BrowserRefreshServer browserRefreshServer, string containingProjectPath, CancellationToken cancellationToken)
-        {
-            // We'd like an accurate scoped css path, but this needs a lot of work to wire-up now.
-            // We'll handle this as part of https://github.com/dotnet/aspnetcore/issues/31217.
-            // For now, we'll make it look like some css file which would cause JS to update a
-            // single file if it's from the current project, or all locally hosted css files if it's a file from
-            // referenced project.
-            var cssFilePath = Path.GetFileNameWithoutExtension(containingProjectPath) + ".css";
-            var message = new UpdateStaticFileMessage { Path = cssFilePath };
-            await browserRefreshServer.SendJsonMessageAsync(message, cancellationToken);
-        }
-
-        private readonly struct UpdateStaticFileMessage
-        {
-            public string Type => "UpdateStaticFile";
-
-            public string Path { get; init; }
         }
     }
 }

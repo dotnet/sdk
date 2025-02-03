@@ -13,7 +13,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
     public class AssemblyIdentityMustMatchTests
     {
-        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AssemblyIdentityMustMatch(new SuppressibleTestLog(), settings, context));
+        private static readonly SuppressibleTestLog s_log = new();
+        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AssemblyIdentityMustMatch(s_log, settings, context));
 
         private static readonly byte[] _publicKey = new byte[]
         {
@@ -196,8 +197,8 @@ using System.Reflection;
             string leftAssembly = SymbolFactory.EmitAssemblyFromSyntax(syntax, publicKey: _publicKey);
             string rightAssembly = SymbolFactory.EmitAssemblyFromSyntax(syntax);
 
-            IAssemblySymbol leftSymbol = new AssemblySymbolLoader().LoadAssembly(leftAssembly);
-            IAssemblySymbol rightSymbol = new AssemblySymbolLoader().LoadAssembly(rightAssembly);
+            IAssemblySymbol leftSymbol = new AssemblySymbolLoader(s_log).LoadAssembly(leftAssembly);
+            IAssemblySymbol rightSymbol = new AssemblySymbolLoader(s_log).LoadAssembly(rightAssembly);
 
             Assert.True(leftSymbol.Identity.IsRetargetable);
             Assert.True(rightSymbol.Identity.IsRetargetable);
@@ -210,4 +211,3 @@ using System.Reflection;
         }
     }
 }
-
