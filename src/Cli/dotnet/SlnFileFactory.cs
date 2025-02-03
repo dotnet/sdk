@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
@@ -76,12 +77,13 @@ namespace Microsoft.DotNet.Tools.Common
             IEnumerable<string> filteredSolutionProjectPaths;
             try
             {
-                JsonNode? jsonNode = JsonNode.Parse(File.ReadAllText(filteredSolutionPath));
-                originalSolutionPath = jsonNode?["solution"]?["path"]?.ToString();
-                filteredSolutionProjectPaths = jsonNode["solution"]?["projects"]?.AsArray()?.GetValues<string>().ToArray() ?? [];
+                JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath)).RootElement;
+                originalSolutionPath = root.GetProperty("solution").GetProperty("path").GetString();
+                filteredSolutionProjectPaths = root.GetProperty("solution").GetProperty("projects").EnumerateArray().Select(p => p.GetString()).ToArray();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 throw new GracefulException(
                     CommonLocalizableStrings.InvalidSolutionFormatString,
                     filteredSolutionPath, ex.Message);
@@ -89,6 +91,9 @@ namespace Microsoft.DotNet.Tools.Common
 
             SolutionModel filteredSolution = new();
             SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPathAbsolute);
+
+            // Store the original solution path in the description field of the filtered solution
+            filteredSolution.Description = originalSolutionPathAbsolute;
 
             foreach (var platform in originalSolution.Platforms)
             {
