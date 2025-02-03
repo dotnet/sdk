@@ -505,9 +505,9 @@ jobs:
           ${{ parameters.extraProperties }}
         displayName: Build
         workingDirectory: ${{ variables.sourcesPath }}
-      env:
-      - ${{ if ne(parameters.crossRootFs, '') }}:
-        ROOTFS_DIR: ${{ parameters.crossRootFs}}
+        - ${{ if ne(parameters.crossRootFs, '') }}:
+          env:
+            ROOTFS_DIR: ${{ parameters.crossRootFs}}
 
     - ${{ if ne(parameters.runOnline, 'True') }}:
       - script: |
