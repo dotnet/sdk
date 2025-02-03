@@ -627,24 +627,26 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slxn")]
+        [InlineData("solution", ".slnx")]
+        public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
 
             var projectArg = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", "App.sln", projectArg);
+                .Execute(solutionCommand, "remove", $"App{solutionExtension}", projectArg);
             cmd.Should().Fail();
             cmd.StdErr.Should().BeVisuallyEquivalentTo(
-                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, "App.sln") + Environment.NewLine
+                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, $"App{solutionExtension}") + Environment.NewLine
                 + CommonLocalizableStrings.DidYouMean + Environment.NewLine
-                 + $"  dotnet solution App.sln remove {projectArg}"
+                 + $"  dotnet solution App{solutionExtension} remove {projectArg}"
             );
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
