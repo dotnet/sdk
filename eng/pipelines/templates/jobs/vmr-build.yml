@@ -250,6 +250,11 @@ jobs:
     - name: monoArgs
       value: --use-mono-runtime
 
+  ### Additional arguments
+  - ${{ if eq(parameters.enableIBCOptimization, 'true') }}:
+    - name: ibcArguments
+      value: '/p:EnableIBCOptimization=true /p:IBCDropAccessToken=$(dn-bot-devdiv-drop-r-code-r)'
+
   ### Test args
   - name: testArguments
     value: -test -excludeCIBinarylog /bl:artifacts/log/${{ parameters.configuration }}/Test.binlog
@@ -275,14 +280,6 @@ jobs:
         value: --online
 
 ### END: Build up the command line variables. ###
-
-    ### Additional arguments
-    - ${{ if eq(parameters.enableIBCOptimization, 'true') }}:
-      - name: ibcArguments
-        value: '/p:EnableIBCOptimization=true /p:IBCDropAccessToken=$(dn-bot-devdiv-drop-r-code-r)'
-    - ${{ else }}:
-      - name: ibcArguments
-        value: ''
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
