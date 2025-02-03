@@ -437,10 +437,8 @@ jobs:
           $(buildArguments)
           $(msbuildArguments)
           $(buildPassArguments)
+          $(testArguments)
           ${{ parameters.extraProperties }}
-          -test
-          -excludeCIBinarylog
-          /bl:artifacts/log/${{ parameters.configuration }}/Test.binlog
         displayName: Run Tests
         workingDirectory: ${{ variables.sourcesPath }}
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
