@@ -395,6 +395,7 @@ stages:
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
+        enableIBCOptimization: ${{ variables.ibcEnabled }}
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -571,7 +572,6 @@ stages:
             pool: ${{ parameters.pool_Mac }}
             targetOS: maccatalyst
             targetArchitecture: arm64
-            runTests: false
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -733,8 +733,8 @@ stages:
             sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
-              name: ${{ variables.azurelinuxX64AlpineCrossContainerName }}
-              image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
+              name: ${{ variables.azurelinuxX64MuslCrossContainerName }}
+              image: ${{ variables.azurelinuxX64MuslCrossContainerImage }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-musl
             targetArchitecture: x64
@@ -748,8 +748,8 @@ stages:
             sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
-              name: ${{ variables.azurelinuxArmAlpineCrossContainerName }}
-              image: ${{ variables.azurelinuxArmAlpineCrossContainerImage }}
+              name: ${{ variables.azurelinuxArmMuslCrossContainerName }}
+              image: ${{ variables.azurelinuxArmMuslCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm'
             targetOS: linux-musl
             targetArchitecture: arm
@@ -763,8 +763,8 @@ stages:
             sign: ${{ variables.signEnabled }}
             pool: ${{ parameters.pool_Linux }}
             container:
-              name: ${{ variables.azurelinuxArm64AlpineCrossContainerName }}
-              image: ${{ variables.azurelinuxArm64AlpineCrossContainerImage }}
+              name: ${{ variables.azurelinuxArm64MuslCrossContainerName }}
+              image: ${{ variables.azurelinuxArm64MuslCrossContainerImage }}
             crossRootFs: '/crossrootfs/arm64'
             targetOS: linux-musl
             targetArchitecture: arm64
@@ -805,6 +805,7 @@ stages:
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
+            enableIBCOptimization: ${{ variables.ibcEnabled }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -827,6 +828,7 @@ stages:
             targetOS: windows
             targetArchitecture: x86
             extraProperties: /p:PgoInstrument=true
+            enableIBCOptimization: ${{ variables.ibcEnabled }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -850,7 +852,6 @@ stages:
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x64
-            runTests: false
             buildPass: 2
             reuseBuildArtifactsFrom:
             - Windows_x64
