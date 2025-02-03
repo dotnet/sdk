@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
@@ -38,7 +38,7 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" IncludeAssets="compile" />
     <!-- Upgrade the transitive MSBuild dependency to a non-vulnerable version.
          This needs to be done manually here outside of CPM as transitive pinning is disabled for this project. -->
-    <PackageReference Include="Microsoft.IO.Redist" IncludeAssets="compile" />
+    <PackageReference Include="Microsoft.IO.Redist" IncludeAssets="compile" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
 
     <!-- We carry NuGet as part of the package in case the package is used with an older SDKs or with full framework MSBuild. -->
     <PackageReference Include="NuGet.Packaging" PrivateAssets="All" Publish="true" />
