@@ -4,6 +4,11 @@ parameters:
   type: string
   default: ''
 
+- name: desiredSigning
+  displayName: Signed/unsigned/default signing parameters
+  type: string
+  default: ''
+
 variables:
 - ${{ if ne(parameters.vmrBranch, '') }}:
   - name: VmrBranch
@@ -17,6 +22,49 @@ variables:
 
 - name: defaultContainerOptions
   value: --privileged
+
+- name: isOfficialBuild
+  value: ${{ and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}
+
+## Note: The use of if expressons underneath the variable is necessary to get the updated isOfficialBuild value
+- name: ibcEnabled
+  ${{ if eq(variables['isOfficialBuild'], true) }}:
+    value: true
+  ${{ else }}:
+    value: false
+
+- name: officialBuildParameter
+  ${{ if eq(variables['isOfficialBuild'], true) }}:
+    value: /p:OfficialBuildId=$(Build.BuildNumber)
+  ${{ else }}:
+    value: ''
+
+- ${{ if eq(parameters.desiredSigning, 'Signed') }}:
+  - name: signEnabled
+    value: true
+- ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
+  - name: signEnabled
+    value: false
+- ${{ if or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
+  # Always sign on the public project (will be dry-run signing)
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: signEnabled
+      value: true
+  # Always sign in pull requests (dry run)
+  - ${{ elseif eq(variables['Build.Reason'], 'PullRequest') }}:
+    - name: signEnabled
+      value: true
+  # Pass sign on the internal project if the, branch is a main or release branch
+  - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+    - name: signEnabled
+      value: true
+  # Do not sign otherwise.
+  - ${{ else }}:
+    - name: signEnabled
+      value: false
+- ${{ else }}:
+  - name: signEnabled
+    value: false
 
 - name: almaLinuxContainerName
   value: almaLinuxContainer
@@ -51,52 +99,52 @@ variables:
 - name: azurelinuxX64CrossContainerName
   value: azurelinuxX64CrossContainer
 - name: azurelinuxX64CrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64
 
 - name: azurelinuxArmCrossContainerName
   value: azurelinuxArmCrossContainer
 - name: azurelinuxArmCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm
 
 - name: azurelinuxArm64CrossContainerName
   value: azurelinuxArm64CrossContainer
 - name: azurelinuxArm64CrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
 
-- name: azurelinuxX64AlpineCrossContainerName
-  value: azurelinuxX64AlpineCrossContainer
-- name: azurelinuxX64AlpineCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-amd64-alpine
+- name: azurelinuxX64MuslCrossContainerName
+  value: azurelinuxX64MuslCrossContainer
+- name: azurelinuxX64MuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64-musl
 
-- name: azurelinuxArmAlpineCrossContainerName
-  value: azurelinuxArmAlpineCrossContainer
-- name: azurelinuxArmAlpineCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm-alpine
+- name: azurelinuxArmMuslCrossContainerName
+  value: azurelinuxArmMuslCrossContainer
+- name: azurelinuxArmMuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm-musl
 
-- name: azurelinuxArm64AlpineCrossContainerName
-  value: azurelinuxArm64AlpineCrossContainer
-- name: azurelinuxArm64AlpineCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-arm64-alpine
+- name: azurelinuxArm64MuslCrossContainerName
+  value: azurelinuxArm64MuslCrossContainer
+- name: azurelinuxArm64MuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64-musl
 
 - name: androidCrossContainerName
   value: androidCrossContainer
 - name: androidCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-cross-android-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-android-amd64
 
 - name: linuxBionicCrossContainerName
   value: linuxBionicCrossContainer
 - name: linuxBionicCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-android-openssl
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-android-openssl-amd64
 
 - name: browserCrossContainerName
   value: browserCrossContainer
 - name: browserCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-webassembly-amd64
 
 - name: wasiCrossContainerName
   value: wasiCrossContainer
 - name: wasiCrossContainerImage
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net9.0-webassembly-amd64
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-webassembly-amd64
 
 - name: almaLinuxName
   value: AlmaLinux8

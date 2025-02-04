@@ -76,6 +76,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.GC.Concurrent"": false,
             ""System.GC.Server"": true,
             ""System.GC.RetainVM"": false,
+            ""System.Linq.Enumerable.IsSizeOptimized"": true,
             ""System.Net.Http.EnableActivityPropagation"": false,
             ""System.Net.Http.UseNativeHttpHandler"": true,
             ""System.Net.Security.UseManagedNtlm"": true,

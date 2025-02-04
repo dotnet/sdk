@@ -76,19 +76,17 @@
     <TargetRid Condition="'$(ShortStack)' == 'true' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</TargetRid>
   </PropertyGroup>
 
-  <!-- Set NuGetPackageRoot before Arcade SDK sets it. -->
-  <PropertyGroup>
-    <!-- Set RestorePackagesPath so that we don't accidentally pull some packages from the global location. -->
-    <RestorePackagesPath Condition="'$(RestorePackagesPath)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '.packages'))</RestorePackagesPath>
-    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(RestorePackagesPath)</NuGetPackageRoot>
-  </PropertyGroup>
-
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
 
   <!-- Init basic Arcade props, if the project importing this file doesn't use Arcade.
        Keep in sync with props/targets in the Arcade.Sdk. -->
   <PropertyGroup Condition="'$(SkipArcadeSdkImport)' == 'true'">
     <!-- RepoLayout.props -->
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' != ''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)'))</NuGetPackageRoot>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(NUGET_PACKAGES)' != ''">$([MSBuild]::NormalizeDirectory('$(NUGET_PACKAGES)'))</NuGetPackageRoot>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(OS)' == 'Windows_NT'">$([MSBuild]::NormalizeDirectory('$(UserProfile)', '.nuget', 'packages'))</NuGetPackageRoot>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(OS)' != 'Windows_NT'">$([MSBuild]::NormalizeDirectory('$(HOME)', '.nuget', 'packages'))</NuGetPackageRoot>
+
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::NormalizeDirectory('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))'))</RepoRoot>
 
     <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts'))</ArtifactsDir>
@@ -175,8 +173,6 @@
     <PreviouslyRestoredPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previouslyRestored'))</PreviouslyRestoredPackagesPath>
     <PrebuiltSourceBuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previously-source-built'))</PrebuiltSourceBuiltPackagesPath>
     <PrebuiltSourceBuiltPackagesPath Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(CustomPrebuiltSourceBuiltPackagesPath)'))</PrebuiltSourceBuiltPackagesPath>
-
-    <GitInfoDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'git-info'))</GitInfoDir>
 
     <PackageReportDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'prebuilt-report'))</PackageReportDir>
     <ResultingPrebuiltPackagesDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', 'prebuilt-packages'))</ResultingPrebuiltPackagesDir>
