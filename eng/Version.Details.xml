@@ -5,7 +5,35 @@
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.2.25080.1">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.2.25080.1">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.2.25080.1">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.2.25080.1">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-preview.2.25080.1">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.2.25080.1">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.2.25080.1">
+      <Uri>https://github.com/dotnet/templating</Uri>
+      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.2.25080.1">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
     </Dependency>
