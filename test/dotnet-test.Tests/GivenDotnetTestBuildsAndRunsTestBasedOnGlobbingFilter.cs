@@ -7,8 +7,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 {
     public class GivenDotnetTestBuildsAndRunsTestBasedOnGlobbingFilter : SdkTest
     {
-        private const string TestApplicationArgsPattern = @".*(Test application arguments).*";
-
         public GivenDotnetTestBuildsAndRunsTestBasedOnGlobbingFilter(ITestOutputHelper log) : base(log)
         {
         }
@@ -33,10 +31,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
-            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, "Debug"), result.StdOut);
+
 
             if (!TestContext.IsLocalized())
             {
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
                     .And.Contain("total: 2")
@@ -47,6 +47,50 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
+
+        [Fact]
+        public void RunTestProjectsWithFilterOfDll_ShouldReturnOneAsExitCode()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            new BuildCommand(testInstance, "TestProject")
+                .Execute()
+                .Should().Pass();
+
+            new BuildCommand(testInstance, "OtherTestProject")
+              .Execute()
+              .Should().Pass();
+
+            var binDirectory = new FileInfo($"{testInstance.Path}{Path.DirectorySeparatorChar}bin").Directory;
+            var binDirectoryLastWriteTime = binDirectory?.LastWriteTime;
+
+            string filterExpression = $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/*TestProject.dll".Replace('/', Path.DirectorySeparatorChar);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .Execute(TestingPlatformOptions.TestModulesFilterOption.Name, filterExpression);
+
+            // Assert that the bin folder hasn't been modified
+            Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
+
+            if (!TestContext.IsLocalized())
+            {
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, TestingConstants.Debug), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+
+                result.StdOut
+                    .Should().Contain("Test run summary: Failed!")
+                    .And.Contain("total: 5")
+                    .And.Contain("succeeded: 2")
+                    .And.Contain("failed: 1")
+                    .And.Contain("skipped: 2");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
 
         [Fact]
         public void RunTestProjectWithFilterOfDllWithRootDirectory_ShouldReturnZeroAsExitCode()
@@ -65,11 +109,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.TestModulesFilterOption.Name, $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar),
                                     TestingPlatformOptions.TestModulesRootDirectoryOption.Name, testInstance.TestRoot);
 
-
-            Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, "Debug"), result.StdOut);
-
             if (!TestContext.IsLocalized())
             {
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, TestingConstants.Debug), result.StdOut);
+
                 result.StdOut
                     .Should().Contain("Test run summary: Passed!")
                     .And.Contain("total: 2")
