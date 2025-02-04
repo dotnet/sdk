@@ -1,4 +1,4 @@
-# Decoulping the .NET SDK and Visual Studio
+# Decoupling the .NET SDK and Visual Studio
 
 ## Goals
 
@@ -94,7 +94,7 @@ This change will allow for `msbuild` to have a more consistent build experience 
 
 Analyzers and generators which ship in the .NET SDK box will change to having a copy checked into Visual Studio. This will occur as part of the .NET SDK insertion process. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer will be loaded.
 
-This means that the behavior of analyzers in Visual Studio design time will be independent of the .NET SDK used by the project. This increases the predictability of our product as we know at ship time what analyzer and generator experience our customers will be getting. It will no longer change as the underyling SDK does.
+This means that the behavior of analyzers in Visual Studio design time will be independent of the .NET SDK used by the project. This increases the predictability of our product as we know at ship time what analyzer and generator experience our customers will be getting. It will no longer change as the underlying SDK does.
 
 Having a consistent version also enables us to take actions like NGEN or R2R analyzers inside of Visual Studio. This is a long standing request from the Visual Studio perf team but impossible to satisfy when the versions change based on global.json resolution.
 
@@ -106,7 +106,7 @@ This does mean that our design time experience can differ from our command line 
 
 ### NuGet based analyzers
 
-Analyzers which ship via NuGet will continue to following the existing [support policies][matrix-of-paine]. This means that they will either need to target a sufficiently old version of Roslyn or implement multi-targeting support to function in Visual Studio.
+Analyzers which ship via NuGet will continue to follow the existing [support policies][matrix-of-paine]. This means that they will either need to target a sufficiently old version of Roslyn or implement multi-targeting support to function in Visual Studio.
 
 In the case of [multi-targeting][issue-analyzer-mt] this proposal is effectively a no-op. Analyzer multi-targeting is already based off of Roslyn versions, not .NET SDK versions, hence the proper version of the analyzer will still load in a torn state. The version of the Roslyn compiler in a torn state for `msbuild` is the same used for `dotnet build` hence it's already a scenario the analyzer needs to support.
 
@@ -134,7 +134,7 @@ However, it is not our intent to support this in perpetuity. The documentation a
 
 An alternative approach is to allow the compiler inside Visual Studio, both the design time and MSBuild copy, to be pluggable. Essentially for a given .NET SDK, grab the equivalent .NET Framework bits and have Visual Studio load them at startup.
 
-This proposal is deemed very unlikley to be successful. Visual Studio is **highly** sensitive to the version of Roslyn it uses. Keeping Visual Studio perf neutral on every Roslyn insertion requires active work by both the Roslyn and Visual Studio teams. It is very unlikely that we could load arbitrary versions of Roslyn into Visual Studio and expect to get equvialent performance.  Consider that concretely this would mean that switching between solutions that used different .NET SDK versions would require a Visual Studio restart as well as rebuilding the MEF cache.
+This proposal is deemed very unlikely to be successful. Visual Studio is **highly** sensitive to the version of Roslyn it uses. Keeping Visual Studio perf neutral on every Roslyn insertion requires active work by both the Roslyn and Visual Studio teams. It is very unlikely that we could load arbitrary versions of Roslyn into Visual Studio and expect to get equivalent performance.  Consider that concretely this would mean that switching between solutions that used different .NET SDK versions would require a Visual Studio restart as well as rebuilding the MEF cache.
 
 Further Visual Studio supports loading many different versions of the .NET SDK. For this to work Visual Studio would need to be tolerant of loading much older Roslyns into current shipping versions. That is a significant engineering effort that is unlikely to be successful.
 
