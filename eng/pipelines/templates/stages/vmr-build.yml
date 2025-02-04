@@ -907,6 +907,13 @@ stages:
           primaryDependentJob: Windows_x64
           outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
 
+    - template: /eng/common/templates-official/job/publish-build-assets.yml@self
+      parameters:
+        dependsOn: FinalJoin
+        publishUsingPipelines: true
+        publishAssetsImmediately: true
+        pool: ${{ parameters.pool_Windows }}
+
 ### VALIDATION ###
 - ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), eq(variables.signEnabled, 'true')) }}:
   - stage: VMR_Validation

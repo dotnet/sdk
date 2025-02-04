@@ -26,6 +26,8 @@
     <!-- Source-build specific tests. -->
     <ProjectReference Include="Microsoft.DotNet.SourceBuild.Tests\Microsoft.DotNet.SourceBuild.Tests.csproj"
                       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <ProjectReference Include="Microsoft.DotNet.UnifiedBuild.Tasks.Tests\Microsoft.DotNet.UnifiedBuild.Tasks.Tests.csproj"
+                      Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" />
     <!-- Unified-build specific tests. -->
     <!-- TODO: Re-enable the asset comparison tests when building in the final stage build with the final merged manifest as an input.
                Disabling the tests meanwhile as the current mechanism doesn't work with unique official build ids for which there is no
