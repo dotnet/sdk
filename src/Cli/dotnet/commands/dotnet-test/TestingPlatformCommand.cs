@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli
             {
                 PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
-                InitializeOutput(degreeOfParallelism, testOptions.IsHelp);
+                InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
 
                 InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Cli
             };
         }
 
-        private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult)
+        private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, bool isHelp)
         {
             var console = new SystemConsole();
             var showPassedTests = parseResult.GetValue<OutputOptions>(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
