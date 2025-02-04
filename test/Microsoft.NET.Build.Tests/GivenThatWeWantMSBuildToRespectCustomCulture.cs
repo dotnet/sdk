@@ -29,6 +29,8 @@ namespace Microsoft.NET.Build.Tests
 
         [InlineData("net7.0")]
         [InlineData("net6.0")]
+        // Until MSBuild 17.13 is merged into FullFW MSBuild in sdk tests - the WarnOnCultureOverwritten
+        //  is not supported - and the build will fail copy (more details in the last test).
         [CoreMSBuildOnlyTheory]
         public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldWarn(string targetFramework)
         {
@@ -39,17 +41,18 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(testAsset);
             // Custom culture is allowed, but if set explicitly and overwritten - a warning is issued.
-            buildCommand.Execute().Should().Pass().And
+            // However the warning is explicit opt-in.
+            buildCommand.Execute("/p:WarnOnCultureOverwritten=true").Should().Pass().And
                 // warning MSB3002: Explicitly set culture "test-1" for item "Resources.test-1.resx" was overwritten with inferred culture "", because 'RespectAlreadyAssignedItemCulture' property was not set.
                 .HaveStdOutContaining("warning MSB3002:");
         }
 
+        [Theory]
         [InlineData("net7.0")]
         [InlineData("net6.0")]
-        [FullMSBuildOnlyTheory]
-        // Is this Failing? Is full FW MSBuild already on 17.13? Then remove this test and remove `[CoreMSBuildOnlyTheory]` attribute on the test above
+        // Is this Failing? Check if WarnOnCultureOverwritten hasn't been made a default opt-in in sdk or MSBuild.
         //
-        // Until MSBuild 17.13 is merged into FullFW MSBuild in sdk tests - the test will fail, as
+        // Without explicit opt-in via WarnOnCultureOverwritten - the test will fail, as
         //  proper recognition of custom cultures in RAR is not supported and hence the build will fail during copy:
         //
         // Microsoft.Common.CurrentVersion.targets(4959,5): error MSB3030: Could not copy the file "obj\Debug\net7.0\test-1\MSBuildCultureResourceGeneration.resources.dll" because it was not found.

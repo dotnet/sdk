@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.GenAPI
         {
             _textWriter = textWriter;
             _header = header;
-            _docGenerator = new CSharpAssemblyDocumentGenerator(log, loader, symbolFilter, attributeDataSymbolFilter, exceptionMessage, includeAssemblyAttributes, metadataReferences, addPartialModifier);
+            _docGenerator = new CSharpAssemblyDocumentGenerator(log, loader, symbolFilter, attributeDataSymbolFilter, exceptionMessage, includeAssemblyAttributes, metadataReferences, addPartialModifier: addPartialModifier);
         }
 
         /// <inheritdoc />

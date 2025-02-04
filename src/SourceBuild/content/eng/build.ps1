@@ -43,8 +43,6 @@ function Get-Usage() {
   Write-Host ""
 }
 
-$useGlobalNuGetCache=$false
-
 . $PSScriptRoot\common\tools.ps1
 
 if ($help) {
@@ -60,6 +58,8 @@ $targets = "/t:Build"
 if ($test) {
   $project = Join-Path (Join-Path $RepoRoot "test") "tests.proj"
   $targets += ";VSTest"
+  $arguments += "/p:Test=true"
+
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"
 }
@@ -78,10 +78,6 @@ if ($cleanWhileBuilding) {
 
 function Build {
   InitializeToolset
-
-  # Manually unset NUGET_PACKAGES as InitializeToolset sets it unconditionally.
-  # The env var shouldn't be set so that the RestorePackagesPath msbuild property is respected.
-  $env:NUGET_PACKAGES=''
 
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
 
