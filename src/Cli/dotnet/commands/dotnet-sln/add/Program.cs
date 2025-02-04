@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
                 // Add fallback solution folder if relative path does not contain `..`.
-                string relativeSolutionFolder =  relativePath.Contains("..")
+                string relativeSolutionFolder =  relativePath.Split(Path.DirectorySeparatorChar).Any(p => p == "..")
                     ? string.Empty : Path.GetDirectoryName(relativePath);
 
                 if (!_inRoot && solutionFolder is null && !string.IsNullOrEmpty(relativeSolutionFolder))
