@@ -81,12 +81,14 @@ namespace Microsoft.DotNet.GenAPI
                         excludeAttributesFiles, accessibilitySymbolFilter,
                         respectInternals: respectInternals);
 
+                string? headerText = headerFile != null ? File.ReadAllText(headerFile) : null;
+
                 CSharpFileBuilder fileBuilder = new(log,
                     textWriter,
                     loader,
                     symbolFilter,
                     attributeDataSymbolFilter,
-                    headerFile,
+                    headerText,
                     exceptionMessage,
                     includeAssemblyAttributes,
                     loader.MetadataReferences,
