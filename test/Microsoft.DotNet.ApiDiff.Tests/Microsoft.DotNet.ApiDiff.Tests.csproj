@@ -22,4 +22,9 @@
     <ProjectReference Include="$(RepoRoot)src\Compatibility\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
   </ItemGroup>
 
+  <Target Name="CopyTestAssemblies" BeforeTargets="Build">
+    <Copy SourceFiles="TestAssemblies\Before\MyAssembly.dll" DestinationFiles="$(OutDir)\TestAssemblies\Before\MyAssembly.dll" />
+    <Copy SourceFiles="TestAssemblies\After\MyAssembly.dll" DestinationFiles="$(OutDir)\TestAssemblies\After\MyAssembly.dll" />
+  </Target>
+
 </Project>

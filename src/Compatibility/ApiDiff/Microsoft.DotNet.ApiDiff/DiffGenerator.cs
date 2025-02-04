@@ -48,6 +48,49 @@ public sealed class DiffGenerator
         };
 
     /// <summary>
+    /// Generates a markdown diff of two different versions of the same collections of assembly paths and saves the results to disk.
+    /// </summary>
+    /// <param name="log">A logger to log messages.</param>
+    /// <param name="outputFolderPath">The path to the folder where the diffs will be saved.</param>
+    /// <param name="attributesToExclude">The optional attributes to exclude from the diff. If <see langword="null"/>, then <see cref="DefaultAttributesToExclude"/> is used.</param>
+    /// <param name="beforeAssembliesFolderPath">The path to the folder containing the old (before) assemblies.</param>
+    /// <param name="beforeAssemblyReferencesFolderPath">The path to the folder containing the old (before) reference assemblies.</param>
+    /// <param name="afterAssembliesFolderPath">The path to the folder containing the new (after) assemblies.</param>
+    /// <param name="afterAssemblyReferencesFolderPath">The path to the folder containing the new (after) reference assemblies.</param>
+    /// <param name="addPartialModifier">Whether to add the partial modifier to types.</param>
+    /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors.</param>
+    /// <param name="diagnosticOptions">The optional diagnostic options to use when generating the diff. If <see langword="null"/> is passed, the default value <see cref="DefaultDiagnosticOptions"/> is used.</param>
+    public static void RunAndSaveToDisk(ILog log,
+                                        string outputFolderPath,
+                                        string[]? attributesToExclude,
+                                        string beforeAssembliesFolderPath,
+                                        string? beforeAssemblyReferencesFolderPath,
+                                        string afterAssembliesFolderPath,
+                                        string? afterAssemblyReferencesFolderPath,
+                                        bool addPartialModifier,
+                                        bool hideImplicitDefaultConstructors,
+                                        IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
+{
+        Dictionary<string, string> results = Run(log,
+                          attributesToExclude,
+                          beforeAssembliesFolderPath,
+                          beforeAssemblyReferencesFolderPath,
+                          afterAssembliesFolderPath,
+                          afterAssemblyReferencesFolderPath,
+                          addPartialModifier,
+                          hideImplicitDefaultConstructors,
+                          diagnosticOptions);
+
+        Directory.CreateDirectory(outputFolderPath);
+        foreach ((string assemblyName, string text) in results)
+        {
+            string filePath = Path.Combine(outputFolderPath, $"{assemblyName}.md");
+            File.WriteAllText(filePath, text);
+            log.LogMessage($"Wrote '{filePath}'.");
+        }
+    }
+
+    /// <summary>
     /// Generates a markdown diff of two different versions of the same collections of assembly paths.
     /// </summary>
     /// <param name="log">A logger to log messages.</param>
@@ -60,6 +103,7 @@ public sealed class DiffGenerator
     /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors.</param>
     /// <param name="diagnosticOptions">The optional diagnostic options to use when generating the diff. If <see langword="null"/> is passed, the default value <see cref="DefaultDiagnosticOptions"/> is used.</param>
     /// <returns>A dictionary with the assembly names as the keys and their diffs as the values.</returns>
+    /// <remarks>This method is public so that it can be unit tested without writing to disk.</remarks>
     public static Dictionary<string, string> Run(ILog log,
                                                  string[]? attributesToExclude,
                                                  string beforeAssembliesFolderPath,
@@ -112,6 +156,7 @@ public sealed class DiffGenerator
     /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors.</param>
     /// <param name="diagnosticOptions">The optional diagnostic options to use when generating the diff. If <see langword="null"/> is passed, the default value <see cref="DefaultDiagnosticOptions"/> is used.</param>
     /// <returns>A dictionary with the assembly names as the keys and their diffs as the values.</returns>
+    /// <remarks>This method is public so that it can be unit tested without reading/writing from/to disk.</remarks>
     public static Dictionary<string, string> Run(ILog log,
                                                  string[] attributesToExclude,
                                                  IAssemblySymbolLoader beforeLoader,

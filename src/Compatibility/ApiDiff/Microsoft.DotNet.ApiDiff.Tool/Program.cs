@@ -116,26 +116,27 @@ public static class Program
 
         string attributesToExclude = diffConfig.AttributesToExclude != null ? string.Join(", ", diffConfig.AttributesToExclude) : string.Empty;
 
-    // Custom ordering to match help menu.
-    log.LogMessage("Selected options:");
-        log.LogMessage($" - 'Before' assemblies:                {diffConfig.BeforeAssembliesFolderPath}");
-        log.LogMessage($" - 'Before' reference assemblies:      {diffConfig.BeforeAssemblyReferencesFolderPath}");
-        log.LogMessage($" - 'After' assemblies:                 {diffConfig.AfterAssembliesFolderPath}");
-        log.LogMessage($" - 'After' ref assemblies:             {diffConfig.AfterAssemblyReferencesFolderPath}");
-        log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
-        log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
-        log.LogMessage($" - Include table of contents:          {diffConfig.IncludeTableOfContents}");
-        log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
-        log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
-        log.LogMessage($" - Debug:                              {diffConfig.Debug}");
-        log.LogMessage("");
+        // Custom ordering to match help menu.
+        log.LogMessage("Selected options:");
+            log.LogMessage($" - 'Before' assemblies:                {diffConfig.BeforeAssembliesFolderPath}");
+            log.LogMessage($" - 'Before' reference assemblies:      {diffConfig.BeforeAssemblyReferencesFolderPath}");
+            log.LogMessage($" - 'After' assemblies:                 {diffConfig.AfterAssembliesFolderPath}");
+            log.LogMessage($" - 'After' ref assemblies:             {diffConfig.AfterAssemblyReferencesFolderPath}");
+            log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
+            log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
+            log.LogMessage($" - Include table of contents:          {diffConfig.IncludeTableOfContents}");
+            log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
+            log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
+            log.LogMessage($" - Debug:                              {diffConfig.Debug}");
+            log.LogMessage("");
 
         if (diffConfig.Debug)
         {
             WaitForDebugger();
         }
 
-        Dictionary<string, string> results = DiffGenerator.Run(log,
+        DiffGenerator.RunAndSaveToDisk(log,
+            diffConfig.OutputFolderPath,
             diffConfig.AttributesToExclude,
             diffConfig.BeforeAssembliesFolderPath,
             diffConfig.BeforeAssemblyReferencesFolderPath,
@@ -143,14 +144,6 @@ public static class Program
             diffConfig.AfterAssemblyReferencesFolderPath,
             diffConfig.AddPartialModifier,
             diffConfig.HideImplicitDefaultConstructors);
-
-        Directory.CreateDirectory(diffConfig.OutputFolderPath);
-        foreach ((string assemblyName, string text) in results)
-        {
-            string filePath = Path.Combine(diffConfig.OutputFolderPath, $"{assemblyName}.md");
-            File.WriteAllText(filePath, text);
-            log.LogMessage($"Wrote '{filePath}'.");
-        }
     }
 
     private static void WaitForDebugger()
