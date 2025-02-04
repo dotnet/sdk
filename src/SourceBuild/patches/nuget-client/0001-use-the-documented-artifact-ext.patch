@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Tue, 4 Feb 2025 22:18:35 +0000
+Subject: [PATCH] use the documented artifact ext
+
+---
+ eng/Publishing.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/Publishing.props b/eng/Publishing.props
+index 5fe1ceb1a..e8289fe7d 100644
+--- a/eng/Publishing.props
++++ b/eng/Publishing.props
+@@ -1,4 +1,4 @@
+-<Project>
++<Project> 
+ 
+   <ItemGroup>
+     <Artifact Include="$(ArtifactsDir)nupkgs/*.nupkg"
