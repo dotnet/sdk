@@ -1,0 +1,288 @@
+From 323a6c652e6a2736d6e12aa222e159c9679ce41e Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Tue, 4 Feb 2025 09:59:55 +0100
+Subject: [PATCH] Revert "remove the Cli prefix to adjust to most recent
+ System.CommandLine breaking changes"
+
+This reverts https://github.com/dotnet/roslyn/pull/76948
+which shouldn't be part of Preview 1.
+
+---
+ eng/Version.Details.xml                       |  8 ++---
+ eng/Versions.props                            |  2 +-
+ src/Features/Lsif/Generator/Program.cs        | 16 ++++-----
+ .../Program.cs                                | 33 ++++++++++---------
+ src/Tools/BuildValidator/Program.cs           | 18 +++++-----
+ src/Workspaces/MSBuild/BuildHost/Program.cs   | 10 +++---
+ 6 files changed, 44 insertions(+), 43 deletions(-)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index 740a4b801c3..7d5a6a32012 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -13,14 +13,14 @@
+       <Sha>3f926184cacc477e3ddccd1eb4f3ebcb9a2b81a5</Sha>
+       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
+     </Dependency>
+-    <Dependency Name="System.CommandLine" Version="2.0.0-beta4.25072.1">
++    <Dependency Name="System.CommandLine" Version="2.0.0-beta4.24528.1">
+       <Uri>https://github.com/dotnet/command-line-api</Uri>
+-      <Sha>060374e56c1b2e741b6525ca8417006efb54fbd7</Sha>
++      <Sha>feb61c7f328a2401d74f4317b39d02126cfdfe24</Sha>
+     </Dependency>
+     <!-- Intermediate is necessary for source build. -->
+-    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.607201">
++    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.552801">
+       <Uri>https://github.com/dotnet/command-line-api</Uri>
+-      <Sha>060374e56c1b2e741b6525ca8417006efb54fbd7</Sha>
++      <Sha>feb61c7f328a2401d74f4317b39d02126cfdfe24</Sha>
+       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
+     </Dependency>
+     <!-- Necessary for source-build. This allows the live version of the package to be used by source-build. -->
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 43f29daca07..08c62a289f6 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -46,7 +46,7 @@
+     Versions managed by Arcade (see Versions.Details.xml)
+   -->
+   <PropertyGroup>
+-    <SystemCommandLineVersion>2.0.0-beta4.25072.1</SystemCommandLineVersion>
++    <SystemCommandLineVersion>2.0.0-beta4.24528.1</SystemCommandLineVersion>
+     <SystemCompositionVersion>8.0.0</SystemCompositionVersion>
+     <SystemConfigurationConfigurationManagerVersion>8.0.0</SystemConfigurationConfigurationManagerVersion>
+     <SystemDiagnosticsEventLogVersion>8.0.0</SystemDiagnosticsEventLogVersion>
+diff --git a/src/Features/Lsif/Generator/Program.cs b/src/Features/Lsif/Generator/Program.cs
+index f3ee22fb79c..940a0c69698 100644
+--- a/src/Features/Lsif/Generator/Program.cs
++++ b/src/Features/Lsif/Generator/Program.cs
+@@ -26,17 +26,17 @@ internal static class Program
+     {
+         public static Task Main(string[] args)
+         {
+-            var solution = new Option<FileInfo>("--solution") { Description = "input solution file" }.AcceptExistingOnly();
+-            var project = new Option<FileInfo>("--project") { Description = "input project file" }.AcceptExistingOnly();
+-            var compilerInvocation = new Option<FileInfo>("--compiler-invocation") { Description = "path to a .json file that contains the information for a csc/vbc invocation" }.AcceptExistingOnly();
+-            var binLog = new Option<FileInfo>("--binlog") { Description = "path to a MSBuild binlog that csc/vbc invocations will be extracted from" }.AcceptExistingOnly();
+-            var output = new Option<string?>("--output") { Description = "file to write the LSIF output to, instead of the console", DefaultValueFactory = _ => null };
++            var solution = new CliOption<FileInfo>("--solution") { Description = "input solution file" }.AcceptExistingOnly();
++            var project = new CliOption<FileInfo>("--project") { Description = "input project file" }.AcceptExistingOnly();
++            var compilerInvocation = new CliOption<FileInfo>("--compiler-invocation") { Description = "path to a .json file that contains the information for a csc/vbc invocation" }.AcceptExistingOnly();
++            var binLog = new CliOption<FileInfo>("--binlog") { Description = "path to a MSBuild binlog that csc/vbc invocations will be extracted from" }.AcceptExistingOnly();
++            var output = new CliOption<string?>("--output") { Description = "file to write the LSIF output to, instead of the console", DefaultValueFactory = _ => null };
+             output.AcceptLegalFilePathsOnly();
+-            var outputFormat = new Option<LsifFormat>("--output-format") { Description = "format of LSIF output", DefaultValueFactory = _ => LsifFormat.Line };
+-            var log = new Option<string?>("--log") { Description = "file to write a log to", DefaultValueFactory = _ => null };
++            var outputFormat = new CliOption<LsifFormat>("--output-format") { Description = "format of LSIF output", DefaultValueFactory = _ => LsifFormat.Line };
++            var log = new CliOption<string?>("--log") { Description = "file to write a log to", DefaultValueFactory = _ => null };
+             log.AcceptLegalFilePathsOnly();
+ 
+-            var generateCommand = new RootCommand("generates an LSIF file")
++            var generateCommand = new CliRootCommand("generates an LSIF file")
+             {
+                 solution,
+                 project,
+diff --git a/src/LanguageServer/Microsoft.CodeAnalysis.LanguageServer/Program.cs b/src/LanguageServer/Microsoft.CodeAnalysis.LanguageServer/Program.cs
+index f5602d249fb..5c80f55e9dd 100644
+--- a/src/LanguageServer/Microsoft.CodeAnalysis.LanguageServer/Program.cs
++++ b/src/LanguageServer/Microsoft.CodeAnalysis.LanguageServer/Program.cs
+@@ -17,6 +17,7 @@
+ using Microsoft.CodeAnalysis.LanguageServer.Logging;
+ using Microsoft.CodeAnalysis.LanguageServer.Services;
+ using Microsoft.CodeAnalysis.LanguageServer.StarredSuggestions;
++using Microsoft.CodeAnalysis.Options;
+ using Microsoft.Extensions.Logging;
+ using Microsoft.Extensions.Logging.Console;
+ using Roslyn.Utilities;
+@@ -102,7 +103,7 @@ static async Task RunAsync(ServerConfiguration serverConfiguration, Cancellation
+ 
+     // LSP server doesn't have the pieces yet to support 'balanced' mode for source-generators.  Hardcode us to
+     // 'automatic' for now.
+-    var globalOptionService = exportProvider.GetExportedValue<Microsoft.CodeAnalysis.Options.IGlobalOptionService>();
++    var globalOptionService = exportProvider.GetExportedValue<IGlobalOptionService>();
+     globalOptionService.SetGlobalOption(WorkspaceConfigurationOptionsStorage.SourceGeneratorExecution, SourceGeneratorExecutionPreference.Automatic);
+ 
+     // The log file directory passed to us by VSCode might not exist yet, though its parent directory is guaranteed to exist.
+@@ -180,79 +181,79 @@ static async Task RunAsync(ServerConfiguration serverConfiguration, Cancellation
+     }
+ }
+ 
+-static RootCommand CreateCommandLineParser()
++static CliRootCommand CreateCommandLineParser()
+ {
+-    var debugOption = new Option<bool>("--debug")
++    var debugOption = new CliOption<bool>("--debug")
+     {
+         Description = "Flag indicating if the debugger should be launched on startup.",
+         Required = false,
+         DefaultValueFactory = _ => false,
+     };
+-    var brokeredServicePipeNameOption = new Option<string?>("--brokeredServicePipeName")
++    var brokeredServicePipeNameOption = new CliOption<string?>("--brokeredServicePipeName")
+     {
+         Description = "The name of the pipe used to connect to a remote process (if one exists).",
+         Required = false,
+     };
+ 
+-    var logLevelOption = new Option<LogLevel>("--logLevel")
++    var logLevelOption = new CliOption<LogLevel>("--logLevel")
+     {
+         Description = "The minimum log verbosity.",
+         Required = true,
+     };
+-    var starredCompletionsPathOption = new Option<string?>("--starredCompletionComponentPath")
++    var starredCompletionsPathOption = new CliOption<string?>("--starredCompletionComponentPath")
+     {
+         Description = "The location of the starred completion component (if one exists).",
+         Required = false,
+     };
+ 
+-    var telemetryLevelOption = new Option<string?>("--telemetryLevel")
++    var telemetryLevelOption = new CliOption<string?>("--telemetryLevel")
+     {
+         Description = "Telemetry level, Defaults to 'off'. Example values: 'all', 'crash', 'error', or 'off'.",
+         Required = false,
+     };
+-    var extensionLogDirectoryOption = new Option<string>("--extensionLogDirectory")
++    var extensionLogDirectoryOption = new CliOption<string>("--extensionLogDirectory")
+     {
+         Description = "The directory where we should write log files to",
+         Required = true,
+     };
+ 
+-    var sessionIdOption = new Option<string?>("--sessionId")
++    var sessionIdOption = new CliOption<string?>("--sessionId")
+     {
+         Description = "Session Id to use for telemetry",
+         Required = false
+     };
+ 
+-    var extensionAssemblyPathsOption = new Option<string[]?>("--extension")
++    var extensionAssemblyPathsOption = new CliOption<string[]?>("--extension")
+     {
+         Description = "Full paths of extension assemblies to load (optional).",
+         Required = false
+     };
+ 
+-    var devKitDependencyPathOption = new Option<string?>("--devKitDependencyPath")
++    var devKitDependencyPathOption = new CliOption<string?>("--devKitDependencyPath")
+     {
+         Description = "Full path to the Roslyn dependency used with DevKit (optional).",
+         Required = false
+     };
+ 
+-    var razorSourceGeneratorOption = new Option<string?>("--razorSourceGenerator")
++    var razorSourceGeneratorOption = new CliOption<string?>("--razorSourceGenerator")
+     {
+         Description = "Full path to the Razor source generator (optional).",
+         Required = false
+     };
+ 
+-    var razorDesignTimePathOption = new Option<string?>("--razorDesignTimePath")
++    var razorDesignTimePathOption = new CliOption<string?>("--razorDesignTimePath")
+     {
+         Description = "Full path to the Razor design time target path (optional).",
+         Required = false
+     };
+ 
+-    var serverPipeNameOption = new Option<string?>("--pipe")
++    var serverPipeNameOption = new CliOption<string?>("--pipe")
+     {
+         Description = "The name of the pipe the server will connect to.",
+         Required = false
+     };
+ 
+-    var useStdIoOption = new Option<bool>("--stdio")
++    var useStdIoOption = new CliOption<bool>("--stdio")
+     {
+         Description = "Use stdio for communication with the client.",
+         Required = false,
+@@ -260,7 +261,7 @@ static RootCommand CreateCommandLineParser()
+ 
+     };
+ 
+-    var rootCommand = new RootCommand()
++    var rootCommand = new CliRootCommand()
+     {
+         debugOption,
+         brokeredServicePipeNameOption,
+diff --git a/src/Tools/BuildValidator/Program.cs b/src/Tools/BuildValidator/Program.cs
+index 3a3c437a1ae..7f19bb81882 100644
+--- a/src/Tools/BuildValidator/Program.cs
++++ b/src/Tools/BuildValidator/Program.cs
+@@ -31,45 +31,45 @@ static int Main(string[] args)
+         {
+             System.Diagnostics.Trace.Listeners.Clear();
+ 
+-            var assembliesPath = new Option<string[]>("--assembliesPath")
++            var assembliesPath = new CliOption<string[]>("--assembliesPath")
+             {
+                 Description = BuildValidatorResources.Path_to_assemblies_to_rebuild_can_be_specified_one_or_more_times,
+                 Required = true,
+                 Arity = ArgumentArity.OneOrMore,
+             };
+-            var exclude = new Option<string[]>("--exclude")
++            var exclude = new CliOption<string[]>("--exclude")
+             {
+                 Description = BuildValidatorResources.Assemblies_to_be_excluded_substring_match,
+                 Arity = ArgumentArity.ZeroOrMore,
+             };
+-            var source = new Option<string>("--sourcePath")
++            var source = new CliOption<string>("--sourcePath")
+             {
+                 Description = BuildValidatorResources.Path_to_sources_to_use_in_rebuild,
+                 Required = true,
+             };
+-            var referencesPath = new Option<string[]>("--referencesPath")
++            var referencesPath = new CliOption<string[]>("--referencesPath")
+             {
+                 Description = BuildValidatorResources.Path_to_referenced_assemblies_can_be_specified_zero_or_more_times,
+                 Arity = ArgumentArity.ZeroOrMore,
+             };
+-            var verbose = new Option<bool>("--verbose")
++            var verbose = new CliOption<bool>("--verbose")
+             {
+                 Description = BuildValidatorResources.Output_verbose_log_information
+             };
+-            var quiet = new Option<bool>("--quiet")
++            var quiet = new CliOption<bool>("--quiet")
+             {
+                 Description = BuildValidatorResources.Do_not_output_log_information_to_console
+             };
+-            var debug = new Option<bool>("--debug")
++            var debug = new CliOption<bool>("--debug")
+             {
+                 Description = BuildValidatorResources.Output_debug_info_when_rebuild_is_not_equal_to_the_original
+             };
+-            var debugPath = new Option<string?>("--debugPath")
++            var debugPath = new CliOption<string?>("--debugPath")
+             {
+                 Description = BuildValidatorResources.Path_to_output_debug_info
+             };
+ 
+-            var rootCommand = new RootCommand
++            var rootCommand = new CliRootCommand
+             {
+                 assembliesPath,
+                 exclude,
+diff --git a/src/Workspaces/MSBuild/BuildHost/Program.cs b/src/Workspaces/MSBuild/BuildHost/Program.cs
+index b3a286b6741..48605a39274 100644
+--- a/src/Workspaces/MSBuild/BuildHost/Program.cs
++++ b/src/Workspaces/MSBuild/BuildHost/Program.cs
+@@ -16,11 +16,11 @@ internal static class Program
+ {
+     internal static async Task Main(string[] args)
+     {
+-        var pipeOption = new Option<string>("--pipe") { Required = true };
+-        var propertyOption = new Option<string[]>("--property") { Arity = ArgumentArity.ZeroOrMore };
+-        var binaryLogOption = new Option<string?>("--binlog") { Required = false };
+-        var localeOption = new Option<string>("--locale") { Required = true };
+-        var command = new RootCommand { pipeOption, binaryLogOption, propertyOption, localeOption };
++        var pipeOption = new CliOption<string>("--pipe") { Required = true };
++        var propertyOption = new CliOption<string[]>("--property") { Arity = ArgumentArity.ZeroOrMore };
++        var binaryLogOption = new CliOption<string?>("--binlog") { Required = false };
++        var localeOption = new CliOption<string>("--locale") { Required = true };
++        var command = new CliRootCommand { pipeOption, binaryLogOption, propertyOption, localeOption };
+         var parsedArguments = command.Parse(args);
+         var pipeName = parsedArguments.GetValue(pipeOption)!;
+         var properties = parsedArguments.GetValue(propertyOption)!;
