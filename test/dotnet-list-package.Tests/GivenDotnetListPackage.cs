@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.List.PackageReferences;
 
@@ -117,6 +119,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .And.NotHaveStdErr();
 
             new ListPackageCommand(Log)
+                .WithProject("App.sln")
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
                 .Should()

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Text.Json;
 
 namespace Microsoft.DotNet.Tools.Run.LaunchSettings
@@ -78,7 +76,7 @@ namespace Microsoft.DotNet.Tools.Run.LaunchSettings
                     {
                         if (TryGetStringValue(environmentVariable.Value, out var environmentVariableValue))
                         {
-                            config.EnvironmentVariables[environmentVariable.Name] = environmentVariableValue;
+                            config.EnvironmentVariables[environmentVariable.Name] = environmentVariableValue!;
                         }
                     }
                 }

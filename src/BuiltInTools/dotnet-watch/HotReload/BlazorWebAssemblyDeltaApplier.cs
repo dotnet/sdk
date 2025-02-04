@@ -1,193 +1,179 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 
 using System.Buffers;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Net.WebSockets;
+using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
-using Microsoft.Extensions.Tools.Internal;
+using Microsoft.DotNet.HotReload;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
-    internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer) : SingleProcessDeltaApplier
+    internal sealed class BlazorWebAssemblyDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer, ProjectGraphNode project) : SingleProcessDeltaApplier(reporter)
     {
-        private const string DefaultCapabilities60 = "Baseline";
-        private const string DefaultCapabilities70 = "Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes";
-        private const string DefaultCapabilities80 = "Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType";
+        private static readonly ImmutableArray<string> s_defaultCapabilities60 =
+            ["Baseline"];
 
-        private static Task<ImmutableArray<string>>? s_cachedCapabilties;
-        private Version? _targetFrameworkVersion;
-        private int _sequenceId;
+        private static readonly ImmutableArray<string> s_defaultCapabilities70 =
+            ["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "NewTypeDefinition", "ChangeCustomAttributes"];
 
-        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
-        {
-            base.Initialize(project, namedPipeName, cancellationToken);
-            _targetFrameworkVersion = project.TargetFrameworkVersion;
-        }
+        private static readonly ImmutableArray<string> s_defaultCapabilities80 =
+            ["Baseline", "AddMethodToExistingType", "AddStaticFieldToExistingType", "NewTypeDefinition", "ChangeCustomAttributes",
+             "AddInstanceFieldToExistingType", "GenericAddMethodToExistingType", "GenericUpdateMethod", "UpdateParameters", "GenericAddFieldToExistingType"];
 
-        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-        {
-            return s_cachedCapabilties ??= GetApplyUpdateCapabilitiesCoreAsync();
+        private static readonly ImmutableArray<string> s_defaultCapabilities90 =
+            s_defaultCapabilities80;
 
-            async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesCoreAsync()
-            {
-                reporter.Verbose("Connecting to the browser.");
-
-                await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
-                await browserRefreshServer.SendJsonSerlialized(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
-
-                var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
-                try
-                {
-                    // We'll query the browser and ask it send capabilities.
-                    var response = await browserRefreshServer.ReceiveAsync(buffer, cancellationToken);
-                    if (!response.HasValue || !response.Value.EndOfMessage || response.Value.MessageType != WebSocketMessageType.Text)
-                    {
-                        throw new ApplicationException("Unable to connect to the browser refresh server.");
-                    }
-
-                    var capabilities = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
-                    var shouldFallBackToDefaultCapabilities = false;
-
-                    // error while fetching capabilities from WASM:
-                    if (capabilities.StartsWith("!"))
-                    {
-                        reporter.Verbose($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
-                        shouldFallBackToDefaultCapabilities = true;
-                    }
-                    else if (capabilities.Length == 0)
-                    {
-                        reporter.Verbose($"Unable to read WASM runtime capabilities");
-                        shouldFallBackToDefaultCapabilities = true;
-                    }
-
-                    if (shouldFallBackToDefaultCapabilities)
-                    {
-                        capabilities = GetDefaultCapabilities(_targetFrameworkVersion);
-                        reporter.Verbose($"Falling back to default WASM capabilities: '{capabilities}'");
-                    }
-
-                    // Capabilities are expressed a space-separated string.
-                    // e.g. https://github.com/dotnet/runtime/blob/14343bdc281102bf6fffa1ecdd920221d46761bc/src/coreclr/System.Private.CoreLib/src/System/Reflection/Metadata/AssemblyExtensions.cs#L87
-                    return capabilities.Split(' ').ToImmutableArray();
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(buffer);
-                }
-            }
-
-            static string GetDefaultCapabilities(Version? targetFrameworkVersion)
-                => targetFrameworkVersion?.Major switch
-                {
-                    >= 8 => DefaultCapabilities80,
-                    >= 7 => DefaultCapabilities70,
-                    >= 6 => DefaultCapabilities60,
-                    _ => string.Empty,
-                };
-        }
-
-        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
-        {
-            if (browserRefreshServer is null)
-            {
-                reporter.Verbose("Unable to send deltas because the browser refresh server is unavailable.");
-                return ApplyStatus.Failed;
-            }
-
-            var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
-            if (applicableUpdates.Count == 0)
-            {
-                return ApplyStatus.NoChangesApplied;
-            }
-
-            await browserRefreshServer.SendJsonWithSecret(sharedSecret => new UpdatePayload
-            {
-                SharedSecret = sharedSecret,
-                Deltas = updates.Select(update => new UpdateDelta
-                {
-                    SequenceId = _sequenceId++,
-                    ModuleId = update.ModuleId,
-                    MetadataDelta = update.MetadataDelta.ToArray(),
-                    ILDelta = update.ILDelta.ToArray(),
-                    UpdatedTypes = update.UpdatedTypes.ToArray(),
-                })
-            }, cancellationToken);
-
-            bool result = await ReceiveApplyUpdateResult(browserRefreshServer, cancellationToken);
-
-            return !result ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
-        }
-
-        private async Task<bool> ReceiveApplyUpdateResult(BrowserRefreshServer browserRefresh, CancellationToken cancellationToken)
-        {
-            var buffer = new byte[1];
-
-            var result = await browserRefresh.ReceiveAsync(buffer, cancellationToken);
-            if (result is not { MessageType: WebSocketMessageType.Binary })
-            {
-                // A null result indicates no clients are connected. No deltas could have been applied in this state.
-                reporter.Verbose("Apply confirmation: No browser is connected");
-                return false;
-            }
-
-            if (result is { Count: 1, EndOfMessage: true })
-            {
-                return buffer[0] == 1;
-            }
-
-            reporter.Verbose("Browser failed to apply the change and reported error:");
-
-            buffer = new byte[1024];
-            var messageStream = new MemoryStream();
-
-            while (true)
-            {
-                result = await browserRefresh.ReceiveAsync(buffer, cancellationToken);
-                if (result is not { MessageType: WebSocketMessageType.Binary })
-                {
-                    reporter.Verbose("Failed to receive error message");
-                    break;
-                }
-
-                messageStream.Write(buffer, 0, result.Value.Count);
-
-                if (result is { EndOfMessage: true })
-                {
-                    // message and stack trace are separated by '\0'
-                    reporter.Verbose(Encoding.UTF8.GetString(messageStream.ToArray()).Replace("\0", Environment.NewLine));
-                    break;
-                }
-            }
-
-            return false;
-        }
+        private int _updateId;
 
         public override void Dispose()
         {
             // Do nothing.
         }
 
-        private readonly struct UpdatePayload
+        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
         {
-            public string Type => "BlazorHotReloadDeltav2";
-            public string? SharedSecret { get; init; }
-            public IEnumerable<UpdateDelta> Deltas { get; init; }
         }
 
-        private readonly struct UpdateDelta
+        public override async Task WaitForProcessRunningAsync(CancellationToken cancellationToken)
+            // Wait for the browser connection to be established as an indication that the process has started.
+            // Alternatively, we could inject agent into blazor-devserver.dll and establish a connection on the named pipe.
+            => await browserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
+
+        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
-            public int SequenceId { get; init; }
-            public string ServerId { get; init; }
+            var capabilities = project.GetWebAssemblyCapabilities();
+
+            if (capabilities.IsEmpty)
+            {
+                var targetFramework = project.GetTargetFrameworkVersion();
+
+                Reporter.Verbose($"Using capabilities based on target framework: '{targetFramework}'.");
+
+                capabilities = targetFramework?.Major switch
+                {
+                    9 => s_defaultCapabilities90,
+                    8 => s_defaultCapabilities80,
+                    7 => s_defaultCapabilities70,
+                    6 => s_defaultCapabilities60,
+                    _ => [],
+                };
+            }
+            else
+            {
+                Reporter.Verbose($"Project specifies capabilities.");
+            }
+
+            return Task.FromResult(capabilities);
+        }
+
+        public override async Task<ApplyStatus> ApplyManagedCodeUpdates(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        {
+            var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
+            if (applicableUpdates.Count == 0)
+            {
+                return ApplyStatus.NoChangesApplied;
+            }
+
+            if (browserRefreshServer.Options.TestFlags.HasFlag(TestFlags.MockBrowser))
+            {
+                // When testing abstract away the browser and pretend all changes have been applied:
+                return ApplyStatus.AllChangesApplied;
+            }
+
+            var anySuccess = false;
+            var anyFailure = false;
+
+            // Make sure to send the same update to all browsers, the only difference is the shared secret.
+
+            var updateId = _updateId++;
+            var deltas = updates.Select(update => new JsonDelta
+            {
+                ModuleId = update.ModuleId,
+                MetadataDelta = [.. update.MetadataDelta],
+                ILDelta = [.. update.ILDelta],
+                PdbDelta = [.. update.PdbDelta],
+                UpdatedTypes = [.. update.UpdatedTypes],
+            }).ToArray();
+
+            var loggingLevel = Reporter.IsVerbose ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
+
+            await browserRefreshServer.SendAndReceiveAsync(
+                request: sharedSecret => new JsonApplyHotReloadDeltasRequest
+                {
+                    SharedSecret = sharedSecret,
+                    UpdateId = updateId,
+                    Deltas = deltas,
+                    ResponseLoggingLevel = (int)loggingLevel
+                },
+                response: (value, reporter) =>
+                {
+                    var data = BrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
+
+                    if (data.Success)
+                    {
+                        anySuccess = true;
+                    }
+                    else
+                    {
+                        anyFailure = true;
+                    }
+
+                    foreach (var entry in data.Log)
+                    {
+                        ReportLogEntry(reporter, entry.Message, (AgentMessageSeverity)entry.Severity);
+                    }
+                },
+                cancellationToken);
+
+            // If no browser is connected we assume the changes have been applied.
+            // If at least one browser suceeds we consider the changes successfully applied.
+            // TODO: 
+            // The refresh server should remember the deltas and apply them to browsers connected in future.
+            // Currently the changes are remembered on the dev server and sent over there from the browser.
+            // If no browser is connected the changes are not sent though.
+            return (!anySuccess && anyFailure) ? ApplyStatus.Failed : (applicableUpdates.Count < updates.Length) ? ApplyStatus.SomeChangesApplied : ApplyStatus.AllChangesApplied;
+        }
+
+        public override Task<ApplyStatus> ApplyStaticAssetUpdates(ImmutableArray<StaticAssetUpdate> updates, CancellationToken cancellationToken)
+            // static asset updates are handled by browser refresh server:
+            => Task.FromResult(ApplyStatus.NoChangesApplied);
+
+        public override Task InitialUpdatesApplied(CancellationToken cancellationToken)
+            => Task.CompletedTask;
+
+        private readonly struct JsonApplyHotReloadDeltasRequest
+        {
+            public string Type => "BlazorHotReloadDeltav3";
+            public string? SharedSecret { get; init; }
+
+            public int UpdateId { get; init; }
+            public JsonDelta[] Deltas { get; init; }
+            public int ResponseLoggingLevel { get; init; }
+        }
+
+        private readonly struct JsonDelta
+        {
             public Guid ModuleId { get; init; }
             public byte[] MetadataDelta { get; init; }
             public byte[] ILDelta { get; init; }
+            public byte[] PdbDelta { get; init; }
             public int[] UpdatedTypes { get; init; }
         }
 
-        private readonly struct BlazorRequestApplyUpdateCapabilities
+        private readonly struct JsonApplyDeltasResponse
+        {
+            public bool Success { get; init; }
+            public IEnumerable<JsonLogEntry> Log { get; init; }
+        }
+
+        private readonly struct JsonLogEntry
+        {
+            public string Message { get; init; }
+            public int Severity { get; init; }
+        }
+
+        private readonly struct JsonGetApplyUpdateCapabilitiesRequest
         {
             public string Type => "BlazorRequestApplyUpdateCapabilities2";
         }

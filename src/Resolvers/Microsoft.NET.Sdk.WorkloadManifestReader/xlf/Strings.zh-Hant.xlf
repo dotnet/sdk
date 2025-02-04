@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="ManifestDoesNotExist">
         <source>No manifest with ID {0} exists.</source>
-        <target state="new">No manifest with ID {0} exists.</target>
+        <target state="translated">沒有識別碼為 {0} 的資訊清單。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">

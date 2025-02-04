@@ -114,6 +114,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Updated workload set version in install state to {request.WorkloadSetVersion}.");
                             break;
 
+                        case InstallRequestType.RecordWorkloadSetInGlobalJson:
+                            RecordWorkloadSetInGlobalJson(new SdkFeatureBand(request.SdkFeatureBand), request.GlobalJsonPath, request.WorkloadSetVersion);
+                            Dispatcher.ReplySuccess($"Recorded workload set {request.WorkloadSetVersion} in {request.GlobalJsonPath} for SDK feature band {request.SdkFeatureBand}.");
+                            break;
+
+                        case InstallRequestType.GetGlobalJsonWorkloadSetVersions:
+                            Dispatcher.Reply(new InstallResponseMessage()
+                            {
+                                Message = "Got global.json GC roots",
+                                HResult = Win32.Msi.Error.S_OK,
+                                Error = Win32.Msi.Error.SUCCESS,
+                                GlobalJsonWorkloadSetVersions = GetGlobalJsonWorkloadSetVersions(new SdkFeatureBand(request.SdkFeatureBand))
+                            });
+                            break;
+
                         default:
                             throw new InvalidOperationException($"Unknown message request: {(int)request.RequestType}");
                     }

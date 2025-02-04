@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 
@@ -34,6 +36,24 @@ namespace Microsoft.NET.Build.Tests
                 "HelloWorld.pdb",
                 "HelloWorld.exe.config"
             });
+        }
+
+        [CoreMSBuildOnlyFact]
+        public void It_does_not_pass_excess_references_to_the_compiler()
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var testAsset = _testAssetsManager.CopyTestAsset("AllResourcesInSatellite").WithSource().WithTargetFrameworks(tfm);
+            var getValues =
+                new GetValuesCommand(testAsset, "_SatelliteAssemblyReferences", GetValuesCommand.ValueType.Item, tfm)
+                {
+                    DependsOnTargets = "CoreBuild",
+                    WorkingDirectory = testAsset.TestRoot,
+                };
+            getValues.Execute($"-p:TargetFramework={tfm}", "-bl").Should().Pass();
+
+            var referenceAssemblies = getValues.GetValues().Select(p => Path.GetFileName(p)).Order().ToArray();
+            // only the 'primary' assemblies for the three potential frameworks (netcoreapp, netframework, netstandard) should be used for satellite assembly generation.
+            referenceAssemblies.Should().Equal(["mscorlib.dll", "netstandard.dll", "System.Runtime.dll",]);
         }
 
         [WindowsOnlyTheory]

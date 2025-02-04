@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// Returns the commandline of the currently executing process.
         /// </summary>
         /// <returns>The commandline of the current process.</returns>
-        public static string GetProcessCommandLine()
+        public static string? GetProcessCommandLine()
         {
             return Marshal.PtrToStringAuto(NativeMethods.Windows.GetCommandLine());
         }

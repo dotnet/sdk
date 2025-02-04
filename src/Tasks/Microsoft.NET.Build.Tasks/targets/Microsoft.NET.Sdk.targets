@@ -103,7 +103,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PredefinedCulturesOnly Condition="'$(PredefinedCulturesOnly)' == '' and '$(InvariantGlobalization)' == 'true'">true</PredefinedCulturesOnly>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(GenerateResourceWarnOnBinaryFormatterUse)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '8.0'))">
+  <PropertyGroup Condition="'$(GenerateResourceWarnOnBinaryFormatterUse)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '8.0'))">
     <GenerateResourceWarnOnBinaryFormatterUse>true</GenerateResourceWarnOnBinaryFormatterUse>
   </PropertyGroup>
 
@@ -223,12 +223,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
     <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
           This is to reduce 'tearing'/dependency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
-    <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == '' and '$(_IsDisjointMSBuildVersion)' == 'true'">true</BuildWithNetFrameworkHostedCompiler>
+    <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == ''
+                                                    and '$(_IsDisjointMSBuildVersion)' == 'true'
+                                                    and ('$(Language)' == 'C#'
+                                                    or '$(Language)' == 'VB')">true</BuildWithNetFrameworkHostedCompiler>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
+    <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
   </PropertyGroup>
 
   <!-- NOTE: Keep in sync with https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.tasks -->
@@ -256,15 +260,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- If users did not run restore or it failed to download the Microsoft.Net.Sdk.Compilers.Toolset package
          (but they proceeded to build, e.g., in Visual Studio), display an error with suggestions how to fix the problem. -->
     <NETSdkError ResourceName="MicrosoftNetSdkCompilersToolsetNotFound"
-        Condition="!Exists('$(RoslynTargetsPath)')"
+        Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' != 'true' and !Exists('$(RoslynTargetsPath)')"
         FormatArguments="$(NETCoreSdkVersion)" />
+
+    <!-- Warn if $(NuGetPackageRoot) is empty. See https://github.com/dotnet/sdk/issues/43016.
+         WPF temp projects are ignored (it's known their NuGetPackageRoot is empty and user cannot fix that anyway). -->
+    <NETSdkWarning ResourceName="MicrosoftNetSdkCompilersToolsetRootEmpty"
+        Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' == 'true' and !($(MSBuildProjectFile.EndsWith('_wpftmp.csproj')) or $(MSBuildProjectFile.EndsWith('_wpftmp.vbproj')))" />
   </Target>
 
-  <!-- TODO: this target should not check GeneratePackageOnBuild.
-             remove when https://github.com/NuGet/Home/issues/7801 is fixed.
-    -->
   <Target Name="_CheckForBuildWithNoBuild"
-          Condition="'$(NoBuild)' == 'true' and '$(GeneratePackageOnBuild)' != 'true'">
+          Condition="'$(NoBuild)' == 'true'">
     <NETSdkError ResourceName="NoBuildRequested" />
   </Target>
 
@@ -544,6 +550,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(_ComObjectDescriptorSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Data.DataSet.XmlSerializationIsSupported"
+                                    Condition="'$(_DataSetXmlSerializationSupport)' != ''"
+                                    Value="$(_DataSetXmlSerializationSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"
                                     Condition="'$(DebuggerSupport)' != ''"
                                     Value="$(DebuggerSupport)"
@@ -590,6 +601,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(InvariantGlobalization)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.TimeZoneInfo.Invariant"
+                                    Condition="'$(InvariantTimezone)' != ''"
+                                    Value="$(InvariantTimezone)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Globalization.Hybrid"
                                     Condition="'$(HybridGlobalization)' != ''"
                                     Value="$(HybridGlobalization)"
@@ -598,6 +614,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Globalization.PredefinedCulturesOnly"
                                     Condition="'$(PredefinedCulturesOnly)' != ''"
                                     Value="$(PredefinedCulturesOnly)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Linq.Enumerable.IsSizeOptimized"
+                                    Condition="'$(UseSizeOptimizedLinq)' != ''"
+                                    Value="$(UseSizeOptimizedLinq)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Net.Http.EnableActivityPropagation"
@@ -782,16 +803,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                                        _GetAppHostPaths
-    Gets the path to apphost (restored via packages or in an apphost pack),
-    and computes the path for the destination apphost.
+                _GetAppHostCreationConfiguration
+    Computes the properties for configuration of apphost creation
+    during either build or publish
     ============================================================
      -->
   <Target Name="_GetAppHostCreationConfiguration"
           Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
     <PropertyGroup>
       <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and
                                       ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
       <_UseSingleFileHostForPublish Condition="'$(PublishSingleFile)' == 'true' and
                                                '$(SelfContained)' == 'true' and
@@ -799,6 +820,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                                '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
                                                $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))">true</_UseSingleFileHostForPublish>
       <_DisableCetCompat Condition="'$(CetCompat)' == 'false'">true</_DisableCetCompat>
+
+      <!-- Default to AppHostDotNetSearch=AppRelative if AppHostRelativeDotNet is set -->
+      <AppHostDotNetSearch Condition="'$(AppHostRelativeDotNet)' != '' and '$(AppHostDotNetSearch)' == ''">AppRelative</AppHostDotNetSearch>
+      <_UpdateAppHostForPublish Condition="'$(_UseSingleFileHostForPublish)' != 'true' and
+                                          ('$(AppHostRelativeDotNet)' != '' or '$(AppHostDotNetSearch)' != '')">true</_UpdateAppHostForPublish>
     </PropertyGroup>
   </Target>
 
@@ -851,6 +877,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
     <PropertyGroup Condition="'$(UseAppHostFromAssetsFile)' == 'false' Or '@(_NativeRestoredAppHostNETCore)' != ''">
       <AppHostIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)apphost$(_NativeExecutableExtension)'))</AppHostIntermediatePath>
+      <AppHostForPublishIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)apphost_publish$(_NativeExecutableExtension)'))</AppHostForPublishIntermediatePath>
       <SingleFileHostIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)singlefilehost$(_NativeExecutableExtension)'))</SingleFileHostIntermediatePath>
     </PropertyGroup>
 
@@ -967,7 +994,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_ComputeNETCoreBuildOutputFiles"
-          DependsOnTargets="_GetAppHostPaths;_GetComHostPaths;_GetIjwHostPaths"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration;_GetComHostPaths;_GetIjwHostPaths"
           BeforeTargets="AssignTargetPaths"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true'">
 
@@ -1099,6 +1126,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
 
+  <!-- TODO: can we now move all of this into the ComputeRunArguments target, or must this be kept for compat? -->
   <PropertyGroup>
     <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' == ''">$(StartWorkingDirectory)</RunWorkingDirectory>
   </PropertyGroup>
@@ -1144,8 +1172,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RunWorkingDirectory Condition="'$(RunWorkingDirectory)' != '' and '$([System.IO.Path]::IsPathRooted($(RunWorkingDirectory)))' != 'true'">$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(RunWorkingDirectory)'))))</RunWorkingDirectory>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Signals that this project supports the target-based run invocation protocol powered by the ComputeRunArguments target. -->
+    <ProjectCapability Include="SupportsComputeRunCommand" />
+  </ItemGroup>
+  <!-- Placeholder target for tools to override RunCommand/RunArguments/RunWorkingDirectory.
+       This allows tools to run validation or logic required to compute any required data,
+       which cannot be done during evaluation.  -->
+  <Target Name="ComputeRunArguments" />
+
+
   <!-- Override MSBuild Run Target -->
-  <Target Name="Run">
+  <Target Name="Run" DependsOnTargets="ComputeRunArguments">
     <Exec Command="$(RunCommand) $(RunArguments)" WorkingDirectory="$(RunWorkingDirectory)"/>
   </Target>
 
@@ -1190,10 +1228,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <UseSharedCompilation>true</UseSharedCompilation>
     </PropertyGroup>
 
+    <ItemGroup>
+      <_SatelliteAssemblyReferences Remove="@(_SatelliteAssemblyReferences)" />
+      <_SatelliteAssemblyReferences Include="@(ReferencePath)" Condition="'%(Filename)' == 'mscorlib' or '%(Filename)' == 'netstandard' or '%(Filename)' == 'System.Runtime' " />
+    </ItemGroup>
+
     <Csc Resources="@(_SatelliteAssemblyResourceInputs)"
          Sources="$(_AssemblyInfoFile)"
          OutputAssembly="$(_OutputAssembly)"
-         References="@(ReferencePath)"
+         References="@(_SatelliteAssemblyReferences)"
          KeyContainer="$(KeyContainerName)"
          KeyFile="$(KeyOriginatorFile)"
          NoConfig="true"
@@ -1201,6 +1244,8 @@ Copyright (c) .NET Foundation. All rights reserved.
          NoStandardLib="$(NoCompilerStandardLib)"
          Optimize="$(Optimize)"
          PublicSign="$(PublicSign)"
+         PathMap="$(PathMap)"
+         Features="$(Features)"
          DelaySign="$(DelaySign)"
          Deterministic="$(Deterministic)"
          DisabledWarnings="$(DisabledWarnings)"

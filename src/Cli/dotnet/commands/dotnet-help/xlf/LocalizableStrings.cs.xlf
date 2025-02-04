@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="SDKOptionsHelpDefinition">
         <source>Show command line help.</source>
-        <target state="new">Show command line help.</target>
+        <target state="translated">Zobrazí nápovědu příkazového řádku.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkDefinition">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
-        <target state="needs-review-translation">Zobrazí nápovědu příkazového řádku.</target>
+        <target state="translated">Otevře referenční stránku v prohlížeči pro zadaný příkaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ListDefinition">
         <source>List packages or references of a .NET project.</source>
-        <target state="needs-review-translation">Vypíše seznam odkazů na projekt daného projektu .NET.</target>
+        <target state="translated">Vypsat balíčky nebo odkazy projektu .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

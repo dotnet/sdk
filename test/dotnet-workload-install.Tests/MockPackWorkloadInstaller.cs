@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
@@ -26,9 +28,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public MockInstallationRecordRepository InstallationRecordRepository;
         public bool FailingRollback;
         public bool FailingGarbageCollection;
+        public WorkloadSet InstalledWorkloadSet;
         private readonly string FailingPack;
         private readonly string _dotnetDir;
-        private string workloadSetContents;
+        private Dictionary<string, string> workloadSetContents;
         List<WorkloadHistoryRecord> HistoryRecords = new();
 
         public IWorkloadResolver WorkloadResolver { get; set; }
@@ -36,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int ExitCode => 0;
 
         public MockPackWorkloadInstaller(string dotnetDir = null, string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
-            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null, string workloadSetContents = "")
+            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null, Dictionary<string, string> workloadSetContents = null)
         {
             InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload, installedWorkloads?.ToHashSet());
             FailingRollback = failingRollback;
@@ -65,9 +68,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
-        {
-            throw new NotImplementedException();
-        }
+        { }
 
         public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
         {
@@ -119,12 +120,14 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
+        public WorkloadSet GetWorkloadSetContents(string workloadSetVersion) => WorkloadSet.FromJson(workloadSetContents[workloadSetVersion], new SdkFeatureBand("6.0.100"));
+
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
             InstallWorkloadSetCalled = true;
-            var workloadSet = WorkloadSet.FromJson(workloadSetContents, new SdkFeatureBand("6.0.100"));
-            workloadSet.Version = workloadSetVersion;
-            return workloadSet;
+            InstalledWorkloadSet = WorkloadSet.FromJson(workloadSetContents[workloadSetVersion], new SdkFeatureBand("6.0.100"));
+            InstalledWorkloadSet.Version = workloadSetVersion;
+            return InstalledWorkloadSet;
         }
 
         public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
@@ -231,6 +234,16 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installStateContents = InstallStateContents.FromPath(path);
             installStateContents.Manifests = manifestContents;
             File.WriteAllText(path, installStateContents.ToString());
+        }
+
+        public void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+
+        }
+
+        public Dictionary<string, string> GetGlobalJsonWorkloadSetVersions(SdkFeatureBand sdkFeatureBand)
+        {
+            return new();
         }
     }
 

@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli
                 }
             }
 
-            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary> 
+            ///<summary>Splits a .NET format string by the format placeholders (the {N} parts) to get an array of the literal parts, to be used in message-checking</summary>
             static string[] DistinctFormatStringParts(string formatString)
             {
                 return Regex.Split(formatString, @"{[0-9]+}"); // match the literal '{', followed by any of 0-9 one or more times, followed by the literal '}'
@@ -173,8 +173,8 @@ namespace Microsoft.DotNet.Cli
 
         internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
         {
-            return parseResult.HasOption(RunCommandParser.RuntimeOption) ?
-                parseResult.GetValue(RunCommandParser.RuntimeOption) :
+            return parseResult.HasOption(CommonOptions.RuntimeOption) ?
+                parseResult.GetValue(CommonOptions.RuntimeOption) :
                 parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
                 parseResult.HasOption(CommonOptions.ArchitectureOption) ||
                 parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?

@@ -46,6 +46,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="TargetOutputs" ItemName="_ReferencedProjectsConfiguration" />
     </MSBuild>
 
+    <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+      <_ReferenceManifestPath Include="@(_ReferencedProjectsConfiguration->'%(BuildManifestPath)')" Condition="'%(_ReferencedProjectsConfiguration.BuildManifestPath)' != ''" />
+    </ItemGroup>
+
+    <WriteLinesToFile Condition="'$(BuildingInsideVisualStudio)' == 'true'"
+      File="$(StaticWebAssetReferencesUpToDateCheckManifestPath)"
+      Lines="@(_ReferenceManifestPath)"
+      Overwrite="false"
+      WriteOnlyWhenDifferent="true" />
+
     <MergeConfigurationProperties
       CandidateConfigurations="@(_ReferencedProjectsConfiguration)"
       ProjectReferences="@(_StaticWebAssetProjectReference)">
@@ -85,6 +95,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           <GetPublishAssetsTargets>$(StaticWebAssetsGetPublishAssetsTargets)</GetPublishAssetsTargets>
           <AdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties)</AdditionalPublishProperties>
           <AdditionalPublishPropertiesToRemove>$(StaticWebAssetsAdditionalPublishPropertiesToRemove)</AdditionalPublishPropertiesToRemove>
+          <!-- Build manifest -->
+          <BuildManifestPath>$([System.IO.Path]::GetFullPath('$(StaticWebAssetBuildManifestPath)'))</BuildManifestPath>
         </_StaticWebAssetThisProjectConfiguration>
       </ItemGroup>
   </Target>

@@ -14,8 +14,6 @@ using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-#nullable enable
-
 namespace Microsoft.DotNet.Workloads.Workload.Config
 {
     internal class WorkloadConfigCommand : WorkloadCommandBase
@@ -24,7 +22,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Config
         private string? _updateMode;
         private readonly IWorkloadResolverFactory _workloadResolverFactory;
 
-        private string? _dotnetPath;
+        private string _dotnetPath;
         private string _userProfileDir;
         private readonly IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;

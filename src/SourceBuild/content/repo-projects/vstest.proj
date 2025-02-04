@@ -3,7 +3,8 @@
   <PropertyGroup>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
 
-    <BuildArgs>$(BuildArgs) /p:SemanticVersioningV1=true</BuildArgs>
+    <!-- Tests are failing to build: https://github.com/microsoft/vstest/issues/14994 -->
+    <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
   </PropertyGroup>
 
   <ItemGroup>

@@ -24,8 +24,13 @@
       </trans-unit>
       <trans-unit id="CannotCombineSkipManifestAndVersion">
         <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
-        <target state="new">Cannot use the {0} and {1} options together.  Remove one of the options.</target>
+        <target state="translated">Nie można używać opcji {0} i {1} razem.  Usuń jedną z opcji.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="translated">Nie można określić wersji obciążenia przy użyciu opcji --version, określając jednocześnie wersje do zainstalowania przy użyciu składni workload@version.</target>
+        <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
@@ -34,12 +39,12 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="new">Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</target>
-        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+        <target state="translated">Nie można użyć opcji {0}, jeśli wersja obciążenia jest określona w pliku global.json.  Usuń opcję {0} lub usuń element „workloadVersion” z {1}.</target>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
-        <target state="needs-review-translation">Sprawdzanie zaktualizowanych manifestów obciążenia.</target>
+        <target state="translated">Sprawdzanie dostępności zaktualizowanej wersji obciążenia.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -50,6 +55,11 @@
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Odinstalowywanie pakietu obciążeń {0} w wersji {1}…</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">Usuwanie wersji obciążenia {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -94,7 +104,7 @@
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadSet">
         <source>Failed to install workload version {0}: {1}</source>
-        <target state="new">Failed to install workload version {0}: {1}</target>
+        <target state="translated">Nie można zainstalować wersji obciążenia {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -388,8 +398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload version.</source>
-        <target state="translated">Zaktualizuj do określonej wersji obciążenia.</target>
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="translated">Wersja obciążenia do wyświetlenia lub co najmniej jednego obciążenia i ich wersji dołączonych za pomocą znaku "@".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

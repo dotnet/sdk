@@ -1,12 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watcher.Tools;
+#nullable disable
 
-internal class MockFileSetFactory : FileSetFactory
+namespace Microsoft.DotNet.Watch.UnitTests;
+
+internal class MockFileSetFactory() : MSBuildFileSetFactory(
+    rootProjectFile: "test.csproj",
+    buildArguments: [],
+    TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet"),
+    NullReporter.Singleton)
 {
-    public Func<bool, (ProjectInfo, FileSet)> CreateImpl;
+    public Func<EvaluationResult> TryCreateImpl;
 
-    protected override ValueTask<(ProjectInfo project, FileSet files)?> CreateAsync(bool waitOnError, CancellationToken cancellationToken)
-        => ValueTask.FromResult(CreateImpl?.Invoke(waitOnError));
+    public override ValueTask<EvaluationResult> TryCreateAsync(bool? requireProjectGraph, CancellationToken cancellationToken)
+        => ValueTask.FromResult(TryCreateImpl?.Invoke());
 }

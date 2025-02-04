@@ -4,47 +4,47 @@
     <body>
       <trans-unit id="Command">
         <source>Command</source>
-        <target state="new">Command</target>
+        <target state="translated">命令</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Shows a history of workload installation actions.</source>
-        <target state="new">Shows a history of workload installation actions.</target>
+        <target state="translated">顯示工作負載安裝動作的歷程記錄。</target>
         <note />
       </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
-        <target state="new">Date</target>
+        <target state="translated">日期</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalJsonVersion">
         <source>Global.json Version</source>
-        <target state="new">Global.json Version</target>
+        <target state="translated">Global.json 版本</target>
         <note />
       </trans-unit>
       <trans-unit id="Id">
         <source>Id</source>
-        <target state="new">Id</target>
+        <target state="translated">識別碼</target>
         <note />
       </trans-unit>
       <trans-unit id="NoHistoryFound">
         <source>No workload history found</source>
-        <target state="new">No workload history found</target>
+        <target state="translated">找不到工作負載歷程記錄</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownRecordsInformationalMessage">
         <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
-        <target state="new">Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</target>
+        <target state="translated">具有未記錄變更的列代表變更來自 .NET CLI 工作負載命令以外的動作。這通常代表對 .NET SDK 或 Visual Studio 的更新。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="new">Workload Version</target>
+        <target state="translated">工作負載版本</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">
         <source>Workloads</source>
-        <target state="new">Workloads</target>
+        <target state="translated">工作負載</target>
         <note />
       </trans-unit>
     </body>

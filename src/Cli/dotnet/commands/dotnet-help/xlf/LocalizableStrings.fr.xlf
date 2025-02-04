@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="SDKOptionsHelpDefinition">
         <source>Show command line help.</source>
-        <target state="new">Show command line help.</target>
+        <target state="translated">Affichez l'aide de la ligne de commande.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkDefinition">
@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
-        <target state="needs-review-translation">Affichez l'aide de la ligne de commande.</target>
+        <target state="translated">Ouvre la page de référence dans un navigateur pour la commande spécifiée.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
@@ -169,7 +169,7 @@
       </trans-unit>
       <trans-unit id="ListDefinition">
         <source>List packages or references of a .NET project.</source>
-        <target state="needs-review-translation">Listez les références de projet d'un projet .NET.</target>
+        <target state="translated">Répertorie les packages ou références d’un projet .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

@@ -8,29 +8,46 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string WorkingDirectory =
-            TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetRunInvocation));
+        public ITestOutputHelper Log { get; }
+
+        public GivenDotnetRunInvocation(ITestOutputHelper log)
+        {
+            Log = log;
+        }
 
         [Theory]
-        [InlineData(new string[] { "-p:prop1=true" }, new string[] { "-p:prop1=true" })]
-        [InlineData(new string[] { "--property:prop1=true" }, new string[] { "-p:prop1=true" })]
-        [InlineData(new string[] { "--property", "prop1=true" }, new string[] { "-p:prop1=true" })]
-        [InlineData(new string[] { "-p", "prop1=true" }, new string[] { "-p:prop1=true" })]
-        [InlineData(new string[] { "-p", "prop1=true", "-p", "prop2=false" }, new string[] { "-p:prop1=true", "-p:prop2=false" })]
-        [InlineData(new string[] { "-p:prop1=true;prop2=false" }, new string[] { "-p:prop1=true;prop2=false" })]
-        [InlineData(new string[] { "-p", "MyProject.csproj", "-p:prop1=true" }, new string[] { "-p:prop1=true" })]
-        // The longhand --property option should never be treated as a project
-        [InlineData(new string[] { "--property", "MyProject.csproj", "-p:prop1=true" }, new string[] { "-p:MyProject.csproj", "-p:prop1=true" })]
-        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "-p:UseRazorBuildServer=false", "-p:UseSharedCompilation=false", "/nodeReuse:false" })]
+        [InlineData(new string[] { "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "--property:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "--property", "prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "-p", "prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "-p", "prop1=true", "-p", "prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
+        [InlineData(new string[] { "-p:prop1=true;prop2=false" }, new string[] { "--property:prop1=true", "--property:prop2=false" })]
+        [InlineData(new string[] { "-p", "MyProject.csproj", "-p:prop1=true" }, new string[] { "--property:prop1=true" })]
+        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedArgs)
         {
-            CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
+
+            string[] constantRestoreArgs = ["-nologo", "-verbosity:quiet"];
+            string[] fullExpectedArgs = constantRestoreArgs.Concat(expectedArgs).ToArray();
+            var tam = new TestAssetsManager(Log);
+            var oldWorkingDirectory = Directory.GetCurrentDirectory();
+            var newWorkingDir = tam.CopyTestAsset("HelloWorld", identifier: $"{nameof(MsbuildInvocationIsCorrect)}_{args.GetHashCode()}_{expectedArgs.GetHashCode()}").WithSource().Path;
+            try
             {
-                var command = RunCommand.FromArgs(args);
-                command.RestoreArgs
-                    .Should()
-                    .BeEquivalentTo(expectedArgs);
-            });
+                Directory.SetCurrentDirectory(newWorkingDir);
+
+                CommandDirectoryContext.PerformActionWithBasePath(newWorkingDir, () =>
+                {
+                    var command = RunCommand.FromArgs(args);
+                    command.RestoreArgs
+                        .Should()
+                        .BeEquivalentTo(fullExpectedArgs);
+                });
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(oldWorkingDirectory);
+            }
         }
     }
 }

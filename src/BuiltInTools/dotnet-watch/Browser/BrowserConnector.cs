@@ -1,33 +1,127 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Graph;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
-    internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable
+    internal sealed partial class BrowserConnector(DotNetWatchContext context) : IAsyncDisposable, IStaticAssetChangeApplierProvider
     {
         // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
-        private static readonly Version s_minimumSupportedVersion = new(6, 0);
+        private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
 
-        private static readonly Regex s_nowListeningRegex = s_nowListeningOnRegex();
+        private static readonly Regex s_nowListeningRegex = GetNowListeningOnRegex();
+        private static readonly Regex s_aspireDashboardUrlRegex = GetAspireDashboardUrlRegex();
 
         [GeneratedRegex(@"Now listening on: (?<url>.*)\s*$", RegexOptions.Compiled)]
-        private static partial Regex s_nowListeningOnRegex();
+        private static partial Regex GetNowListeningOnRegex();
 
-        private bool _attemptedBrowserLaunch = false;
-        public BrowserRefreshServer? RefreshServer { get; private set; }
+        [GeneratedRegex(@"Login to the dashboard at (?<url>.*)\s*$", RegexOptions.Compiled)]
+        private static partial Regex GetAspireDashboardUrlRegex();
+
+        private readonly object _serversGuard = new();
+        private readonly Dictionary<ProjectGraphNode, BrowserRefreshServer?> _servers = [];
+
+        // interlocked
+        private ImmutableHashSet<ProjectGraphNode> _browserLaunchAttempted = [];
+
+        public async ValueTask DisposeAsync()
+        {
+            BrowserRefreshServer?[] serversToDispose;
+
+            lock (_serversGuard)
+            {
+                serversToDispose = _servers.Values.ToArray();
+                _servers.Clear();
+            }
+
+            await Task.WhenAll(serversToDispose.Select(async server =>
+            {
+                if (server != null)
+                {
+                    await server.DisposeAsync();
+                }
+            }));
+        }
+
+        /// <summary>
+        /// A single browser refresh server is created for each project that supports browser launching.
+        /// When the project is rebuilt we reuse the same refresh server and browser instance.
+        /// Reload message is sent to the browser in that case.
+        /// </summary>
+        public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(
+            ProjectGraphNode projectNode,
+            ProcessSpec processSpec,
+            EnvironmentVariablesBuilder environmentBuilder,
+            ProjectOptions projectOptions,
+            CancellationToken cancellationToken)
+        {
+            BrowserRefreshServer? server;
+            bool hasExistingServer;
+
+            lock (_serversGuard)
+            {
+                hasExistingServer = _servers.TryGetValue(projectNode, out server);
+                if (!hasExistingServer)
+                {
+                    server = IsServerSupported(projectNode) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
+                    _servers.Add(projectNode, server);
+                }
+            }
+
+            // Attach trigger to the process that detects when the web server reports to the output that it's listening.
+            // Launches browser on the URL found in the process output for root projects.
+            processSpec.OnOutput += GetBrowserLaunchTrigger(projectNode, projectOptions, server, cancellationToken);
+
+            if (server == null)
+            {
+                // browser refresh server isn't supported
+                return null;
+            }
+
+            if (!hasExistingServer)
+            {
+                // Start the server we just created:
+                await server.StartAsync(cancellationToken);
+            }
+
+            server.SetEnvironmentVariables(environmentBuilder);
+
+            return server;
+        }
+
+        bool IStaticAssetChangeApplierProvider.TryGetApplier(ProjectGraphNode projectNode, [NotNullWhen(true)] out IStaticAssetChangeApplier? applier)
+        {
+            if (TryGetRefreshServer(projectNode, out var server))
+            {
+                applier = server;
+                return true;
+            }
+
+            applier = null;
+            return false;
+        }
+
+        public bool TryGetRefreshServer(ProjectGraphNode projectNode, [NotNullWhen(true)] out BrowserRefreshServer? server)
+        {
+            lock (_serversGuard)
+            {
+                return _servers.TryGetValue(projectNode, out server) && server != null;
+            }
+        }
 
         /// <summary>
         /// Get process output handler that will be subscribed to the process output event every time the process is launched.
         /// </summary>
-        public DataReceivedEventHandler? GetBrowserLaunchTrigger(ProjectInfo project, CancellationToken cancellationToken)
+        public Action<OutputLine>? GetBrowserLaunchTrigger(ProjectGraphNode projectNode, ProjectOptions projectOptions, BrowserRefreshServer? server, CancellationToken cancellationToken)
         {
-            if (!CanLaunchBrowser(context, project))
+            if (!CanLaunchBrowser(context, projectNode, projectOptions, out var launchProfile))
             {
-                if (context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.BrowserRequired))
+                if (context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
                 {
                     context.Reporter.Error("Test requires browser to launch");
                 }
@@ -35,40 +129,58 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return null;
             }
 
+            bool matchFound = false;
+
+            // Workaround for Aspire dashboard launching: scan for "Login to the dashboard at " prefix in the output and use the URL.
+            // TODO: Share launch profile processing logic as implemented in VS with dotnet-run and implement browser launching there.
+            var isAspireHost = projectNode.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability);
+
             return handler;
 
-            void handler(object sender, DataReceivedEventArgs eventArgs)
+            void handler(OutputLine line)
             {
                 // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-                Console.WriteLine(eventArgs.Data);
+                (line.IsError ? Console.Error : Console.Out).WriteLine(line.Content);
 
-                var match = s_nowListeningRegex.Match(eventArgs.Data ?? "");
+                if (matchFound)
+                {
+                    return;
+                }
+
+                var match = (isAspireHost ? s_aspireDashboardUrlRegex : s_nowListeningRegex).Match(line.Content);
                 if (!match.Success)
                 {
                     return;
                 }
 
-                ((Process)sender).OutputDataReceived -= handler;
+                matchFound = true;
 
-                if (!_attemptedBrowserLaunch)
+                if (projectOptions.IsRootProject &&
+                    ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, projectNode) => set.Add(projectNode), projectNode))
                 {
-                    // first iteration:
-                    _attemptedBrowserLaunch = true;
-                    LaunchBrowser(context, match.Groups["url"].Value);
+                    // first build iteration of a root project:
+                    var launchUrl = GetLaunchUrl(launchProfile.LaunchUrl, match.Groups["url"].Value);
+                    LaunchBrowser(launchUrl, server);
                 }
-                else if (RefreshServer != null)
+                else if (server != null)
                 {
-                    // subsequent iterations (project has been rebuilt and relaunched):
+                    // Subsequent iterations (project has been rebuilt and relaunched).
+                    // Use refresh server to reload the browser, if available.
                     context.Reporter.Verbose("Reloading browser.");
-                    _ = RefreshServer.ReloadAsync(cancellationToken);
+                    _ = server.SendReloadMessageAsync(cancellationToken);
                 }
             }
         }
 
-        private static void LaunchBrowser(DotNetWatchContext context, string launchUrl)
+        public static string GetLaunchUrl(string? profileLaunchUrl, string outputLaunchUrl)
+            => string.IsNullOrWhiteSpace(profileLaunchUrl) ? outputLaunchUrl :
+                Uri.TryCreate(profileLaunchUrl, UriKind.Absolute, out _) ? profileLaunchUrl :
+                Uri.TryCreate(outputLaunchUrl, UriKind.Absolute, out var launchUri) ? new Uri(launchUri, profileLaunchUrl).ToString() :
+                outputLaunchUrl;
+
+        private void LaunchBrowser(string launchUrl, BrowserRefreshServer? server)
         {
-            var launchPath = context.LaunchSettingsProfile.LaunchUrl;
-            var fileName = Uri.TryCreate(launchPath, UriKind.Absolute, out _) ? launchPath : launchUrl + "/" + launchPath;
+            var fileName = launchUrl;
 
             var args = string.Empty;
             if (EnvironmentVariables.BrowserPath is { } browserPath)
@@ -81,6 +193,12 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             if (context.EnvironmentOptions.TestFlags != TestFlags.None)
             {
+                if (context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
+                {
+                    Debug.Assert(server != null);
+                    server.EmulateClientConnected();
+                }
+
                 return;
             }
 
@@ -110,103 +228,77 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        private static bool CanLaunchBrowser(DotNetWatchContext context, ProjectInfo project)
+        private bool CanLaunchBrowser(DotNetWatchContext context, ProjectGraphNode projectNode, ProjectOptions projectOptions, [NotNullWhen(true)] out LaunchSettingsProfile? launchProfile)
         {
             var reporter = context.Reporter;
+            launchProfile = null;
 
             if (context.EnvironmentOptions.SuppressLaunchBrowser)
             {
                 return false;
             }
 
-            if (!project.IsNetCoreApp31OrNewer())
+            if (!projectNode.IsNetCoreApp(minVersion: Versions.Version3_1))
             {
                 // Browser refresh middleware supports 3.1 or newer
                 reporter.Verbose("Browser refresh is only supported in .NET Core 3.1 or newer projects.");
                 return false;
             }
 
-            if (context.Options.Command != "run")
+            if (!CommandLineOptions.IsCodeExecutionCommand(projectOptions.Command))
             {
-                reporter.Verbose("Browser refresh is only supported for run commands.");
+                reporter.Verbose($"Command '{projectOptions.Command}' does not support browser refresh.");
                 return false;
             }
 
-            if (context.LaunchSettingsProfile is not { LaunchBrowser: true })
+            launchProfile = GetLaunchProfile(projectOptions);
+            if (launchProfile is not { LaunchBrowser: true })
             {
                 reporter.Verbose("launchSettings does not allow launching browsers.");
                 return false;
             }
 
-            reporter.Verbose("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.");
+            reporter.Report(MessageDescriptor.ConfiguredToLaunchBrowser);
             return true;
         }
 
-        public async ValueTask<BrowserRefreshServer?> StartRefreshServerAsync(CancellationToken cancellationToken)
+        public bool IsServerSupported(ProjectGraphNode projectNode)
         {
             if (context.EnvironmentOptions.SuppressBrowserRefresh)
             {
-                return null;
+                return false;
             }
 
-            if (context.ProjectGraph is null)
-            {
-                context.Reporter.Verbose("Unable to determine if this project is a webapp.");
-                return null;
-            }
-
-            if (!IsBrowserRefreshSupported(context.ProjectGraph))
+            if (!projectNode.IsNetCoreApp(minVersion: s_minimumSupportedVersion))
             {
                 context.Reporter.Warn(
                     "Skipping configuring browser-refresh middleware since the target framework version is not supported." +
                     " For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.");
-                return null;
+
+                return false;
             }
 
-            if (!IsWebApp(context.ProjectGraph))
+            if (!IsWebApp(projectNode))
             {
                 context.Reporter.Verbose("Skipping configuring browser-refresh middleware since this is not a webapp.");
-                return null;
-            }
-
-            context.Reporter.Verbose("Configuring the app to use browser-refresh middleware.");
-
-            return RefreshServer = await BrowserRefreshServer.CreateAsync(context.EnvironmentOptions, context.Reporter, cancellationToken);
-        }
-
-        private static bool IsBrowserRefreshSupported(ProjectGraph context)
-        {
-            if (context.GraphRoots.FirstOrDefault() is not { } projectNode)
-            {
                 return false;
             }
 
-            if (projectNode.ProjectInstance.GetPropertyValue("_TargetFrameworkVersionWithoutV") is not string targetFrameworkVersion)
-            {
-                return false;
-            }
-
-            if (!Version.TryParse(targetFrameworkVersion, out var version))
-            {
-                return false;
-            }
-
-            return version >= s_minimumSupportedVersion;
+            context.Reporter.Report(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            return true;
         }
 
-        private static bool IsWebApp(ProjectGraph projectGraph)
-        {
-            // We only want to enable browser refreshes if this is a WebApp (ASP.NET Core / Blazor app).
-            return projectGraph.GraphRoots.FirstOrDefault() is { } projectNode &&
-                projectNode.ProjectInstance.GetItems("ProjectCapability").Any(p => p.EvaluatedInclude is "AspNetCore" or "WebAssembly");
-        }
+        // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
+        private static bool IsWebApp(ProjectGraphNode projectNode)
+            => projectNode.GetCapabilities().Any(value => value is "AspNetCore" or "WebAssembly");
 
-        public async ValueTask DisposeAsync()
+        private LaunchSettingsProfile GetLaunchProfile(ProjectOptions projectOptions)
         {
-            if (RefreshServer != null)
-            {
-                await RefreshServer.DisposeAsync();
-            }
+            var projectDirectory = Path.GetDirectoryName(projectOptions.ProjectPath);
+            Debug.Assert(projectDirectory != null);
+
+            return (projectOptions.NoLaunchProfile == true
+                ? null : LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, projectOptions.LaunchProfileName, context.Reporter)) ?? new();
         }
     }
 }

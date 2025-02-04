@@ -5,10 +5,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.WebTools.AspireServer.Contracts;
-using Microsoft.WebTools.AspireServer.Models;
 
-namespace Microsoft.WebTools.AspireServer.Helpers;
+namespace Aspire.Tools.Service;
 
 internal static class HttpContextExtensions
 {

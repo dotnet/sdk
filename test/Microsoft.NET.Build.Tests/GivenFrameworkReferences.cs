@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Linq;
 
@@ -887,7 +889,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WindowsForms" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms" },
-                notExpectedReferenceNames: new[] { "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 
@@ -899,7 +901,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WPF" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Presentation" },
-                notExpectedReferenceNames: new[] { "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 
@@ -911,7 +913,7 @@ namespace FrameworkReferenceTest
             TestFrameworkReferenceProfiles(
                 frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WindowsForms", "Microsoft.WindowsDesktop.App.WPF" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms", "System.Windows.Presentation" },
-                notExpectedReferenceNames: new[] { "WindowsFormsIntegration" },
+                notExpectedReferenceNames: Enumerable.Empty<string>(),
                 selfContained);
         }
 

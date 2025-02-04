@@ -3,28 +3,22 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
-using System.Diagnostics;
-using System.IO.Pipes;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.Testing.Platform.Helpers;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
 {
     internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     {
-        private readonly List<NamedPipeServer> _namedPipeServers = new();
-        private readonly List<Task> _taskModuleName = [];
-        private readonly ConcurrentBag<Task> _testsRun = [];
-        private readonly ConcurrentDictionary<string, CommandLineOptionMessage> _commandLineOptionNameToModuleNames = [];
-        private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
-        private readonly ConcurrentDictionary<string, TestApplication> _testApplications = [];
-        private readonly PipeNameDescription _pipeNameDescription = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
-        private readonly CancellationTokenSource _cancellationToken = new();
+        private MSBuildHandler _msBuildHandler;
+        private TerminalTestReporter _output;
         private TestApplicationActionQueue _actionQueue;
-
-        private Task _namedPipeConnectionLoop;
-        private string[] _args;
+        private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
+        private byte _cancelled;
+        private bool _isDiscovery;
+        private TestApplicationsEventHandlers _eventHandlers;
 
         public TestingPlatformCommand(string name, string description = null) : base(name, description)
         {
@@ -33,198 +27,188 @@ namespace Microsoft.DotNet.Cli
 
         public int Run(ParseResult parseResult)
         {
-            _args = parseResult.GetArguments();
-
-            // User can decide what the degree of parallelism should be
-            // If not specified, we will default to the number of processors
-            if (!int.TryParse(parseResult.GetValue(TestCommandParser.MaxParallelTestModules), out int degreeOfParallelism))
-                degreeOfParallelism = Environment.ProcessorCount;
-
-            if (ContainsHelpOption(_args))
+            bool hasFailed = false;
+            try
             {
-                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                {
-                    testApp.HelpRequested += OnHelpRequested;
-                    testApp.ErrorReceived += OnErrorReceived;
+                PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
-                    await testApp.RunHelpAsync();
-                });
+                InitializeOutput(degreeOfParallelism, testOptions.IsHelp);
+
+                InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
+
+                BuildOptions buildOptions = GetBuildOptions(parseResult, degreeOfParallelism);
+                _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
+                TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue);
+
+                _eventHandlers = new TestApplicationsEventHandlers(_executions, _output);
+
+                if (testOptions.HasFilterMode)
+                {
+                    if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
+                    {
+                        return ExitCodes.GenericFailure;
+                    }
+                }
+                else
+                {
+                    if (!_msBuildHandler.RunMSBuild(buildOptions))
+                    {
+                        return ExitCodes.GenericFailure;
+                    }
+
+                    if (!_msBuildHandler.EnqueueTestApplications())
+                    {
+                        _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
+                        return ExitCodes.GenericFailure;
+                    }
+                }
+
+                _actionQueue.EnqueueCompleted();
+                hasFailed = _actionQueue.WaitAllActions();
+            }
+            finally
+            {
+                CompleteRun();
+                CleanUp();
+            }
+
+            return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+        }
+
+        private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
+        {
+            SetupCancelKeyPressHandler();
+
+            degreeOfParallelism = GetDegreeOfParallelism(parseResult);
+
+            bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
+            bool isHelp = ContainsHelpOption(parseResult.GetArguments());
+
+            testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp);
+
+            _isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
+        }
+
+        private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, bool isHelp)
+        {
+            if (isHelp)
+            {
+                InitializeHelpActionQueue(degreeOfParallelism, testOptions);
             }
             else
             {
-                _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
-                {
-                    testApp.ErrorReceived += OnErrorReceived;
-
-                    await testApp.RunAsync();
-                });
-            }
-
-            VSTestTrace.SafeWriteTrace(() => $"Wait for connection(s) on pipe = {_pipeNameDescription.Name}");
-            _namedPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token));
-
-            bool containsNoBuild = parseResult.UnmatchedTokens.Any(token => token == CliConstants.NoBuildOptionKey);
-            List<string> msbuildCommandlineArgs = [$"-t:{(containsNoBuild ? string.Empty : "Build;")}_GetTestsProject",
-                 $"-p:GetTestsProjectPipeName={_pipeNameDescription.Name}",
-                    "-verbosity:q"];
-
-            AddAdditionalMSBuildParameters(parseResult, msbuildCommandlineArgs);
-
-            VSTestTrace.SafeWriteTrace(() => $"MSBuild command line arguments: {msbuildCommandlineArgs}");
-
-            ForwardingAppImplementation msBuildForwardingApp = new(GetMSBuildExePath(), msbuildCommandlineArgs);
-            int testsProjectResult = msBuildForwardingApp.Execute();
-
-            if (testsProjectResult != 0)
-            {
-                VSTestTrace.SafeWriteTrace(() => $"MSBuild task _GetTestsProject didn't execute properly.");
-                return testsProjectResult;
-            }
-
-            _actionQueue.EnqueueCompleted();
-
-            _actionQueue.WaitAllActions();
-
-            // Above line will block till we have all connections and all GetTestsProject msbuild task complete.
-            _cancellationToken.Cancel();
-            _namedPipeConnectionLoop.Wait();
-
-            return 0;
-        }
-
-        private static void AddAdditionalMSBuildParameters(ParseResult parseResult, List<string> parameters)
-        {
-            string msBuildParameters = parseResult.GetValue(TestCommandParser.AdditionalMSBuildParameters);
-            parameters.AddRange(!string.IsNullOrEmpty(msBuildParameters) ? msBuildParameters.Split(" ", StringSplitOptions.RemoveEmptyEntries) : []);
-        }
-
-        private async Task WaitConnectionAsync(CancellationToken token)
-        {
-            try
-            {
-                while (true)
-                {
-                    NamedPipeServer namedPipeServer = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
-                    namedPipeServer.RegisterAllSerializers();
-
-                    await namedPipeServer.WaitConnectionAsync(token);
-
-                    _namedPipeServers.Add(namedPipeServer);
-                }
-            }
-            catch (OperationCanceledException ex) when (ex.CancellationToken == token)
-            {
-                // We are exiting
-            }
-            catch (Exception ex)
-            {
-                if (VSTestTrace.TraceEnabled)
-                {
-                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
-                }
-
-                Environment.FailFast(ex.ToString());
+                InitializeTestExecutionActionQueue(degreeOfParallelism, testOptions);
             }
         }
 
-        private Task<IResponse> OnRequest(IRequest request)
+        private void SetupCancelKeyPressHandler()
         {
-            try
+            Console.CancelKeyPress += (s, e) =>
             {
-                if (TryGetModulePath(request, out string modulePath))
-                {
-                    _testApplications[modulePath] = new TestApplication(modulePath, _pipeNameDescription.Name, _args);
-                    // Write the test application to the channel
-                    _actionQueue.Enqueue(_testApplications[modulePath]);
-
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                if (TryGetHelpResponse(request, out CommandLineOptionMessages commandLineOptionMessages))
-                {
-                    var testApplication = _testApplications[commandLineOptionMessages.ModulePath];
-                    Debug.Assert(testApplication is not null);
-                    testApplication.OnCommandLineOptionMessages(commandLineOptionMessages);
-
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                // If we don't recognize the message, log and skip it
-                if (TryGetUnknownMessage(request, out UnknownMessage unknownMessage))
-                {
-                    if (VSTestTrace.TraceEnabled)
-                    {
-                        VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                    }
-                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
-                }
-
-                // If it doesn't match any of the above, throw an exception
-                throw new NotSupportedException($"Request '{request.GetType()}' is unsupported.");
-            }
-            catch (Exception ex)
-            {
-                if (VSTestTrace.TraceEnabled)
-                {
-                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
-                }
-
-                Environment.FailFast(ex.ToString());
-            }
-            return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                _output?.StartCancelling();
+                CompleteRun();
+            };
         }
 
-        private static bool TryGetModulePath(IRequest request, out string modulePath)
+        private void InitializeOutput(int degreeOfParallelism, bool isHelp)
         {
-            if (request is Module module)
+            var console = new SystemConsole();
+            _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
             {
-                modulePath = module.DLLPath;
-                return true;
-            }
+                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1" ? () => true : () => false,
+                ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
+                UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
+                ShowAssembly = true,
+                ShowAssemblyStartAndComplete = true,
+            });
 
-            modulePath = null;
-            return false;
+            if (!isHelp)
+            {
+                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
+            }
         }
 
-        private static bool TryGetHelpResponse(IRequest request, out CommandLineOptionMessages commandLineOptionMessages)
+        private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions)
         {
-            if (request is CommandLineOptionMessages result)
+            _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
             {
-                commandLineOptionMessages = result;
-                return true;
-            }
+                testApp.HelpRequested += OnHelpRequested;
+                testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
+                testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
+                testApp.ExecutionIdReceived += _eventHandlers.OnExecutionIdReceived;
 
-            commandLineOptionMessages = null;
-            return false;
+                return await testApp.RunAsync(testOptions);
+            });
         }
 
-        private static bool TryGetUnknownMessage(IRequest request, out UnknownMessage unknownMessage)
+        private void InitializeTestExecutionActionQueue(int degreeOfParallelism, TestOptions testOptions)
         {
-            if (request is UnknownMessage result)
+            _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
             {
-                unknownMessage = result;
-                return true;
-            }
+                testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
+                testApp.DiscoveredTestsReceived += _eventHandlers.OnDiscoveredTestsReceived;
+                testApp.TestResultsReceived += _eventHandlers.OnTestResultsReceived;
+                testApp.FileArtifactsReceived += _eventHandlers.OnFileArtifactsReceived;
+                testApp.SessionEventReceived += _eventHandlers.OnSessionEventReceived;
+                testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
+                testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
+                testApp.ExecutionIdReceived += _eventHandlers.OnExecutionIdReceived;
 
-            unknownMessage = null;
-            return false;
+                return await testApp.RunAsync(testOptions);
+            });
         }
 
-        private void OnErrorReceived(object sender, ErrorEventArgs args)
+        private static int GetDegreeOfParallelism(ParseResult parseResult)
         {
-            if (VSTestTrace.TraceEnabled)
-            {
-                VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
-            }
+            if (!int.TryParse(parseResult.GetValue(TestingPlatformOptions.MaxParallelTestModulesOption), out int degreeOfParallelism) || degreeOfParallelism <= 0)
+                degreeOfParallelism = Environment.ProcessorCount;
+            return degreeOfParallelism;
+        }
+
+        private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
+            new(parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption),
+                hasFilterMode,
+                isHelp);
+
+        private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
+        {
+            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled(ref unmatchedTokens, out string binLogFileName);
+
+            return new BuildOptions(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
+                parseResult.GetValue(TestingPlatformOptions.SolutionOption),
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
+                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
+                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
+                    CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, parseResult.GetValue(TestingPlatformOptions.ArchitectureOption)) :
+                    string.Empty,
+                allowBinLog,
+                binLogFileName,
+                degreeOfParallelism,
+                unmatchedTokens);
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
 
-        private static string GetMSBuildExePath()
+        private void CompleteRun()
         {
-            return Path.Combine(
-                AppContext.BaseDirectory,
-                CliConstants.MSBuildExeName);
+            if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
+            {
+                _output?.TestExecutionCompleted(DateTimeOffset.Now);
+            }
+        }
+
+        private void CleanUp()
+        {
+            _msBuildHandler.Dispose();
+            foreach (var execution in _executions)
+            {
+                execution.Key.Dispose();
+            }
         }
     }
 }

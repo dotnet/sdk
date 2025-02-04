@@ -11,16 +11,6 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
-        public static readonly CliOption<string> MaxParallelTestModules = new ForwardedOption<string>("--max-parallel-test-modules", "-mptm")
-        {
-            Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
-        };
-
-        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additional-msbuild-parameters")
-        {
-            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
-        };
-
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -31,12 +21,6 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.CmdListTestsDescription
         }.ForwardAs("-property:VSTestListTests=true");
-
-        public static readonly CliOption<IEnumerable<string>> EnvOption = new CliOption<IEnumerable<string>>("--environment", "-e")
-        {
-            Description = LocalizableStrings.CmdEnvironmentVariableDescription,
-            HelpName = LocalizableStrings.CmdEnvironmentVariableExpression
-        }.AllowSingleArgPerToken();
 
         public static readonly CliOption<string> FilterOption = new ForwardedOption<string>("--filter")
         {
@@ -178,9 +162,6 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-#if RELEASE
-            return GetVSTestCliCommand();
-#else
             bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
             string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
 
@@ -194,15 +175,24 @@ namespace Microsoft.DotNet.Cli
             }
 
             throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
-#endif
         }
 
         private static CliCommand GetTestingPlatformCliCommand()
         {
             var command = new TestingPlatformCommand("test");
-            command.SetAction((parseResult) => command.Run(parseResult));
-            command.Options.Add(MaxParallelTestModules);
-            command.Options.Add(AdditionalMSBuildParameters);
+            command.SetAction(parseResult => command.Run(parseResult));
+            command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
+            command.Options.Add(TestingPlatformOptions.AdditionalMSBuildParametersOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
+            command.Options.Add(TestingPlatformOptions.NoBuildOption);
+            command.Options.Add(TestingPlatformOptions.NoRestoreOption);
+            command.Options.Add(TestingPlatformOptions.ArchitectureOption);
+            command.Options.Add(TestingPlatformOptions.ConfigurationOption);
+            command.Options.Add(TestingPlatformOptions.ProjectOption);
+            command.Options.Add(TestingPlatformOptions.ListTestsOption);
+            command.Options.Add(TestingPlatformOptions.SolutionOption);
+            command.Options.Add(TestingPlatformOptions.DirectoryOption);
 
             return command;
         }
@@ -219,7 +209,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Options.Add(SettingsOption);
             command.Options.Add(ListTestsOption);
-            command.Options.Add(EnvOption);
+            command.Options.Add(CommonOptions.EnvOption);
             command.Options.Add(FilterOption);
             command.Options.Add(AdapterOption);
             command.Options.Add(LoggerOption);

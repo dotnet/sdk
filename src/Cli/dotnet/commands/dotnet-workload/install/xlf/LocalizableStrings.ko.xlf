@@ -24,8 +24,13 @@
       </trans-unit>
       <trans-unit id="CannotCombineSkipManifestAndVersion">
         <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
-        <target state="new">Cannot use the {0} and {1} options together.  Remove one of the options.</target>
+        <target state="translated">{0} 및 {1} 옵션을 함께 사용할 수 없습니다.  옵션 중 하나를 제거하세요.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="translated">workload@version 구문을 사용하여 설치할 버전도 지정하면서 --version 옵션을 사용하여 작업 버전을 지정할 수 없습니다.</target>
+        <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
@@ -34,12 +39,12 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="new">Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</target>
-        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+        <target state="translated">global.json에 워크로드 버전이 지정된 경우 {0} 옵션을 사용할 수 없습니다.  {0} 옵션을 제거하거나, {1}에서 'workloadVersion' 요소를 제거하세요.</target>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
-        <target state="needs-review-translation">업데이트된 워크로드 매니페스트를 확인하는 중입니다.</target>
+        <target state="translated">업데이트된 워크로드 버전을 확인하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -50,6 +55,11 @@
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">워크로드 팩 {0} 버전 {1} 제거 중...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">워크로드 버전 {0}을(를) 삭제하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -94,7 +104,7 @@
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadSet">
         <source>Failed to install workload version {0}: {1}</source>
-        <target state="new">Failed to install workload version {0}: {1}</target>
+        <target state="translated">{0} 워크로드 버전을 설치하지 못했습니다. {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -388,8 +398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload version.</source>
-        <target state="translated">지정된 워크로드 버전으로 업데이트합니다.</target>
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="translated">표시할 워크로드 버전 또는 하나 이상의 워크로드 및 해당 버전이 '@' 문자로 결합되었습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

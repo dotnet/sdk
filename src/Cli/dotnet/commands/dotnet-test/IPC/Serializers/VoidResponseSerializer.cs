@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Tools.Test;
 
 internal sealed class VoidResponseSerializer : INamedPipeSerializer
 {
-    public int Id => 0;
+    public int Id => VoidResponseFieldsId.MessagesSerializerId;
 
     public object Deserialize(Stream _)
         => new VoidResponse();

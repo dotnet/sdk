@@ -208,5 +208,25 @@ namespace Microsoft.DotNet.Installer.Windows
                 WorkloadSetVersion = newVersion,
             });
         }
+
+        public InstallResponseMessage SendRecordWorkloadSetInGlobalJsonRequest(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.RecordWorkloadSetInGlobalJson,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+                GlobalJsonPath = globalJsonPath,
+                WorkloadSetVersion = workloadSetVersion,
+            });
+        }
+
+        public InstallResponseMessage SendGetGlobalJsonWorkloadSetVersionsRequest(SdkFeatureBand sdkFeatureBand)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.GetGlobalJsonWorkloadSetVersions,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+            });
+        }
     }
 }

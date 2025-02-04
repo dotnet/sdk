@@ -42,11 +42,14 @@ add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/we4703>) # Potentially uninitia
 add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/we4789>) # destination of memory copy is too small
 add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/we4995>) # 'function': name was marked as #pragma deprecated
 add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/we4996>) # 'function': was declared deprecated also 'std::'
+add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/guard:cf>) # Enable control flow guard
 
 add_executable(Finalizer 
   finalizer.cpp
   native.rc
 )
+
+add_link_options(/guard:cf)
 
 # These are normally part of a .vcxproj in Visual Studio, but appears to be missing when CMAKE generates a .vcxproj for arm64.
 target_link_libraries(Finalizer shell32.lib)

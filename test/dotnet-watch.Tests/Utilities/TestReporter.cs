@@ -1,35 +1,99 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Tools.Internal
+using System.Diagnostics;
+using Microsoft.Build.Graph;
+
+namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal class TestReporter : IReporter
+    internal class TestReporter(ITestOutputHelper output) : IReporter
     {
-        private readonly ITestOutputHelper _output;
+        private readonly Dictionary<int, Action> _actions = [];
+        public readonly List<string> ProcessOutput = [];
 
-        public TestReporter(ITestOutputHelper output)
+        public bool EnableProcessOutputReporting
+            => true;
+
+        public bool IsVerbose
+            => true;
+
+        public event Action<string, OutputLine>? OnProjectProcessOutput;
+        public event Action<OutputLine>? OnProcessOutput;
+
+        public void ReportProcessOutput(OutputLine line)
         {
-            _output = output;
+            WriteTestOutput(line.Content);
+            ProcessOutput.Add(line.Content);
+
+            OnProcessOutput?.Invoke(line);
         }
 
-        public void Verbose(string message, string emoji = "⌚")
+        public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
         {
-            _output.WriteLine($"verbose {emoji} " + message);
+            var content = $"[{project.GetDisplayName()}]: {line.Content}";
+
+            WriteTestOutput(content);
+            ProcessOutput.Add(content);
+
+            OnProjectProcessOutput?.Invoke(project.ProjectInstance.FullPath, line);
         }
 
-        public void Output(string message, string emoji = "⌚")
+        public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)
         {
-            _output.WriteLine($"output {emoji} " + message);
+            var semaphore = new SemaphoreSlim(initialCount: 0);
+            RegisterAction(descriptor, () => semaphore.Release());
+            return semaphore;
         }
 
-        public void Warn(string message, string emoji = "⌚")
+        public void RegisterAction(MessageDescriptor descriptor, Action action)
         {
-            _output.WriteLine($"warn {emoji} " + message);
+            Debug.Assert(descriptor.Id != null);
+
+            if (_actions.TryGetValue(descriptor.Id.Value, out var existing))
+            {
+                existing += action;
+            }
+            else
+            {
+                existing = action;
+            }
+
+            _actions[descriptor.Id.Value] = existing;
         }
 
-        public void Error(string message, string emoji = "❌")
+        public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
         {
-            _output.WriteLine($"error {emoji} " + message);
+            if (descriptor.TryGetMessage(prefix, args, out var message))
+            {
+                WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
+            }
+
+            if (descriptor.Id.HasValue && _actions.TryGetValue(descriptor.Id.Value, out var action))
+            {
+                action();
+            }
         }
+
+        private void WriteTestOutput(string message)
+        {
+            try
+            {
+                output.WriteLine(message);
+            }
+            catch (InvalidOperationException)
+            {
+                // May happen when a test is aborted and no longer running.
+            }
+        }
+
+        private static string ToString(MessageSeverity severity)
+            => severity switch
+            {
+                MessageSeverity.Verbose => "verbose",
+                MessageSeverity.Output => "output",
+                MessageSeverity.Warning => "warning",
+                MessageSeverity.Error => "error",
+                _ => throw new InvalidOperationException()
+            };
     }
 }

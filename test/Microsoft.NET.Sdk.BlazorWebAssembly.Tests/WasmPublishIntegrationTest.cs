@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
@@ -12,7 +14,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_MinimalApp_Works()
         {
             // Arrange
@@ -51,7 +53,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyBootManifestHashes(testInstance, Path.Combine(publishDirectory.ToString(), "wwwroot"));
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithDefaultSettings_Works()
         {
             // Arrange
@@ -103,7 +105,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyTypeGranularTrimming(blazorPublishDirectory);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_Works_WithLibraryUsingHintPath()
         {
             // Arrange
@@ -156,7 +158,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithScopedCss_Works()
         {
             // Arrange
@@ -205,7 +207,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_InRelease_Works()
         {
             // Arrange
@@ -249,7 +251,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithExistingWebConfig_Works()
         {
             // Arrange
@@ -269,7 +271,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             webConfig.Should().Contain(webConfigContents);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithNoBuild_Works()
         {
             // Arrange
@@ -318,7 +320,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyCompression(testInstance, blazorPublishDirectory);
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         [InlineData("different-path")]
         [InlineData("/different-path")]
         public void Publish_WithStaticWebBasePathWorks(string basePath)
@@ -381,7 +383,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 staticWebAssetsBasePath: "different-path");
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         [InlineData("different-path/")]
         [InlineData("/different-path/")]
         public void Publish_Hosted_WithStaticWebBasePathWorks(string basePath)
@@ -449,7 +451,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             uncompressedText.Should().Be(originalText);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithTrimmingdDisabled_Works()
         {
             // Arrange
@@ -572,7 +574,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyBootManifestHashes(testInstance, blazorPublishDirectory);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_DefaultSettings_Works()
         {
             // Arrange
@@ -665,7 +667,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyTypeGranularTrimming(blazorPublishDirectory);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
@@ -766,7 +768,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         // Regression test for https://github.com/dotnet/aspnetcore/issues/18752
         public void Publish_HostedApp_WithoutTrimming_Works()
         {
@@ -867,7 +869,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithNoBuild_Works()
         {
             // Arrange
@@ -929,7 +931,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
@@ -1023,7 +1025,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
@@ -1187,7 +1189,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyBootManifestHashes(testInstance, blazorPublishDirectory);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithRidSpecifiedInCLI_Works()
         {
             // Arrange
@@ -1207,10 +1209,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
             ExecuteCommand(publishCommand, "/p:RuntimeIdentifier=linux-x64").Should().Pass();
 
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
-        [ConditionalFact()]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithRidSpecifiedAsArgument_NoSelfContained_Works()
         {
             // Arrange
@@ -1243,7 +1245,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             publishCommand.WithWorkingDirectory(Path.Combine(testInstance.TestRoot, "blazorhosted"));
             var result = ExecuteCommand(publishCommand, "--no-self-contained");
             result.Should().Pass();
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true, selfContained: false);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true, selfContained: false);
         }
 
         [Fact]
@@ -1269,10 +1271,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var result = ExecuteCommand(publishCommand, "--self-contained");
 
             result.Should().Pass();
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostedApp_WithRid_Works()
         {
             // Arrange
@@ -1292,10 +1294,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var publishCommand = CreatePublishCommand(testInstance, "blazorhosted");
             ExecuteCommand(publishCommand).Should().Pass();
 
-            AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
+            AssertRIDPublishOutput(publishCommand, testInstance, hosted: true);
         }
 
-        private void AssertRIDPublishOuput(PublishCommand command, TestAsset testInstance, bool hosted = false)
+        private void AssertRIDPublishOutput(PublishCommand command, TestAsset testInstance, bool hosted = false)
         {
             var publishDirectory = command.GetOutputDirectory(DefaultTfm, "Debug", "linux-x64");
 
@@ -1375,7 +1377,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        private void AssertRIDPublishOuput(DotnetPublishCommand command, TestAsset testInstance, bool hosted = false, bool selfContained = true)
+        private void AssertRIDPublishOutput(DotnetPublishCommand command, TestAsset testInstance, bool hosted = false, bool selfContained = true)
         {
             var publishDirectory = command.GetOutputDirectory(DefaultTfm, "Release", "linux-x64");
 
@@ -1457,7 +1459,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
         {
             // Arrange
@@ -1493,7 +1495,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_HostingMultipleBlazorWebApps_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/29264
@@ -1554,7 +1556,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "Newtonsoft.Json.wasm.br")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithTransitiveReference_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.

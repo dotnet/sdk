@@ -1,37 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Tools.Internal;
-
-namespace Microsoft.DotNet.Watcher.Internal
+namespace Microsoft.DotNet.Watch
 {
-    internal sealed class FileWatcher
+    internal sealed class FileWatcher(IReporter reporter) : IDisposable
     {
+        // Directory watcher for each watched directory
+        private readonly Dictionary<string, IDirectoryWatcher> _watchers = [];
+
         private bool _disposed;
+        public event Action<ChangedPath>? OnFileChange;
 
-        private readonly IDictionary<string, IFileSystemWatcher> _watchers;
-        private readonly IReporter _reporter;
-
-        public FileWatcher()
-            : this(NullReporter.Singleton)
-        { }
-
-        public FileWatcher(IReporter reporter)
-        {
-            _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
-            _watchers = new Dictionary<string, IFileSystemWatcher>();
-        }
-
-        public event Action<string, bool>? OnFileChange;
-
-        public void WatchDirectory(string? directory)
-        {
-            EnsureNotDisposed();
-            if ( directory != null )
-            {
-                AddDirectoryWatcher(directory);
-            } 
-        }
+        public bool SuppressEvents { get; set; }
 
         public void Dispose()
         {
@@ -42,68 +22,74 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             _disposed = true;
 
-            foreach (var watcher in _watchers)
+            foreach (var (_, watcher) in _watchers)
             {
-                watcher.Value.OnFileChange -= WatcherChangedHandler;
-                watcher.Value.OnError -= WatcherErrorHandler;
-                watcher.Value.Dispose();
+                watcher.OnFileChange -= WatcherChangedHandler;
+                watcher.OnError -= WatcherErrorHandler;
+                watcher.Dispose();
             }
-
-            _watchers.Clear();
         }
 
-        private void AddDirectoryWatcher(string directory)
+        public bool WatchingDirectories
+            => _watchers.Count > 0;
+
+        public void WatchContainingDirectories(IEnumerable<string> filePaths)
+            => WatchDirectories(filePaths.Select(path => Path.GetDirectoryName(path)!));
+
+        public void WatchDirectories(IEnumerable<string> directories)
         {
-            directory = EnsureTrailingSlash(directory);
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
-            var alreadyWatched = _watchers
-                .Where(d => directory.StartsWith(d.Key))
-                .Any();
-
-            if (alreadyWatched)
+            foreach (var dir in directories)
             {
-                return;
-            }
+                var directory = EnsureTrailingSlash(dir);
 
-            var redundantWatchers = _watchers
-                .Where(d => d.Key.StartsWith(directory))
-                .Select(d => d.Key)
-                .ToList();
+                var alreadyWatched = _watchers
+                    .Where(d => directory.StartsWith(d.Key))
+                    .Any();
 
-            if (redundantWatchers.Any())
-            {
+                if (alreadyWatched)
+                {
+                    continue;
+                }
+
+                var redundantWatchers = _watchers
+                    .Where(d => d.Key.StartsWith(directory))
+                    .Select(d => d.Key)
+                    .ToList();
+
                 foreach (var watcher in redundantWatchers)
                 {
                     DisposeWatcher(watcher);
                 }
+
+                var newWatcher = FileWatcherFactory.CreateWatcher(directory);
+                if (newWatcher is EventBasedDirectoryWatcher eventBasedWatcher)
+                {
+                    eventBasedWatcher.Logger = message => reporter.Verbose(message);
+                }
+
+                newWatcher.OnFileChange += WatcherChangedHandler;
+                newWatcher.OnError += WatcherErrorHandler;
+                newWatcher.EnableRaisingEvents = true;
+
+                _watchers.Add(directory, newWatcher);
             }
-
-            var newWatcher = FileWatcherFactory.CreateWatcher(directory!);
-            newWatcher.OnFileChange += WatcherChangedHandler;
-            newWatcher.OnError += WatcherErrorHandler;
-            newWatcher.EnableRaisingEvents = true;
-
-            _watchers.Add(directory, newWatcher);
         }
 
         private void WatcherErrorHandler(object? sender, Exception error)
         {
-            if (sender is IFileSystemWatcher watcher)
+            if (sender is IDirectoryWatcher watcher)
             {
-                _reporter.Warn($"The file watcher observing '{watcher.BasePath}' encountered an error: {error.Message}");
+                reporter.Warn($"The file watcher observing '{watcher.WatchedDirectory}' encountered an error: {error.Message}");
             }
         }
 
-        private void WatcherChangedHandler(object? sender, (string changedPath, bool newFile) args)
+        private void WatcherChangedHandler(object? sender, ChangedPath change)
         {
-            NotifyChange(args.changedPath, args.newFile);
-        }
-
-        private void NotifyChange(string path, bool newFile)
-        {
-            if (OnFileChange != null)
+            if (!SuppressEvents)
             {
-                OnFileChange(path, newFile);
+                OnFileChange?.Invoke(change);
             }
         }
 
@@ -113,30 +99,69 @@ namespace Microsoft.DotNet.Watcher.Internal
             _watchers.Remove(directory);
 
             watcher.EnableRaisingEvents = false;
-
             watcher.OnFileChange -= WatcherChangedHandler;
             watcher.OnError -= WatcherErrorHandler;
 
             watcher.Dispose();
         }
 
-        private void EnsureNotDisposed()
+        private static string EnsureTrailingSlash(string path)
+            => (path is [.., var last] && last != Path.DirectorySeparatorChar) ? path + Path.DirectorySeparatorChar : path;
+
+        public async Task<ChangedFile?> WaitForFileChangeAsync(IReadOnlyDictionary<string, FileItem> fileSet, Action? startedWatching, CancellationToken cancellationToken)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(FileWatcher));
-            }
+            var changedPath = await WaitForFileChangeAsync(
+                acceptChange: change => fileSet.ContainsKey(change.Path),
+                startedWatching,
+                cancellationToken);
+
+            return changedPath.HasValue ? new ChangedFile(fileSet[changedPath.Value.Path], changedPath.Value.Kind) : null;
         }
 
-        private static string EnsureTrailingSlash(string path)
+        public async Task<ChangedPath?> WaitForFileChangeAsync(Predicate<ChangedPath> acceptChange, Action? startedWatching, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(path) &&
-                path[path.Length - 1] != Path.DirectorySeparatorChar)
+            var fileChangedSource = new TaskCompletionSource<ChangedPath?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            cancellationToken.Register(() => fileChangedSource.TrySetResult(null));
+
+            void FileChangedCallback(ChangedPath change)
             {
-                return path + Path.DirectorySeparatorChar;
+                if (acceptChange(change))
+                {
+                    fileChangedSource.TrySetResult(change);
+                }
             }
 
-            return path;
+            ChangedPath? change;
+
+            OnFileChange += FileChangedCallback;
+            try
+            {
+                startedWatching?.Invoke();
+                change = await fileChangedSource.Task;
+            }
+            finally
+            {
+                OnFileChange -= FileChangedCallback;
+            }
+
+            return change;
+        }
+
+        public static async ValueTask WaitForFileChangeAsync(string filePath, IReporter reporter, Action? startedWatching, CancellationToken cancellationToken)
+        {
+            using var watcher = new FileWatcher(reporter);
+
+            watcher.WatchDirectories([Path.GetDirectoryName(filePath)!]);
+
+            var fileChange = await watcher.WaitForFileChangeAsync(
+                acceptChange: change => change.Path == filePath,
+                startedWatching,
+                cancellationToken);
+
+            if (fileChange != null)
+            {
+                reporter.Output($"File changed: {filePath}");
+            }
         }
     }
 }

@@ -10,15 +10,13 @@ using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-#nullable enable
-
 namespace Microsoft.DotNet.Workloads.Workload.Clean
 {
     internal class WorkloadCleanCommand : WorkloadCommandBase
     {
         private readonly bool _cleanAll;
 
-        private string? _dotnetPath;
+        private string _dotnetPath;
         private string _userProfileDir;
 
         private readonly ReleaseVersion _sdkVersion;

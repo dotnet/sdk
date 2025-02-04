@@ -24,8 +24,13 @@
       </trans-unit>
       <trans-unit id="CannotCombineSkipManifestAndVersion">
         <source>Cannot use the {0} and {1} options together.  Remove one of the options.</source>
-        <target state="new">Cannot use the {0} and {1} options together.  Remove one of the options.</target>
+        <target state="translated">Impossible d’utiliser les options {0} et {1} ensemble.  Supprimez l’une des options.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="translated">Impossible de spécifier une version de charge de travail à l’aide de l’option --version tout en spécifiant également les versions à installer à l’aide de la syntaxe workload@version.</target>
+        <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
@@ -34,12 +39,12 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="new">Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</target>
-        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+        <target state="translated">Impossible d’utiliser l’option {0} lorsque la version de la charge de travail est spécifiée dans global.json.  Supprimez l’option {0} ou supprimez l’élément « workloadVersion » de {1}.</target>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
-        <target state="needs-review-translation">Recherche de manifestes de charge de travail mis à jour</target>
+        <target state="translated">Vérification de la version mise à jour de la charge de travail.</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
@@ -50,6 +55,11 @@
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Désinstallation de la version {1} du pack {0} de charge de travail...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">Suppression de la version de la charge de travail {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -94,7 +104,7 @@
       </trans-unit>
       <trans-unit id="FailedToInstallWorkloadSet">
         <source>Failed to install workload version {0}: {1}</source>
-        <target state="new">Failed to install workload version {0}: {1}</target>
+        <target state="translated">Échec de l’installation de la version de charge de travail {0}: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FromCacheOptionArgumentName">
@@ -388,8 +398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload version.</source>
-        <target state="translated">Mettre à jour vers la version de charge de travail spécifiée.</target>
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="translated">Version de charge de travail à afficher ou une ou plusieurs charges de travail et leurs versions jointes par le caractère « @ ».</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         int ExitCode { get; }
 
+        WorkloadSet GetWorkloadSetContents(string workloadVersion);
+
         void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 
         void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null);
@@ -57,6 +59,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents);
 
         void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode);
+
+        void RecordWorkloadSetInGlobalJson(SdkFeatureBand sdkFeatureBand, string globalJsonPath, string workloadSetVersion);
     }
 
     // Interface to pass to workload manifest updater

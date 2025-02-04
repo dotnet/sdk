@@ -101,18 +101,31 @@ The tests can read settings from a `VMTestSettings.json` file which you need to 
 - **VMMachineName** - The machine name used by the VM's operating system.  This is what is used to browse to the machine in File Explorer, for example `\\TestVM`.  If this isn't specified, the tests will use the VM Name with any spaces removed for the VM machine name.
 - **SdkInstallerVersion** - The version of the SDK to install for testing.  The installer for this version needs to be copied to `C:\SdkTesting` inside the VM.
 - **ShouldTestStage2** - If set to true (which is the default), then the tests will copy the SDK implementation binaries to the installed SDK folder inside the VM.  Basically, you should leave this set to true if you want to test local changes to the SDK, and you should set it to false if you want to test the SDK specified in `SdkInstallerVersion`.
+- **NuGetSourcesToAdd** - A list of NuGet sources to add to the NuGet.config before running tests.
+
 Example:
 
 ```json
 {
     "VMName": "TestVM",
     "VMMachineName": "WINDEV2401EVAL",
-    "SdkInstallerVersion": "8.0.300-preview.24155.26"
+    "SdkInstallerVersion": "8.0.300-preview.24155.26",
+    "NuGetSourcesToAdd": [
+        "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json"
+    ]
 }
 ```
 
-If you want to change the snapshot used for the initial test state, in addition to renaming the snapshots so that the new one has "Test Start" in its name, you will need to delete the `VMState.json` file, as otherwise the root test state will be read from it.
+## Checkpoint limit
 
-## Notes
+Hyper-V supports a maximum of 50 checkpoints per VM.  This means that as more checkpoints are created and the limit is hit, tests will fail when they try to create checkpoints.  Thus, the checkpoints created by the tests will need to be deleted periodically.  Some pointers:
 
-Hyper-V supports a maximum of 50 snapshots per VM.  If you make changes to the SDK and re-run tests, new snapshots will be created for the newly deployed stage 2 SDK.  You may need to delete the older snapshots in order avoid hitting the snapshot limit.  Also, if you want to force a test to run a command instead of using the cached result, you can delete the corresponding snapshot.
+- Running all the tests will likely exceed the checkpoint limit.  To avoid this, run each test class separately, deleting the checkpoints between the runs.
+- Re-building an SDK will result in a different stage 2 SDK, invalidating all of the old checkpoints.  So when you re-build the SDK, you usually want to delete the whole checkpoint tree under the previous "Deploy Stage 2 SDK" checkpoint.
+- If you want to force a test to run a command instead of using the cached result, you can delete the corresponding checkpoint.
+
+## Sharing test results
+
+The test project is configured to save test results to `MsiInstallationTests.html` and `MsiInstallationTests.trx` in the `TestResults` folder.  You can use these files to share test results.  However, each time you run any tests, these files will be overwritten, so you may need to copy and rename them each time you run tests.
+
+Note that once a test has run the result will be saved, so re-running the test will usually complete quickly without actually taking any actions on the VM.  So if you need to re-run a single test in order to fix something or due to test flakiness, once you have done so you can usually run all the tests in the test class again to get results files with all of those test results included.
