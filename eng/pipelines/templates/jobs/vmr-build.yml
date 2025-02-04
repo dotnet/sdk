@@ -214,7 +214,7 @@ jobs:
 
   ## MSBuild args
   - name: msbuildArguments
-    value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} $(officialBuildParameter) /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+    value: /p:TargetOS="${{ parameters.targetOS }}" /p:TargetArchitecture="${{ parameters.targetArchitecture }}" $(officialBuildParameter) /p:VerticalName="$(Agent.JobName)" /p:ArtifactsStagingDir="$(artifactsStagingDir)"
 
   ### Signing args
   - ${{ if and(eq(parameters.sign, 'true'), ne(parameters.buildSourceOnly, 'true')) }}:
