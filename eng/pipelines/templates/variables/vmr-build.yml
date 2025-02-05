@@ -26,6 +26,13 @@ variables:
 - name: isOfficialBuild
   value: ${{ and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}
 
+## Note: The use of if expressons underneath the variable is necessary to get the updated isOfficialBuild value
+- name: ibcEnabled
+  ${{ if eq(variables['isOfficialBuild'], true) }}:
+    value: true
+  ${{ else }}:
+    value: false
+
 - name: officialBuildParameter
   ${{ if eq(variables['isOfficialBuild'], true) }}:
     value: /p:OfficialBuildId=$(Build.BuildNumber)

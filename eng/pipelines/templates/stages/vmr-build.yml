@@ -406,6 +406,7 @@ stages:
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
+        enableIBCOptimization: ${{ variables.ibcEnabled }}
 
     - template: ../jobs/vmr-build.yml
       parameters:
@@ -815,6 +816,7 @@ stages:
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
+            enableIBCOptimization: ${{ variables.ibcEnabled }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
@@ -837,6 +839,7 @@ stages:
             targetOS: windows
             targetArchitecture: x86
             extraProperties: /p:PgoInstrument=true
+            enableIBCOptimization: ${{ variables.ibcEnabled }}
 
         - template: ../jobs/vmr-build.yml
           parameters:
