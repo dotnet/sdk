@@ -297,12 +297,6 @@
   </Target>
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
-    <Error Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
-      Condition="'$(ContainerArchiveOutputPath)' != '' and
-                 !$(ContainerArchiveOutputPath.EndsWith('/')) and
-                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and
-                 $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
-
     <PropertyGroup>
       <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
       <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
@@ -400,10 +394,6 @@
         Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])"
         Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])" />
     </ItemGroup>
-    <PropertyGroup>
-      <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
-      <ContainerArchiveOutputPath Condition="'$(ContainerArchiveOutputPath)' != ''">$([System.IO.Path]::Combine($(ContainerArchiveOutputPath), $(ContainerRepository)-$(ContainerRuntimeIdentifier).tar.gz))</ContainerArchiveOutputPath>
-    </PropertyGroup>
   </Target>
 
   <Target Name="PublishContainer"
