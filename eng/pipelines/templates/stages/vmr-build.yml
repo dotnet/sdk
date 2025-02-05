@@ -383,7 +383,6 @@ stages:
         targetOS: windows
         targetArchitecture: x64
         extraProperties: /p:DotNetBuildTests=true
-        runTests: false
 
 #### VERTICAL BUILD (Official) ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
