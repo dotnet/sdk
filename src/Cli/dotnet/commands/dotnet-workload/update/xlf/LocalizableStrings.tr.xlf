@@ -22,6 +22,11 @@
         <target state="translated">İş yüklerini belirtilen geri alma tanım dosyasına göre güncelleştirin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Bu özellik bandı için iş yükü yüklenmedi. Önceki SDK sürümleriyle yüklenen iş yüklerini güncelleştirmek için --from-previous-sdk seçeneğini ekleyin.</target>
@@ -40,6 +45,11 @@
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">Aşağıdaki nedenlerle '{0}' iş yükü güncelleştirilemedi:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Geri alma dosyasının güncelleştirilmesi iş yükü kümeleriyle uyumlu değil. Yükle ve Güncelleştir özelliği artık bağımsız bildirimler kullanıyor. Belirli bir iş yükü sürümünde güncelleştirmek için “--version” komutunu kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
