@@ -97,47 +97,47 @@
       <Sha>387f04cb6675c984036a64c9bb768ac6f00e06f9</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-2.25104.14">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-2.25104.15">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>da89755a71fb593ea6b433ecb46ee70bf664c9de</Sha>
+      <Sha>480ad452ef9d0649344743d1b4e9443577c27b4e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-preview.1.25103.6">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
