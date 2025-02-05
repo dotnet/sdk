@@ -928,7 +928,7 @@ public class EndToEndTests : IDisposable
         string imageName = NewImageName();
         string tag = "1.0";
         string image = $"{imageName}:{tag}";
-        string archiveOutput = Path.Combine(TestSettings.TestArtifactsDirectory, "tarballs-output");
+        string archiveOutput = TestSettings.TestArtifactsDirectory;
         string imageTarball = Path.Combine(archiveOutput, $"{imageName}.tar.gz");
 
         // Create a new console project
