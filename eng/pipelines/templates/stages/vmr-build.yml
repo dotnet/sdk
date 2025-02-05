@@ -364,7 +364,7 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: ${{ format('{0}_DevVersions', variables.ubuntuName) }}
+        buildName: ${{ format('{0}_Ubuntu', variables.ubuntuName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         pool: ${{ parameters.pool_Linux }}
