@@ -182,7 +182,6 @@ namespace Microsoft.DotNet.Cli
             var command = new TestingPlatformCommand("test");
             command.SetAction(parseResult => command.Run(parseResult));
             command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
-            command.Options.Add(TestingPlatformOptions.AdditionalMSBuildParametersOption);
             command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
             command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
             command.Options.Add(TestingPlatformOptions.NoBuildOption);

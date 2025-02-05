@@ -174,8 +174,16 @@ namespace Microsoft.DotNet.Cli
 
         private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
         {
+            IEnumerable<string> propertyTokens = MSBuildUtility.GetPropertyTokens(parseResult.UnmatchedTokens);
+            IEnumerable<string> binaryLoggerTokens = MSBuildUtility.GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
+
+            var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
+                .Concat(propertyTokens)
+                .Concat(binaryLoggerTokens).ToList();
+
             List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled(ref unmatchedTokens, out string binLogFileName);
+            unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
+            unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
 
             return new BuildOptions(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
@@ -186,10 +194,9 @@ namespace Microsoft.DotNet.Cli
                 parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
                     CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, parseResult.GetValue(TestingPlatformOptions.ArchitectureOption)) :
                     string.Empty,
-                allowBinLog,
-                binLogFileName,
                 degreeOfParallelism,
-                unmatchedTokens);
+                unmatchedTokens,
+                msbuildArgs);
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
@@ -204,7 +211,7 @@ namespace Microsoft.DotNet.Cli
 
         private void CleanUp()
         {
-            _msBuildHandler.Dispose();
+            _msBuildHandler?.Dispose();
             foreach (var execution in _executions)
             {
                 execution.Key.Dispose();

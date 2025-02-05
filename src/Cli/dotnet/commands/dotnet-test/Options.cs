@@ -5,5 +5,5 @@ namespace Microsoft.DotNet.Cli
 {
     internal record TestOptions(bool HasListTests, string Configuration, string Architecture, bool HasFilterMode, bool IsHelp);
 
-    internal record BuildOptions(string ProjectPath, string SolutionPath, string DirectoryPath, bool HasNoRestore, bool HasNoBuild, string Configuration, string RuntimeIdentifier, bool AllowBinLog, string BinLogFileName, int DegreeOfParallelism, List<string> UnmatchedTokens);
+    internal record BuildOptions(string ProjectPath, string SolutionPath, string DirectoryPath, bool HasNoRestore, bool HasNoBuild, string Configuration, string RuntimeIdentifier, int DegreeOfParallelism, List<string> UnmatchedTokens, List<string> MSBuildArgs);
 }
