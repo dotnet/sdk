@@ -69,18 +69,18 @@
       <Sha>763d10a1a251be35337ee736832bfde3f9200672</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.14.0-preview-25073-02">
+    <Dependency Name="Microsoft.Build" Version="17.14.0-preview-25081-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>291a8108761ed347562228f2f8f25477996a5a93</Sha>
+      <Sha>7e539c169a657040eeb768e8115c44f1780e59df</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.14.0-preview-25073-02">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.14.0-preview-25081-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>291a8108761ed347562228f2f8f25477996a5a93</Sha>
+      <Sha>7e539c169a657040eeb768e8115c44f1780e59df</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.14.0-preview-25073-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.14.0-preview-25081-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>291a8108761ed347562228f2f8f25477996a5a93</Sha>
+      <Sha>7e539c169a657040eeb768e8115c44f1780e59df</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25079.4">
@@ -93,43 +93,43 @@
       <Sha>387f04cb6675c984036a64c9bb768ac6f00e06f9</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-2.25080.6">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-2.25081.4">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>de7b08d41e1a09e4f86c17487d4b526011ada498</Sha>
+      <Sha>b5e48cce69950f6f8cf8b6c6919cddf4c03a2f48</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="9.0.0-rtm.24529.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
@@ -597,14 +597,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>47e3672c762970073e4282bd563233da86bcca3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25079.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25102.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>4d0fe09477310240ec5bcf7c7758fbb358ca02ab</Sha>
+      <Sha>008b3a357044b102ec30e15ac381c2e880f573af</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25079.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25102.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>4d0fe09477310240ec5bcf7c7758fbb358ca02ab</Sha>
+      <Sha>008b3a357044b102ec30e15ac381c2e880f573af</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
