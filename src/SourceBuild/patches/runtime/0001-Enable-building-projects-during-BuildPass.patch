@@ -1,0 +1,22 @@
+From ce566bbc998ae3140a21e360b3e09a3f4ff5084b Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Wed, 5 Feb 2025 11:35:24 -0800
+Subject: [PATCH] Enable building projects during BuildPass=2 in dotnet/runtime
+
+Backport: https://github.com/dotnet/runtime/pull/112201
+---
+ eng/Build.props | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/eng/Build.props b/eng/Build.props
+index b2d72fb52aaea7..01705fc98d4f17 100644
+--- a/eng/Build.props
++++ b/eng/Build.props
+@@ -5,5 +5,7 @@
+   </PropertyGroup>
+   <ItemGroup>
+     <ProjectToBuild Include="$(RepoRoot)Build.proj" />
++    <!-- dotnet/runtime controls which projects run in which passes through our DefaultSubsets settings in eng/Subsets.props -->
++    <ProjectToBuild Include="$(RepoRoot)Build.proj" BuildPass="2" />
+   </ItemGroup>
+ </Project>
