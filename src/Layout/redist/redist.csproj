@@ -17,7 +17,7 @@
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1205</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
-  <Import Project="targets\BuildToolsetTasks.targets" />
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
   <Import Project="targets\Version.targets" />
   <Import Project="targets\BundledSdks.targets" />

@@ -3,7 +3,6 @@
   <Import Project="..\..\Directory.Build.props" />
 
   <PropertyGroup>
-    <Nullable>enable</Nullable>
     <StrongNameKeyId>Open</StrongNameKeyId>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

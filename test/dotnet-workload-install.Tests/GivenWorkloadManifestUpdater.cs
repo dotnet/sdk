@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using FluentAssertions.Extensions;
@@ -67,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             (var manifestUpdater, var nugetDownloader, var sentinelPath) = GetTestUpdater();
 
-            File.Create(sentinelPath);
+            File.Create(sentinelPath).Close();
             var createTime = DateTime.Now;
 
             await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
@@ -242,7 +244,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 offlineCacheDir = Path.Combine(testDir, "offlineCache");
                 Directory.CreateDirectory(offlineCacheDir);
-                File.Create(Path.Combine(offlineCacheDir, $"{testManifestName}.Manifest-6.0.200.nupkg"));
+                File.Create(Path.Combine(offlineCacheDir, $"{testManifestName}.Manifest-6.0.200.nupkg")).Close();
 
                 await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir));
             }
@@ -550,8 +552,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Write multiple manifest packages to the offline cache
             var offlineCache = Path.Combine(testDir, "cache");
             Directory.CreateDirectory(offlineCache);
-            File.Create(Path.Combine(offlineCache, $"{manifestId}.manifest-{featureBand}.2.0.0.nupkg"));
-            File.Create(Path.Combine(offlineCache, $"{manifestId}.manifest-{featureBand}.3.0.0.nupkg"));
+            File.Create(Path.Combine(offlineCache, $"{manifestId}.manifest-{featureBand}.2.0.0.nupkg")).Close();
+            File.Create(Path.Combine(offlineCache, $"{manifestId}.manifest-{featureBand}.3.0.0.nupkg")).Close();
 
             var workloadManifestProvider = new MockManifestProvider(new string[] { Path.Combine(installedManifestDir, manifestId, _manifestFileName) });
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
