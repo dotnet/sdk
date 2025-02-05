@@ -1,0 +1,188 @@
+From a863f87ecea0409679839a7e28fe225df4c47948 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Tue, 4 Feb 2025 09:49:00 +0100
+Subject: [PATCH] Revert "update System.CommandLine (#15474)"
+
+This temporarily reverts https://github.com/dotnet/arcade/pull/15474
+to unblock dependency flow.
+
+---
+ eng/Version.Details.xml                       |  8 ++---
+ eng/Versions.props                            |  2 +-
+ src/Microsoft.DotNet.MacOsPkg/Program.cs      | 30 +++++++++----------
+ .../Program.cs                                | 12 ++++----
+ 4 files changed, 26 insertions(+), 26 deletions(-)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index 89de117bd..3a977442b 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -138,9 +138,9 @@
+       <SourceBuild RepoName="arcade" ManagedOnly="true" />
+     </Dependency>
+     <!-- Intermediate is necessary for source build. -->
+-    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.607201">
++    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.512601">
+       <Uri>https://github.com/dotnet/command-line-api</Uri>
+-      <Sha>060374e56c1b2e741b6525ca8417006efb54fbd7</Sha>
++      <Sha>5ea97af07263ea3ef68a18557c8aa3f7e3200bda</Sha>
+       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
+     </Dependency>
+     <!-- Intermediate is necessary for source build. -->
+@@ -178,9 +178,9 @@
+       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+       <Sha>990ebf52fc408ca45929fd176d2740675a67fab8</Sha>
+     </Dependency>
+-    <Dependency Name="System.CommandLine" Version="2.0.0-beta4.25072.1">
++    <Dependency Name="System.CommandLine" Version="2.0.0-beta4.24126.1">
+       <Uri>https://github.com/dotnet/command-line-api</Uri>
+-      <Sha>060374e56c1b2e741b6525ca8417006efb54fbd7</Sha>
++      <Sha>5ea97af07263ea3ef68a18557c8aa3f7e3200bda</Sha>
+     </Dependency>
+     <!-- Transitive dependency needed for source build. -->
+     <Dependency Name="System.Reflection.Metadata" Version="9.0.0-rc.2.24473.5">
+diff --git a/eng/Versions.props b/eng/Versions.props
+index c31b6a103..24590737d 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -15,7 +15,7 @@
+     <MicrosoftDotNetProductConstructionServiceClientVersion>1.1.0-beta.25081.4</MicrosoftDotNetProductConstructionServiceClientVersion>
+     <MicrosoftDotNetMaestroTasksVersion>1.1.0-beta.25081.4</MicrosoftDotNetMaestroTasksVersion>
+     <!-- command-line-api -->
+-    <SystemCommandLineVersion>2.0.0-beta4.25072.1</SystemCommandLineVersion>
++    <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
+     <!-- corefx -->
+     <MicrosoftBclHashCodeVersion>1.1.1</MicrosoftBclHashCodeVersion>
+     <SystemMemoryVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">4.5.5</SystemMemoryVersion>
+diff --git a/src/Microsoft.DotNet.MacOsPkg/Program.cs b/src/Microsoft.DotNet.MacOsPkg/Program.cs
+index 3357d4967..90f13e41a 100644
+--- a/src/Microsoft.DotNet.MacOsPkg/Program.cs
++++ b/src/Microsoft.DotNet.MacOsPkg/Program.cs
+@@ -26,20 +26,20 @@ public static int Main(string[] args)
+             return 1;
+         }
+ 
+-        RootCommand rootCommand = Setup();
+-        return new CommandLineConfiguration(rootCommand).Invoke(args);
++        CliRootCommand rootCommand = Setup();
++        return new CliConfiguration(rootCommand).Invoke(args);
+     }
+ 
+     /// <summary>
+     /// Set up the command line interface and associated actions.
+     /// </summary>
+     /// <returns>Root cli command</returns>
+-    private static RootCommand Setup()
++    private static CliRootCommand Setup()
+     {
+-        var rootCommand = new RootCommand();
+-        var unpackSrcArgument = new Argument<string>("src") { Description = "Source path of the .pkg or .app file" };
+-        var unpackDestinationArgument = new Argument<string>("dst") { Description = "Destination path to unpack the file" };
+-        var unpackCommand = new Command("unpack", "Unpack a .pkg or .app file")
++        var rootCommand = new CliRootCommand();
++        var unpackSrcArgument = new CliArgument<string>("src") { Description = "Source path of the .pkg or .app file" };
++        var unpackDestinationArgument = new CliArgument<string>("dst") { Description = "Destination path to unpack the file" };
++        var unpackCommand = new CliCommand("unpack", "Unpack a .pkg or .app file")
+         {
+             Arguments = { unpackSrcArgument, unpackDestinationArgument }
+         };
+@@ -48,9 +48,9 @@ private static RootCommand Setup()
+             return UnpackCommand(result, unpackSrcArgument, unpackDestinationArgument);
+         });
+ 
+-        var packSrcArgument = new Argument<string>("src") { Description = "Source path to pack." };
+-        var packDstArgument = new Argument<string>("dst") { Description = "Destination path of the .pkg or .app file." };
+-        var packCommand = new Command("pack", "Pack a directory into a .pkg or .app file.")
++        var packSrcArgument = new CliArgument<string>("src") { Description = "Source path to pack." };
++        var packDstArgument = new CliArgument<string>("dst") { Description = "Destination path of the .pkg or .app file." };
++        var packCommand = new CliCommand("pack", "Pack a directory into a .pkg or .app file.")
+         {
+             Arguments = { packSrcArgument, packDstArgument }
+         };
+@@ -59,8 +59,8 @@ private static RootCommand Setup()
+             return PackCommand(result, packSrcArgument, packDstArgument);
+         });
+ 
+-        var pkgOrAppArgument = new Argument<string>("src") { Description = "Input pkg or app to verify." };
+-        var verifyCommand = new Command("verify", "Verify that a pkg or app is signed.")
++        var pkgOrAppArgument = new CliArgument<string>("src") { Description = "Input pkg or app to verify." };
++        var verifyCommand = new CliCommand("verify", "Verify that a pkg or app is signed.")
+         {
+             Arguments = { pkgOrAppArgument }
+         };
+@@ -75,7 +75,7 @@ private static RootCommand Setup()
+         return rootCommand;
+     }
+ 
+-    private static int VerifyCommand(ParseResult result, Argument<string> pkgOrAppArgument)
++    private static int VerifyCommand(ParseResult result, CliArgument<string> pkgOrAppArgument)
+     {
+         var srcPath = result.GetValue(pkgOrAppArgument) ?? throw new Exception("src must be non-empty");
+         try
+@@ -103,7 +103,7 @@ private static int VerifyCommand(ParseResult result, Argument<string> pkgOrAppAr
+         return 0;
+     }
+ 
+-    private static int PackCommand(ParseResult result, Argument<string> packSrcArgument, Argument<string> packDstArgument)
++    private static int PackCommand(ParseResult result, CliArgument<string> packSrcArgument, CliArgument<string> packDstArgument)
+     {
+         var srcPath = result.GetValue(packSrcArgument) ?? throw new Exception("src must be non-empty");
+         var dstPath = result.GetValue(packDstArgument) ?? throw new Exception("dst must be non-empty");
+@@ -141,7 +141,7 @@ private static int PackCommand(ParseResult result, Argument<string> packSrcArgum
+         return 0;
+     }
+ 
+-    private static int UnpackCommand(ParseResult result, Argument<string> unpackSrcArgument, Argument<string> unpackDestinationArgument)
++    private static int UnpackCommand(ParseResult result, CliArgument<string> unpackSrcArgument, CliArgument<string> unpackDestinationArgument)
+     {
+         var srcPath = result.GetValue(unpackSrcArgument) ?? throw new Exception("src must be non-empty");
+         var dstPath = result.GetValue(unpackDestinationArgument) ?? throw new Exception("dst must be non-empty");
+diff --git a/src/VersionTools/Microsoft.DotNet.VersionTools.Cli/Program.cs b/src/VersionTools/Microsoft.DotNet.VersionTools.Cli/Program.cs
+index a3051aa11..9cd7897c0 100644
+--- a/src/VersionTools/Microsoft.DotNet.VersionTools.Cli/Program.cs
++++ b/src/VersionTools/Microsoft.DotNet.VersionTools.Cli/Program.cs
+@@ -13,31 +13,31 @@ static int Main(string[] args)
+     {
+         //// Global options
+ 
+-        RootCommand rootCommand = new("Microsoft.DotNet.VersionTools.Cli v" + Environment.Version.ToString(2))
++        CliRootCommand rootCommand = new("Microsoft.DotNet.VersionTools.Cli v" + Environment.Version.ToString(2))
+         {
+             TreatUnmatchedTokensAsErrors = true
+         };
+ 
+         // Package command
+-        Option<string> assetsDirectoryOption = new("--assets-path", "-d")
++        CliOption<string> assetsDirectoryOption = new("--assets-path", "-d")
+         {
+             Description = "Path to the directory where the assets are located",
+             Required = true
+         };
+ 
+-        Option<string> searchPatternOption = new("--search-pattern", "-s")
++        CliOption<string> searchPatternOption = new("--search-pattern", "-s")
+         {
+             Description = "The search string to match against the names of subdirectories in --assets-path. See Directory.GetFiles for details.",
+             DefaultValueFactory = _ => "*.nupkg"
+         };
+ 
+-        Option<bool> recursiveOption = new("--recursive", "-r")
++        CliOption<bool> recursiveOption = new("--recursive", "-r")
+         {
+             Description = "Search for assets recursively.",
+             DefaultValueFactory = _ => true
+         };
+ 
+-        Command trimAssetVersionCommand = new("trim-assets-version", "Trim versions from provided assets. Currently, only NuGet packages are supported.");
++        CliCommand trimAssetVersionCommand = new("trim-assets-version", "Trim versions from provided assets. Currently, only NuGet packages are supported.");
+         trimAssetVersionCommand.Options.Add(assetsDirectoryOption);
+         trimAssetVersionCommand.Options.Add(searchPatternOption);
+         trimAssetVersionCommand.Options.Add(recursiveOption);
+@@ -59,6 +59,6 @@ static int Main(string[] args)
+         });
+ 
+         rootCommand.Subcommands.Add(trimAssetVersionCommand);
+-        return new CommandLineConfiguration(rootCommand).Invoke(args);
++        return new CliConfiguration(rootCommand).Invoke(args);
+     }
+ }
