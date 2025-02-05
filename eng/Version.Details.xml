@@ -167,14 +167,6 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>6908aead3a8b313798c381d5e435e9e6068301a7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-alpha.2.25073.4">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="10.0.0-alpha.2.25073.4">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.14.0-preview.1.11">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>a4a2e3f31ddc2adb52ebd3204ea6f650d89caf3f</Sha>
@@ -392,6 +384,42 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.JSInterop" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Web.ItemTemplates.10.0" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Web.ProjectTemplates.10.0" Version="10.0.0-alpha.2.25073.4">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
+    </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="10.0.0-alpha.2.25073.4">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -415,22 +443,6 @@
       <Uri>https://github.com/dotnet/razor</Uri>
       <Sha>b16f63a0c4e003acad74eb3f17d648c6ec17622b</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-alpha.2.25073.4">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="10.0.0-alpha.2.25073.4">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="10.0.0-alpha.2.25073.4">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="10.0.0-alpha.2.25073.4">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
     <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-preview.2.25102.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
@@ -581,10 +593,6 @@
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0-preview.2.25104.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>37b1764e19aceaa545d8433c490b850538b8905a</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="10.0.0-alpha.2.25073.4">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>febd7e8bdf05f17fb4e0e4dd3123e9538fbf7e7b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Win32.SystemEvents" Version="10.0.0-preview.2.25104.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
