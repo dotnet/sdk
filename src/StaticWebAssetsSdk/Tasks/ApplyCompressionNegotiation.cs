@@ -23,7 +23,10 @@ public class ApplyCompressionNegotiation : Task
 
     public override bool Execute()
     {
-        var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
+        var assetsById = new Dictionary<string, StaticWebAsset>(CandidateAssets.Length, OSPath.PathComparer);
+
+        // A good rule of thumb is that the number of compressed assets is half the number of assets.
+        var compressedAssets = new List<StaticWebAsset>(CandidateAssets.Length / 2);
 
         for (var i = 0; i < CandidateAssets.Length; i++)
         {
