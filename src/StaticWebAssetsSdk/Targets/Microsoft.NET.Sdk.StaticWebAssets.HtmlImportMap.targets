@@ -98,7 +98,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MakeDir Directories="$(_PublishImportMapHtmlPath)"/>
 
     <ItemGroup>
-      <_HtmlStaticWebAssetsForPublish Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build' and '%(Extension)' == '.html'" />
       <_EsModuleCandidateForPublish Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build'" />
     </ItemGroup>
 
@@ -112,7 +111,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </FilterStaticWebAssetEndpoints>
     <WriteImportMapToHtml
       Endpoints="@(_EsModuleCandidateForPublishEndpoints)"
-      HtmlFiles="@(_HtmlStaticWebAssetsForPublish)"
+      HtmlFiles="@(_HtmlStaticWebAssets)"
       OutputPath="$(_PublishImportMapHtmlPath)">
       <Output TaskParameter="HtmlCandidates" ItemName="_HtmlPublishCandidates" />
       <Output TaskParameter="HtmlFilesToRemove" ItemName="_HtmlPublishFilesToRemove" />
