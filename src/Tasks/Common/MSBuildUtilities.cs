@@ -1,12 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-//Microsoft.NET.Build.Extensions.Tasks (net7.0) has nullables disabled
-#pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
-
-
 namespace Microsoft.NET.Build.Tasks
 {
     /// <summary>
@@ -23,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks
         /// <returns>Boolean true or false, corresponding to the string.</returns>
         internal static bool ConvertStringToBool(string parameterValue, bool defaultValue = false)
         {
-            if (String.IsNullOrEmpty(parameterValue))
+            if (string.IsNullOrEmpty(parameterValue))
             {
                 return defaultValue;
             }
@@ -48,12 +42,12 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         private static bool ValidBooleanTrue(string parameterValue)
         {
-            return ((String.Compare(parameterValue, "true", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "on", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "yes", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!false", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!off", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!no", StringComparison.OrdinalIgnoreCase) == 0));
+            return ((string.Compare(parameterValue, "true", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "on", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "yes", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!false", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!off", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!no", StringComparison.OrdinalIgnoreCase) == 0));
         }
 
         /// <summary>
@@ -62,12 +56,12 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         private static bool ValidBooleanFalse(string parameterValue)
         {
-            return ((String.Compare(parameterValue, "false", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "off", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "no", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!true", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!on", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!yes", StringComparison.OrdinalIgnoreCase) == 0));
+            return ((string.Compare(parameterValue, "false", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "off", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "no", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!true", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!on", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!yes", StringComparison.OrdinalIgnoreCase) == 0));
         }
     }
 }

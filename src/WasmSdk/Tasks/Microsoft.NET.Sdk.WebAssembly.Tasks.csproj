@@ -39,7 +39,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalContent Include="$(WasmSdkRoot)Targets\**\*.*">
+    <AdditionalContent Include="$(WasmSdkRoot)targets\**\*.*">
       <Pack>true</Pack>
       <PackagePath>targets</PackagePath>
     </AdditionalContent>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <!-- TODO: Remove once dotnet/sourcelink#964 is resolved. -->
+    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="command-line-api" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
+</Project>

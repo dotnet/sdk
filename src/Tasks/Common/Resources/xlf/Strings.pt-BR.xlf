@@ -117,11 +117,6 @@
         <target state="translated">NETSDK1205: o pacote Microsoft.Net.Compilers.Toolset.Framework não deve ser definido diretamente. Defina a propriedade 'BuildWithNetFrameworkHostedCompiler' como 'true' se precisar.</target>
         <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
-      <trans-unit id="CannotEmbedClsidMapIntoComhost">
-        <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
-        <target state="translated">NETSDK1092: o CLSIDMap não pode ser inserido no host COM porque a adição de recursos requer que o build seja executado no Windows (excluindo Nano Server).</target>
-        <note>{StrBegin="NETSDK1092: "}</note>
-      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: Não é possível encontrar o host do aplicativo para {0}. {0} poderia ser um RID (identificador de runtime inválido). Para obter mais informações sobre RID, confira https://aka.ms/rid-catalog.</target>
@@ -482,8 +477,8 @@
         <note>{StrBegin="NETSDK1141: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkFailed">
-        <source>NETSDK1144: Optimizing assemblies for size failed. Optimization can be disabled by setting the PublishTrimmed property to false.</source>
-        <target state="translated">NETSDK1144: Falha na otimização de assemblies de tamanho. A otimização pode ser desabilitada definindo a propriedade PublishTrimmed como false.</target>
+        <source>NETSDK1144: Optimizing assemblies for size failed.</source>
+        <target state="translated">NETSDK1144: falha ao otimizar assemblies para tamanho.</target>
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNoValidRuntimePackageError">
@@ -525,6 +520,11 @@
         <source>NETSDK1163: Input assembly '{0}' not found.</source>
         <target state="translated">NETSDK1163: conjunto de entrada '{0}' não encontrado.</target>
         <note>{StrBegin="NETSDK1163: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidAppHostDotNetSearch">
+        <source>NETSDK1217: Invalid value in AppHostDotNetSearch: '{0}'.</source>
+        <target state="translated">NETSDK1217: valor inválido em AppHostDotNetSearch: '{0}'.</target>
+        <note>{StrBegin="NETSDK1217: "}</note>
       </trans-unit>
       <trans-unit id="InvalidFrameworkName">
         <source>NETSDK1003: Invalid framework name: '{0}'.</source>
@@ -588,6 +588,16 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1157: biblioteca JIT '{0}' não encontrada.</target>
         <note>{StrBegin="NETSDK1157: "}</note>
       </trans-unit>
+      <trans-unit id="MicrosoftNetSdkCompilersToolsetNotFound">
+        <source>NETSDK1216: Package Microsoft.Net.Sdk.Compilers.Toolset is not downloaded but it is needed because your MSBuild and SDK versions are mismatched. Ensure version {0} of the package is available in your NuGet source feeds and then run NuGet package restore from Visual Studio or MSBuild.</source>
+        <target state="translated">NETSDK1216: o pacote Microsoft.Net.Sdk.Compilers.Toolset não foi baixado, mas é necessário porque suas versões do MSBuild e do SDK não são correspondentes. Verifique se a versão {0} do pacote está disponível nos feeds de origem do NuGet e execute a restauração do pacote NuGet do Visual Studio ou do MSBuild.</target>
+        <note>{StrBegin="NETSDK1216: "}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"} {0} is a NuGet package version and should not be translated.</note>
+      </trans-unit>
+      <trans-unit id="MicrosoftNetSdkCompilersToolsetRootEmpty">
+        <source>NETSDK1221: NuGetPackageRoot property is empty so package Microsoft.Net.Sdk.Compilers.Toolset cannot be used but it is recommended because your MSBuild and SDK versions are mismatched. Ensure you are building with '/restore /t:Build' and not '/t:Restore;Build'.</source>
+        <target state="translated">NETSDK1221: a propriedade NuGetPackageRoot está vazia, portanto, o pacote Microsoft.Net.Sdk.Compilers.Toolset não pode ser usado, mas é recomendável porque suas versões do MSBuild e do SDK não são correspondentes. Verifique se você está compilando com '/restore /t:Build' e não com '/t:Restore;Build'.</target>
+        <note>{StrBegin="NETSDK1221: "}{Locked="NuGetPackageRoot"}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"}{Locked="'/restore /t:Build'"}{Locked="'/t:Restore;Build'"}</note>
+      </trans-unit>
       <trans-unit id="MismatchedPlatformPackageVersion">
         <source>NETSDK1061: The project was restored using {0} version {1}, but with current settings, version {2} would be used instead. To resolve this issue, make sure the same settings are used for restore and for subsequent operations such as build or publish. Typically this issue can occur if the RuntimeIdentifier property is set during build or publish but not during restore. For more information, see https://aka.ms/dotnet-runtime-patch-selection.</source>
         <target state="translated">NETSDK1061: o projeto foi restaurado usando o {0} versão {1}, mas, com as configurações atuais, a versão {2} seria usada. Para resolver esse problema, verifique se as mesmas configurações são usadas para restauração e para operações subsequentes, como compilação ou publicação. Normalmente, esse problema poderá ocorrer se a propriedade RuntimeIdentifier for definida durante a compilação ou a publicação, mas não durante a restauração. Para obter mais informações, consulte https://aka.ms/dotnet-runtime-patch-selection.</target>
@@ -631,10 +641,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1115: o SDK do .NET atual não dá suporte ao .NET Framework sem o uso de Padrões do SDK do .NET. O motivo é provavelmente uma incompatibilidade entre a propriedade CLRSupport do projeto C++/CLI e a TargetFramework.</target>
         <note>{StrBegin="NETSDK1115: "}</note>
       </trans-unit>
-      <trans-unit id="Net8NotCompatibleWithDev177">
-        <source>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</source>
-        <target state="translated">NETSDK1213: não há suporte para o direcionamento do .NET 8.0 ou superior no Visual Studio 2022 17.7.</target>
-        <note>{StrBegin="NETSDK1213: "}</note>
+      <trans-unit id="Net9NotCompatibleWithDev1711">
+        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
+        <target state="translated">NETSDK1223: não há suporte para o direcionamento do .NET 9.0 ou superior no Visual Studio 2022 17.11.</target>
+        <note>{StrBegin="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -750,6 +760,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1189: Prefer32Bit is not supported and has no effect for netcoreapp target.</source>
         <target state="translated">NETSDK1189: Prefer32Bit não é suportado e não tem efeito para o destino netcoreapp.</target>
         <note>{StrBegin="NETSDK1189: "}</note>
+      </trans-unit>
+      <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
+        <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="translated">NETSDK1222: PreferNativeArm64 se aplica apenas a destinos do .NET Framework. Não há suporte e não tem efeito ao direcionar para o .NET Core.</target>
+        <note>{StrBegin="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>
@@ -878,6 +893,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1138: não há mais suporte para a estrutura de destino '{0}' e ela não receberá atualizações de segurança no futuro. Confira {1} para obter mais informações sobre a política de suporte.</target>
         <note>{StrBegin="NETSDK1138: "}</note>
       </trans-unit>
+      <trans-unit id="TargetFrameworkIsNotRecommended">
+        <source>NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</source>
+        <target state="translated">NETSDK1215: o direcionamento do .NET Standard anterior à versão 2.0 não é mais recomendado. Veja {0} para obter detalhes.</target>
+        <note>{StrBegin="NETSDK1215: "}</note>
+      </trans-unit>
       <trans-unit id="TargetFrameworkWithSemicolon">
         <source>NETSDK1046: The TargetFramework value '{0}' is not valid. To multi-target, use the 'TargetFrameworks' property instead.</source>
         <target state="translated">NETSDK1046: O valor '{0}' do TargetFramework não é válido. Para vários destinos, use a propriedade 'TargetFrameworks'.</target>
@@ -1003,10 +1023,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: Você está usando uma versão de visualização do .NET. Veja: https://aka.ms/dotnet-support-policy</target>
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
-      <trans-unit id="UsingUnsupportedUseUwpFeature">
-        <source>NETSDK1214: UseUwp and all associated functionality require the .NET 9 SDK and are not supported by older .NET SDKs.</source>
-        <target state="new">NETSDK1214: UseUwp and all associated functionality require the .NET 9 SDK and are not supported by older .NET SDKs.</target>
-        <note>{StrBegin="NETSDK1214: "}</note>
+      <trans-unit id="UsingPreviewUseUwpFeature">
+        <source>NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
+        <target state="translated">NETSDK1219: UseUwp e todas as funcionalidades associadas atualmente são experimentais e não têm suporte oficial.</target>
+        <note>{StrBegin="NETSDK1219: "}</note>
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
@@ -1048,6 +1068,16 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1148: um assembly referenciado foi compilado usando uma versão mais recente do Microsoft.Windows.SDK.NET.dll. Atualize para um SDK do .NET mais recente para referenciar este assembly.</target>
         <note>{StrBegin="NETSDK1148: "}</note>
       </trans-unit>
+      <trans-unit id="WindowsSDKXamlInvalidTfm">
+        <source>NETSDK1220: UseUwp and all associated functionality require using a TFM of 'net8.0-windows' or greater.</source>
+        <target state="translated">NETSDK1220: UseUwp e todas as funcionalidades associadas exigem o uso de um TFM de 'net8.0-windows' ou superior.</target>
+        <note>{StrBegin="NETSDK1220: "}</note>
+      </trans-unit>
+      <trans-unit id="WindowsSDKXamlMissingUseUwpProperty">
+        <source>NETSDK1218: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</source>
+        <target state="translated">NETSDK1218: este projeto tem uma dependência transitiva nas projeções SDK do Windows completas (incluindo tipos Windows.UI.Xaml.*), mas não especifica a propriedade UseUwp. Isso deve ser habilitado para garantir que os tipos do .NET sejam projetados e transformados em marshall corretamente para cenários de interoperabilidade com esses tipos do XAML.</target>
+        <note>{StrBegin="NETSDK1218: "}</note>
+      </trans-unit>
       <trans-unit id="WorkloadIsEol">
         <source>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
         <target state="translated">NETSDK1202: a carga de trabalho '{0}' está sem suporte e não receberá atualizações de segurança no futuro. Consulte o {1} para obter mais informações sobre a política de suporte.</target>
@@ -1066,7 +1096,7 @@ To install these workloads, run the following command: dotnet workload restore</
         <target state="translated">NETSDK1147: Para criar este projeto, as seguintes cargas de trabalho devem ser instaladas: {0}
  
 Para instalar essas cargas de trabalho, execute o seguinte comando: dotnet workload restore</target>
-        <note>{StrBegin="NETSDK1147: "} LOCALIZATION: Do not localize "dotnet workload restore"</note>
+        <note>{StrBegin="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
     </body>
   </file>
