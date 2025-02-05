@@ -25,17 +25,17 @@
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>413bd7e00eb0a8ff708625c97f7921b52cec090a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.2.25080.1">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.2.25104.14">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+      <Sha>413bd7e00eb0a8ff708625c97f7921b52cec090a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.2.25080.1">
+    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.2.25104.14">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+      <Sha>413bd7e00eb0a8ff708625c97f7921b52cec090a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.2.25080.1">
+    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.2.25104.14">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>7137d45fe29466e53caadc374472912811f6522e</Sha>
+      <Sha>413bd7e00eb0a8ff708625c97f7921b52cec090a</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-preview.2.25104.14">
