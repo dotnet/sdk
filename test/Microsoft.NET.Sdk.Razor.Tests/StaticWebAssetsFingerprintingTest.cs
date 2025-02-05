@@ -47,6 +47,22 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
     }
 
     [Fact]
+    public void Build_WriteImportMapToHtml()
+    {
+        var testAsset = "VanillaWasm";
+        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+        var build = CreateBuildCommand(ProjectDirectory);
+        ExecuteCommand(build).Should().Pass();
+
+        var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+        var indexHtmlPath = Directory.EnumerateFiles(Path.Combine(intermediateOutputPath, "importmaphtml", "build"), "*.html").Single();
+        var endpointsManifestPath = Path.Combine(intermediateOutputPath, $"staticwebassets.build.endpoints.json");
+
+        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath);
+    }
+
+    [Fact]
     public void Publish_WriteImportMapToHtml()
     {
         var testAsset = "VanillaWasm";
@@ -57,10 +73,15 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
 
         var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
         var indexHtmlPath = Path.Combine(outputPath, "wwwroot", "index.html");
-        var indexHtmlContent = File.ReadAllText(indexHtmlPath);
+        var endpointsManifestPath = Path.Combine(outputPath, $"{testAsset}.staticwebassets.endpoints.json");
 
-        var endpointsManifestFile = Path.Combine(outputPath, $"{testAsset}.staticwebassets.endpoints.json");
-        var endpoints = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(File.ReadAllText(endpointsManifestFile));
+        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath);
+    }
+
+    private void AssertImportMapInHtml(string indexHtmlPath, string endpointsManifestPath)
+    {
+        var indexHtmlContent = File.ReadAllText(indexHtmlPath);
+        var endpoints = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(File.ReadAllText(endpointsManifestPath));
 
         var mainJs = GetFingerprintedPath("main.js");
         Assert.DoesNotContain("src=\"main.js\"", indexHtmlContent);
