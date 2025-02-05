@@ -46,10 +46,10 @@ internal class ArchiveFileRegistry : ILocalRegistry
         => await LoadAsync(image, sourceReference, destinationReference, cancellationToken,
             DockerCli.WriteImageToStreamAsync);
 
-    public async Task LoadAsync(BuiltImage[] images, SourceImageReference sourceReference,
+    public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken) 
-        => await LoadAsync(images, sourceReference, destinationReference, cancellationToken,
+        => await LoadAsync(multiArchImage, sourceReference, destinationReference, cancellationToken,
             DockerCli.WriteMultiArchOciImageToStreamAsync);
 
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);

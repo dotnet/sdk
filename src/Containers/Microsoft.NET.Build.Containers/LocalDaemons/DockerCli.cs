@@ -130,8 +130,8 @@ internal sealed class DockerCli
         // For loading to the local registry, we use the Docker format. Two reasons: one - compatibility with previous behavior before oci formatted publishing was available, two - Podman cannot load multi tag oci image tarball.
         => await LoadAsync(image, sourceReference, destinationReference, WriteDockerImageToStreamAsync, cancellationToken);
 
-    public async Task LoadAsync(BuiltImage[] images, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
-        => await LoadAsync(images, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken, checkContainerdStore: true);
+    public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
+        => await LoadAsync(multiArchImage, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken, checkContainerdStore: true);
     
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
@@ -500,7 +500,7 @@ internal sealed class DockerCli
     }
 
     public static async Task WriteMultiArchOciImageToStreamAsync(
-        BuiltImage[] images,
+        MultiArchImage multiArchImage,
         SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         Stream imageStream,
@@ -510,13 +510,13 @@ internal sealed class DockerCli
 
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
 
-        foreach (var image in images)
+        foreach (var image in multiArchImage.Images!)
         {
             await WriteOciImageToBlobs(writer, image, sourceReference, cancellationToken)
             .ConfigureAwait(false);
         }
 
-        await WriteIndexJsonForMultiArchOciImage(writer, images, destinationReference, cancellationToken)
+        await WriteIndexJsonForMultiArchOciImage(writer, multiArchImage, destinationReference, cancellationToken)
             .ConfigureAwait(false);
 
         await WriteOciLayout(writer, cancellationToken)
@@ -525,21 +525,18 @@ internal sealed class DockerCli
 
     private static async Task WriteIndexJsonForMultiArchOciImage(
         TarWriter writer,
-        BuiltImage[] images,
+        MultiArchImage multiArchImage,
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken)
     {
         // 1. create manifest list for the blobs
         cancellationToken.ThrowIfCancellationRequested();
 
-        // For multi-arch we publish only oci-formatted image tarballs.
-        string manifestListJson = ImageIndexGenerator.GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1);
-
-        var manifestListDigest = DigestUtils.GetDigest(manifestListJson);
+        var manifestListDigest = DigestUtils.GetDigest(multiArchImage.ImageIndex);
         var manifestListSha = DigestUtils.GetShaFromDigest(manifestListDigest);
         var manifestListPath = $"{_blobsPath}/{manifestListSha}";
         
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(manifestListJson)))
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(multiArchImage.ImageIndex)))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, manifestListPath)
             {
@@ -552,9 +549,9 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
-            SchemaTypes.OciImageIndexV1, 
+            multiArchImage.ImageIndexMediaType, 
             manifestListDigest, 
-            manifestListJson.Length, 
+            multiArchImage.ImageIndex.Length, 
             destinationReference.Repository, 
             destinationReference.Tags);
 

@@ -525,13 +525,17 @@ internal sealed class Registry
 
     }
 
-    public async Task PushManifestListAsync(string repositoryName, string[] tags, string manifestListJson, string mediaType, CancellationToken cancellationToken)
+    public async Task PushManifestListAsync(
+        MultiArchImage multiArchImage,
+        SourceImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        foreach (var tag in tags)
+        foreach (var tag in destinationImageReference.Tags)
         {
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-            await _registryAPI.Manifest.PutAsync(repositoryName, tag, manifestListJson, mediaType, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
         }          
     }

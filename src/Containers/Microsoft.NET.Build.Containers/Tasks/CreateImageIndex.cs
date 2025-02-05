@@ -74,14 +74,17 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             return false;
         }
 
+        var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind);
+
+        GeneratedImageIndex = multiArchImage.ImageIndex;
+        GeneratedArchiveOutputPath = ArchiveOutputPath;
+
         logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
-        await ImagePublisher.PublishImageAsync(images, sourceImageReference, destinationImageReference, Log, BuildEngine, telemetry, cancellationToken)
-            .ConfigureAwait(false);
-
-        GeneratedArchiveOutputPath = ArchiveOutputPath;
+        await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, BuildEngine, telemetry, cancellationToken)
+            .ConfigureAwait(false); 
 
         return !Log.HasLoggedErrors;
     }
@@ -156,5 +159,30 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             return (string.Empty, string.Empty);
         }
         return (architecture, os);
+    }
+
+    private static MultiArchImage CreateMultiArchImage(BuiltImage[] images, DestinationImageReferenceKind destinationImageKind)
+    {
+        switch (destinationImageKind)
+        {
+            case DestinationImageReferenceKind.LocalRegistry:
+                return new MultiArchImage()
+                {
+                    // For multi-arch we publish only oci-formatted image tarballs.
+                    ImageIndex = ImageIndexGenerator.GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1),
+                    ImageIndexMediaType = SchemaTypes.OciImageIndexV1,
+                    Images = images
+                };
+            case DestinationImageReferenceKind.RemoteRegistry:
+                (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
+                return new MultiArchImage()
+                {
+                    ImageIndex = imageIndex,
+                    ImageIndexMediaType = mediaType,
+                    // For remote registry we don't need individual images, as they should be pushed already
+                };
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 }

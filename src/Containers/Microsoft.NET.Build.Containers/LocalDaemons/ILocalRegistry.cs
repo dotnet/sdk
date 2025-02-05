@@ -16,7 +16,7 @@ internal interface ILocalRegistry {
     /// <summary>
     /// Loads a multi-arch image (presumably from a tarball) into the local registry.
     /// </summary>
-    public Task LoadAsync(BuiltImage[] images, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken);
+    public Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken);
 
     /// <summary>
     /// Checks to see if the local registry is available. This is used to give nice errors to the user.

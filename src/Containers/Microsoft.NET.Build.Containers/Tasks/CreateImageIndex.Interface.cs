@@ -61,8 +61,17 @@ partial class CreateImageIndex
     [Required]
     public string[] ImageTags { get; set; }
 
+    /// <summary>
+    /// The generated archive output path.
+    /// </summary>
     [Output]
     public string GeneratedArchiveOutputPath { get; set; }
+
+    /// <summary>
+    /// The generated image index (manifest list) in JSON format.
+    /// </summary>
+    [Output]
+    public string GeneratedImageIndex { get; set; }
 
     public CreateImageIndex()
     {
@@ -76,5 +85,6 @@ partial class CreateImageIndex
         Repository = string.Empty;
         ImageTags = Array.Empty<string>();
         GeneratedArchiveOutputPath = string.Empty;
+        GeneratedImageIndex = string.Empty;
     }
 } 

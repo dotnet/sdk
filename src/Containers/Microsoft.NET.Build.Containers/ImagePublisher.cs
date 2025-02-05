@@ -51,7 +51,7 @@ internal static class ImagePublisher
     }
 
     public static async Task PublishImageAsync(
-        BuiltImage[] multiArchImage,
+        MultiArchImage multiArchImage,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
@@ -82,16 +82,7 @@ internal static class ImagePublisher
                     Log,
                     BuildEngine,
                     cancellationToken,
-                    async (images, source, destination, token) =>
-                    {
-                        (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
-                        await destinationImageReference.RemoteRegistry!.PushManifestListAsync(
-                            destinationImageReference.Repository,
-                            destinationImageReference.Tags,
-                            imageIndex,
-                            mediaType,
-                            cancellationToken).ConfigureAwait(false);
-                    },
+                    destinationImageReference.RemoteRegistry!.PushManifestListAsync,
                     Strings.ImageIndexUploadedToRegistry).ConfigureAwait(false);
                 break;
             default:

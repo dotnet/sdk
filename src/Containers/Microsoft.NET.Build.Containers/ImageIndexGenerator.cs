@@ -47,6 +47,11 @@ internal static class ImageIndexGenerator
 
     internal static string GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
     {
+        if (images.Length == 0)
+        {
+            throw new ArgumentException(string.Format(Strings.ImagesEmpty));
+        }
+        
         // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
         // We are filling the same fields, so we can use the same struct.
         var manifests = new PlatformSpecificManifest[images.Length];
