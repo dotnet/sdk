@@ -73,18 +73,18 @@
       <Sha>3ac196ac425223d11490e759c2641256ce746f21</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.14.0-preview-25073-02">
+    <Dependency Name="Microsoft.Build" Version="17.14.0-preview-25103-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>291a8108761ed347562228f2f8f25477996a5a93</Sha>
+      <Sha>66061962dffd4250199894b385d0ad441a9b32d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.14.0-preview-25073-02">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.14.0-preview-25103-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>291a8108761ed347562228f2f8f25477996a5a93</Sha>
+      <Sha>66061962dffd4250199894b385d0ad441a9b32d6</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.14.0-preview-25073-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.14.0-preview-25103-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>291a8108761ed347562228f2f8f25477996a5a93</Sha>
+      <Sha>66061962dffd4250199894b385d0ad441a9b32d6</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25079.4">
@@ -370,22 +370,22 @@
       <Sha>3c7e5681f30d0aacc62eda00c7df371d4ed705d9</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.25081.4">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.25104.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>25c7bf034222c9621fcc78e6cb503664e4604f0b</Sha>
+      <Sha>6c6d8398c493a16dde80dbe5b71704a60b0e3da5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.25081.4">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.25104.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>25c7bf034222c9621fcc78e6cb503664e4604f0b</Sha>
+      <Sha>6c6d8398c493a16dde80dbe5b71704a60b0e3da5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.25081.4">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.25104.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>25c7bf034222c9621fcc78e6cb503664e4604f0b</Sha>
+      <Sha>6c6d8398c493a16dde80dbe5b71704a60b0e3da5</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.25081.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.25104.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>25c7bf034222c9621fcc78e6cb503664e4604f0b</Sha>
+      <Sha>6c6d8398c493a16dde80dbe5b71704a60b0e3da5</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-preview.1.25103.6">
@@ -460,9 +460,9 @@
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="10.0.607101">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="10.0.607901">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>0c377e9585d2aeae504ff1d6529ccb1abef36172</Sha>
+      <Sha>962bb86f95ebece01c2b1de97ed7d4261e00b058</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
