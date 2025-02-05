@@ -36,9 +36,6 @@ static class ContainerCli
     public static RunExeCommand PortCommand(ITestOutputHelper log, string containerName, int port)
       => CreateCommand(log, "port", containerName, port.ToString());
 
-    public static RunExeCommand ImagesCommand(ITestOutputHelper log, params string[] args)
-      => CreateCommand(log, "images", args);
-
     private static RunExeCommand CreateCommand(ITestOutputHelper log, string command, params string[] args)
     {
         string commandPath = IsPodman ? "podman" : "docker";
