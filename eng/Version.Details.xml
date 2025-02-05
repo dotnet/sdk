@@ -384,44 +384,44 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.JSInterop" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.AspNetCore.TestHost" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Web.ItemTemplates.10.0" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.DotNet.Web.ItemTemplates.10.0" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Web.ProjectTemplates.10.0" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.DotNet.Web.ProjectTemplates.10.0" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="10.0.0-alpha.2.25073.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="10.0.0-preview.2.25105.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>9f3e60c3cfc720f662c87e8430284c05e2e084cb</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
