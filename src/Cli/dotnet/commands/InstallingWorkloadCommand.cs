@@ -254,7 +254,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             PrintWorkloadSetTransition(workloadSetVersion);
             var workloadSet = _workloadInstaller.InstallWorkloadSet(context, workloadSetVersion);
 
-            return _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
+            return workloadSet is null ? Enumerable.Empty<ManifestVersionUpdate>() : _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
         }
 
         private void PrintWorkloadSetTransition(string newVersion)
