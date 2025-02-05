@@ -4,7 +4,6 @@
 using System.Formats.Tar;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
