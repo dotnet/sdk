@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.NET.Build.Containers.Resources;
@@ -46,11 +47,6 @@ internal static class ImageIndexGenerator
 
     internal static string GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
     {
-        if (images.Length == 0)
-        {
-            throw new ArgumentException(string.Format(Strings.ImagesEmpty));
-        }
-        
         // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
         // We are filling the same fields, so we can use the same struct.
         var manifests = new PlatformSpecificManifest[images.Length];
@@ -77,12 +73,7 @@ internal static class ImageIndexGenerator
             manifests = manifests
         };
 
-        var options = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-        
-        return JsonSerializer.SerializeToNode(imageIndex, options)?.ToJsonString() ?? "";
+        return GetJsonStringFromImageIndex(imageIndex);
     }
 
     internal static string GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
@@ -98,7 +89,7 @@ internal static class ImageIndexGenerator
                 digest = manifestDigest,
                 annotations = new Dictionary<string, string> 
                 {
-                    { "io.containerd.image.name", $"{repository}:{tag}" },
+                    { "io.containerd.image.name", $"docker.io/library/{repository}:{tag}" },
                     { "org.opencontainers.image.ref.name", tag } 
                 }
             };
@@ -111,11 +102,20 @@ internal static class ImageIndexGenerator
             manifests = manifests
         };
 
-        var options = new JsonSerializerOptions
+        return GetJsonStringFromImageIndex(index);
+    }
+
+    private static string GetJsonStringFromImageIndex<T>(T imageIndex)
+    {
+        var nullIgnoreOptions = new JsonSerializerOptions
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
+        var escapeOptions = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
 
-        return JsonSerializer.SerializeToNode(index, options)?.ToJsonString() ?? "";
+        return JsonSerializer.SerializeToNode(imageIndex, nullIgnoreOptions)?.ToJsonString(escapeOptions) ?? "";
     }
 }
