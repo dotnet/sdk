@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.NET.Sdk.StaticWebAssets.targets
+Microsoft.NET.Sdk.StaticWebAssets.HtmlImportMap.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -16,7 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <ResolveBuildRelatedStaticWebAssetsDependsOn>
-      $(ResolveStaticWebAssetsInputsDependsOn);
+      $(ResolveBuildRelatedStaticWebAssetsDependsOn);
       _UpdateHtmlFiles;
     </ResolveBuildRelatedStaticWebAssetsDependsOn>
     <ResolveCompressedFilesDependsOn>
@@ -32,14 +32,22 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <MakeDir Directories="$(_BuildImportMapHtmlPath)"/>
 
-    <!-- Find HTML swa -->
+    <!-- Find HTML Static Web Assets -->
     <ItemGroup>
-      <_HtmlStaticWebAssets Include="@(StaticWebAsset)" Condition="'%(Extension)' == '.html'" />
+      <_HtmlStaticWebAssets Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Publish' and '%(Extension)' == '.html'" />
+      <_EsModuleCandidate Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Publish'" />
     </ItemGroup>
 
-    <!-- Write import map and fingerprinted assets to html files -->
-    <WriteImportMapToHtml
+    <!-- Filter relevant endpoints, write import map and fingerprinted assets to html files -->
+    <FilterStaticWebAssetEndpoints Condition="'@(_EsModuleCandidate)' != ''"
       Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_EsModuleCandidate)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_EsModuleCandidateEndpoints" />
+    </FilterStaticWebAssetEndpoints>
+    <WriteImportMapToHtml
+      Endpoints="@(_EsModuleCandidateEndpoints)"
       HtmlFiles="@(_HtmlStaticWebAssets)"
       OutputPath="$(_BuildImportMapHtmlPath)">
       <Output TaskParameter="HtmlCandidates" ItemName="_HtmlCandidates" />
@@ -51,10 +59,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_HtmlCandidatesNoMetadata
         Include="@(_HtmlCandidates)"
-        RemoveMetadata="Integrity;Fingerprint" />
+        RemoveMetadata="SourceType;AssetKind;Integrity;Fingerprint" />
       <_HtmlCandidatesNoMetadata ContentRoot="$(_BuildImportMapHtmlPath)" />
     </ItemGroup>
-    <DefineStaticWebAssets CandidateAssets="@(_HtmlCandidatesNoMetadata)">
+    <DefineStaticWebAssets CandidateAssets="@(_HtmlCandidatesNoMetadata)"
+      SourceType="Computed"
+      AssetKind="Build"
+    >
       <Output TaskParameter="Assets" ItemName="_UpdatedHtmlStaticWebAssets" />
     </DefineStaticWebAssets>
     <DefineStaticWebAssetEndpoints
@@ -68,6 +79,70 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Remove="@(_HtmlFilesToRemove)" />
       <StaticWebAsset Include="@(_UpdatedHtmlStaticWebAssets)" />
       <StaticWebAssetEndpoint Include="@(_UpdatedHtmlStaticWebAssetsEndpoint)" />
+    </ItemGroup>
+  </Target>
+  
+  <!-- Publish -->
+  <PropertyGroup>
+    <ResolvePublishRelatedStaticWebAssetsDependsOn>
+      $(ResolvePublishRelatedStaticWebAssetsDependsOn);
+      _UpdatePublishHtmlFiles;
+    </ResolvePublishRelatedStaticWebAssetsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_UpdatePublishHtmlFiles">
+    <PropertyGroup>
+      <_PublishImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(IntermediateOutputPath), 'importmaphtml', 'publish'))</_PublishImportMapHtmlPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(_PublishImportMapHtmlPath)"/>
+
+    <ItemGroup>
+      <_HtmlStaticWebAssetsForPublish Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build' and '%(Extension)' == '.html'" />
+      <_EsModuleCandidateForPublish Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build'" />
+    </ItemGroup>
+
+    <!-- Filter relevant endpoints, write import map and fingerprinted assets to html files -->
+    <FilterStaticWebAssetEndpoints Condition="'@(_EsModuleCandidateForPublish)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_EsModuleCandidateForPublish)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_EsModuleCandidateForPublishEndpoints" />
+    </FilterStaticWebAssetEndpoints>
+    <WriteImportMapToHtml
+      Endpoints="@(_EsModuleCandidateForPublishEndpoints)"
+      HtmlFiles="@(_HtmlStaticWebAssetsForPublish)"
+      OutputPath="$(_PublishImportMapHtmlPath)">
+      <Output TaskParameter="HtmlCandidates" ItemName="_HtmlPublishCandidates" />
+      <Output TaskParameter="HtmlFilesToRemove" ItemName="_HtmlPublishFilesToRemove" />
+      <Output TaskParameter="FileWrites" ItemName="FileWrites" />
+    </WriteImportMapToHtml>
+
+    <!-- Replace modified HTML swa -->
+    <ItemGroup>
+      <_HtmlPublishCandidatesNoMetadata
+        Include="@(_HtmlPublishCandidates)"
+        RemoveMetadata="SourceType;AssetKind;Integrity;Fingerprint" />
+      <_HtmlPublishCandidatesNoMetadata ContentRoot="$(_PublishImportMapHtmlPath)" />
+    </ItemGroup>
+    <DefineStaticWebAssets CandidateAssets="@(_HtmlPublishCandidatesNoMetadata)"
+      SourceType="Computed"
+      AssetKind="Publish"
+    >
+      <Output TaskParameter="Assets" ItemName="_UpdatedHtmlPublishStaticWebAssets" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_UpdatedHtmlPublishStaticWebAssets)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_UpdatedHtmlPublishStaticWebAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+    <ItemGroup>
+      <StaticWebAsset Remove="@(_HtmlPublishFilesToRemove)" />
+      <StaticWebAsset Include="@(_UpdatedHtmlPublishStaticWebAssets)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedHtmlPublishStaticWebAssetsEndpoint)" />
     </ItemGroup>
   </Target>
 
