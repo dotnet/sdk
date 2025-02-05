@@ -10,26 +10,26 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolUninstallCommandParser
     {
-        public static readonly CliArgument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
+        public static readonly Argument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
 
-        public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+        public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
-        public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
+        public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
 
-        public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
+        public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
-        public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+        public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
+            Command command = new("uninstall", LocalizableStrings.CommandDescription);
 
             command.Arguments.Add(PackageIdArgument);
             command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));

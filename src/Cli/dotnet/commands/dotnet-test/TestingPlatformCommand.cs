@@ -10,7 +10,7 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
 {
-    internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
+    internal partial class TestingPlatformCommand : Command, ICustomHelp
     {
         private MSBuildHandler _msBuildHandler;
         private TerminalTestReporter _output;

@@ -13,11 +13,11 @@ namespace Dotnet_new3
     /// this implementation is for test purpose only.
     /// Keep in sync with https://github.com/dotnet/sdk/blob/main/src/Cli/dotnet/commands/dotnet-complete/CompleteCommand.cs.
     /// </remark>
-    internal class CompleteCommand : CliCommand
+    internal class CompleteCommand : Command
     {
-        private static readonly CliArgument<string> PathArgument = new("path");
+        private static readonly Argument<string> PathArgument = new("path");
 
-        private static readonly CliOption<int?> PositionOption = new("--position");
+        private static readonly Option<int?> PositionOption = new("--position");
 
         internal CompleteCommand() : base("complete", "tab completion")
         {
@@ -40,7 +40,7 @@ namespace Dotnet_new3
                     input += " ";
                 }
 
-                CliCommand newCommand = New3CommandFactory.Create();
+                Command newCommand = New3CommandFactory.Create();
                 ParseResult newCommandResult = ParserFactory.CreateParser(newCommand).Parse(input);
                 foreach (CompletionItem suggestion in newCommandResult.GetCompletions(position).Distinct())
                 {

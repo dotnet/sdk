@@ -11,16 +11,16 @@ namespace Microsoft.DotNet.Tools.MSBuild
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-msbuild";
 
-        public static readonly CliArgument<string[]> Arguments = new("arguments");
+        public static readonly Argument<string[]> Arguments = new("arguments");
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
             var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.AppFullName)
             {

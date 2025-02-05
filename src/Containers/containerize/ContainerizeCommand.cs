@@ -10,115 +10,115 @@ using Microsoft.NET.Build.Containers;
 
 namespace containerize;
 
-internal class ContainerizeCommand : CliRootCommand
+internal class ContainerizeCommand : RootCommand
 {
-    internal CliArgument<DirectoryInfo> PublishDirectoryArgument { get; } = new CliArgument<DirectoryInfo>("PublishDirectory")
+    internal Argument<DirectoryInfo> PublishDirectoryArgument { get; } = new Argument<DirectoryInfo>("PublishDirectory")
     {
         Description = "The directory for the build outputs to be published."
     }.AcceptExistingOnly();
 
-    internal CliOption<string> BaseRegistryOption { get; } = new("--baseregistry")
+    internal Option<string> BaseRegistryOption { get; } = new("--baseregistry")
     {
         Description = "The registry to use for the base image.",
         Required = true
     };
 
-    internal CliOption<string> BaseImageNameOption { get; } = new("--baseimagename")
+    internal Option<string> BaseImageNameOption { get; } = new("--baseimagename")
     {
         Description = "The base image to pull.",
         Required = true
     };
 
-    internal CliOption<string> BaseImageTagOption { get; } = new("--baseimagetag")
+    internal Option<string> BaseImageTagOption { get; } = new("--baseimagetag")
     {
         Description = "The base image tag. Ex: 6.0",
         DefaultValueFactory = (_) => "latest"
     };
 
-    internal CliOption<string> BaseImageDigestOption { get; } = new("--baseimagedigest")
+    internal Option<string> BaseImageDigestOption { get; } = new("--baseimagedigest")
     {
         Description = "The base image digest. Ex: sha256:6cec3641...",
         Required = false
     };
 
-    internal CliOption<string> OutputRegistryOption { get; } = new("--outputregistry")
+    internal Option<string> OutputRegistryOption { get; } = new("--outputregistry")
     {
         Description = "The registry to push to.",
         Required = false
     };
 
-    internal CliOption<string> ArchiveOutputPathOption { get; } = new("--archiveoutputpath")
+    internal Option<string> ArchiveOutputPathOption { get; } = new("--archiveoutputpath")
     {
         Description = "The file path to which to write a tar.gz archive of the container image.",
         Required = false
     };
 
-    internal CliOption<string> RepositoryOption { get; } = new("--repository")
+    internal Option<string> RepositoryOption { get; } = new("--repository")
     {
         Description = "The name of the output container repository that will be pushed to the registry.",
         Required = true
     };
 
-    internal CliOption<string[]> ImageTagsOption { get; } = new("--imagetags")
+    internal Option<string[]> ImageTagsOption { get; } = new("--imagetags")
     {
         Description = "The tags to associate with the new image.",
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string> WorkingDirectoryOption { get; } = new("--workingdirectory")
+    internal Option<string> WorkingDirectoryOption { get; } = new("--workingdirectory")
     {
         Description = "The working directory of the container.",
         Required = true
     };
 
-    internal CliOption<string[]> EntrypointOption { get; } = new("--entrypoint")
+    internal Option<string[]> EntrypointOption { get; } = new("--entrypoint")
     {
         Description = "The entrypoint application of the container.",
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string[]> EntrypointArgsOption { get; } = new("--entrypointargs")
+    internal Option<string[]> EntrypointArgsOption { get; } = new("--entrypointargs")
     {
         Description = "Arguments to pass alongside Entrypoint.",
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string[]> DefaultArgsOption { get; } = new CliOption<string[]>("--defaultargs")
+    internal Option<string[]> DefaultArgsOption { get; } = new Option<string[]>("--defaultargs")
     {
         Description = "Default arguments passed. These can be overridden by the user when the container is created.",
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string[]> AppCommandOption { get; } = new("--appcommand")
+    internal Option<string[]> AppCommandOption { get; } = new("--appcommand")
     {
         Description = "The file name and arguments that launch the application. For example: ['dotnet', 'app.dll'].",
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string[]> AppCommandArgsOption { get; } = new("--appcommandargs")
+    internal Option<string[]> AppCommandArgsOption { get; } = new("--appcommandargs")
     {
         Description = "Arguments always passed to the application.",
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string> AppCommandInstructionOption { get; } = new CliOption<string>("--appcommandinstruction")
+    internal Option<string> AppCommandInstructionOption { get; } = new Option<string>("--appcommandinstruction")
     {
         Description = "The Dockerfile instruction used for AppCommand. Can be set to 'DefaultArgs', 'Entrypoint', 'None', '' (default)."
     };
 
-    internal CliOption<string> LocalRegistryOption { get; } = new CliOption<string>("--localregistry")
+    internal Option<string> LocalRegistryOption { get; } = new Option<string>("--localregistry")
     {
         Description = "The local registry to push to."
     };
 
-    internal CliOption<Dictionary<string, string>> LabelsOption { get; } = new("--labels")
+    internal Option<Dictionary<string, string>> LabelsOption { get; } = new("--labels")
     {
         Description = "Labels that the image configuration will include in metadata.",
         CustomParser = result => ParseDictionary(result, errorMessage: "Incorrectly formatted labels: "),
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<Port[]> PortsOption { get; } = new("--ports")
+    internal Option<Port[]> PortsOption { get; } = new("--ports")
     {
         Description = "Ports that the application declares that it will use. Note that this means nothing to container hosts, by default - it's mostly documentation. Ports should be of the form {number}/{type}, where {type} is tcp or udp",
         AllowMultipleArgumentsPerToken = true,
@@ -178,32 +178,32 @@ internal class ContainerizeCommand : CliRootCommand
         }
     };
 
-    internal CliOption<Dictionary<string, string>> EnvVarsOption { get; } = new("--environmentvariables")
+    internal Option<Dictionary<string, string>> EnvVarsOption { get; } = new("--environmentvariables")
     {
         Description = "Container environment variables to set.",
         CustomParser = result => ParseDictionary(result, errorMessage: "Incorrectly formatted environment variables:  "),
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal CliOption<string> RidOption { get; } = new("--rid") { Description = "Runtime Identifier of the generated container." };
+    internal Option<string> RidOption { get; } = new("--rid") { Description = "Runtime Identifier of the generated container." };
 
-    internal CliOption<string> RidGraphPathOption { get; } = new("--ridgraphpath") { Description = "Path to the RID graph file." };
+    internal Option<string> RidGraphPathOption { get; } = new("--ridgraphpath") { Description = "Path to the RID graph file." };
 
-    internal CliOption<string> ContainerUserOption { get; } = new("--container-user") { Description = "User to run the container as." };
+    internal Option<string> ContainerUserOption { get; } = new("--container-user") { Description = "User to run the container as." };
 
-    internal CliOption<bool> GenerateLabelsOption { get; } = new("--generate-labels")
+    internal Option<bool> GenerateLabelsOption { get; } = new("--generate-labels")
     {
         Description = "If true, the tooling may create labels on the generated images.",
         Arity = ArgumentArity.Zero
     };
 
-    internal CliOption<bool> GenerateDigestLabelOption { get; } = new("--generate-digest-label")
+    internal Option<bool> GenerateDigestLabelOption { get; } = new("--generate-digest-label")
     {
         Description = "If true, the tooling will generate an 'org.opencontainers.image.base.digest' label on the generated images containing the digest of the chosen base image.",
         Arity = ArgumentArity.Zero
     };
 
-    internal CliOption<KnownImageFormats?> ImageFormatOption { get; } = new("--image-format")
+    internal Option<KnownImageFormats?> ImageFormatOption { get; } = new("--image-format")
     {
         Description = "If set to OCI or Docker will force the generated image to be that format. If unset, the base images format will be used."
     };

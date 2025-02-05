@@ -19,67 +19,67 @@ namespace Microsoft.CodeAnalysis.Tools
         private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
         private static string[] SeverityLevels => new[] { "info", "warn", "error" };
 
-        public static readonly CliArgument<string> SlnOrProjectArgument = new CliArgument<string>(Resources.SolutionOrProjectArgumentName)
+        public static readonly Argument<string> SlnOrProjectArgument = new Argument<string>(Resources.SolutionOrProjectArgumentName)
         {
             Description = Resources.SolutionOrProjectArgumentDescription,
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
-        internal static readonly CliOption<bool> FolderOption = new("--folder")
+        internal static readonly Option<bool> FolderOption = new("--folder")
         {
             Description = Resources.Whether_to_treat_the_workspace_argument_as_a_simple_folder_of_files,
         };
-        internal static readonly CliOption<bool> NoRestoreOption = new("--no-restore")
+        internal static readonly Option<bool> NoRestoreOption = new("--no-restore")
         {
             Description = Resources.Doesnt_execute_an_implicit_restore_before_formatting,
         };
-        internal static readonly CliOption<bool> VerifyNoChanges = new("--verify-no-changes")
+        internal static readonly Option<bool> VerifyNoChanges = new("--verify-no-changes")
         {
             Description = Resources.Verify_no_formatting_changes_would_be_performed_Terminates_with_a_non_zero_exit_code_if_any_files_would_have_been_formatted,
         };
-        internal static readonly CliOption<string[]> DiagnosticsOption = new("--diagnostics")
+        internal static readonly Option<string[]> DiagnosticsOption = new("--diagnostics")
         {
             AllowMultipleArgumentsPerToken = true,
             DefaultValueFactory = _ => Array.Empty<string>(),
             Description = Resources.A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues,
         };
-        internal static readonly CliOption<string[]> ExcludeDiagnosticsOption = new("--exclude-diagnostics")
+        internal static readonly Option<string[]> ExcludeDiagnosticsOption = new("--exclude-diagnostics")
         {
             AllowMultipleArgumentsPerToken = true,
             DefaultValueFactory = _ => Array.Empty<string>(),
             Description = Resources.A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues,
         };
-        internal static readonly CliOption<string> SeverityOption = new CliOption<string>("--severity")
+        internal static readonly Option<string> SeverityOption = new Option<string>("--severity")
         {
             Description = Resources.The_severity_of_diagnostics_to_fix_Allowed_values_are_info_warn_and_error,
         };
-        internal static readonly CliOption<string[]> IncludeOption = new("--include")
+        internal static readonly Option<string[]> IncludeOption = new("--include")
         {
             AllowMultipleArgumentsPerToken = true,
             DefaultValueFactory = _ => Array.Empty<string>(),
             Description = Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty,
         };
-        internal static readonly CliOption<string[]> ExcludeOption = new("--exclude")
+        internal static readonly Option<string[]> ExcludeOption = new("--exclude")
         {
             AllowMultipleArgumentsPerToken = true,
             DefaultValueFactory = _ => Array.Empty<string>(),
             Description = Resources.A_list_of_relative_file_or_folder_paths_to_exclude_from_formatting,
         };
-        internal static readonly CliOption<bool> IncludeGeneratedOption = new("--include-generated")
+        internal static readonly Option<bool> IncludeGeneratedOption = new("--include-generated")
         {
             Description = Resources.Format_files_generated_by_the_SDK,
         };
-        internal static readonly CliOption<string> VerbosityOption = new CliOption<string>("--verbosity", "-v")
+        internal static readonly Option<string> VerbosityOption = new Option<string>("--verbosity", "-v")
         {
             Description = Resources.Set_the_verbosity_level_Allowed_values_are_quiet_minimal_normal_detailed_and_diagnostic,
         };
-        internal static readonly CliOption<string> BinarylogOption = new CliOption<string>("--binarylog")
+        internal static readonly Option<string> BinarylogOption = new Option<string>("--binarylog")
         {
             HelpName = "binary-log-path",
             Arity = ArgumentArity.ZeroOrOne,
             Description = Resources.Log_all_project_or_solution_load_information_to_a_binary_log_file,
         };
-        internal static readonly CliOption<string> ReportOption = new CliOption<string>("--report")
+        internal static readonly Option<string> ReportOption = new Option<string>("--report")
         {
             HelpName = "report-path",
             Arity = ArgumentArity.ZeroOrOne,
@@ -118,7 +118,7 @@ namespace Microsoft.CodeAnalysis.Tools
             return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
         }
 
-        public static void AddCommonOptions(this CliCommand command)
+        public static void AddCommonOptions(this Command command)
         {
             command.Arguments.Add(SlnOrProjectArgument);
             command.Options.Add(NoRestoreOption);
@@ -131,7 +131,7 @@ namespace Microsoft.CodeAnalysis.Tools
             command.Options.Add(ReportOption);
         }
 
-        public static CliArgument<string> DefaultToCurrentDirectory(this CliArgument<string> arg)
+        public static Argument<string> DefaultToCurrentDirectory(this Argument<string> arg)
         {
             arg.DefaultValueFactory = _ => EnsureTrailingSlash(Directory.GetCurrentDirectory());
             return arg;

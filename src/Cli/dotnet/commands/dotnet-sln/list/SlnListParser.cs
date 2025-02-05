@@ -9,18 +9,18 @@ namespace Microsoft.DotNet.Cli
 {
     public static class SlnListParser
     {
-        public static readonly CliOption<bool> SolutionFolderOption = new("--solution-folders") { Description = LocalizableStrings.ListSolutionFoldersArgumentDescription };
+        public static readonly Option<bool> SolutionFolderOption = new("--solution-folders") { Description = LocalizableStrings.ListSolutionFoldersArgumentDescription };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("list", LocalizableStrings.ListAppFullName);
+            Command command = new("list", LocalizableStrings.ListAppFullName);
 
             command.Options.Add(SolutionFolderOption);
             command.SetAction((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());

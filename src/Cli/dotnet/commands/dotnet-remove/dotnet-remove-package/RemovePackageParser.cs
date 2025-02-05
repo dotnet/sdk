@@ -10,27 +10,27 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class RemovePackageParser
     {
-        public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(Tools.Add.PackageReference.LocalizableStrings.CmdPackage)
+        public static readonly Argument<IEnumerable<string>> CmdPackageArgument = new(Tools.Add.PackageReference.LocalizableStrings.CmdPackage)
         {
             Description = LocalizableStrings.AppHelpText,
             Arity = ArgumentArity.OneOrMore,
         };
 
-        public static readonly CliOption<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
+        public static readonly Option<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
         {
             Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
         }.ForwardAs("--interactive");
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            var command = new CliCommand("package", LocalizableStrings.AppFullName);
+            var command = new Command("package", LocalizableStrings.AppFullName);
 
             command.Arguments.Add(CmdPackageArgument);
             command.Options.Add(InteractiveOption);

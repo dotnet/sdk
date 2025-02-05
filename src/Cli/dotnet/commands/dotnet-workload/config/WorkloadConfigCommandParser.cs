@@ -13,24 +13,24 @@ namespace Microsoft.DotNet.Cli
         public static readonly string UpdateMode_WorkloadSet = "workload-set";
         public static readonly string UpdateMode_Manifests = "manifests";
 
-        public static readonly CliOption<string> UpdateMode = new("--update-mode")
+        public static readonly Option<string> UpdateMode = new("--update-mode")
         {
             Description = LocalizableStrings.UpdateModeDescription,
             Arity = ArgumentArity.ZeroOrOne
         };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
             UpdateMode.AcceptOnlyFromAmong(UpdateMode_WorkloadSet, UpdateMode_Manifests);
 
-            CliCommand command = new("config", LocalizableStrings.CommandDescription);
+            Command command = new("config", LocalizableStrings.CommandDescription);
             command.Options.Add(UpdateMode);
 
             command.SetAction(parseResult =>

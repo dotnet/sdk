@@ -244,7 +244,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
-            CliCommand rootCommand = new("dotnet")
+            Command rootCommand = new("dotnet")
             {
                 myCommand
             };
@@ -258,7 +258,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
-            CliCommand rootCommand = new("dotnet")
+            Command rootCommand = new("dotnet")
             {
                 myCommand
             };
@@ -272,7 +272,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
-            CliCommand rootCommand = new("dotnet")
+            Command rootCommand = new("dotnet")
             {
                 myCommand
             };

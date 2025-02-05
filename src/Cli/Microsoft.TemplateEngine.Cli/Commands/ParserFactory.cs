@@ -8,9 +8,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal static class ParserFactory
     {
-        internal static CliConfiguration CreateParser(CliCommand command, bool disableHelp = false)
+        internal static CommandLineConfiguration CreateParser(Command command, bool disableHelp = false)
         {
-            CliConfiguration config = new(command)
+            CommandLineConfiguration config = new(command)
             //TODO: decide if it's needed to implement it; and implement if needed
             //.UseParseDirective()
             //.UseSuggestDirective()

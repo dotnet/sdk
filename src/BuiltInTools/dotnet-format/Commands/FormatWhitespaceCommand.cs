@@ -12,9 +12,9 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
     {
         private static readonly FormatWhitespaceHandler s_formattingHandler = new();
 
-        internal static CliCommand GetCommand()
+        internal static Command GetCommand()
         {
-            var command = new CliCommand("whitespace", Resources.Run_whitespace_formatting)
+            var command = new Command("whitespace", Resources.Run_whitespace_formatting)
             {
                 FolderOption
             };
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             }
         }
 
-        private class FormatWhitespaceHandler : AsynchronousCliAction
+        private class FormatWhitespaceHandler : AsynchronousCommandLineAction
         {
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {

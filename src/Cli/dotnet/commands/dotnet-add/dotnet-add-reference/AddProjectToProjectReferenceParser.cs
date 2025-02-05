@@ -9,31 +9,31 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class AddProjectToProjectReferenceParser
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ProjectPathArgumentName)
+        public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ProjectPathArgumentName)
         {
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore
         };
 
-        public static readonly CliOption<string> FrameworkOption = new CliOption<string>("--framework", "-f")
+        public static readonly Option<string> FrameworkOption = new Option<string>("--framework", "-f")
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
             HelpName = Tools.Add.PackageReference.LocalizableStrings.CmdFramework
 
         }.AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
-        public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption;
+        public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption;
 
-        private static readonly CliCommand Command = ConstructCommand();
+        private static readonly Command Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        private static Command ConstructCommand()
         {
-            CliCommand command = new("reference", LocalizableStrings.AppFullName);
+            Command command = new("reference", LocalizableStrings.AppFullName);
 
             command.Arguments.Add(ProjectPathArgument);
             command.Options.Add(FrameworkOption);

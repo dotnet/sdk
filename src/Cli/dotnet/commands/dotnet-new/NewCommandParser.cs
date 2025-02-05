@@ -18,6 +18,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.MSBuildEvaluation;
 using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -32,14 +33,14 @@ namespace Microsoft.DotNet.Cli
 
         private const VerbosityOptions DefaultVerbosity = VerbosityOptions.normal;
 
-        private static readonly CliOption<bool> s_disableSdkTemplatesOption = new CliOption<bool>("--debug:disable-sdk-templates")
+        private static readonly Option<bool> s_disableSdkTemplatesOption = new Option<bool>("--debug:disable-sdk-templates")
         {
             DefaultValueFactory = static _ => false,
             Description = LocalizableStrings.DisableSdkTemplates_OptionDescription,
             Recursive = true
         }.Hide();
 
-        private static readonly CliOption<bool> s_disableProjectContextEvaluationOption = new CliOption<bool>(
+        private static readonly Option<bool> s_disableProjectContextEvaluationOption = new Option<bool>(
             "--debug:disable-project-context")
         {
             DefaultValueFactory = static _ => false,
@@ -47,7 +48,7 @@ namespace Microsoft.DotNet.Cli
             Recursive = true
         }.Hide();
 
-        private static readonly CliOption<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
+        private static readonly Option<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
         {
             DefaultValueFactory = _ => DefaultVerbosity,
             Description = LocalizableStrings.Verbosity_OptionDescription,
@@ -55,16 +56,16 @@ namespace Microsoft.DotNet.Cli
             Recursive = true
         };
 
-        private static readonly CliOption<bool> s_diagnosticOption =
+        private static readonly Option<bool> s_diagnosticOption =
             CommonOptionsFactory
                 .CreateDiagnosticsOption(recursive: true)
                 .WithDescription(LocalizableStrings.Diagnostics_OptionDescription);
 
-        internal static readonly CliCommand s_command = GetCommand();
+        internal static readonly Command s_command = GetCommand();
 
-        public static CliCommand GetCommand()
+        public static Command GetCommand()
         {
-            CliCommand command = NewCommandFactory.Create(CommandName, (Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
+            Command command = NewCommandFactory.Create(CommandName, (Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
             command.Options.Add(s_disableSdkTemplatesOption);
             command.Options.Add(s_disableProjectContextEvaluationOption);
             command.Options.Add(s_verbosityOption);
