@@ -20,3 +20,15 @@ index b2d72fb52aaea7..01705fc98d4f17 100644
 +    <ProjectToBuild Include="$(RepoRoot)Build.proj" BuildPass="2" />
    </ItemGroup>
  </Project>
+diff --git a/eng/Build.props b/eng/Build.props
+index 01705fc98d4..45d7d76c82a 100644
+--- a/eng/Build.props
++++ b/eng/Build.props
+@@ -6,6 +6,6 @@
+   <ItemGroup>
+     <ProjectToBuild Include="$(RepoRoot)Build.proj" />
+     <!-- dotnet/runtime controls which projects run in which passes through our DefaultSubsets settings in eng/Subsets.props -->
+-    <ProjectToBuild Include="$(RepoRoot)Build.proj" BuildPass="2" />
++    <ProjectToBuild Include="$(RepoRoot)Build.proj" DotNetBuildPass="2" Condition="'$(DotNetBuildPass)' == '2'" />
+   </ItemGroup>
+ </Project>
