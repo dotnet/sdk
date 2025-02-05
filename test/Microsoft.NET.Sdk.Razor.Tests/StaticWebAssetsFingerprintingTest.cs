@@ -4,6 +4,7 @@
 #nullable disable
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 
@@ -43,5 +44,33 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         var manifest1 = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
         AssertManifest(manifest1, expectedManifest);
         AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
+    }
+
+    [Fact]
+    public void Publish_WriteImportMapToHtml()
+    {
+        var testAsset = "VanillaWasm";
+        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+        var publish = CreatePublishCommand(ProjectDirectory);
+        ExecuteCommand(publish).Should().Pass();
+
+        var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+        var indexHtmlPath = Path.Combine(outputPath, "wwwroot", "index.html");
+        var indexHtmlContent = File.ReadAllText(indexHtmlPath);
+
+        var endpointsManifestFile = Path.Combine(outputPath, $"{testAsset}.staticwebassets.endpoints.json");
+        var endpoints = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(File.ReadAllText(endpointsManifestFile));
+
+        var mainJs = GetFingerprintedPath("main.js");
+        Assert.DoesNotContain("src=\"main.js\"", indexHtmlContent);
+        Assert.Contains($"src=\"{mainJs}\"", indexHtmlContent);
+
+        Assert.Contains(GetFingerprintedPath("_framework/dotnet.js"), indexHtmlContent);
+        Assert.Contains(GetFingerprintedPath("_framework/dotnet.native.js"), indexHtmlContent);
+        Assert.Contains(GetFingerprintedPath("_framework/dotnet.runtime.js"), indexHtmlContent);
+
+        string GetFingerprintedPath(string route)
+            => endpoints.Endpoints.FirstOrDefault(e => e.Route == route && e.Selectors.Length == 0)?.AssetFile ?? throw new Exception($"Missing endpoint for file '{route}'");
     }
 }
