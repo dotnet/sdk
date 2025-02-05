@@ -97,47 +97,47 @@
       <Sha>387f04cb6675c984036a64c9bb768ac6f00e06f9</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-2.25104.7">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-2.25104.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>40ec700e70c751f4013e5e5dbdc55bf637756e14</Sha>
+      <Sha>a65728c31cb0c5e533bac0989b7a01c0f068313a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-preview.1.25103.6">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
