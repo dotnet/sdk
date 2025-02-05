@@ -625,7 +625,7 @@ internal sealed class DockerCli
         }
     }
 
-    private static bool IsContainerdStoreEnabledForDocker()
+    internal static bool IsContainerdStoreEnabledForDocker()
     {
         try
         {
