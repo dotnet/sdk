@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
     {
         public string Name;
         public NuGetVersion Version;
+
+        public override string ToString() => $"{Name}/{Version}";
     }
 
     /// <summary>
@@ -196,6 +198,10 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             if (VersionPropsFlowType == DependenciesOnlyVersionPropsFlowType)
             {
                 var dependencies = GetDependences();
+                foreach (string dependency in dependencies)
+                {
+                    Log.LogMessage($"Found dependency: '{dependency}'");
+                }
 
                 if (Log.HasLoggedErrors)
                 {
@@ -203,6 +209,10 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 }
 
                 packageElementsToWrite = FilterNonDependencies(packageElementsToWrite, dependencies);
+                foreach (VersionEntry packageElementToWrite in packageElementsToWrite)
+                {
+                    Log.LogMessage($"Writing dependency: '{packageElementToWrite}");
+                }
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(OutputPath));

@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class MSBuildUtility
     {
-        public static (IEnumerable<Module>, bool) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
+        public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
         {
             var projectCollection = new ProjectCollection();
             string rootDirectory = SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
@@ -32,11 +32,11 @@ namespace Microsoft.DotNet.Cli
                 buildOptions,
                 GetCommands(buildOptions.HasNoRestore, buildOptions.HasNoBuild));
 
-            ConcurrentBag<Module> projects = GetProjectsProperties(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions.DegreeOfParallelism);
+            ConcurrentBag<Module> projects = GetProjectsProperties(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
             return (projects, isBuiltOrRestored);
         }
 
-        public static (IEnumerable<Module>, bool) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
+        public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
         {
             var projectCollection = new ProjectCollection();
             bool isBuiltOrRestored = true;
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli
                     [CliConstants.BuildCommand]);
             }
 
-            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, projectCollection);
+            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), projectCollection);
 
             return (projects, isBuiltOrRestored);
         }
@@ -76,16 +76,16 @@ namespace Microsoft.DotNet.Cli
             return buildResult.OverallResult == BuildResultCode.Success;
         }
 
-        private static ConcurrentBag<Module> GetProjectsProperties(ProjectCollection projectCollection, IEnumerable<string> projects, int degreeOfParallelism)
+        private static ConcurrentBag<Module> GetProjectsProperties(ProjectCollection projectCollection, IEnumerable<string> projects, BuildOptions buildOptions)
         {
             var allProjects = new ConcurrentBag<Module>();
 
             Parallel.ForEach(
                 projects,
-                new ParallelOptions { MaxDegreeOfParallelism = degreeOfParallelism },
+                new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
                 (project) =>
                 {
-                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection);
+                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions), projectCollection);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);
@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Cli
             return solutionFullPath;
         }
 
-        internal static bool IsBinaryLoggerEnabled(List<string> args, out string binLogFileName)
+        internal static bool IsBinaryLoggerEnabled(ref List<string> args, out string binLogFileName)
         {
             binLogFileName = string.Empty;
             var binLogArgs = new List<string>();
