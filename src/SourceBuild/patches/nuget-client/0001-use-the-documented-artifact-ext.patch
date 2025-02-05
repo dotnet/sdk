@@ -1,17 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Nikola Milosavljevic <nikolam@microsoft.com>
-Date: Tue, 4 Feb 2025 22:18:35 +0000
+From: Premek Vysoky <premek.vysoky@microsoft.com>
+Date: Wed, 5 Feb 2025 12:51:35 +0100
 Subject: [PATCH] Remove extra spaces in Publishing.props (#6251)
 
+This might help with the VMR sync problems we have in https://github.com/dotnet/sdk/pull/46361
 ---
- eng/Publishing.props | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ eng/Publishing.props | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/eng/Publishing.props b/eng/Publishing.props
-index d5604fbf8..7517ca4e5 100644
+index d5604fbf8..d7fd329ae 100644
 --- a/eng/Publishing.props
 +++ b/eng/Publishing.props
-@@ -2,7 +2,7 @@
+@@ -2,7 +2,6 @@
  
    <ItemGroup>
      <Artifact Include="$(ArtifactsDir)nupkgs/*.nupkg"
@@ -20,5 +21,3 @@ index d5604fbf8..7517ca4e5 100644
    </ItemGroup>
 -  
  </Project>
--- 
-2.47.1.windows.2
