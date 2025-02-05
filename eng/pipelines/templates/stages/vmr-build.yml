@@ -866,7 +866,6 @@ stages:
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86
-            runTests: false
             buildPass: 2
             reuseBuildArtifactsFrom:
             - AzureLinux_x64_Cross_x64
