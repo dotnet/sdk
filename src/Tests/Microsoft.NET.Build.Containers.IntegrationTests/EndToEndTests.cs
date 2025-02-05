@@ -1004,6 +1004,7 @@ public class EndToEndTests : IDisposable
         string imageX64 = $"{imageName}:{imageTag}-linux-x64";
         string imageArm64 = $"{imageName}:{imageTag}-linux-arm64";
         string imageIndex = $"{imageName}:{imageTag}";
+        string imageFromRegistry = $"{registry}/{imageIndex}";
 
         // Create a new console project
         DirectoryInfo newProjectDir = CreateNewProject("console");
@@ -1031,59 +1032,42 @@ public class EndToEndTests : IDisposable
             .And.HaveStdOutContaining($"Pushed image '{imageX64}' to registry '{registry}'.")
             .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to registry '{registry}'.")
             .And.HaveStdOutContaining($"Pushed image index '{imageIndex}' to registry '{registry}'.");
-
-
-        // Check that the containers can be run
-        // First pull the image from the registry, then tag so the image won't be overwritten
-        string imageX64Tagged = $"{registry}/test-image-{imageName}-x64";
+        
+        // First pull the image from the registry for each platform
         ContainerCli.PullCommand(
             _testOutput,
             "--platform",
             "linux/amd64",
-            $"{registry}/{imageIndex}")
+            imageFromRegistry)
             .Execute()
             .Should().Pass();
-        ContainerCli.TagCommand(
+        ContainerCli.PullCommand(
             _testOutput,
-            $"{registry}/{imageIndex}",
-            imageX64Tagged)
+            "--platform",
+            "linux/arm64",
+            imageFromRegistry)
             .Execute()
             .Should().Pass();
-        CommandResult processResultX64 = ContainerCli.RunCommand(
+
+        // Check that the containers can be run
+        ContainerCli.RunCommand(
             _testOutput,
             "--rm",
             "--platform",
             "linux/amd64",
             "--name",
             $"test-container-{imageName}-x64",
-            imageX64Tagged)
-        .Execute();
-        processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
-
-        string imageArm64Tagged = $"{registry}/test-image-{imageName}-arm64";
-        ContainerCli.PullCommand(
-            _testOutput,
-            "--platform",
-            "linux/arm64",
-            $"{registry}/{imageIndex}")
-            .Execute()
-            .Should().Pass();
-        ContainerCli.TagCommand(
-            _testOutput,
-            $"{registry}/{imageIndex}",
-            imageArm64Tagged)
-            .Execute()
-            .Should().Pass();
-        CommandResult processResultArm64 = ContainerCli.RunCommand(
+            imageFromRegistry)
+        .Execute().Should().Pass().And.HaveStdOut("Hello, World!");
+        ContainerCli.RunCommand(
             _testOutput,
             "--rm",
             "--platform",
             "linux/arm64",
             "--name",
             $"test-container-{imageName}-arm64",
-            imageArm64Tagged)
-        .Execute();
-        processResultArm64.Should().Pass().And.HaveStdOut("Hello, World!");
+            imageFromRegistry)
+        .Execute().Should().Pass().And.HaveStdOut("Hello, World!");
 
         // Cleanup
         newProjectDir.Delete(true);

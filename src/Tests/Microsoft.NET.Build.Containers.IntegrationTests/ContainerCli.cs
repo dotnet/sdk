@@ -12,9 +12,6 @@ static class ContainerCli
     public static RunExeCommand PullCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "pull", args);
 
-    public static RunExeCommand TagCommand(ITestOutputHelper log, params string[] args)
-      => CreateCommand(log, "tag", args);
-
     public static RunExeCommand PushCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "push", args);
 
