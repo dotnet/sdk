@@ -50,8 +50,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
 
     <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
+    <_TargetingNET100OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))</_TargetingNET100OrLater>
     <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
     <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true'">false</WasmFingerprintDotnetJs>
+    <WasmFingerprintDotnetJs Condition="'$(_TargetingNET100OrLater)' == 'true' and '$(WriteImportMapToHtml)' == 'true'">true</WasmFingerprintDotnetJs>
     <WasmEnableWebcil Condition="'$(WasmEnableWebcil)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or '$(_TargetingNET80OrLater)' != 'true')">false</WasmEnableWebcil>
 
     <!-- Turn off parts of the build that do not apply to Blazor projects -->
