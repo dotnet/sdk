@@ -9,6 +9,7 @@
 
     <TestArgs>$(TestArgs) /p:AdditionalTestArgs="--xml $(TestXmlOutputPath) --target-rid $(TargetRid) --portable-rid $(PortableRid) --no-cleanup --no-traits Category=MultiTFM"</TestArgs>
     <TestArgs>$(TestArgs) /p:TestBinlogDir="$(ArtifactsLogRepoDir.TrimEnd('\'))"</TestArgs>
+    <TestArgs>$(TestArgs) /p:UseFxVersionOverride=true</TestArgs>
 
     <TestDependsOn>PrepareScenarioTestsInputs;$(TestDependsOn)</TestDependsOn>
   </PropertyGroup>
