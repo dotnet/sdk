@@ -83,7 +83,7 @@ while :; do
     --artifacts-rid)
       artifactsRid=$2
       ;;
-    -rid|-target-rid)
+    --rid|--target-rid)
       target_rid=$2
       shift
       ;;
@@ -185,7 +185,8 @@ function BootstrapArtifacts {
   DOTNET_SDK_PATH="$REPO_ROOT/.dotnet"
 
   # Create working directory for running bootstrap project
-  workingDir=$(mktemp -d)
+  workingDir="$REPO_ROOT/artifacts/prep-bootstrap"
+  mkdir -p "$workingDir"
   echo "  Building bootstrap previously source-built in $workingDir"
 
   # Copy bootstrap project to working dir
