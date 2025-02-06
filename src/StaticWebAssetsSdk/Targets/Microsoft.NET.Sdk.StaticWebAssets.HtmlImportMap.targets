@@ -46,8 +46,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               ResolveHtmlImportMapPublishConfiguration
      -->
     <ResolvePublishRelatedStaticWebAssetsDependsOn>
-      ResolveHtmlImportMapPublishStaticWebAssets;
-      $(ResolvePublishRelatedStaticWebAssetsDependsOn)
+      $(ResolvePublishRelatedStaticWebAssetsDependsOn);
+      ResolveHtmlImportMapPublishStaticWebAssets
     </ResolvePublishRelatedStaticWebAssetsDependsOn>
     <ResolveHtmlImportMapPublishStaticWebAssetsDependsOn>
       GenerateHtmlImportMapPublishStaticWebAssets;
