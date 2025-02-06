@@ -16,6 +16,7 @@
     <!-- Update nuget.config property to point to modified file that will be created/updated during build. -->
     <OriginalNuGetConfigFile>$(NuGetConfigFile)</OriginalNuGetConfigFile>
     <NuGetConfigFile Condition="'$(OriginalNuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">$(BaseIntermediateOutputPath)$([System.IO.Path]::GetFileName('$(OriginalNuGetConfigFile)'))</NuGetConfigFile>
+    <CommonArgs Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">$(CommonArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</CommonArgs>
 
     <DiskUsageCommand Condition="'$(BuildOS)' == 'windows'">powershell -NoProfile "Get-PSDrive -PSProvider FileSystem -Name (Get-Item "$(RepoRoot.TrimEnd('\'))").PSDrive.Name"</DiskUsageCommand>
     <DiskUsageCommand Condition="'$(BuildOS)' != 'windows'">df -h $(RepoRoot)</DiskUsageCommand>
@@ -46,7 +47,6 @@
 
     <!-- Only pass these properites through when necessary to reduce command line noise. -->
     <CommonArgs Condition="'$(DotNetBuildTests)' == 'true' and '$(DotNetBuildTestsOptOut)' != 'true'">$(CommonArgs) /p:DotNetBuildTests=true</CommonArgs>
-    <CommonArgs Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">$(CommonArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</CommonArgs>
   </PropertyGroup>
 
   <PropertyGroup>
