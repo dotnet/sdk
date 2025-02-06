@@ -117,6 +117,15 @@
       </RepositoryReferenceInfo>
     </ItemGroup>
 
+    <ItemGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
+      <RepositoryReferenceInfo Include="$(RepositoryName)">
+        <ShippingSourceName>$(PreviousBuildPassSourceNamePrefix)$(RepositoryName)</ShippingSourceName>
+        <NonShippingSourceName>$(PreviousBuildPassSourceNamePrefix)transport-$(RepositoryName)</NonShippingSourceName>
+        <ShippingPackagesPath>$(ArtifactsShippingPackagesDir)/$(RepositoryName)/</ShippingPackagesPath>
+        <NonShippingPackagesPath>$(ArtifactsNonShippingPackagesDir)/$(RepositoryName)/</NonShippingPackagesPath>
+      </RepositoryReferenceInfo>
+    </ItemGroup>
+
     <ItemGroup Condition="'@(RepositoryReferenceInfo)' != ''">
       <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(ShippingSourceName)')" />
       <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(NonShippingSourceName)')" />
@@ -214,16 +223,6 @@
                             SourceName="%(RepositoryReferenceInfo.NonShippingSourceName)"
                             SourcePath="%(RepositoryReferenceInfo.NonShippingPackagesPath)"
                             Condition="Exists('%(RepositoryReferenceInfo.NonShippingPackagesPath)')" />
-
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="PreviousBuildPass-$(RepositoryName)"
-                            SourcePath="$(ArtifactsShippingPackagesDir)/$(RepositoryName)"
-                            Condition="Exists('$(ArtifactsShippingPackagesDir)/$(RepositoryName)') and '$(DotNetBuildPass)' != '' and '$(DotnetBuildPass)' != '1'" />
-
-    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
-                            SourceName="PreviousBuildPass-transport-$(RepositoryName)"
-                            SourcePath="$(ArtifactsNonShippingPackagesDir)/$(RepositoryName)"
-                            Condition="Exists('$(ArtifactsNonShippingPackagesDir)/$(RepositoryName)') and '$(DotNetBuildPass)' != '' and '$(DotnetBuildPass)' != '1'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(ExtraSourcesNuGetSourceName)"
