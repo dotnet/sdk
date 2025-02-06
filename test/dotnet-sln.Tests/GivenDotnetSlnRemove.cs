@@ -629,7 +629,7 @@ Options:
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slxn")]
+        [InlineData("sln", ".slnx")]
         [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
