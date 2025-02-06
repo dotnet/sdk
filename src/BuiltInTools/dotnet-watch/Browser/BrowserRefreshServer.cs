@@ -28,8 +28,11 @@ namespace Microsoft.DotNet.Watch
         private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
+        public readonly EnvironmentOptions Options;
+
         private readonly List<BrowserConnection> _activeConnections = [];
         private readonly RSA _rsa;
+        private readonly CompilationHandler _compilationHandler;
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _browserConnected;
@@ -39,11 +42,10 @@ namespace Microsoft.DotNet.Watch
         private IHost? _refreshServer;
         private string? _serverUrls;
 
-        public readonly EnvironmentOptions Options;
-
-        public BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
+        public BrowserRefreshServer(CompilationHandler compilationHandler, EnvironmentOptions options, IReporter reporter)
         {
             _rsa = RSA.Create(2048);
+            _compilationHandler = compilationHandler;
             Options = options;
             _reporter = reporter;
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -174,6 +176,8 @@ namespace Microsoft.DotNet.Watch
             {
                 _activeConnections.Add(connection);
             }
+
+            // TODO: send previous updates
 
             _browserConnected.TrySetResult();
             await _terminateWebSocket.Task;

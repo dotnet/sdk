@@ -58,6 +58,8 @@ namespace Microsoft.DotNet.Watch
             Workspace?.Dispose();
         }
 
+        public ImmutableList<WatchHotReloadService.Update> PreviousUpdates => _previousUpdates;
+
         public async ValueTask TerminateNonRootProcessesAndDispose(CancellationToken cancellationToken)
         {
             _reporter.Verbose("Disposing remaining child processes.");

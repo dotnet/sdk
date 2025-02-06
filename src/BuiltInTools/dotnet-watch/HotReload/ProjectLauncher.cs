@@ -101,7 +101,9 @@ internal sealed class ProjectLauncher(
             Reporter.Verbose($"Target process is '{targetPath}'");
         }
 
-        var browserRefreshServer = await browserConnector.LaunchOrRefreshBrowserAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
+        var browserRefreshServer = await browserConnector.LaunchOrRefreshBrowserAsync(
+            projectNode, processSpec, environmentBuilder, projectOptions, compilationHandler, cancellationToken);
+
         environmentBuilder.ConfigureProcess(processSpec);
 
         var processReporter = new ProjectSpecificReporter(projectNode, Reporter);

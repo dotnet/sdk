@@ -49,6 +49,7 @@ namespace Microsoft.DotNet.Watch
             ProcessSpec processSpec,
             EnvironmentVariablesBuilder environmentBuilder,
             ProjectOptions projectOptions,
+            CompilationHandler compilationHandler,
             CancellationToken cancellationToken)
         {
             BrowserRefreshServer? server;
@@ -59,7 +60,7 @@ namespace Microsoft.DotNet.Watch
                 hasExistingServer = _servers.TryGetValue(projectNode, out server);
                 if (!hasExistingServer)
                 {
-                    server = IsServerSupported(projectNode) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
+                    server = IsServerSupported(projectNode) ? new BrowserRefreshServer(compilationHandler, context.EnvironmentOptions, context.Reporter) : null;
                     _servers.Add(projectNode, server);
                 }
             }

@@ -7,7 +7,30 @@ setTimeout(async function () {
   }
   window[scriptInjectedSentinel] = true;
 
-  // dotnet-watch browser reload script
+  const AgentMessageSeverity_Error = 2
+
+  var pendingUpdates = [];
+  var pendingUpdatesLog = [];
+  var initializedBlazor = undefined;
+
+  window["__BlazorWebAssemblyInitializeForHotReload"] = async function (blazor) {
+    // apply pending updates
+    try {
+      pendingUpdates.forEach(update => pendingUpdatesLog.push(blazor.applyHotReloadDeltas(update.deltas, update.responseLoggingLevel)));
+      initializedBlazor = api;
+      updatesApplied = true;
+    } catch (error) {
+      console.error(error);
+      pendingUpdatesLog.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
+
+      // no updates can't be applied to this process:
+      pendingUpdates = undefined;
+      return;
+    }
+
+    notifyHotReloadApplied();
+  };
+    // dotnet-watch browser reload script
   const webSocketUrls = '{{hostString}}'.split(',');
   const sharedSecret = await getSecret('{{ServerKey}}');
   let connection;
@@ -44,9 +67,18 @@ setTimeout(async function () {
       const payload = JSON.parse(message.data);
       const action = {
         'UpdateStaticFile': () => updateStaticFile(payload.path),
-        'BlazorHotReloadDeltav1': () => applyBlazorDeltas_legacy(payload.sharedSecret, payload.deltas, false),
-        'BlazorHotReloadDeltav2': () => applyBlazorDeltas_legacy(payload.sharedSecret, payload.deltas, true),
-        'BlazorHotReloadDeltav3': () => applyBlazorDeltas(payload.sharedSecret, payload.updateId, payload.deltas, payload.responseLoggingLevel),
+        'BlazorHotReloadDeltav1': () => {
+          validateSecret(payload.sharedSecret);
+          applyBlazorDeltas_legacy(payload.deltas, false);
+        },
+        'BlazorHotReloadDeltav2': () => {
+          validateSecret(payload.sharedSecret);
+          applyBlazorDeltas_legacy(payload.deltas, true);
+        },
+        'BlazorHotReloadDeltav3': () => {
+          validateSecret(payload.sharedSecret);
+          applyBlazorDeltas(payload.deltas, payload.responseLoggingLevel);
+        },
         'HotReloadDiagnosticsv1': () => displayDiagnostics(payload.diagnostics),
         'BlazorRequestApplyUpdateCapabilities': () => getBlazorWasmApplyUpdateCapabilities(false),
         'BlazorRequestApplyUpdateCapabilities2': () => getBlazorWasmApplyUpdateCapabilities(true),
@@ -137,13 +169,15 @@ setTimeout(async function () {
     styleElement.parentNode.insertBefore(newElement, styleElement.nextSibling);
   }
 
-  async function applyBlazorDeltas_legacy(serverSecret, deltas, sendErrorToClient) {
+  function validateSecret(serverSecret) {
     if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
       // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
       // that do not support this feature as yet.
       throw 'Unable to validate the server. Rejecting apply-update payload.';
     }
+  }
 
+  async function applyBlazorDeltas_legacy(deltas, sendErrorToClient) {
     let applyError = undefined;
     if (window.Blazor?._internal?.applyHotReload) {
       // Only apply hot reload deltas if Blazor has been initialized.
@@ -174,59 +208,49 @@ setTimeout(async function () {
     }
   }
 
-  async function applyBlazorDeltas(serverSecret, updateId, deltas, responseLoggingLevel) {
-    if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
-      // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
-      // that do not support this feature as yet.
-      throw 'Unable to validate the server. Rejecting apply-update payload.';
+  async function applyBlazorDeltas(deltas, responseLoggingLevel) {
+    let updatesApplied = false
+    let success = true;
+    let log = [];
+
+    if (pendingUpdatesLog.length > 0) {
+      log.push(pendingUpdatesLog);
+      pendingUpdatesLog = [];
     }
 
-    const AgentMessageSeverity_Error = 2
+    let wasmDeltas = deltas.map(delta => {
+      return {
+        "moduleId": delta.moduleId,
+        "metadataDelta": delta.metadataDelta,
+        "ilDelta": delta.ilDelta,
+        "pdbDelta": delta.pdbDelta,
+        "updatedTypes": delta.updatedTypes,
+      };
+    });
 
-    let applyError = undefined;
-    let log = [];
-    if (window.Blazor?._internal?.applyHotReloadDeltas) {
-      // Only apply hot reload deltas if Blazor has been initialized.
-      // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
-      // to be a failure. These deltas will get applied later, when Blazor completes initialization.
+    if (initializedBlazor !== undefined) {
       try {
-        let wasmDeltas = deltas.map(delta => {
-          return {
-            "moduleId": delta.moduleId,
-            "metadataDelta": delta.metadataDelta,
-            "ilDelta": delta.ilDelta,
-            "pdbDelta": delta.pdbDelta,
-            "updatedTypes": delta.updatedTypes,
-          };
-        });
-
-        log = window.Blazor._internal.applyHotReloadDeltas(wasmDeltas, responseLoggingLevel);
+        log.push(initializedBlazor.applyHotReloadDeltas(wasmDeltas, responseLoggingLevel));
+        updatesApplied = true;
       } catch (error) {
         console.warn(error);
-        applyError = error;
         log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
+        success = false;
       }
-    }
-
-    try {
-      let body = JSON.stringify({
-        "id": updateId,
-        "deltas": deltas
-      });
-
-      await fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: body });
-    } catch (error) {
-      console.warn(error);
-      applyError = error;
-      log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
+    } else if (pendingUpdates !== undefined) {
+      // Blazor is not initialized, defer delta application until it is:
+      pendingUpdates.push({ "deltas": wasmDeltas, "responseLoggingLevel": responseLoggingLevel })
+    } else {
+      // pending updates failed to apply, we can't apply any more updates:
+      success = false;
     }
 
     connection.send(JSON.stringify({
-      "success": !applyError,
+      "success": success,
       "log": log
     }));
 
-    if (!applyError) {
+    if (updatesApplied) {
       notifyHotReloadApplied();
     }
   }
