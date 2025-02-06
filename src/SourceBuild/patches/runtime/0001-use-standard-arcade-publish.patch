@@ -1781,3 +1781,28 @@ index 18d123f01d4..746078a6cec 100644
        </ItemGroup>
      </When>
      <Otherwise>
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 746078a6cec..5b6717e0eff 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -18,7 +18,7 @@
+     -->
+     <EnableDefaultArtifacts Condition="'$(DotNetBuildOrchestrator)' != 'true'">false</EnableDefaultArtifacts>
+     <EnableBlobArtifacts>true</EnableBlobArtifacts>
+-    <EnableBlobArtifacts Condition="'$(MonoEnableLLVM)' == 'true'">false</EnableBlobArtifacts>
++    <EnableBlobArtifacts Condition="'$(MonoAOTEnableLLVM)' == 'true'">false</EnableBlobArtifacts>
+ 
+     <UseDotNetCertificate>true</UseDotNetCertificate>
+   </PropertyGroup>
+@@ -112,9 +112,9 @@
+                   IsShipping="false" />
+       </ItemGroup>
+     </When>
+-    <When Condition="'$(MonoEnableLLVM)' == 'true'">
++    <When Condition="'$(MonoAOTEnableLLVM)' == 'true'">
+       <ItemGroup>
+-        <PackageArtifacts Include="$(ArtifactsPackagesDir)**\*.$(PackageRID).*.LLVM.*.nupkg" />
++        <PackageArtifacts Include="$(ArtifactsPackagesDir)**\*.LLVM.AOT.$(PackageRID).*.nupkg" />
+         <Artifact Include="@(PackageArtifacts)"
+                   IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
+                   Kind="Package" />
