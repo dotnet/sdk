@@ -55,6 +55,7 @@
   <Target Name="SetCommonProperties">
     <!-- Update nuget.config property to point to modified file that will be created/updated during build. -->
     <PropertyGroup Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">
+      <OriginalNuGetConfigFile>$(NuGetConfigFile)</OriginalNuGetConfigFile>
       <NuGetConfigFile>$(BaseIntermediateOutputPath)$([System.IO.Path]::GetFileName('$(NuGetConfigFile)'))</NuGetConfigFile>
       <CommonArgs>$(CommonArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</CommonArgs>
     </PropertyGroup>
@@ -156,9 +157,6 @@
   </Target>
 
   <Target Name="CopyNuGetConfig" DependsOnTargets="SetCommonProperties">
-    <PropertyGroup>
-      <OriginalNuGetConfigFile>$(NuGetConfigFile)</OriginalNuGetConfigFile>
-    </PropertyGroup>
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(NuGetConfigFile)'))" />
 
     <Copy SourceFiles="$(OriginalNuGetConfigFile)"
