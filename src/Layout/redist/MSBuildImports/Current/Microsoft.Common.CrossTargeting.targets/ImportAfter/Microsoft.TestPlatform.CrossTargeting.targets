@@ -91,6 +91,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
+  <Target Name="_MTPBuild" DependsOnTargets="_ComputeTargetFrameworkItems">
+    <CallTarget Condition="'$(MTPNoBuild)' != 'true'" Targets="Build" />
+  </Target>
+
   <!--
   ===================================================================================
                DispatchToInnerBuildsWithTestProjectTarget

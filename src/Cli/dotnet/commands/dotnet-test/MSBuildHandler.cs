@@ -33,20 +33,21 @@ namespace Microsoft.DotNet.Cli
 
             int msBuildExitCode;
             string path;
+            PathOptions pathOptions = buildOptions.PathOptions;
 
-            if (!string.IsNullOrEmpty(buildOptions.ProjectPath))
+            if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
             {
-                path = PathUtility.GetFullPath(buildOptions.ProjectPath);
+                path = PathUtility.GetFullPath(pathOptions.ProjectPath);
                 msBuildExitCode = RunBuild(path, isSolution: false, buildOptions);
             }
-            else if (!string.IsNullOrEmpty(buildOptions.SolutionPath))
+            else if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
             {
-                path = PathUtility.GetFullPath(buildOptions.SolutionPath);
+                path = PathUtility.GetFullPath(pathOptions.SolutionPath);
                 msBuildExitCode = RunBuild(path, isSolution: true, buildOptions);
             }
             else
             {
-                path = PathUtility.GetFullPath(buildOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+                path = PathUtility.GetFullPath(pathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
                 msBuildExitCode = RunBuild(path, buildOptions);
             }
 

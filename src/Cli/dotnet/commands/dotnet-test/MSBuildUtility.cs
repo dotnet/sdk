@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Build;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -26,7 +25,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
-             solutionFilePath, buildOptions.MSBuildArgs, !buildOptions.HasNoRestore, !buildOptions.HasNoBuild);
+             solutionFilePath, buildOptions.MSBuildArgs, buildOptions.HasNoRestore, buildOptions.HasNoBuild);
 
             ConcurrentBag<Module> projects = GetProjectsProperties(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
             return (projects, isBuiltOrRestored);
@@ -36,7 +35,7 @@ namespace Microsoft.DotNet.Cli
         {
             var projectCollection = new ProjectCollection();
 
-            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions.MSBuildArgs, !buildOptions.HasNoRestore, !buildOptions.HasNoBuild);
+            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions.MSBuildArgs, buildOptions.HasNoRestore, buildOptions.HasNoBuild);
 
             IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), projectCollection);
 
@@ -60,30 +59,12 @@ namespace Microsoft.DotNet.Cli
                 arg.StartsWith("-bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("-bl", StringComparison.OrdinalIgnoreCase));
         }
 
-        private static bool BuildOrRestoreProjectOrSolution(string filePath, List<string> arguments, bool hasRestore, bool hasBuild)
+        private static bool BuildOrRestoreProjectOrSolution(string filePath, List<string> arguments, bool hasNoRestore, bool hasNoBuild)
         {
-            int result = 0;
             arguments.Add(filePath);
+            arguments.Add("-target:_MTPBuild");
 
-            if (hasRestore && hasBuild)
-            {
-                result = new BuildCommand(arguments, noRestore: false).Execute();
-                return result == (int)BuildResultCode.Success;
-            }
-
-            if (hasRestore)
-            {
-                result = new RestoringCommand(arguments, true).Execute();
-                if (result != (int)BuildResultCode.Success)
-                {
-                    return false;
-                }
-            }
-
-            if (hasBuild)
-            {
-                result = new BuildCommand(arguments, noRestore: true).Execute();
-            }
+            int result = new RestoringCommand(arguments, hasNoRestore || hasNoBuild).Execute();
 
             return result == (int)BuildResultCode.Success;
         }

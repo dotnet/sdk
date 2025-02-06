@@ -304,7 +304,7 @@ namespace Microsoft.DotNet.Cli
             builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectFullPath}\"");
 
             // Because we restored and built before in MSHandler, we will skip those with dotnet run
-            builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
+            builder.Append($" {CommonOptions.NoRestoreOption.Name}");
             builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
 
             if (!string.IsNullOrEmpty(testOptions.Architecture))

@@ -185,15 +185,20 @@ namespace Microsoft.DotNet.Cli
             unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
             unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
 
-            return new BuildOptions(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
+            PathOptions pathOptions = new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-                parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
-                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
-                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+
+            string runtimeIdentifier = parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
                     CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, parseResult.GetValue(TestingPlatformOptions.ArchitectureOption)) :
-                    string.Empty,
+                    string.Empty;
+
+            return new BuildOptions(
+                pathOptions,
+                parseResult.GetValue(CommonOptions.NoRestoreOption),
+                parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                runtimeIdentifier,
                 degreeOfParallelism,
                 unmatchedTokens,
                 msbuildArgs);

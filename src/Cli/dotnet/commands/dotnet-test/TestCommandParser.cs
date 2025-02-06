@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
             command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
             command.Options.Add(TestingPlatformOptions.NoBuildOption);
-            command.Options.Add(TestingPlatformOptions.NoRestoreOption);
+            command.Options.Add(CommonOptions.NoRestoreOption);
             command.Options.Add(TestingPlatformOptions.ArchitectureOption);
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.ProjectOption);

@@ -298,7 +298,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration,
-                                            TestingPlatformOptions.NoRestoreOption.Name,
+                                            CommonOptions.NoRestoreOption.Name,
                                             TestingPlatformOptions.NoBuildOption.Name);
 
             // Assert that the bin folder hasn't been modified
