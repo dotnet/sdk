@@ -233,6 +233,8 @@ jobs:
     - ${{ else }}:
       - name: signArguments
         value: ''
+      - name: _SignDiagnosticFilesArgs
+        value: ''
 
     ### Build Pass
     - ${{ if ne(parameters.buildPass, '') }}:

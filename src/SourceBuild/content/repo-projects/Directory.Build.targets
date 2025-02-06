@@ -216,6 +216,16 @@
                             Condition="Exists('%(RepositoryReferenceInfo.NonShippingPackagesPath)')" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
+                            SourceName="PreviousBuildPass-$(RepositoryName)"
+                            SourcePath="$(ArtifactsShippingPackagesDir)/$(RepositoryName)"
+                            Condition="Exists('$(ArtifactsShippingPackagesDir)/$(RepositoryName)') and '$(DotNetBuildPass)' != '' and '$(DotnetBuildPass)' != '1'" />
+
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
+                            SourceName="PreviousBuildPass-transport-$(RepositoryName)"
+                            SourcePath="$(ArtifactsNonShippingPackagesDir)/$(RepositoryName)"
+                            Condition="Exists('$(ArtifactsNonShippingPackagesDir)/$(RepositoryName)') and '$(DotNetBuildPass)' != '' and '$(DotnetBuildPass)' != '1'" />
+
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(ExtraSourcesNuGetSourceName)"
                             SourcePath="$(ExtraRestoreSourcePath)"
                             Condition="'$(ExtraRestoreSourcePath)' != ''" />
