@@ -117,7 +117,7 @@
 
   <!-- Build specific args -->
   <PropertyGroup>
-    <BuildArgs>$(CommonArgs) -bl</BuildArgs>
+    <BuildArgs>$(BuildArgs) -bl</BuildArgs>
     <!-- Don't flow these control properties during testing to avoid the outer/inner complexity. -->
     <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
