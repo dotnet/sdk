@@ -54,7 +54,14 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             DownloadCallResult.Add(path);
             if (_downloadPath != string.Empty)
             {
-                File.WriteAllText(path, string.Empty);
+                try
+                {
+                    File.WriteAllText(path, string.Empty);
+                }
+                catch (IOException)
+                {
+                    // Do not write this file twice in parallel
+                }
             }
             _lastPackageVersion = packageVersion ?? new NuGetVersion("1.0.42");
             return Task.FromResult(path);

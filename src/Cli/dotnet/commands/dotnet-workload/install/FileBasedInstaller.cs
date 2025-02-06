@@ -147,6 +147,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 if (PackIsInstalled(packInfo) && !overwriteExistingPacks)
                 {
                     _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
+                    WritePackInstallationRecord(packInfo, sdkFeatureBand);
                 }
                 else
                 {
