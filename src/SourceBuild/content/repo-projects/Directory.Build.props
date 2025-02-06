@@ -143,14 +143,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
-    <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(RepoDotNetRoot)" />
-    <EnvironmentVariables Include="DOTNET_PATH=$(RepoDotNetRoot)" />
-    <EnvironmentVariables Include="DOTNET_HOST_PATH=$(RepoDotNetTool)" />
-
-    <!-- _InitializeDotNetCli is used by websdk and templating to decide whether to init the SDK -->
-    <EnvironmentVariables Include="_InitializeDotNetCli=$(RepoDotNetRoot.TrimEnd('/\'))" />
-    <EnvironmentVariables Include="_DotNetInstallDir=$(RepoDotNetRoot)" />
     <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj"
                           Condition="'$(UseBootstrapArcade)' != 'true'" />
 
@@ -171,9 +163,6 @@
 
     <!-- Need to be passed in as an env var so that custom Exec tasks in the repo's DotNetBuild.props receive this setting. -->
     <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
-
-    <!-- Needed for miscellanous projects in various repos - see https://github.com/dotnet/source-build/issues/4081-->
-    <EnvironmentVariables Include="RestoreConfigFile=$(NuGetConfigFile)" Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'" />
 
     <!-- Need to be passed in here so that outer and inner builds don't restore into the orchestrator package cache (CI builds)
          or the user package cache (local dev builds). -->

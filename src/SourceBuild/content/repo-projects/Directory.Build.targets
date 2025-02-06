@@ -9,15 +9,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <RepoDotNetRoot Condition="'$(RepoDotNetRoot)' == ''">$(DotNetRoot)</RepoDotNetRoot>
-    <RepoDotNetTool Condition="'$(BuildOS)' == 'windows'">$(RepoDotNetRoot)dotnet.exe</RepoDotNetTool>
-    <RepoDotNetTool Condition="'$(BuildOS)' != 'windows'">$(RepoDotNetRoot)dotnet</RepoDotNetTool>
-
-    <!-- Update nuget.config property to point to modified file that will be created/updated during build. -->
-    <OriginalNuGetConfigFile>$(NuGetConfigFile)</OriginalNuGetConfigFile>
-    <NuGetConfigFile Condition="'$(OriginalNuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">$(BaseIntermediateOutputPath)$([System.IO.Path]::GetFileName('$(OriginalNuGetConfigFile)'))</NuGetConfigFile>
-    <CommonArgs Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">$(CommonArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</CommonArgs>
-
     <DiskUsageCommand Condition="'$(BuildOS)' == 'windows'">powershell -NoProfile "Get-PSDrive -PSProvider FileSystem -Name (Get-Item "$(RepoRoot.TrimEnd('\'))").PSDrive.Name"</DiskUsageCommand>
     <DiskUsageCommand Condition="'$(BuildOS)' != 'windows'">df -h $(RepoRoot)</DiskUsageCommand>
 
@@ -59,6 +50,41 @@
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
   </PropertyGroup>
+
+  <!-- Dynamic properties that are used in both test and build. -->
+  <Target Name="SetCommonProperties">
+    <!-- Update nuget.config property to point to modified file that will be created/updated during build. -->
+    <Choose>
+      <When Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">
+        <PropertyGroup>
+          <NuGetConfigFile>$(BaseIntermediateOutputPath)$([System.IO.Path]::GetFileName('$(NuGetConfigFile)'))</NuGetConfigFile>
+          <CommonArgs>$(CommonArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</CommonArgs>
+        </PropertyGroup>
+
+        <ItemGroup>
+          <!-- Needed for miscellanous projects in various repos - see https://github.com/dotnet/source-build/issues/4081-->
+          <EnvironmentVariables Include="RestoreConfigFile=$(NuGetConfigFile)" />
+        </ItemGroup>
+      </When>
+    </Choose>
+
+    <PropertyGroup>
+      <RepoDotNetRoot Condition="'$(RepoDotNetRoot)' == ''">$(DotNetRoot)</RepoDotNetRoot>
+      <RepoDotNetTool Condition="'$(BuildOS)' == 'windows'">$(RepoDotNetRoot)dotnet.exe</RepoDotNetTool>
+      <RepoDotNetTool Condition="'$(BuildOS)' != 'windows'">$(RepoDotNetRoot)dotnet</RepoDotNetTool>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
+      <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(RepoDotNetRoot)" />
+      <EnvironmentVariables Include="DOTNET_PATH=$(RepoDotNetRoot)" />
+      <EnvironmentVariables Include="DOTNET_HOST_PATH=$(RepoDotNetTool)" />
+
+      <!-- _InitializeDotNetCli is used by websdk and templating to decide whether to init the SDK -->
+      <EnvironmentVariables Include="_InitializeDotNetCli=$(RepoDotNetRoot.TrimEnd('/\'))" />
+      <EnvironmentVariables Include="_DotNetInstallDir=$(RepoDotNetRoot)" />
+    </ItemGroup>
+  </Target>
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.ReplaceTextInFile" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="AddNoWarns"
@@ -133,15 +159,15 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CopyNuGetConfig"
-          Condition="'$(NuGetConfigFile)' != ''"
-          Inputs="$(MSBuildProjectFullPath);$(OriginalNuGetConfigFile)"
-          Outputs="$(NuGetConfigFile)">
-
+  <Target Name="CopyNuGetConfig" DependsOnTargets="SetCommonProperties">
+    <PropertyGroup>
+      <OriginalNuGetConfigFile>$(NuGetConfigFile)</OriginalNuGetConfigFile>
+    </PropertyGroup>
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(NuGetConfigFile)'))" />
 
     <Copy SourceFiles="$(OriginalNuGetConfigFile)"
-          DestinationFiles="$(NuGetConfigFile)">
+          DestinationFiles="$(NuGetConfigFile)"
+          SkipUnchangedFiles="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
@@ -456,7 +482,7 @@
   </Target>
 
   <Target Name="SetBuildProperties"
-          DependsOnTargets="GetTransitiveRepositoryReferences">
+          DependsOnTargets="SetCommonProperties;GetTransitiveRepositoryReferences">
     <PropertyGroup>
       <!-- Infer the projects runtime identifier as the vertical's RID when doing a vertical build
            and filter down RID lists to the target RID in such a scenario. This is necessary when the host (SDK) rid
@@ -667,7 +693,7 @@
   <Target Name="CleanupRepo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
-          DependsOnTargets="BackupProjectAssetsJsonFiles"
+          DependsOnTargets="BackupProjectAssetsJsonFiles;SetCommonProperties"
           Condition="'$(IsUtilityProject)' != 'true' and
                      '$(CleanWhileBuilding)' == 'true' and
                      Exists('$(RepoArtifactsDir)')">
@@ -770,7 +796,8 @@
     CleanupRepo" />
 
   <Target Name="RepoTest"
-          DependsOnTargets="UpdateGlobalJsonVersions;
+          DependsOnTargets="SetCommonProperties;
+                            UpdateGlobalJsonVersions;
                             DiscoverBuiltSdkOverrides;
                             SetSourceBuiltSdkOverrides">
     <PropertyGroup>
@@ -800,11 +827,15 @@
     <OnError ExecuteTargets="MoveDotNetBuildLogs" />
   </Target>
 
-  <Target Name="Test"
-          DependsOnTargets="
-    RepoTest;
-    MoveDotNetBuildLogs;
-    CleanupRepo" />
+  <PropertyGroup>
+    <TestDependsOn>
+      $(TestDependsOn);
+      RepoTest;
+      MoveDotNetBuildLogs;
+      CleanupRepo
+  </PropertyGroup>
+
+  <Target Name="Test" DependsOnTargets="$(TestDependsOn)" />
   <Target Name="VSTest" DependsOnTargets="Test" />
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
