@@ -24,6 +24,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem RunSettingsFilePath { get; set; } = new TaskItem(string.Empty);
 
+        public ITaskItem IsTestingPlatformApplication { get; set; } = new TaskItem(string.Empty);
+
         public override bool Execute()
         {
             try
@@ -36,7 +38,7 @@ namespace Microsoft.NET.Build.Tasks
                 dotnetTestPipeClient.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
 
                 dotnetTestPipeClient.ConnectAsync(CancellationToken.None).GetAwaiter().GetResult();
-                dotnetTestPipeClient.RequestReplyAsync<ModuleMessage, VoidResponse>(new ModuleMessage(TargetPath.ItemSpec, ProjectFullPath.ItemSpec, TargetFramework.ItemSpec, RunSettingsFilePath.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
+                dotnetTestPipeClient.RequestReplyAsync<ModuleMessage, VoidResponse>(new ModuleMessage(TargetPath.ItemSpec, ProjectFullPath.ItemSpec, TargetFramework.ItemSpec, RunSettingsFilePath.ItemSpec, IsTestingPlatformApplication.ItemSpec), CancellationToken.None).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {

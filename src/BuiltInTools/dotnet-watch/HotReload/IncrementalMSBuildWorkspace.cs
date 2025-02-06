@@ -8,10 +8,8 @@ using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools;
+namespace Microsoft.DotNet.Watch;
 
 internal class IncrementalMSBuildWorkspace : Workspace
 {
@@ -38,15 +36,25 @@ internal class IncrementalMSBuildWorkspace : Workspace
 
         var loader = new MSBuildProjectLoader(this);
         var projectMap = ProjectMap.Create();
-        var projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
 
-        var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => p.FilePath!, elementSelector: static p => p.Id);
+        ImmutableArray<ProjectInfo> projectInfos;
+        try
+        {
+            projectInfos = await loader.LoadProjectInfoAsync(rootProjectPath, projectMap, progress: null, msbuildLogger: null, cancellationToken).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException)
+        {
+            // TODO: workaround for https://github.com/dotnet/roslyn/issues/75956
+            projectInfos = [];
+        }
 
-        // Map new project id to the corresponding old one based on file path, if it exists, and null for added projects.
+        var oldProjectIdsByPath = oldSolution.Projects.ToDictionary(keySelector: static p => (p.FilePath!, p.Name), elementSelector: static p => p.Id);
+
+        // Map new project id to the corresponding old one based on file path and project name (includes TFM), if it exists, and null for added projects.
         // Deleted projects won't be included in this map.
         var projectIdMap = projectInfos.ToDictionary(
             keySelector: static info => info.Id,
-            elementSelector: info => oldProjectIdsByPath.TryGetValue(info.FilePath!, out var oldProjectId) ? oldProjectId : null);
+            elementSelector: info => oldProjectIdsByPath.TryGetValue((info.FilePath!, info.Name), out var oldProjectId) ? oldProjectId : null);
 
         var newSolution = oldSolution;
 

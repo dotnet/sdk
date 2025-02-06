@@ -21,6 +21,7 @@ usage()
   echo "  --clean                         Clean the solution"
   echo "  --help                          Print help and exit (short: -h)"
   echo "  --test                          Run tests (short: -t)"
+  echo "  --sign                          Sign the build."
   echo ""
 
   echo "Source-only settings:"
@@ -36,8 +37,6 @@ usage()
 
   echo "Non-source-only settings:"
   echo "  --build-repo-tests              Build repository tests"
-  echo "  --dev                           Use -dev or -ci versioning instead of .NET official build versions"
-
 
   echo "Advanced settings:"
   echo "  --ci                            Set when running on CI server"
@@ -61,8 +60,6 @@ while [[ -h "$source" ]]; do
   [[ $source != /* ]] && source="$scriptroot/$source"
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
-
-packagesRestoredDir="$scriptroot/.packages/"
 
 # Common settings
 binary_log=false
@@ -88,7 +85,6 @@ packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 ci=false
 exclude_ci_binary_log=false
 prepare_machine=false
-use_dev_versioning=false
 target_rid=
 system_libs=
 
@@ -127,6 +123,9 @@ while [[ $# > 0 ]]; do
       ;;
     -test|-t)
       test=true
+      ;;
+    -sign)
+      properties+=( "/p:Sign=true" )
       ;;
 
     # Source-only settings
@@ -190,10 +189,7 @@ while [[ $# > 0 ]]; do
       prepare_machine=true
       ;;
     -use-mono-runtime)
-      properties+=( "/p:SourceBuildUseMonoRuntime=true" )
-      ;;
-    -dev)
-      use_dev_versioning=true
+      properties+=( "/p:DotNetBuildUseMonoRuntime=true" )
       ;;
     *)
       properties+=( "$1" )
@@ -209,13 +205,6 @@ if [[ "$ci" == true ]]; then
   fi
 fi
 
-if [[ "$use_dev_versioning" == true && "$sourceOnly" != true ]]; then
-  properties+=( "/p:UseOfficialBuildVersioning=false" )
-fi
-
-# Never use the global nuget cache folder
-use_global_nuget_cache=false
-
 . "$scriptroot/eng/common/tools.sh"
 
 project="$scriptroot/build.proj"
@@ -225,6 +214,8 @@ targets="/t:Build"
 if [[ "$test" == true ]]; then
   project="$scriptroot/test/tests.proj"
   targets="$targets;VSTest"
+  properties+=( "/p:Test=true" )
+
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   export MSBUILDENSURESTDOUTFORTASKPROCESSES=1
   # Ensure all test projects share stdout (https://github.com/dotnet/source-build/issues/4635#issuecomment-2397464519)
@@ -235,10 +226,6 @@ function Build {
   if [[ "$sourceOnly" != "true" ]]; then
 
     InitializeToolset
-
-    # Manually unset NUGET_PACKAGES as InitializeToolset sets it unconditionally.
-    # The env var shouldn't be set so that the RestorePackagesPath msbuild property is respected.
-    unset NUGET_PACKAGES
 
     local bl=""
     if [[ "$binary_log" == true ]]; then
@@ -255,22 +242,19 @@ function Build {
     ExitWithExitCode 0
 
   else
-
     if [ "$ci" == "true" ]; then
       properties+=( "/p:ContinuousIntegrationBuild=true" )
     fi
 
-    if [ "$test" != "true" ]; then
-      initSourceOnlyBinaryLog=""
-      if [[ "$binary_log" == true ]]; then
-        initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
-      fi
-
-      "$CLI_ROOT/dotnet" build-server shutdown
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog "${properties[@]}"
-      # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
-      "$CLI_ROOT/dotnet" build-server shutdown
+    initSourceOnlyBinaryLog=""
+    if [[ "$binary_log" == true ]]; then
+      initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
     fi
+
+    "$CLI_ROOT/dotnet" build-server shutdown --msbuild
+    "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog "${properties[@]}"
+    # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
+    "$CLI_ROOT/dotnet" build-server shutdown --msbuild
 
     # Point MSBuild to the custom SDK resolvers folder, so it will pick up our custom SDK Resolver
     export MSBUILDADDITIONALSDKRESOLVERSFOLDER="$scriptroot/artifacts/toolset/VSSdkResolvers/"
@@ -305,6 +289,18 @@ fi
 
 # Source-only settings
 if [[ "$sourceOnly" == "true" ]]; then
+  # Don't use the global nuget cache folder when building source-only which
+  # restores prebuilt packages that should never get into the global nuget cache.
+  export NUGET_PACKAGES="$scriptroot/.packages/"
+  export RESTORENOHTTPCACHE=true
+
+  if [[ "$test" == true ]]; then
+    # Use a custom package cache for tests to make prebuilt detection work.
+    export NUGET_PACKAGES="${NUGET_PACKAGES}tests/"
+  fi
+
+  echo "NuGet packages cache: '${NUGET_PACKAGES}'"
+
   # For build purposes, we need to make sure we have all the SourceLink information
   if [ "$test" != "true" ]; then
     GIT_DIR="$scriptroot/.git"
@@ -417,7 +413,7 @@ if [[ "$sourceOnly" == "true" ]]; then
 
     export SOURCE_BUILT_SDK_ID_ARCADE=Microsoft.DotNet.Arcade.Sdk
     export SOURCE_BUILT_SDK_VERSION_ARCADE=$ARCADE_BOOTSTRAP_VERSION
-    export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/BootstrapPackages/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_ARCADE=${NUGET_PACKAGES}BootstrapPackages/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
   fi
 
   # 2. Microsoft.Build.NoTargets
@@ -428,7 +424,7 @@ if [[ "$sourceOnly" == "true" ]]; then
 
     export SOURCE_BUILT_SDK_ID_NOTARGETS=Microsoft.Build.NoTargets
     export SOURCE_BUILT_SDK_VERSION_NOTARGETS=$NOTARGETS_BOOTSTRAP_VERSION
-    export SOURCE_BUILT_SDK_DIR_NOTARGETS=$packagesRestoredDir/BootstrapPackages/microsoft.build.notargets/$NOTARGETS_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_NOTARGETS=${NUGET_PACKAGES}BootstrapPackages/microsoft.build.notargets/$NOTARGETS_BOOTSTRAP_VERSION
   fi
 
   # 3. Microsoft.Build.Traversal
@@ -439,7 +435,7 @@ if [[ "$sourceOnly" == "true" ]]; then
 
     export SOURCE_BUILT_SDK_ID_TRAVERSAL=Microsoft.Build.Traversal
     export SOURCE_BUILT_SDK_VERSION_TRAVERSAL=$TRAVERSAL_BOOTSTRAP_VERSION
-    export SOURCE_BUILT_SDK_DIR_TRAVERSAL=$packagesRestoredDir/BootstrapPackages/microsoft.build.traversal/$TRAVERSAL_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_TRAVERSAL=${NUGET_PACKAGES}BootstrapPackages/microsoft.build.traversal/$TRAVERSAL_BOOTSTRAP_VERSION
   fi
 
   echo "Found bootstrap versions: SDK $SDK_VERSION, Arcade $ARCADE_BOOTSTRAP_VERSION, NoTargets $NOTARGETS_BOOTSTRAP_VERSION and Traversal $TRAVERSAL_BOOTSTRAP_VERSION"

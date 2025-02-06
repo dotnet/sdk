@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="FromHistoryOptionDescription">
         <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
-        <target state="new">Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</target>
+        <target state="translated">인수에 지정된 이전 버전으로 워크로드를 업데이트합니다. 'dotnet 워크로드 기록'을 사용하여 사용 가능한 워크로드 기록 레코드를 확인합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
@@ -34,12 +34,12 @@
       </trans-unit>
       <trans-unit id="HistoryManifestOnlyOptionDescription">
         <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
-        <target state="new">Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</target>
+        <target state="translated">설치된 워크로드를 변경하지 않고 기록에 지정된 워크로드 버전으로 업데이트합니다. 현재 설치된 워크로드는 지정된 기록 버전과 일치하도록 업데이트됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadHistoryRecords">
         <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
-        <target state="new">Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</target>
+        <target state="translated">워크로드 기록 레코드는 업데이트 또는 설치와 같은 워크로드를 수정하는 작업을 실행할 때 만들어집니다. 워크로드 기록 레코드가 있어야 기록에서 업데이트할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
@@ -84,12 +84,12 @@
       </trans-unit>
       <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
         <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
-        <target state="new">The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</target>
+        <target state="translated">워크로드 기록 레코드의 ID는 1에서 워크로드 기록 레코드 수(포함) 사이여야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
         <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
+        <target state="translated">dotnet 워크로드 업데이트의 --mode 인수에 대한 "{0}" 인수가 잘못되었습니다. "workloadset", "loosemanifest", "auto" 모드만 지원됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

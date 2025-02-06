@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
@@ -453,8 +455,9 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
+        // We used to emit NETSDK1219 while UWP support on .NET 9 was not GA yet, make sure it's gone now
         [WindowsOnlyFact]
-        public void ItWarnsWhenBuildingAProjectWithUseUwpProperty()
+        public void ItDoesNotWarnAnymoreWhenBuildingAProjectWithUseUwpProperty()
         {
             TestProject testProject = new()
             {
@@ -463,6 +466,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "net9.0-windows10.0.22621.0"
             };
             testProject.AdditionalProperties["UseUwp"] = "true";
+            testProject.AdditionalProperties["UseUwpTools"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -471,7 +475,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("NETSDK1219");
+                .NotHaveStdOutContaining("NETSDK1219");
         }
 
         [WindowsOnlyFact]
@@ -484,6 +488,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "netstandard2.0"
             };
             testProject.AdditionalProperties["UseUwp"] = "true";
+            testProject.AdditionalProperties["UseUwpTools"] = "false";
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -505,6 +510,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "net9.0-windows10.0.22621.0"
             };
             testProjectA.AdditionalProperties["UseUwp"] = "true";
+            testProjectA.AdditionalProperties["UseUwpTools"] = "false";
 
             TestProject testProjectB = new()
             {
@@ -579,6 +585,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             };
             testProject.AdditionalProperties["UseUwp"] = "true";
+            testProject.AdditionalProperties["UseUwpTools"] = "false";
 
             // Temporary until new projections flow to tests
             testProject.AdditionalProperties["WindowsSdkPackageVersion"] = "10.0.22621.39";
@@ -589,6 +596,33 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute()
                 .Should()
                 .Pass();
+        }
+
+        [WindowsOnlyFact]
+        public void ItHandlesProfilesWithSelfContained()
+        {
+            TestProject testProject = new()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows",
+                IsExe = true,
+                SelfContained = "true",
+                RuntimeIdentifier = "win-x64"
+            };
+            //  Setting both UseWpf and UseWindowsForms to true will add a FrameworkReference to Microsoft.WindowsDesktop.App
+            testProject.AdditionalProperties["UseWpf"] = "true";
+            testProject.AdditionalProperties["UseWindowsForms"] = "true";
+
+            //  Add reference to Windows Forms, which is a profile of Microsoft.WindowsDesktop.App
+            testProject.AddItem("FrameworkReference", "Include", "Microsoft.WindowsDesktop.App.WindowsForms");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            //  PresentationFramework should be included in output, even though it's not in the WindowsForms profile,
+            //  it should be included because of the Microsoft.WindowsDesktop.App FrameworkReference
+            buildCommand.GetOutputDirectory().Should().HaveFile("PresentationFramework.dll");
         }
 
         private string GetReferencedWindowsSdkVersion(TestAsset testAsset)

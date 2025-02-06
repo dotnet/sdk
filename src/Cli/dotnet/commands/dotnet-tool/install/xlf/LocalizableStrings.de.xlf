@@ -95,12 +95,12 @@ Wenn Sie ein Manifest erstellen möchten, verwenden Sie das Flag „--create-man
       </trans-unit>
       <trans-unit id="SourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
-        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <target state="translated">Ersetzen alle NuGet-Paketquellen für die Nutzung während der Installation durch diese.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceOptionName">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">QUELLE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -194,7 +194,7 @@ Weitere Gründe sowie Informationen zum Erzwingen der Paketbenennung finden Sie 
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
         <source>ADDSOURCE</source>
-        <target state="needs-review-translation">SOURCE</target>
+        <target state="translated">QUELLE HINZUFÜGEN</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

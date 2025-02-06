@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
@@ -13,6 +15,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly string _downloadPath;
         private readonly bool _manifestDownload;
         private NuGetVersion _lastPackageVersion = new("1.0.0");
+        private IEnumerable<NuGetVersion> _packageVersions;
 
         public List<(PackageId id, NuGetVersion version, DirectoryPath? downloadFolder, PackageSourceLocation packageSourceLocation)> DownloadCallParams = new();
 
@@ -22,7 +25,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public HashSet<string> PackageIdsToNotFind { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public MockNuGetPackageDownloader(string dotnetRoot = null, bool manifestDownload = false)
+        public MockNuGetPackageDownloader(string dotnetRoot = null, bool manifestDownload = false, IEnumerable<NuGetVersion> packageVersions = null)
         {
             _manifestDownload = manifestDownload;
             _downloadPath = dotnetRoot == null ? string.Empty : Path.Combine(dotnetRoot, "metadata", "temp");
@@ -30,6 +33,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 Directory.CreateDirectory(_downloadPath);
             }
+
+            _packageVersions = packageVersions;
         }
 
         public Task<string> DownloadPackageAsync(PackageId packageId,
@@ -38,8 +43,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null,
-            bool isTool = false)
+            PackageSourceMapping packageSourceMapping = null)
         {
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
 
@@ -80,7 +84,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(new List<string>() as IEnumerable<string>);
         }
 
-        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => Task.FromResult(Enumerable.Empty<NuGetVersion>());
+        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => Task.FromResult(_packageVersions ?? Enumerable.Empty<NuGetVersion>());
 
         public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
         {

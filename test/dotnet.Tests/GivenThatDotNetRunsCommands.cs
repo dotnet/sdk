@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Configurer;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
 
@@ -37,7 +40,7 @@ namespace Microsoft.DotNet.Tests
         public void GivenAMissingHomeVariableItExecutesHelpCommandSuccessfully(string value)
         {
             new DotnetCommand(Log)
-                .WithEnvironmentVariable(CliFolderPathCalculator.PlatformHomeVariableName, value)
+                .WithEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME", value)
                 .WithEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, "")
                 .Execute("--help")
                 .Should()

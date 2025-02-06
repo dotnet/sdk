@@ -34,6 +34,11 @@
 
     <swid:Tag Regid="microsoft.com" InstallPath="[$(var.Program_Files)]dotnet" />
 
+    <!-- Search references for upgrade policy keys -->
+    <util:RegistrySearchRef Id="RemovePreviousVersionRegistryKeySearch"/>
+    <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeyExistsSearch"/>
+    <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeySearch"/>
+
     <util:RegistrySearch Id="CheckDotnetInstallLocation_x86"
               Variable="DotnetInstallLocationExists_x86"
               Result="exists"
@@ -182,6 +187,9 @@
       <MsiPackage SourceFile="$(var.SharedFXMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
+      <MsiPackage SourceFile="$(var.ASPNETRuntimeMsiSourcePath)">
+        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+      </MsiPackage>
       <MsiPackage SourceFile="$(var.HostFXRMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
       </MsiPackage>
@@ -224,13 +232,6 @@
         <MsiProperty Name="EXEFULLPATH" Value="[WixBundleOriginalSource]" />
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
-      <?if $(var.Platform)=x86?>
-        <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x86"/>
-      <?elseif $(var.Platform)=x64?>
-        <PackageGroupRef Id="PG_AspNetCoreSharedFramework_x64"/>
-      <?elseif $(var.Platform)=arm64?>
-        <PackageGroupRef Id="PG_AspNetCoreSharedFramework_arm64"/>
-      <?endif?>
     </Chain>
   </Bundle>
 

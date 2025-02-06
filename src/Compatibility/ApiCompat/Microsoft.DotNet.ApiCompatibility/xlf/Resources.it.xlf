@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="CannotAddGenericConstraint">
         <source>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</source>
-        <target state="new">Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <target state="translated">Impossibile aggiungere il vincolo '{0}' nel parametro di tipo '{1}' di '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotAddMemberToInterface">
@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
-        <target state="new">Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <target state="translated">Impossibile rimuovere il vincolo '{0}' nel parametro di tipo '{1}' di '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualFromMember">
@@ -129,7 +129,7 @@
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
         <source>Element at index {0} should not be null.</source>
-        <target state="needs-review-translation">L'elemento non deve essere null. Trovato valore null all'indice: {0}.</target>
+        <target state="translated">L'elemento in corrispondenza dell'indice {0} non deve essere null.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumTypesMustMatch">
@@ -144,12 +144,7 @@
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
-        <target state="new">The {0} index should be in the range zero through {1} inclusive.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">Non è stato possibile trovare un assembly corrispondente: '{0}' in nessuna delle directory di ricerca.</target>
+        <target state="translated">L'indice {0} deve essere compreso nell'intervallo compreso tra zero e {1} incluso.</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">
@@ -169,7 +164,7 @@
       </trans-unit>
       <trans-unit id="ShouldBeGreaterThanZero">
         <source>Value of '{0}' should be greater than 0.</source>
-        <target state="new">Value of '{0}' should be greater than 0.</target>
+        <target state="translated">Il valore di '{0}' deve essere maggiore di 0.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">

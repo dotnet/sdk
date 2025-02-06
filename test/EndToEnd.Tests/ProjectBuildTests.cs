@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable disable
+
 using EndToEnd.Tests.Utilities;
 
 namespace EndToEnd.Tests
@@ -192,6 +194,7 @@ namespace EndToEnd.Tests
 [\w \.\(\)]+blazor\s+\[C#\][\w\ \/]+
 [\w \.\(\)]+classlib\s+\[C#\],F#,VB[\w\ \/]+
 [\w \.\(\)]+console\s+\[C#\],F#,VB[\w\ \/]+
+[\w \.\(\)]+mstest\s+\[C#\],F#,VB[\w\ \/]+
 ";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -407,20 +410,7 @@ namespace EndToEnd.Tests
             if (latestMajorVersion == 10)
             {
                 // TODO: This block need to be updated when every template updates their default tfm.
-                // Currently winforms updated their default templates target but not others.
-                if (template.StartsWith("mstest")
-                       || template.StartsWith("winforms")
-                       || template.StartsWith("wpf")
-                       || template.StartsWith("web")
-                       || template.StartsWith("razor")
-                       || template.StartsWith("blazor")
-                       || template.StartsWith("mvc")
-                       || template.StartsWith("worker")
-                       || template.StartsWith("grpc")
-                       || template.StartsWith("classlib")
-                       || template.StartsWith("console")
-                       || template.StartsWith("nunit")
-                       || template.StartsWith("xunit"))
+                if (template.StartsWith("wpf"))
                 {
                     return $"net9.0";
                 }

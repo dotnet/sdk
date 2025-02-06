@@ -51,6 +51,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _currentWorkingDirectory;
         private readonly bool? _verifySignatures;
 
+        internal readonly RestoreActionConfig restoreActionConfig;
+
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
             PackageId? packageId = null,
@@ -86,11 +88,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             var configOption = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption);
-            var restoreAction = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+            restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
                 NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
+            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
             _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
             _store = store;
 
@@ -164,7 +166,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
                 if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
                 {
-                    _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, _packageId, oldPackageNullable.Version.ToNormalizedString()).Green());
+                    _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, oldPackageNullable.Id, oldPackageNullable.Version.ToNormalizedString()).Green());
                     return 0;
                 }   
             }
@@ -192,7 +194,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         verbosity: _verbosity,
                         isGlobalTool: true,
                         isGlobalToolRollForward: _allowRollForward,
-                        verifySignatures: _verifySignatures ?? true
+                        verifySignatures: _verifySignatures ?? true,
+                        restoreActionConfig: restoreActionConfig
                     );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
@@ -239,13 +242,14 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 packageId: packageId,
                 versionRange: versionRange,
                 verbosity: _verbosity,
-                isGlobalTool: true
+                isGlobalTool: true,
+                restoreActionConfig: restoreActionConfig
             );
         }
 
         private static bool ToolVersionAlreadyInstalled(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)
         {
-            return oldPackageNullable != null && (oldPackageNullable.Version.Version == nuGetVersion.Version);
+            return oldPackageNullable != null && (oldPackageNullable.Version == nuGetVersion);
         }
 
         private static void EnsureVersionIsHigher(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage, bool allowDowngrade)

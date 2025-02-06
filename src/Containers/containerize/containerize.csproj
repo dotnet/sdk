@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
@@ -27,11 +26,11 @@
     <ItemGroup>
       <ContainerizeFiles Include="$(ArtifactsBinDir)containerize\$(Configuration)\$(SdkTargetFramework)\**\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(ContainerizeFiles)" DestinationFiles="@(ContainerizeFiles->'$(ArtifactsTmpDir)Container\containerize\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ContainerizeFiles)" DestinationFiles="@(ContainerizeFiles->'$(ArtifactsTmpDir)Container\containerize\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
 
   <!-- Copy to *.csproj for using in sanity checks integration tests. -->
   <Target Name="CopyCsprojToTestExecutionDirectory" AfterTargets="Build">
-    <Copy SourceFiles="$(MSBuildThisFileFullPath)" DestinationFiles="$(ArtifactsTmpDir)Container\ProjectFiles\$(MSBuildThisFileName).csproj" />
+    <Copy SourceFiles="$(MSBuildThisFileFullPath)" DestinationFiles="$(ArtifactsTmpDir)Container\ProjectFiles\$(MSBuildThisFileName).csproj" SkipUnchangedFiles="true" />
   </Target>
 </Project>

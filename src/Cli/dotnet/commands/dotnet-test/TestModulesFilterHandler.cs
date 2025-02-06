@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli
 
             foreach (string testModule in testModulePaths)
             {
-                var testApp = new TestApplication(new Module(testModule, null, null, null), _args);
+                var testApp = new TestApplication(new Module(testModule, null, null, null, true, true), _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
             }
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli
 
         private static IEnumerable<string> GetMatchedModulePaths(string testModules, string rootDirectory)
         {
-            var testModulePatterns = testModules.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            var testModulePatterns = testModules.Split([';'], StringSplitOptions.RemoveEmptyEntries);
 
             Matcher matcher = new();
             matcher.AddIncludePatterns(testModulePatterns);

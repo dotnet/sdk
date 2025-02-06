@@ -14,6 +14,12 @@ pr:
     - README.md
     - CODEOWNERS
 
+parameters:
+- name: enableArm64Job
+  displayName: Enables the ARM64 job
+  type: boolean
+  default: false
+
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngPublicBuildPool
@@ -25,12 +31,12 @@ resources:
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
   - container: centosStream9
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-  - container: debian11Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-amd64
+  - container: debian12Amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
   - container: fedora39
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-  - container: ubuntu2204
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04
+  - container: ubuntu2204DebPkg
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
 
 stages:
 ############### BUILD STAGE ###############
@@ -44,7 +50,7 @@ stages:
         name: $(DncEngPublicBuildPool)
         demands: ImageOverride -equals windows.vs2022.amd64.open
         os: windows
-      helixTargetQueue: windows.amd64.vs2022.pre.open
+      helixTargetQueue: windows.amd64.vs2022.pre.scout.open
 
   ############### LINUX ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -63,17 +69,19 @@ stages:
         vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.13.amd64.open
-
-  ############### SOURCE BUILD ###############
-  # Temporarily removed until the SDK can target net10. The assets produced by upstream repos
-  # are net10, but this repo needs net9.
-  # - template: /eng/common/templates-official/job/source-build.yml@self
-  #   parameters:
-  #     platform:
-  #       name: Managed
-  #       container: centosStream9
-  #       jobProperties:
-  #         timeoutInMinutes: 30
+  ### ARM64 ###
+  - ${{ if eq(parameters.enableArm64Job, true) }}:
+    - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+      parameters:
+        pool:
+          name: Azure Pipelines
+          vmImage: macOS-latest
+          os: macOS
+        helixTargetQueue: osx.13.arm64.open
+        macOSJobParameterSets:
+        - categoryName: TestBuild
+          buildArchitecture: arm64
+          runtimeIdentifier: osx-arm64
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml

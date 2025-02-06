@@ -1,17 +1,17 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
   <String Id="Caption">[WixBundleName]-Installationsprogramm</String>
   <String Id="Title">[BUNDLEMONIKER]</String>
-  <String Id="ConfirmCancelMessage">Möchten Sie den Vorgang wirklich abbrechen?</String>
+  <String Id="ConfirmCancelMessage">Möchten Sie den Vorgang abbrechen?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Vorherige Version</String>
   <String Id="HelpHeader">Setup-Hilfe</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] – installiert, repariert, deinstalliert
-   oder erstellt eine vollständige lokale Kopie des Bundles im Verzeichnis. „/install“ ist die Standardeinstellung.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]„Verzeichnis“[\]] – installiert, repariert, deinstalliert
+   oder erstellt eine vollständige lokale Kopie des Bündels im Verzeichnis. „/install“ ist die Standardeinstellung.
 
-/passive | /quiet –  zeigt eine minimale Benutzeroberfläche ohne Eingabeaufforderungen oder keine Benutzeroberfläche und
-   keine Eingabeaufforderungen an. Standardmäßig werden die Benutzeroberfläche und alle Eingabeaufforderungen angezeigt.
+/passive | /quiet – Zeigt eine minimale Benutzeroberfläche ohne Eingabeaufforderungen an oder zeigt weder eine Benutzeroberfläche noch
+   Eingabeaufforderungen an. Standardmäßig werden die Benutzeroberfläche und alle Eingabeaufforderungen angezeigt.
 
-/norestart – unterdrückt alle Neustartversuche. Standardmäßig fordert die Benutzeroberfläche zum Bestätigen eines Neustarts auf.
-/log [\[]"log.txt"[\]] – protokolliert in eine bestimmte Datei. Standardmäßig wird die Protokolldatei in %TEMP% erstellt.</String>
+/norestart – Unterdrückt alle Neustartversuche. Standardmäßig wird die Benutzeroberfläche vor dem Neustart aufgefordert.
+/log [\[]"log.txt"[\]] – Protokolliert eine bestimmte Datei. Standardmäßig wird eine Protokolldatei in %TEMP% erstellt.</String>
   <String Id="HelpCloseButton">S&amp;chließen</String>
   <String Id="InstallAcceptCheckbox">Ich &amp;stimme den Bedingungen des Lizenzvertrags zu</String>
   <String Id="InstallOptionsButton">&amp;Optionen</String>
@@ -19,7 +19,7 @@
   <String Id="InstallCloseButton">S&amp;chließen</String>
   <String Id="ProgressHeader">Setupstatus</String>
   <String Id="ProgressLabel">Wird verarbeitet:</String>
-  <String Id="OverallProgressPackageText">Wird initialisiert...</String>
+  <String Id="OverallProgressPackageText">Initialisierung...</String>
   <String Id="ProgressCancelButton">&amp;Abbrechen</String>
   <String Id="ModifyHeader">Setup ändern</String>
   <String Id="ModifyRepairButton">&amp;Reparieren</String>
@@ -48,23 +48,23 @@
   <String Id="FilesInUseCancelButton">&amp;Abbrechen</String>
   <String Id="FirstTimeWelcomeMessage">Die Installation war erfolgreich.
 
-Die folgenden Produkte wurden unter installiert:
-    • .NET-SDK [DOTNETSDKVERSION]
-    • .NET-Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core-Runtime [ASPNETCOREVERSION]
-    • .NET Windows Desktop-Runtime [WINFORMSANDWPFVERSION]
+Die folgenden Produkte wurden installiert:
+    • .NET SDK [DOTNETSDKVERSION]
+    • .NET Runtime [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core Runtime [ASPNETCOREVERSION]
+    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
-Dieses Produkt sammelt Verbrauchsdaten.
-    • Weitere Informationen und Deaktivieren https://aka.ms/dotnet-cli-telemetry
+Dieses Produkt sammelt Nutzungsdaten
+    • Weitere Informationen und Kündigung https://aka.ms/dotnet-cli-telemetry
 
 Ressourcen
-    • .NET-Dokumentation: https://aka.ms/dotnet-docs
-    • SDK-Dokumentation: https://aka.ms/dotnet-sdk-docs
-    • Versionshinweise: https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
-    • Tutorials: https://aka.ms/dotnet-tutorials</String>
+    • .NET-Dokumentation https://aka.ms/dotnet-docs
+    • SDK-Dokumentation https://aka.ms/dotnet-sdk-docs
+    • Versionshinweise https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • Tutorials https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET-SDK</String>
   <String Id="WelcomeDescription">
-    Das .NET-SDK wird zum Erstellen, Ausführen und Testen von .NET-Anwendungen verwendet. Sie können aus mehreren Sprachen, Editoren und Entwicklertools auswählen und ein großes Ökosystem von Bibliotheken nutzen, um Apps für das Web, mobile Geräte, Desktops, Gaming und IoT zu entwickeln. Wir wünschen Ihnen viel Spaß damit!</String>
+    Das .NET SDK wird zum Erstellen, Ausführen und Testen von .NET-Anwendungen verwendet. Sie können aus mehreren Sprachen, Editoren und Entwicklungstools wählen und ein großes Bibliotheksnetzwerk nutzen, um Apps für das Web, mobile Geräte, Desktops, Gaming und IoT zu entwickeln. Wir wünschen Ihnen viel Spaß dabei!</String>
   <String Id="LearnMoreTitle">Weitere Informationen zu .NET</String>
   <String Id="ResourcesHeader">Ressourcen</String>
   <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;.NET-Dokumentation&lt;/A&gt;</String>
@@ -75,9 +75,9 @@ Ressourcen
   <String Id="InstallationNoteTitle">Installationshinweis</String>
   <String Id="InstallationNote">Während des Installationsvorgangs wird ein Befehl ausgeführt, durch den die Geschwindigkeit der Projektwiederherstellung verbessert und der Offlinezugriff aktiviert wird. Der Vorgang dauert bis zu einer Minute.
   </String>
-  <String Id="VisualStudioWarning">Wenn Sie beabsichtigen, .NET [VERSIONMAJOR].[VERSIONMINOR] mit Visual Studio zu verwenden, ist Visual Studio 2022 [MINIMUMVSVERSION] oder höher erforderlich. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Weitere Informationen&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Wenn Sie beabsichtigen, .NET [VERSIONMAJOR]. [VERSIONMINOR] mit Visual Studio zu verwenden, ist Visual Studio 2022 [MINIMUMVSVERSION] oder neuer erforderlich. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Weitere Informationen&lt;/A&gt;.
   </String>
-  <String Id="LicenseAssent">Durch Klicken auf „Installieren2 stimmen Sie den nachstehenden Bedingungen zu:</String>
+  <String Id="LicenseAssent">Durch Klicken auf „Installieren“ stimmen Sie den nachstehenden Bedingungen zu:</String>
   <String Id="InstallPathx64x86">Der Installationspfad „[DOTNETHOME_X64]“ für x64 SDK-Installationen kann nicht derselbe sein wie für x86 SDK-Installationen: „[DOTNETHOME_X86]“</String>
   <String Id="InstallPathARM64x86">Der Installationspfad „[DOTNETHOME_ARM64]“ für ARM64 SDK-Installationen kann nicht derselbe sein wie für x86 SDK-Installationen: „[DOTNETHOME_X86]“</String>
   <String Id="InstallPathARM64x64">Der Installationspfad „[DOTNETHOME_ARM64]“ für ARM64 SDK-Installationen kann nicht derselbe sein wie für x64 SDK-Installationen: „[DOTNETHOME_X64]“</String>

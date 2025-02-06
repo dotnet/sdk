@@ -4,14 +4,15 @@
   <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
   <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
   <String Id="HelpHeader">Kurulum Yardımı</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"dizin"[\]] - yükler, onarır, kaldırır 
-   ya da dizindeki paketin tam bir yerel kopyasını oluşturur. Varsayılan  '/install' değeridir.
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"dizin"[\]] - yüklemeler, onarımlar, kaldırmalar
+   veya paketin tam bir yerel kopyasını dizinde oluşturur. '/install' varsayılandır.
 
-/passive | /quiet - en az düzeyde istemsiz UI gösterir ya da hiç UI göstermez ve
-   istem yoktur. Varsayılan olarak, UI ve tüm istemler görüntülenir.
+/passive | /quiet - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve 
+ istem olmadan
+   görüntüler. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir.
 
-/norestart   - yeniden başlama denemelerini durdurur. Varsayılan olarak UI yeniden başlatılmadan önce sorar.
-/log [\[]"log.txt"[\]] - belirli bir günlük dosyası tutar. Varsayılan olarak, %TEMP% içinde bir günlük dosyası oluşturulur.</String>
+/norestart - yeniden başlatma girişimlerini durdur. Varsayılan olarak kullanıcı arabirimi yeniden başlatmadan önce sorar.
+/log [\[]"log.txt"[\]] - belirli bir dosyaya kaydeder. Varsayılan olarak, %TEMP% içinde bir günlük dosyası oluşturulur.</String>
   <String Id="HelpCloseButton">&amp;Kapat</String>
   <String Id="InstallAcceptCheckbox">Lisans hüküm ve koşullarını &amp;kabul ediyorum</String>
   <String Id="InstallOptionsButton">&amp;Seçenekler</String>
@@ -48,14 +49,14 @@
   <String Id="FilesInUseCancelButton">İ&amp;ptal</String>
   <String Id="FirstTimeWelcomeMessage">Yükleme başarılı oldu.
 
-Aşağıdakiler ürünler yüklendi:
+Şu ürünler yüklendi:
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Çalışma Zamanı [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Çalışma Zamanı [ASPNETCOREVERSION]
+    • ASP.NET Çekirdek Çalışma Zamanı [ASPNETCOREVERSION]
     • .NET Windows Masaüstü Çalışma Zamanı [WINFORMSANDWPFVERSION]
 
 Bu ürün, kullanım verilerini toplar
-    • Daha fazla bilgi ve katılmamayı seçmek için bkz. https://aka.ms/dotnet-cli-telemetry
+    • Daha fazla bilgi ve geri çevirme https://aka.ms/dotnet-cli-telemetry
 
 Kaynaklar
     • .NET Belgeleri https://aka.ms/dotnet-docs

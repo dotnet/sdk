@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="CannotAddGenericConstraint">
         <source>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</source>
-        <target state="new">Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <target state="translated">형식 매개 변수 '{2}'의 '{1}'에서 제약 조건 '{0}'을(를) 추가할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotAddMemberToInterface">
@@ -119,7 +119,7 @@
       </trans-unit>
       <trans-unit id="CannotRemoveGenericConstraint">
         <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
-        <target state="new">Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <target state="translated">형식 매개 변수 '{2}'의 '{1}'에서 제약 조건 '{0}'을(를) 제거할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualFromMember">
@@ -129,7 +129,7 @@
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
         <source>Element at index {0} should not be null.</source>
-        <target state="needs-review-translation">요소는 Null이 아니어야 합니다. 인덱스 {0}에 Null이 있습니다.</target>
+        <target state="translated">{0} 인덱스의 요소는 null일 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnumTypesMustMatch">
@@ -144,12 +144,7 @@
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
-        <target state="new">The {0} index should be in the range zero through {1} inclusive.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">검색 디렉터리에서 일치하는 어셈블리 '{0}'(을)를 찾을 수 없습니다.</target>
+        <target state="translated">{0} 인덱스는 0 이상 {1} 이하의 범위 안에 있어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">
@@ -169,7 +164,7 @@
       </trans-unit>
       <trans-unit id="ShouldBeGreaterThanZero">
         <source>Value of '{0}' should be greater than 0.</source>
-        <target state="new">Value of '{0}' should be greater than 0.</target>
+        <target state="translated">‘{0}’의 값은 0보다 커야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">

@@ -9,23 +9,21 @@ schedules:
     include:
     - main
     - release/*.0.1xx-preview*
-    - release/9.0.1xx
     - internal/release/*.0.1xx*
 
 pr: none
 
 # Always trigger a run when changes are made to the license test implementation or baselines
-trigger: 
+trigger:
   branches:
     include:
     - main
     - release/*.0.1xx-preview*
-    - release/9.0.1xx
     - internal/release/*.0.1xx*
   paths:
     include:
-    - test/Microsoft.DotNet.SourceBuild.SmokeTests/LicenseScanTests.cs
-    - test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
+    - test/Microsoft.DotNet.SourceBuild.Tests/LicenseScanTests.cs
+    - test/Microsoft.DotNet.SourceBuild.Tests/assets/LicenseScanTests
 
 parameters:
 # Provides a way to scan a specific repo. If not provided, all repos of the VMR will be scanned.
@@ -40,158 +38,169 @@ variables:
 - name: sdkRoot
   value: '$(Build.SourcesDirectory)/src/sdk'
 
-jobs:
-- job: Setup
-  pool:
-    name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2004
-  steps:
-  - script: |
-      vmrSrcDir="$(Build.SourcesDirectory)/src"
-      # Builds an Azure DevOps matrix definition. Each entry in the matrix is a path,
-      # allowing a job to be run for each src repo.
-      matrix=""
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
-      # Trim leading/trailing spaces from the repo name
-      specificRepoName=$(echo "${{ parameters.specificRepoName }}" | awk '{$1=$1};1')
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: NetCore1ESPool-Svc-Internal
+      image: 1es-ubuntu-2204
+      os: linux
+    sdl:
+      sourceAnalysisPool:
+          name: NetCore1ESPool-Svc-Internal
+          image: 1es-windows-2022
+          os: windows
+    stages:
+    - stage: stage
+      jobs:
+      - job: Setup
+        steps:
+        - script: |
+            vmrSrcDir="$(Build.SourcesDirectory)/src"
+            # Builds an Azure DevOps matrix definition. Each entry in the matrix is a path,
+            # allowing a job to be run for each src repo.
+            matrix=""
 
-      # If the repo name is provided, only scan that repo.
-      if [ ! -z "$specificRepoName" ]; then
-        matrix="\"$specificRepoName\": { \"repoPath\": \"$vmrSrcDir/$specificRepoName\" }"
-      else
-        for dir in $vmrSrcDir/*/
-        do
-          if [ ! -z "$matrix" ]; then
-            matrix="$matrix,"
-          fi
-          repoName=$(basename $dir)
-          matrix="$matrix \"$repoName\": { \"repoPath\": \"$dir\" }"
-        done
-      fi
+            # Trim leading/trailing spaces from the repo name
+            specificRepoName=$(echo "${{ parameters.specificRepoName }}" | awk '{$1=$1};1')
 
-      matrix="{ $matrix }"
+            # If the repo name is provided, only scan that repo.
+            if [ ! -z "$specificRepoName" ]; then
+              matrix="\"$specificRepoName\": { \"repoPath\": \"$vmrSrcDir/$specificRepoName\" }"
+            else
+              for dir in $vmrSrcDir/*/
+              do
+                if [ ! -z "$matrix" ]; then
+                  matrix="$matrix,"
+                fi
+                repoName=$(basename $dir)
+                matrix="$matrix \"$repoName\": { \"repoPath\": \"$dir\" }"
+              done
+            fi
 
-      echo "##vso[task.setvariable variable=matrix;isOutput=true]$matrix"
-    name: GetMatrix
-    displayName: Get Matrix
+            matrix="{ $matrix }"
 
-- job: LicenseScan
-  dependsOn: Setup
-  pool:
-    name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2004
-  timeoutInMinutes: 420
-  strategy:
-    matrix: $[ dependencies.Setup.outputs['GetMatrix.matrix'] ]
-  steps:
+            echo "##vso[task.setvariable variable=matrix;isOutput=true]$matrix"
+          name: GetMatrix
+          displayName: Get Matrix
 
-  - script: |
-      source ./eng/common/tools.sh
-      InitializeDotNetCli true
-    displayName: Install .NET SDK
-    workingDirectory: $(Build.SourcesDirectory)
+      - job: LicenseScan
+        dependsOn: Setup
+        timeoutInMinutes: 420
+        strategy:
+          matrix: $[ dependencies.Setup.outputs['GetMatrix.matrix'] ]
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish BuildLogs'
+            condition: succeededOrFailed()
+            targetPath: '$(Build.StagingDirectory)/BuildLogs'
+            artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
+        steps:
 
-  - task: PipAuthenticate@1
-    displayName: 'Pip Authenticate'
-    inputs:
-      artifactFeeds: public/dotnet-public-pypi
-      onlyAddExtraIndex: false
+        - script: |
+            source ./eng/common/tools.sh
+            InitializeDotNetCli true
+          displayName: Install .NET SDK
+          workingDirectory: $(Build.SourcesDirectory)
 
-  - script: $(sdkRoot)/eng/install-scancode.sh
-    displayName: Install Scancode
+        - task: PipAuthenticate@1
+          displayName: 'Pip Authenticate'
+          inputs:
+            artifactFeeds: public/dotnet-public-pypi
+            onlyAddExtraIndex: false
 
-  - script: >
-      $(Build.SourcesDirectory)/.dotnet/dotnet test
-      $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/Microsoft.DotNet.SourceBuild.SmokeTests.csproj
-      --filter "FullyQualifiedName=Microsoft.DotNet.SourceBuild.SmokeTests.LicenseScanTests.ScanForLicenses"
-      --logger:'trx;LogFileName=$(Agent.JobName)_LicenseScan.trx'
-      --logger:'console;verbosity=detailed'
-      -c Release
-      -bl:$(Build.SourcesDirectory)/artifacts/log/Debug/BuildTests_$(date +"%m%d%H%M%S").binlog
-      -flp:LogFile=$(Build.SourcesDirectory)/artifacts/logs/BuildTests_$(date +"%m%d%H%M%S").log
-      -clp:v=m
-      /p:SmokeTestsLicenseScanPath=$(repoPath)
-      /p:SmokeTestsWarnOnLicenseScanDiffs=false
-      /p:TargetRid=linux-x64
-      /p:PortableRid=linux-x64
-      /p:SkipPrepareSdkArchive=true
-    displayName: Run Tests
-    workingDirectory: $(Build.SourcesDirectory)
+        - script: $(sdkRoot)/eng/install-scancode.sh
+          displayName: Install Scancode
 
-  - script: |
-      set -x
-      targetFolder=$(Build.StagingDirectory)/BuildLogs/
-      mkdir -p ${targetFolder}
-      cd "$(Build.SourcesDirectory)"
-      find artifacts/log/ -type f -name "BuildTests*.binlog" -exec cp {} --parents -t ${targetFolder} \;
-      find artifacts/log/ -type f -name "BuildTests*.log" -exec cp {} --parents -t ${targetFolder} \;
-      find artifacts/TestResults/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
-      find artifacts/TestResults/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
-      echo "Updated:"
-      find artifacts/TestResults/ -type f -name "UpdatedLicenseExclusions*.txt"
-      find artifacts/TestResults/ -type f -name "UpdatedLicenseExclusions*.txt" -exec cp {} --parents -t ${targetFolder} \;
-      find artifacts/TestResults/ -type f -name "Updated*.json"
-      find artifacts/TestResults/ -type f -name "Updated*.json" -exec cp {} --parents -t ${targetFolder} \;
-      echo "Results:"
-      find artifacts/TestResults/ -type f -name "scancode-results*.json" -exec cp {} --parents -t ${targetFolder} \;
-      echo "All:"
-      ls -R artifacts/TestResults/
-      echo "BuildLogs:"
-      ls -R ${targetFolder}
-    displayName: Prepare BuildLogs staging directory
-    continueOnError: true
-    condition: succeededOrFailed()
+        - script: >
+            $(Build.SourcesDirectory)/.dotnet/dotnet test
+            $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.Tests/Microsoft.DotNet.SourceBuild.Tests.csproj
+            --filter "FullyQualifiedName=Microsoft.DotNet.SourceBuild.Tests.LicenseScanTests.ScanForLicenses"
+            --logger:'trx;LogFileName=$(Agent.JobName)_LicenseScan.trx'
+            --logger:'console;verbosity=detailed'
+            -c Release
+            -bl:$(Build.SourcesDirectory)/artifacts/log/Debug/BuildTests_$(date +"%m%d%H%M%S").binlog
+            -flp:LogFile=$(Build.SourcesDirectory)/artifacts/logs/BuildTests_$(date +"%m%d%H%M%S").log
+            -clp:v=m
+            /p:SourceBuildTestsLicenseScanPath=$(repoPath)
+            /p:TargetRid=linux-x64
+            /p:PortableRid=linux-x64
+            /p:SkipPrepareSdkArchive=true
+          displayName: Run Tests
+          workingDirectory: $(Build.SourcesDirectory)
 
-  - publish: '$(Build.StagingDirectory)/BuildLogs'
-    artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
-    displayName: Publish BuildLogs
-    continueOnError: true
-    condition: succeededOrFailed()
+        - script: |
+            set -x
+            targetFolder=$(Build.StagingDirectory)/BuildLogs/
+            mkdir -p ${targetFolder}
+            cd "$(Build.SourcesDirectory)"
+            find artifacts/log/ -type f -name "BuildTests*.binlog" -exec cp {} --parents -t ${targetFolder} \;
+            find artifacts/log/ -type f -name "BuildTests*.log" -exec cp {} --parents -t ${targetFolder} \;
+            find artifacts/TestResults/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
+            find artifacts/TestResults/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
+            echo "Updated:"
+            find artifacts/TestResults/ -type f -name "UpdatedLicenseExclusions*.txt"
+            find artifacts/TestResults/ -type f -name "UpdatedLicenseExclusions*.txt" -exec cp {} --parents -t ${targetFolder} \;
+            find artifacts/TestResults/ -type f -name "Updated*.json"
+            find artifacts/TestResults/ -type f -name "Updated*.json" -exec cp {} --parents -t ${targetFolder} \;
+            echo "Results:"
+            find artifacts/TestResults/ -type f -name "scancode-results*.json" -exec cp {} --parents -t ${targetFolder} \;
+            echo "All:"
+            ls -R artifacts/TestResults/
+            echo "BuildLogs:"
+            ls -R ${targetFolder}
+          displayName: Prepare BuildLogs staging directory
+          continueOnError: true
+          condition: succeededOrFailed()
 
-  - task: PublishTestResults@2
-    displayName: Publish Test Results
-    condition: succeededOrFailed()
-    continueOnError: true
-    inputs:
-      testRunner: vSTest
-      testResultsFiles: '**/*.trx'
-      searchFolder: $(Build.SourcesDirectory)/artifacts/TestResults
-      mergeTestResults: true
-      publishRunAttachments: true
-      testRunTitle: $(Agent.JobName)
+        - task: PublishTestResults@2
+          displayName: Publish Test Results
+          condition: succeededOrFailed()
+          continueOnError: true
+          inputs:
+            testRunner: vSTest
+            testResultsFiles: '**/*.trx'
+            searchFolder: $(Build.SourcesDirectory)/artifacts/TestResults
+            mergeTestResults: true
+            publishRunAttachments: true
+            testRunTitle: $(Agent.JobName)
 
-- job: Publish_Test_Results_PR
-  dependsOn: LicenseScan
-  condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
-  pool:
-    name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2004
-  variables:
-  - template: templates/variables/pipelines.yml
-  steps:
+      - job: Publish_Test_Results_PR
+        dependsOn: LicenseScan
+        condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
+        variables:
+        - template: /eng/pipelines/templates/variables/pipelines.yml@self
+        steps:
+        - script: |
+            source ./eng/common/tools.sh
+            InitializeDotNetCli true
+          displayName: Install .NET SDK
+          workingDirectory: $(Build.SourcesDirectory)
 
-  - script: |
-      source ./eng/common/tools.sh
-      InitializeDotNetCli true
-    displayName: Install .NET SDK
-    workingDirectory: $(Build.SourcesDirectory)
+        - template: /eng/pipelines/templates/steps/download-pipeline-artifact.yml@self
+          parameters:
+            pipeline: $(SOURCE_BUILD_LICENSE_SCAN_PIPELINE_ID)
+            buildId: $(Build.BuildId)
+            artifact: ''
+            patterns: '**/Updated*'
+            displayName: Download Updated Test Files
 
-  - template: templates/steps/download-pipeline-artifact.yml
-    parameters:
-      pipeline: $(SOURCE_BUILD_LICENSE_SCAN_PIPELINE_ID)
-      buildId: $(Build.BuildId)
-      artifact: ''
-      patterns: '**/Updated*'
-      displayName: Download Updated Test Files
+        - script: |
+            find $(Pipeline.Workspace)/Artifacts -type f -exec mv {} $(Pipeline.Workspace)/Artifacts \;
+          displayName: Move Artifacts to root
 
-  - script: |
-      find $(Pipeline.Workspace)/Artifacts -type f -exec mv {} $(Pipeline.Workspace)/Artifacts \;
-    displayName: Move Artifacts to root
-
-  - template: templates/steps/create-baseline-update-pr.yml
-    parameters:
-      pipeline: license
-      repo: dotnet/sdk
-      originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
-      updatedFilesDirectory: $(Pipeline.Workspace)/Artifacts
-      pullRequestTitle: Update Source-Build License Scan Baselines and Exclusions
+        - template: /eng/pipelines/templates/steps/create-baseline-update-pr.yml@self
+          parameters:
+            pipeline: license
+            repo: dotnet/sdk
+            originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.Tests/assets/LicenseScanTests
+            updatedFilesDirectory: $(Pipeline.Workspace)/Artifacts
+            pullRequestTitle: Update Source-Build License Scan Baselines and Exclusions

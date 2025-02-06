@@ -1,160 +1,168 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using System.Globalization;
 using Microsoft.Build.Framework;
-using System.Collections.Concurrent;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
+using Microsoft.Build.Utilities;
 
-namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
+
+public class DefineStaticWebAssetEndpoints : Task
 {
-    public class DefineStaticWebAssetEndpoints : Task
+    [Required]
+    public ITaskItem[] CandidateAssets { get; set; }
+
+    public ITaskItem[] ExistingEndpoints { get; set; }
+
+    [Required]
+    public ITaskItem[] ContentTypeMappings { get; set; }
+
+    public ITaskItem[] AssetFileDetails { get; set; }
+
+    [Output]
+    public ITaskItem[] Endpoints { get; set; }
+
+    public Func<string, int> TestLengthResolver;
+    public Func<string, DateTime> TestLastWriteResolver;
+
+    private Dictionary<string, ITaskItem> _assetFileDetails;
+
+    public override bool Execute()
     {
-        [Required]
-        public ITaskItem[] CandidateAssets { get; set; }
-
-        public ITaskItem[] ExistingEndpoints { get; set; }
-
-        [Required]
-        public ITaskItem[] ContentTypeMappings { get; set; }
-
-        public ITaskItem[] AssetFileDetails { get; set; }
-
-        [Output]
-        public ITaskItem[] Endpoints { get; set; }
-
-        public Func<string, int> TestLengthResolver;
-        public Func<string, DateTime> TestLastWriteResolver;
-
-        private Dictionary<string, ITaskItem> _assetFileDetails;
-
-        public override bool Execute()
+        if (AssetFileDetails != null)
         {
-            if (AssetFileDetails != null)
+            _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
+            for (var i = 0; i < AssetFileDetails.Length; i++)
             {
-                _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
-                for (int i = 0; i < AssetFileDetails.Length; i++)
-                {
-                    var item = AssetFileDetails[i];
-                    _assetFileDetails[item.ItemSpec] = item;
-                }
+                var item = AssetFileDetails[i];
+                _assetFileDetails[item.ItemSpec] = item;
             }
-
-            var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
-            var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
-            var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
-            var endpoints = new ConcurrentBag<StaticWebAssetEndpoint>();
-
-            Parallel.For(0, CandidateAssets.Length, i =>
-            {
-                var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
-                var routes = asset.ComputeRoutes().ToList();
-
-                if (existingEndpointsByAssetFile != null && existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
-                {
-                    for (var j = routes.Count -1; j >= 0; j--)
-                    {
-                        var (label, route, values) = routes[j];
-                        // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
-                        // package or a referenced project and ignored if it comes from the current project.
-                        // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
-                        // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
-                        // adjusted at that time.
-                        var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
-
-                        // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
-                        // during the build will have already defined endpoints and we only want to add new ones.
-                        if (set.Contains(finalRoute))
-                        {
-                            Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {route}.");
-                            routes.RemoveAt(j);
-                        }
-                    }
-                }
-
-                foreach (var endpoint in CreateEndpoints(routes, asset, contentTypeProvider))
-                {
-                    Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
-                    endpoints.Add(endpoint);
-                }
-            });
-
-            Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
-
-            return !Log.HasLoggedErrors;
         }
 
-        private Dictionary<string, HashSet<string>> CreateEndpointsByAssetFile()
+        var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
+        var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
+        var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
+        var endpoints = new List<StaticWebAssetEndpoint>();
+
+        Parallel.For(
+            0,
+            CandidateAssets.Length,
+            () => new ParallelWorker(
+                endpoints,
+                new List<StaticWebAssetEndpoint>(),
+                CandidateAssets,
+                existingEndpointsByAssetFile,
+                Log,
+                contentTypeProvider,
+                _assetFileDetails,
+                TestLengthResolver,
+                TestLastWriteResolver),
+            static (i, loop, state) => state.Process(i, loop),
+            static worker => worker.Finally());
+
+        Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
+
+        return !Log.HasLoggedErrors;
+    }
+
+    private Dictionary<string, HashSet<string>> CreateEndpointsByAssetFile()
+    {
+        if (ExistingEndpoints != null && ExistingEndpoints.Length > 0)
         {
-            if (ExistingEndpoints != null && ExistingEndpoints.Length > 0)
+            Dictionary<string, HashSet<string>> existingEndpointsByAssetFile = new(OSPath.PathComparer);
+            var assets = new HashSet<string>(CandidateAssets.Length, OSPath.PathComparer);
+            foreach (var asset in CandidateAssets)
             {
-                Dictionary<string, HashSet<string>> existingEndpointsByAssetFile = new(OSPath.PathComparer);
-                var assets = new HashSet<string>(CandidateAssets.Length, OSPath.PathComparer);
-                foreach (var asset in CandidateAssets)
-                {
-                    assets.Add(asset.ItemSpec);
-                }
-
-                for (int i = 0; i < ExistingEndpoints.Length; i++)
-                {
-                    var endpointCandidate = ExistingEndpoints[i];
-                    var assetFile = endpointCandidate.GetMetadata(nameof(StaticWebAssetEndpoint.AssetFile));
-                    if (!assets.Contains(assetFile))
-                    {
-                        Log.LogMessage(MessageImportance.Low, $"Removing endpoints for asset '{assetFile}' because it no longer exists.");
-                        continue;
-                    }
-
-                    if (!existingEndpointsByAssetFile.TryGetValue(assetFile, out var set))
-                    {
-                        set = new HashSet<string>(OSPath.PathComparer);
-                        existingEndpointsByAssetFile[assetFile] = set;
-                    }
-
-                    // Add the route
-                    set.Add(endpointCandidate.ItemSpec);
-                }
-
-                return existingEndpointsByAssetFile;
+                assets.Add(asset.ItemSpec);
             }
 
-            return null;
+            for (var i = 0; i < ExistingEndpoints.Length; i++)
+            {
+                var endpointCandidate = ExistingEndpoints[i];
+                var assetFile = endpointCandidate.GetMetadata(nameof(StaticWebAssetEndpoint.AssetFile));
+                if (!assets.Contains(assetFile))
+                {
+                    Log.LogMessage(MessageImportance.Low, $"Removing endpoints for asset '{assetFile}' because it no longer exists.");
+                    continue;
+                }
+
+                if (!existingEndpointsByAssetFile.TryGetValue(assetFile, out var set))
+                {
+                    set = new HashSet<string>(OSPath.PathComparer);
+                    existingEndpointsByAssetFile[assetFile] = set;
+                }
+
+                // Add the route
+                set.Add(endpointCandidate.ItemSpec);
+            }
+
+            return existingEndpointsByAssetFile;
         }
 
-        private List<StaticWebAssetEndpoint> CreateEndpoints(List<StaticWebAsset.StaticWebAssetResolvedRoute> routes, StaticWebAsset asset, ContentTypeProvider contentTypeMappings)
+        return null;
+    }
+
+    private readonly struct ParallelWorker(
+        List<StaticWebAssetEndpoint> collectedEndpoints,
+        List<StaticWebAssetEndpoint> currentEndpoints,
+        ITaskItem[] candidateAssets,
+        Dictionary<string, HashSet<string>> existingEndpointsByAssetFile,
+        TaskLoggingHelper log,
+        ContentTypeProvider contentTypeProvider,
+        Dictionary<string, ITaskItem> assetDetails,
+        Func<string, int> testLengthResolver,
+        Func<string, DateTime> testLastWriteResolver)
+    {
+        public List<StaticWebAssetEndpoint> CollectedEndpoints { get; } = collectedEndpoints;
+        public List<StaticWebAssetEndpoint> CurrentEndpoints { get; } = currentEndpoints;
+        public ITaskItem[] CandidateAssets { get; } = candidateAssets;
+        public Dictionary<string, HashSet<string>> ExistingEndpointsByAssetFile { get; } = existingEndpointsByAssetFile;
+        public TaskLoggingHelper Log { get; } = log;
+        public ContentTypeProvider ContentTypeProvider { get; } = contentTypeProvider;
+        public Dictionary<string, ITaskItem> AssetDetails { get; } = assetDetails;
+        public Func<string, int> TestLengthResolver { get; } = testLengthResolver;
+        public Func<string, DateTime> TestLastWriteResolver { get; } = testLastWriteResolver;
+
+        private List<StaticWebAssetEndpoint> CreateEndpoints(
+            List<StaticWebAsset.StaticWebAssetResolvedRoute> routes,
+            StaticWebAsset asset,
+            StaticWebAssetGlobMatcher.MatchContext matchContext)
         {
             var (length, lastModified) = ResolveDetails(asset);
             var result = new List<StaticWebAssetEndpoint>();
             foreach (var (label, route, values) in routes)
             {
-                var (mimeType, cacheSetting) = ResolveContentType(asset, contentTypeMappings);
+                var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
                 List<StaticWebAssetEndpointResponseHeader> headers = [
                         new()
-                        {
-                            Name = "Accept-Ranges",
-                            Value = "bytes"
-                        },
-                        new()
-                        {
-                            Name = "Content-Length",
-                            Value = length,
-                        },
-                        new()
-                        {
-                            Name = "Content-Type",
-                            Value = mimeType,
-                        },
-                        new()
-                        {
-                            Name = "ETag",
-                            Value = $"\"{asset.Integrity}\"",
-                        },
-                        new()
-                        {
-                            Name = "Last-Modified",
-                            Value = lastModified
-                        },
-                    ];
+                    {
+                        Name = "Accept-Ranges",
+                        Value = "bytes"
+                    },
+                    new()
+                    {
+                        Name = "Content-Length",
+                        Value = length,
+                    },
+                    new()
+                    {
+                        Name = "Content-Type",
+                        Value = mimeType,
+                    },
+                    new()
+                    {
+                        Name = "ETag",
+                        Value = $"\"{asset.Integrity}\"",
+                    },
+                    new()
+                    {
+                        Name = "Last-Modified",
+                        Value = lastModified
+                    },
+                ];
 
                 if (values.ContainsKey("fingerprint"))
                 {
@@ -226,11 +234,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         // Greenwich Mean Time.HTTP dates are always expressed in GMT, never in local time.
         private (string length, string lastModified) ResolveDetails(StaticWebAsset asset)
         {
-            if (_assetFileDetails != null && _assetFileDetails.TryGetValue(asset.Identity, out var details))
+            if (AssetDetails != null && AssetDetails.TryGetValue(asset.Identity, out var details))
             {
                 return (length: details.GetMetadata("FileLength"), lastModified: details.GetMetadata("LastWriteTimeUtc"));
             }
-            else if (_assetFileDetails != null && _assetFileDetails.TryGetValue(asset.OriginalItemSpec, out var originalDetails))
+            else if (AssetDetails != null && AssetDetails.TryGetValue(asset.OriginalItemSpec, out var originalDetails))
             {
                 return (length: originalDetails.GetMetadata("FileLength"), lastModified: originalDetails.GetMetadata("LastWriteTimeUtc"));
             }
@@ -240,7 +248,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
             else
             {
-                Log.LogMessage(MessageImportance.High, $"No details found for {asset.Identity}. Using file system to resolve details.");
+                Log.LogMessage(MessageImportance.Normal, $"No details found for {asset.Identity}. Using file system to resolve details.");
                 var fileInfo = StaticWebAsset.ResolveFile(asset.Identity, asset.OriginalItemSpec);
                 var length = fileInfo.Length.ToString(CultureInfo.InvariantCulture);
                 var lastModified = fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
@@ -267,19 +275,66 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return fileInfo.Length.ToString(CultureInfo.InvariantCulture);
         }
 
-        private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider)
+        private static (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider, StaticWebAssetGlobMatcher.MatchContext matchContext, TaskLoggingHelper log)
         {
             var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
-            var mapping = contentTypeProvider.ResolveContentTypeMapping(relativePath, Log);
+            matchContext.SetPathAndReinitialize(relativePath);
+
+            var mapping = contentTypeProvider.ResolveContentTypeMapping(matchContext, log);
 
             if (mapping.MimeType != null)
             {
                 return (mapping.MimeType, mapping.Cache);
             }
 
-            Log.LogMessage(MessageImportance.Low, $"No match for {relativePath}. Using default content type 'application/octet-stream'");
+            log.LogMessage(MessageImportance.Low, $"No match for {relativePath}. Using default content type 'application/octet-stream'");
 
             return ("application/octet-stream", null);
+        }
+
+        internal void Finally()
+        {
+            lock (CollectedEndpoints)
+            {
+                CollectedEndpoints.AddRange(CurrentEndpoints);
+            }
+        }
+
+        internal ParallelWorker Process(int i, ParallelLoopState _)
+        {
+            var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
+            var routes = asset.ComputeRoutes().ToList();
+            var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
+
+            if (ExistingEndpointsByAssetFile != null && ExistingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
+            {
+                for (var j = routes.Count - 1; j >= 0; j--)
+                {
+                    var (_, route, _) = routes[j];
+                    // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
+                    // package or a referenced project and ignored if it comes from the current project.
+                    // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
+                    // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
+                    // adjusted at that time.
+                    var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
+
+                    // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
+                    // during the build will have already defined endpoints and we only want to add new ones.
+                    if (set.Contains(finalRoute))
+                    {
+                        Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {route}.");
+                        routes.RemoveAt(j);
+                    }
+                }
+            }
+
+            foreach (var endpoint in CreateEndpoints(routes, asset, matchContext))
+            {
+                Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
+                CurrentEndpoints.Add(endpoint);
+            }
+
+            return this;
         }
     }
 }

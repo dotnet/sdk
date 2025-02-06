@@ -154,7 +154,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Target Name="_GetTestsProject" DependsOnTargets="_ComputeTargetFrameworkItems">
-    <CallTarget Condition="$(IsTestProject) == 'true' OR '$(IsTestingPlatformApplication)' == 'true'" Targets="Build" />
     <CallTarget Targets="DispatchToInnerBuildsWithTestProjectTarget" />
   </Target>
 
