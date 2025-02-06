@@ -4,7 +4,7 @@
 using System.Collections;
 using Xunit.Sdk;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal static class AssertEx
     {
@@ -157,7 +157,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 Assert.NotNull(actual);
             }
 
-            if (!expected.SequenceEqual(actual, comparer))
+            if (!expected.SequenceEqual(actual, comparer ?? EqualityComparer<T>.Default))
             {
                 Fail(GetAssertMessage(expected, actual, message, itemInspector, itemSeparator));
             }
@@ -225,13 +225,16 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public static void Contains(string expected, IEnumerable<string> items)
         {
-            if (items.Any(item => item == expected))
+            if (items.Any(item => item.Contains(expected)))
             {
                 return;
             }
 
             var message = new StringBuilder();
-            message.AppendLine($"'{expected}' not found in:");
+            message.AppendLine($"Expected output not found:");
+            message.AppendLine(expected);
+            message.AppendLine();
+            message.AppendLine("Actual output:");
 
             foreach (var item in items)
             {
