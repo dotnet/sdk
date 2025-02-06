@@ -33,7 +33,8 @@
 
   <Target Name="PrepareScenarioTestsInputs"
           DependsOnTargets="DetermineSourceBuiltSdkVersion"
-          BeforeTargets="UpdateGlobalJsonVersions;RepoTest">
+          BeforeTargets="UpdateGlobalJsonVersions;RepoTest"
+          Condition="'$(Test)' == 'true'">
     <PropertyGroup>
       <!-- When testing scenario-tests, use the live produced SDK.-->
       <RepoNETCoreSdkVersion>$(SourceBuiltSdkVersion)</RepoNETCoreSdkVersion>
