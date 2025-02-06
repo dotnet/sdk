@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Logging;
+using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -27,10 +25,7 @@ namespace Microsoft.DotNet.Cli
             }
 
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
-                solutionFilePath,
-                projectCollection,
-                buildOptions,
-                GetCommands(buildOptions.HasNoRestore, buildOptions.HasNoBuild));
+             solutionFilePath, buildOptions.MSBuildArgs, buildOptions.HasNoRestore, buildOptions.HasNoBuild);
 
             ConcurrentBag<Module> projects = GetProjectsProperties(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
             return (projects, isBuiltOrRestored);
@@ -39,41 +34,39 @@ namespace Microsoft.DotNet.Cli
         public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
         {
             var projectCollection = new ProjectCollection();
-            bool isBuiltOrRestored = true;
 
-            if (!buildOptions.HasNoRestore)
-            {
-                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
-                    projectFilePath,
-                    projectCollection,
-                    buildOptions,
-                    [CliConstants.RestoreCommand]);
-            }
-
-            if (!buildOptions.HasNoBuild)
-            {
-                isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProjectOrSolution(
-                    projectFilePath,
-                    projectCollection,
-                    buildOptions,
-                    [CliConstants.BuildCommand]);
-            }
+            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions.MSBuildArgs, buildOptions.HasNoRestore, buildOptions.HasNoBuild);
 
             IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), projectCollection);
 
             return (projects, isBuiltOrRestored);
         }
 
-        private static bool BuildOrRestoreProjectOrSolution(string filePath, ProjectCollection projectCollection, BuildOptions buildOptions, string[] commands)
+        public static IEnumerable<string> GetPropertyTokens(IEnumerable<string> unmatchedTokens)
         {
-            var parameters = GetBuildParameters(projectCollection, buildOptions);
-            var globalProperties = GetGlobalProperties(buildOptions);
+            return unmatchedTokens.Where(token =>
+                token.StartsWith("--property:", StringComparison.OrdinalIgnoreCase) ||
+                token.StartsWith("/property:", StringComparison.OrdinalIgnoreCase) ||
+                token.StartsWith("-p:", StringComparison.OrdinalIgnoreCase) ||
+                token.StartsWith("/p:", StringComparison.OrdinalIgnoreCase));
+        }
 
-            var buildRequestData = new BuildRequestData(filePath, globalProperties, null, commands, null);
+        public static IEnumerable<string> GetBinaryLoggerTokens(IEnumerable<string> args)
+        {
+            return args.Where(arg =>
+                arg.StartsWith("/bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("/bl", StringComparison.OrdinalIgnoreCase) ||
+                arg.StartsWith("--binaryLogger:", StringComparison.OrdinalIgnoreCase) || arg.Equals("--binaryLogger", StringComparison.OrdinalIgnoreCase) ||
+                arg.StartsWith("-bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("-bl", StringComparison.OrdinalIgnoreCase));
+        }
 
-            BuildResult buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
+        private static bool BuildOrRestoreProjectOrSolution(string filePath, List<string> arguments, bool hasNoRestore, bool hasNoBuild)
+        {
+            arguments.Add(filePath);
+            arguments.Add("-target:_MTPBuild");
 
-            return buildResult.OverallResult == BuildResultCode.Success;
+            int result = new RestoringCommand(arguments, hasNoRestore || hasNoBuild).Execute();
+
+            return result == (int)BuildResultCode.Success;
         }
 
         private static ConcurrentBag<Module> GetProjectsProperties(ProjectCollection projectCollection, IEnumerable<string> projects, BuildOptions buildOptions)
@@ -107,71 +100,6 @@ namespace Microsoft.DotNet.Cli
             return solutionFullPath;
         }
 
-        internal static bool IsBinaryLoggerEnabled(ref List<string> args, out string binLogFileName)
-        {
-            binLogFileName = string.Empty;
-            var binLogArgs = new List<string>();
-
-            foreach (var arg in args)
-            {
-                if (arg.StartsWith("/bl:") || arg.Equals("/bl")
-                    || arg.StartsWith("--binaryLogger:") || arg.Equals("--binaryLogger")
-                    || arg.StartsWith("-bl:") || arg.Equals("-bl"))
-                {
-                    binLogArgs.Add(arg);
-
-                }
-            }
-
-            if (binLogArgs.Count > 0)
-            {
-                // Remove all BinLog args from the list of args
-                args.RemoveAll(arg => binLogArgs.Contains(arg));
-
-                // Get BinLog filename
-                var binLogArg = binLogArgs.LastOrDefault();
-
-                if (binLogArg.Contains(CliConstants.Colon))
-                {
-                    var parts = binLogArg.Split(CliConstants.Colon, 2);
-                    binLogFileName = !string.IsNullOrEmpty(parts[1]) ? parts[1] : CliConstants.BinLogFileName;
-                }
-                else
-                {
-                    binLogFileName = CliConstants.BinLogFileName;
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        private static BuildParameters GetBuildParameters(ProjectCollection projectCollection, BuildOptions buildOptions)
-        {
-            BuildParameters parameters = new(projectCollection)
-            {
-                Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet)]
-            };
-
-            if (!buildOptions.AllowBinLog)
-                return parameters;
-
-            parameters.Loggers =
-            [
-                .. parameters.Loggers,
-                .. new[]
-                {
-                    new BinaryLogger
-                    {
-                        Parameters = buildOptions.BinLogFileName
-                    }
-                },
-            ];
-
-            return parameters;
-        }
-
         private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
         {
             var globalProperties = new Dictionary<string, string>();
@@ -187,23 +115,6 @@ namespace Microsoft.DotNet.Cli
             }
 
             return globalProperties;
-        }
-
-        private static string[] GetCommands(bool hasNoRestore, bool hasNoBuild)
-        {
-            var commands = ImmutableArray.CreateBuilder<string>();
-
-            if (!hasNoRestore)
-            {
-                commands.Add(CliConstants.RestoreCommand);
-            }
-
-            if (!hasNoBuild)
-            {
-                commands.Add(CliConstants.BuildCommand);
-            }
-
-            return [.. commands];
         }
     }
 }
