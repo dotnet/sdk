@@ -32,3 +32,16 @@ index 01705fc98d4..45d7d76c82a 100644
 +    <ProjectToBuild Include="$(RepoRoot)Build.proj" DotNetBuildPass="2" Condition="'$(DotNetBuildPass)' == '2'" />
    </ItemGroup>
  </Project>
+diff --git a/eng/Subsets.props b/eng/Subsets.props
+index efb52377533..1a32d113896 100644
+--- a/eng/Subsets.props
++++ b/eng/Subsets.props
+@@ -69,7 +69,7 @@
+     <DefaultSubsets Condition="'$(DotNetBuildMonoCrossAOT)' == 'true'">mono+packs</DefaultSubsets>
+ 
+     <!-- In the Win-x86 BuildPass2 job in the VMR, we want to build the cross-OS DACs and pack them. -->
+-    <DefaultSubsets Condition="'$(DotNetBuildPass)' == '2' and '$(TargetRid)' == 'win-x86'">crossdacpack</DefaultSubsets>
++    <DefaultSubsets Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x86'">crossdacpack</DefaultSubsets>
+   </PropertyGroup>
+ 
+   <PropertyGroup>
