@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             string commandName)
             : base(hostBuilder, commandName, SymbolStrings.Command_Uninstall_Description)
         {
-            this.Arguments.Add(NameArgument);
+            Arguments.Add(NameArgument);
         }
 
         internal static CliArgument<string[]> NameArgument { get; } = new("package")
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             ParseResult parseResult,
             CancellationToken cancellationToken)
         {
-            TemplatePackageCoordinator templatePackageCoordinator = new TemplatePackageCoordinator(environmentSettings, templatePackageManager);
+            TemplatePackageCoordinator templatePackageCoordinator = new(environmentSettings, templatePackageManager);
 
             return templatePackageCoordinator.EnterUninstallFlowAsync(args, cancellationToken);
         }

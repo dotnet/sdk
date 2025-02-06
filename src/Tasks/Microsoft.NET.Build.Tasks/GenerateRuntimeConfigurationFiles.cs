@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool AlwaysIncludeCoreFramework { get; set; }
 
-        List<ITaskItem> _filesWritten = new List<ITaskItem>();
+        List<ITaskItem> _filesWritten = new();
 
         private static readonly string[] RollForwardValues = new string[]
         {
@@ -152,8 +152,10 @@ namespace Microsoft.NET.Build.Tasks
             bool isFrameworkDependent,
             IList<LockFileItem> packageFolders)
         {
-            RuntimeConfig config = new RuntimeConfig();
-            config.RuntimeOptions = new RuntimeOptions();
+            RuntimeConfig config = new()
+            {
+                RuntimeOptions = new RuntimeOptions()
+            };
 
             AddFrameworks(
                 config.RuntimeOptions,
@@ -192,16 +194,18 @@ namespace Microsoft.NET.Build.Tasks
                     //  If there are no RuntimeFrameworks (which would be set in the ProcessFrameworkReferences task based
                     //  on FrameworkReference items), then use package resolved from MicrosoftNETPlatformLibrary for
                     //  the runtimeconfig
-                    RuntimeConfigFramework framework = new RuntimeConfigFramework();
-                    framework.Name = lockFilePlatformLibrary.Name;
-                    framework.Version = lockFilePlatformLibrary.Version.ToNormalizedString();
+                    RuntimeConfigFramework framework = new()
+                    {
+                        Name = lockFilePlatformLibrary.Name,
+                        Version = lockFilePlatformLibrary.Version.ToNormalizedString()
+                    };
 
                     frameworks.Add(framework);
                 }
             }
             else
             {
-                HashSet<string> usedFrameworkNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> usedFrameworkNames = new(StringComparer.OrdinalIgnoreCase);
                 foreach (var platformLibrary in runtimeFrameworks)
                 {
                     //  In earlier versions of the SDK, we would exclude Microsoft.NETCore.App from the frameworks listed in the runtimeconfig file.
@@ -224,9 +228,11 @@ namespace Microsoft.NET.Build.Tasks
                         continue;
                     }
 
-                    RuntimeConfigFramework framework = new RuntimeConfigFramework();
-                    framework.Name = platformLibrary.Name;
-                    framework.Version = platformLibrary.Version;
+                    RuntimeConfigFramework framework = new()
+                    {
+                        Name = platformLibrary.Name,
+                        Version = platformLibrary.Version
+                    };
 
                     frameworks.Add(framework);
                 }
@@ -264,7 +270,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             JObject runtimeOptionsFromProject;
-            using (JsonTextReader reader = new JsonTextReader(File.OpenText(UserRuntimeConfig)))
+            using (JsonTextReader reader = new(File.OpenText(UserRuntimeConfig)))
             {
                 runtimeOptionsFromProject = JObject.Load(reader);
             }
@@ -325,8 +331,10 @@ namespace Microsoft.NET.Build.Tasks
 
         private void WriteDevRuntimeConfig(IList<LockFileItem> packageFolders)
         {
-            RuntimeConfig devConfig = new RuntimeConfig();
-            devConfig.RuntimeOptions = new RuntimeOptions();
+            RuntimeConfig devConfig = new()
+            {
+                RuntimeOptions = new RuntimeOptions()
+            };
 
             AddAdditionalProbingPaths(devConfig.RuntimeOptions, packageFolders);
 
@@ -373,12 +381,14 @@ namespace Microsoft.NET.Build.Tasks
 
         private static void WriteToJsonFile(string fileName, object value)
         {
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            serializer.Formatting = Formatting.Indented;
-            serializer.DefaultValueHandling = DefaultValueHandling.Ignore;
+            JsonSerializer serializer = new()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented,
+                DefaultValueHandling = DefaultValueHandling.Ignore
+            };
 
-            using (JsonTextWriter writer = new JsonTextWriter(new StreamWriter(File.Create(fileName))))
+            using (JsonTextWriter writer = new(new StreamWriter(File.Create(fileName))))
             {
                 serializer.Serialize(writer, value);
             }

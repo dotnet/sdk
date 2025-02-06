@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 namespace Microsoft.Extensions.Tools.Internal
 {
     /// <summary>
@@ -16,16 +14,12 @@ namespace Microsoft.Extensions.Tools.Internal
 
         public static IReporter Singleton { get; } = new NullReporter();
 
-        public void Verbose(string message, string emoji = "⌚")
-        { }
+        public bool ReportProcessOutput => false;
 
-        public void Output(string message, string emoji = "⌚")
-        { }
+        public void ProcessOutput(string projectPath, string data) => throw new InvalidOperationException();
 
-        public void Warn(string message, string emoji = "⌚")
-        { }
-
-        public void Error(string message, string emoji = "❌")
-        { }
+        public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
+        {
+        }
     }
 }

@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="es" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Command">
+        <source>Command</source>
+        <target state="translated">Comando</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="translated">Muestra un historial de acciones de instalación de cargas de trabajo.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Date">
+        <source>Date</source>
+        <target state="translated">Fecha</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonVersion">
+        <source>Global.json Version</source>
+        <target state="translated">Versión de Global.json</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Id">
+        <source>Id</source>
+        <target state="translated">Id.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoHistoryFound">
+        <source>No workload history found</source>
+        <target state="translated">No se encontró ningún historial de cargas de trabajo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownRecordsInformationalMessage">
+        <source>Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio.</source>
+        <target state="translated">Las filas con cambios sin registrar representan cambios de acciones distintas de los comandos de carga de trabajo de la CLI de .NET. Por lo general, esto representa una actualización del SDK de .NET o de Visual Studio.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload Version</source>
+        <target state="translated">Versión de carga de trabajo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Workloads">
+        <source>Workloads</source>
+        <target state="translated">Cargas de trabajo</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

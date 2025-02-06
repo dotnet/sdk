@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-run" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-run" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet run
 .PP
@@ -31,7 +31,8 @@ dotnet run [-a|--arch <ARCHITECTURE>] [-c|--configuration <CONFIGURATION>]
     [--launch-profile <NAME>] [--no-build]
     [--no-dependencies] [--no-launch-profile] [--no-restore]
     [--os <OS>] [--project <PATH>] [-r|--runtime <RUNTIME_IDENTIFIER>]
-    [-v|--verbosity <LEVEL>] [[--] [application arguments]]
+    [--tl:[auto|on|off]] [-v|--verbosity <LEVEL>]
+    [[--] [application arguments]]
 
 dotnet run -h|--help
 \f[R]
@@ -226,6 +227,34 @@ dotnet run -- --property name=value
 .PP
 Specifies the target runtime to restore packages for.
 For a list of Runtime Identifiers (RIDs), see the RID catalog.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
+.RS 2
+.PP
+Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
+The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
+\f[V]on\f[R] skips the environment check and enables terminal logging.
+\f[V]off\f[R] skips the environment check and uses the default console logger.
+.PP
+The terminal logger shows you the restore phase followed by the build phase.
+During each phase, the currently building projects appear at the bottom of the terminal.
+Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
+You can search this information to learn more about the build.
+When a project is finished building, a single \[lq]build completed\[rq] section is written that captures:
+.IP \[bu] 2
+The name of the built project.
+.IP \[bu] 2
+The target framework (if multi-targeted).
+.IP \[bu] 2
+The status of that build.
+.IP \[bu] 2
+The primary output of that build (which is hyperlinked).
+.IP \[bu] 2
+Any diagnostics generated for that project.
+.PP
+This option is available starting in .NET 8.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
