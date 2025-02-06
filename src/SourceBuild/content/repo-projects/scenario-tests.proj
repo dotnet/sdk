@@ -13,7 +13,7 @@
     <TestXmlOutputPath>$(ScenarioTestsResultsDir)$([System.DateTime]::Now.ToString("yyyy-MM-dd_HH_mm_ss")).xml</TestXmlOutputPath>
 
     <TestArgs>$(TestArgs) /p:AdditionalTestArgs="--xml $(TestXmlOutputPath) --target-rid $(TargetRid) --portable-rid $(PortableRid) --no-cleanup --no-traits Category=MultiTFM"</TestArgs>
-    <TestArgs>$(TestArgs) /p:TestBinlogDir=$(ArtifactsLogRepoDir)</TestArgs>
+    <TestArgs>$(TestArgs) /p:TestBinlogDir="$(ArtifactsLogRepoDir.TrimEnd('\'))"</TestArgs>
   </PropertyGroup>
 
   <ItemGroup>
