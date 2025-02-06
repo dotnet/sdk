@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
         {
             Description = LocalizableStrings.CmdNoLogo
-        }.ForwardAs("-property:VSTestNoLogo=nologo");
+        }.ForwardAs("-property:VSTestNoLogo=true");
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 

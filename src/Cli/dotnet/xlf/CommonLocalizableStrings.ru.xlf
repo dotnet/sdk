@@ -282,6 +282,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">Решение {0} уже содержит проект {1} в папке решения {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="translated">Файл параметров для средства {0} не существует.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Обновить</target>
