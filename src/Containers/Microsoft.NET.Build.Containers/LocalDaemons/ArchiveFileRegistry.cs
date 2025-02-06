@@ -14,14 +14,22 @@ internal class ArchiveFileRegistry : ILocalRegistry
         ArchiveOutputPath = archiveOutputPath;
     }
 
-    private async Task LoadAsync<T>(T image, SourceImageReference sourceReference, 
+    internal async Task LoadAsync<T>(T image, SourceImageReference sourceReference, 
         DestinationImageReference destinationReference, CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc)
     {
         var fullPath = Path.GetFullPath(ArchiveOutputPath);
 
+        var directorySeparatorChar = Path.DirectorySeparatorChar;
+
+        // if doesn't end with a file extension, assume it's a directory
+        if (!fullPath.Split(directorySeparatorChar).Last().Contains('.'))
+        {
+           fullPath += Path.DirectorySeparatorChar;
+        }
+
         // pointing to a directory? -> append default name
-        if (Directory.Exists(fullPath) || ArchiveOutputPath.EndsWith("/") || ArchiveOutputPath.EndsWith("\\"))
+        if (fullPath.EndsWith(directorySeparatorChar))
         {
             fullPath = Path.Combine(fullPath, destinationReference.Repository + ".tar.gz");
         }
