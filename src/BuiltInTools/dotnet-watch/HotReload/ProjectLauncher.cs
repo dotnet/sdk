@@ -99,6 +99,9 @@ internal sealed class ProjectLauncher(
 
         var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
 
+        //TODO
+        environmentBuilder.ConfigureProcess(processSpec)
+
         var arguments = new List<string>()
         {
             projectOptions.Command,
