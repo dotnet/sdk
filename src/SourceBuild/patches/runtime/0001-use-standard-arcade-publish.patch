@@ -1767,3 +1767,17 @@ index 6c78a667bdd..18d123f01d4 100644
      </Otherwise>
    </Choose>
  </Project>
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 18d123f01d4..746078a6cec 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -115,6 +115,9 @@
+     <When Condition="'$(MonoEnableLLVM)' == 'true'">
+       <ItemGroup>
+         <PackageArtifacts Include="$(ArtifactsPackagesDir)**\*.$(PackageRID).*.LLVM.*.nupkg" />
++        <Artifact Include="@(PackageArtifacts)"
++                  IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
++                  Kind="Package" />
+       </ItemGroup>
+     </When>
+     <Otherwise>
