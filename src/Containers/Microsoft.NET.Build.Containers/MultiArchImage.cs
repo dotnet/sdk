@@ -6,7 +6,7 @@ namespace Microsoft.NET.Build.Containers;
 /// <summary>
 /// Represents constructed image ready for further processing.
 /// </summary>
-internal sealed class MultiArchImage
+internal readonly struct MultiArchImage
 {
     internal required string ImageIndex { get; init; }
 
