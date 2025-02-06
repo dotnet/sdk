@@ -82,8 +82,7 @@
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
     <BuildActions Condition="'$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
-    <TestActions>$(FlagParameterPrefix)restore</TestActions>
-    <TestActions>$(TestActions) $(FlagParameterPrefix)test</TestActions>
+    <TestActions>$(FlagParameterPrefix)test</TestActions>
   </PropertyGroup>
 
   <!-- Common args used for building and testing. -->
