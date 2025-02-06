@@ -33,13 +33,13 @@ public abstract class DiffBaseTests
 
         // CreateFromTexts will assert on any loader diagnostics via SyntaxFactory.
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols)
-            = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: before, diagnosticOptions: DiffGenerator.DefaultDiagnosticOptions);
+            = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: before, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
         (IAssemblySymbolLoader afterLoader, Dictionary<string, IAssemblySymbol> afterAssemblySymbols)
-            = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: after, diagnosticOptions: DiffGenerator.DefaultDiagnosticOptions);
+            = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: after, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
 
         using MemoryStream outputStream = new();
 
-        Dictionary<string, string> actualResults = DiffGenerator.Run(
+        IDiffGenerator generator = DiffGeneratorFactory.Create(
             _log,
             attributesToExclude,
             beforeLoader,
@@ -48,11 +48,13 @@ public abstract class DiffBaseTests
             afterAssemblySymbols,
             addPartialModifier,
             hideImplicitDefaultConstructors,
-            DiffGenerator.DefaultDiagnosticOptions);
+            DiffGeneratorFactory.DefaultDiagnosticOptions);
+
+        generator.Run();
 
         foreach ((string expectedAssemblyName, string expectedCode) in expected)
         {
-            Assert.True(actualResults.TryGetValue(expectedAssemblyName, out string? actualCode), $"Expected assembly entry not found among actual results: {expectedAssemblyName}");
+            Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Expected assembly entry not found among actual results: {expectedAssemblyName}");
             string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
             Assert.True(fullExpectedCode.Equals(actualCode), $"\nExpected:\n{fullExpectedCode}\nActual:\n{actualCode}");
         }
