@@ -7,14 +7,14 @@ namespace Microsoft.DotNet.ApiDiff;
 /// Defines the necessary configuration options for API diff.
 /// </summary>
 public record DiffConfiguration(
-    bool AddPartialModifier,
     string AfterAssembliesFolderPath,
     string? AfterAssemblyReferencesFolderPath,
-    string[]? AttributesToExclude,
     string BeforeAssembliesFolderPath,
     string? BeforeAssemblyReferencesFolderPath,
-    bool Debug,
+    string OutputFolderPath,
+    string TableOfContentsTitle,
+    string[]? AttributesToExclude,
+    bool AddPartialModifier,
     bool HideImplicitDefaultConstructors,
-    bool IncludeTableOfContents,
-    string OutputFolderPath
+    bool Debug
 );

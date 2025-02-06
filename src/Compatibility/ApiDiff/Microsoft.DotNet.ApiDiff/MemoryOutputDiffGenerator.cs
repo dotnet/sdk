@@ -1,5 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,9 +18,13 @@ namespace Microsoft.DotNet.ApiDiff;
 /// <summary>
 /// Generates a markdown diff of two different versions of the same assembly.
 /// </summary>
-public sealed class DiffGenerator
+public class MemoryOutputDiffGenerator : IDiffGenerator
 {
     private readonly ILog _log;
+    private readonly IAssemblySymbolLoader _beforeLoader;
+    private readonly IAssemblySymbolLoader _afterLoader;
+    private readonly Dictionary<string, IAssemblySymbol> _beforeAssemblySymbols;
+    private readonly Dictionary<string, IAssemblySymbol> _afterAssemblySymbols;
     private readonly bool _addPartialModifier;
     private readonly bool _hideImplicitDefaultConstructors;
     private readonly ISymbolFilter _symbolFilter;
@@ -28,186 +32,66 @@ public sealed class DiffGenerator
     private readonly SyntaxTriviaList _twoSpacesTrivia;
     private readonly SyntaxList<AttributeListSyntax> _emptyAttributeList;
     private readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>> _diagnosticOptions;
+    private readonly Dictionary<string, string> _results;
 
     /// <summary>
-    /// The default attributes to exclude from the diff.
+    /// Initializes a new instance of the <see cref="MemoryOutputDiffGenerator"/> class.
     /// </summary>
-    public static readonly string[] DefaultAttributesToExclude = [
-        "T:System.AttributeUsageAttribute",
-        "T:System.ComponentModel.EditorBrowsableAttribute",
-        "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
-        "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute"
-    ];
-
-    /// <summary>
-    /// The default diagnostic options to use when generating the diff.
-    /// </summary>
-    public static readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>> DefaultDiagnosticOptions = new List<KeyValuePair<string, ReportDiagnostic>>() {
-            new ("CS8019", ReportDiagnostic.Suppress), // CS8019: Unnecessary using directive.
-            new ("CS8597", ReportDiagnostic.Suppress), // CS8597: Thrown value may be null.
-        };
-
-    /// <summary>
-    /// Generates a markdown diff of two different versions of the same collections of assembly paths and saves the results to disk.
-    /// </summary>
-    /// <param name="log">A logger to log messages.</param>
-    /// <param name="outputFolderPath">The path to the folder where the diffs will be saved.</param>
-    /// <param name="attributesToExclude">The optional attributes to exclude from the diff. If <see langword="null"/>, then <see cref="DefaultAttributesToExclude"/> is used.</param>
-    /// <param name="beforeAssembliesFolderPath">The path to the folder containing the old (before) assemblies.</param>
-    /// <param name="beforeAssemblyReferencesFolderPath">The path to the folder containing the old (before) reference assemblies.</param>
-    /// <param name="afterAssembliesFolderPath">The path to the folder containing the new (after) assemblies.</param>
-    /// <param name="afterAssemblyReferencesFolderPath">The path to the folder containing the new (after) reference assemblies.</param>
-    /// <param name="addPartialModifier">Whether to add the partial modifier to types.</param>
-    /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors.</param>
-    /// <param name="diagnosticOptions">The optional diagnostic options to use when generating the diff. If <see langword="null"/> is passed, the default value <see cref="DefaultDiagnosticOptions"/> is used.</param>
-    public static void RunAndSaveToDisk(ILog log,
-                                        string outputFolderPath,
-                                        string[]? attributesToExclude,
-                                        string beforeAssembliesFolderPath,
-                                        string? beforeAssemblyReferencesFolderPath,
-                                        string afterAssembliesFolderPath,
-                                        string? afterAssemblyReferencesFolderPath,
-                                        bool addPartialModifier,
-                                        bool hideImplicitDefaultConstructors,
-                                        IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
-{
-        Dictionary<string, string> results = Run(log,
-                          attributesToExclude,
-                          beforeAssembliesFolderPath,
-                          beforeAssemblyReferencesFolderPath,
-                          afterAssembliesFolderPath,
-                          afterAssemblyReferencesFolderPath,
-                          addPartialModifier,
-                          hideImplicitDefaultConstructors,
-                          diagnosticOptions);
-
-        Directory.CreateDirectory(outputFolderPath);
-        foreach ((string assemblyName, string text) in results)
-        {
-            string filePath = Path.Combine(outputFolderPath, $"{assemblyName}.md");
-            File.WriteAllText(filePath, text);
-            log.LogMessage($"Wrote '{filePath}'.");
-        }
-    }
-
-    /// <summary>
-    /// Generates a markdown diff of two different versions of the same collections of assembly paths.
-    /// </summary>
-    /// <param name="log">A logger to log messages.</param>
-    /// <param name="attributesToExclude">The optional attributes to exclude from the diff. If <see langword="null"/>, then <see cref="DefaultAttributesToExclude"/> is used.</param>
-    /// <param name="beforeAssembliesFolderPath">The path to the folder containing the old (before) assemblies.</param>
-    /// <param name="beforeAssemblyReferencesFolderPath">The path to the folder containing the old (before) reference assemblies.</param>
-    /// <param name="afterAssembliesFolderPath">The path to the folder containing the new (after) assemblies.</param>
-    /// <param name="afterAssemblyReferencesFolderPath">The path to the folder containing the new (after) reference assemblies.</param>
-    /// <param name="addPartialModifier">Whether to add the partial modifier to types.</param>
-    /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors.</param>
-    /// <param name="diagnosticOptions">The optional diagnostic options to use when generating the diff. If <see langword="null"/> is passed, the default value <see cref="DefaultDiagnosticOptions"/> is used.</param>
-    /// <returns>A dictionary with the assembly names as the keys and their diffs as the values.</returns>
-    /// <remarks>This method is public so that it can be unit tested without writing to disk.</remarks>
-    public static Dictionary<string, string> Run(ILog log,
-                                                 string[]? attributesToExclude,
-                                                 string beforeAssembliesFolderPath,
-                                                 string? beforeAssemblyReferencesFolderPath,
-                                                 string afterAssembliesFolderPath,
-                                                 string? afterAssemblyReferencesFolderPath,
-                                                 bool addPartialModifier,
-                                                 bool hideImplicitDefaultConstructors,
-                                                IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
-    {
-        attributesToExclude = (attributesToExclude != null && attributesToExclude.Length > 0) ? attributesToExclude : DefaultAttributesToExclude;
-
-        diagnosticOptions = diagnosticOptions ?? DefaultDiagnosticOptions;
-
-        (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols) =
-            AssemblySymbolLoader.CreateFromFiles(
-                log,
-                assembliesPaths: [beforeAssembliesFolderPath],
-                assemblyReferencesPaths: beforeAssemblyReferencesFolderPath != null ? [beforeAssemblyReferencesFolderPath] : null,
-                diagnosticOptions: diagnosticOptions);
-
-        (IAssemblySymbolLoader afterLoader, Dictionary<string, IAssemblySymbol> afterAssemblySymbols) =
-            AssemblySymbolLoader.CreateFromFiles(
-                log,
-                assembliesPaths: [afterAssembliesFolderPath],
-                assemblyReferencesPaths: afterAssemblyReferencesFolderPath != null ? [afterAssemblyReferencesFolderPath] : null,
-                diagnosticOptions: diagnosticOptions);
-
-        return Run(log,
-                   attributesToExclude,
-                   beforeLoader,
-                   afterLoader,
-                   beforeAssemblySymbols,
-                   afterAssemblySymbols,
-                   addPartialModifier,
-                   hideImplicitDefaultConstructors,
-                   diagnosticOptions);
-    }
-
-    /// <summary>
-    /// Generates a markdown diff of two different versions of the same collections of assembly symbols.
-    /// </summary>
-    /// <param name="log">A logger to log messages.</param>
-    /// <param name="attributesToExclude">The attributes to exclude from the diff.</param>
-    /// <param name="beforeLoader">The loader for the before assembly.</param>
-    /// <param name="afterLoader">The loader for the after assembly.</param>
-    /// <param name="beforeAssemblySymbols">The symbols for the before assembly.</param>
-    /// <param name="afterAssemblySymbols">The symbols for the after assembly.</param>
-    /// <param name="addPartialModifier">Whether to add the partial modifier to types.</param>
-    /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors.</param>
-    /// <param name="diagnosticOptions">The optional diagnostic options to use when generating the diff. If <see langword="null"/> is passed, the default value <see cref="DefaultDiagnosticOptions"/> is used.</param>
-    /// <returns>A dictionary with the assembly names as the keys and their diffs as the values.</returns>
-    /// <remarks>This method is public so that it can be unit tested without reading/writing from/to disk.</remarks>
-    public static Dictionary<string, string> Run(ILog log,
-                                                 string[] attributesToExclude,
-                                                 IAssemblySymbolLoader beforeLoader,
-                                                 IAssemblySymbolLoader afterLoader,
-                                                 Dictionary<string, IAssemblySymbol> beforeAssemblySymbols,
-                                                 Dictionary<string, IAssemblySymbol> afterAssemblySymbols,
-                                                 bool addPartialModifier,
-                                                 bool hideImplicitDefaultConstructors,
-                                                 IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
-    {
-        diagnosticOptions = diagnosticOptions ?? DefaultDiagnosticOptions;
-
-        DiffGenerator generator = new(log, attributesToExclude, addPartialModifier, hideImplicitDefaultConstructors, diagnosticOptions);
-        return generator.GenerateDiff(beforeLoader, afterLoader, beforeAssemblySymbols, afterAssemblySymbols);
-    }
-
-    private DiffGenerator(ILog log, string[] attributesToExclude, bool addPartialModifier, bool hideImplicitDefaultConstructors, IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions)
+    /// <param name="log"></param>
+    /// <param name="attributesToExclude"></param>
+    /// <param name="beforeLoader"></param>
+    /// <param name="afterLoader"></param>
+    /// <param name="beforeAssemblySymbols"></param>
+    /// <param name="afterAssemblySymbols"></param>
+    /// <param name="addPartialModifier"></param>
+    /// <param name="hideImplicitDefaultConstructors"></param>
+    /// <param name="diagnosticOptions"></param>
+    internal MemoryOutputDiffGenerator(
+        ILog log,
+        string[] attributesToExclude,
+        IAssemblySymbolLoader beforeLoader,
+        IAssemblySymbolLoader afterLoader,
+        Dictionary<string, IAssemblySymbol> beforeAssemblySymbols,
+        Dictionary<string, IAssemblySymbol> afterAssemblySymbols,
+        bool addPartialModifier,
+        bool hideImplicitDefaultConstructors,
+        IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
     {
         _log = log;
+        _beforeLoader = beforeLoader;
+        _afterLoader = afterLoader;
+        _beforeAssemblySymbols = beforeAssemblySymbols;
+        _afterAssemblySymbols = afterAssemblySymbols;
         _addPartialModifier = addPartialModifier;
         _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
-        _diagnosticOptions = diagnosticOptions;
-
+        _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
         _symbolFilter = SymbolFilterFactory.GetFilterFromList([], includeExplicitInterfaceImplementationSymbols: true);
-        _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude, includeExplicitInterfaceImplementationSymbols: true);
-
+        _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude, includeExplicitInterfaceImplementationSymbols: true);
         _twoSpacesTrivia = SyntaxFactory.TriviaList(SyntaxFactory.Space, SyntaxFactory.Space);
         _emptyAttributeList = SyntaxFactory.List<AttributeListSyntax>();
+        _results = [];
     }
 
-    private Dictionary<string, string> GenerateDiff(IAssemblySymbolLoader beforeLoader,
-                                                    IAssemblySymbolLoader afterLoader,
-                                                    Dictionary<string, IAssemblySymbol> beforeAssemblySymbols,
-                                                    Dictionary<string, IAssemblySymbol> afterAssemblySymbols)
-    {
-        Dictionary<string, string> results = new();
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<string, string> Results => _results.AsReadOnly();
 
-        foreach ((string assemblyName, IAssemblySymbol beforeAssemblySymbol) in beforeAssemblySymbols)
+    /// <inheritdoc/>
+    public void Run()
+    {
+        foreach ((string assemblyName, IAssemblySymbol beforeAssemblySymbol) in _beforeAssemblySymbols)
         {
             StringBuilder sb = new();
 
-            (SyntaxNode beforeAssemblyNode, SemanticModel beforeModel) = GetAssemblyRootNodeAndModel(beforeLoader, beforeAssemblySymbol);
+            (SyntaxNode beforeAssemblyNode, SemanticModel beforeModel) = GetAssemblyRootNodeAndModel(_beforeLoader, beforeAssemblySymbol);
 
             // See if an assembly with the same name can be found in the diff folder.
-            if (afterAssemblySymbols.TryGetValue(assemblyName, out IAssemblySymbol? afterAssemblySymbol))
+            if (_afterAssemblySymbols.TryGetValue(assemblyName, out IAssemblySymbol? afterAssemblySymbol))
             {
-                (SyntaxNode afterAssemblyNode, SemanticModel afterModel) = GetAssemblyRootNodeAndModel(afterLoader, afterAssemblySymbol);
+                (SyntaxNode afterAssemblyNode, SemanticModel afterModel) = GetAssemblyRootNodeAndModel(_afterLoader, afterAssemblySymbol);
                 // We don't care about changed assembly attributes (for now).
                 sb.Append(VisitChildren(beforeAssemblyNode, afterAssemblyNode, beforeModel, afterModel, wereParentAttributesChanged: false));
                 // Remove the found ones. The remaining ones will be processed at the end because they're new.
-                afterAssemblySymbols.Remove(assemblyName);
+                _afterAssemblySymbols.Remove(assemblyName);
             }
             else
             {
@@ -217,24 +101,22 @@ public sealed class DiffGenerator
 
             if (sb.Length > 0)
             {
-                results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
+                _results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
             }
         }
 
         // Process the remaining assemblies in the diff folder.
-        foreach ((string assemblyName, IAssemblySymbol afterAssemblySymbol) in afterAssemblySymbols)
+        foreach ((string assemblyName, IAssemblySymbol afterAssemblySymbol) in _afterAssemblySymbols)
         {
             StringBuilder sb = new();
-            (SyntaxNode afterAssemblyNode, _) = GetAssemblyRootNodeAndModel(afterLoader, afterAssemblySymbol);
+            (SyntaxNode afterAssemblyNode, _) = GetAssemblyRootNodeAndModel(_afterLoader, afterAssemblySymbol);
             sb.Append(GenerateAddedDiff(afterAssemblyNode));
 
             if (sb.Length > 0)
             {
-                results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
+                _results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
             }
         }
-
-        return results;
     }
 
     private string GetFinalAssemblyDiff(string assemblyName, string diffText)
@@ -654,7 +536,8 @@ public sealed class DiffGenerator
                     break;
                 default:
                     break;
-            };
+            }
+            ;
         }
 
         if (sb.Length == 0)
