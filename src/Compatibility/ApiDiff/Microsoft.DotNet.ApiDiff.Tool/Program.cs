@@ -3,11 +3,7 @@
 
 using System.CommandLine;
 using System.Diagnostics;
-using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiSymbolExtensions;
-using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.GenAPI;
 
 namespace Microsoft.DotNet.ApiDiff.Tool;
 
@@ -21,9 +17,18 @@ public static class Program
     {
         RootCommand rootCommand = new("genapidiff");
 
-        Option<bool> optionAddPartialModifier = new(["--addPartialModifier", "-apm"], () => false)
+        Option<string> optionBeforeAssembliesFolderPath = new(["--before", "-b"])
         {
-            Description = "Add the 'partial' modifier to types."
+            Description = "The path to the folder containing the old (before) assemblies.",
+            Arity = ArgumentArity.ExactlyOne,
+            IsRequired = true
+        };
+
+        Option<string> optionBeforeRefAssembliesFolderPath = new(["--refbefore", "-rb"])
+        {
+            Description = "The path to the folder containing the old (before) reference assemblies.",
+            Arity = ArgumentArity.ExactlyOne,
+            IsRequired = false
         };
 
         Option<string> optionAfterAssembliesFolderPath = new(["--after", "-a"])
@@ -40,6 +45,18 @@ public static class Program
             IsRequired = false
         };
 
+        Option<string> optionOutputFolderPath = new(["--output", "-o"])
+        {
+            Description = "The path to the output folder.",
+            Arity = ArgumentArity.ExactlyOne,
+            IsRequired = true
+        };
+
+        Option<string> optionTableOfContentsTitle = new(["--tableOfContentsTitle", "-tc"])
+        {
+            Description = "The title of the markdown file that is placed in the output folder with a table of contents."
+        };
+
         Option<string[]?> optionAttributesToExclude = new(["--attributesToExclude", "-ate"], () => null)
         {
             Description = "Attributes to exclude from the diff.",
@@ -47,23 +64,9 @@ public static class Program
             IsRequired = false
         };
 
-        Option<string> optionBeforeAssembliesFolderPath = new(["--before", "-b"])
+        Option<bool> optionAddPartialModifier = new(["--addPartialModifier", "-apm"], () => false)
         {
-            Description = "The path to the folder containing the old (before) assemblies.",
-            Arity = ArgumentArity.ExactlyOne,
-            IsRequired = true
-        };
-
-        Option<string> optionBeforeRefAssembliesFolderPath = new(["--refbefore", "-rb"])
-        {
-            Description = "The path to the folder containing the old (before) reference assemblies.",
-            Arity = ArgumentArity.ExactlyOne,
-            IsRequired = false
-        };
-
-        Option<bool> optionDebug = new(["--debug"], () => false)
-        {
-            Description = "Stops the tool at startup, prints the process ID and waits for a debugger to attach."
+            Description = "Add the 'partial' modifier to types."
         };
 
         Option<bool> optionHideImplicitDefaultConstructors = new(["--hideImplicitDefaultConstructors", "-hidc"], () => false)
@@ -71,16 +74,9 @@ public static class Program
             Description = "Hide implicit default constructors from types."
         };
 
-        Option<bool> optionIncludeTableOfContents = new(["--includeTableOfContents", "-toc"], () => true)
+        Option<bool> optionDebug = new(["--attachDebugger", "-d"], () => false)
         {
-            Description = "Include a markdown file at the root output folder with a table of contents."
-        };
-
-        Option<string> optionOutputFolderPath = new(["--output", "-o"])
-        {
-            Description = "The path to the output folder.",
-            Arity = ArgumentArity.ExactlyOne,
-            IsRequired = true
+            Description = "Stops the tool at startup, prints the process ID and waits for a debugger to attach."
         };
 
         // Custom ordering for the help menu.
@@ -89,22 +85,22 @@ public static class Program
         rootCommand.Add(optionAfterAssembliesFolderPath);
         rootCommand.Add(optionAfterRefAssembliesFolderPath);
         rootCommand.Add(optionOutputFolderPath);
+        rootCommand.Add(optionTableOfContentsTitle);
         rootCommand.Add(optionAttributesToExclude);
-        rootCommand.Add(optionIncludeTableOfContents);
         rootCommand.Add(optionAddPartialModifier);
         rootCommand.Add(optionHideImplicitDefaultConstructors);
         rootCommand.Add(optionDebug);
 
-        GenAPIDiffConfigurationBinder c = new(optionAddPartialModifier,
+        GenAPIDiffConfigurationBinder c = new(optionBeforeAssembliesFolderPath,
+                                              optionBeforeRefAssembliesFolderPath,
                                               optionAfterAssembliesFolderPath,
                                               optionAfterRefAssembliesFolderPath,
+                                              optionOutputFolderPath,
+                                              optionTableOfContentsTitle,
                                               optionAttributesToExclude,
-                                              optionBeforeAssembliesFolderPath,
-                                              optionBeforeRefAssembliesFolderPath,
-                                              optionDebug,
+                                              optionAddPartialModifier,
                                               optionHideImplicitDefaultConstructors,
-                                              optionIncludeTableOfContents,
-                                              optionOutputFolderPath);
+                                              optionDebug);
 
         rootCommand.SetHandler(HandleCommand, c);
         await rootCommand.InvokeAsync(args);
@@ -124,7 +120,7 @@ public static class Program
             log.LogMessage($" - 'After' ref assemblies:             {diffConfig.AfterAssemblyReferencesFolderPath}");
             log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
             log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
-            log.LogMessage($" - Include table of contents:          {diffConfig.IncludeTableOfContents}");
+            log.LogMessage($" - Table of contents title:            {diffConfig.TableOfContentsTitle}");
             log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
             log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
             log.LogMessage($" - Debug:                              {diffConfig.Debug}");
@@ -135,15 +131,21 @@ public static class Program
             WaitForDebugger();
         }
 
-        DiffGenerator.RunAndSaveToDisk(log,
-            diffConfig.OutputFolderPath,
-            diffConfig.AttributesToExclude,
-            diffConfig.BeforeAssembliesFolderPath,
-            diffConfig.BeforeAssemblyReferencesFolderPath,
-            diffConfig.AfterAssembliesFolderPath,
-            diffConfig.AfterAssemblyReferencesFolderPath,
-            diffConfig.AddPartialModifier,
-            diffConfig.HideImplicitDefaultConstructors);
+        IDiffGenerator diffGenerator = DiffGeneratorFactory.Create(log,
+                                                                   diffConfig.BeforeAssembliesFolderPath,
+                                                                   diffConfig.BeforeAssemblyReferencesFolderPath,
+                                                                   diffConfig.AfterAssembliesFolderPath,
+                                                                   diffConfig.AfterAssemblyReferencesFolderPath,
+                                                                   diffConfig.OutputFolderPath,
+                                                                   diffConfig.TableOfContentsTitle,
+                                                                   diffConfig.AttributesToExclude,
+                                                                   diffConfig.AddPartialModifier,
+                                                                   diffConfig.HideImplicitDefaultConstructors,
+                                                                   writeToDisk: true,
+                                                                   diagnosticOptions: null // TODO: If needed, add CLI option to pass specific diagnostic options
+                                                                   );
+
+        diffGenerator.Run();
     }
 
     private static void WaitForDebugger()

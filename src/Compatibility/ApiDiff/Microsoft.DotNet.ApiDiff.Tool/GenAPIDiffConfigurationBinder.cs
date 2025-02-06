@@ -9,51 +9,51 @@ namespace Microsoft.DotNet.ApiDiff;
 // Binds System.CommandLine options to a DiffConfiguration object.
 internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
 {
-    private readonly Option<bool> _optionAddPartialModifier;
-    private readonly Option<string> _optionAfterAssembliesFolderPath;
-    private readonly Option<string> _optionAfterAssemblyReferencesFolderPath;
-    private readonly Option<string[]?> _optionAttributesToExclude;
     private readonly Option<string> _optionBeforeAssembliesFolderPath;
     private readonly Option<string> _optionBeforeAssemblyReferencesFolderPath;
-    private readonly Option<bool> _optionDebug;
-    private readonly Option<bool> _optionHideImplicitDefaultConstructors;
-    private readonly Option<bool> _optionIncludeTableOfContents;
+    private readonly Option<string> _optionAfterAssembliesFolderPath;
+    private readonly Option<string> _optionAfterAssemblyReferencesFolderPath;
     private readonly Option<string> _optionOutputFolderPath;
+    private readonly Option<string> _optionTableOfContentsTitle;
+    private readonly Option<string[]?> _optionAttributesToExclude;
+    private readonly Option<bool> _optionAddPartialModifier;
+    private readonly Option<bool> _optionHideImplicitDefaultConstructors;
+    private readonly Option<bool> _optionDebug;
 
-    internal GenAPIDiffConfigurationBinder(Option<bool> optionAddPartialModifier,
+    internal GenAPIDiffConfigurationBinder(Option<string> optionBeforeAssembliesFolderPath,
+                                           Option<string> optionBeforeAssemblyReferencesFolderPath,
                                            Option<string> optionAfterAssembliesFolderPath,
                                            Option<string> optionAfterAssemblyReferencesFolderPath,
+                                           Option<string> optionOutputFolderPath,
+                                           Option<string> optionTableOfContentsTitle,
                                            Option<string[]?> optionAttributesToExclude,
-                                           Option<string> optionBeforeAssembliesFolderPath,
-                                           Option<string> optionBeforeAssemblyReferencesFolderPath,
-                                           Option<bool> optionDebug,
+                                           Option<bool> optionAddPartialModifier,
                                            Option<bool> optionHideImplicitDefaultConstructors,
-                                           Option<bool> optionIncludeTableOfContents,
-                                           Option<string> optionOutputFolderPath)
+                                           Option<bool> optionDebug)
     {
-        _optionAddPartialModifier = optionAddPartialModifier;
-        _optionAfterAssembliesFolderPath = optionAfterAssembliesFolderPath;
-        _optionAfterAssemblyReferencesFolderPath = optionAfterAssemblyReferencesFolderPath;
-        _optionAttributesToExclude = optionAttributesToExclude;
         _optionBeforeAssembliesFolderPath = optionBeforeAssembliesFolderPath;
         _optionBeforeAssemblyReferencesFolderPath = optionBeforeAssemblyReferencesFolderPath;
-        _optionDebug = optionDebug;
-        _optionHideImplicitDefaultConstructors = optionHideImplicitDefaultConstructors;
-        _optionIncludeTableOfContents = optionIncludeTableOfContents;
+        _optionAfterAssembliesFolderPath = optionAfterAssembliesFolderPath;
+        _optionAfterAssemblyReferencesFolderPath = optionAfterAssemblyReferencesFolderPath;
         _optionOutputFolderPath = optionOutputFolderPath;
+        _optionTableOfContentsTitle = optionTableOfContentsTitle;
+        _optionAttributesToExclude = optionAttributesToExclude;
+        _optionAddPartialModifier = optionAddPartialModifier;
+        _optionHideImplicitDefaultConstructors = optionHideImplicitDefaultConstructors;
+        _optionDebug = optionDebug;
     }
 
     protected override DiffConfiguration GetBoundValue(BindingContext bindingContext) =>
         new DiffConfiguration(
-            AddPartialModifier: bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
-            AfterAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssembliesFolderPath) ?? throw new NullReferenceException("Null after assemblies directory."),
-            AfterAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssemblyReferencesFolderPath),
-            AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
             BeforeAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionBeforeAssembliesFolderPath) ?? throw new NullReferenceException("Null before assemblies directory."),
             BeforeAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionBeforeAssemblyReferencesFolderPath),
-            Debug: bindingContext.ParseResult.GetValueForOption(_optionDebug),
+            AfterAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssembliesFolderPath) ?? throw new NullReferenceException("Null after assemblies directory."),
+            AfterAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssemblyReferencesFolderPath),
+            OutputFolderPath: bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory."),
+            TableOfContentsTitle: bindingContext.ParseResult.GetValueForOption(_optionTableOfContentsTitle) ?? throw new NullReferenceException("Null table of contents title."),
+            AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
+            AddPartialModifier: bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
             HideImplicitDefaultConstructors: bindingContext.ParseResult.GetValueForOption(_optionHideImplicitDefaultConstructors),
-            IncludeTableOfContents: bindingContext.ParseResult.GetValueForOption(_optionIncludeTableOfContents),
-            OutputFolderPath: bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory.")
+            Debug: bindingContext.ParseResult.GetValueForOption(_optionDebug)
         );
 }
