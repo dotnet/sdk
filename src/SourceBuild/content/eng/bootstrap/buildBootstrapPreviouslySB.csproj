@@ -26,11 +26,7 @@
     <PackageDownload Include="runtime.$(PortableRid).Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
     <PackageDownload Include="runtime.$(PortableRid).Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
     <PackageDownload Include="runtime.$(PortableRid).Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
-
     <PackageDownload Include="runtime.$(PortableRid).runtime.native.System.IO.Ports" Version="[$(RuntimeNativeSystemIOPortsVersion)]" />
-    <!-- These packages don't actually exist -->
-    <ExcludedPackage Include="runtime.linux-musl-x64.runtime.native.System.IO.Ports" />
-    <ExcludedPackage Include="runtime.linux-musl-arm64.runtime.native.System.IO.Ports" />
   </ItemGroup>
 
   <Target Name="BuildBoostrapPreviouslySourceBuilt"
