@@ -20,7 +20,6 @@ partial class CreateNewImage
     /// The base registry to pull from.
     /// Ex: mcr.microsoft.com
     /// </summary>
-    [Required]
     public string BaseRegistry { get; set; }
 
     /// <summary>
