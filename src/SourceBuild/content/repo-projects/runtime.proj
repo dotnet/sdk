@@ -9,14 +9,11 @@
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
 
-    <IsSpecialFlavorBuild Condition="'$(DotNetBuildRuntimeWasmEnableThreads)' == 'true'">true</IsSpecialFlavorBuild>
-    <IsSpecialFlavorBuild Condition="'$(DotNetBuildMonoEnableLLVM)' != ''">true</IsSpecialFlavorBuild>
     <IsSpecialFlavorBuild Condition="'$(PgoInstrument)' == 'true'">true</IsSpecialFlavorBuild>
-    <!-- TODO: We may be able to use DotNetBuildAllRuntimePacks=true with wasm. Need to validate. -->
-    <IsSpecialFlavorBuild Condition="'$(TargetArchitecture)' == 'wasm'">true</IsSpecialFlavorBuild>
     <!--
       When building a vertical where we explicitly request using the Mono runtime, only build the Mono runtime.
-      This is generally used in source-build scenarios where the target RID is only supported on Mono.
+      This is generally used in source-build scenarios where the target RID is only supported on Mono
+      or Mono-LLVMAOT runtime pack builds.
     -->
     <IsSpecialFlavorBuild Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">true</IsSpecialFlavorBuild>
 
