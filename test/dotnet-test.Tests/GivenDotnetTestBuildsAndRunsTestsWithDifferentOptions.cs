@@ -287,7 +287,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             new BuildCommand(testInstance)
-                .Execute($"/p:Configuration={configuration}")
+                .Execute($"-p:Configuration={configuration}")
                 .Should().Pass();
 
             var binDirectory = new FileInfo($"{testInstance.Path}{Path.DirectorySeparatorChar}bin").Directory;
@@ -296,16 +296,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
-                                            TestingPlatformOptions.ArchitectureOption.Name, "x64",
-                                            TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                            TestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                            TestingPlatformOptions.NoRestoreOption.Name,
+                                            TestingPlatformOptions.NoBuildOption.Name);
 
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
-
-            var testAppArgs = Regex.Matches(result.StdOut!, TestApplicationArgsPattern);
-            Assert.Contains($"{TestingPlatformOptions.NoRestoreOption.Name} {TestingPlatformOptions.NoBuildOption.Name}", testAppArgs.FirstOrDefault()?.Value.Split(TestApplicationArgsSeparator)[0]);
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }

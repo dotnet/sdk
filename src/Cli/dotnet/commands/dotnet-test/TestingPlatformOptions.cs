@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.CmdArchitectureDescription,
             Arity = ArgumentArity.ExactlyOne
-        }.ForwardAsSingle(p => $"/p:arch={p}");
+        }.SetForwardingFunction(CommonOptions.ResolveArchOptionToRuntimeIdentifier);
 
         public static readonly CliOption<string> ConfigurationOption = new ForwardedOption<string>("--configuration", "-c")
         {

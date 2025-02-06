@@ -63,7 +63,6 @@ namespace Microsoft.DotNet.Cli
         private static bool BuildOrRestoreProjectOrSolution(string filePath, List<string> arguments, bool hasRestore, bool hasBuild)
         {
             int result = 0;
-
             arguments.Add(filePath);
 
             if (hasRestore && hasBuild)
