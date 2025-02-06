@@ -9,6 +9,12 @@ pr:
     - release/*
     - internal/release/*
 
+parameters:
+- name: enableArm64Job
+  displayName: Enables the ARM64 job
+  type: boolean
+  default: false
+
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngPublicBuildPool
@@ -59,17 +65,18 @@ stages:
         os: macOS
       helixTargetQueue: osx.13.amd64.open
   ### ARM64 ###
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-    parameters:
-      pool:
-        name: Azure Pipelines
-        vmImage: macOS-latest
-        os: macOS
-      helixTargetQueue: osx.13.arm64.open
-      macOSJobParameterSets:
-      - categoryName: TestBuild
-        buildArchitecture: arm64
-        runtimeIdentifier: osx-arm64
+  - ${{ if eq(parameters.enableArm64Job, true) }}:
+    - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+      parameters:
+        pool:
+          name: Azure Pipelines
+          vmImage: macOS-latest
+          os: macOS
+        helixTargetQueue: osx.13.arm64.open
+        macOSJobParameterSets:
+        - categoryName: TestBuild
+          buildArchitecture: arm64
+          runtimeIdentifier: osx-arm64
 
   ############### SOURCE BUILD ###############
   - template: /eng/common/templates/job/source-build.yml
