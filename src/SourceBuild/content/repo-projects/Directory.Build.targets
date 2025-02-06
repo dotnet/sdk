@@ -833,6 +833,7 @@
       RepoTest;
       MoveDotNetBuildLogs;
       CleanupRepo
+    </TestDependsOn>
   </PropertyGroup>
 
   <Target Name="Test" DependsOnTargets="$(TestDependsOn)" />
