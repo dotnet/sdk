@@ -324,5 +324,58 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.ExitCode.Should().Be(0);
         }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunSpecificCSProjRunsWithMSBuildArgs_ShouldReturnZeroAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .Execute(TestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
+                                            TestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                            "--property:WarningLevel=2", $"--property:Configuration={configuration}");
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut
+                  .Should().Contain("Test run summary: Passed!")
+                  .And.Contain("total: 2")
+                  .And.Contain("succeeded: 1")
+                  .And.Contain("failed: 0")
+                  .And.Contain("skipped: 1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunOnSolutionWithMSBuildArgs_ShouldReturnOneAsExitCode(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                            "--property:WarningLevel=2");
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut
+                  .Should().Contain("Test run summary: Failed!")
+                  .And.Contain("total: 5")
+                  .And.Contain("succeeded: 2")
+                  .And.Contain("failed: 1")
+                  .And.Contain("skipped: 2");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
     }
 }
