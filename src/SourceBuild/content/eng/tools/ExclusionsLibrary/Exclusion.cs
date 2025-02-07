@@ -50,7 +50,7 @@ internal class Exclusion : IEquatable<Exclusion>
         Suffixes = new HashSet<string?>(other.Suffixes);
     }
 
-        /// <summary>
+    /// <summary>
     /// Checks if the exclusion matches the path and suffix.
     /// <param name="path">The path to check.</param>
     /// <param name="suffix">The suffix to check.</param>
