@@ -10,27 +10,28 @@ namespace Microsoft.DotNet.Cli
     {
         public static bool ValidateBuildPathOptions(BuildOptions buildPathOptions, TerminalTestReporter output)
         {
-            if ((!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.SolutionPath)) ||
-                (!string.IsNullOrEmpty(buildPathOptions.ProjectPath) && !string.IsNullOrEmpty(buildPathOptions.DirectoryPath)) ||
-                (!string.IsNullOrEmpty(buildPathOptions.SolutionPath) && !string.IsNullOrEmpty(buildPathOptions.DirectoryPath)))
+            PathOptions pathOptions = buildPathOptions.PathOptions;
+            if ((!string.IsNullOrEmpty(pathOptions.ProjectPath) && !string.IsNullOrEmpty(pathOptions.SolutionPath)) ||
+                (!string.IsNullOrEmpty(pathOptions.ProjectPath) && !string.IsNullOrEmpty(pathOptions.DirectoryPath)) ||
+                (!string.IsNullOrEmpty(pathOptions.SolutionPath) && !string.IsNullOrEmpty(pathOptions.DirectoryPath)))
             {
                 output.WriteMessage(LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(buildPathOptions.ProjectPath))
+            if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
             {
-                return ValidateFilePath(buildPathOptions.ProjectPath, CliConstants.ProjectExtensions, LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription, output);
+                return ValidateFilePath(pathOptions.ProjectPath, CliConstants.ProjectExtensions, LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription, output);
             }
 
-            if (!string.IsNullOrEmpty(buildPathOptions.SolutionPath))
+            if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
             {
-                return ValidateFilePath(buildPathOptions.SolutionPath, CliConstants.SolutionExtensions, LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription, output);
+                return ValidateFilePath(pathOptions.SolutionPath, CliConstants.SolutionExtensions, LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription, output);
             }
 
-            if (!string.IsNullOrEmpty(buildPathOptions.DirectoryPath) && !Directory.Exists(buildPathOptions.DirectoryPath))
+            if (!string.IsNullOrEmpty(pathOptions.DirectoryPath) && !Directory.Exists(pathOptions.DirectoryPath))
             {
-                output.WriteMessage(string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, buildPathOptions.DirectoryPath));
+                output.WriteMessage(string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, pathOptions.DirectoryPath));
                 return false;
             }
 

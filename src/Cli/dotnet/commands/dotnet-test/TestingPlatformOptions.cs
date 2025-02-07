@@ -13,11 +13,6 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
         };
 
-        public static readonly CliOption<string> AdditionalMSBuildParametersOption = new("--additional-msbuild-parameters")
-        {
-            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
-        };
-
         public static readonly CliOption<string> TestModulesFilterOption = new("--test-modules")
         {
             Description = LocalizableStrings.CmdTestModulesDescription
@@ -28,29 +23,22 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdTestModulesRootDirectoryDescription
         };
 
-        public static readonly CliOption<string> NoBuildOption = new("--no-build")
+        public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
         {
-            Description = LocalizableStrings.CmdNoBuildDescription,
-            Arity = ArgumentArity.Zero
-        };
+            Description = LocalizableStrings.CmdNoBuildDescription
+        }.ForwardAs("-property:MTPNoBuild=true");
 
-        public static readonly CliOption<string> NoRestoreOption = new("--no-restore")
-        {
-            Description = LocalizableStrings.CmdNoRestoreDescription,
-            Arity = ArgumentArity.Zero
-        };
-
-        public static readonly CliOption<string> ArchitectureOption = new("--arch")
+        public static readonly CliOption<string> ArchitectureOption = new ForwardedOption<string>("--arch", "-a")
         {
             Description = LocalizableStrings.CmdArchitectureDescription,
             Arity = ArgumentArity.ExactlyOne
-        };
+        }.SetForwardingFunction(CommonOptions.ResolveArchOptionToRuntimeIdentifier);
 
-        public static readonly CliOption<string> ConfigurationOption = new("--configuration")
+        public static readonly CliOption<string> ConfigurationOption = new ForwardedOption<string>("--configuration", "-c")
         {
             Description = LocalizableStrings.CmdConfigurationDescription,
             Arity = ArgumentArity.ExactlyOne
-        };
+        }.ForwardAsSingle(p => $"/p:configuration={p}");
 
         public static readonly CliOption<string> ProjectOption = new("--project")
         {

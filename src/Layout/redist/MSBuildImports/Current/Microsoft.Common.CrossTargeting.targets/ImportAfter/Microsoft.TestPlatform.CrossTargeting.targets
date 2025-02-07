@@ -92,69 +92,18 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
-  ===================================================================================
-               DispatchToInnerBuildsWithTestProjectTarget
-
-     Builds this project with /t:$(GetTestsProjectTargets) /p:TargetFramework=X for each
-     value X in $(TargetFrameworks)
-
-     [IN]
-     $(TargetFrameworks) - Semicolon delimited list of target frameworks.
-     $(GetTestsProjectTargets) - The targets to build and get module name for each
-                               target framework
-
-     [OUT]
-     @(InnerOutput) - The combined output items of inner targets across
-                      all target frameworks..
-
-  ===================================================================================
-  -->
-
-  <Target Name="DispatchToInnerBuildsWithTestProjectTarget" Returns="@(InnerOutput)">
-    <PropertyGroup>
-      <!-- 
-        Emulating technique found in Microsoft.Build.Traversal for deciding whether to run tests in parallel.
-        Setting either property will revert to previous behavior of running tests in parallel, but without their
-        different TFMs running in parallel.
-      -->
-      <_TestTfmsInParallel>$([MSBuild]::ValueOrDefault('$(TestTfmsInParallel)', '$(BuildInParallel)'))</_TestTfmsInParallel>
-    </PropertyGroup>
-    <ItemGroup>
-      <_TargetFramework Include="$(TargetFrameworks)" />
-      <_ProjectToTestWithTFM Include="$(MSBuildProjectFile)" Properties="TargetFramework=%(_TargetFramework.Identity)" />
-    </ItemGroup>
-    <MSBuild Projects="@(_ProjectToTestWithTFM)"
-             Condition="'$(TargetFrameworks)' != '' "
-             Targets="$(GetTestsProjectTargets)"
-             ContinueOnError="ErrorAndContinue"
-             BuildInParallel="$(_TestTfmsInParallel)">
-      <Output ItemName="InnerOutput" TaskParameter="TargetOutputs" />
-    </MSBuild>
-  </Target>
-
-  <!--
   ==================================================================================
-                                   The New Testing Platform
+                                   _MTPBuild
 
-   Cross-targeting version of the new testing platform.
+   Cross-targeting version of MTP.
 
-   [IN]
-   $(TargetFrameworks) - Semicolon delimited list of target frameworks.
-   $(GetTestsProjectTargets) - The targets to build and get module name for each
-                             target framework.
-
-   [OUT]
-   @(InnerOutput) - The combined output items of the inner targets across
-                    all builds.
+   Build each project if $(MTPNoBuild) != 'false'.
+   
   =================================================================================
   -->
 
-  <PropertyGroup>
-    <GetTestsProjectTargets>_GetTestsProject</GetTestsProjectTargets>
-  </PropertyGroup>
-
-  <Target Name="_GetTestsProject" DependsOnTargets="_ComputeTargetFrameworkItems">
-    <CallTarget Targets="DispatchToInnerBuildsWithTestProjectTarget" />
+  <Target Name="_MTPBuild" DependsOnTargets="_ComputeTargetFrameworkItems">
+    <CallTarget Condition="'$(MTPNoBuild)' != 'true'" Targets="Build" />
   </Target>
 
 </Project>

@@ -177,22 +177,34 @@ namespace Microsoft.DotNet.Cli
 
         private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
         {
-            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled(ref unmatchedTokens, out string binLogFileName);
+            IEnumerable<string> propertyTokens = MSBuildUtility.GetPropertyTokens(parseResult.UnmatchedTokens);
+            IEnumerable<string> binaryLoggerTokens = MSBuildUtility.GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
 
-            return new BuildOptions(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
+            var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
+                .Concat(propertyTokens)
+                .Concat(binaryLoggerTokens).ToList();
+
+            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+            unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
+            unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
+
+            PathOptions pathOptions = new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-                parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
-                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
-                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+
+            string runtimeIdentifier = parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
                     CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, parseResult.GetValue(TestingPlatformOptions.ArchitectureOption)) :
-                    string.Empty,
-                allowBinLog,
-                binLogFileName,
+                    string.Empty;
+
+            return new BuildOptions(
+                pathOptions,
+                parseResult.GetValue(CommonOptions.NoRestoreOption),
+                parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                runtimeIdentifier,
                 degreeOfParallelism,
-                unmatchedTokens);
+                unmatchedTokens,
+                msbuildArgs);
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
@@ -207,7 +219,7 @@ namespace Microsoft.DotNet.Cli
 
         private void CleanUp()
         {
-            _msBuildHandler.Dispose();
+            _msBuildHandler?.Dispose();
             foreach (var execution in _executions)
             {
                 execution.Key.Dispose();
