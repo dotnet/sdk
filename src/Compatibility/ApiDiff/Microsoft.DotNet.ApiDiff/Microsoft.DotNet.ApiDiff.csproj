@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(NetToolMinimum)</TargetFramework>
+    <DotNetBuildSourceOnly>false</DotNetBuildSourceOnly>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
   <ItemGroup>
