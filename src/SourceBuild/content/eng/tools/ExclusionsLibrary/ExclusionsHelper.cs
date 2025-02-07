@@ -72,34 +72,7 @@ public class ExclusionsHelper
         foreach (string file in _unusedStorage.GetFiles())
         {
             IEnumerable<string> newLines = File.ReadLines(file)
-                .Select(line =>
-                {
-                    if (IsIgnorableLine(line) || line.StartsWith(FileImportPrefix))
-                    {
-                        return line;
-                    }
-
-                    Exclusion exclusion = new(line);
-                    Exclusion? unusedExclusion = _unusedStorage.GetExclusion(file, exclusion.Pattern);
-                    if (unusedExclusion is not null)
-                    {
-                        HashSet<string?> unusedSuffixes = unusedExclusion.Suffixes;
-
-                        // If all suffixes are unused, we can remove the exclusion
-                        if (unusedSuffixes.Count == exclusion.Suffixes.Count)
-                        {
-                            return null;
-                        }
-
-                        // Remove the unused suffixes from the line
-                        foreach (string? suffix in unusedSuffixes)
-                        {
-                            string suffixPattern = $@"\s*,?\s*{suffix}\s*";
-                            line = Regex.Replace(line, suffixPattern.ToString(), string.Empty);
-                        }
-                    }
-                    return line;
-                })
+                .Select(line => UpdateBaselineExclusionLine(line))
                 .Where(line => line is not null)
                 .Select(line => line!);
 
@@ -116,6 +89,39 @@ public class ExclusionsHelper
 
             File.WriteAllLines(Path.Combine(targetDir, updatedFileName), newLines, Encoding.UTF8);
         }
+    }
+
+    /// <summary>
+    /// Updates a line in the baseline file to remove unused suffixes.
+    /// <param name="line">The line to update.</param>
+    /// </summary>
+    private string? UpdateBaselineExclusionLine(string line)
+    {
+        if (IsIgnorableLine(line) || line.StartsWith(FileImportPrefix))
+        {
+            return line;
+        }
+
+        Exclusion exclusion = new(line);
+        Exclusion? unusedExclusion = _unusedStorage.GetExclusion(file, exclusion.Pattern);
+        if (unusedExclusion is not null)
+        {
+            HashSet<string?> unusedSuffixes = unusedExclusion.Suffixes;
+
+            // If all suffixes are unused, we can remove the exclusion
+            if (unusedSuffixes.Count == exclusion.Suffixes.Count)
+            {
+                return null;
+            }
+
+            // Remove the unused suffixes from the line
+            foreach (string? suffix in unusedSuffixes)
+            {
+                string suffixPattern = $@"\s*,?\s*{suffix}\s*";
+                line = Regex.Replace(line, suffixPattern.ToString(), string.Empty);
+            }
+        }
+        return line;
     }
 
     /// <summary>
