@@ -72,28 +72,15 @@ namespace Microsoft.DotNet.Tools.Common
 
         public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionPath)
         {
-            JsonDocument jsonDocument;
-            JsonElement jsonElement;
-            JsonElement filteredSolutionJsonElement;
             string originalSolutionPath;
             string originalSolutionPathAbsolute;
-            string[] filteredSolutionProjectPaths;
-
+            IEnumerable<string> filteredSolutionProjectPaths;
             try
             {
-                jsonDocument = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath));
-                jsonElement = jsonDocument.RootElement;
-                filteredSolutionJsonElement = jsonElement.GetProperty("solution");
-                originalSolutionPath = filteredSolutionJsonElement.GetProperty("path").GetString();
+                JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath)).RootElement;
+                originalSolutionPath = root.GetProperty("solution").GetProperty("path").GetString();
+                filteredSolutionProjectPaths = root.GetProperty("solution").GetProperty("projects").EnumerateArray().Select(p => p.GetString()).ToArray();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
-                if (!File.Exists(originalSolutionPathAbsolute))
-                {
-                    throw new Exception();
-                }
-                filteredSolutionProjectPaths = filteredSolutionJsonElement.GetProperty("projects")
-                    .EnumerateArray()
-                    .Select(project => project.GetString())
-                    .ToArray();
             }
             catch (Exception ex)
             {
@@ -102,8 +89,11 @@ namespace Microsoft.DotNet.Tools.Common
                     filteredSolutionPath, ex.Message);
             }
 
-            SolutionModel filteredSolution = new SolutionModel();
+            SolutionModel filteredSolution = new();
             SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPathAbsolute);
+
+            // Store the original solution path in the description field of the filtered solution
+            filteredSolution.Description = originalSolutionPathAbsolute;
 
             foreach (var platform in originalSolution.Platforms)
             {
@@ -114,16 +104,19 @@ namespace Microsoft.DotNet.Tools.Common
                 filteredSolution.AddBuildType(buildType);
             }
 
-            foreach (string path in filteredSolutionProjectPaths)
-            {
-                // Normalize path to use correct directory separator
-                string normalizedPath = path.Replace('\\', Path.DirectorySeparatorChar);
-
-                SolutionProjectModel project = originalSolution.FindProject(normalizedPath) ?? throw new GracefulException(
+            IEnumerable<SolutionProjectModel> projects = filteredSolutionProjectPaths
+                .Select(path => path.Replace('\\', Path.DirectorySeparatorChar))
+                .Select(path => originalSolution.FindProject(path) ?? throw new GracefulException(
                         CommonLocalizableStrings.ProjectNotFoundInTheSolution,
-                        normalizedPath,
-                        originalSolutionPath);
-                filteredSolution.AddProject(project.FilePath, project.Type, project.Parent is null ? null : filteredSolution.AddFolder(project.Parent.Path));
+                        path,
+                        originalSolutionPath));
+
+            foreach (var project in projects)
+            {
+                _ = filteredSolution.AddProject(
+                    project.FilePath,
+                    project.Type,
+                    project.Parent is null ? null : filteredSolution.AddFolder(project.Parent.Path));
             }
 
             return filteredSolution;
