@@ -29,6 +29,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
              PackageSourceLocation packageSourceLocation = null,
              bool includePreview = false);
 
+        Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId,
+             int numberOfResults,
+             PackageSourceLocation packageSourceLocation = null,
+             bool includePreview = false);
+
         Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
             VersionRange versionRange,
              PackageSourceLocation packageSourceLocation = null);

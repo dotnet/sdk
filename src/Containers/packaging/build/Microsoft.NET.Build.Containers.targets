@@ -104,16 +104,15 @@
       <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
 
       <!-- Set the WorkingDirectory depending on the RID -->
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows) ">/app</ContainerWorkingDirectory>
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows) ">C:\app</ContainerWorkingDirectory>
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
     </PropertyGroup>
 
     <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
       <!-- For self-contained, invoke the native executable as a single arg -->
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and '$(_ContainerIsSelfContained)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)" />
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and '$(_ContainerIsSelfContained)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
       <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0" Include="dotnet;$(TargetFileName)" />
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
     </ItemGroup>
 
     <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
@@ -131,6 +130,7 @@
       <Output TaskParameter="ParsedContainerRegistry" PropertyName="ContainerBaseRegistry" />
       <Output TaskParameter="ParsedContainerImage" PropertyName="ContainerBaseName" />
       <Output TaskParameter="ParsedContainerTag" PropertyName="ContainerBaseTag" />
+      <Output TaskParameter="ParsedContainerDigest" PropertyName="ContainerBaseDigest" />
       <Output TaskParameter="NewContainerRegistry" PropertyName="ContainerRegistry" />
       <Output TaskParameter="NewContainerRepository" PropertyName="ContainerRepository" />
       <Output TaskParameter="NewContainerTags" ItemName="ContainerImageTags" />
@@ -255,6 +255,7 @@
                     BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
+                    BaseImageDigest="$(ContainerBaseDigest)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"

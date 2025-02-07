@@ -25,6 +25,6 @@ internal sealed class DigestUtils
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
         SHA256.HashData(Encoding.UTF8.GetBytes(str), hash);
 
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        return Convert.ToHexStringLower(hash);
     }
 }

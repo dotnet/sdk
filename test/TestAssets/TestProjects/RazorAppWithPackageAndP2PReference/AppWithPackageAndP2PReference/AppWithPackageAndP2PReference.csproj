@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <Target Name="EnsurePackagesExist" BeforeTargets="Restore">
+    <ItemGroup>
+      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryDirectDependency.1.0.2.nupkg" />
+      <LocalPackages Include="$(AspNetTestPackageSource)\RazorPackageLibraryTransitiveDependency.1.0.2.nupkg" />
+    </ItemGroup>
+
+    <Error Condition="!Exists('%(LocalPackages.Identity)')" 
+      Text="Package %(LocalPackages.Identity) does not exist. Ensure the test calls CreatePackCommand(ProjectDirectory, &quot;PackageLibraryDirectDependency&quot;)" />
+
+    <Error Condition="'$(RestorePackagesPath)' != '$(AspNetNugetIsolationPath)'"
+      Text="Packages are not being restored into the expected directory. Ensure that NUGET_PACKAGES and AspNetNugetIsolationPath are set as environment variables. The test should extend IsolatedNuGetPackageFolderAspNetSdkBaselineTest. RestorePackagesPath = '$(RestorePackagesPath)', AspNetNugetIsolationPath = '$(AspNetNugetIsolationPath)'" />
+  </Target>
+
+  <Target Name="EnsureLocalPackageStaticWebAssets" BeforeTargets="UpdateExistingPackageStaticWebAssets">
+    <PropertyGroup>
+      <_LocalStaticAssetPath>$(AspNetNugetIsolationPath)\razorpackagelibrarydirectdependency\1.0.2\build\..\staticwebassets\</_LocalStaticAssetPath>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <_RazorPackageLibraryDirectDependencyAssets Include="@(StaticWebAsset)" Condition="'%(SourceId)' == 'RazorPackageLibraryDirectDependency'" />
+      <_LocalStaticWebAsset Include="@(_RazorPackageLibraryDirectDependencyAssets)" Condition="'%(ContentRoot)' == '$(_LocalStaticAssetPath)'" />
+    </ItemGroup>
+
+    <Error Condition="'@(_LocalStaticWebAsset)' == ''" Text="Static web assets for RazorPackageLibraryDirectDependency not found in '$(_LocalStaticAssetPath)'. Assets: '@(_RazorPackageLibraryDirectDependencyAssets->'%(Identity) %(ContentRoot)', ' ')'" />
+
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="RazorPackageLibraryDirectDependency" Version="1.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AnotherClassLib\AnotherClassLib.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+<Project>
+
+  <!-- This is a Directory.Build.props file to prevent test which reside
+       under this directory to use any of the repository local settings. -->
+  <PropertyGroup>
+    <ImportDirectoryPackagesProps>false</ImportDirectoryPackagesProps>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+  </PropertyGroup>
+
+</Project>

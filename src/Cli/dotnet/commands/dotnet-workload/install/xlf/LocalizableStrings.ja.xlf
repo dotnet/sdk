@@ -52,6 +52,11 @@
         <target state="translated">ワークロード パック {0} バージョン {1} をアンインストールしています...</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">ワークロード バージョン {0} を削除しています。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">ディレクトリ</target>

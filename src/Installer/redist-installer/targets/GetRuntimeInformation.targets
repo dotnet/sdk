@@ -1,0 +1,60 @@
+<Project>
+
+  <Target Name="GetCurrentRuntimeInformation">
+    <PropertyGroup>
+      <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
+      <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$(__DistroRid)</HostRid>
+      <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</HostRid>
+      <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</HostRid>
+
+      <IsLinux Condition = " $([MSBuild]::IsOSPlatform('LINUX')) ">True</IsLinux>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS')) ">win</HostOSName>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX')) ">osx</HostOSName>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD')) ">freebsd</HostOSName>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS')) ">illumos</HostOSName>
+      <HostOSName Condition=" '$(HostOSName)' == '' AND '$(IsLinux)' == 'True' ">linux</HostOSName>
+
+      <OSName Condition=" '$(OSName)' == '' AND $(Rid) != '' ">$(Rid.Substring(0, $(Rid.LastIndexOf('-'))))</OSName>
+      <OSName Condition=" '$(OSName)' == '' ">$(HostOSName)</OSName>
+
+      <PortableOSName Condition=" '$(PortableOSName)' == '' ">$(OSName)</PortableOSName>
+
+      <Rid>$(OSName)-$(Architecture)</Rid>
+
+      <PortableRid>$(PortableOSName)-$(Architecture)</PortableRid>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <IsDebianBaseDistro Condition=" $(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian')) ">true</IsDebianBaseDistro>
+      <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('rhel')) AND '$(HostRid)' != 'rhel.6-x64' ">true</IsRPMBasedDistro>
+      <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('centos')) ">true</IsRPMBasedDistro>
+      <PublishNativeInstallers Condition=" '$(IslinuxPortable)' != 'true' AND '$(HostRid)' != 'rhel.6-x64' AND !$(Rid.StartsWith('linux-musl'))">true</PublishNativeInstallers>
+      <PublishArchives Condition=" '$(IslinuxPortable)' == 'true' OR ('$(IsDebianBaseDistro)' != 'true' AND '$(IsRPMBasedDistro)' != 'true') ">true</PublishArchives>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <ProductMonikerRid Condition=" '$(ProductMonikerRid)' == '' ">$(Rid)</ProductMonikerRid>
+
+      <PortableProductMonikerRid Condition=" '$(PortableProductMonikerRid)' == '' ">$(PortableRid)</PortableProductMonikerRid>
+
+      <ArtifactNameSdk>dotnet-sdk-internal$(PgoTerm)</ArtifactNameSdk>
+      <ArtifactNameCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)</ArtifactNameCombinedHostHostFxrFrameworkSdk>
+
+      <ArtifactNameWithVersionSdk>$(ArtifactNameSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+      <ArtifactNameWithVersionMSBuildExtensions>dotnet-standard-support-vs2015-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionMSBuildExtensions>
+      <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion],
+               Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradability of the SDK bundle installer. -->
+      <ProductBandCombinedHostHostFxrFrameworkSdkName>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</ProductBandCombinedHostHostFxrFrameworkSdkName>
+
+      <InstallerTargetArchitecture>$(Architecture)</InstallerTargetArchitecture>
+      <InstallerTargetArchitecture Condition=" '$(IsRPMBasedDistro)' == 'true' and '$(Architecture)' == 'Arm64' ">aarch64</InstallerTargetArchitecture>
+
+      <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(InstallerTargetArchitecture)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <!-- Mariner RPM names -->
+      <MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.1-$(InstallerTargetArchitecture)</MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.2-$(InstallerTargetArchitecture)</Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+    </PropertyGroup>
+  </Target>
+
+</Project>

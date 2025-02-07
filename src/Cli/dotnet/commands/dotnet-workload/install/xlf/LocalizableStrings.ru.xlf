@@ -52,6 +52,11 @@
         <target state="translated">Идет удаление пакета рабочих нагрузок {0} версии {1}...</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadSet">
+        <source>Deleting workload version {0}.</source>
+        <target state="translated">Удаление версии рабочей нагрузки {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
         <source>DIRECTORY</source>
         <target state="translated">КАТАЛОГ</target>
