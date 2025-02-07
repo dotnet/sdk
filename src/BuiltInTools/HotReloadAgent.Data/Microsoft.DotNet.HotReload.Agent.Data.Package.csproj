@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!--
-      Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.
-      At the same time source build requires us to not target 6.0, so we fall back to netstandard.
+      Intentionally pinned. Supports Visual Studio in-proc agent client.
     -->
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -14,10 +13,10 @@
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
     <IsSourcePackage>true</IsSourcePackage>
-    <PackageId>Microsoft.DotNet.HotReload.Agent</PackageId>
+    <PackageId>Microsoft.DotNet.HotReload.Agent.Data</PackageId>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageDescription>
-      Package containing sources of Hot Reload agent.
+      Package containing sources of Hot Reload agent data types.
     </PackageDescription>
     <!-- Remove once https://github.com/NuGet/Home/issues/8583 is fixed -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
@@ -27,5 +26,4 @@
   <ItemGroup>
     <Using Remove="@(Using)" />
   </ItemGroup>
-  <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
 </Project>
