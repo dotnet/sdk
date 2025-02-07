@@ -122,7 +122,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private string GetFinalAssemblyDiff(string assemblyName, string diffText)
     {
         StringBuilder sbAssembly = new();
-        sbAssembly.AppendLine($"# {Path.GetFileNameWithoutExtension(assemblyName)}");
+        sbAssembly.AppendLine($"# {assemblyName}");
         sbAssembly.AppendLine();
         sbAssembly.AppendLine("```diff");
         sbAssembly.Append(diffText.TrimEnd()); // Leading text stays, it's usually valid indentation.
@@ -137,7 +137,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         Dictionary<string, MemberDeclarationSyntax> afterChildrenNodes = CollectChildrenNodes(afterParentNode, afterModel);
 
         StringBuilder sb = new();
-        // Traverse all the elements found on the left side. This only visits unchanged, modified and deleted APIs. In other words, this loop excludes those that are new on the right. Those are handled later.
+        // Traverse all the elements found on the left side. This only visits unchanged, modified and deleted APIs.
+        // In other words, this loop excludes those that are new on the right. Those are handled later.
         foreach ((string memberName, MemberDeclarationSyntax beforeMemberNode) in beforeChildrenNodes)
         {
             if (afterChildrenNodes.TryGetValue(memberName, out MemberDeclarationSyntax? afterMemberNode) &&

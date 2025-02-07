@@ -26,10 +26,11 @@ public class TestAssemblyLoaderFactory
         Dictionary<string, IAssemblySymbol> assemblySymbols = new();
         foreach ((string assemblyName, string assemblyText) in assemblyTexts)
         {
+            string actualAssemblyName = assemblyName.Replace(".dll", string.Empty);
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(assemblyText, diagnosticOptions, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            if (loader.LoadAssembly(assemblyName, assemblyStream) is IAssemblySymbol assemblySymbol)
+            if (loader.LoadAssembly(actualAssemblyName, assemblyStream) is IAssemblySymbol assemblySymbol)
             {
-                assemblySymbols.Add(assemblyName, assemblySymbol);
+                assemblySymbols.Add(actualAssemblyName, assemblySymbol);
             }
         }
 
