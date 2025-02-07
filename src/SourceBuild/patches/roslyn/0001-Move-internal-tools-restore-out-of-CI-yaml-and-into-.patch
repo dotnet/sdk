@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Matt Mitchell (.NET)" <mmitche@microsoft.com>
+Date: Fri, 24 Jan 2025 07:19:03 -0800
+Subject: [PATCH] Move internal tools restore out of CI yaml and into eng/build.ps1
+ The internal tools must be restored before loading the
+ powershell module to find IBCM merge data. To work nicely with VMR builds,
+ which call roslyn's eng/build.ps1 script, move this restore logic out of the
+ YAML and into the eng/build.ps1 script. The tools are only restored when we
+ know we need to load the module. Note that the tools project will already be
+ restored again automatically when roslyn builds because of the use of IBC
+ data.
+ 
+Backport PR: https://github.com/dotnet/roslyn/pull/76911
+
+---
+ azure-pipelines-official.yml | 10 ----------
+ eng/build.ps1                | 11 +++++++++++
+ 2 files changed, 11 insertions(+), 10 deletions(-)
+
+diff --git a/azure-pipelines-official.yml b/azure-pipelines-official.yml
+index 69c371a7db6..058212a9a22 100644
+--- a/azure-pipelines-official.yml
++++ b/azure-pipelines-official.yml
+@@ -266,16 +266,6 @@ extends:
+             useGlobalJson: true
+             workingDirectory: '$(Build.SourcesDirectory)'
+ 
+-        # Needed to restore the Microsoft.DevDiv.Optimization.Data.PowerShell package
+-        - task: NuGetCommand@2
+-          displayName: Restore internal tools
+-          inputs:
+-            command: restore
+-            feedsToUse: config
+-            restoreSolution: 'eng\common\internal\Tools.csproj'
+-            nugetConfigPath: 'NuGet.config'
+-            restoreDirectory: '$(Build.SourcesDirectory)\.packages'
+-
+         - task: MicroBuildSigningPlugin@4
+           inputs:
+             signType: $(SignType)
+diff --git a/eng/build.ps1 b/eng/build.ps1
+index 2a173ce151b..14a887825a1 100644
+--- a/eng/build.ps1
++++ b/eng/build.ps1
+@@ -221,6 +221,14 @@ function Process-Arguments() {
+   }
+ }
+ 
++function RestoreInternalTooling() {
++  $internalToolingProject = Join-Path $RepoRoot 'eng/common/internal/Tools.csproj'
++  # The restore config file might be set via env var. Ignore that for this operation,
++  # as the internal nuget.config should be used.
++  $restoreConfigFile = Join-Path $RepoRoot 'eng/common/internal/NuGet.config'
++  MSBuild $internalToolingProject /t:Restore /p:RestoreConfigFile=$restoreConfigFile
++}
++
+ function BuildSolution() {
+   $solution = "Roslyn.sln"
+ 
+@@ -333,6 +341,9 @@ function GetIbcDropName() {
+         return ""
+     }
+ 
++    # Ensure that we have the internal tooling restored before attempting to load the powershell module.
++    RestoreInternalTooling
++
+     # Bring in the ibc tools
+     $packagePath = Join-Path (Get-PackageDir "Microsoft.DevDiv.Optimization.Data.PowerShell") "lib\net472"
+     Import-Module (Join-Path $packagePath "Optimization.Data.PowerShell.dll")

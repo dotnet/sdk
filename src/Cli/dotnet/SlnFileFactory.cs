@@ -121,5 +121,21 @@ namespace Microsoft.DotNet.Tools.Common
 
             return filteredSolution;
         }
+
+        public static string GetSolutionPathFromFilteredSolutionFile(string filteredSolutionPath)
+        {
+            try
+            {
+                JsonNode? jsonNode = JsonNode.Parse(File.ReadAllText(filteredSolutionPath));
+                string? originalSolutionPath = jsonNode?["solution"]?["path"]?.GetValue<string>();
+                return originalSolutionPath!;
+            }
+            catch (Exception ex)
+            {
+                throw new GracefulException(
+                    CommonLocalizableStrings.InvalidSolutionFormatString,
+                    filteredSolutionPath, ex.Message);
+            }
+        }
     }
 }

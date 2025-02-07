@@ -65,6 +65,12 @@
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
     <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
+    <PackageReference Include="System.IO.Hashing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Don't reference MS.NET.Build.Extensions.Tasks, but make sure it builds before this project -->
+    <ProjectReference Include="..\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
@@ -75,9 +81,9 @@
         the same System.Reflection.Metadata assembly and their types can unify. See the following link for the MSBuild binding redirect config.
           https://github.com/dotnet/msbuild/blob/299e0514835a1588e6ef21b1da748462dec706b8/src/MSBuild/app.config#L60
     -->
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="8.0.0" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="8.0.0" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="8.0.0" />
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataToolsetPackageVersion)" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextToolsetPackageVersion)" />
   </ItemGroup>
 
   <!-- These are loaded from the CLI's copy on .NET Core, we don't need to duplicate them on disk -->

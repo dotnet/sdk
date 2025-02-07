@@ -13,15 +13,20 @@
     <!-- MSBuild dependencies -->
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
+    <!-- NuGet dependencies -->
+    <PackageVersion Include="NuGet.ProjectModel" Version="$(NuGetProjectModelVersion)" />
+    <PackageVersion Include="NuGet.Protocol" Version="$(NuGetProtocolVersion)" />
     <!-- Runtime dependencies -->
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
-    <!-- External dependencies -->
+  </ItemGroup>
+
+  <!-- External dependencies -->
+  <ItemGroup>
     <PackageVersion Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
     <PackageVersion Include="xunit.extensibility.core" Version="$(XUnitVersion)" />
     <PackageVersion Include="xunit.extensibility.execution" Version="$(XUnitVersion)" />
-    <PackageVersion Include="NuGet.Protocol" Version="$(NuGetProtocolVersion)" />
     <PackageVersion Include="Octokit" Version="$(OctokitVersion)" />
   </ItemGroup>
 
