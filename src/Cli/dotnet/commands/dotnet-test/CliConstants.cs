@@ -39,6 +39,8 @@ namespace Microsoft.DotNet.Cli
 
         public const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
         public const string DLLExtension = ".dll";
+
+        public const string MTPTarget = "_MTPBuild";
     }
 
     internal static class TestStates
