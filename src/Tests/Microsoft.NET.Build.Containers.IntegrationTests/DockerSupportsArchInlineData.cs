@@ -9,12 +9,6 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 public class DockerSupportsArchInlineData : DataAttribute
 {
-    // an optimization - this doesn't change over time so we can compute it once
-    private static string[] LinuxPlatforms = GetSupportedLinuxPlatforms();
-
-    // another optimization - daemons don't switch types easily or quickly, so this is as good as static
-    private static bool IsWindowsDockerDaemon = GetIsWindowsDockerDaemon();
-
     private readonly string _arch;
     private readonly object[] _data;
 
@@ -26,26 +20,38 @@ public class DockerSupportsArchInlineData : DataAttribute
 
     public override IEnumerable<object[]> GetData(MethodInfo testMethod)
     {
-        if (DaemonSupportsArch(_arch))
+        if (DockerSupportsArchHelper.DaemonSupportsArch(_arch))
         {
             return new object[][] { _data.Prepend(_arch).ToArray() };
-        };
+        }
+        else
+        {
+            base.Skip = $"Skipping test because Docker daemon does not support {_arch}.";
+        }
         return Array.Empty<object[]>();
     }
+}
 
-    private bool DaemonSupportsArch(string arch)
+internal static class DockerSupportsArchHelper
+{
+    internal static bool DaemonSupportsArch(string arch)
     {
+        // an optimization - this doesn't change over time so we can compute it once
+        string[] LinuxPlatforms = GetSupportedLinuxPlatforms();
+
         if (LinuxPlatforms.Contains(arch))
         {
             return true;
         }
         else
         {
+            // another optimization - daemons don't switch types easily or quickly, so this is as good as static
+            bool IsWindowsDockerDaemon = GetIsWindowsDockerDaemon();
+
             if (IsWindowsDockerDaemon && arch.StartsWith("windows", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
-            base.Skip = $"Skipping test because Docker daemon does not support {arch}.";
             return false;
         }
     }

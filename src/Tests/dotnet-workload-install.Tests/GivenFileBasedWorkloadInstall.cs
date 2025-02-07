@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             (string dotnetRoot, FileBasedInstaller installer, _, _) = GetTestInstaller();
             var stringFeatureBand = "6.0.300"; // This is hard-coded in the test installer, so if that changes, update this, too.
             var sdkFeatureBand = new SdkFeatureBand(stringFeatureBand);
-            var path = Path.Combine(dotnetRoot, "metadata", "workloads", stringFeatureBand, "InstallState", "default.json");
+            var path = Path.Combine(dotnetRoot, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), stringFeatureBand, "InstallState", "default.json");
 
             installer.UpdateInstallMode(sdkFeatureBand, true);
             var installState = InstallStateContents.FromString(File.ReadAllText(path));
@@ -324,7 +324,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var manifestId = new ManifestId("test-manifest-1");
             var manifestVersion = new ManifestVersion("5.0.0");
 
-            var manifestUpdate = new ManifestVersionUpdate(manifestId, null, null, manifestVersion, featureBand.ToString());
+            var manifestUpdate = new ManifestVersionUpdate(manifestId, manifestVersion, featureBand.ToString());
 
             CliTransaction.RunNew(context => installer.InstallWorkloadManifest(manifestUpdate, context));
 
