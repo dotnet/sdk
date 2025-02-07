@@ -912,7 +912,7 @@ stages:
         dependsOn: FinalJoin
         publishUsingPipelines: true
         publishAssetsImmediately: true
-        pool: ${{ parameters.pool_Windows }}
+        pool: ${{ parameters.pool_Linux }}
 
 ### VALIDATION ###
 - ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), eq(variables.signEnabled, 'true')) }}:

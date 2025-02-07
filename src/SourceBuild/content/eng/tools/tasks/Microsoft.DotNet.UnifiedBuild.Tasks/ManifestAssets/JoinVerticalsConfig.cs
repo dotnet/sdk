@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
     {
         public IReadOnlyList<string> PriorityVerticals { get; set; } = [];
 
-        public static JoinVerticalsConfig GetConfig()
+        public static JoinVerticalsConfig GetDefaultConfig()
         {
             JoinVerticalsConfig joinVerticalsConfig = new JoinVerticalsConfig
             {

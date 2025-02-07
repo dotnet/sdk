@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
 
         public JoinVerticalsAssetSelector(JoinVerticalsConfig? config = null)
         {
-            _config = config ?? JoinVerticalsConfig.GetConfig();
+            _config = config ?? JoinVerticalsConfig.GetDefaultConfig();
         }
 
         public IEnumerable<AssetVerticalMatchResult> SelectAssetMatchingVertical(IEnumerable<BuildAssetsManifest> verticalManifests)
