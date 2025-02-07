@@ -54,7 +54,9 @@ public static class Program
 
         Option<string> optionTableOfContentsTitle = new(["--tableOfContentsTitle", "-tc"])
         {
-            Description = "The title of the markdown file that is placed in the output folder with a table of contents."
+            Description = "The title of the markdown file that is placed in the output folder with a table of contents.",
+            Arity = ArgumentArity.ExactlyOne,
+            IsRequired = true
         };
 
         Option<string[]?> optionAttributesToExclude = new(["--attributesToExclude", "-ate"], () => null)
@@ -114,17 +116,17 @@ public static class Program
 
         // Custom ordering to match help menu.
         log.LogMessage("Selected options:");
-            log.LogMessage($" - 'Before' assemblies:                {diffConfig.BeforeAssembliesFolderPath}");
-            log.LogMessage($" - 'Before' reference assemblies:      {diffConfig.BeforeAssemblyReferencesFolderPath}");
-            log.LogMessage($" - 'After' assemblies:                 {diffConfig.AfterAssembliesFolderPath}");
-            log.LogMessage($" - 'After' ref assemblies:             {diffConfig.AfterAssemblyReferencesFolderPath}");
-            log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
-            log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
-            log.LogMessage($" - Table of contents title:            {diffConfig.TableOfContentsTitle}");
-            log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
-            log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
-            log.LogMessage($" - Debug:                              {diffConfig.Debug}");
-            log.LogMessage("");
+        log.LogMessage($" - 'Before' source assemblies:         {diffConfig.BeforeAssembliesFolderPath}");
+        log.LogMessage($" - 'After'  source assemblies:         {diffConfig.AfterAssembliesFolderPath}");
+        log.LogMessage($" - 'Before' reference assemblies:      {diffConfig.BeforeAssemblyReferencesFolderPath}");
+        log.LogMessage($" - 'After'  reference assemblies:      {diffConfig.AfterAssemblyReferencesFolderPath}");
+        log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
+        log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
+        log.LogMessage($" - Table of contents title:            {diffConfig.TableOfContentsTitle}");
+        log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
+        log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
+        log.LogMessage($" - Debug:                              {diffConfig.Debug}");
+        log.LogMessage("");
 
         if (diffConfig.Debug)
         {
