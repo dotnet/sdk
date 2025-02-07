@@ -260,8 +260,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             case ChangeType.Modified:
                 Debug.Assert(beforeNode != null && afterNode != null);
                 string? changed = GenerateChangedDiff(beforeNodeWithoutAttributes!, afterNodeWithoutAttributes!);
-                // The attributes might have changed, but they were handled before, separately.
-                // If the API itself also changed, then we can directly append the changed diff.
+                // At this stage, the attributes that decorated this API have already been handled and printed.
+                // If the API itself also changed, then we can directly append this API's diff under the attributes (if any).
                 // Otherwise, we still need to show the API as unmodified, but only if the attributes also changed.
                 if (changed != null)
                 {
