@@ -101,7 +101,8 @@ public class DiffAttributeTests : DiffBaseTests
                 +         public MyAttribute2Attribute() { }
                 +     }
                   }
-                """);
+                """,
+                attributesToExclude: []);
     }
 
     [Fact]
@@ -480,6 +481,154 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """, hideImplicitDefaultConstructors: true);
+    }
+
+    #endregion
+
+    #region Attribute exclusion
+
+    [Fact]
+    public void TestSuppressAllDefaultAttributes()
+    {
+        // The attributes that should get hidden in this test must all be part of
+        // the DiffGeneratorFactory.DefaultAttributesToExclude list.
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                using System;
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+                    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Text")]
+                    [MyAttribute]
+                    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Text")]
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                +     [MyAttribute]
+                      public class MyClass
+                      {
+                      }
+                +     public class MyAttributeAttribute : System.Attribute
+                +     {
+                +         public MyAttributeAttribute() { }
+                +     }
+                  }
+                """,
+                attributesToExclude: null); // null forces using the default list
+    }
+
+    [Fact]
+    public void TestSuppressNone()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                using System;
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+                    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Text")]
+                    [MyAttribute]
+                    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Text")]
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                +     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+                +     [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Text")]
+                +     [MyAttribute]
+                +     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Text")]
+                      public class MyClass
+                      {
+                      }
+                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     public class MyAttributeAttribute : System.Attribute
+                +     {
+                +         public MyAttributeAttribute() { }
+                +     }
+                  }
+                """,
+                attributesToExclude: []); // empty list is respected as is
+    }
+
+    [Fact]
+    public void TestSuppressOnlyCustom()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                using System;
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+                    [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Text")]
+                    [MyAttribute]
+                    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Text")]
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                +     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+                +     [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Text")]
+                +     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Text")]
+                      public class MyClass
+                      {
+                      }
+                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     public class MyAttributeAttribute : System.Attribute
+                +     {
+                +         public MyAttributeAttribute() { }
+                +     }
+                  }
+                """,
+                attributesToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Overrides the default list
     }
 
     #endregion
