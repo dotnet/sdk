@@ -7,6 +7,8 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>apidiff</ToolCommandName>
     <PackageDescription>Tool to emit markdown diffs between sets of assemblies.</PackageDescription>
+    <DotNetBuildSourceOnly>false</DotNetBuildSourceOnly>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
   <ItemGroup>
