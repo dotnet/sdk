@@ -676,78 +676,7 @@ public class DiffTypeTests : DiffBaseTests
 
     #endregion
 
-    #region General
-
-    [Fact]
-    public void TestTypeKindChange()
-    {
-        // Name remains the same (as well as DocID), but the kind changes
-        RunTest(beforeCode: """
-                namespace MyNamespace
-                {
-                    public struct MyType
-                    {
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyType
-                    {
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                -     public struct MyType
-                -     {
-                -     }
-                +     public class MyType
-                +     {
-                +         public MyType() { }
-                +     }
-                  }
-                """);
-    }
-
-    [Fact]
-    public void TestShowPartial()
-    {
-        RunTest(beforeCode: "",
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                        public class MySubClass
-                        {
-                        }
-                    }
-                    public struct MyStruct
-                    {
-                    }
-                }
-                """,
-                expectedCode: """
-                + namespace MyNamespace
-                + {
-                +     public partial class MyClass
-                +     {
-                +         public MyClass() { }
-                +         public partial class MySubClass
-                +         {
-                +             public MySubClass() { }
-                +         }
-                +     }
-                +     public partial struct MyStruct
-                +     {
-                +     }
-                + }
-                """,
-                addPartialModifier: true);
-    }
+    #region Nested types
 
     [Fact]
     public void TestNestedTypeAdd()
@@ -984,6 +913,163 @@ public class DiffTypeTests : DiffBaseTests
                       }
                   }
                 """);
+    }
+
+    #endregion
+
+    #region Exclusions
+
+    [Fact]
+    public void TestExcludeAddedType()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["T:MyNamespace.MyStruct"]);
+    }
+
+    [Fact]
+    public void TestExcludeModifiedType()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                    public struct MyStruct1
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                    public struct MyStruct2
+                    {
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["T:MyNamespace.MyStruct1", "T:MyNamespace.MyStruct2"]);
+    }
+
+    [Fact]
+    public void TestExcludeRemovedType()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                }
+                """,
+                expectedCode: "", // The removal is not shown
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["T:MyNamespace.MyStruct"]);
+    }
+
+    #endregion
+
+    #region General
+
+    [Fact]
+    public void TestTypeKindChange()
+    {
+        // Name remains the same (as well as DocID), but the kind changes
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public struct MyType
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyType
+                    {
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                -     public struct MyType
+                -     {
+                -     }
+                +     public class MyType
+                +     {
+                +         public MyType() { }
+                +     }
+                  }
+                """);
+    }
+
+    [Fact]
+    public void TestShowPartial()
+    {
+        RunTest(beforeCode: "",
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public class MySubClass
+                        {
+                        }
+                    }
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """,
+                expectedCode: """
+                + namespace MyNamespace
+                + {
+                +     public partial class MyClass
+                +     {
+                +         public MyClass() { }
+                +         public partial class MySubClass
+                +         {
+                +             public MySubClass() { }
+                +         }
+                +     }
+                +     public partial struct MyStruct
+                +     {
+                +     }
+                + }
+                """,
+                addPartialModifier: true);
     }
 
     #endregion

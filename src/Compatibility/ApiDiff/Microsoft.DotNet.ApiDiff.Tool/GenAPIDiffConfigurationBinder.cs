@@ -16,6 +16,7 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
     private readonly Option<string> _optionOutputFolderPath;
     private readonly Option<string> _optionTableOfContentsTitle;
     private readonly Option<string[]?> _optionAttributesToExclude;
+    private readonly Option<string[]?> _optionApisToExclude;
     private readonly Option<bool> _optionAddPartialModifier;
     private readonly Option<bool> _optionHideImplicitDefaultConstructors;
     private readonly Option<bool> _optionDebug;
@@ -27,6 +28,7 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
                                            Option<string> optionOutputFolderPath,
                                            Option<string> optionTableOfContentsTitle,
                                            Option<string[]?> optionAttributesToExclude,
+                                           Option<string[]?> optionApisToExclude,
                                            Option<bool> optionAddPartialModifier,
                                            Option<bool> optionHideImplicitDefaultConstructors,
                                            Option<bool> optionDebug)
@@ -38,6 +40,7 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
         _optionOutputFolderPath = optionOutputFolderPath;
         _optionTableOfContentsTitle = optionTableOfContentsTitle;
         _optionAttributesToExclude = optionAttributesToExclude;
+        _optionApisToExclude = optionApisToExclude;
         _optionAddPartialModifier = optionAddPartialModifier;
         _optionHideImplicitDefaultConstructors = optionHideImplicitDefaultConstructors;
         _optionDebug = optionDebug;
@@ -52,6 +55,7 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
             OutputFolderPath: bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory."),
             TableOfContentsTitle: bindingContext.ParseResult.GetValueForOption(_optionTableOfContentsTitle) ?? throw new NullReferenceException("Null table of contents title."),
             AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
+            ApisToExclude: bindingContext.ParseResult.GetValueForOption(_optionApisToExclude),
             AddPartialModifier: bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
             HideImplicitDefaultConstructors: bindingContext.ParseResult.GetValueForOption(_optionHideImplicitDefaultConstructors),
             Debug: bindingContext.ParseResult.GetValueForOption(_optionDebug)

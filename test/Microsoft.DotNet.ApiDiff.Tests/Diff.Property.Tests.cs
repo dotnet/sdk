@@ -330,4 +330,84 @@ public class DiffPropertyTests : DiffBaseTests
                   }
                 """);
     }
+
+    #region Exclusions
+
+    [Fact]
+    public void TestExcludeAddedProperty()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int MyProperty { get; set; }
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["P:MyNamespace.MyClass.MyProperty"]);
+    }
+
+    [Fact]
+    public void TestExcludeModifiedProperty()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int MyProperty1 { get; set; }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int MyProperty2 { get; set; }
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["P:MyNamespace.MyClass.MyProperty1", "P:MyNamespace.MyClass.MyProperty2"]);
+    }
+
+    [Fact]
+    public void TestExcludeRemovedProperty()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int MyProperty { get; set; }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["P:MyNamespace.MyClass.MyProperty"]);
+    }
+
+    #endregion
 }

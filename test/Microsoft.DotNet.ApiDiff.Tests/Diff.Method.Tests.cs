@@ -329,4 +329,84 @@ public class DiffMethodTests : DiffBaseTests
     }
 
     #endregion
+
+    #region Exclusions
+
+    [Fact]
+    public void TestExcludeAddedMethod()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public void MyMethod() { }
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["M:MyNamespace.MyClass.MyMethod"]);
+    }
+
+    [Fact]
+    public void TestExcludeModifiedMethod()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public void MyMethod1() { }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public void MyMethod2() { }
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["M:MyNamespace.MyClass.MyMethod1", "M:MyNamespace.MyClass.MyMethod2"]);
+    }
+
+    [Fact]
+    public void TestExcludeRemovedMethod()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public void MyMethod() { }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["M:MyNamespace.MyClass.MyMethod"]);
+    }
+
+    #endregion
 }

@@ -38,6 +38,7 @@ public static class DiffGeneratorFactory
     /// <param name="outputFolderPath"></param>
     /// <param name="tableOfContentsTitle"></param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier"></param>
     /// <param name="hideImplicitDefaultConstructors"></param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="IDiffGenerator.Run"/>, the generated markdown files get written to disk, and no item is added to the <see cref="IDiffGenerator.Run"/> dictionary. If <see langword="false"/>, when calling <see cref="IDiffGenerator.Run"/>, the generated markdown files get added to the <see cref="IDiffGenerator.Run"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
@@ -51,6 +52,7 @@ public static class DiffGeneratorFactory
                                         string outputFolderPath,
                                         string tableOfContentsTitle,
                                         string[]? attributesToExclude,
+                                        string[]? apisToExclude,
                                         bool addPartialModifier,
                                         bool hideImplicitDefaultConstructors,
                                         bool writeToDisk,
@@ -64,6 +66,7 @@ public static class DiffGeneratorFactory
                                            outputFolderPath,
                                            tableOfContentsTitle,
                                            attributesToExclude,
+                                           apisToExclude,
                                            addPartialModifier,
                                            hideImplicitDefaultConstructors,
                                            writeToDisk,
@@ -74,31 +77,34 @@ public static class DiffGeneratorFactory
     /// Creates a new instance of <see cref="IDiffGenerator"/> that writes the diff to memory.
     /// </summary>
     /// <param name="log"></param>
-    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="beforeLoader"></param>
     /// <param name="afterLoader"></param>
     /// <param name="beforeAssemblySymbols"></param>
     /// <param name="afterAssemblySymbols"></param>
+    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier"></param>
     /// <param name="hideImplicitDefaultConstructors"></param>
     /// <param name="diagnosticOptions"></param>
     /// <returns></returns>
     public static IDiffGenerator Create(ILog log,
-                                        string[]? attributesToExclude,
                                         IAssemblySymbolLoader beforeLoader,
                                         IAssemblySymbolLoader afterLoader,
                                         Dictionary<string, IAssemblySymbol> beforeAssemblySymbols,
                                         Dictionary<string, IAssemblySymbol> afterAssemblySymbols,
+                                        string[]? attributesToExclude,
+                                        string[]? apisToExclude,
                                         bool addPartialModifier,
                                         bool hideImplicitDefaultConstructors,
                                         IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
     {
         return new MemoryOutputDiffGenerator(log,
-                                             attributesToExclude,
                                              beforeLoader,
                                              afterLoader,
                                              beforeAssemblySymbols,
                                              afterAssemblySymbols,
+                                             attributesToExclude,
+                                             apisToExclude,
                                              addPartialModifier,
                                              hideImplicitDefaultConstructors,
                                              diagnosticOptions);

@@ -631,5 +631,35 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Overrides the default list
     }
 
+    [Fact]
+    public void TestSuppressTypeAndAttributeUsage()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                    }
+                    [MyAttribute]
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: ["T:MyNamespace.MyAttributeAttribute"], // Exclude the attribute decorating other APIs
+                apisToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Excludes the type definition of the attribute itself
+    }
+
     #endregion
 }

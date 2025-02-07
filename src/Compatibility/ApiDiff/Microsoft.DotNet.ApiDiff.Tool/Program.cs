@@ -59,9 +59,16 @@ public static class Program
             IsRequired = true
         };
 
-        Option<string[]?> optionAttributesToExclude = new(["--attributesToExclude", "-ate"], () => null)
+        Option<string[]?> optionAttributesToExclude = new(["--attributesToExclude", "-eattrs"], () => null)
         {
             Description = "Attributes to exclude from the diff.",
+            Arity = ArgumentArity.ZeroOrMore,
+            IsRequired = false
+        };
+
+        Option<string[]?> optionApisToExclude = new(["--apisToExclude", "-eapis"], () => null)
+        {
+            Description = "APIs to exclude from the diff.",
             Arity = ArgumentArity.ZeroOrMore,
             IsRequired = false
         };
@@ -89,6 +96,7 @@ public static class Program
         rootCommand.Add(optionOutputFolderPath);
         rootCommand.Add(optionTableOfContentsTitle);
         rootCommand.Add(optionAttributesToExclude);
+        rootCommand.Add(optionApisToExclude);
         rootCommand.Add(optionAddPartialModifier);
         rootCommand.Add(optionHideImplicitDefaultConstructors);
         rootCommand.Add(optionDebug);
@@ -100,6 +108,7 @@ public static class Program
                                               optionOutputFolderPath,
                                               optionTableOfContentsTitle,
                                               optionAttributesToExclude,
+                                              optionApisToExclude,
                                               optionAddPartialModifier,
                                               optionHideImplicitDefaultConstructors,
                                               optionDebug);
@@ -113,6 +122,7 @@ public static class Program
         var log = new ConsoleLog(MessageImportance.Normal);
 
         string attributesToExclude = diffConfig.AttributesToExclude != null ? string.Join(", ", diffConfig.AttributesToExclude) : string.Empty;
+        string apisToExclude = diffConfig.ApisToExclude != null ? string.Join(", ", diffConfig.ApisToExclude) : string.Empty;
 
         // Custom ordering to match help menu.
         log.LogMessage("Selected options:");
@@ -122,6 +132,7 @@ public static class Program
         log.LogMessage($" - 'After'  reference assemblies:      {diffConfig.AfterAssemblyReferencesFolderPath}");
         log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
         log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
+        log.LogMessage($" - APIs to exclude:                    {apisToExclude}");
         log.LogMessage($" - Table of contents title:            {diffConfig.TableOfContentsTitle}");
         log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
         log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
@@ -141,6 +152,7 @@ public static class Program
                                                                    diffConfig.OutputFolderPath,
                                                                    diffConfig.TableOfContentsTitle,
                                                                    diffConfig.AttributesToExclude,
+                                                                   diffConfig.ApisToExclude,
                                                                    diffConfig.AddPartialModifier,
                                                                    diffConfig.HideImplicitDefaultConstructors,
                                                                    writeToDisk: true,
