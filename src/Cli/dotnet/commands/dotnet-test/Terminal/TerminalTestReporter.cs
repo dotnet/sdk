@@ -286,7 +286,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
             {
                 terminal.Append(SingleIndentation);
                 AppendAssemblySummary(assemblyRun, terminal);
-                terminal.AppendLine();
             }
 
             terminal.AppendLine();
@@ -801,6 +800,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
+        terminal.ResetColor();
         int failedTests = assemblyRun.FailedTests;
         int warnings = 0;
 
@@ -809,6 +809,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         AppendAssemblyResult(terminal, assemblyRun.Success, failedTests, warnings);
         terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
+        terminal.AppendLine();
     }
 
     /// <summary>
