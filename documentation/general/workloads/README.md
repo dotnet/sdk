@@ -20,3 +20,4 @@ Other documentation for workloads is in this repo:
 - [Grouping multiple packs into one MSI](https://github.com/dotnet/sdk/issues/21741)
 - [Handling workload assets across major .NET versions](cross-version-workloads.md)
 - [Workload Clean Command](workload-clean.md)
+- [Workload MSI Installation Tests](/src/Tests/dotnet-MsiInstallation.Tests/README.md)
