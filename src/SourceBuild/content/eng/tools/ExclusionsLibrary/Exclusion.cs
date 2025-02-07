@@ -19,6 +19,11 @@ internal class Exclusion : IEquatable<Exclusion>
     public HashSet<string?> Suffixes { get; init; }
 
     /// <summary>
+    /// The matcher for the pattern.
+    /// </summary>
+    private Matcher PatternMatcher = new(StringComparison.Ordinal);
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Exclusion"/> class.
     /// <param name="line"/>>The line to parse.</param>
     /// </summary>
@@ -27,6 +32,8 @@ internal class Exclusion : IEquatable<Exclusion>
         string parsedLine = line.Split('#')[0].Trim();
         string[] splitLine = parsedLine.Split('|', 2); // Split on the first occurrence of '|'
         Pattern = splitLine[0].Trim();
+
+        PatternMatcher.AddInclude(Pattern);
 
         Suffixes = splitLine.Length > 1
             ? new HashSet<string?>(splitLine[1].Split(',').Select(s => s.Trim()))
@@ -52,9 +59,7 @@ internal class Exclusion : IEquatable<Exclusion>
     {
         if (Suffixes.Contains(suffix))
         {
-            Matcher matcher = new(StringComparison.Ordinal);
-            matcher.AddInclude(Pattern);
-            if (matcher.Match(path).HasMatches)
+            if (PatternMatcher.Match(path).HasMatches)
             {
                 return true;
             }
