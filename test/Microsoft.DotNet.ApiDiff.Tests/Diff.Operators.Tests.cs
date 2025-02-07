@@ -3,7 +3,8 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
-public class DiffOverloadsTests : DiffBaseTests
+// Since operators are also methods, this class tests more basic things than the methods class.
+public class DiffOperatorsTests : DiffBaseTests
 {
     [Fact]
     public void TestEqualityOperators()
@@ -550,7 +551,6 @@ public class DiffOverloadsTests : DiffBaseTests
                 """);
     }
 
-
     [Fact]
     public void TestImplicitOperator()
     {
@@ -613,7 +613,7 @@ public class DiffOverloadsTests : DiffBaseTests
                 """);
     }
 
-    // The checked operator wasn't being handled by Roslyn, it's going to be fixed with https://github.com/dotnet/roslyn/pull/77102
+    // The checked operator isn't being handled by Roslyn, it's going to be fixed with https://github.com/dotnet/roslyn/pull/77102
     [Fact(Skip = "https://github.com/dotnet/roslyn/issues/77101")]
     public void TestExplicitCheckedOperator()
     {
@@ -646,4 +646,115 @@ public class DiffOverloadsTests : DiffBaseTests
                   }
                 """);
     }
+
+    #region Exclusions
+
+    [Fact]
+    public void TestExcludeAddedOperator()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static explicit operator int(MyClass value) { throw null; }
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32"]);
+    }
+
+    [Fact]
+    public void TestExcludeModifiedOperator()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static explicit operator int(MyClass value) { throw null; }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static explicit operator byte(MyClass value) { throw null; }
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32", "M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Byte"]);
+    }
+
+    [Fact]
+    public void TestExcludeRemovedOperator()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static explicit operator int(MyClass value) { throw null; }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32"]);
+    }
+
+    // The checked operator isn't being handled by Roslyn, so even when it's not going to show up in the diff,
+    // we try to process it but we end up throwing an exception as it is unrecognized.
+    // It's going to be fixed with https://github.com/dotnet/roslyn/pull/77102
+    [Fact(Skip = "https://github.com/dotnet/roslyn/issues/77101")]
+    public void TestExcludeUnmodifiedOperator()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static explicit operator byte(MyClass value) => (byte)(MyClass)value;
+                        public static explicit operator checked byte(MyClass value) => checked((byte)(MyClass)value);
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static explicit operator byte(MyClass value) => (byte)(MyClass)value;
+                        public static explicit operator checked byte(MyClass value) => checked((byte)(MyClass)value);
+                    }
+                }
+                """,
+                expectedCode: "",
+                hideImplicitDefaultConstructors: true,
+                apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Byte"]);
+    }
+
+    #endregion
 }

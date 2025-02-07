@@ -14,6 +14,7 @@ public record DiffConfiguration(
     string OutputFolderPath,
     string TableOfContentsTitle,
     string[]? AttributesToExclude,
+    string[]? ApisToExclude,
     bool AddPartialModifier,
     bool HideImplicitDefaultConstructors,
     bool Debug

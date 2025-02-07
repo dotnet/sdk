@@ -21,6 +21,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     private readonly string _outputFolderPath;
     private readonly string _tableOfContentsTitle;
     private readonly string[] _attributesToExclude;
+    private readonly string[] _apisToExclude;
     private readonly bool _addPartialModifier;
     private readonly bool _hideImplicitDefaultConstructors;
     private readonly bool _writeToDisk;
@@ -38,6 +39,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     /// <param name="outputFolderPath"></param>
     /// <param name="tableOfContentsTitle"></param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier"></param>
     /// <param name="hideImplicitDefaultConstructors"></param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="Run"/>, the generated markdown files get written to disk, and no item is added to the <see cref="Run"/> dictionary. If <see langword="false"/>, when calling <see cref="Run"/>, the generated markdown files get added to the <see cref="Run"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
@@ -50,6 +52,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                                     string outputFolderPath,
                                     string tableOfContentsTitle,
                                     string[]? attributesToExclude,
+                                    string[]? apisToExclude,
                                     bool addPartialModifier,
                                     bool hideImplicitDefaultConstructors,
                                     bool writeToDisk,
@@ -64,6 +67,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         _outputFolderPath = outputFolderPath;
         _tableOfContentsTitle = tableOfContentsTitle;
         _attributesToExclude = attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude;
+        _apisToExclude = apisToExclude ?? [];
         _addPartialModifier = addPartialModifier;
         _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
         _writeToDisk = writeToDisk;
@@ -95,11 +99,12 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                 diagnosticOptions: _diagnosticOptions);
 
         MemoryOutputDiffGenerator generator = new(_log,
-                                                  _attributesToExclude,
                                                   beforeLoader,
                                                   afterLoader,
                                                   beforeAssemblySymbols,
                                                   afterAssemblySymbols,
+                                                  _attributesToExclude,
+                                                  _apisToExclude,
                                                   _addPartialModifier,
                                                   _hideImplicitDefaultConstructors,
                                                   _diagnosticOptions);

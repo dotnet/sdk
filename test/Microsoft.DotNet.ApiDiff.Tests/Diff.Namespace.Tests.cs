@@ -224,4 +224,52 @@ public class DiffNamespaceTests : DiffBaseTests
     }
 
     #endregion
+
+    #region Exclusions
+
+    [Fact]
+    public void TestExcludeAddedNamespace()
+    {
+        RunTest(beforeCode: "",
+                afterCode: """
+                namespace MyNamespace
+                {
+                }
+                """,
+                expectedCode: "",
+                apisToExclude: ["N:MyNamespace.MyNamespace"]);
+    }
+
+    [Fact]
+    public void TestExcludeModifiedNamespace()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace1
+                {
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace2
+                {
+                }
+                """,
+                expectedCode: "",
+                apisToExclude: ["N:MyNamespace.MyNamespace1", "N:MyNamespace.MyNamespace2"]);
+    }
+
+    [Fact]
+    public void TestExcludeRemovedNamespace()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                }
+                """,
+                afterCode: "",
+                expectedCode: "",
+                apisToExclude: ["N:MyNamespace.MyNamespace"]);
+    }
+
+
+    #endregion
 }

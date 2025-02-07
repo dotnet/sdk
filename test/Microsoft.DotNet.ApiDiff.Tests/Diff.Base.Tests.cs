@@ -17,12 +17,14 @@ public abstract class DiffBaseTests
                            string afterCode,
                            string expectedCode,
                            string[]? attributesToExclude = null,
+                           string[]? apisToExclude = null,
                            bool addPartialModifier = false,
                            bool hideImplicitDefaultConstructors = false)
         => RunTest(before: [($"{AssemblyName}.dll", beforeCode)],
                    after: [($"{AssemblyName}.dll", afterCode)],
                    expected: new() { { AssemblyName, expectedCode } },
                    attributesToExclude,
+                   apisToExclude,
                    addPartialModifier,
                    hideImplicitDefaultConstructors);
 
@@ -30,6 +32,7 @@ public abstract class DiffBaseTests
                            (string, string)[] after,
                            Dictionary<string, string> expected,
                            string[]? attributesToExclude = null,
+                           string[]? apisToExclude = null,
                            bool addPartialModifier = false,
                            bool hideImplicitDefaultConstructors = false)
     {
@@ -43,11 +46,12 @@ public abstract class DiffBaseTests
 
         IDiffGenerator generator = DiffGeneratorFactory.Create(
             _log,
-            attributesToExclude,
             beforeLoader,
             afterLoader,
             beforeAssemblySymbols,
             afterAssemblySymbols,
+            attributesToExclude,
+            apisToExclude,
             addPartialModifier,
             hideImplicitDefaultConstructors,
             DiffGeneratorFactory.DefaultDiagnosticOptions);
@@ -56,9 +60,16 @@ public abstract class DiffBaseTests
 
         foreach ((string expectedAssemblyName, string expectedCode) in expected)
         {
-            Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Expected assembly entry not found among actual results: {expectedAssemblyName}");
-            string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
-            Assert.True(fullExpectedCode.Equals(actualCode), $"\nExpected:\n{fullExpectedCode}\nActual:\n{actualCode}");
+            if (string.IsNullOrEmpty(expectedCode))
+            {
+                Assert.False(generator.Results.TryGetValue(expectedAssemblyName, out string? _), $"Assembly should've been absent among the results: {expectedAssemblyName}");
+            }
+            else
+            {
+                Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
+                string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
+                Assert.True(fullExpectedCode.Equals(actualCode), $"\nExpected:\n{fullExpectedCode}\nActual:\n{actualCode}");
+            }
         }
     }
 
