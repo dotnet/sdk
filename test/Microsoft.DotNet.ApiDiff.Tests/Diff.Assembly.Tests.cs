@@ -8,9 +8,8 @@ public class DiffAssemblyTests : DiffBaseTests
     [Fact]
     public void TestAssemblyAdd()
     {
-        string assemblyName = "MyAddedAssembly.dll";
         RunTest(before: [],
-                after: [(assemblyName, """
+                after: [("MyAddedAssembly.dll", """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -19,7 +18,7 @@ public class DiffAssemblyTests : DiffBaseTests
                 }
                 """)],
                 expected: new Dictionary<string, string>() {
-                    { assemblyName, """
+                    { "MyAddedAssembly", """
                     + namespace MyNamespace
                     + {
                     +     public struct MyStruct
@@ -50,7 +49,7 @@ public class DiffAssemblyTests : DiffBaseTests
                 }
                 """)],
                 expected: new Dictionary<string, string>() {
-                    { "MyBeforeAssembly.dll", """
+                    { "MyBeforeAssembly", """
                     - namespace MyNamespace
                     - {
                     -     public struct MyStruct
@@ -58,7 +57,7 @@ public class DiffAssemblyTests : DiffBaseTests
                     -     }
                     - }
                     """ },
-                    { "MyAfterAssembly.dll", """
+                    { "MyAfterAssembly", """
                     + namespace MyNamespace
                     + {
                     +     public struct MyStruct
@@ -72,8 +71,7 @@ public class DiffAssemblyTests : DiffBaseTests
     [Fact]
     public void TestAssemblyDelete()
     {
-        string assemblyName = "MyRemovedAssembly.dll";
-        RunTest(before: [(assemblyName, """
+        RunTest(before: [("MyRemovedAssembly.dll", """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -83,7 +81,7 @@ public class DiffAssemblyTests : DiffBaseTests
                 """)],
                 after: [],
                 expected: new Dictionary<string, string>() {
-                    { assemblyName, """
+                    { "MyRemovedAssembly", """
                     - namespace MyNamespace
                     - {
                     -     public struct MyStruct

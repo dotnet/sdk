@@ -11,15 +11,15 @@ namespace Microsoft.DotNet.ApiDiff.Tests;
 public abstract class DiffBaseTests
 {
     private readonly ConsoleLog _log = new(MessageImportance.Normal);
-    protected const string AssemblyName = "MyAssembly.dll";
+    protected const string AssemblyName = "MyAssembly";
 
     protected void RunTest(string beforeCode,
                            string afterCode,
                            string expectedCode,
                            bool addPartialModifier = false,
                            bool hideImplicitDefaultConstructors = false)
-        => RunTest(before: [(AssemblyName, beforeCode)],
-                   after: [(AssemblyName, afterCode)],
+        => RunTest(before: [($"{AssemblyName}.dll", beforeCode)],
+                   after: [($"{AssemblyName}.dll", afterCode)],
                    expected: new() { { AssemblyName, expectedCode } },
                    addPartialModifier, hideImplicitDefaultConstructors);
 

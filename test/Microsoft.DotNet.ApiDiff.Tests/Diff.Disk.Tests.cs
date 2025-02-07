@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Reflection.Metadata;
-using System.Reflection.Metadata.Ecma335;
-using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -19,8 +14,8 @@ public class DiffDiskTests
 {
     private const string BeforeFolderName = "Before";
     private const string AfterFolderName = "After";
-    private const string TableOfContentsTitle = "MyTitle";
-    private const string ActualAssemblyName = "MyAssembly";
+    private const string DefaultTableOfContentsTitle = "MyTitle";
+    private const string DefaultAssemblyName = "MyAssembly";
 
     private const string ExpectedTableOfContents = $"""
         # API difference between {BeforeFolderName} and {AfterFolderName}
@@ -28,8 +23,10 @@ public class DiffDiskTests
         API listing follows standard diff formatting.
         Lines preceded by a '+' are additions and a '-' indicates removal.
 
-        * [{ActualAssemblyName}]({TableOfContentsTitle}_{ActualAssemblyName}.md)
-    """;
+        * [{DefaultAssemblyName}]({DefaultTableOfContentsTitle}_{DefaultAssemblyName}.md)
+
+
+        """;
 
     private const string BeforeCode = """
         namespace MyNamespace
@@ -51,7 +48,7 @@ public class DiffDiskTests
             }
         }
         """;
-    private const string ExpectedMarkdown = $@"# {ActualAssemblyName}
+    private const string DefaultExpectedMarkdown = $@"# {DefaultAssemblyName}
 
 ```diff
   namespace MyNamespace
@@ -64,27 +61,105 @@ public class DiffDiskTests
 ```
 ";
 
+    private readonly Dictionary<string, string[]> DefaultBeforeAssemblyAndCodeFiles = new() { { DefaultAssemblyName, [BeforeCode] } };
+    private readonly Dictionary<string, string[]> DefaultAfterAssemblyAndCodeFiles = new() { { DefaultAssemblyName, [AfterCode] } };
+    private readonly Dictionary<string, string> DefaultExpectedAssemblyMarkdowns = new() { { DefaultAssemblyName, DefaultExpectedMarkdown } };
+
     /// <summary>
     /// This test reads two DLLs, where the only difference between the types in the assembly is one method that is added on the new type.
     /// The output goes to disk.
     /// </summary>
     [Fact]
-    public void TestDiskReadAndWrite()
+    public void Test_DiskRead_DiskWrite()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
 
-        IDiffGenerator generator = TestDiskShared(inputFolderPath.DirPath, outputFolderPath.DirPath, writeToDisk: true);
+        IDiffGenerator generator = TestDiskShared(inputFolderPath.DirPath, DefaultTableOfContentsTitle, DefaultBeforeAssemblyAndCodeFiles, DefaultAfterAssemblyAndCodeFiles, outputFolderPath.DirPath, writeToDisk: true);
         generator.Run();
 
-        string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{TableOfContentsTitle}.md");
-        Assert.True(File.Exists(tableOfContentsMarkdownFilePath), $"{tableOfContentsMarkdownFilePath} table of contents markdown file does not exist.");
+        VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedTableOfContents, DefaultExpectedAssemblyMarkdowns);
+    }
 
-        string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{TableOfContentsTitle}_{ActualAssemblyName}.md");
-        Assert.True(File.Exists(myAssemblyMarkdownFilePath), $"{myAssemblyMarkdownFilePath} assembly markdown file does not exist.");
+    /// <summary>
+    ///  Many namespaces belonging to a single assembly should go into the same output markdown file for that assembly.
+    /// </summary>
+    [Fact]
+    public void Test_DiskRead_DiskWrite_MultiNamespaces()
+    {
+        using TempDirectory inputFolderPath = new();
+        using TempDirectory outputFolderPath = new();
 
-        string actualCode = File.ReadAllText(myAssemblyMarkdownFilePath);
-        Assert.Equal(ExpectedMarkdown, actualCode);
+        string beforeCode1 = """
+        namespace MyNamespace
+        {
+            public class MyClass
+            {
+                public MyClass() { }
+            }
+        }
+        """;
+
+        string beforeCode2 = """
+        namespace MyNamespace.MySubNamespace
+        {
+            public class MySubClass
+            {
+                public MySubClass() { }
+            }
+        }
+        """;
+
+        string afterCode1 = """
+        namespace MyNamespace
+        {
+            public class MyClass
+            {
+                public MyClass() { }
+                public void MyMethod() { }
+            }
+        }
+        """;
+
+        string afterCode2 = """
+        namespace MyNamespace.MySubNamespace
+        {
+            public class MySubClass
+            {
+                public MySubClass() { }
+                public void MySubMethod() { }
+            }
+        }
+        """;
+
+        string expectedMarkdown = $@"# {DefaultAssemblyName}
+
+```diff
+  namespace MyNamespace
+  {{
+      public class MyClass
+      {{
++         public void MyMethod() {{ }}
+      }}
+  }}
+  namespace MyNamespace.MySubNamespace
+  {{
+      public class MySubClass
+      {{
++         public void MySubMethod() {{ }}
+      }}
+  }}
+```
+";
+
+        Dictionary<string, string[]> beforeAssemblyAndCodeFiles = new() { { DefaultAssemblyName, [beforeCode1, beforeCode2] } };
+        Dictionary<string, string[]> afterAssemblyAndCodeFiles = new() { { DefaultAssemblyName, [afterCode1, afterCode2] } };
+        Dictionary<string, string> expectedAssemblyMarkdowns = new() { { DefaultAssemblyName, expectedMarkdown } };
+
+        IDiffGenerator generator = TestDiskShared(inputFolderPath.DirPath, DefaultTableOfContentsTitle, beforeAssemblyAndCodeFiles, afterAssemblyAndCodeFiles, outputFolderPath.DirPath, writeToDisk: true);
+        generator.Run();
+
+        VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedTableOfContents, expectedAssemblyMarkdowns);
     }
 
     /// <summary>
@@ -92,24 +167,26 @@ public class DiffDiskTests
     /// The output is the Results dictionary.
     /// </summary>
     [Fact]
-    public void TestDiskReadAndMemoryWrite()
+    public void Test_DiskRead_MemoryWrite()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
 
-        IDiffGenerator generator = TestDiskShared(inputFolderPath.DirPath, outputFolderPath.DirPath, writeToDisk: false);
+        IDiffGenerator generator = TestDiskShared(inputFolderPath.DirPath, DefaultTableOfContentsTitle, DefaultBeforeAssemblyAndCodeFiles, DefaultAfterAssemblyAndCodeFiles, outputFolderPath.DirPath, writeToDisk: false);
         generator.Run();
 
-        string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{TableOfContentsTitle}.md");
+        string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}.md");
         Assert.Contains(tableOfContentsMarkdownFilePath, generator.Results.Keys);
 
-        string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{TableOfContentsTitle}_{ActualAssemblyName}.md");
+        Assert.Equal(ExpectedTableOfContents, generator.Results[tableOfContentsMarkdownFilePath]);
+
+        string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}_{DefaultAssemblyName}.md");
         Assert.Contains(myAssemblyMarkdownFilePath, generator.Results.Keys);
 
-        Assert.Equal(ExpectedMarkdown, generator.Results[myAssemblyMarkdownFilePath]);
+        Assert.Equal(DefaultExpectedMarkdown, generator.Results[myAssemblyMarkdownFilePath]);
     }
 
-    private IDiffGenerator TestDiskShared(string inputFolderPath, string outputFolderPath, bool writeToDisk)
+    private IDiffGenerator TestDiskShared(string inputFolderPath, string tableOfContentsTitle, Dictionary<string, string[]> beforeAssemblyAndCodeFiles, Dictionary<string, string[]> afterAssemblyAndCodeFiles, string outputFolderPath, bool writeToDisk)
     {
         string beforeAssembliesFolderPath = Path.Join(inputFolderPath, BeforeFolderName);
         string afterAssembliesFolderPath = Path.Join(inputFolderPath, AfterFolderName);
@@ -117,11 +194,8 @@ public class DiffDiskTests
         Directory.CreateDirectory(beforeAssembliesFolderPath);
         Directory.CreateDirectory(afterAssembliesFolderPath);
 
-        WriteCodeToAssemblyInDisk(beforeAssembliesFolderPath, BeforeCode);
-        WriteCodeToAssemblyInDisk(afterAssembliesFolderPath, AfterCode);
-
-        Assert.True(Directory.Exists(beforeAssembliesFolderPath), $"{beforeAssembliesFolderPath} dir does not exist.");
-        Assert.True(Directory.Exists(afterAssembliesFolderPath), $"{afterAssembliesFolderPath} dir does not exist.");
+        WriteCodeToAssemblyInDisk(beforeAssembliesFolderPath, beforeAssemblyAndCodeFiles);
+        WriteCodeToAssemblyInDisk(afterAssembliesFolderPath, afterAssemblyAndCodeFiles);
 
         Mock<ILog> log = new();
 
@@ -131,7 +205,7 @@ public class DiffDiskTests
             afterAssembliesFolderPath,
             afterAssemblyReferencesFolderPath: null,
             outputFolderPath,
-            TableOfContentsTitle,
+            tableOfContentsTitle,
             attributesToExclude: null,
             addPartialModifier: false,
             hideImplicitDefaultConstructors: true,
@@ -139,29 +213,54 @@ public class DiffDiskTests
             DiffGeneratorFactory.DefaultDiagnosticOptions);
     }
 
-    private void WriteCodeToAssemblyInDisk(string assemblyDirectoryPath, string code)
+    private void WriteCodeToAssemblyInDisk(string assemblyDirectoryPath, Dictionary<string, string[]> assemblyAndCodeFiles)
     {
-        SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(code);
-
-        IEnumerable<MetadataReference> references = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(a => !a.IsDynamic)
-            .Select(a => MetadataReference.CreateFromFile(a.Location))
-            .Cast<MetadataReference>();
-
-        CSharpCompilation compilation = CSharpCompilation.Create(
-            ActualAssemblyName,
-            [syntaxTree],
-            references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var assemblyPath = Path.Join(assemblyDirectoryPath, $"{ActualAssemblyName}.dll");
-        EmitResult result = compilation.Emit(assemblyPath);
-
-        if (!result.Success)
+        foreach ((string assemblyName, string[] codeFiles) in assemblyAndCodeFiles)
         {
-            IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
-            string failureMessages = string.Join(Environment.NewLine, failures.Select(f => $"{f.Id}: {f.GetMessage()}"));
-            Assert.Fail($"Compilation failed: {failureMessages}");
+            List<SyntaxTree> syntaxTrees = new();
+            foreach (string codeFile in codeFiles)
+            {
+                syntaxTrees.Add(CSharpSyntaxTree.ParseText(codeFile));
+            }
+
+            IEnumerable<MetadataReference> references = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !a.IsDynamic)
+                .Select(a => MetadataReference.CreateFromFile(a.Location))
+                .Cast<MetadataReference>();
+
+            CSharpCompilation compilation = CSharpCompilation.Create(
+                assemblyName,
+                syntaxTrees,
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            var assemblyPath = Path.Join(assemblyDirectoryPath, $"{assemblyName}.dll");
+            EmitResult result = compilation.Emit(assemblyPath);
+
+            if (!result.Success)
+            {
+                IEnumerable<Diagnostic> failures = result.Diagnostics.Where(diagnostic => diagnostic.IsWarningAsError || diagnostic.Severity == DiagnosticSeverity.Error);
+                string failureMessages = string.Join(Environment.NewLine, failures.Select(f => $"{f.Id}: {f.GetMessage()}"));
+                Assert.Fail($"Compilation failed: {failureMessages}");
+            }
+        }
+    }
+
+    private void VerifyDiskWrite(string outputFolderPath, string tableOfContentsTitle, string expectedTableOfContents, Dictionary<string, string> expectedAssemblyMarkdowns)
+    {
+        string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath, $"{tableOfContentsTitle}.md");
+        Assert.True(File.Exists(tableOfContentsMarkdownFilePath), $"{tableOfContentsMarkdownFilePath} table of contents markdown file does not exist.");
+
+        string actualTableOfContentsText = File.ReadAllText(tableOfContentsMarkdownFilePath);
+        Assert.Equal(expectedTableOfContents, actualTableOfContentsText);
+
+        foreach ((string expectedAssembly, string expectedMarkdown) in expectedAssemblyMarkdowns)
+        {
+            string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath, $"{tableOfContentsTitle}_{expectedAssembly}.md");
+            Assert.True(File.Exists(myAssemblyMarkdownFilePath), $"{myAssemblyMarkdownFilePath} assembly markdown file does not exist.");
+
+            string actualCode = File.ReadAllText(myAssemblyMarkdownFilePath);
+            Assert.Equal(expectedMarkdown, actualCode);
         }
     }
 }
