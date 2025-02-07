@@ -42,11 +42,12 @@ internal class ExclusionsStorage
     /// </summary>
     public void Add(string file, Exclusion exclusion)
     {
-        if (!_storage.ContainsKey(file))
+        if (!_storage.TryGetValue(file, out var exclusions))
         {
-            _storage[file] = new List<Exclusion>();
+            exclusions = new List<Exclusion>();
+            _storage[file] = exclusions;
         }
-        _storage[file].Add(exclusion);
+        exclusions.Add(exclusion);
     }
 
     /// <summary>
