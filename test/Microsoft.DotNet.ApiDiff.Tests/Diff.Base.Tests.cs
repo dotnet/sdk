@@ -16,21 +16,23 @@ public abstract class DiffBaseTests
     protected void RunTest(string beforeCode,
                            string afterCode,
                            string expectedCode,
+                           string[]? attributesToExclude = null,
                            bool addPartialModifier = false,
                            bool hideImplicitDefaultConstructors = false)
         => RunTest(before: [($"{AssemblyName}.dll", beforeCode)],
                    after: [($"{AssemblyName}.dll", afterCode)],
                    expected: new() { { AssemblyName, expectedCode } },
-                   addPartialModifier, hideImplicitDefaultConstructors);
+                   attributesToExclude,
+                   addPartialModifier,
+                   hideImplicitDefaultConstructors);
 
     protected void RunTest((string, string)[] before,
                            (string, string)[] after,
                            Dictionary<string, string> expected,
+                           string[]? attributesToExclude = null,
                            bool addPartialModifier = false,
                            bool hideImplicitDefaultConstructors = false)
     {
-        string[] attributesToExclude = Array.Empty<string>(); // TODO: Add tests for this
-
         // CreateFromTexts will assert on any loader diagnostics via SyntaxFactory.
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols)
             = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: before, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
