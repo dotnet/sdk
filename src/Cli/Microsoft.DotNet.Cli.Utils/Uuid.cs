@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.Utils
             Array.Copy(namespaceBytes, streamToHash, namespaceBytes.Length);
             Array.Copy(nameBytes, 0, streamToHash, namespaceBytes.Length, nameBytes.Length);
 
-            var hashResult = XxHash3.Hash(streamToHash); // This is just used for generating a named pipe so we don't need a cryptographic hash
+            var hashResult = XxHash128.Hash(streamToHash); // This is just used for generating a named pipe so we don't need a cryptographic hash
 
             var res = new byte[16];
 
