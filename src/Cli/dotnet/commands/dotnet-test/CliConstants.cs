@@ -15,7 +15,6 @@ namespace Microsoft.DotNet.Cli
 
         public const string ParametersSeparator = "--";
         public const string SemiColon = ";";
-        public const string Colon = ":";
 
         public const string VSTest = "VSTest";
         public const string MicrosoftTestingPlatform = "MicrosoftTestingPlatform";
