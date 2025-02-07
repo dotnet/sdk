@@ -27,8 +27,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private readonly Dictionary<string, IAssemblySymbol> _afterAssemblySymbols;
     private readonly bool _addPartialModifier;
     private readonly bool _hideImplicitDefaultConstructors;
-    private readonly ISymbolFilter _symbolFilter;
     private readonly ISymbolFilter _attributeSymbolFilter;
+    private readonly ISymbolFilter _symbolFilter;
     private readonly SyntaxTriviaList _twoSpacesTrivia;
     private readonly SyntaxList<AttributeListSyntax> _emptyAttributeList;
     private readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>> _diagnosticOptions;
@@ -38,21 +38,23 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     /// Initializes a new instance of the <see cref="MemoryOutputDiffGenerator"/> class.
     /// </summary>
     /// <param name="log"></param>
-    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="beforeLoader"></param>
     /// <param name="afterLoader"></param>
     /// <param name="beforeAssemblySymbols"></param>
     /// <param name="afterAssemblySymbols"></param>
+    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier"></param>
     /// <param name="hideImplicitDefaultConstructors"></param>
     /// <param name="diagnosticOptions"></param>
     internal MemoryOutputDiffGenerator(
         ILog log,
-        string[]? attributesToExclude,
         IAssemblySymbolLoader beforeLoader,
         IAssemblySymbolLoader afterLoader,
         Dictionary<string, IAssemblySymbol> beforeAssemblySymbols,
         Dictionary<string, IAssemblySymbol> afterAssemblySymbols,
+        string[]? attributesToExclude,
+        string[]? apisToExclude,
         bool addPartialModifier,
         bool hideImplicitDefaultConstructors,
         IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
@@ -65,8 +67,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _addPartialModifier = addPartialModifier;
         _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
         _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
-        _symbolFilter = SymbolFilterFactory.GetFilterFromList([], includeExplicitInterfaceImplementationSymbols: true);
         _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude, includeExplicitInterfaceImplementationSymbols: true);
+        _symbolFilter = SymbolFilterFactory.GetFilterFromList(apisToExclude ?? [], includeExplicitInterfaceImplementationSymbols: true);
         _twoSpacesTrivia = SyntaxFactory.TriviaList(SyntaxFactory.Space, SyntaxFactory.Space);
         _emptyAttributeList = SyntaxFactory.List<AttributeListSyntax>();
         _results = [];

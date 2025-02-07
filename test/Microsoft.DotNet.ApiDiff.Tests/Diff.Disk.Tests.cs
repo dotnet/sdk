@@ -207,6 +207,7 @@ public class DiffDiskTests
             outputFolderPath,
             tableOfContentsTitle,
             attributesToExclude: null,
+            apisToExclude: null,
             addPartialModifier: false,
             hideImplicitDefaultConstructors: true,
             writeToDisk,
