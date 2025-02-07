@@ -37,7 +37,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     /// <param name="afterAssemblyReferencesFolderPath"></param>
     /// <param name="outputFolderPath"></param>
     /// <param name="tableOfContentsTitle"></param>
-    /// <param name="attributesToExclude"></param>
+    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="addPartialModifier"></param>
     /// <param name="hideImplicitDefaultConstructors"></param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="Run"/>, the generated markdown files get written to disk, and no item is added to the <see cref="Run"/> dictionary. If <see langword="false"/>, when calling <see cref="Run"/>, the generated markdown files get added to the <see cref="Run"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>

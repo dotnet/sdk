@@ -38,7 +38,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     /// Initializes a new instance of the <see cref="MemoryOutputDiffGenerator"/> class.
     /// </summary>
     /// <param name="log"></param>
-    /// <param name="attributesToExclude"></param>
+    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="beforeLoader"></param>
     /// <param name="afterLoader"></param>
     /// <param name="beforeAssemblySymbols"></param>
@@ -48,7 +48,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     /// <param name="diagnosticOptions"></param>
     internal MemoryOutputDiffGenerator(
         ILog log,
-        string[] attributesToExclude,
+        string[]? attributesToExclude,
         IAssemblySymbolLoader beforeLoader,
         IAssemblySymbolLoader afterLoader,
         Dictionary<string, IAssemblySymbol> beforeAssemblySymbols,
