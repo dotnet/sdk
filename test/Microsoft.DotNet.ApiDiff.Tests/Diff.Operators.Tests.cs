@@ -549,4 +549,101 @@ public class DiffOverloadsTests : DiffBaseTests
                   }
                 """);
     }
+
+
+    [Fact]
+    public void TestImplicitOperator()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static implicit operator MyClass(int value) { throw null; }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                +         public static implicit operator MyClass(int value) { throw null; }
+                      }
+                  }
+                """);
+    }
+
+    [Fact]
+    public void TestExplicitOperator()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static explicit operator int(MyClass value) { throw null; }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                +         public static explicit operator int(MyClass value) { throw null; }
+                      }
+                  }
+                """);
+    }
+
+    // The checked operator wasn't being handled by Roslyn, it's going to be fixed with https://github.com/dotnet/roslyn/pull/77102
+    [Fact(Skip = "https://github.com/dotnet/roslyn/issues/77101")]
+    public void TestExplicitCheckedOperator()
+    {
+        RunTest(beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public static explicit operator byte(MyClass value) => (byte)(MyClass)value;
+                        public static explicit operator checked byte(MyClass value) => checked((byte)(MyClass)value);
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                +         public static explicit operator byte(MyClass value) { throw null; }
+                +         public static explicit operator checked byte(MyClass value) { throw null; }
+                      }
+                  }
+                """);
+    }
 }
