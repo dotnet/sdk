@@ -50,6 +50,9 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         [Required]
         public string SourceBuiltSourceNamePrefix { get; set; }
 
+        [Required]
+        public string PreviousBuildPassSourceNamePrefix { get; set; }
+
         public string SbrpCacheSourceName { get; set; }
 
         public string ReferencePackagesSourceName { get; set; }
@@ -255,6 +258,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         {
             bool isCurrentSourceBuiltSource =
                 packageSource.StartsWith(SourceBuiltSourceNamePrefix) ||
+                packageSource.StartsWith(PreviousBuildPassSourceNamePrefix) ||
                 packageSource.Equals(SbrpCacheSourceName) ||
                 packageSource.Equals(ReferencePackagesSourceName);
 
