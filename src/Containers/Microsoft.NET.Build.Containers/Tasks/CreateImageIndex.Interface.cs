@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
+using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
@@ -85,5 +86,7 @@ partial class CreateImageIndex
         ImageTags = Array.Empty<string>();
         GeneratedArchiveOutputPath = string.Empty;
         GeneratedImageIndex = string.Empty;
+
+        TaskResources = Resource.Manager;
     }
 } 
