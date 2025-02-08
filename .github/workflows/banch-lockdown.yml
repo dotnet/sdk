@@ -1,4 +1,4 @@
-name: Check if target branch is in lockdown
+name: PR Analysis
 on:
   pull_request:
     types: [opened, synchronize, labeled, unlabeled]
@@ -6,7 +6,7 @@ permissions:
   contents: read
   pull-requests: read
 jobs:
-  check:
+  lockdown:
     runs-on: ubuntu-latest
     steps:
       - name: Retun error if branch is in lockdown
