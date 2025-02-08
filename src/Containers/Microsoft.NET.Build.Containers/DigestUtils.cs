@@ -21,7 +21,7 @@ internal sealed class DigestUtils
     {
         if (!digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException("Invalid digest format. Digest must start with 'sha256:'.");
+            throw new ArgumentException($"Invalid digest '{digest}'. Digest must start with 'sha256:'.");
         }
 
         return digest.Substring("sha256:".Length);

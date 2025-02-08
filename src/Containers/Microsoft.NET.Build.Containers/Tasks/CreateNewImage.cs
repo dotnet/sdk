@@ -23,7 +23,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     /// </summary>
     public string ToolPath { get; set; }
 
-    private bool IsLocalPull => string.IsNullOrEmpty(BaseRegistry.Trim());
+    private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
 

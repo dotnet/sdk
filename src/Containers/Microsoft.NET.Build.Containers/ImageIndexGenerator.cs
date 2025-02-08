@@ -13,7 +13,7 @@ internal static class ImageIndexGenerator
     /// <summary>
     /// Generates an image index from the given images.
     /// </summary>
-    /// <param name="images"></param>
+    /// <param name="images">Images to generate image index from.</param>
     /// <returns>Returns json string of image index and image index mediaType.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="NotSupportedException"></exception>
@@ -45,6 +45,15 @@ internal static class ImageIndexGenerator
         }
     }
 
+    /// <summary>
+    /// Generates an image index from the given images.
+    /// </summary>
+    /// <param name="images">Images to generate image index from.</param>
+    /// <param name="manifestMediaType">Media type of the manifest.</param>
+    /// <param name="imageIndexMediaType">Media type of the produced image index.</param>
+    /// <returns>Returns json string of image index and image index mediaType.</returns>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="NotSupportedException"></exception>
     internal static string GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
     {
         if (images.Length == 0)
@@ -116,6 +125,7 @@ internal static class ImageIndexGenerator
         {
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
+        // To avoid things like \u002B for '+' especially in media types ("application/vnd.oci.image.manifest.v1\u002Bjson"), we use UnsafeRelaxedJsonEscaping.
         var escapeOptions = new JsonSerializerOptions
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping

@@ -23,7 +23,7 @@ internal class ArchiveFileRegistry : ILocalRegistry
         var directorySeparatorChar = Path.DirectorySeparatorChar;
 
         // if doesn't end with a file extension, assume it's a directory
-        if (!fullPath.Split(directorySeparatorChar).Last().Contains('.'))
+        if (!Path.HasExtension(fullPath))
         {
            fullPath += Path.DirectorySeparatorChar;
         }

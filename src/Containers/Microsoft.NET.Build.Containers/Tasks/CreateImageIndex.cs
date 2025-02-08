@@ -23,7 +23,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         _cancellationTokenSource.Dispose();
     }
 
-    private bool IsLocalPull => string.IsNullOrEmpty(BaseRegistry.Trim());
+    private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public override bool Execute()
     {
