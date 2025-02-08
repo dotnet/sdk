@@ -83,7 +83,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
-        await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, BuildEngine != null, telemetry, cancellationToken)
+        await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
             .ConfigureAwait(false); 
 
         return !Log.HasLoggedErrors;

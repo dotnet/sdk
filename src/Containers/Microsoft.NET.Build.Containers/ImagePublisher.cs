@@ -13,7 +13,6 @@ internal static class ImagePublisher
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        bool isSafeLog,
         Telemetry telemetry,
         CancellationToken cancellationToken)
     {
@@ -27,7 +26,6 @@ internal static class ImagePublisher
                     sourceImageReference,
                     destinationImageReference,
                     Log,
-                    isSafeLog,
                     telemetry,
                     cancellationToken,
                     destinationImageReference.LocalRegistry!.LoadAsync).ConfigureAwait(false);
@@ -38,7 +36,6 @@ internal static class ImagePublisher
                     sourceImageReference,
                     destinationImageReference,
                     Log,
-                    isSafeLog,
                     cancellationToken,
                     destinationImageReference.RemoteRegistry!.PushAsync,
                     Strings.ContainerBuilder_ImageUploadedToRegistry).ConfigureAwait(false);
@@ -55,7 +52,6 @@ internal static class ImagePublisher
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        bool isSafeLog,
         Telemetry telemetry,
         CancellationToken cancellationToken)
     {
@@ -69,7 +65,6 @@ internal static class ImagePublisher
                     sourceImageReference,
                     destinationImageReference,
                     Log,
-                    isSafeLog,
                     telemetry,
                     cancellationToken,
                     destinationImageReference.LocalRegistry!.LoadAsync).ConfigureAwait(false);
@@ -80,7 +75,6 @@ internal static class ImagePublisher
                     sourceImageReference,
                     destinationImageReference,
                     Log,
-                    isSafeLog,
                     cancellationToken,
                     destinationImageReference.RemoteRegistry!.PushManifestListAsync,
                     Strings.ImageIndexUploadedToRegistry).ConfigureAwait(false);
@@ -97,7 +91,6 @@ internal static class ImagePublisher
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        bool isSafeLog,
         Telemetry telemetry,
         CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, CancellationToken, Task> loadFunc)
@@ -112,34 +105,25 @@ internal static class ImagePublisher
         try
         {
             await loadFunc(image, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-            if (isSafeLog) 
-            {
-                Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
-            }
+            Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
         }
-        catch (ContainerHttpException e) when (isSafeLog)
+        catch (ContainerHttpException e)
         {
             Log.LogErrorFromException(e, true);
         }
         catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
         {
             telemetry.LogLocalLoadError();
-            if (isSafeLog)
-            {
-                Log.LogErrorFromException(dle, showStackTrace: false);
-            }
+            Log.LogErrorFromException(dle, showStackTrace: false);
         }
-        catch (ArgumentException argEx) when (isSafeLog)
+        catch (ArgumentException argEx)
         {
             Log.LogErrorFromException(argEx, showStackTrace: false);
         }
         catch (DockerLoadException dle)
         {
             telemetry.LogLocalLoadError();
-            if (isSafeLog)
-            {
-                Log.LogErrorFromException(dle, showStackTrace: false);
-            }
+            Log.LogErrorFromException(dle, showStackTrace: false);
         }
     }
 
@@ -148,7 +132,6 @@ internal static class ImagePublisher
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        bool isSafeLog,
         CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, CancellationToken, Task> pushFunc,
         string successMessage)
@@ -160,20 +143,17 @@ internal static class ImagePublisher
                 sourceImageReference,
                 destinationImageReference,
                 cancellationToken).ConfigureAwait(false);
-            if (isSafeLog) 
-            {
-                Log.LogMessage(MessageImportance.High, successMessage, destinationImageReference, destinationImageReference.RemoteRegistry!.RegistryName);
-            }
+            Log.LogMessage(MessageImportance.High, successMessage, destinationImageReference, destinationImageReference.RemoteRegistry!.RegistryName);
         }
-        catch (UnableToAccessRepositoryException) when (isSafeLog)
+        catch (UnableToAccessRepositoryException)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
         }
-        catch (ContainerHttpException e) when (isSafeLog)
+        catch (ContainerHttpException e)
         {
             Log.LogErrorFromException(e, true);
         }
-        catch (Exception e) when (isSafeLog)
+        catch (Exception e)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
             Log.LogMessage(MessageImportance.Low, "Details: {0}", e);

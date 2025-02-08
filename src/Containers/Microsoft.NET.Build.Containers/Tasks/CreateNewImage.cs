@@ -120,13 +120,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
-        if (BuildEngine != null) 
-        {
-            (string message, object[] parameters) = SkipPublishing ?
-                ( Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
-                ( Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
-            Log.LogMessage(MessageImportance.High, message, parameters);
-        }
+        (string message, object[] parameters) = SkipPublishing ?
+            ( Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
+            ( Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
+        Log.LogMessage(MessageImportance.High, message, parameters);
 
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
         imageBuilder.AddLayer(newLayer);
@@ -183,7 +180,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         if (!SkipPublishing)
         {
-            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, BuildEngine != null, telemetry, cancellationToken)
+            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
                 .ConfigureAwait(false);
         }
         
