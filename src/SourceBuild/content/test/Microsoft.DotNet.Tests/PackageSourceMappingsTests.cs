@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests
 
         private const string NetSdkSupportingFeedName = "net-sdk-supporting-feed";
         private const string ArcadeSourceName = "source-built-arcade";
-        private const string RuntimeSourceName = "previous-build-pass--runtime";
+        private const string RuntimeSourceName = "previous-build-pass-runtime";
         private const string PrebuiltSourceName = "prebuilt";
         private const string PreviouslySourceBuiltSourceName = "previously-source-built";
         private const string ReferencePackagesSourceName = "reference-packages";
