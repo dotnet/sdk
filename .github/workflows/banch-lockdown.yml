@@ -1,7 +1,7 @@
 name: Check if target branch is in lockdown
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, labeled, unlabeled]
 permissions:
   contents: read
   pull-requests: read
