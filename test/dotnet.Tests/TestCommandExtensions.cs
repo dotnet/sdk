@@ -7,15 +7,7 @@ namespace Microsoft.DotNet.Tests
     {
         public static TestCommand WithUserProfileRoot(this TestCommand testCommand, string path)
         {
-            var userProfileEnvironmentVariableName = GetUserProfileEnvironmentVariableName();
-            return testCommand.WithEnvironmentVariable(userProfileEnvironmentVariableName, path);
-        }
-
-        private static string GetUserProfileEnvironmentVariableName()
-        {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? "LocalAppData"
-                : "HOME";
+            return testCommand.WithEnvironmentVariable("DOTNET_CLI_HOME", path);
         }
     }
 }

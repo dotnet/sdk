@@ -1,13 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmCompressionTests : AspNetSdkTest
     {
         public WasmCompressionTests(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -60,7 +62,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             Assert.NotEqual(blazorBootJsonCompressedThumbPrint, newBlazorBootJsonCompressedThumbPrint);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithoutLinkerAndCompression_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -104,7 +106,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             Assert.NotEqual(mainAppCompressedDllThumbPrint, newMainAppCompressedDllThumbPrint);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -136,7 +138,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_WithoutLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -168,7 +170,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_CompressesAllFrameworkFiles()
         {
             // Arrange

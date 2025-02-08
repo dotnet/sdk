@@ -26,9 +26,9 @@
 
     <PropertyGroup>
       <IsDebianBaseDistro Condition=" $(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian')) ">true</IsDebianBaseDistro>
-      <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('rhel')) AND '$(HostRid)' != 'rhel.6-x64' ">true</IsRPMBasedDistro>
+      <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('rhel'))">true</IsRPMBasedDistro>
       <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('centos')) ">true</IsRPMBasedDistro>
-      <PublishNativeInstallers Condition=" '$(IslinuxPortable)' != 'true' AND '$(HostRid)' != 'rhel.6-x64' AND !$(Rid.StartsWith('linux-musl'))">true</PublishNativeInstallers>
+      <PublishNativeInstallers Condition=" '$(IslinuxPortable)' != 'true' AND !$(Rid.StartsWith('linux-musl'))">true</PublishNativeInstallers>
       <PublishArchives Condition=" '$(IslinuxPortable)' == 'true' OR ('$(IsDebianBaseDistro)' != 'true' AND '$(IsRPMBasedDistro)' != 'true') ">true</PublishArchives>
     </PropertyGroup>
 
@@ -38,22 +38,15 @@
       <PortableProductMonikerRid Condition=" '$(PortableProductMonikerRid)' == '' ">$(PortableRid)</PortableProductMonikerRid>
 
       <ArtifactNameSdk>dotnet-sdk-internal$(PgoTerm)</ArtifactNameSdk>
-      <ArtifactNameCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)</ArtifactNameCombinedHostHostFxrFrameworkSdk>
 
       <ArtifactNameWithVersionSdk>$(ArtifactNameSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
-      <ArtifactNameWithVersionMSBuildExtensions>dotnet-standard-support-vs2015-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionMSBuildExtensions>
-      <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
       <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion],
                Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradability of the SDK bundle installer. -->
       <ProductBandCombinedHostHostFxrFrameworkSdkName>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</ProductBandCombinedHostHostFxrFrameworkSdkName>
 
       <InstallerTargetArchitecture>$(Architecture)</InstallerTargetArchitecture>
       <InstallerTargetArchitecture Condition=" '$(IsRPMBasedDistro)' == 'true' and '$(Architecture)' == 'Arm64' ">aarch64</InstallerTargetArchitecture>
-
-      <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(InstallerTargetArchitecture)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
-      <!-- Mariner RPM names -->
-      <MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.1-$(InstallerTargetArchitecture)</MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
-      <Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.2-$(InstallerTargetArchitecture)</Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
     </PropertyGroup>
   </Target>
 

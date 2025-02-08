@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Utils
     internal static class RuntimeEnvironment
     {
         private static readonly Lazy<Platform> _platform = new(DetermineOSPlatform);
-        private static readonly Lazy<DistroInfo> _distroInfo = new(LoadDistroInfo);
+        private static readonly Lazy<DistroInfo?> _distroInfo = new(LoadDistroInfo);
 
         public static Platform OperatingSystemPlatform { get; } = GetOSPlatform();
         public static string OperatingSystemVersion { get; } = GetOSVersion();
@@ -26,8 +26,8 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private class DistroInfo
         {
-            public string Id;
-            public string VersionId;
+            public string? Id;
+            public string? VersionId;
         }
 
         private static string GetOSName()
@@ -82,17 +82,17 @@ namespace Microsoft.DotNet.Cli.Utils
             return _platform.Value;
         }
 
-        private static string GetDistroId()
+        private static string? GetDistroId()
         {
             return _distroInfo.Value?.Id;
         }
 
-        private static string GetDistroVersionId()
+        private static string? GetDistroVersionId()
         {
             return _distroInfo.Value?.VersionId;
         }
 
-        private static DistroInfo LoadDistroInfo()
+        private static DistroInfo? LoadDistroInfo()
         {
             switch (GetOSPlatform())
             {
@@ -105,9 +105,9 @@ namespace Microsoft.DotNet.Cli.Utils
             return null;
         }
 
-        private static DistroInfo LoadDistroInfoFromLinux()
+        private static DistroInfo? LoadDistroInfoFromLinux()
         {
-            DistroInfo result = null;
+            DistroInfo? result = null;
 
             // Sample os-release file:
             //   NAME="Ubuntu"
@@ -146,9 +146,9 @@ namespace Microsoft.DotNet.Cli.Utils
             return result;
         }
 
-        private static DistroInfo LoadDistroInfoFromIllumos()
+        private static DistroInfo? LoadDistroInfoFromIllumos()
         {
-            DistroInfo result = null;
+            DistroInfo? result = null;
             // examples:
             //   on OmniOS
             //       SunOS 5.11 omnios-r151018-95eaa7e
@@ -201,12 +201,12 @@ namespace Microsoft.DotNet.Cli.Utils
             if (lastVersionNumberSeparatorIndex != -1 && distroInfo.Id == "alpine")
             {
                 // For Alpine, the version reported has three components, so we need to find the second version separator
-                lastVersionNumberSeparatorIndex = distroInfo.VersionId.IndexOf('.', lastVersionNumberSeparatorIndex + 1);
+                lastVersionNumberSeparatorIndex = distroInfo.VersionId?.IndexOf('.', lastVersionNumberSeparatorIndex + 1) ?? -1;
             }
 
             if (lastVersionNumberSeparatorIndex != -1 && (distroInfo.Id == "rhel" || distroInfo.Id == "alpine"))
             {
-                distroInfo.VersionId = distroInfo.VersionId.Substring(0, lastVersionNumberSeparatorIndex);
+                distroInfo.VersionId = distroInfo.VersionId?.Substring(0, lastVersionNumberSeparatorIndex);
             }
 
             return distroInfo;

@@ -3,7 +3,6 @@
 	<PropertyGroup>
 		<TargetFramework>$(CurrentTargetFramework)</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
 
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>

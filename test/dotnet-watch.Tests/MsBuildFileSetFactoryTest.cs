@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class MsBuildFileSetFactoryTest(ITestOutputHelper output)
@@ -405,7 +403,7 @@ $@"<ItemGroup>
             return result;
         }
 
-        private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");
+        private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject?.Name + ".csproj");
 
         private static string WriteFile(TestAsset testAsset, string name, string contents = "")
         {
@@ -426,6 +424,6 @@ $@"<ItemGroup>
         }
 
         private static string GetTestProjectDirectory(TestAsset testAsset)
-            => Path.Combine(testAsset.Path, testAsset.TestProject.Name);
+            => Path.Combine(testAsset.Path, testAsset.TestProject?.Name ?? string.Empty);
     }
 }

@@ -6,4 +6,13 @@
     <ProjectToBuild Include="$(RepoRoot)src/VirtualMonoRepo/InitializeVMR.proj" BuildInParallel="false" />
   </ItemGroup>
 
+  <!-- For product build, build MSBuildExtensions and VSTemplateLocator only in the second build pass on win-x64 as
+       they depend on assets from other verticals that are built in the first build pass. -->
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and
+                        '$(OS)' == 'Windows_NT' and
+                        '$(Architecture)' == 'x64'">
+    <ProjectToBuild Include="$(RepoRoot)src\VSMSBuildExtensions\VSMSBuildExtensions.proj" DotNetBuildPass="2" />
+    <ProjectToBuild Include="$(RepoRoot)src\VSTemplateLocator\VSTemplateLocator.proj" DotNetBuildPass="2" />
+  </ItemGroup>
+
 </Project>
