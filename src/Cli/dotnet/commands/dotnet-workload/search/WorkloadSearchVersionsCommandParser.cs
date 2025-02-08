@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Search;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
 
@@ -9,10 +10,10 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadSearchVersionsCommandParser
     {
-        public static readonly CliArgument<string> WorkloadVersionArgument =
+        public static readonly CliArgument<IEnumerable<string>> WorkloadVersionArgument =
             new(LocalizableStrings.WorkloadVersionArgument)
             {
-                Arity = ArgumentArity.ZeroOrOne,
+                Arity = ArgumentArity.ZeroOrMore,
                 Description = LocalizableStrings.WorkloadVersionArgumentDescription
             };
 
@@ -22,6 +23,8 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.FormatOptionDescription
         };
+
+        public static readonly CliOption<bool> IncludePreviewsOption = new("--include-previews");
 
         private static readonly CliCommand Command = ConstructCommand();
 
@@ -36,6 +39,7 @@ namespace Microsoft.DotNet.Cli
             command.Arguments.Add(WorkloadVersionArgument);
             command.Options.Add(FormatOption);
             command.Options.Add(TakeOption);
+            command.Options.Add(IncludePreviewsOption);
 
             TakeOption.Validators.Add(optionResult =>
             {
@@ -50,6 +54,15 @@ namespace Microsoft.DotNet.Cli
                 if (result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument) != null)
                 {
                     result.AddError(string.Format(LocalizableStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
+                }
+            });
+
+            command.Validators.Add(result =>
+            {
+                var versionArgument = result.GetValue(WorkloadVersionArgument);
+                if (versionArgument is not null && !versionArgument.All(v => v.Contains('@')) && !WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument.SingleOrDefault(defaultValue: string.Empty)))
+                {
+                    result.AddError(string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
                 }
             });
 

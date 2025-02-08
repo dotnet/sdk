@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Execution;
-using Microsoft.DotNet.Cli.Sln.Internal;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -22,7 +21,7 @@ namespace Microsoft.DotNet.Tools.Common
             string projectTypeGuid = projectInstance.GetPropertyValue("DefaultProjectTypeGuid");
             if (string.IsNullOrEmpty(projectTypeGuid) && projectInstance.FullPath.EndsWith(".shproj", StringComparison.OrdinalIgnoreCase))
             {
-                projectTypeGuid = ProjectTypeGuids.SharedProjectGuid;
+                projectTypeGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
             }
             return projectTypeGuid;
         }

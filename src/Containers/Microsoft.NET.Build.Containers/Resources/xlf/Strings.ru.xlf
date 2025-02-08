@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
         <source>Building image index '{0}' on top of manifests {1}.</source>
-        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <target state="translated">Построение индекса '{0}' поверх манифестов {1}.</target>
         <note>
       {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </note>
@@ -161,7 +161,7 @@
       </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
         <source>Pushed image index '{0}' to registry '{1}'.</source>
-        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <target state="translated">Индекс изображения "{0}" отправлен в реестр "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
@@ -176,7 +176,7 @@
       </trans-unit>
       <trans-unit id="ImagesEmpty">
         <source>Cannot create manifest list (image index) because no images were provided.</source>
-        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <target state="translated">Не удается создать список манифестов (индекс образа), так как изображения не предоставлены.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
@@ -186,7 +186,7 @@
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
         <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <target state="translated">Не удается создать список манифестов (индекс образа), так как предоставленные образы недопустимы. Элементы должны иметь метаданные "Config", "Manifest", "ManifestMediaType" и "ManifestDigest".</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -236,7 +236,7 @@
       </trans-unit>
       <trans-unit id="InvalidTargetRuntimeIdentifiers">
         <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
-        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <target state="translated">Недопустимая строка[] TargetRuntimeIdentifiers. Все должны быть либо "linux-маскали", либо нет.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidTokenResponse">
@@ -276,7 +276,7 @@
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
         <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
-        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <target state="translated">MediaType манифестов должен быть одинаковым в списке манифестов (индексе образа).</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -291,7 +291,7 @@
       </trans-unit>
       <trans-unit id="OciImageMultipleTagsNotSupported">
         <source>Unable to create tarball for oci image with multiple tags.</source>
-        <target state="new">Unable to create tarball for oci image with multiple tags.</target>
+        <target state="translated">Невозможно создать tarball для образа oci с несколькими тегами.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
@@ -416,12 +416,12 @@
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
         <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <target state="translated">Не удается создать список манифестов (индекс образа) для указанного "mediaType" = '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
         <source>Unable to create tarball for mediaType '{0}'.</source>
-        <target state="new">Unable to create tarball for mediaType '{0}'.</target>
+        <target state="translated">Не удалось создать tarball для mediaType "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="_Test">

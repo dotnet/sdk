@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CertGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\ExceptionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\HttpContextExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\LoggerProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SocketConnectionManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SocketUtilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WebSocketConnection.cs" />
