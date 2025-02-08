@@ -13,7 +13,7 @@ internal static class ImagePublisher
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        IBuildEngine? BuildEngine,
+        bool isSafeLog,
         Telemetry telemetry,
         CancellationToken cancellationToken)
     {
@@ -27,7 +27,7 @@ internal static class ImagePublisher
                     sourceImageReference,
                     destinationImageReference,
                     Log,
-                    BuildEngine,
+                    isSafeLog,
                     telemetry,
                     cancellationToken,
                     destinationImageReference.LocalRegistry!.LoadAsync).ConfigureAwait(false);
@@ -38,7 +38,7 @@ internal static class ImagePublisher
                     sourceImageReference,
                     destinationImageReference,
                     Log,
-                    BuildEngine,
+                    isSafeLog,
                     cancellationToken,
                     destinationImageReference.RemoteRegistry!.PushAsync,
                     Strings.ContainerBuilder_ImageUploadedToRegistry).ConfigureAwait(false);
@@ -55,7 +55,7 @@ internal static class ImagePublisher
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        IBuildEngine? BuildEngine,
+        bool isSafeLog,
         Telemetry telemetry,
         CancellationToken cancellationToken)
     {
@@ -69,7 +69,7 @@ internal static class ImagePublisher
                     sourceImageReference,
                     destinationImageReference,
                     Log,
-                    BuildEngine,
+                    isSafeLog,
                     telemetry,
                     cancellationToken,
                     destinationImageReference.LocalRegistry!.LoadAsync).ConfigureAwait(false);
@@ -80,7 +80,7 @@ internal static class ImagePublisher
                     sourceImageReference,
                     destinationImageReference,
                     Log,
-                    BuildEngine,
+                    isSafeLog,
                     cancellationToken,
                     destinationImageReference.RemoteRegistry!.PushManifestListAsync,
                     Strings.ImageIndexUploadedToRegistry).ConfigureAwait(false);
@@ -97,7 +97,7 @@ internal static class ImagePublisher
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        IBuildEngine? BuildEngine,
+        bool isSafeLog,
         Telemetry telemetry,
         CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, CancellationToken, Task> loadFunc)
@@ -112,31 +112,34 @@ internal static class ImagePublisher
         try
         {
             await loadFunc(image, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-            if (BuildEngine != null) 
+            if (isSafeLog) 
             {
                 Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
             }
         }
-        catch (ContainerHttpException e)
+        catch (ContainerHttpException e) when (isSafeLog)
         {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
+            Log.LogErrorFromException(e, true);
         }
         catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
         {
             telemetry.LogLocalLoadError();
-            Log.LogErrorFromException(dle, showStackTrace: false);
+            if (isSafeLog)
+            {
+                Log.LogErrorFromException(dle, showStackTrace: false);
+            }
         }
-        catch (ArgumentException argEx)
+        catch (ArgumentException argEx) when (isSafeLog)
         {
             Log.LogErrorFromException(argEx, showStackTrace: false);
         }
         catch (DockerLoadException dle)
         {
             telemetry.LogLocalLoadError();
-            Log.LogErrorFromException(dle, showStackTrace: false);
+            if (isSafeLog)
+            {
+                Log.LogErrorFromException(dle, showStackTrace: false);
+            }
         }
     }
 
@@ -145,7 +148,7 @@ internal static class ImagePublisher
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
-        IBuildEngine? BuildEngine,
+        bool isSafeLog,
         CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, CancellationToken, Task> pushFunc,
         string successMessage)
@@ -157,32 +160,23 @@ internal static class ImagePublisher
                 sourceImageReference,
                 destinationImageReference,
                 cancellationToken).ConfigureAwait(false);
-            if (BuildEngine != null) 
+            if (isSafeLog) 
             {
                 Log.LogMessage(MessageImportance.High, successMessage, destinationImageReference, destinationImageReference.RemoteRegistry!.RegistryName);
             }
         }
-        catch (UnableToAccessRepositoryException)
+        catch (UnableToAccessRepositoryException) when (isSafeLog)
         {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
-            }
+            Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
         }
-        catch (ContainerHttpException e)
+        catch (ContainerHttpException e) when (isSafeLog)
         {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
+            Log.LogErrorFromException(e, true);
         }
-        catch (Exception e)
+        catch (Exception e) when (isSafeLog)
         {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
-                Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
-            }
+            Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
+            Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
         }
     }
 }
