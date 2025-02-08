@@ -1,0 +1,62 @@
+# Contains the binaries that are allowed for source build
+
+# This file is used by the Binary Tool to remove binaries from the VMR
+# If importing a file, include the relative path to the file
+
+# Well known non-checked in infrastructure
+artifacts/*/BinaryToolKit/
+.dotnet/
+.git/
+.packages/
+prereqs/packages/
+
+**/*.bmp
+**/*.doc
+**/*.docx
+**/*.gif
+**/*.ico
+**/*.jpg
+**/*.JPG
+**/*.pdf
+**/*.png
+**/*.PNG
+**/*.rtf
+**/*.snk
+**/*.vsd
+**/*.vsdx
+**/*.xlsx
+**/*.ttf
+**/*.cur
+**/*.icm
+**/*.reg
+
+# aspnetcore
+src/aspnetcore/src/**/samples/**/*.eot
+src/aspnetcore/src/**/samples/**/*.pfx
+src/aspnetcore/src/**/samples/**/*.woff*
+src/aspnetcore/src/**/Samples/**/*.woff*
+src/aspnetcore/src/Components/benchmarkapps/BlazingPizza.Server/wwwroot/css/font/quicksand-v8-latin-*.woff*
+src/aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js # JavaScript files with a null bytes
+src/aspnetcore/src/ProjectTemplates/Web.ProjectTemplates/**/app.db
+
+# fsharp
+src/fsharp/src/fsi/fsi.res # Icon
+
+# razor
+src/razor/**/SampleApp/**/fonts/**/*.eot
+src/razor/**/SampleApp/**/fonts/**/*.otf
+src/razor/**/SampleApp/**/fonts/**/*.woff
+
+# runtime
+src/runtime/src/libraries/System.Diagnostics.EventLog/src/Messages/EventLogMessages.res # Icon
+src/runtime/src/libraries/System.Speech/src/**/*.upsmap # https://github.com/dotnet/runtime/issues/81692
+src/runtime/src/libraries/System.Text.Encoding.CodePages/src/Data/codepages.nlp # https://github.com/dotnet/runtime/issues/81693
+src/runtime/src/native/external/brotli/common/dictionary.bin.br
+
+# source-build-externals
+src/source-build-externals/src/humanizer/src/Humanizer.Tests**/*.pfx
+src/source-build-externals/src/newtonsoft-json/Src/Newtonsoft.Json.Tests/SpaceShipV2.bson
+src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/build/strongNameBypass.reg # UTF16-LE text file
+src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/build/strongNameBypass2.reg # UTF16-LE text file
+src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/test/Certs/*.pfx
+src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/test/Certs/*.cer

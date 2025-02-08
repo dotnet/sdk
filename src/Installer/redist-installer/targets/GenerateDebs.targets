@@ -1,0 +1,446 @@
+<Project>
+
+  <PropertyGroup>
+    <DebPackageToolPath>$(PkgMicrosoft_DotNet_Build_Tasks_Installers)/build/deb-package-tool</DebPackageToolPath>
+  </PropertyGroup>
+
+  <Target Name="SetupDebProps"
+        DependsOnTargets="GetCurrentRuntimeInformation;
+                          SetupFileExtensions;
+                          CalculateLinuxNativeInstallerDependencyVersions;
+                          SetSdkBrandingInfo">
+    <PropertyGroup>
+      <DotnetDebToolDir>$(MSBuildProjectDirectory)</DotnetDebToolDir>
+    </PropertyGroup>
+
+    <!-- constants -->
+    <PropertyGroup>
+      <DebianInstalledDirectory>/usr/share/dotnet</DebianInstalledDirectory>
+
+      <LayoutPackageRootDirName>package_root</LayoutPackageRootDirName>
+      <LayoutAbsolutePlacementDirName>$</LayoutAbsolutePlacementDirName>
+      <LayoutSamplesDirName>samples</LayoutSamplesDirName>
+      <LayoutDocsDirName>docs</LayoutDocsDirName>
+      <LayoutDebianFilesDirName>debian</LayoutDebianFilesDirName>
+    </PropertyGroup>
+
+    <!-- Package Identities -->
+    <PropertyGroup>
+      <RuntimeDepsPackageVersion>$(MicrosoftNETCoreAppMajorMinorVersion)</RuntimeDepsPackageVersion>
+      <RuntimeDepsPackageName>dotnet-runtime-deps-$(RuntimeDepsPackageVersion)</RuntimeDepsPackageName>
+      <DownloadedRuntimeDepsInstallerFile>$(DownloadsFolder)$(DownloadedRuntimeDepsInstallerFileName)</DownloadedRuntimeDepsInstallerFile>
+      <SdkDebianPackageVersion>$(MajorMinorVersion)</SdkDebianPackageVersion>
+      <SdkDebianPackageName>dotnet-sdk-$(SdkDebianPackageVersion)</SdkDebianPackageName>
+      <SharedFxDebianPackageFileVersion>$(MicrosoftNETCoreAppPackageVersion)</SharedFxDebianPackageFileVersion>
+      <SharedFxDebianPackageVersion>$(MicrosoftNETCoreAppMajorMinorVersion)</SharedFxDebianPackageVersion>
+      <SharedFxDebianPackageFileName>dotnet-runtime-$(SharedFxDebianPackageFileVersion)</SharedFxDebianPackageFileName>
+      <SharedFxDebianPackageFileName>$(SharedFxDebianPackageFileName.ToLower())</SharedFxDebianPackageFileName>
+      <SharedFxDebianPackageName>dotnet-runtime-$(SharedFxDebianPackageVersion)</SharedFxDebianPackageName>
+      <SharedFxDebianPackageName>$(SharedFxDebianPackageName.ToLower())</SharedFxDebianPackageName>
+      <DownloadedSharedFrameworkInstallerFile>$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)</DownloadedSharedFrameworkInstallerFile>
+      <NetCoreAppTargetingPackDebianPackageFileName>dotnet-targeting-pack-$(SharedFxDebianPackageFileVersion)</NetCoreAppTargetingPackDebianPackageFileName>
+      <NetCoreAppTargetingPackDebianPackageFileName>$(NetCoreAppTargetingPackDebianPackageFileName.ToLower())</NetCoreAppTargetingPackDebianPackageFileName>
+      <NetCoreAppTargetingPackDebianPackageName>dotnet-targeting-pack-$(SharedFxDebianPackageVersion)</NetCoreAppTargetingPackDebianPackageName>
+      <NetCoreAppTargetingPackDebianPackageName>$(NetCoreAppTargetingPackDebianPackageName.ToLower())</NetCoreAppTargetingPackDebianPackageName>
+      <DownloadedNetCoreAppTargetingPackInstallerFile>$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadedNetCoreAppTargetingPackInstallerFile>
+      <NetStandardTargetingPackDebianPackageFileName>netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackDebianPackageFileName>
+      <NetStandardTargetingPackDebianPackageFileName>$(NetStandardTargetingPackDebianPackageFileName.ToLower())</NetStandardTargetingPackDebianPackageFileName>
+      <NetStandardTargetingPackDebianPackageName>netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion.Split('.')[0]).$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackDebianPackageName>
+      <NetStandardTargetingPackDebianPackageName>$(NetStandardTargetingPackDebianPackageName.ToLower())</NetStandardTargetingPackDebianPackageName>
+      <DownloadedNetStandardTargetingPackInstallerFile>$(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadedNetStandardTargetingPackInstallerFile>
+      <NetCoreAppHostPackDebianPackageFileName>dotnet-apphost-pack-$(SharedFxDebianPackageFileVersion)</NetCoreAppHostPackDebianPackageFileName>
+      <NetCoreAppHostPackDebianPackageFileName>$(NetCoreAppHostPackDebianPackageFileName.ToLower())</NetCoreAppHostPackDebianPackageFileName>
+      <NetCoreAppHostPackDebianPackageName>dotnet-apphost-pack-$(SharedFxDebianPackageVersion)</NetCoreAppHostPackDebianPackageName>
+      <NetCoreAppHostPackDebianPackageName>$(NetCoreAppHostPackDebianPackageName.ToLower())</NetCoreAppHostPackDebianPackageName>
+      <DownloadedNetCoreAppHostPackInstallerFile>$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)</DownloadedNetCoreAppHostPackInstallerFile>
+      <HostFxrDebianPackageFileName>dotnet-hostfxr-$(HostFxrVersion)</HostFxrDebianPackageFileName>
+      <HostFxrDebianPackageFileName>$(HostFxrDebianPackageFileName.ToLower())</HostFxrDebianPackageFileName>
+      <HostFxrDebianPackageName>dotnet-hostfxr-$(HostFxrMajorMinorVersion)</HostFxrDebianPackageName>
+      <HostFxrDebianPackageName>$(HostFxrDebianPackageName.ToLower())</HostFxrDebianPackageName>
+      <DownloadedHostFxrInstallerFile>$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)</DownloadedHostFxrInstallerFile>
+      <SharedHostDebianPackageName>dotnet-host</SharedHostDebianPackageName>
+      <DownloadedSharedHostInstallerFile>$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)</DownloadedSharedHostInstallerFile>
+      <AspNetCoreSharedFxDebianPackageFileName>aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCoreSharedFxDebianPackageFileName>
+      <AspNetCoreSharedFxDebianPackageFileName>$(AspNetCoreSharedFxDebianPackageFileName.ToLower())</AspNetCoreSharedFxDebianPackageFileName>
+      <AspNetCoreSharedFxDebianPackageName>aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)</AspNetCoreSharedFxDebianPackageName>
+      <AspNetCoreSharedFxDebianPackageName>$(AspNetCoreSharedFxDebianPackageName.ToLower())</AspNetCoreSharedFxDebianPackageName>
+      <DownloadedAspNetCoreSharedFxInstallerFile>$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadedAspNetCoreSharedFxInstallerFile>
+      <AspNetTargetingPackDebianPackageFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)</AspNetTargetingPackDebianPackageFileName>
+      <AspNetTargetingPackDebianPackageFileName>$(AspNetTargetingPackDebianPackageFileName.ToLower())</AspNetTargetingPackDebianPackageFileName>
+      <AspNetTargetingPackDebianPackageName>aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)</AspNetTargetingPackDebianPackageName>
+      <AspNetTargetingPackDebianPackageName>$(AspNetTargetingPackDebianPackageName.ToLower())</AspNetTargetingPackDebianPackageName>
+      <DownloadedAspNetTargetingPackInstallerFile>$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadedAspNetTargetingPackInstallerFile>
+    </PropertyGroup>
+
+    <!-- Inputs -->
+    <PropertyGroup>
+      <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
+      <ManpagesDirectory>$(RepoRoot)Documentation/manpages</ManpagesDirectory>
+      <EndToEndTestProject>$(RepoRoot)test/EndToEnd/EndToEnd.Tests.csproj</EndToEndTestProject>
+      <CLISdkRoot>$(RedistLayoutPath)sdk/</CLISdkRoot>
+      <TemplatesRoot>$(RedistLayoutPath)templates/</TemplatesRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <CLISdkFiles Include="$(CLISdkRoot)**/*" />
+      <TemplatesFiles Include="$(TemplatesRoot)**/*" />
+      <SdkDebManPageFiles Include="$(ManpagesDirectory)/**/*" />
+      <ManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
+    </ItemGroup>
+
+    <!-- Output Directories -->
+    <PropertyGroup>
+      <InstallerOutputDirectory>$(ArtifactsShippingPackagesDir)</InstallerOutputDirectory>
+      <SdkDebInstallerFile>$(InstallerOutputDirectory)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkDebInstallerFile>
+      <SdkDebianIntermediateDirectory>$(IntermediateOutputPath)debian/sdk/</SdkDebianIntermediateDirectory>
+      <DotNetDebToolOutputDirectory>$(SdkDebianIntermediateDirectory)deb-tool-output</DotNetDebToolOutputDirectory>
+      <DebianTestResultsXmlFile>$(SdkDebianIntermediateDirectory)debian-testResults.xml</DebianTestResultsXmlFile>
+    </PropertyGroup>
+
+    <!-- Layout Directories -->
+    <PropertyGroup>
+      <LayoutDirectory>$(SdkDebianIntermediateDirectory)debianLayoutDirectory/</LayoutDirectory>
+      <LayoutPackageRootDir>$(LayoutDirectory)$(LayoutPackageRootDirName)</LayoutPackageRootDir>
+      <LayoutAbsolutePlacementDir>$(LayoutDirectory)$(LayoutAbsolutePlacementDirName)</LayoutAbsolutePlacementDir>
+      <LayoutSamplesDir>$(LayoutDirectory)$(LayoutSamplesDirName)</LayoutSamplesDir>
+      <LayoutDocsDir>$(LayoutDirectory)$(LayoutDocsDirName)</LayoutDocsDir>
+      <LayoutDebianFilesDir>$(LayoutDirectory)$(LayoutDebianFilesDirName)</LayoutDebianFilesDir>
+    </PropertyGroup>
+
+    <!-- debian_config.json -->
+    <PropertyGroup>
+      <DebianConfigTemplateFile>$(MSBuildThisFileDirectory)../packaging/deb/dotnet-debian_config.json</DebianConfigTemplateFile>
+      <DebianConfigJsonFile>$(LayoutDirectory)debian_config.json</DebianConfigJsonFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)../packaging/deb/postinst</DebianPostinstTemplateFile>
+      <DebianPostinstFile>$(LayoutDirectory)debian/postinst</DebianPostinstFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <DebianConfigTokenValues Include="%SHARED_FRAMEWORK_DEBIAN_PACKAGE_NAME%">
+        <ReplacementString>$(SharedFxDebianPackageName)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%ASPNETCORE_SHAREDFX_DEBIAN_PACKAGE_NAME%">
+        <ReplacementString>$(AspNetCoreSharedFxDebianPackageName)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%NETCOREAPP_TARGETING_PACK_DEBIAN_PACKAGE_NAME%">
+        <ReplacementString>$(NetCoreAppTargetingPackDebianPackageName)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%NETCORE_APPHOST_PACK_DEBIAN_PACKAGE_NAME%">
+        <ReplacementString>$(NetCoreAppHostPackDebianPackageName)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%NETSTANDARD_TARGETING_PACK_DEBIAN_PACKAGE_NAME%">
+        <ReplacementString>$(NetStandardTargetingPackDebianPackageName)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%ASPNET_TARGETING_PACK_DEBIAN_PACKAGE_NAME%">
+        <ReplacementString>$(AspNetTargetingPackDebianPackageName)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%SHARED_FRAMEWORK_DEBIAN_PACKAGE_ADDITIONAL_DEPENDENCY%"
+                               Condition="'$(IncludeAdditionalSharedFrameworks)' == 'true'">
+        <ReplacementString>
+          ,
+          "$(AdditionalSharedFxDebianPackageName)" : {}
+        </ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%SHARED_FRAMEWORK_DEBIAN_PACKAGE_ADDITIONAL_DEPENDENCY%"
+                               Condition="'$(IncludeAdditionalSharedFrameworks)' != 'true'">
+        <ReplacementString></ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%SDK_NUGET_VERSION%">
+        <ReplacementString>$(MajorMinorVersion)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%CLI_SDK_BRAND_NAME%">
+        <ReplacementString>$(SdkBrandName)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%SHARED_FRAMEWORK_DEBIAN_PACKAGE_VERSION%">
+        <ReplacementString>$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%NETCOREAPP_TARGETING_PACK_DEBIAN_PACKAGE_VERSION%">
+        <ReplacementString>$(MicrosoftNETCoreAppRefPackageVersionWithTilde)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%NET_STANDARD_DEBIAN_PACKAGE_VERSION%">
+        <ReplacementString>$(NetStandardTargetingPackPackageVersionWithTilde)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%ASPNETCORE_SHAREDFX_DEBIAN_PACKAGE_VERSION%">
+        <ReplacementString>$(AspNetCoreRuntimeVersionWithTilde)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianConfigTokenValues Include="%ASPNET_TARGETING_PACK_DEBIAN_PACKAGE_VERSION%">
+        <ReplacementString>$(AspNetCoreRefVersionWithTilde)</ReplacementString>
+      </DebianConfigTokenValues>
+      <DebianPostInstTokenValues Include="%SDK_VERSION%">
+        <ReplacementString>$(Version)</ReplacementString>
+      </DebianPostInstTokenValues>
+    </ItemGroup>
+
+    <ItemGroup>
+      <TestSdkDebTaskEnvironmentVariables Include="PATH=$(DebianInstalledDirectory)$(PathListSeparator)$(PATH)" />
+      <TestSdkDebTaskEnvironmentVariables Include="TEST_ARTIFACTS=$(TestArtifactsDir)" />
+      <TestSdkDebTaskEnvironmentVariables Include="TEST_PACKAGES=$(TestPackagesDir)" />
+      <TestSdkDebTaskEnvironmentVariables Include="PreviousStageProps=$(NextStagePropsPath)" />
+
+      <!-- Consumed By Publish -->
+      <GeneratedInstallers Include="$(SdkDebInstallerFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Outer GenerateDebs target so that GetCurrentRuntimeInformation will set IsDebianBasedDistro before
+       GenerateDebsInner condition is evaluated -->
+  <Target Name="GenerateDebs"
+          DependsOnTargets="GetCurrentRuntimeInformation;
+                            GenerateDebsInner" />
+
+  <Target Name="GenerateDebsInner"
+          DependsOnTargets="SetupBundledComponents;
+                            SetupDebProps;
+                            TestDebuild;
+                            BuildSdkDeb;
+                            TestSdkDeb"
+          Condition=" '$(IsDebianBaseDistro)' == 'True' "
+          Outputs="@(GeneratedInstallers)" />
+
+  <Target Name="ReadAspNetCoreSharedRuntimeVersionFile"
+      DependsOnTargets="DownloadBundledComponents">
+    <ItemGroup>
+      <File Include="$(DownloadsFolder)$(AspNetCoreSharedFxBaseRuntimeVersionFileName)" />
+    </ItemGroup>
+    <ReadLinesFromFile File="@(File)">
+      <Output
+          TaskParameter="Lines"
+          PropertyName="AspNetCoreSharedFxBaseRuntimeVersion" />
+    </ReadLinesFromFile>
+  </Target>
+
+  <Target Name="GetAspNetSharedFxInstallArgs" DependsOnTargets="SetupDebProps;ReadAspNetCoreSharedRuntimeVersionFile">
+    <PropertyGroup>
+      <AspNetVersionPrereleaseSeparator>$(AspNetCoreSharedFxBaseRuntimeVersion.IndexOf('-'))</AspNetVersionPrereleaseSeparator>
+      <AspNetSimpleVersion>$(AspNetCoreSharedFxBaseRuntimeVersion)</AspNetSimpleVersion>
+      <AspNetSimpleVersion Condition=" '$(AspNetVersionPrereleaseSeparator)' != -1 ">$(AspNetCoreSharedFxBaseRuntimeVersion.Substring(0, $(AspNetVersionPrereleaseSeparator)))</AspNetSimpleVersion>
+
+      <AspNetVersionPatchSeparator>$(AspNetSimpleVersion.LastIndexOf('.'))</AspNetVersionPatchSeparator>
+      <AspNetSimpleVersion Condition=" '$(AspNetVersionPatchSeparator)' != -1 ">$(AspNetSimpleVersion.Substring(0, $(AspNetVersionPatchSeparator)))</AspNetSimpleVersion>
+      
+      <!-- dotnet-runtime package may not currently be available -->
+      <InstallAspNetCoreSharedFxArgs>--ignore-depends=dotnet-runtime-$(AspNetSimpleVersion)</InstallAspNetCoreSharedFxArgs>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="BuildSdkDeb"
+      Condition=" '$(IsDebianBaseDistro)' == 'True' AND '$(BuildSdkDeb)'  == 'true' "
+      DependsOnTargets="PrepareDotnetDebDirectories;
+                        GetAspNetSharedFxInstallArgs;"
+      Inputs="@(CLISdkFiles);@(TemplatesFiles);@(ManifestFiles)"
+      Outputs="$(SdkDebInstallerFile)">
+    <!-- Install Shared Framework Packages -->
+    <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppHostPackInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedNetStandardTargetingPackInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedAspNetTargetingPackInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedRuntimeDepsInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedSharedHostInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedHostFxrInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedSharedFrameworkInstallerFile)" />
+    <Exec Command="sudo dpkg $(InstallAspNetCoreSharedFxArgs) -i $(DownloadedAspNetCoreSharedFxInstallerFile)" />
+
+    <!-- Create layout: Binaries -->
+    <Copy
+      DestinationFiles="@(CLISdkFiles->'$(LayoutPackageRootDir)/sdk/%(RecursiveDir)%(Filename)%(Extension)')"
+      SourceFiles="@(CLISdkFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: Templates -->
+    <Copy
+      DestinationFiles="@(TemplatesFiles->'$(LayoutPackageRootDir)/templates/%(RecursiveDir)%(Filename)%(Extension)')"
+      SourceFiles="@(TemplatesFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: Workload Manifests -->
+    <Copy
+      DestinationFiles="@(ManifestFiles->'$(LayoutPackageRootDir)/sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
+      SourceFiles="@(ManifestFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: Man Pages -->
+    <Copy
+      DestinationFiles="@(SdkDebManPageFiles->'$(LayoutDocsDir)/%(RecursiveDir)%(Filename)-$(Version)%(Extension)')"
+      SourceFiles="@(SdkDebManPageFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Create layout: Generate and Place postinst -->
+    <ReplaceFileContents
+      InputFiles="$(DebianPostinstTemplateFile)"
+      DestinationFiles="$(DebianPostinstFile)"
+      ReplacementItems="@(DebianPostInstTokenValues)" />
+
+    <Chmod
+      Glob="$(DebianPostinstFile)"
+      Mode="ugo+x" />
+
+    <!-- Create layout: Generate and Place debian_config.json -->
+    <ReplaceFileContents
+      InputFiles="$(DebianConfigTemplateFile)"
+      DestinationFiles="$(DebianConfigJsonFile)"
+      ReplacementItems="@(DebianConfigTokenValues)" />
+
+    <!-- Build SDK Deb package -->
+    <DotNetDebTool ToolPath="$(DebPackageToolPath)"
+                    InputDirectory="$(LayoutDirectory)"
+                    OutputDirectory="$(DotNetDebToolOutputDirectory)"
+                    PackageName="$(SdkDebianPackageName)"
+                    PackageVersion="$(Version)"
+                    WorkingDirectory="$(DotnetDebToolDir)" />
+
+    <!-- Copy SDK package to output
+        dbgsym packages is Debian Debug Symbol Packages https://wiki.ubuntu.com/Debug%20Symbol%20Packages,
+        we don't use them.
+    -->
+    <ItemGroup>
+      <GeneratedDebFiles Include="$(DotNetDebToolOutputDirectory)/*.deb" Exclude="$(DotNetDebToolOutputDirectory)/*dbgsym*.deb" />
+    </ItemGroup>
+
+    <Error Text="@(GeneratedDebFiles->Count()) .deb files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />
+
+    <Copy
+      DestinationFiles="$(SdkDebInstallerFile)"
+      SourceFiles="@(GeneratedDebFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Proactively remove all possible Shared Framework and Debian Packages -->
+    <ItemGroup>
+      <SetupDebPackageToRemove Include="$(SdkDebianPackageName)" />
+      <SetupDebPackageToRemove Include="$(AspNetCoreSharedFxDebianPackageName)" />
+      <SetupDebPackageToRemove Include="$(AspNetCoreSharedFxDebianPackageFileName)" />
+      <SetupDebPackageToRemove Include="$(SharedFxDebianPackageName)" />
+      <SetupDebPackageToRemove Include="$(SharedFxDebianPackageFileName)" />
+      <SetupDebPackageToRemove Include="$(HostFxrDebianPackageName)" />
+      <SetupDebPackageToRemove Include="$(HostFxrDebianPackageFileName)" />
+      <SetupDebPackageToRemove Include="$(SharedHostDebianPackageName)" />
+      <SetupDebPackageToRemove Include="$(AspNetTargetingPackDebianPackageName)" />
+      <SetupDebPackageToRemove Include="$(AspNetTargetingPackDebianPackageFileName)" />
+      <SetupDebPackageToRemove Include="$(NetStandardTargetingPackDebianPackageName)" />
+      <SetupDebPackageToRemove Include="$(NetStandardTargetingPackDebianPackageFileName)" />
+      <SetupDebPackageToRemove Include="$(NetCoreAppTargetingPackDebianPackageName)" />
+      <SetupDebPackageToRemove Include="$(NetCoreAppTargetingPackDebianPackageFileName)" />
+      <SetupDebPackageToRemove Include="$(NetCoreAppHostPackDebianPackageFileName)" />
+      <SetupDebPackageToRemove Include="$(RuntimeDepsPackageName)" />
+    </ItemGroup>
+    <!-- The following line is needed. So it won't warning dotnet folder is not empty after uninstall -->
+    <Exec Command="sudo rm -rf /usr/share/dotnet/sdk/NuGetFallbackFolder" />
+    <Exec Command="!(dpkg-query -W %(SetupDebPackageToRemove.Identity)) || sudo dpkg -r %(SetupDebPackageToRemove.Identity)" />
+  </Target>
+
+  <Target Name="TestSdkDeb"
+      Condition=" '$(CLIBUILD_SKIP_TESTS)' != 'true' and '$(IsDebianBaseDistro)' == 'True' and '$(BuildSdkDeb)'  == 'true' "
+      DependsOnTargets="GetAspNetSharedFxInstallArgs"
+      Inputs="$(DownloadedRuntimeDepsInstallerFile);
+              $(DownloadedNetCoreAppHostPackInstallerFile);
+              $(DownloadedNetCoreAppTargetingPackInstallerFile);
+              $(DownloadedNetStandardTargetingPackInstallerFile);
+              $(DownloadedAspNetTargetingPackInstallerFile);
+              $(DownloadedSharedHostInstallerFile);
+              $(DownloadedHostFxrInstallerFile);
+              $(DownloadedSharedFrameworkInstallerFile);
+              $(DownloadedAspNetCoreSharedFxInstallerFile);
+              $(SdkDebInstallerFile);
+              $(DebianTestResultsXmlFile);"
+      Outputs="$(DebianTestResultsXmlFile)">
+    <!-- Install Dependencies and SDK Packages -->
+    <Exec Command="sudo dpkg -i $(DownloadedRuntimeDepsInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppHostPackInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppTargetingPackInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedNetStandardTargetingPackInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedAspNetTargetingPackInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedSharedHostInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedHostFxrInstallerFile)" />
+    <Exec Command="sudo dpkg -i $(DownloadedSharedFrameworkInstallerFile)" />
+    <Exec Command="sudo dpkg $(InstallAspNetCoreSharedFxArgs) -i $(DownloadedAspNetCoreSharedFxInstallerFile)" />
+
+    <Exec Command="sudo dpkg -i $(SdkDebInstallerFile)" />
+
+    <!-- Run End-2-end Tests https://github.com/dotnet/core-sdk/issues/1174
+    <DotNetRestore ProjectPath="$(EndToEndTestProject)"
+                    ToolPath="$(DebianInstalledDirectory)" />
+    <DotNetTest ProjectPath="$(EndToEndTestProject)"
+                EnvironmentVariables="@(TestSdkDebTaskEnvironmentVariables)"
+                ToolPath="$(DebianInstalledDirectory)" />-->
+  
+    <!-- Clean up Packages -->
+    <!-- The following line is needed. So it won't warning dotnet folder is not empty after uninstall -->
+    <Exec Command="sudo rm -rf /usr/share/dotnet/sdk/NuGetFallbackFolder" />
+
+    <ItemGroup>
+      <TestSdkDebPackageToRemove Include="$(SdkDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(AspNetCoreSharedFxDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(SharedFxDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(HostFxrDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(SharedHostDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(AspNetTargetingPackDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(NetStandardTargetingPackDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(NetCoreAppTargetingPackDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(NetCoreAppHostPackDebianPackageName)" />
+      <TestSdkDebPackageToRemove Include="$(RuntimeDepsPackageName)" />
+    </ItemGroup>
+    <!-- If package installed remove it -->
+    <Exec Command="!(dpkg-query -W %(TestSdkDebPackageToRemove.Identity)) || sudo dpkg -r %(TestSdkDebPackageToRemove.Identity)" />
+  </Target>
+
+  <Target Name="PrepareDotnetDebDirectories" DependsOnTargets="SetupDebProps">
+
+    <!-- Clean the workspace -->
+    <ItemGroup>
+      <FilesToClean Remove="*" />
+      <FilesToClean Include="$(SdkDebInstallerFile)" />
+
+      <WorkspaceDirectories Remove="*" />
+      <WorkspaceDirectories Include="$(SdkDebianIntermediateDirectory);
+                                     $(LayoutDirectory)" />
+
+      <LayoutSubDirectories Remove="*" />
+      <LayoutSubDirectories Include="$(LayoutPackageRootDir);
+                                     $(LayoutAbsolutePlacementDir);
+                                     $(LayoutSamplesDir);
+                                     $(LayoutDocsDir);
+                                     $(LayoutDebianFilesDir)" />
+    </ItemGroup>
+
+    <Delete Files="@(FilesToClean)" />
+    <RemoveDir Directories="@(WorkspaceDirectories)" />
+
+    <!-- Rebuild the workspace -->
+    <MakeDir Directories="@(WorkspaceDirectories)" />
+    <MakeDir Directories="@(LayoutSubDirectories)" />
+    <MakeDir Directories="$(DotNetDebToolOutputDirectory)" />
+  </Target>
+
+  <Target Name="TestDebuild">
+    <Message Text="Don't remove this" />
+
+    <!-- run Debuild  -->
+    <!-- NB: IgnoreExitCode prevents Exec from failing, but does not prevent us from retrieving the exit code. -->
+    <Exec Command="/usr/bin/env debuild -h > /dev/null 2>&amp;1" IgnoreExitCode="true">
+        <Output TaskParameter="ExitCode" PropertyName="DebuildExitCode" />
+    </Exec>
+
+    <!-- Check if it returned 0 -->
+    <PropertyGroup>
+      <BuildSdkDeb Condition=" '$(BuildSdkDeb)' == '' or '$(DebuildExitCode)' != '0' ">false</BuildSdkDeb>
+    </PropertyGroup>
+
+    <!-- Workaround for Ubuntu16 Jenkins https://github.com/dotnet/core-setup/issues/167 -->
+    <Message Condition=" '$(BuildSdkDeb)' == 'false' "
+              Text="Debuild Not found or BuildSdkDeb not set, Debian packages will not be built."
+              Importance="High" />
+  </Target>
+
+</Project>
