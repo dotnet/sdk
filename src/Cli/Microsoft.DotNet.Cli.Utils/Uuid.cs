@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.IO.Hashing;
 
 namespace Microsoft.DotNet.Cli.Utils
@@ -28,6 +29,7 @@ namespace Microsoft.DotNet.Cli.Utils
             Array.Copy(nameBytes, 0, streamToHash, namespaceBytes.Length, nameBytes.Length);
 
             var hashResult = XxHash128.Hash(streamToHash); // This is just used for generating a named pipe so we don't need a cryptographic hash
+            Debug.Assert(hashResult.Length >= 16);
 
             var res = new byte[16];
 
