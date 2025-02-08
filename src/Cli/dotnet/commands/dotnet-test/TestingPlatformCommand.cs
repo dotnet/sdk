@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli
             {
                 PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
-                InitializeOutput(degreeOfParallelism, testOptions.IsHelp);
+                InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
 
                 InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
@@ -110,14 +110,17 @@ namespace Microsoft.DotNet.Cli
             };
         }
 
-        private void InitializeOutput(int degreeOfParallelism, bool isHelp)
+        private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, bool isHelp)
         {
             var console = new SystemConsole();
+            var showPassedTests = parseResult.GetValue<OutputOptions>(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
+            var noProgress = parseResult.HasOption(TestingPlatformOptions.NoProgressOption);
+            var noAnsi = parseResult.HasOption(TestingPlatformOptions.NoAnsiOption);
             _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
             {
-                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1" ? () => true : () => false,
-                ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
-                UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
+                ShowPassedTests = () => showPassedTests,
+                ShowProgress = () => !noProgress,
+                UseAnsi = !noAnsi,
                 ShowAssembly = true,
                 ShowAssemblyStartAndComplete = true,
             });

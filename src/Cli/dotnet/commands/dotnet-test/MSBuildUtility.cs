@@ -14,30 +14,23 @@ namespace Microsoft.DotNet.Cli
     {
         public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
         {
-            var projectCollection = new ProjectCollection();
-            string rootDirectory = SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
-
             SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
 
-            if (solutionFilePath.HasExtension(".slnf"))
-            {
-                solutionFilePath = HandleFilteredSolutionFilePath(solutionFilePath, out rootDirectory);
-            }
+            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
-            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
-             solutionFilePath, buildOptions.MSBuildArgs, buildOptions.HasNoRestore, buildOptions.HasNoBuild);
+            string rootDirectory = solutionFilePath.HasExtension(".slnf") ?
+                    Path.GetDirectoryName(solutionModel.Description) :
+                    SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
-            ConcurrentBag<Module> projects = GetProjectsProperties(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+            ConcurrentBag<Module> projects = GetProjectsProperties(new ProjectCollection(), solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
             return (projects, isBuiltOrRestored);
         }
 
         public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
         {
-            var projectCollection = new ProjectCollection();
+            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
 
-            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions.MSBuildArgs, buildOptions.HasNoRestore, buildOptions.HasNoBuild);
-
-            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), projectCollection);
+            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), new ProjectCollection());
 
             return (projects, isBuiltOrRestored);
         }
@@ -59,12 +52,14 @@ namespace Microsoft.DotNet.Cli
                 arg.StartsWith("-bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("-bl", StringComparison.OrdinalIgnoreCase));
         }
 
-        private static bool BuildOrRestoreProjectOrSolution(string filePath, List<string> arguments, bool hasNoRestore, bool hasNoBuild)
+        private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
         {
-            arguments.Add(filePath);
-            arguments.Add("-target:_MTPBuild");
+            List<string> msbuildArgs = buildOptions.MSBuildArgs;
 
-            int result = new RestoringCommand(arguments, hasNoRestore || hasNoBuild).Execute();
+            msbuildArgs.Add(filePath);
+            msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
+
+            int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore || buildOptions.HasNoBuild).Execute();
 
             return result == (int)BuildResultCode.Success;
         }
@@ -86,18 +81,6 @@ namespace Microsoft.DotNet.Cli
                 });
 
             return allProjects;
-        }
-
-        private static string HandleFilteredSolutionFilePath(string solutionFilterFilePath, out string rootDirectory)
-        {
-            string solution = SlnFileFactory.GetSolutionPathFromFilteredSolutionFile(solutionFilterFilePath);
-
-            // Resolve the solution path relative to the .slnf file directory
-            string solutionFilterDirectory = Path.GetDirectoryName(solutionFilterFilePath);
-            string solutionFullPath = Path.GetFullPath(solution, solutionFilterDirectory);
-            rootDirectory = Path.GetDirectoryName(solutionFullPath);
-
-            return solutionFullPath;
         }
 
         private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
