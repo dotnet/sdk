@@ -17,14 +17,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             JoinVerticalsConfig joinVerticalsConfig = new JoinVerticalsConfig
             {
                 PriorityVerticals = [
-                    "Windows_x64_BuildPass2",
-                    "Windows_x64",
-                    "OSX_arm64",
-                    "AzureLinux_x64_Cross_x64",
-                    "AzureLinux_x64_Cross_arm64",
-                    "Android_Shortstack_x64",
-                    "Browser_Shortstack_wasm",
-                    "iOS_Shortstack_arm64"
+                    "Windows_x64"
                 ]
             };
             return joinVerticalsConfig;
