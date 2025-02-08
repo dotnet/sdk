@@ -77,9 +77,9 @@
       <Sha>80c165644db640d0f309affe0daa281c7e17b939</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="8.3.546805">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-format</Uri>
-      <Sha>86f5186deeea364bd8541d51657e52a54b2a96b2</Sha>
+    <Dependency Name="dotnet-format" Version="8.3.607401">
+      <Uri>https://github.com/dotnet/format</Uri>
+      <Sha>42ef1d04e544c2a0dca064f9fc982639ca516a84</Sha>
       <SourceBuild RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.10.0-3.25064.8">
@@ -293,18 +293,18 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>009e1ccafde4086ea52999e878f6e7aa5a7c4ccf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.24629.2">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.25104.5">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>47a3872a73899ff683dc9593e587e539a1264233</Sha>
+      <Sha>291218a1671cc18216b6fc93204619d761515011</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.24629.2">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.25104.5">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>47a3872a73899ff683dc9593e587e539a1264233</Sha>
+      <Sha>291218a1671cc18216b6fc93204619d761515011</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.24629.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.25104.5">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>47a3872a73899ff683dc9593e587e539a1264233</Sha>
+      <Sha>291218a1671cc18216b6fc93204619d761515011</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.13">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
@@ -349,9 +349,9 @@
       <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.25060.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.25104.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>c7cb4da26e74ef645e3e98fcb4534a7d66247a82</Sha>
+      <Sha>dc30cd1ec22f198d658e011c14525d4d65873991</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25081.5">
