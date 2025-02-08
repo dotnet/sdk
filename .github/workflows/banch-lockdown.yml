@@ -6,17 +6,10 @@ permissions:
   contents: read
   pull-requests: read
 jobs:
-  Check:
+  check:
+    if: contains(github.event.pull_request.labels.*.name, 'Branch Lockdown')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Install jq
-      run: sudo apt-get install jq
-    - name: Check if pr has branch-lockdown label
-      run: |
-        if [[ $(jq -r '.pull_request.labels[].name' $GITHUB_EVENT_PATH) == "Branch Lockdown" ]]; then
-          echo "Branch is in lockdown"
-          exit 1
-        else
-          echo "Branch is not in lockdown"
-        fi
+      - uses: actions/checkout@v2
+      - name: Retun error if branch is in lockdown
+        run: echo "Branch is in lockdown. Please contact the branch owner to get it unlocked." && exit 1
