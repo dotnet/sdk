@@ -67,7 +67,7 @@
       <OldText><![CDATA[</Project>]]></OldText>
       <NewText>
         <![CDATA[  <PropertyGroup>
-    <NoWarn>%24(NoWarn);NU1903;$(RepoNoWarns)</NoWarn>
+    <NoWarn>%24(NoWarn);NU1903;NU1510;NU1511;$(RepoNoWarns)</NoWarn>
   </PropertyGroup>
 </Project>]]>
       </NewText>
