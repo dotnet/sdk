@@ -9,6 +9,6 @@ jobs:
   lockdown:
     runs-on: ubuntu-latest
     steps:
-      - name: Retun error if branch is in lockdown
+      - name: Return error if branch is in lockdown
         run: echo "Branch is in lockdown. Please contact the branch owner to get it unlocked." && exit 1
         if: ${{ contains(github.event.pull_request.labels.*.name, 'Branch Lockdown') }}
