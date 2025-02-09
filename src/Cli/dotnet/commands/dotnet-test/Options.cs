@@ -3,7 +3,9 @@
 
 namespace Microsoft.DotNet.Cli
 {
-    internal record BuildConfigurationOptions(bool HasNoRestore, bool HasNoBuild, bool HasListTests, string Configuration, string Architecture);
+    internal record TestOptions(bool HasListTests, string Configuration, string Architecture, bool HasFilterMode, bool IsHelp);
 
-    internal record BuildPathsOptions(string ProjectPath, string SolutionPath, string DirectoryPath);
+    internal record PathOptions(string ProjectPath, string SolutionPath, string DirectoryPath);
+
+    internal record BuildOptions(PathOptions PathOptions, bool HasNoRestore, bool HasNoBuild, string Configuration, string RuntimeIdentifier, int DegreeOfParallelism, List<string> UnmatchedTokens, List<string> MSBuildArgs);
 }

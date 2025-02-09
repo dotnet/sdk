@@ -45,7 +45,6 @@
           Inputs="@(BinPlaceDir);%(BinPlaceDir.Identity)"
           Outputs="unused">
     <PropertyGroup>
-      <BinPlaceUseHardlinksIfPossible Condition="'$(BinPlaceUseHardlinksIfPossible)' == ''">true</BinPlaceUseHardlinksIfPossible>
       <_BinPlaceDir>%(BinPlaceDir.Identity)</_BinPlaceDir>
     </PropertyGroup>
 
@@ -62,7 +61,7 @@
           OverwriteReadOnlyFiles="true"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-          UseHardlinksIfPossible="$(BinPlaceUseHardlinksIfPossible)" />
+          UseHardlinksIfPossible="true" />
   </Target>
 
 </Project>
