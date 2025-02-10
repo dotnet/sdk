@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli
 
         private static IEnumerable<string> GetMatchedModulePaths(string testModules, string rootDirectory)
         {
-            var testModulePatterns = testModules.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            var testModulePatterns = testModules.Split([';'], StringSplitOptions.RemoveEmptyEntries);
 
             Matcher matcher = new();
             matcher.AddIncludePatterns(testModulePatterns);

@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli
     {
         private readonly List<string> _args;
         private readonly TestApplicationActionQueue _actionQueue;
-        private TerminalTestReporter _output;
+        private readonly TerminalTestReporter _output;
 
         private readonly ConcurrentBag<TestApplication> _testApplications = new();
         private bool _areTestingPlatformApplications = true;
@@ -33,20 +33,21 @@ namespace Microsoft.DotNet.Cli
 
             int msBuildExitCode;
             string path;
+            PathOptions pathOptions = buildOptions.PathOptions;
 
-            if (!string.IsNullOrEmpty(buildOptions.ProjectPath))
+            if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
             {
-                path = PathUtility.GetFullPath(buildOptions.ProjectPath);
+                path = PathUtility.GetFullPath(pathOptions.ProjectPath);
                 msBuildExitCode = RunBuild(path, isSolution: false, buildOptions);
             }
-            else if (!string.IsNullOrEmpty(buildOptions.SolutionPath))
+            else if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
             {
-                path = PathUtility.GetFullPath(buildOptions.SolutionPath);
+                path = PathUtility.GetFullPath(pathOptions.SolutionPath);
                 msBuildExitCode = RunBuild(path, isSolution: true, buildOptions);
             }
             else
             {
-                path = PathUtility.GetFullPath(buildOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+                path = PathUtility.GetFullPath(pathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
                 msBuildExitCode = RunBuild(path, buildOptions);
             }
 
@@ -69,18 +70,18 @@ namespace Microsoft.DotNet.Cli
                 return ExitCodes.GenericFailure;
             }
 
-            (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
+            (IEnumerable<Module> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
 
-            InitializeTestApplications(modules);
+            InitializeTestApplications(projects);
 
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
 
         private int RunBuild(string filePath, bool isSolution, BuildOptions buildOptions)
         {
-            (IEnumerable<Module> modules, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
+            (IEnumerable<Module> projects, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
 
-            InitializeTestApplications(modules);
+            InitializeTestApplications(projects);
 
             return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
         }
@@ -121,15 +122,15 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private (IEnumerable<Module>, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
+        private (IEnumerable<Module> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
         {
-            (IEnumerable<Module> allProjects, bool isBuiltOrRestored) = isSolution ?
+            (IEnumerable<Module> projects, bool isBuiltOrRestored) = isSolution ?
                 MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, buildOptions) :
                 MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, buildOptions);
 
-            LogProjectProperties(allProjects);
+            LogProjectProperties(projects);
 
-            return (allProjects, isBuiltOrRestored);
+            return (projects, isBuiltOrRestored);
         }
 
         private void LogProjectProperties(IEnumerable<Module> modules)

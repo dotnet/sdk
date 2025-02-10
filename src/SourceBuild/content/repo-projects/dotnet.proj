@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <RepositoryReference Include="sdk" />
-    <RepositoryReference Include="scenario-tests" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2'">

@@ -21,9 +21,7 @@
       <Error Condition="'$(OutputFolder)' == ''" Text="OutputFolder is not set." />
 
       <ItemGroup>
-        <VerticalManifest
-          Include="$(VerticalManifestsPath)\*.xml"
-          Exclude="$(VerticalManifestsPath)\*Shortstack*.xml" />
+        <VerticalManifest Include="$(VerticalManifestsPath)\*.xml" />
       </ItemGroup>
 
       <!-- AzureDevOpsToken shouldn't be set when running in dnceng-public -->

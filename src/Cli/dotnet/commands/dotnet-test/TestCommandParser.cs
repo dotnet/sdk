@@ -182,17 +182,19 @@ namespace Microsoft.DotNet.Cli
             var command = new TestingPlatformCommand("test");
             command.SetAction(parseResult => command.Run(parseResult));
             command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
-            command.Options.Add(TestingPlatformOptions.AdditionalMSBuildParametersOption);
             command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
             command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
             command.Options.Add(TestingPlatformOptions.NoBuildOption);
-            command.Options.Add(TestingPlatformOptions.NoRestoreOption);
+            command.Options.Add(CommonOptions.NoRestoreOption);
             command.Options.Add(TestingPlatformOptions.ArchitectureOption);
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.ProjectOption);
             command.Options.Add(TestingPlatformOptions.ListTestsOption);
             command.Options.Add(TestingPlatformOptions.SolutionOption);
             command.Options.Add(TestingPlatformOptions.DirectoryOption);
+            command.Options.Add(TestingPlatformOptions.NoAnsiOption);
+            command.Options.Add(TestingPlatformOptions.NoProgressOption);
+            command.Options.Add(TestingPlatformOptions.OutputOption);
 
             return command;
         }

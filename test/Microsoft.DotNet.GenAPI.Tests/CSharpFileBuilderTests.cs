@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
@@ -33,14 +32,16 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
             string[] excludedAttributeList = null,
-            [CallerMemberName] string assemblyName = "")
+            [CallerMemberName] string assemblyName = "",
+            // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
+            string header = "")
         {
             using StringWriter stringWriter = new();
 
             Mock<ILog> log = new();
 
             (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
-                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe);
+                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
 
             ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
             ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
@@ -51,7 +52,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 loader,
                 symbolFilter,
                 attributeDataSymbolFilter,
-                header: string.Empty,
+                header: header,
                 exceptionMessage: null,
                 includeAssemblyAttributes: false,
                 MetadataReferences,
@@ -70,6 +71,48 @@ namespace Microsoft.DotNet.GenAPI.Tests
             // compare SyntaxTree and not string representation
             Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
+        }
+
+        [Fact]
+        public void TestDefaultHeader()
+        {
+            RunTest(original: """
+                namespace A
+                {
+                namespace B {}
+
+                namespace C.D { public struct Bar {} }
+                }
+                """,
+                expected: $@"
+                {CSharpFileBuilder.DefaultFileHeader}
+                namespace A.C.D {{ public partial struct Bar {{}} }}
+                ",
+                header: null);
+        }
+
+        [Fact]
+        public void TestCustomHeader()
+        {
+            string customHeader = """
+            // Licensed to the .NET Foundation under one or more agreements.
+            // The .NET Foundation licenses this file to you under the MIT license.
+
+            """;
+
+            RunTest(original: """
+                namespace A
+                {
+                namespace B {}
+
+                namespace C.D { public struct Bar {} }
+                }
+                """,
+                expected: $@"
+                {customHeader}
+                namespace A.C.D {{ public partial struct Bar {{}} }}
+                ",
+                header: customHeader);
         }
 
         [Fact]
