@@ -723,9 +723,9 @@
       <Uri>https://github.com/microsoft/testfx</Uri>
       <Sha>19881b056c8f5d91263de5eb6f36e963f33a5b82</Sha>
     </Dependency>
-	<Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="9.0.1">
+    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.2.25109.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>c8acea22626efab11c13778c028975acdc34678f</Sha>
+      <Sha>1c3b1b5835cce7c61bb5c7bdab8468bb6ced47b6</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
