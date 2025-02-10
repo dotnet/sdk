@@ -97,6 +97,7 @@
     <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-preview.2.25109.2</MicrosoftExtensionsLoggingConsoleVersion>
     <MicrosoftExtensionsLoggingVersion>10.0.0-preview.2.25109.2</MicrosoftExtensionsLoggingVersion>
     <MicrosoftNETILLinkTasksPackageVersion>10.0.0-preview.2.25109.2</MicrosoftNETILLinkTasksPackageVersion>
+    <MicrosoftExtensionsConfigurationIniVersion>10.0.0-preview.2.25109.2</MicrosoftExtensionsConfigurationIniVersion>
     <SystemServiceProcessServiceControllerVersion>10.0.0-preview.2.25109.2</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>10.0.0-preview.2.25109.2</MicrosoftNETCorePlatformsPackageVersion>
