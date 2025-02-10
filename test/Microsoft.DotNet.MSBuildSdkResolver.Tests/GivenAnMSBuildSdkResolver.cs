@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
-        private const string DotnetHost = "DOTNET_HOST_PATH";
+        private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
                 result.PropertiesToAdd.Count.Should().Be(2);
-                result.PropertiesToAdd.Should().ContainKey(DotnetHost);          
+                result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             }
             else
             {
@@ -293,7 +293,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
                 result.PropertiesToAdd.Count.Should().Be(4);
-                result.PropertiesToAdd.Should().ContainKey(DotnetHost);
+                result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             }
             else
             {

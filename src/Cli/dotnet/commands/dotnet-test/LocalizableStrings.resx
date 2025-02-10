@@ -451,4 +451,13 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
     <value>Specify either the project, solution or directory option.</value>
   </data>
+  <data name="CmdNoAnsiDescription" xml:space="preserve">
+    <value>Disable ANSI output.</value>
+  </data>
+  <data name="CmdNoProgressDescription" xml:space="preserve">
+    <value>Disable progress reporting.</value>
+  </data>
+  <data name="CmdTestOutputDescription" xml:space="preserve">
+    <value>Verbosity of test output.</value>
+  </data>
 </root>

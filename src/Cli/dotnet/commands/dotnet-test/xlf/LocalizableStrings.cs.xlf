@@ -153,9 +153,19 @@ Pro MSTest před 2.2.4 se časový limit použije pro všechny testovací příp
         <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoAnsiDescription">
+        <source>Disable ANSI output.</source>
+        <target state="new">Disable ANSI output.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Spustit testy bez zobrazení nápisu Microsoft Testplatform</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoProgressDescription">
+        <source>Disable progress reporting.</source>
+        <target state="new">Disable progress reporting.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
@@ -298,6 +308,11 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
       <trans-unit id="CmdTestModulesRootDirectoryDescription">
         <source>The test modules have the specified root directory.</source>
         <target state="new">The test modules have the specified root directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestOutputDescription">
+        <source>Verbosity of test output.</source>
+        <target state="new">Verbosity of test output.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedMessageRequestTypeException">
