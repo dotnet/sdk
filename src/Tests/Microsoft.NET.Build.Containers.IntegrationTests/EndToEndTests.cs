@@ -721,10 +721,11 @@ public class EndToEndTests : IDisposable
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
     }
 
-    [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
-    public void EndToEndMultiArch_LocalRegistry()
+    [InlineData("endtoendmultiarch-localregisty")]
+    [InlineData("myteam/endtoendmultiarch-localregisty")]
+    [DockerIsAvailableAndSupportsArchTheory("linux/arm64", checkContainerdStoreAvailability: true)]
+    public void EndToEndMultiArch_LocalRegistry(string imageName)
     {
-        string imageName = NewImageName();
         string tag = "1.0";
         string image = $"{imageName}:{tag}";
 
@@ -759,7 +760,7 @@ public class EndToEndTests : IDisposable
             "--platform",
             "linux/amd64",
             "--name",
-            $"test-container-{imageName}-x64",
+            $"test-container-{imageName.Replace('/', '-')}-x64",
             image)
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
@@ -770,7 +771,7 @@ public class EndToEndTests : IDisposable
             "--platform",
             "linux/arm64",
             "--name",
-            $"test-container-{imageName}-arm64",
+            $"test-container-{imageName.Replace('/', '-')}-arm64",
             image)
         .Execute();
         processResultArm64.Should().Pass().And.HaveStdOut("Hello, World!");
@@ -904,10 +905,11 @@ public class EndToEndTests : IDisposable
     private string GetPublishArtifactsPath(string projectDir, string rid, string configuration = "Debug")
         => Path.Combine(projectDir, "bin", configuration, ToolsetInfo.CurrentTargetFramework, rid, "publish");
 
-    [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
-    public void EndToEndMultiArch_ArchivePublishing()
+    [InlineData("endtoendmultiarch-archivepublishing")]
+    [InlineData("myteam/endtoendmultiarch-archivepublishing")]
+    [DockerIsAvailableAndSupportsArchTheory("linux/arm64", checkContainerdStoreAvailability: true)]
+    public void EndToEndMultiArch_ArchivePublishing(string imageName)
     {
-        string imageName = NewImageName();
         string tag = "1.0";
         string image = $"{imageName}:{tag}";
         string archiveOutput = TestSettings.TestArtifactsDirectory;
@@ -953,7 +955,7 @@ public class EndToEndTests : IDisposable
             "--platform",
             "linux/amd64",
             "--name",
-            $"test-container-{imageName}-x64",
+            $"test-container-{imageName.Replace('/', '-')}-x64",
             image)
         .Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
@@ -964,7 +966,7 @@ public class EndToEndTests : IDisposable
             "--platform",
             "linux/arm64",
             "--name",
-            $"test-container-{imageName}-arm64",
+            $"test-container-{imageName.Replace('/', '-')}-arm64",
             image)
         .Execute();
         processResultArm64.Should().Pass().And.HaveStdOut("Hello, World!");

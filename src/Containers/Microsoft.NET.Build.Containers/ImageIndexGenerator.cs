@@ -92,6 +92,8 @@ internal static class ImageIndexGenerator
 
     internal static string GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
     {
+        string containerdImageNamePrefix = repository.Contains('/') ? "docker.io/" : "docker.io/library/";
+        
         var manifests = new PlatformSpecificOciManifest[tags.Length];
         for (int i = 0; i < tags.Length; i++)
         {
@@ -103,7 +105,7 @@ internal static class ImageIndexGenerator
                 digest = manifestDigest,
                 annotations = new Dictionary<string, string> 
                 {
-                    { "io.containerd.image.name", $"docker.io/library/{repository}:{tag}" },
+                    { "io.containerd.image.name", $"{containerdImageNamePrefix}{repository}:{tag}" },
                     { "org.opencontainers.image.ref.name", tag } 
                 }
             };
