@@ -1,0 +1,143 @@
+From 548ed9c156c1088290a6b61f8f041ad39e884fd0 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 10 Feb 2025 18:40:38 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/runtime/pull/112357 
+
+---
+ .../Microsoft.Extensions.Diagnostics.Abstractions.csproj  | 7 ++++++-
+ .../ref/Microsoft.Extensions.Logging.Abstractions.csproj  | 5 +++++
+ .../ref/Microsoft.Extensions.Logging.Console.csproj       | 5 ++++-
+ .../System.Formats.Nrbf/ref/System.Formats.Nrbf.csproj    | 4 +++-
+ .../System.Memory.Data/ref/System.Memory.Data.csproj      | 2 +-
+ .../System.Net.Http.Json/ref/System.Net.Http.Json.csproj  | 8 ++++----
+ 6 files changed, 23 insertions(+), 8 deletions(-)
+
+diff --git a/src/libraries/Microsoft.Extensions.Diagnostics.Abstractions/ref/Microsoft.Extensions.Diagnostics.Abstractions.csproj b/src/libraries/Microsoft.Extensions.Diagnostics.Abstractions/ref/Microsoft.Extensions.Diagnostics.Abstractions.csproj
+index f7b93cc292f..63b868b9850 100644
+--- a/src/libraries/Microsoft.Extensions.Diagnostics.Abstractions/ref/Microsoft.Extensions.Diagnostics.Abstractions.csproj
++++ b/src/libraries/Microsoft.Extensions.Diagnostics.Abstractions/ref/Microsoft.Extensions.Diagnostics.Abstractions.csproj
+@@ -1,4 +1,5 @@
+ <Project Sdk="Microsoft.NET.Sdk">
++
+   <PropertyGroup>
+     <TargetFrameworks>$(NetCoreAppCurrent);$(NetCoreAppPrevious);$(NetCoreAppMinimum);netstandard2.0;$(NetFrameworkMinimum)</TargetFrameworks>
+   </PropertyGroup>
+@@ -13,7 +14,11 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <ProjectReference Include="$(LibrariesProjectRoot)System.Diagnostics.DiagnosticSource\ref\System.Diagnostics.DiagnosticSource.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Extensions.DependencyInjection.Abstractions\ref\Microsoft.Extensions.DependencyInjection.Abstractions.csproj" />
+   </ItemGroup>
++
++  <ItemGroup Condition="'$(TargetFramework)' != '$(NetCoreAppCurrent)'">
++    <ProjectReference Include="$(LibrariesProjectRoot)System.Diagnostics.DiagnosticSource\ref\System.Diagnostics.DiagnosticSource.csproj" />
++  </ItemGroup>
++
+ </Project>
+diff --git a/src/libraries/Microsoft.Extensions.Logging.Abstractions/ref/Microsoft.Extensions.Logging.Abstractions.csproj b/src/libraries/Microsoft.Extensions.Logging.Abstractions/ref/Microsoft.Extensions.Logging.Abstractions.csproj
+index ff6d90a86e9..9d4c9f5ccf4 100644
+--- a/src/libraries/Microsoft.Extensions.Logging.Abstractions/ref/Microsoft.Extensions.Logging.Abstractions.csproj
++++ b/src/libraries/Microsoft.Extensions.Logging.Abstractions/ref/Microsoft.Extensions.Logging.Abstractions.csproj
+@@ -1,4 +1,5 @@
+ <Project Sdk="Microsoft.NET.Sdk">
++
+   <PropertyGroup>
+     <TargetFrameworks>$(NetCoreAppCurrent);$(NetCoreAppPrevious);$(NetCoreAppMinimum);netstandard2.0;$(NetFrameworkMinimum)</TargetFrameworks>
+   </PropertyGroup>
+@@ -9,6 +10,10 @@
+ 
+   <ItemGroup>
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Extensions.DependencyInjection.Abstractions\ref\Microsoft.Extensions.DependencyInjection.Abstractions.csproj" />
++  </ItemGroup>
++
++  <ItemGroup Condition="'$(TargetFramework)' != '$(NetCoreAppCurrent)'">
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Diagnostics.DiagnosticSource\ref\System.Diagnostics.DiagnosticSource.csproj" /> 
+   </ItemGroup>
++
+ </Project>
+diff --git a/src/libraries/Microsoft.Extensions.Logging.Console/ref/Microsoft.Extensions.Logging.Console.csproj b/src/libraries/Microsoft.Extensions.Logging.Console/ref/Microsoft.Extensions.Logging.Console.csproj
+index 537f64f4fe4..92847d16a4f 100644
+--- a/src/libraries/Microsoft.Extensions.Logging.Console/ref/Microsoft.Extensions.Logging.Console.csproj
++++ b/src/libraries/Microsoft.Extensions.Logging.Console/ref/Microsoft.Extensions.Logging.Console.csproj
+@@ -18,11 +18,14 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <ProjectReference Include="$(LibrariesProjectRoot)System.Text.Json\ref\System.Text.Json.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Extensions.Configuration.Abstractions\ref\Microsoft.Extensions.Configuration.Abstractions.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Extensions.Logging.Abstractions\ref\Microsoft.Extensions.Logging.Abstractions.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Extensions.Logging\ref\Microsoft.Extensions.Logging.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Extensions.Options\ref\Microsoft.Extensions.Options.csproj" />
+   </ItemGroup>
+ 
++  <ItemGroup Condition="'$(TargetFramework)' == '$(NetCoreAppCurrent)'">
++    <ProjectReference Include="$(LibrariesProjectRoot)System.Text.Json\ref\System.Text.Json.csproj" />
++  </ItemGroup>
++
+ </Project>
+diff --git a/src/libraries/System.Formats.Nrbf/ref/System.Formats.Nrbf.csproj b/src/libraries/System.Formats.Nrbf/ref/System.Formats.Nrbf.csproj
+index 092064146e4..1fcac9238bc 100644
+--- a/src/libraries/System.Formats.Nrbf/ref/System.Formats.Nrbf.csproj
++++ b/src/libraries/System.Formats.Nrbf/ref/System.Formats.Nrbf.csproj
+@@ -1,4 +1,5 @@
+ <Project Sdk="Microsoft.NET.Sdk">
++
+   <PropertyGroup>
+     <TargetFrameworks>$(NetCoreAppCurrent);$(NetCoreAppPrevious);$(NetCoreAppMinimum);netstandard2.0;$(NetFrameworkMinimum)</TargetFrameworks>
+     <CLSCompliant>false</CLSCompliant>
+@@ -8,7 +9,7 @@
+     <Compile Include="System.Formats.Nrbf.cs" />
+   </ItemGroup>
+ 
+-  <ItemGroup>
++  <ItemGroup Condition="'$(TargetFramework)' != '$(NetCoreAppCurrent)'">
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Reflection.Metadata\ref\System.Reflection.Metadata.csproj" />
+   </ItemGroup>
+ 
+@@ -21,4 +22,5 @@
+     <Compile Include="$(CoreLibSharedDir)System\Diagnostics\CodeAnalysis\RequiresDynamicCodeAttribute.cs" />
+     <PackageReference Include="System.Memory" Version="$(SystemMemoryVersion)" />
+   </ItemGroup>
++
+ </Project>
+diff --git a/src/libraries/System.Memory.Data/ref/System.Memory.Data.csproj b/src/libraries/System.Memory.Data/ref/System.Memory.Data.csproj
+index 7d9b3481ecd..5f4d300cdab 100644
+--- a/src/libraries/System.Memory.Data/ref/System.Memory.Data.csproj
++++ b/src/libraries/System.Memory.Data/ref/System.Memory.Data.csproj
+@@ -13,7 +13,7 @@
+     <Compile Include="$(CoreLibSharedDir)System\Diagnostics\CodeAnalysis\RequiresUnreferencedCodeAttribute.cs" />
+   </ItemGroup>
+ 
+-  <ItemGroup>
++  <ItemGroup Condition="'$(TargetFramework)' != '$(NetCoreAppCurrent)'">
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Text.Json\ref\System.Text.Json.csproj" />
+   </ItemGroup>
+ 
+diff --git a/src/libraries/System.Net.Http.Json/ref/System.Net.Http.Json.csproj b/src/libraries/System.Net.Http.Json/ref/System.Net.Http.Json.csproj
+index 6b6cd6ec4cb..f70e88607df 100644
+--- a/src/libraries/System.Net.Http.Json/ref/System.Net.Http.Json.csproj
++++ b/src/libraries/System.Net.Http.Json/ref/System.Net.Http.Json.csproj
+@@ -17,16 +17,16 @@
+     <Compile Include="$(CoreLibSharedDir)System\Diagnostics\CodeAnalysis\StringSyntaxAttribute.cs" />
+   </ItemGroup>
+ 
+-  <ItemGroup>
+-    <ProjectReference Include="$(LibrariesProjectRoot)System.Text.Json\ref\System.Text.Json.csproj" />
+-  </ItemGroup>
+-
+   <ItemGroup Condition="'$(TargetFramework)' == '$(NetCoreAppCurrent)'">
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Net.Http\ref\System.Net.Http.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Net.Primitives\ref\System.Net.Primitives.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Runtime\ref\System.Runtime.csproj" />
+   </ItemGroup>
+ 
++  <ItemGroup Condition="'$(TargetFramework)' != '$(NetCoreAppCurrent)'">
++    <ProjectReference Include="$(LibrariesProjectRoot)System.Text.Json\ref\System.Text.Json.csproj" />
++  </ItemGroup>
++
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <Reference Include="System.Net.Http" />
+   </ItemGroup>
