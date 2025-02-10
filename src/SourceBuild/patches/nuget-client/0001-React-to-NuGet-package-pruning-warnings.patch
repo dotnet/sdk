@@ -1,0 +1,80 @@
+From 4457db44e5129e7777abb1ad2262d60fab8d0a9b Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 10 Feb 2025 15:04:23 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/NuGet/NuGet.Client/pull/6261
+
+---
+ src/NuGet.Core/NuGet.Common/NuGet.Common.csproj                 | 2 +-
+ src/NuGet.Core/NuGet.LibraryModel/NuGet.LibraryModel.csproj     | 2 +-
+ .../NuGet.PackageManagement/NuGet.PackageManagement.csproj      | 2 +-
+ src/NuGet.Core/NuGet.Packaging/NuGet.Packaging.csproj           | 2 +-
+ src/NuGet.Core/NuGet.ProjectModel/NuGet.ProjectModel.csproj     | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj b/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
+index 75ed5accd..c1815cb84 100644
+--- a/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
++++ b/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
+@@ -27,7 +27,7 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="System.Collections.Immutable" />
++    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/NuGet.Core/NuGet.LibraryModel/NuGet.LibraryModel.csproj b/src/NuGet.Core/NuGet.LibraryModel/NuGet.LibraryModel.csproj
+index c20604eb9..21db96e44 100644
+--- a/src/NuGet.Core/NuGet.LibraryModel/NuGet.LibraryModel.csproj
++++ b/src/NuGet.Core/NuGet.LibraryModel/NuGet.LibraryModel.csproj
+@@ -17,7 +17,7 @@
+   </PropertyGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="System.Collections.Immutable" />
++    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+index fd1bd0cd7..9111aac80 100644
+--- a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
++++ b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+@@ -22,7 +22,7 @@
+ 
+   <ItemGroup>
+     <PackageReference Include="Microsoft.Web.Xdt" />
+-    <PackageReference Include="Microsoft.CSharp" />
++    <PackageReference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'" />
+   </ItemGroup>
+ 
+   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
+diff --git a/src/NuGet.Core/NuGet.Packaging/NuGet.Packaging.csproj b/src/NuGet.Core/NuGet.Packaging/NuGet.Packaging.csproj
+index 1a140570e..df0f64c7d 100644
+--- a/src/NuGet.Core/NuGet.Packaging/NuGet.Packaging.csproj
++++ b/src/NuGet.Core/NuGet.Packaging/NuGet.Packaging.csproj
+@@ -66,7 +66,7 @@
+       This package is a dependency of System.Security.Cryptography.Pkcs
+       When it is upgraded to a newer version, try deleting the below PackageReference
+       -->
+-    <PackageReference Include="System.Formats.Asn1" Condition=" '$(TargetFramework)' != '$(NETFXTargetFramework)'" />
++    <PackageReference Include="System.Formats.Asn1" Condition="'$(TargetFramework)' != '$(NETFXTargetFramework)' and '$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/NuGet.Core/NuGet.ProjectModel/NuGet.ProjectModel.csproj b/src/NuGet.Core/NuGet.ProjectModel/NuGet.ProjectModel.csproj
+index bec334cd4..43308010a 100644
+--- a/src/NuGet.Core/NuGet.ProjectModel/NuGet.ProjectModel.csproj
++++ b/src/NuGet.Core/NuGet.ProjectModel/NuGet.ProjectModel.csproj
+@@ -20,7 +20,7 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="System.Collections.Immutable" />
++    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+   </ItemGroup>
+ 
+   <ItemGroup>

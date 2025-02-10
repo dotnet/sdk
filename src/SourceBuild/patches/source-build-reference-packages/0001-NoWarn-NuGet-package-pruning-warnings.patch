@@ -1,0 +1,25 @@
+From 7eeb1ab91a29ff3bb849a28adc3fd8919344f8d7 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 10 Feb 2025 14:54:25 +0100
+Subject: [PATCH] NoWarn NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/source-build-reference-packages/pull/1153
+---
+ src/referencePackages/Directory.Build.props | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/referencePackages/Directory.Build.props b/src/referencePackages/Directory.Build.props
+index 4482751a..f3a6b737 100644
+--- a/src/referencePackages/Directory.Build.props
++++ b/src/referencePackages/Directory.Build.props
+@@ -107,6 +107,10 @@
+     <NoWarn>$(NoWarn);RS1025</NoWarn>
+     <!-- Don't warn on RS1026 - Enable concurrent execution -->
+     <NoWarn>$(NoWarn);RS1026</NoWarn>
++
++    <!-- Disable package and project pruning warnings. All dependencies in this repository mirror the
++         original package's dependencies and shouldn't get changed here. -->
++    <NoWarn>$(NoWarn);NU1510;NU1511</NoWarn>
+   </PropertyGroup>
+ 
+ </Project>

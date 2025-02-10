@@ -1,0 +1,74 @@
+From 175dac7a1911085eda6da7b3c4d4dca054ba8021 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 10 Feb 2025 15:09:54 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/sdk/pull/46689
+
+---
+ src/BuiltInTools/dotnet-watch/dotnet-watch.csproj            | 1 -
+ .../Microsoft.NET.Build.Containers.csproj                    | 2 +-
+ src/Layout/redist/redist.csproj                              | 1 -
+ .../Microsoft.NET.Build.Tasks.csproj                         | 5 +++--
+ 4 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/src/BuiltInTools/dotnet-watch/dotnet-watch.csproj b/src/BuiltInTools/dotnet-watch/dotnet-watch.csproj
+index b1b69a480a..9cfbf47181 100644
+--- a/src/BuiltInTools/dotnet-watch/dotnet-watch.csproj
++++ b/src/BuiltInTools/dotnet-watch/dotnet-watch.csproj
+@@ -30,7 +30,6 @@
+     <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" PrivateAssets="All" />
+     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="All" />
+     <PackageReference Include="Microsoft.Build.Locator" />
+-    <PackageReference Include="Microsoft.Extensions.Logging" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
+     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
+     <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="All" />
+diff --git a/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj b/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj
+index 68bdc29cb9..c6aaaf98c2 100644
+--- a/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj
++++ b/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj
+@@ -44,7 +44,7 @@
+       <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
+       <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
+     </PackageReference>
+-    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime">
++    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+       <!-- For the net472 flavor, lock back to a System.Text.Json equal to or older than MSBuild will provide
+            so it doesn't have to be redistributed. -->
+       <VersionOverride Condition="'$(TargetFramework)' == 'net472'">$(SystemTextJsonToolsetPackageVersion)</VersionOverride>
+diff --git a/src/Layout/redist/redist.csproj b/src/Layout/redist/redist.csproj
+index a241ed598f..ceab916eb0 100644
+--- a/src/Layout/redist/redist.csproj
++++ b/src/Layout/redist/redist.csproj
+@@ -47,7 +47,6 @@
+ 
+     <!-- Lift up dependencies of dependencies to prevent build tasks from getting pinned to older versions -->
+     <PackageReference Include="System.CodeDom" />
+-    <PackageReference Include="System.Text.Encoding.CodePages" />
+     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+     <PackageReference Include="System.Resources.Extensions" />
+     <!-- Override to use the newest version. In source-only modes this will be a no-diff change. -->
+diff --git a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
+index 4ae83a699e..44d6dfafa1 100644
+--- a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
++++ b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
+@@ -58,8 +58,6 @@
+     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+     <PackageReference Include="Microsoft.NET.HostModel" />
+-    <PackageReference Include="System.Text.Json" />
+-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+     <PackageReference Include="NuGet.ProjectModel" />
+     <PackageReference Include="NuGet.Build.Tasks.Pack" ExcludeAssets="All" />
+     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+@@ -75,6 +73,9 @@
+ 
+   <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
++    <PackageReference Include="System.Text.Json" />
++    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
++
+     <!--
+         Microsoft.NET.HostModel also uses System.Reflection.Metadata. Don't move ahead of the version of System.Reflection.Metadata
+         that MSBuild supports with the binding redirect to ensure that both this project and Microsoft.NET.HostModel can load

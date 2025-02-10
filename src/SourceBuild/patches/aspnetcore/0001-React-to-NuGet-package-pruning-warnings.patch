@@ -1,0 +1,52 @@
+From 2f580edd82d872d165b86b07ee0eeb073cb49acd Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 10 Feb 2025 15:06:49 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/aspnetcore/pull/60297
+
+---
+ .../Server/src/Microsoft.AspNetCore.Components.Server.csproj    | 2 +-
+ src/Tools/dotnet-user-jwts/src/dotnet-user-jwts.csproj          | 2 +-
+ src/Tools/dotnet-user-secrets/src/dotnet-user-secrets.csproj    | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/Components/Server/src/Microsoft.AspNetCore.Components.Server.csproj b/src/Components/Server/src/Microsoft.AspNetCore.Components.Server.csproj
+index f690416b2b..92bd983063 100644
+--- a/src/Components/Server/src/Microsoft.AspNetCore.Components.Server.csproj
++++ b/src/Components/Server/src/Microsoft.AspNetCore.Components.Server.csproj
+@@ -22,7 +22,7 @@
+     <Reference Include="Microsoft.Extensions.Caching.Memory" />
+     <Reference Include="Microsoft.Extensions.Logging" />
+     <!-- Required for S.T.J source generation -->
+-    <Reference Include="System.Text.Json" PrivateAssets="All" />
++    <Reference Include="System.Text.Json" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+ 
+     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
+     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+diff --git a/src/Tools/dotnet-user-jwts/src/dotnet-user-jwts.csproj b/src/Tools/dotnet-user-jwts/src/dotnet-user-jwts.csproj
+index b670eccaa5..3a9a992b5a 100644
+--- a/src/Tools/dotnet-user-jwts/src/dotnet-user-jwts.csproj
++++ b/src/Tools/dotnet-user-jwts/src/dotnet-user-jwts.csproj
+@@ -28,7 +28,7 @@
+ 
+   <ItemGroup>
+     <Reference Include="System.IdentityModel.Tokens.Jwt" />
+-    <Reference Include="System.Text.Json" />
++    <Reference Include="System.Text.Json" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+     <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
+     <Reference Include="Microsoft.Extensions.Configuration" />
+     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
+diff --git a/src/Tools/dotnet-user-secrets/src/dotnet-user-secrets.csproj b/src/Tools/dotnet-user-secrets/src/dotnet-user-secrets.csproj
+index b2ca66d8f7..b9b1b99952 100644
+--- a/src/Tools/dotnet-user-secrets/src/dotnet-user-secrets.csproj
++++ b/src/Tools/dotnet-user-secrets/src/dotnet-user-secrets.csproj
+@@ -29,7 +29,7 @@
+ 
+   <ItemGroup>
+     <Reference Include="Newtonsoft.Json" />
+-    <Reference Include="System.Text.Json" />
++    <Reference Include="System.Text.Json" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+   </ItemGroup>
+ 
