@@ -332,6 +332,10 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                     {
                         AddToDictionary(currentPackages, id, version);
                     }
+                    else if (packageSource.StartsWith(PreviousBuildPassSourceNamePrefix))
+                    {
+                        AddToDictionary(currentPackages, id, version);
+                    }
                     else if (packageSource.Equals(ReferencePackagesSourceName))
                     {
                         AddToDictionary(referencePackages, id, version);
