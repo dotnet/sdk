@@ -44,7 +44,7 @@
       <!-- In the SDK, NuGet is already available in the MSBuild/SDK directory -->
       <ExcludeAssets Condition="'$(TargetFramework)' != 'net472'">runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime">
+    <PackageReference Include="System.Text.Json" ExcludeAssets="runtime" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
       <!-- For the net472 flavor, lock back to a System.Text.Json equal to or older than MSBuild will provide
            so it doesn't have to be redistributed. -->
       <VersionOverride Condition="'$(TargetFramework)' == 'net472'">$(SystemTextJsonToolsetPackageVersion)</VersionOverride>
