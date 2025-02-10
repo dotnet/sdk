@@ -16,12 +16,12 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image digest.
     /// </summary>
-    internal required string ImageDigest { get; init; }
+    internal string? ImageDigest { get; init; }
 
     /// <summary>
     /// Gets image SHA.
     /// </summary>
-    internal required string ImageSha { get; init; }
+    internal string? ImageSha { get; init; }
 
     /// <summary>
     /// Gets image manifest.

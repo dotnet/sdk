@@ -108,18 +108,26 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 break;
             }
 
-            var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest);
-            if (manifestV2 == null)
-            {
-                Log.LogError(Strings.InvalidImageManifest);
-                break;
-            }
-
-            string imageDigest = manifestV2.Config.digest;
-            string imageSha = DigestUtils.GetShaFromDigest(imageDigest);
-            // We don't need layers for remote registry, as the individual images should be pushed already
-            var layers = destinationKind == DestinationImageReferenceKind.RemoteRegistry ? null : manifestV2.Layers;
             (string architecture, string os) = GetArchitectureAndOsFromConfig(config);
+
+            // We don't need ImageDigest, ImageSha, Layers for remote registry, as the individual images should be pushed already
+            string? imageDigest = null;
+            string? imageSha = null;
+            List<ManifestLayer>? layers = null;
+
+            if (destinationKind == DestinationImageReferenceKind.LocalRegistry)
+            {
+                var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest);
+                if (manifestV2 == null)
+                {
+                    Log.LogError(Strings.InvalidImageManifest);
+                    break;
+                }
+
+                imageDigest = manifestV2.Config.digest;
+                imageSha = DigestUtils.GetShaFromDigest(imageDigest);
+                layers = manifestV2.Layers;
+            }     
 
             images[i] = new BuiltImage()
             {

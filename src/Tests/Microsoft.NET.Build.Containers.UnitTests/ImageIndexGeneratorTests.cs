@@ -31,8 +31,6 @@ public class ImageIndexGeneratorTests
             new BuiltImage
             {
                 Config = "",
-                ImageDigest = "",
-                ImageSha = "",
                 Manifest = "",
                 ManifestDigest = "",
                 ManifestMediaType = "unsupported"
@@ -53,8 +51,6 @@ public class ImageIndexGeneratorTests
             new BuiltImage
             {
                 Config = "",
-                ImageDigest = "",
-                ImageSha = "",
                 Manifest = "",
                 ManifestDigest = "",
                 ManifestMediaType = supportedMediaType,
@@ -62,8 +58,6 @@ public class ImageIndexGeneratorTests
             new BuiltImage
             {
                 Config = "",
-                ImageDigest = "",
-                ImageSha = "",
                 Manifest = "",
                 ManifestDigest = "",
                 ManifestMediaType = "anotherMediaType"
@@ -82,8 +76,6 @@ public class ImageIndexGeneratorTests
             new BuiltImage
             {
                 Config = "",
-                ImageDigest = "",
-                ImageSha = "",
                 Manifest = "123",
                 ManifestDigest = "sha256:digest1",
                 ManifestMediaType = SchemaTypes.DockerManifestV2,
@@ -93,8 +85,6 @@ public class ImageIndexGeneratorTests
             new BuiltImage
             {
                 Config = "",
-                ImageDigest = "",
-                ImageSha = "",
                 Manifest = "123",
                 ManifestDigest = "sha256:digest2",
                 ManifestMediaType = SchemaTypes.DockerManifestV2,
@@ -116,8 +106,6 @@ public class ImageIndexGeneratorTests
             new BuiltImage
             {
                 Config = "",
-                ImageDigest = "",
-                ImageSha = "",
                 Manifest = "123",
                 ManifestDigest = "sha256:digest1",
                 ManifestMediaType = SchemaTypes.OciManifestV1,
@@ -127,8 +115,6 @@ public class ImageIndexGeneratorTests
             new BuiltImage
             {
                 Config = "",
-                ImageDigest = "",
-                ImageSha = "",
                 Manifest = "123",
                 ManifestDigest = "sha256:digest2",
                 ManifestMediaType = SchemaTypes.OciManifestV1,

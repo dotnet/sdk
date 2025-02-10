@@ -595,7 +595,7 @@ internal sealed class Registry
         cancellationToken.ThrowIfCancellationRequested();
         using (MemoryStream stringStream = new MemoryStream(Encoding.UTF8.GetBytes(builtImage.Config)))
         {
-            var configDigest = builtImage.ImageDigest;
+            var configDigest = builtImage.ImageDigest!;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
             await UploadBlobAsync(destination.Repository, configDigest, stringStream, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ConfigUploaded);

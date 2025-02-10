@@ -311,7 +311,7 @@ internal sealed class DockerCli
         await WriteImageLayers(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
             .ConfigureAwait(false);
 
-        string configTarballPath = $"{image.ImageSha}.json";
+        string configTarballPath = $"{image.ImageSha!}.json";
         await WriteImageConfig(writer, image, configTarballPath, cancellationToken)
             .ConfigureAwait(false);
 
@@ -492,7 +492,7 @@ internal sealed class DockerCli
         await WriteImageLayers(writer, image, sourceReference, d => $"{_blobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
             .ConfigureAwait(false);
 
-        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.ImageSha}", cancellationToken)
+        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.ImageSha!}", cancellationToken)
             .ConfigureAwait(false);
 
         await WriteManifestForOciImage(writer, image, cancellationToken)
