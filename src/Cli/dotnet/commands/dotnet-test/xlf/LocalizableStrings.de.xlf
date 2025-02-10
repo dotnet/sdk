@@ -321,8 +321,8 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
         <note>{0} - message request type</note>
       </trans-unit>
       <trans-unit id="CmdUnsupportedTestRunnerDescription">
-        <source>Test runner not supported: {0}.</source>
-        <target state="new">Test runner not supported: {0}.</target>
+        <source>Test runner '{0}' is not supported.</source>
+        <target state="new">Test runner '{0}' is not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
@@ -403,6 +403,41 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
       <trans-unit id="HangTimeoutArgumentName">
         <source>TIMESPAN</source>
         <target state="translated">TIMESPAN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpExtensionOptions">
+        <source>Extension Options:</source>
+        <target state="new">Extension Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpModuleIsMissingTheOptionBelow">
+        <source>{0} is missing the option below</source>
+        <target state="new">{0} is missing the option below</target>
+        <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpModuleIsMissingTheOptionsBelow">
+        <source>{0} is missing the options below</source>
+        <target state="new">{0} is missing the options below</target>
+        <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpOptions">
+        <source>Options:</source>
+        <target state="new">Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUnavailableExtensionOptions">
+        <source>Unavailable extension options:</source>
+        <target state="new">Unavailable extension options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUnavailableOptions">
+        <source>Unavailable options:</source>
+        <target state="new">Unavailable options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpWaitingForOptionsAndExtensions">
+        <source>Waiting for options and extensions...</source>
+        <target state="new">Waiting for options and extensions...</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoredArgumentsMessage">

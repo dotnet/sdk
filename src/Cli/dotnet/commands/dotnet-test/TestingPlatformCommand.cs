@@ -125,10 +125,7 @@ namespace Microsoft.DotNet.Cli
                 ShowAssemblyStartAndComplete = true,
             });
 
-            if (!isHelp)
-            {
-                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
-            }
+            _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
         }
 
         private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions)
