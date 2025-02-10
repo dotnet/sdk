@@ -1155,6 +1155,8 @@ Options:
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "", solutionExtension);
@@ -1163,6 +1165,8 @@ Options:
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectWithInRootItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "--in-root", solutionExtension);
@@ -1171,6 +1175,8 @@ Options:
         [Theory]
         [InlineData("sln", ".sln")]
         [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionIsPassedAsProjectWithSolutionFolderItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             VerifySuggestionAndUsage(solutionCommand, "--solution-folder", solutionExtension);

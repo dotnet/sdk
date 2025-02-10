@@ -31,11 +31,10 @@ namespace Microsoft.DotNet.Watch
 
             var onOutput = processSpec.OnOutput;
 
-            // allow tests to watch for application output:
-            if (reporter.EnableProcessOutputReporting)
-            {
-                onOutput += line => reporter.ReportProcessOutput(line);
-            }
+            // If output isn't already redirected (build invocation) we redirect it to the reporter.
+            // The reporter synchronizes the output of the process with the reporter output,
+            // so that the printed lines don't interleave.
+            onOutput ??= line => reporter.ReportProcessOutput(line);
 
             using var process = CreateProcess(processSpec, onOutput, state, reporter);
 
@@ -186,7 +185,7 @@ namespace Microsoft.DotNet.Watch
                     FileName = processSpec.Executable,
                     UseShellExecute = false,
                     WorkingDirectory = processSpec.WorkingDirectory,
-                    RedirectStandardOutput =  onOutput != null,
+                    RedirectStandardOutput = onOutput != null,
                     RedirectStandardError = onOutput != null,
                 }
             };

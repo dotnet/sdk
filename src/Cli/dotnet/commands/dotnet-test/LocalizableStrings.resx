@@ -425,7 +425,7 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
     <value>Zero tests ran</value>
   </data>
   <data name="CmdUnsupportedTestRunnerDescription" xml:space="preserve">
-    <value>Test runner not supported: {0}.</value>
+    <value>Test runner '{0}' is not supported.</value>
   </data>
   <data name="CmdNonExistentFileErrorDescription" xml:space="preserve">
     <value>The provided file path does not exist: {0}.</value>
@@ -450,5 +450,37 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   </data>
   <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
     <value>Specify either the project, solution or directory option.</value>
+  </data>
+  <data name="CmdNoAnsiDescription" xml:space="preserve">
+    <value>Disable ANSI output.</value>
+  </data>
+  <data name="CmdNoProgressDescription" xml:space="preserve">
+    <value>Disable progress reporting.</value>
+  </data>
+  <data name="CmdTestOutputDescription" xml:space="preserve">
+    <value>Verbosity of test output.</value>
+  </data>
+  <data name="HelpExtensionOptions" xml:space="preserve">
+    <value>Extension Options:</value>
+  </data>
+  <data name="HelpModuleIsMissingTheOptionBelow" xml:space="preserve">
+    <value>{0} is missing the option below</value>
+    <comment>0 is name of the module, this string is followed by lined that list the option</comment>
+  </data>
+  <data name="HelpModuleIsMissingTheOptionsBelow" xml:space="preserve">
+    <value>{0} is missing the options below</value>
+    <comment>0 is name of the module, this string is followed by lined that list the option</comment>
+  </data>
+  <data name="HelpOptions" xml:space="preserve">
+    <value>Options:</value>
+  </data>
+  <data name="HelpUnavailableExtensionOptions" xml:space="preserve">
+    <value>Unavailable extension options:</value>
+  </data>
+  <data name="HelpUnavailableOptions" xml:space="preserve">
+    <value>Unavailable options:</value>
+  </data>
+  <data name="HelpWaitingForOptionsAndExtensions" xml:space="preserve">
+    <value>Waiting for options and extensions...</value>
   </data>
 </root>

@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli
             {
                 PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
-                InitializeOutput(degreeOfParallelism, testOptions.IsHelp);
+                InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
 
                 InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
@@ -110,22 +110,22 @@ namespace Microsoft.DotNet.Cli
             };
         }
 
-        private void InitializeOutput(int degreeOfParallelism, bool isHelp)
+        private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, bool isHelp)
         {
             var console = new SystemConsole();
+            var showPassedTests = parseResult.GetValue<OutputOptions>(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
+            var noProgress = parseResult.HasOption(TestingPlatformOptions.NoProgressOption);
+            var noAnsi = parseResult.HasOption(TestingPlatformOptions.NoAnsiOption);
             _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
             {
-                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1" ? () => true : () => false,
-                ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
-                UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
+                ShowPassedTests = () => showPassedTests,
+                ShowProgress = () => !noProgress,
+                UseAnsi = !noAnsi,
                 ShowAssembly = true,
                 ShowAssemblyStartAndComplete = true,
             });
 
-            if (!isHelp)
-            {
-                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
-            }
+            _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
         }
 
         private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions)
@@ -174,22 +174,34 @@ namespace Microsoft.DotNet.Cli
 
         private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
         {
-            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled(ref unmatchedTokens, out string binLogFileName);
+            IEnumerable<string> propertyTokens = MSBuildUtility.GetPropertyTokens(parseResult.UnmatchedTokens);
+            IEnumerable<string> binaryLoggerTokens = MSBuildUtility.GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
 
-            return new BuildOptions(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
+            var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
+                .Concat(propertyTokens)
+                .Concat(binaryLoggerTokens).ToList();
+
+            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+            unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
+            unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
+
+            PathOptions pathOptions = new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-                parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
-                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
-                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+
+            string runtimeIdentifier = parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
                     CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, parseResult.GetValue(TestingPlatformOptions.ArchitectureOption)) :
-                    string.Empty,
-                allowBinLog,
-                binLogFileName,
+                    string.Empty;
+
+            return new BuildOptions(
+                pathOptions,
+                parseResult.GetValue(CommonOptions.NoRestoreOption),
+                parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                runtimeIdentifier,
                 degreeOfParallelism,
-                unmatchedTokens);
+                unmatchedTokens,
+                msbuildArgs);
         }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
@@ -204,7 +216,7 @@ namespace Microsoft.DotNet.Cli
 
         private void CleanUp()
         {
-            _msBuildHandler.Dispose();
+            _msBuildHandler?.Dispose();
             foreach (var execution in _executions)
             {
                 execution.Key.Dispose();
