@@ -425,7 +425,7 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
     <value>Zero tests ran</value>
   </data>
   <data name="CmdUnsupportedTestRunnerDescription" xml:space="preserve">
-    <value>Test runner {0} is not supported.</value>
+    <value>Test runner '{0}' is not supported.</value>
   </data>
   <data name="CmdNonExistentFileErrorDescription" xml:space="preserve">
     <value>The provided file path does not exist: {0}.</value>
