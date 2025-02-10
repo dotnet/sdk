@@ -54,10 +54,15 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
           Condition="'$(RestoreEnablePackagePruning)' == 'true'">
 
+    <PropertyGroup>
+      <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
+    </PropertyGroup>
+    
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                         TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                         FrameworkReferences="@(FrameworkReference)"
-                        TargetingPackRoot="$(NetCoreTargetingPackRoot)">
+                        TargetingPackRoot="$(NetCoreTargetingPackRoot)"
+                        PrunePackageDataRoot="$(PrunePackageDataRoot)">
       <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
     </GetPackagesToPrune>
     

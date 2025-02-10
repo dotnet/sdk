@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using global::NuGet.Frameworks;
 using global::NuGet.Versioning;
+using Microsoft.NET.Build.Tasks.ConflictResolution;
 
 /// <summary>
 /// Represents a set of packages that are provided by a specific framework.
@@ -132,19 +133,11 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
                 if (packageOverridesFile is not null)
                 {
                     // Adapted from https://github.com/dotnet/sdk/blob/c3a8f72c3a5491c693ff8e49e7406136a12c3040/src/Tasks/Common/ConflictResolution/PackageOverride.cs#L52-L68
-                    var packageOverrides = File.ReadAllLines(packageOverridesFile);
+                    var packageOverrideLines = File.ReadAllLines(packageOverridesFile);
 
-                    foreach (var packageOverride in packageOverrides)
+                    foreach (var packageOverride in PackageOverride.CreateOverriddenPackages(packageOverrideLines))
                     {
-                        var packageOverrideParts = packageOverride.Trim().Split('|');
-
-                        if (packageOverrideParts.Length == 2)
-                        {
-                            var packageId = packageOverrideParts[0];
-                            var packageVersion = ParseVersion(packageOverrideParts[1]);
-
-                            frameworkPackages.Packages[packageId] = packageVersion;
-                        }
+                        frameworkPackages.Packages[packageOverride.Item1] = packageOverride.Item2;
                     }
                 }
             }

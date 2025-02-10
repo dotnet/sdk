@@ -310,6 +310,27 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
+        [Theory]
+        [InlineData("net9.0")]
+        public void PrunePackageDataSucceeds(string targetFramework)
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = targetFramework
+            };
+
+            testProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
+            testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App");
+            testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App.WindowsForms");
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand.Execute().Should().Pass();
+        }
+
         [Fact]
         public void TransitiveFrameworkReferencesDoNotAffectPruning()
         {
