@@ -88,7 +88,6 @@ exclude_ci_binary_log=false
 prepare_machine=false
 target_rid=
 system_libs=
-two_stage_runtime_build=
 
 properties=()
 while [[ $# > 0 ]]; do
@@ -194,7 +193,7 @@ while [[ $# > 0 ]]; do
       properties+=( "/p:DotNetBuildUseMonoRuntime=true" )
       ;;
     -two-stage-runtime-build)
-      two_stage_runtime_build=1
+      properties+=( "/p:TwoStageRuntimeBuild=true" )
       ;;
     *)
       properties+=( "$1" )
@@ -290,9 +289,6 @@ if [[ -n "$target_rid" ]]; then
 fi
 if [[ -n "$system_libs" ]]; then
   properties+=( "/p:UseSystemLibs=$system_libs" )
-fi
-if [[ -n "$two_stage_runtime_build" ]]; then
-  properties+=( "/p:TwoStageRuntimeBuild=true" )
 fi
 
 # Source-only settings
