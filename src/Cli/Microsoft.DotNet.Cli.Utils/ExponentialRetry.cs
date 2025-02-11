@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Utils
             foreach (var t in timer())
             {
                 await t;
-                T result = default;
+                T? result = default;
                 count++;
 
                 result = await action();
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public static async Task<T> ExecuteWithRetryOnFailure<T>(Func<Task<T>> action,
             int maxRetryCount = 3,
-            Func<IEnumerable<Task>> timer = null)
+            Func<IEnumerable<Task>>? timer = null)
         {
             timer = timer == null ? () => Timer(Intervals) : timer;
             return await ExecuteAsyncWithRetry(action, result => result != null && !result.Equals(default), maxRetryCount, timer);

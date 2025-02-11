@@ -8,12 +8,12 @@ namespace Microsoft.DotNet.Cli.Utils
         private static readonly char[] s_ignoreCharacters = new char[] { '\r' };
         private static readonly char s_flushBuilderCharacter = '\n';
 
-        private StringBuilder _builder;
-        private StringWriter _capture;
-        private Action<string> _writeLine;
+        private StringBuilder? _builder;
+        private StringWriter? _capture;
+        private Action<string>? _writeLine;
         private bool _trimTrailingCapturedNewline;
 
-        public string CapturedOutput
+        public string? CapturedOutput
         {
             get
             {
@@ -88,8 +88,8 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private void WriteBuilder()
         {
-            WriteLine(_builder.ToString());
-            _builder.Clear();
+            WriteLine(_builder?.ToString() ?? string.Empty);
+            _builder?.Clear();
         }
 
         private void WriteLine(string str)

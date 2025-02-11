@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is ToolCommandName name && Equals(name);
         }
