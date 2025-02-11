@@ -22,6 +22,11 @@
         <target state="translated">Обновление рабочих нагрузок на основе указанного файла определения отката.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Для этого диапазона функций не установлены рабочие нагрузки. Чтобы обновить рабочие нагрузки, установленные в более ранних версиях SDK, включите параметр --from-previous-sdk.</target>
@@ -40,6 +45,11 @@
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">Не удалось обновить рабочую нагрузку "{0}" по следующей причине:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Обновление до файла отката несовместимо с наборами рабочих нагрузок. Теперь установка и обновление будут использовать свободные манифесты. Чтобы выполнить обновление до определенной версии рабочей нагрузки, используйте "--version".</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">

@@ -64,8 +64,10 @@ namespace Microsoft.DotNet.Installer.Windows
             using RegistryKey sessionKey = localMachineKey?.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager");
 
             string[] pendingFileRenameOperations = (string[])sessionKey?.GetValue("PendingFileRenameOperations") ?? new string[0];
+            // Destination files for pending renames start with !\??\, whereas the source does not have the leading "!".
+            bool hasPendingFileRenames = pendingFileRenameOperations.Any(s => !string.IsNullOrWhiteSpace(s) && s.StartsWith(@"!\??\"));
 
-            return (auKey != null || cbsKey != null || pendingFileRenameOperations.Length > 0);
+            return (auKey != null || cbsKey != null || hasPendingFileRenames);
         }
     }
 }

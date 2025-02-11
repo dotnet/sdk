@@ -22,6 +22,11 @@
         <target state="translated">Aktualizuje úlohy na základě zadaného souboru definice vrácení zpět.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Pro toto pásmo funkcí nejsou nainstalované žádné úlohy. Pokud chcete provést aktualizaci úlohy nainstalované z předchozí sady SDK, přidejte možnost --from-previous-sdk.</target>
@@ -40,6 +45,11 @@
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">Aktualizace úlohy {0} neproběhla úspěšně z následujícího důvodu:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Aktualizace na soubor vrácení zpět není kompatibilní se sadami úloh. Instalace a aktualizace teď budou používat volné manifesty. Pokud chcete provést aktualizaci na konkrétní verzi úlohy, použijte možnost --version.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
