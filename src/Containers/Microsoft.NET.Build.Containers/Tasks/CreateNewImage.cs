@@ -125,6 +125,24 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             ( Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
 
+        // forcibly change the media type if required
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
+            {
+                imageBuilder.ManifestMediaType = imageFormat switch
+                {
+                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+                };
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+            }
+        }
+
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
