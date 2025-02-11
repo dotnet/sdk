@@ -539,7 +539,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     {
                         var workloadSetVersion = Path.GetFileName(workloadSetDirectory);
                         var workloadSet = WorkloadSet.FromWorkloadSetFolder(workloadSetDirectory, workloadSetVersion, featureBand);
-                        availableWorkloadSets[workloadSet.Version!] = workloadSet;
+
+                        if (workloadSet is not null)
+                        {
+                            availableWorkloadSets[workloadSet.Version!] = workloadSet;
+                        }
                     }
                 }
             }
