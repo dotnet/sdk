@@ -20,7 +20,6 @@ partial class CreateNewImage
     /// The base registry to pull from.
     /// Ex: mcr.microsoft.com
     /// </summary>
-    [Required]
     public string BaseRegistry { get; set; }
 
     /// <summary>
@@ -160,6 +159,11 @@ partial class CreateNewImage
     /// </remarks>
     [Required]
     public bool GenerateDigestLabel { get; set; }
+
+    /// <summary>
+    /// If true, the tooling will skip the publishing step.
+    /// </summary>
+    public bool SkipPublishing { get; set; }
 
     [Output]
     public string GeneratedContainerManifest { get; set; }
