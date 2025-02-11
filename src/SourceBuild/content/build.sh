@@ -44,6 +44,7 @@ usage()
   echo "  --excludeCIBinarylog            Don't output binary log (short: -nobl)"
   echo "  --prepareMachine                Prepare machine for CI run, clean up processes after build"
   echo "  --use-mono-runtime              Output uses the mono runtime"
+  echo "  --two-stage-runtime-build       Build runtime in two stages to use live apphost, crossgen2 and ilcompiler packs instead of LKG ones."
   echo ""
   echo "Command line arguments not listed above are passed thru to msbuild."
   echo "Arguments can also be passed in with a single hyphen."
@@ -87,6 +88,7 @@ exclude_ci_binary_log=false
 prepare_machine=false
 target_rid=
 system_libs=
+two_stage_runtime_build=
 
 properties=()
 while [[ $# > 0 ]]; do
@@ -191,6 +193,9 @@ while [[ $# > 0 ]]; do
     -use-mono-runtime)
       properties+=( "/p:DotNetBuildUseMonoRuntime=true" )
       ;;
+    -two-stage-runtime-build)
+      two_stage_runtime_build=1
+      ;;
     *)
       properties+=( "$1" )
       ;;
@@ -285,6 +290,9 @@ if [[ -n "$target_rid" ]]; then
 fi
 if [[ -n "$system_libs" ]]; then
   properties+=( "/p:UseSystemLibs=$system_libs" )
+fi
+if [[ -n "$two_stage_runtime_build" ]]; then
+  properties+=( "/p:TwoStageRuntimeBuild=true" )
 fi
 
 # Source-only settings
