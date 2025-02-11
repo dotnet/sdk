@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Tools.Common;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -51,7 +52,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Extension Options:\s+--[\s\S]*", result.StdOut);
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
 
-                string otherTestProjectDllRegex = @$"\s+.*\\{ToolsetInfo.CurrentTargetFramework}\\OtherTestProject\.dll.*\s+--report-trx\s+--report-trx-filename";
+                string directorySeparator = PathUtility.GetDirectorySeparatorChar();
+                string otherTestProjectDllRegex = @$"\s+.*{directorySeparator}{ToolsetInfo.CurrentTargetFramework}{directorySeparator}OtherTestProject\.dll.*\s+--report-trx\s+--report-trx-filename";
 
                 Assert.Matches(@$"Unavailable extension options:{otherTestProjectDllRegex}", result.StdOut);
             }
