@@ -196,7 +196,7 @@
     <MicrosoftBuildVersion>17.14.0-preview-25110-01</MicrosoftBuildVersion>
     <MicrosoftBuildLocalizationVersion>17.14.0-preview-25110-01</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
-    <MinimumVSVersion>17.12</MinimumVSVersion>
+    <MinimumVSVersion>17.13</MinimumVSVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
