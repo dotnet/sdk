@@ -56,7 +56,6 @@
     <Compile Include="..\Microsoft.DotNet.CommandFactory.Tests\**\*.cs" LinkBase="CommandFactory" />
     <Compile Include="..\Microsoft.DotNet.Configurer.UnitTests\**\*.cs" LinkBase="Configurer" />
     <Compile Include="..\Microsoft.DotNet.ShellShim.Tests\**\*.cs" LinkBase="ShellShim" />
-    <Compile Remove="..\dotnet-test.Tests\GivenDotnetTestBuildsAndRunsHelp.cs" />
     <Compile Remove="..\dotnet-test.Tests\MSBuildHandlerTests.cs" />
 
     <None Include="..\Microsoft.DotNet.ShellShim.Tests\WpfBinaryTestAsssets\testwpf.dll" LinkBase="WpfBinaryTestAsssets">
