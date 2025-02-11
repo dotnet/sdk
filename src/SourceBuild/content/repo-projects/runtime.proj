@@ -40,11 +40,6 @@
     <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
   </PropertyGroup>
 
-  <!-- We don't need to build the host tools in later build passes as no repos in later build passes need them to produce assets. -->
-  <PropertyGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
-    <BuildArgs>$(BuildArgs) /p:BuildHostTools=false</BuildArgs>
-  </PropertyGroup>
-
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="cecil" />
