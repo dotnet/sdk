@@ -509,7 +509,7 @@
       <Output TaskParameter="ExitCode" PropertyName="RepoBuildExitCode" />
     </Exec>
 
-    <Exec Command="$(FullCommand) -s clr+mono+libs+host -p:StageOneBuild=true $(FullCommandRedirection)"
+    <Exec Command="$(FullCommand) -p:StageOneBuild=true $(FullCommandRedirection)"
           WorkingDirectory="$(ProjectDirectory)"
           EnvironmentVariables="@(EnvironmentVariables)"
           IgnoreStandardErrorWarningFormat="true"
@@ -517,7 +517,7 @@
       <Output TaskParameter="ExitCode" PropertyName="RepoBuildExitCode" />
     </Exec>
 
-    <Exec Command="$(FullCommand) -s clr.tools+packs -p:StageTwoBuild=true $(FullCommandRedirection)"
+    <Exec Command="$(FullCommand) -p:StageTwoBuild=true $(FullCommandRedirection)"
           WorkingDirectory="$(ProjectDirectory)"
           EnvironmentVariables="@(EnvironmentVariables)"
           IgnoreStandardErrorWarningFormat="true"
