@@ -93,6 +93,16 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
         <target state="translated">대상으로 하는 런타임이 설치되지 않은 경우 .NET 도구가 최신 버전의 .NET 런타임으로 롤포워드하도록 허용합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">설치 중에 사용할 모든 NuGet 패키지 원본을 이러한 패키지 원본으로 바꿉니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">원본</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">설치할 도구 패키지 버전입니다.</target>
@@ -183,8 +193,8 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

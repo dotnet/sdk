@@ -1,0 +1,34 @@
+<Project>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
+
+  <Target Name="DetermineSourceBuiltSdkVersion">
+    <PropertyGroup>
+      <SdkFilenamePrefix>dotnet-sdk-</SdkFilenamePrefix>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SdkTarballItem Condition="'$(SdkTarballPath)' != ''" Include="$(SdkTarballPath)" />
+      <SdkTarballItem Condition="'$(SdkTarballPath)' == ''" Include="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*$(ArchiveExtension)"
+                      Exclude="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*.wixpack.zip" />
+    </ItemGroup>
+
+    <Error Text="Didn't find an SDK archive." Condition="'@(SdkTarballItem)' == ''" />
+    <Error Text="Found more than one SDK archive." Condition="@(SdkTarballItem->Count()) &gt; 1" />
+
+    <!--
+      Extract SDK version from SDK tarball filename.
+      Keep in sync with dotnet-sdk's archive location and filename.
+
+      Example:
+      artifacts\assets\<config>\Sdk\9.0.100-alpha.1.24057.1\dotnet-sdk-9.0.100-alpha.1.24057.1-fedora.38-x64.tar.gz
+      artifacts\assets\<config>\Sdk\<SdkVersion>\dotnet-sdk-<SdkVersion>-<TargetRid><ArchiveExtension>
+    -->
+    <PropertyGroup>
+      <SdkFilename>%(SdkTarballItem.Filename)%(SdkTarballItem.Extension)</SdkFilename>
+      <SdkTarballPath Condition="'$(SdkTarballPath)' == ''">%(SdkTarballItem.Identity)</SdkTarballPath>
+      <SourceBuiltSdkVersion>$(SdkFilename.Replace('$(SdkFilenamePrefix)','').Replace('-$(TargetRid)$(ArchiveExtension)',''))</SourceBuiltSdkVersion>
+    </PropertyGroup>
+  </Target>
+
+</Project>
