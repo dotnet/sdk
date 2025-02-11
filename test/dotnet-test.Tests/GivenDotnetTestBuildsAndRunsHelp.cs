@@ -53,9 +53,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
 
                 string directorySeparator = PathUtility.GetDirectorySeparatorChar();
-                string otherTestProjectDllRegex = @$"\s+.*{directorySeparator}{ToolsetInfo.CurrentTargetFramework}{directorySeparator}OtherTestProject\.dll.*\s+--report-trx\s+--report-trx-filename";
+                string otherTestProjectPattern = @$"Unavailable extension options:\s+.*{directorySeparator}{ToolsetInfo.CurrentTargetFramework}{directorySeparator}OtherTestProject\.dll.*\s+(--report-trx\s+--report-trx-filename|--report-trx-filename\s+--report-trx)";
 
-                Assert.Matches(@$"Unavailable extension options:{otherTestProjectDllRegex}", result.StdOut);
+                Assert.Matches(otherTestProjectPattern, result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
