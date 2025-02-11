@@ -1,9 +1,9 @@
-From 1babdc04211e9a0e964fdefcedeb009903c1c690 Mon Sep 17 00:00:00 2001
+From 66fb701949fa9d79664e80d383c0385c2a823a85 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Mon, 10 Feb 2025 18:40:38 +0100
 Subject: [PATCH] React to NuGet package pruning warnings
 
-Backport: https://github.com/dotnet/runtime/pull/112357 
+Backport: https://github.com/dotnet/runtime/pull/112357
 
 ---
  eng/packaging.targets                         | 603 +++++++++---------
@@ -12,7 +12,8 @@ Backport: https://github.com/dotnet/runtime/pull/112357
  ...icrosoft.Extensions.Logging.Console.csproj |   5 +-
  .../ref/System.Formats.Nrbf.csproj            |   4 +-
  .../ref/System.Memory.Data.csproj             |   2 +-
- 6 files changed, 313 insertions(+), 313 deletions(-)
+ .../System.Security.Cryptography.Pkcs.csproj  |   2 +-
+ 7 files changed, 314 insertions(+), 314 deletions(-)
 
 diff --git a/eng/packaging.targets b/eng/packaging.targets
 index c64ccfb2fcc..e03c40614b4 100644
@@ -667,7 +668,7 @@ index ff6d90a86e9..9d4c9f5ccf4 100644
 +
  </Project>
 diff --git a/src/libraries/Microsoft.Extensions.Logging.Console/ref/Microsoft.Extensions.Logging.Console.csproj b/src/libraries/Microsoft.Extensions.Logging.Console/ref/Microsoft.Extensions.Logging.Console.csproj
-index 537f64f4fe4..92847d16a4f 100644
+index 537f64f4fe4..f0353dbde22 100644
 --- a/src/libraries/Microsoft.Extensions.Logging.Console/ref/Microsoft.Extensions.Logging.Console.csproj
 +++ b/src/libraries/Microsoft.Extensions.Logging.Console/ref/Microsoft.Extensions.Logging.Console.csproj
 @@ -18,11 +18,14 @@
@@ -722,5 +723,18 @@ index 7d9b3481ecd..5f4d300cdab 100644
 -  <ItemGroup>
 +  <ItemGroup Condition="'$(TargetFramework)' != '$(NetCoreAppCurrent)'">
      <ProjectReference Include="$(LibrariesProjectRoot)System.Text.Json\ref\System.Text.Json.csproj" />
+   </ItemGroup>
+ 
+diff --git a/src/libraries/System.Security.Cryptography.Pkcs/src/System.Security.Cryptography.Pkcs.csproj b/src/libraries/System.Security.Cryptography.Pkcs/src/System.Security.Cryptography.Pkcs.csproj
+index 168ec510fd0..de6981cf994 100644
+--- a/src/libraries/System.Security.Cryptography.Pkcs/src/System.Security.Cryptography.Pkcs.csproj
++++ b/src/libraries/System.Security.Cryptography.Pkcs/src/System.Security.Cryptography.Pkcs.csproj
+@@ -675,7 +675,7 @@ System.Security.Cryptography.Pkcs.EnvelopedCms</PackageDescription>
+     <None Include="@(AsnXml)" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition="'$(IsPartialFacadeAssembly)' != 'true' and '$(TargetFramework)' != '$(NetCoreAppCurrent)'">
++  <ItemGroup Condition="'$(IsPartialFacadeAssembly)' != 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetCoreAppCurrent)'))">
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Formats.Asn1\src\System.Formats.Asn1.csproj" />
    </ItemGroup>
  
