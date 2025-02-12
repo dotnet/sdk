@@ -12,14 +12,9 @@ internal sealed class ProjectSpecificReporter(ProjectGraphNode node, IReporter u
     public bool IsVerbose
         => underlyingReporter.IsVerbose;
 
-    public bool EnableProcessOutputReporting
-        => underlyingReporter.EnableProcessOutputReporting;
-
-    public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
-        => underlyingReporter.ReportProcessOutput(project, line);
-
     public void ReportProcessOutput(OutputLine line)
-        => ReportProcessOutput(node, line);
+        => underlyingReporter.ReportProcessOutput(
+            underlyingReporter.PrefixProcessOutput ? line with { Content = $"[{_projectDisplayName}] {line.Content}" } : line);
 
     public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
         => underlyingReporter.Report(descriptor, $"[{_projectDisplayName}] {prefix}", args);
