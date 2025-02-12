@@ -1,10 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <!-- Tests are failing to build: https://github.com/dotnet/efcore/issues/35547 -->
-    <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
-  </PropertyGroup>
-
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="runtime" />

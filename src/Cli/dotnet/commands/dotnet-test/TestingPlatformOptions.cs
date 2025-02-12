@@ -63,5 +63,29 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdDirectoryDescription,
             Arity = ArgumentArity.ExactlyOne
         };
+
+        public static readonly CliOption<bool> NoAnsiOption = new("--no-ansi")
+        {
+            Description = LocalizableStrings.CmdNoAnsiDescription,
+            Arity = ArgumentArity.Zero
+        };
+
+        public static readonly CliOption<bool> NoProgressOption = new("--no-progress")
+        {
+            Description = LocalizableStrings.CmdNoProgressDescription,
+            Arity = ArgumentArity.Zero
+        };
+
+        public static readonly CliOption<OutputOptions> OutputOption = new("--output")
+        {
+            Description = LocalizableStrings.CmdTestOutputDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
+    }
+
+    internal enum OutputOptions
+    {
+        Normal,
+        Detailed
     }
 }
