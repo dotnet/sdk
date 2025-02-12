@@ -74,4 +74,6 @@ jobs:
             done
           else
             echo "Outside the label period. No labels added."
+            echo "adding test label..."
+            gh pr edit 46337 --add-label "Branch Lockdown"
           fi
