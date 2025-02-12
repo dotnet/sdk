@@ -42,21 +42,22 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
-        [InlineData("-i")]
-        [InlineData("install")]
-        public void CanInstallRemoteNuGetPackage_LatestVariations(string commandName)
+        [InlineData("::")]
+        [InlineData("@")]
+        public void CanInstallRemoteNuGetPackage_LatestVariations(string separator)
         {
+            var commandName = "install";
             CommandResult command1 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
-            CommandResult command2 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::")
+            CommandResult command2 = new DotnetNewCommand(_log, commandName, $"Microsoft.DotNet.Common.ProjectTemplates.5.0{separator}")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
-            CommandResult command3 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::*")
+            CommandResult command3 = new DotnetNewCommand(_log, commandName, $"Microsoft.DotNet.Common.ProjectTemplates.5.0{separator}*")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();

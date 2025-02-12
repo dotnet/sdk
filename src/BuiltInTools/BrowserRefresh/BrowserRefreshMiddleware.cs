@@ -9,21 +9,25 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
-    public class BrowserRefreshMiddleware
+    public sealed class BrowserRefreshMiddleware
     {
-        private static readonly MediaTypeHeaderValue _textHtmlMediaType = new("text/html");
-        private static readonly MediaTypeHeaderValue _applicationJsonMediaType = new("application/json");
-        private readonly string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
-        private readonly string? _aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
-
+        private static readonly MediaTypeHeaderValue s_textHtmlMediaType = new("text/html");
+        private static readonly MediaTypeHeaderValue s_applicationJsonMediaType = new("application/json");
         private readonly RequestDelegate _next;
-        private readonly ILogger _logger;
+        private readonly ILogger<BrowserRefreshMiddleware> _logger;
+        private string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
+        private string? _aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
+
+        public BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger)
+        {
+            _next = next;
+            _logger = logger;
+
+            logger.LogDebug("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES={ModifiableAssemblies}, __ASPNETCORE_BROWSER_TOOLS={BrowserTools}", _dotnetModifiableAssemblies, _aspnetcoreBrowserTools);
+        }
 
         private static string? GetNonEmptyEnvironmentVariableValue(string name)
             => Environment.GetEnvironmentVariable(name) is { Length: > 0 } value ? value : null;
-
-        public BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger) =>
-            (_next, _logger) = (next, logger);
 
         public async Task InvokeAsync(HttpContext context)
         {
@@ -76,7 +80,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             {
                 if (!context.Response.Headers.ContainsKey("DOTNET-MODIFIABLE-ASSEMBLIES"))
                 {
-                    if(_dotnetModifiableAssemblies != null)
+                    if (_dotnetModifiableAssemblies != null)
                     {
                         context.Response.Headers.Add("DOTNET-MODIFIABLE-ASSEMBLIES", _dotnetModifiableAssemblies);
                     }
@@ -141,7 +145,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             for (var i = 0; i < acceptHeaders.Count; i++)
             {
-                if (acceptHeaders[i].MatchesAllTypes || acceptHeaders[i].IsSubsetOf(_applicationJsonMediaType))
+                if (acceptHeaders[i].MatchesAllTypes || acceptHeaders[i].IsSubsetOf(s_applicationJsonMediaType))
                 {
                     return true;
                 }
@@ -175,13 +179,19 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             for (var i = 0; i < acceptHeaders.Count; i++)
             {
-                if (acceptHeaders[i].IsSubsetOf(_textHtmlMediaType))
+                if (acceptHeaders[i].IsSubsetOf(s_textHtmlMediaType))
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        internal void Test_SetEnvironment(string dotnetModifiableAssemblies, string aspnetcoreBrowserTools)
+        {
+            _dotnetModifiableAssemblies = dotnetModifiableAssemblies;
+            _aspnetcoreBrowserTools = aspnetcoreBrowserTools;
         }
 
         internal static class Log
