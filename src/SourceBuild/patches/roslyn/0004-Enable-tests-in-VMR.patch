@@ -3,7 +3,7 @@ From: "Nikola Milosavljevic (CLR) false" <nikolam@microsoft.com>
 Date: Tue, 11 Feb 2025 23:44:46 -0800
 Subject: [PATCH] Enable tests in VMR
 
-Backport: https://github.com/dotnet/roslyn/issues/76960
+Backport: https://github.com/dotnet/roslyn/pull/77179
 ---
  eng/Directory.Packages.props | 4 ++--
  eng/Versions.props           | 8 ++++++++
