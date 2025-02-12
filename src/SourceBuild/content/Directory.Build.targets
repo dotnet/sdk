@@ -40,7 +40,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <RuntimeArchiveItem Include="$(ArtifactsAssetsDir)Runtime/**/$(RuntimeFilenamePrefix)*$(ArchiveExtension)" />
+      <RuntimeArchiveItem Include="$(ArtifactsAssetsDir)Runtime/**/$(RuntimeFilenamePrefix)*$(ArchiveExtension)"
+                          Exclude="$(ArtifactsAssetsDir)Runtime/**/$(RuntimeFilenamePrefix)*.wixpack.zip" />
     </ItemGroup>
 
     <Error Text="Didn't find a runtime archive." Condition="'@(RuntimeArchiveItem)' == ''" />
