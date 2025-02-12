@@ -253,7 +253,9 @@
        This guarantees that all repositories build with the VMR's SDK version. -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateJson" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="UpdateGlobalJsonVersions"
-          Condition="'$(GlobalJsonFile)' != ''">
+          Condition="'$(GlobalJsonFile)' != ''"
+          Inputs="$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)UpdateGlobalJsonVersions.complete">
     <ItemGroup>
       <_PossibleCliVersionJsonPath Include="sdk:version" />
       <_PossibleCliVersionJsonPath Include="tools:dotnet" />
