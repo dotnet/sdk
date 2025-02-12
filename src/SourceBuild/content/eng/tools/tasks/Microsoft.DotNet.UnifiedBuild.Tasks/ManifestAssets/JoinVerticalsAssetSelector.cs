@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             _config = config ?? JoinVerticalsConfig.GetDefaultConfig();
         }
 
-        public IEnumerable<AssetVerticalMatchResult> SelectAssetMatchingVertical(IEnumerable<BuildAssetsManifest> verticalManifests)
+        public IEnumerable<AssetVerticalMatchResult> SelectAssetMatchingVertical(IEnumerable<BuildAssetsManifest> verticalManifests, HashSet<string>? excludeAssetsByName = null)
         {
             bool IsExternalAsset(ManifestAsset asset)
             {
@@ -57,6 +57,12 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             foreach (var assetGroup in _assetsById)
             {
                 string assetId = assetGroup.Key;
+
+                if (excludeAssetsByName != null && excludeAssetsByName.Contains(assetId))
+                {
+                    continue;
+                }
+
                 int verticalsCount = assetGroup.Count();
                 var verticalNames = assetGroup.Select(o => o.manifest.VerticalName!).ToList();
                 if (verticalsCount > 0)
