@@ -762,8 +762,7 @@
     CleanupRepo" />
 
   <Target Name="RepoTest"
-          DependsOnTargets="UpdateGlobalJsonVersions;
-                            DiscoverBuiltSdkOverrides;
+          DependsOnTargets="DiscoverBuiltSdkOverrides;
                             SetSourceBuiltSdkOverrides">
     <PropertyGroup>
       <TestCommand>$(BuildScript) $(TestActions) $(CommonArgs) $(TestArgs)</TestCommand>
