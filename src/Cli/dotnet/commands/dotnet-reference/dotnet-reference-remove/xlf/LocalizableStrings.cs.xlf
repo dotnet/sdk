@@ -4,27 +4,27 @@
     <body>
       <trans-unit id="AppFullName">
         <source>Remove a project-to-project reference from the project.</source>
-        <target state="translated">Odebrat odkaz mezi projekty z projektu</target>
+        <target state="new">Remove a project-to-project reference from the project.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command to remove project to project reference</source>
-        <target state="translated">Příkaz pro odebrání odkazu mezi projekty</target>
+        <target state="new">Command to remove project to project reference</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdFrameworkDescription">
         <source>Remove the reference only when targeting a specific framework.</source>
-        <target state="translated">Odebere odkaz jen v případě, že cílem je konkrétní architektura.</target>
+        <target state="new">Remove the reference only when targeting a specific framework.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectPathArgumentName">
         <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+        <target state="new">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectPathArgumentDescription">
         <source>The paths to the referenced projects to remove.</source>
-        <target state="translated">Cesty k odkazovaným projektům, které se mají odebrat</target>
+        <target state="new">The paths to the referenced projects to remove.</target>
         <note />
       </trans-unit>
     </body>

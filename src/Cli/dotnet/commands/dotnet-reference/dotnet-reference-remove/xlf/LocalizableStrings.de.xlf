@@ -4,27 +4,27 @@
     <body>
       <trans-unit id="AppFullName">
         <source>Remove a project-to-project reference from the project.</source>
-        <target state="translated">Hiermit entfernen Sie einen Projekt-zu-Projekt-Verweis aus dem Projekt.</target>
+        <target state="new">Remove a project-to-project reference from the project.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command to remove project to project reference</source>
-        <target state="translated">Befehl zum Entfernen von Projekt-zu-Projekt-Verweisen</target>
+        <target state="new">Command to remove project to project reference</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdFrameworkDescription">
         <source>Remove the reference only when targeting a specific framework.</source>
-        <target state="translated">Der Verweis wird nur dann entfernt, wenn ein bestimmtes Zielframework als Zielversion verwendet wird.</target>
+        <target state="new">Remove the reference only when targeting a specific framework.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectPathArgumentName">
         <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+        <target state="new">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectPathArgumentDescription">
         <source>The paths to the referenced projects to remove.</source>
-        <target state="translated">Die Pfade zu den referenzierten Projekten, die entfernt werden sollen.</target>
+        <target state="new">The paths to the referenced projects to remove.</target>
         <note />
       </trans-unit>
     </body>

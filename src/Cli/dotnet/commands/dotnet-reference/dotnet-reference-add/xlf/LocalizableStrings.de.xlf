@@ -4,27 +4,27 @@
     <body>
       <trans-unit id="AppFullName">
         <source>Add a project-to-project reference to the project.</source>
-        <target state="translated">Hiermit fügen Sie dem Projekt einen Projekt-zu-Projekt-Verweis hinzu.</target>
+        <target state="new">Add a project-to-project reference to the project.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command to add project to project reference</source>
-        <target state="translated">Befehl zum Hinzufügen eines Projekt-zu-Projekt-Verweises</target>
+        <target state="new">Command to add project to project reference</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdFrameworkDescription">
         <source>Add the reference only when targeting a specific framework.</source>
-        <target state="translated">Hiermit wird der Verweis nur dann hinzugefügt, wenn ein bestimmtes Zielframework als Zielversion verwendet wird.</target>
+        <target state="new">Add the reference only when targeting a specific framework.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectPathArgumentName">
         <source>PROJECT_PATH</source>
-        <target state="translated">PROJECT_PATH</target>
+        <target state="new">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectPathArgumentDescription">
         <source>The paths to the projects to add as references.</source>
-        <target state="translated">Die Pfade zu den Projekten, die als Verweise hinzugefügt werden sollen.</target>
+        <target state="new">The paths to the projects to add as references.</target>
         <note />
       </trans-unit>
     </body>
