@@ -6,6 +6,10 @@
 
     <TestArgs>$(TestArgs) /p:TestBinlogDir="$(ArtifactsLogRepoDir.TrimEnd('\'))"</TestArgs>
     <TestArgs>$(TestArgs) /p:TestDotNetRoot="$(DotNetSdkExtractDir.TrimEnd('\'))"</TestArgs>
+
+    <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
+         the Microsoft built packages should be used. -->
+    <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,12 +44,6 @@
     </ItemGroup>
 
     <MakeDir Directories="$(ScenarioTestsResultsDir)" />
-
-    <PropertyGroup>
-      <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
-           the Microsoft built packages should be used. -->
-      <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
-    </PropertyGroup>
   </Target>
 
   <Target Name="SetAzureDevOpsVariableForScenarioTests"
