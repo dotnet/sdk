@@ -19,6 +19,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         string GetManifestVersion(string manifestId);
         IEnumerable<WorkloadManifestInfo> GetInstalledManifests();
         string GetSdkFeatureBand();
+        string? GetWorkloadVersion();
         IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads);
         WorkloadManifest GetManifestFromWorkload(WorkloadId workloadId);
 
