@@ -32,6 +32,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportSingleFile)'))</_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectCapability Condition="'$(IsAotCompatible)' == 'true'" Include="IsAotCompatible" />
+    <ProjectCapability Condition="'$(IsTrimmable)' == 'true'" Include="IsTrimmable" />
+    <ProjectCapability Condition="'$(PublishAot)' == 'true'" Include="PublishAot" />
+    <ProjectCapability Condition="'$(PublishReadyToRun)' == 'true'" Include="PublishReadyToRun" />
+    <ProjectCapability Condition="'$(PublishSingleFile)' == 'true'" Include="PublishSingleFile" />
+    <ProjectCapability Condition="'$(PublishTrimmed)' == 'true'" Include="PublishTrimmed" />
+  </ItemGroup>
+
   <ItemDefinitionGroup>
     <ResolvedFileToPublish>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
@@ -219,6 +228,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="SolutionProjectConfigurationsConflict"
                  FormatArguments="PublishRelease;$(ProjectName)"/>
 
+    <NETSdkError Condition="'$(PublishAot)' == 'true' and
+                            '$(_IsPublishing)' != 'true' and
+                            '$(PublishAotUsingRuntimePack)' == 'true' and
+                            '$(_TargetFrameworkVersionWithoutV)' >= '10.0'"
+                 ResourceName="NativeCompilationRequiresPublishing" />
+
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
       <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
@@ -312,11 +327,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Find all files in the final output directory. -->
     <FindUnderPath Path="$(_NormalizedPublishDir)" Files="@(_UnfilteredAbsolutePriorPublishFileWrites)" UpdateToAbsolutePaths="true">
-      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOuput"/>
+      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOutput"/>
     </FindUnderPath>
 
     <!-- Remove duplicates from files produced in the previous publish. -->
-    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOuput)" >
+    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOutput)" >
       <Output TaskParameter="Filtered" ItemName="_PriorPublishFileWrites"/>
     </RemoveDuplicates>
 

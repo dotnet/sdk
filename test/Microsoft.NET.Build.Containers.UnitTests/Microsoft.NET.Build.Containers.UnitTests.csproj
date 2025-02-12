@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <StrongNameKeyId>MicrosoftShared</StrongNameKeyId>

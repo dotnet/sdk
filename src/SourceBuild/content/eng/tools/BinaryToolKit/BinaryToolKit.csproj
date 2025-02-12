@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <CustomPackageVersionsProps></CustomPackageVersionsProps>
     <OutputType>Exe</OutputType>
   </PropertyGroup>

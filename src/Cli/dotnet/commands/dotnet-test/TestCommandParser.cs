@@ -11,16 +11,6 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
-        public static readonly CliOption<string> MaxParallelTestModules = new ForwardedOption<string>("--max-parallel-test-modules", "-mptm")
-        {
-            Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
-        };
-
-        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additional-msbuild-parameters")
-        {
-            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
-        };
-
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -156,8 +146,6 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
-
-
         public static CliCommand GetCommand()
         {
             return Command;
@@ -172,9 +160,6 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-#if RELEASE
-            return GetVSTestCliCommand();
-#else
             bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
             string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
 
@@ -188,15 +173,26 @@ namespace Microsoft.DotNet.Cli
             }
 
             throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
-#endif
         }
 
         private static CliCommand GetTestingPlatformCliCommand()
         {
             var command = new TestingPlatformCommand("test");
-            command.SetAction((parseResult) => command.Run(parseResult));
-            command.Options.Add(MaxParallelTestModules);
-            command.Options.Add(AdditionalMSBuildParameters);
+            command.SetAction(parseResult => command.Run(parseResult));
+            command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
+            command.Options.Add(TestingPlatformOptions.NoBuildOption);
+            command.Options.Add(CommonOptions.NoRestoreOption);
+            command.Options.Add(TestingPlatformOptions.ArchitectureOption);
+            command.Options.Add(TestingPlatformOptions.ConfigurationOption);
+            command.Options.Add(TestingPlatformOptions.ProjectOption);
+            command.Options.Add(TestingPlatformOptions.ListTestsOption);
+            command.Options.Add(TestingPlatformOptions.SolutionOption);
+            command.Options.Add(TestingPlatformOptions.DirectoryOption);
+            command.Options.Add(TestingPlatformOptions.NoAnsiOption);
+            command.Options.Add(TestingPlatformOptions.NoProgressOption);
+            command.Options.Add(TestingPlatformOptions.OutputOption);
 
             return command;
         }

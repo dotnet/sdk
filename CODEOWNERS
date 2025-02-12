@@ -30,8 +30,8 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @sharwell @arkalyanms
-/test/dotnet-format.Tests @sharwell @arkalyanms
+/src/Cli/dotnet/commands/dotnet-format @sharwell @arunchndr
+/test/dotnet-format.Tests @sharwell @arunchndr
 
 # Area-NuGet
 /src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
@@ -76,12 +76,12 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @tmat @arkalyanms @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @tmat @arkalyanms @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @tmat @arunchndr @dotnet/roslyn-ide
+/test/dotnet-watch.Tests/ @tmat @arunchndr @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @arkalyanms @dotnet/roslyn-ide
+/src/BuiltInTools/* @tmat @arunchndr @dotnet/roslyn-ide
 /src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService @BillHiebert @dotnet/aspnet-blazor-eng
+/src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries
@@ -106,8 +106,9 @@
 /test/dotnet-format.Tests @dotnet/roslyn-ide
 
 # Area: VMR & SourceBuild
-/.devcontainer/ @dotnet/source-build
+/.devcontainer/ @dotnet/source-build @dotnet/product-construction
 /eng/pipelines/ @dotnet/source-build @dotnet/product-construction
+/eng/DotNetBuild.props @dotnet/source-build @dotnet/product-construction
 /eng/SourceBuild* @dotnet/source-build
 /src/SourceBuild/ @dotnet/source-build @dotnet/product-construction
 /src/VirtualMonoRepo/ @dotnet/product-construction
