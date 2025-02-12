@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using NuGet.ProjectModel;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tasks
         }
         public IEnumerable<ResolvedFile> Resolve(ProjectContext projectContext, bool resolveRuntimeTargets = true)
         {
-            List<ResolvedFile> results = new List<ResolvedFile>();
+            List<ResolvedFile> results = new();
 
             foreach (LockFileTargetLibrary targetLibrary in projectContext.GetRuntimeLibraries(_excludedPackageIds))
             {

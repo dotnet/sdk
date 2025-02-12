@@ -4,11 +4,9 @@
 using System.Collections.Concurrent;
 using Microsoft.DotNet.NativeWrapper;
 
-//Microsoft.DotNet.SdkResolver (net7.0) has nullables disabled
 #pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
+#nullable enable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
-
 namespace Microsoft.DotNet.DotNetSdkResolver
 {
 
@@ -16,22 +14,22 @@ namespace Microsoft.DotNet.DotNetSdkResolver
     //  This class is used by the MSBuild SDK resolvers, which can be called on multiple threads.
     public class NETCoreSdkResolver
     {
-        private readonly Func<string, string> _getEnvironmentVariable;
+        private readonly Func<string, string?> _getEnvironmentVariable;
         private readonly VSSettings _vsSettings;
 
         // Caches of minimum versions, compatible SDKs are static to benefit multiple IDE evaluations.
         private static readonly ConcurrentDictionary<string, Version> s_minimumMSBuildVersions
-            = new ConcurrentDictionary<string, Version>();
+            = new();
 
         private static readonly ConcurrentDictionary<CompatibleSdkKey, CompatibleSdkValue> s_compatibleSdks
-            = new ConcurrentDictionary<CompatibleSdkKey, CompatibleSdkValue>();
+            = new();
 
         public NETCoreSdkResolver()
             : this(Environment.GetEnvironmentVariable, VSSettings.Ambient)
         {
         }
 
-        public NETCoreSdkResolver(Func<string, string> getEnvironmentVariable, VSSettings vsSettings)
+        public NETCoreSdkResolver(Func<string, string?> getEnvironmentVariable, VSSettings vsSettings)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
             _vsSettings = vsSettings;
@@ -39,30 +37,30 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
         private sealed class CompatibleSdkKey : IEquatable<CompatibleSdkKey>
         {
-            public readonly string DotnetExeDirectory;
+            public readonly string? DotnetExeDirectory;
             public readonly Version MSBuildVersion;
 
-            public CompatibleSdkKey(string dotnetExeDirectory, Version msbuildVersion)
+            public CompatibleSdkKey(string? dotnetExeDirectory, Version msbuildVersion)
             {
                 DotnetExeDirectory = dotnetExeDirectory;
                 MSBuildVersion = msbuildVersion;
             }
 
-            public bool Equals(CompatibleSdkKey other)
+            public bool Equals(CompatibleSdkKey? other)
             {
                 return other != null
                     && DotnetExeDirectory == other.DotnetExeDirectory
                     && MSBuildVersion == other.MSBuildVersion;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return Equals(obj as CompatibleSdkValue);
             }
 
             public override int GetHashCode()
             {
-                int h1 = DotnetExeDirectory.GetHashCode();
+                int h1 = DotnetExeDirectory!.GetHashCode();
                 int h2 = MSBuildVersion.GetHashCode();
                 return unchecked(((h1 << 5) + h1) ^ h2);
             }
@@ -70,17 +68,17 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
         private sealed class CompatibleSdkValue
         {
-            public readonly string MostRecentCompatible;
-            public readonly string MostRecentCompatibleNonPreview;
+            public readonly string? MostRecentCompatible;
+            public readonly string? MostRecentCompatibleNonPreview;
 
-            public CompatibleSdkValue(string mostRecentCompatible, string mostRecentCompatibleNonPreview)
+            public CompatibleSdkValue(string? mostRecentCompatible, string? mostRecentCompatibleNonPreview)
             {
                 MostRecentCompatible = mostRecentCompatible;
                 MostRecentCompatibleNonPreview = mostRecentCompatibleNonPreview;
             }
         }
 
-        private string GetMostCompatibleSdk(string dotnetExeDirectory, Version msbuildVersion, int minimumSdkMajorVersion = 0)
+        private string? GetMostCompatibleSdk(string? dotnetExeDirectory, Version msbuildVersion, int minimumSdkMajorVersion = 0)
         {
             CompatibleSdkValue sdks = GetMostCompatibleSdks(dotnetExeDirectory, msbuildVersion, minimumSdkMajorVersion);
             if (_vsSettings.DisallowPrerelease())
@@ -91,16 +89,16 @@ namespace Microsoft.DotNet.DotNetSdkResolver
             return sdks.MostRecentCompatible;
         }
 
-        private CompatibleSdkValue GetMostCompatibleSdks(string dotnetExeDirectory, Version msbuildVersion, int minimumSdkMajorVersion)
+        private CompatibleSdkValue GetMostCompatibleSdks(string? dotnetExeDirectory, Version msbuildVersion, int minimumSdkMajorVersion)
         {
             return s_compatibleSdks.GetOrAdd(
                 new CompatibleSdkKey(dotnetExeDirectory, msbuildVersion),
                 key =>
                 {
-                    string mostRecent = null;
-                    string mostRecentNonPreview = null;
+                    string? mostRecent = null;
+                    string? mostRecentNonPreview = null;
 
-                    string[] availableSdks = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(key.DotnetExeDirectory);
+                    string[] availableSdks = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(key.DotnetExeDirectory)!;
                     for (int i = availableSdks.Length - 1; i >= 0; i--)
                     {
                         string netcoreSdkDir = availableSdks[i];
@@ -112,7 +110,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                             continue;
                         }
 
-                        if (minimumSdkMajorVersion != 0 && Int32.TryParse(netcoreSdkVersion.Split('.')[0], out int sdkMajorVersion) && sdkMajorVersion < minimumSdkMajorVersion)
+                        if (minimumSdkMajorVersion != 0 && int.TryParse(netcoreSdkVersion.Split('.')[0], out int sdkMajorVersion) && sdkMajorVersion < minimumSdkMajorVersion)
                         {
                             continue;
                         }
@@ -152,11 +150,11 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                 });
         }
 
-        public SdkResolutionResult ResolveNETCoreSdkDirectory(string globalJsonStartDir, Version msbuildVersion, bool isRunningInVisualStudio, string dotnetExeDir)
+        public SdkResolutionResult ResolveNETCoreSdkDirectory(string? globalJsonStartDir, Version msbuildVersion, bool isRunningInVisualStudio, string? dotnetExeDir)
         {
             var result = NETCoreSdkResolverNativeWrapper.ResolveSdk(dotnetExeDir, globalJsonStartDir, _vsSettings.DisallowPrerelease());
 
-            string mostCompatible = result.ResolvedSdkDirectory;
+            string? mostCompatible = result.ResolvedSdkDirectory;
             if (result.ResolvedSdkDirectory == null
                 && result.GlobalJsonPath != null
                 && isRunningInVisualStudio)

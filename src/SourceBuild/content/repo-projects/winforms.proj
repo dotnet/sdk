@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)NativeToolsOnMachine</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="runtime" />
+  </ItemGroup>
+
+</Project>

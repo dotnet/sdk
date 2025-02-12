@@ -11,6 +11,16 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
 
+        public static readonly CliOption<string> MaxParallelTestModules = new ForwardedOption<string>("--max-parallel-test-modules", "-mptm")
+        {
+            Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
+        };
+
+        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additional-msbuild-parameters")
+        {
+            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
+        };
+
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
             Description = LocalizableStrings.CmdSettingsDescription,
@@ -152,15 +162,57 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
+
+
         public static CliCommand GetCommand()
         {
             return Command;
         }
 
+        private static bool IsTestingPlatformEnabled()
+        {
+            var testingPlatformEnabledEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE");
+            var isTestingPlatformEnabled = testingPlatformEnabledEnvironmentVariable == "1" || string.Equals(testingPlatformEnabledEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
+            return isTestingPlatformEnabled;
+        }
+
         private static CliCommand ConstructCommand()
         {
-            DocumentedCommand command = new("test", DocsLink, LocalizableStrings.AppFullName);
-            command.TreatUnmatchedTokensAsErrors = false;
+#if RELEASE
+            return GetVSTestCliCommand();
+#else
+            bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
+            string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
+
+            if (isTestingPlatformEnabled)
+            {
+                return GetTestingPlatformCliCommand();
+            }
+            else
+            {
+                return GetVSTestCliCommand();
+            }
+
+            throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
+#endif
+        }
+
+        private static CliCommand GetTestingPlatformCliCommand()
+        {
+            var command = new TestingPlatformCommand("test");
+            command.SetAction((parseResult) => command.Run(parseResult));
+            command.Options.Add(MaxParallelTestModules);
+            command.Options.Add(AdditionalMSBuildParameters);
+
+            return command;
+        }
+
+        private static CliCommand GetVSTestCliCommand()
+        {
+            DocumentedCommand command = new("test", DocsLink, LocalizableStrings.AppFullName)
+            {
+                TreatUnmatchedTokensAsErrors = false
+            };
 
             // We are on purpose not capturing the solution, project or directory here. We want to pass it to the
             // MSBuild command so we are letting it flow.
@@ -194,7 +246,6 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
-
             command.SetAction(TestCommand.Run);
 
             return command;
