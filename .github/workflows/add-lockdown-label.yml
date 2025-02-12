@@ -4,7 +4,6 @@ on:
   pull_request_target:
     branches-ignore:
     - main
-    - release/9.0.3xx
   workflow_dispatch: # Allows manual triggering of the workflow
 
 permissions:
@@ -14,6 +13,11 @@ permissions:
 jobs:
   add-label:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
