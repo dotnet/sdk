@@ -649,6 +649,18 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: OSX_Shortstack_Mono_LLVMAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            pool: ${{ parameters.pool_Mac }}
+            useMonoRuntime: true
+            targetOS: osx
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildMonoEnableLLVM=true /p:DotNetBuildMonoAOTEnableLLVM=true /p:DotNetBuildMonoBundleLLVMOptimizer=true
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
