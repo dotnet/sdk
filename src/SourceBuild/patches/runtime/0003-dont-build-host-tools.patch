@@ -1,0 +1,24 @@
+From 282fb06e2d46d0a6b80a4ee737e402063f3409c3 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Tue, 11 Feb 2025 14:40:59 -0800
+Subject: [PATCH] Don't build host tools when building the cross-os DACs
+
+Backport: https://github.com/dotnet/runtime/pull/112454
+---
+ .../Microsoft.CrossOsDiag.Private.CoreCLR.proj                 | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/src/coreclr/.nuget/Microsoft.CrossOsDiag.Private.CoreCLR/Microsoft.CrossOsDiag.Private.CoreCLR.proj b/src/coreclr/.nuget/Microsoft.CrossOsDiag.Private.CoreCLR/Microsoft.CrossOsDiag.Private.CoreCLR.proj
+index 4fbe217f42068c..2687500c79b917 100644
+--- a/src/coreclr/.nuget/Microsoft.CrossOsDiag.Private.CoreCLR/Microsoft.CrossOsDiag.Private.CoreCLR.proj
++++ b/src/coreclr/.nuget/Microsoft.CrossOsDiag.Private.CoreCLR/Microsoft.CrossOsDiag.Private.CoreCLR.proj
+@@ -32,7 +32,8 @@
+       <_CrossOSDacProject Include="@(SupportedRid->'$(RepoRoot)Build.proj')"
+                           AdditionalProperties="TargetOS=%(TargetOS);
+                                                 TargetArchitecture=%(TargetArchitecture);
+-                                                Subset=linuxdac+alpinedac" />
++                                                Subset=linuxdac+alpinedac;
++                                                BuildHostTools=false" />
+       <_RuntimePrereqsProject Include="$(CoreClrProjectRoot)runtime-prereqs.proj" />
+     </ItemGroup>
+ 
