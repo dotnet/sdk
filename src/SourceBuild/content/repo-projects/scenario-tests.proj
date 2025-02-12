@@ -4,24 +4,15 @@
     <!-- The scenario-tests repo shouldn't be cleaned after building as we run tests from it. -->
     <CleanWhileBuilding>false</CleanWhileBuilding>
 
-    <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
-    <TestXmlOutputPath>$(ScenarioTestsResultsDir)$([System.DateTime]::Now.ToString("yyyy-MM-dd_HH_mm_ss")).xml</TestXmlOutputPath>
-    <ScenarioTestsAdditionalArgs>--xml $(TestXmlOutputPath) --target-rid $(TargetRid) --portable-rid $(PortableRid) --no-cleanup --no-traits Category=MultiTFM</ScenarioTestsAdditionalArgs>
-
     <TestArgs>$(TestArgs) /p:TestBinlogDir="$(ArtifactsLogRepoDir.TrimEnd('\'))"</TestArgs>
-    <TestArgs>$(TestArgs) /p:UseFxVersionOverride=true</TestArgs>
-
-    <TestDependsOn>PrepareScenarioTestsInputs;$(TestDependsOn)</TestDependsOn>
+    <TestArgs>$(TestArgs) /p:TestDotNetRoot="$(DotNetSdkExtractDir.TrimEnd('\'))"</TestArgs>
   </PropertyGroup>
-
-  <!-- Needs to be set as an env var as the eng/common/tools parser can't handle this string. -->
-  <ItemGroup>
-    <TestEnvironmentVariable Include="AdditionalTestArgs=$(ScenarioTestsAdditionalArgs)" />
-  </ItemGroup>
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
+    <!-- Depend on NuGet packages from the sdk repo and transitive repositories. -->
+    <RepositoryReference Include="sdk" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -29,23 +20,32 @@
     <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <!-- Depends on NuGet packages from the sdk repo and transitive repositories. -->
-    <RepositoryReference Include="sdk" />
-  </ItemGroup>
-
-  <Target Name="PrepareScenarioTestsInputs" DependsOnTargets="DetermineSourceBuiltSdkVersion">
+  <Target Name="PrepareScenarioTestsInputs"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion;DetermineSourceBuiltRuntimeVersion"
+          BeforeTargets="Test">
     <PropertyGroup>
-      <!-- When testing scenario-tests, use the live produced SDK. -->
-      <RepoDotNetRoot>$(DotNetSdkExtractDir)</RepoDotNetRoot>
-      <RepoNETCoreSdkVersion>$(SourceBuiltSdkVersion)</RepoNETCoreSdkVersion>
-
-      <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
-           the Microsoft built packages should be used. -->
-      <UseIntermediateNuGetConfigFile Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</UseIntermediateNuGetConfigFile>
+      <TestArgs>$(TestArgs) /p:TestSdkVersion=$(SourceBuiltSdkVersion)</TestArgs>
+      <TestArgs>$(TestArgs) /p:TestFxVersion=$(SourceBuiltRuntimeVersion)</TestArgs>
     </PropertyGroup>
 
+    <PropertyGroup>
+      <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
+      <TestXmlOutputPath>$(ScenarioTestsResultsDir)$([System.DateTime]::Now.ToString("yyyy-MM-dd_HH_mm_ss")).xml</TestXmlOutputPath>
+      <ScenarioTestsAdditionalArgs>--xml $(TestXmlOutputPath) --target-rid $(TargetRid) --portable-rid $(PortableRid) --no-cleanup --no-traits Category=MultiTFM</ScenarioTestsAdditionalArgs>
+    </PropertyGroup>
+
+    <!-- Needs to be set as an env var as the eng/common/tools parser can't handle this string. -->
+    <ItemGroup>
+      <TestEnvironmentVariable Include="AdditionalTestArgs=$(ScenarioTestsAdditionalArgs)" />
+    </ItemGroup>
+
     <MakeDir Directories="$(ScenarioTestsResultsDir)" />
+
+    <PropertyGroup>
+      <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
+           the Microsoft built packages should be used. -->
+      <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
+    </PropertyGroup>
   </Target>
 
   <Target Name="SetAzureDevOpsVariableForScenarioTests"

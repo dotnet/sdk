@@ -38,6 +38,10 @@
     <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)NuGet.config')">$(ProjectDirectory)NuGet.config</NuGetConfigFile>
     <NuGetConfigFile Condition="'$(NuGetConfigFile)' == '' and Exists('$(ProjectDirectory)NuGet.Config')">$(ProjectDirectory)NuGet.Config</NuGetConfigFile>
 
+    <OriginalNuGetConfigFile>$(NuGetConfigFile)</OriginalNuGetConfigFile>
+    <!-- Update nuget.config property to point to modified file that will be created/updated during build. -->
+    <NuGetConfigFile Condition="'$(OriginalNuGetConfigFile)' != ''">$(BaseIntermediateOutputPath)$([System.IO.Path]::GetFileName('$(OriginalNuGetConfigFile)'))</NuGetConfigFile>
+
     <RepoAssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(AssetManifestsIntermediateDir)', '$(RepositoryName)'))</RepoAssetManifestsDir>
     <IntermediateSymbolsRepoDir>$([MSBuild]::NormalizeDirectory('$(IntermediateSymbolsRootDir)', '$(RepositoryName)'))</IntermediateSymbolsRepoDir>
 
@@ -142,6 +146,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
+    <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetRoot)" />
+    <EnvironmentVariables Include="DOTNET_PATH=$(DotNetRoot)" />
+    <EnvironmentVariables Include="DOTNET_HOST_PATH=$(DotNetTool)" />
+
+    <!-- _InitializeDotNetCli is used by websdk and templating to decide whether to init the SDK -->
+    <EnvironmentVariables Include="_InitializeDotNetCli=$(DotNetRoot.TrimEnd('/\'))" />
+    <EnvironmentVariables Include="_DotNetInstallDir=$(DotNetRoot)" />
     <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj"
                           Condition="'$(UseBootstrapArcade)' != 'true'" />
 
@@ -162,6 +174,9 @@
 
     <!-- Need to be passed in as an env var so that custom Exec tasks in the repo's DotNetBuild.props receive this setting. -->
     <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
+
+    <!-- Needed for miscellanous projects in various repos - see https://github.com/dotnet/source-build/issues/4081-->
+    <EnvironmentVariables Include="RestoreConfigFile=$(NuGetConfigFile)" Condition="'$(NuGetConfigFile)' != ''" />
 
     <!-- Need to be passed in here so that outer and inner builds don't restore into the orchestrator package cache (CI builds)
          or the user package cache (local dev builds). -->

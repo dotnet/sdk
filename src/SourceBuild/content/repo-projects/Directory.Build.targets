@@ -51,38 +51,6 @@
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
   </PropertyGroup>
 
-  <!-- Dynamic properties that are used in both test and build. -->
-  <Target Name="SetCommonProperties">
-    <!-- Update nuget.config property to point to modified file that will be created/updated during build. -->
-    <PropertyGroup Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">
-      <OriginalNuGetConfigFile>$(NuGetConfigFile)</OriginalNuGetConfigFile>
-      <NuGetConfigFile>$(BaseIntermediateOutputPath)$([System.IO.Path]::GetFileName('$(NuGetConfigFile)'))</NuGetConfigFile>
-      <CommonArgs>$(CommonArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</CommonArgs>
-    </PropertyGroup>
-
-    <ItemGroup Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'">
-      <!-- Needed for miscellanous projects in various repos - see https://github.com/dotnet/source-build/issues/4081-->
-      <EnvironmentVariables Include="RestoreConfigFile=$(NuGetConfigFile)" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <RepoDotNetRoot Condition="'$(RepoDotNetRoot)' == ''">$(DotNetRoot)</RepoDotNetRoot>
-      <RepoDotNetTool Condition="'$(BuildOS)' == 'windows'">$(RepoDotNetRoot)dotnet.exe</RepoDotNetTool>
-      <RepoDotNetTool Condition="'$(BuildOS)' != 'windows'">$(RepoDotNetRoot)dotnet</RepoDotNetTool>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
-      <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(RepoDotNetRoot)" />
-      <EnvironmentVariables Include="DOTNET_PATH=$(RepoDotNetRoot)" />
-      <EnvironmentVariables Include="DOTNET_HOST_PATH=$(RepoDotNetTool)" />
-
-      <!-- _InitializeDotNetCli is used by websdk and templating to decide whether to init the SDK -->
-      <EnvironmentVariables Include="_InitializeDotNetCli=$(RepoDotNetRoot.TrimEnd('/\'))" />
-      <EnvironmentVariables Include="_DotNetInstallDir=$(RepoDotNetRoot)" />
-    </ItemGroup>
-  </Target>
-
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.ReplaceTextInFile" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="AddNoWarns"
           Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
@@ -156,7 +124,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CopyNuGetConfig" DependsOnTargets="SetCommonProperties">
+  <Target Name="CopyNuGetConfig"
+          Condition="'$(NuGetConfigFile)' != ''">
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(NuGetConfigFile)'))" />
 
     <Copy SourceFiles="$(OriginalNuGetConfigFile)"
@@ -171,7 +140,7 @@
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateNuGetConfigPackageSourcesMappings" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="UpdateNuGetConfig"
           DependsOnTargets="CopyNuGetConfig;GetRepositoryReferenceInfo"
-          Condition="'$(NuGetConfigFile)' != '' and '$(UseIntermediateNuGetConfigFile)' != 'false'"
+          Condition="'$(NuGetConfigFile)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)UpdateNuGetConfig.complete">
     <PropertyGroup>
@@ -285,10 +254,6 @@
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateJson" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="UpdateGlobalJsonVersions"
           Condition="'$(GlobalJsonFile)' != ''">
-    <PropertyGroup>
-      <RepoNETCoreSdkVersion Condition="'$(RepoNETCoreSdkVersion)' == ''">$(NETCoreSdkVersion)</RepoNETCoreSdkVersion>
-    </PropertyGroup>
-
     <ItemGroup>
       <_PossibleCliVersionJsonPath Include="sdk:version" />
       <_PossibleCliVersionJsonPath Include="tools:dotnet" />
@@ -296,13 +261,18 @@
 
     <UpdateJson JsonFilePath="$(GlobalJsonFile)"
                 PathToAttribute="%(_PossibleCliVersionJsonPath.Identity)"
-                NewAttributeValue="$(RepoNETCoreSdkVersion)"
+                NewAttributeValue="$(NETCoreSdkVersion)"
                 SkipUpdateIfMissingKey="true" />
 
     <!-- VB PoC, remove the global runtimes until https://github.com/dotnet/arcade/issues/14283 is resolved. -->
     <UpdateJson JsonFilePath="$(GlobalJsonFile)"
                 PathToAttribute="tools:runtimes"
                 SkipUpdateIfMissingKey="true" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)UpdateGlobalJsonVersions.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
   </Target>
 
   <!-- TODO: Remove when all repos use a consistent set of eng/common files: https://github.com/dotnet/source-build/issues/3710. -->
@@ -476,7 +446,7 @@
   </Target>
 
   <Target Name="SetBuildProperties"
-          DependsOnTargets="SetCommonProperties;GetTransitiveRepositoryReferences">
+          DependsOnTargets="GetTransitiveRepositoryReferences">
     <PropertyGroup>
       <!-- Infer the projects runtime identifier as the vertical's RID when doing a vertical build
            and filter down RID lists to the target RID in such a scenario. This is necessary when the host (SDK) rid
@@ -687,7 +657,7 @@
   <Target Name="CleanupRepo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
-          DependsOnTargets="BackupProjectAssetsJsonFiles;SetCommonProperties"
+          DependsOnTargets="BackupProjectAssetsJsonFiles"
           Condition="'$(IsUtilityProject)' != 'true' and
                      '$(CleanWhileBuilding)' == 'true' and
                      Exists('$(RepoArtifactsDir)')">
@@ -700,7 +670,7 @@
 
       Don't run when source building to prevent the build from hanging indefinitely - https://github.com/dotnet/source-build/issues/4796
     -->
-    <Exec Command="$(RepoDotNetTool) build-server shutdown --vbcscompiler"
+    <Exec Command="$(DotNetTool) build-server shutdown --vbcscompiler"
           Condition="'$(DotNetBuildSourceOnly)' != 'true'"
           EnvironmentVariables="NUGET_PACKAGES=$(RepoArtifactsPackageCache)"
           IgnoreStandardErrorWarningFormat="true"
@@ -790,8 +760,7 @@
     CleanupRepo" />
 
   <Target Name="RepoTest"
-          DependsOnTargets="SetCommonProperties;
-                            UpdateGlobalJsonVersions;
+          DependsOnTargets="UpdateGlobalJsonVersions;
                             DiscoverBuiltSdkOverrides;
                             SetSourceBuiltSdkOverrides">
     <PropertyGroup>
@@ -821,16 +790,10 @@
     <OnError ExecuteTargets="MoveDotNetBuildLogs" />
   </Target>
 
-  <PropertyGroup>
-    <TestDependsOn>
-      $(TestDependsOn);
-      RepoTest;
-      MoveDotNetBuildLogs;
-      CleanupRepo
-    </TestDependsOn>
-  </PropertyGroup>
-
-  <Target Name="Test" DependsOnTargets="$(TestDependsOn)" />
+  <Target Name="Test"
+          DependsOnTargets="RepoTest;
+                            MoveDotNetBuildLogs;
+                            CleanupRepo" />
   <Target Name="VSTest" DependsOnTargets="Test" />
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
