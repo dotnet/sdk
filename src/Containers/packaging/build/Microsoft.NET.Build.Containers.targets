@@ -322,6 +322,7 @@
           ContainerBaseRegistry=$(ContainerBaseRegistry);
           ContainerBaseName=$(ContainerBaseName);
           ContainerBaseTag=$(ContainerBaseTag);
+          ContainerBaseDigest=$(ContainerBaseDigest);
           ContainerRegistry=$(ContainerRegistry);
           _ContainerImageTags=@(ContainerImageTags, ';');
           ContainerRepository=$(ContainerRepository);
@@ -359,7 +360,8 @@
                       ImageTags="@(ContainerImageTags)"
                       BaseRegistry="$(ContainerBaseRegistry)"
                       BaseImageName="$(ContainerBaseName)"
-                      BaseImageTag="$(ContainerBaseTag)">
+                      BaseImageTag="$(ContainerBaseTag)"
+                      BaseImageDigest="$(ContainerBaseDigest)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
     </CreateImageIndex>
