@@ -47,12 +47,12 @@
     <Error Text="Found more than one runtime archive." Condition="@(RuntimeArchiveItem->Count()) &gt; 1" />
 
     <!--
-      Extract runtime version from runitme archive filename.
+      Extract runtime version from the dotnet-runtime archive filename.
       Keep in sync with dotnet-runtime's archive location and filename.
 
       Example:
       artifacts\assets\<config>\Runtime\9.0.100-alpha.1.24057.1\dotnet-runtime-9.0.100-alpha.1.24057.1-fedora.38-x64.tar.gz
-      artifacts\assets\<config>\Runtime\<RuntimeVersion>\dotnet-sdk-<RuntimeVersion>-<TargetRid><ArchiveExtension>
+      artifacts\assets\<config>\Runtime\<RuntimeVersion>\dotnet-runtime-<RuntimeVersion>-<TargetRid><ArchiveExtension>
     -->
     <PropertyGroup>
       <RuntimeFilename>%(RuntimeArchiveItem.Filename)%(RuntimeArchiveItem.Extension)</RuntimeFilename>

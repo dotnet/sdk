@@ -4,8 +4,8 @@
     <!-- The scenario-tests repo shouldn't be cleaned after building as we run tests from it. -->
     <CleanWhileBuilding>false</CleanWhileBuilding>
 
-    <TestArgs>$(TestArgs) /p:TestBinlogDir="$(ArtifactsLogRepoDir.TrimEnd('\'))"</TestArgs>
-    <TestArgs>$(TestArgs) /p:TestDotNetRoot="$(DotNetSdkExtractDir.TrimEnd('\'))"</TestArgs>
+    <TestArgs>$(TestArgs) /p:TestBinlogDir="$(ArtifactsLogRepoDir.TrimEnd('/\'))"</TestArgs>
+    <TestArgs>$(TestArgs) /p:TestDotNetRoot="$(DotNetSdkExtractDir.TrimEnd('/\'))"</TestArgs>
 
     <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
          the Microsoft built packages should be used. -->

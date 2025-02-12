@@ -151,7 +151,6 @@
     <EnvironmentVariables Include="DOTNET_PATH=$(DotNetRoot)" />
     <EnvironmentVariables Include="DOTNET_HOST_PATH=$(DotNetTool)" />
 
-    <!-- _InitializeDotNetCli is used by websdk and templating to decide whether to init the SDK -->
     <EnvironmentVariables Include="_InitializeDotNetCli=$(DotNetRoot.TrimEnd('/\'))" />
     <EnvironmentVariables Include="_DotNetInstallDir=$(DotNetRoot)" />
     <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj"
