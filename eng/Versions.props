@@ -180,8 +180,8 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes.
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
-    <MicrosoftBuildVersion>17.12.27</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.12.27-preview-25106-01</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.12.29</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.12.29-preview-25111-06</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
     <MinimumVSVersion>17.12</MinimumVSVersion>
   </PropertyGroup>
@@ -261,7 +261,7 @@
   <PropertyGroup Label="Infrastructure and test only dependencies">
     <VersionToolsVersion>2.2.0-beta.19072.10</VersionToolsVersion>
     <DotnetDebToolVersion>2.0.0</DotnetDebToolVersion>
-    <MicrosoftDotNetScenarioTestsSdkTemplateTestsVersion>9.0.0-preview.25102.1</MicrosoftDotNetScenarioTestsSdkTemplateTestsVersion>
+    <MicrosoftDotNetScenarioTestsSdkTemplateTestsVersion>9.0.0-preview.25112.2</MicrosoftDotNetScenarioTestsSdkTemplateTestsVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manually updated">
     <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
