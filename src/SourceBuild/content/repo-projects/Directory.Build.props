@@ -52,6 +52,7 @@
 
     <SbrpCacheNuGetSourceName>source-build-reference-package-cache</SbrpCacheNuGetSourceName>
     <SourceBuiltSourceNamePrefix>source-built-</SourceBuiltSourceNamePrefix>
+    <PreviousBuildPassSourceNamePrefix>previous-build-pass-</PreviousBuildPassSourceNamePrefix>
 
     <!-- Set the bootstrap version to the VMR's version if empty. (no bootstrap set). -->
     <ArcadeBootstrapVersion>$([MSBuild]::ValueOrDefault('$(ARCADE_BOOTSTRAP_VERSION)', '$(ArcadeSdkVersion)'))</ArcadeBootstrapVersion>
