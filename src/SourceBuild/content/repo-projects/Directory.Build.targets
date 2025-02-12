@@ -117,6 +117,15 @@
       </RepositoryReferenceInfo>
     </ItemGroup>
 
+    <ItemGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
+      <RepositoryReferenceInfo Include="$(RepositoryName)">
+        <ShippingSourceName>$(PreviousBuildPassSourceNamePrefix)$(RepositoryName)</ShippingSourceName>
+        <NonShippingSourceName>$(PreviousBuildPassSourceNamePrefix)transport-$(RepositoryName)</NonShippingSourceName>
+        <ShippingPackagesPath>$(ArtifactsShippingPackagesDir)/$(RepositoryName)/</ShippingPackagesPath>
+        <NonShippingPackagesPath>$(ArtifactsNonShippingPackagesDir)/$(RepositoryName)/</NonShippingPackagesPath>
+      </RepositoryReferenceInfo>
+    </ItemGroup>
+
     <ItemGroup Condition="'@(RepositoryReferenceInfo)' != ''">
       <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(ShippingSourceName)')" />
       <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(NonShippingSourceName)')" />
@@ -236,6 +245,7 @@
       PreviouslySourceBuiltSourceName="$(PreviouslySourceBuiltNuGetSourceName)"
       PrebuiltSourceName="$(PrebuiltNuGetSourceName)"
       SourceBuiltSourceNamePrefix="$(SourceBuiltSourceNamePrefix)"
+      PreviousBuildPassSourceNamePrefix="$(PreviousBuildPassSourceNamePrefix)"
       CustomSources="$(NetSdkSupportingFeedName)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
