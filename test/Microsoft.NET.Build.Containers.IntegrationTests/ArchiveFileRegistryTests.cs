@@ -13,7 +13,7 @@ public class ArchiveFileRegistryTests
         string archiveOutputPath = TestSettings.TestArtifactsDirectory;
         string expectedCreatedFilePath = Path.Combine(TestSettings.TestArtifactsDirectory, "repository.tar.gz");
 
-        await CreateRegistryAndCallLoadAsync(archiveOutputPath).ConfigureAwait(false);
+        await CreateRegistryAndCallLoadAsync(archiveOutputPath);
         
         Assert.True(File.Exists(expectedCreatedFilePath));    
     }  
@@ -28,7 +28,7 @@ public class ArchiveFileRegistryTests
              "nonexisting" + (includeDirectorySeperatorAtTheEnd ? Path.DirectorySeparatorChar : ""));
         string expectedCreatedFilePath = Path.Combine(archiveOutputPath, "repository.tar.gz");
 
-        await CreateRegistryAndCallLoadAsync(archiveOutputPath).ConfigureAwait(false);
+        await CreateRegistryAndCallLoadAsync(archiveOutputPath);
         
         Assert.True(File.Exists(expectedCreatedFilePath));    
     }
@@ -39,7 +39,7 @@ public class ArchiveFileRegistryTests
         string archiveOutputPath = Path.Combine(TestSettings.TestArtifactsDirectory, "custom-name.withextension");
         string expectedCreatedFilePath = archiveOutputPath;
 
-        await CreateRegistryAndCallLoadAsync(archiveOutputPath).ConfigureAwait(false);
+        await CreateRegistryAndCallLoadAsync(archiveOutputPath);
         
         Assert.True(File.Exists(expectedCreatedFilePath));    
     }
@@ -50,7 +50,7 @@ public class ArchiveFileRegistryTests
         string archiveOutputPath = Path.Combine(TestSettings.TestArtifactsDirectory, $"nonexisting-directory{Path.AltDirectorySeparatorChar}custom-name.withextension");
         string expectedCreatedFilePath = archiveOutputPath;
 
-        await CreateRegistryAndCallLoadAsync(archiveOutputPath).ConfigureAwait(false);
+        await CreateRegistryAndCallLoadAsync(archiveOutputPath);
         
         Assert.True(File.Exists(expectedCreatedFilePath));    
     }
@@ -68,6 +68,6 @@ public class ArchiveFileRegistryTests
             async (img, srcRef, destRef, stream, token) =>
             {
                 await Task.CompletedTask;
-            }).ConfigureAwait(false);
+            });
     }
 }
