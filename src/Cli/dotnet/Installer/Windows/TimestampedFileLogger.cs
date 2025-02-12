@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// The locale-neutral timestamp prefix.
         /// </summary>
-        protected static string TimeStamp => $"[{DateTime.Now:u}]";
+        protected static string TimeStamp => $"[{DateTime.Now.ToString("u").Replace(':', '_').Replace(' ', '_')}]";
 
         /// <summary>
         /// Creates a new <see cref="TimestampedFileLogger"/> instance.

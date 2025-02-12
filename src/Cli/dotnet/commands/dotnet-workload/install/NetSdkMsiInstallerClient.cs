@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
@@ -1125,7 +1127,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             bool shouldLog = true)
         {
             ISynchronizingLogger logger =
-                shouldLog ? new TimestampedFileLogger(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:u}.log"))
+                shouldLog ? new TimestampedFileLogger(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now.ToString("u").Replace(':', '_').Replace(' ', '_')}.log"))
                           : new NullInstallerLogger();
             InstallClientElevationContext elevationContext = new(logger);
 
