@@ -73,18 +73,18 @@
       <Sha>2c27e405e17595694d91892159593d6dd10e61e2</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.12.27">
+    <Dependency Name="Microsoft.Build" Version="17.12.29">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>e0b90a9a8ad3d8fdd186566b33859450c9e4e06c</Sha>
+      <Sha>990a07ed6852e478b0c05599154c3a28c124cdeb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.12.27-preview-25106-01">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.12.29-preview-25111-06">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>e0b90a9a8ad3d8fdd186566b33859450c9e4e06c</Sha>
+      <Sha>990a07ed6852e478b0c05599154c3a28c124cdeb</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.12.27-preview-25106-01">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.12.29-preview-25111-06">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>e0b90a9a8ad3d8fdd186566b33859450c9e4e06c</Sha>
+      <Sha>990a07ed6852e478b0c05599154c3a28c124cdeb</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.9.101-beta.25070.7">
@@ -631,14 +631,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>47e3672c762970073e4282bd563233da86bcca3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25102.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25112.2">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>008b3a357044b102ec30e15ac381c2e880f573af</Sha>
+      <Sha>f219fd635f701e3142be92cb0bb4039cadb39d4d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25102.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25112.2">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>008b3a357044b102ec30e15ac381c2e880f573af</Sha>
+      <Sha>f219fd635f701e3142be92cb0bb4039cadb39d4d</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
