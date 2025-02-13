@@ -92,8 +92,8 @@ namespace Microsoft.DotNet.Tools.Common
             SolutionModel filteredSolution = new();
             SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPathAbsolute);
 
-            // Store the original solution path in the description field of the filtered solution
-            filteredSolution.Description = originalSolutionPathAbsolute;
+            // Store the original (unescaped) solution path in the description field of the filtered solution
+            filteredSolution.Description = Uri.UnescapeDataString(originalSolutionPathAbsolute);
 
             foreach (var platform in originalSolution.Platforms)
             {
