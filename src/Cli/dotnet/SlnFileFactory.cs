@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Tools.Common
             try
             {
                 JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath)).RootElement;
-                originalSolutionPath = Uri.UnescapeDataString(root.GetProperty("solution").GetProperty("path").GetString() ?? string.Empty);
+                originalSolutionPath = Uri.UnescapeDataString(root.GetProperty("solution").GetProperty("path").GetString());
                 filteredSolutionProjectPaths = root.GetProperty("solution").GetProperty("projects").EnumerateArray().Select(p => p.GetString()).ToArray();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
             }
