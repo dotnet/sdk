@@ -42,24 +42,24 @@
         <target state="translated">Das Tool "{0}" ist auf dem neuesten Stand (Version {1}, Manifestdatei "{2}").</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">Die angeforderte Version {0} ist niedriger als die vorhandene Version {1} (Manifestdatei "{2}").</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">Das Tool "{0}" wurde erfolgreich von Version {1} auf Version {2} aktualisiert (Manifestdatei "{3}").</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
+        <target state="translated">Die angeforderte Version {0} ist niedriger als die vorhandene Version {1} (Manifestdatei {2}). Verwenden Sie die Option --Downgrade zulassen, um dieses Update zuzulassen.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest prerelease version (version '{1}').</source>
-        <target state="translated">Das Tool „{0}“ wurde in der neuesten Vorabversion neu installiert (Version „{1}“).</target>
+        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
+        <target state="translated">Das Tool "{0}" wurde mit der Vorabversion (Version "{1}" ) neu installiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">Das Tool "{0}" wurde in der neuesten stabilen Version neu installiert (Version {1}).</target>
+        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
+        <target state="translated">Das Tool "{0}" wurde mit der stabilen Version (Version "{1}" ) neu installiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

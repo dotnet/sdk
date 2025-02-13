@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.ToolManifest
         public PackageId PackageId { get; }
         public NuGetVersion Version { get; }
         public ToolCommandName[] CommandNames { get; }
+        public bool RollForward { get; }
         /// <summary>
         /// The directory that will take effect first.
         /// When it is under .config directory, it is not .config directory
@@ -23,12 +24,14 @@ namespace Microsoft.DotNet.ToolManifest
         public ToolManifestPackage(PackageId packagePackageId,
             NuGetVersion version,
             ToolCommandName[] toolCommandNames,
-            DirectoryPath firstEffectDirectory)
+            DirectoryPath firstEffectDirectory,
+            bool rollForward)
         {
             FirstEffectDirectory = firstEffectDirectory;
             PackageId = packagePackageId;
             Version = version ?? throw new ArgumentNullException(nameof(version));
             CommandNames = toolCommandNames ?? throw new ArgumentNullException(nameof(toolCommandNames));
+            RollForward = rollForward;
         }
 
         public override bool Equals(object obj)
@@ -43,7 +46,8 @@ namespace Microsoft.DotNet.ToolManifest
                    EqualityComparer<NuGetVersion>.Default.Equals(Version, other.Version) &&
                    CommandNamesEqual(other.CommandNames) &&
                    FirstEffectDirectory.Value.TrimEnd('/', '\\')
-                     .Equals(other.FirstEffectDirectory.Value.TrimEnd('/', '\\'), StringComparison.Ordinal);
+                     .Equals(other.FirstEffectDirectory.Value.TrimEnd('/', '\\'), StringComparison.Ordinal) &&
+                     RollForward.Equals(other.RollForward);
         }
 
         private bool CommandNamesEqual(ToolCommandName[] otherCommandNames)
@@ -63,7 +67,7 @@ namespace Microsoft.DotNet.ToolManifest
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(PackageId, Version, CommandNames);
+            return HashCode.Combine(PackageId, Version, CommandNames, RollForward);
         }
 
         public static bool operator ==(ToolManifestPackage tool1,
