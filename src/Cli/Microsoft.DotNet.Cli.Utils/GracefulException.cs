@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Utils
         }
 
 
-        public GracefulException(IEnumerable<string> messages, IEnumerable<string> verboseMessages = null,
+        public GracefulException(IEnumerable<string> messages, IEnumerable<string>? verboseMessages = null,
             bool isUserError = true)
             : this(string.Join(Environment.NewLine, messages), isUserError: isUserError)
         {
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Utils
         {
         }
 
-        public GracefulException(string message, Exception innerException = null, bool isUserError = true) : base(message, innerException)
+        public GracefulException(string message, Exception? innerException = null, bool isUserError = true) : base(message, innerException)
         {
             IsUserError = isUserError;
             Data.Add(ExceptionExtensions.CLI_User_Displayed_Exception, isUserError);

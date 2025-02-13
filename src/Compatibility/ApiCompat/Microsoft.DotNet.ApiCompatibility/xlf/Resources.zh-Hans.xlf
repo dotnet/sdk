@@ -147,11 +147,6 @@
         <target state="translated">{0} 索引应在 0 到 {1} (含)范围内。</target>
         <note />
       </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">在任何搜索目录中都找不到匹配的程序集“{0}”。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MemberExistsOnLeft">
         <source>Member '{0}' exists on {1} but not on {2}</source>
         <target state="translated">成员“{0}”在 {1} 上存在，但在 {2} 上不存在</target>

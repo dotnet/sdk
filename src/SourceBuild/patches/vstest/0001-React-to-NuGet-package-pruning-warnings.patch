@@ -1,0 +1,46 @@
+From 2783ecf7488da808c853b6be4f3a741cfafc7869 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 10 Feb 2025 14:57:53 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/microsoft/vstest/pull/15008
+
+---
+ .../Microsoft.TestPlatform.CoreUtilities.csproj            | 7 ++-----
+ .../Microsoft.TestPlatform.ObjectModel.csproj              | 5 ++---
+ 2 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/src/Microsoft.TestPlatform.CoreUtilities/Microsoft.TestPlatform.CoreUtilities.csproj b/src/Microsoft.TestPlatform.CoreUtilities/Microsoft.TestPlatform.CoreUtilities.csproj
+index 919bb26e7..866225a77 100644
+--- a/src/Microsoft.TestPlatform.CoreUtilities/Microsoft.TestPlatform.CoreUtilities.csproj
++++ b/src/Microsoft.TestPlatform.CoreUtilities/Microsoft.TestPlatform.CoreUtilities.csproj
+@@ -17,11 +17,8 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryVersion)" Condition=" '$(TargetFramework)' == 'netstandard2.0' " />
+-  </ItemGroup>
+-
+-  <ItemGroup>
+-    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
++    <PackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryVersion)" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
++    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.TestPlatform.ObjectModel/Microsoft.TestPlatform.ObjectModel.csproj b/src/Microsoft.TestPlatform.ObjectModel/Microsoft.TestPlatform.ObjectModel.csproj
+index 034807a58..1675d4cb0 100644
+--- a/src/Microsoft.TestPlatform.ObjectModel/Microsoft.TestPlatform.ObjectModel.csproj
++++ b/src/Microsoft.TestPlatform.ObjectModel/Microsoft.TestPlatform.ObjectModel.csproj
+@@ -35,9 +35,8 @@
+   <ItemGroup>
+     <!-- net48 includes tuple, we need to reference it in previous versions but only on .net framework. -->
+     <PackageReference Include="System.ValueTuple" Version="4.5.0" 
+-        Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net48')) != true
+-                    and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net4'))" />
+-    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
++        Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net48')) != 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'" />
++    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+   </ItemGroup>
+ 
+   <ItemGroup>

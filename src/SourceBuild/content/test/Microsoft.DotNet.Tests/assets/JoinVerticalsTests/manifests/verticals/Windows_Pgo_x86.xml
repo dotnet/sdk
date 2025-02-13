@@ -1,0 +1,4 @@
+<Build PublishingVersion="3" Name="dotnet-dotnet" BuildId="20250204.4" Branch="refs/heads/main" Commit="78058a4eefdb5a28d9bd4ada15761285361355ae" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/main" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2635437" AzureDevOpsBuildNumber="20250204.4" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2635437/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false" VerticalName="Windows_Pgo_x86">
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-pgo-10.0.100-preview.2.25104.104-win-x86.zip" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-pgo-10.0.100-preview.2.25104.104-win-x86.zip.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+</Build>
