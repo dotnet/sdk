@@ -286,6 +286,9 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
         [InlineData("solution")]
         public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescaped(string solutionCommand)
         {
+            string[] expectedOutput = { $"{CommandLocalizableStrings.ProjectsHeader}",
+                $"{new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}",
+                $"{Path.Combine("src", "App", "App.csproj")}" };
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnxAndSolutionFoldersWithSpecialCharacters", identifier: "GivenDotnetSlnList-Filter-Unescape")
                 .WithSource()

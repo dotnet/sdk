@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Tools.Common
             try
             {
                 JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath)).RootElement;
-                originalSolutionPath = root.GetProperty("solution").GetProperty("path").GetString();
+                originalSolutionPath = Uri.UnescapeDataString(root.GetProperty("solution").GetProperty("path").GetString() ?? string.Empty);
                 filteredSolutionProjectPaths = root.GetProperty("solution").GetProperty("projects").EnumerateArray().Select(p => p.GetString()).ToArray();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
             }
@@ -92,8 +92,8 @@ namespace Microsoft.DotNet.Tools.Common
             SolutionModel filteredSolution = new();
             SolutionModel originalSolution = CreateFromFileOrDirectory(originalSolutionPathAbsolute);
 
-            // Store the original (unescaped) solution path in the description field of the filtered solution
-            filteredSolution.Description = Uri.UnescapeDataString(originalSolutionPathAbsolute);
+            // Store the original solution path in the description field of the filtered solution
+            filteredSolution.Description = originalSolutionPathAbsolute;
 
             foreach (var platform in originalSolution.Platforms)
             {
