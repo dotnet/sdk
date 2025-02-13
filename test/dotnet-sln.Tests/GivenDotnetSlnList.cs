@@ -290,7 +290,7 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
                 $"{new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}",
                 $"{Path.Combine("src", "App", "App.csproj")}" };
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnxAndSolutionFoldersWithSpecialCharacters", identifier: "GivenDotnetSlnList-Filter-Unescape")
+                .CopyTestAsset("TestAppWithSlnAndSlnfWithSpecialCharactersInPath", identifier: "GivenDotnetSlnList-Filter-Unescape")
                 .WithSource()
                 .Path;
             var cmd = new DotnetCommand(Log)
