@@ -17,8 +17,8 @@ namespace Microsoft.Extensions.Tools.Internal
             var dotnetWatchDefaultPrefix = $"dotnet watch {(suppressEmojis ? ":" : "⌚")} ";
 
             // stdout
-            reporter.Verbose("verbose");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}verbose" + EOL, testConsole.GetOutput());
+            reporter.Verbose("verbose {0}");
+            Assert.Equal($"{dotnetWatchDefaultPrefix}verbose {{0}}" + EOL, testConsole.GetOutput());
             testConsole.Clear();
 
             reporter.Output("out");
