@@ -50,18 +50,14 @@ jobs:
           if [[ "$current_date" > "$third_tuesday" || "$current_date" < "$first_tuesday" ]]; then
             echo "Within the label period. Checking if the branch matches..."
 
-            # Get all open PRs created by app/dotnet-maestro and targeting branches release/8* and release/9* excluding release/9.0.3xx
+            # Get all open PRs targeting branches release/8* and release/9* excluding release/9.0.3xx
             echo "Running gh pr list query..."
             prs=$(gh pr list --state open --limit 200 --json number,baseRefName,author,labels)
             echo "Total PRs Count: $(echo "$prs" | jq length)"
             echo "PRs JSON: $prs"
 
-            echo "Filtering PRs created by app/dotnet-maestro..."
-            prs_by_author=$(echo "$prs" | jq '[.[] | select(.author.login == "app/dotnet-maestro")]')
-            echo "Count of PRs by app/dotnet-maestro: $(echo "$prs_by_author" | jq length)"
-
             echo "Filtering PRs targeting release/8* and release/9* excluding release/9.0.3xx..."
-            prs_targeting_branches=$(echo "$prs_by_author" | jq '[.[] | select(.baseRefName | test("^release/[89].*")) | select(.baseRefName | test("^release/9.0.3xx") | not)]')
+            prs_targeting_branches=$(echo "$prs" | jq '[.[] | select(.baseRefName | test("^release/[89].*")) | select(.baseRefName | test("^release/9.0.3xx") | not)]')
             echo "Count of PRs targeting specific branches: $(echo "$prs_targeting_branches" | jq length)"
 
             echo "Filtering PRs without Branch Lockdown label..."
