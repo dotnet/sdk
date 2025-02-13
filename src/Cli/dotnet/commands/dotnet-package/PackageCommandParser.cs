@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -11,11 +12,11 @@ namespace Microsoft.DotNet.Cli
 
         public static CliCommand GetCommand()
         {
-            CliCommand command = new DocumentedCommand("package", DocsLink);
+            CliCommand command = new DocumentedCommand("package", DocsLink, LocalizableStrings.AppFullName);
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
             command.Subcommands.Add(PackageSearchCommandParser.GetCommand());
 
             return command;
         }
-    } 
+    }
 }

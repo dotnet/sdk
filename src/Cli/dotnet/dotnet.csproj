@@ -49,7 +49,7 @@
     <EmbeddedResource Update="**\dotnet-list\*.resx" Namespace="Microsoft.DotNet.Tools.List" />
     <EmbeddedResource Update="**\dotnet-new\*.resx" Namespace="Microsoft.DotNet.Tools.New" />
     <EmbeddedResource Update="**\dotnet-pack\*.resx" Namespace="Microsoft.DotNet.Tools.Pack" />
-    <EmbeddedResource Update="**\dotnet-package\search\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Search" />
+    <EmbeddedResource Update="**\dotnet-package\*.resx" Namespace="Microsoft.DotNet.Tools.Package" />
     <EmbeddedResource Update="**\dotnet-publish\*.resx" Namespace="Microsoft.DotNet.Tools.Publish" />
     <EmbeddedResource Update="**\dotnet-remove-package\*.resx" Namespace="Microsoft.DotNet.Tools.Remove.PackageReference" />
     <EmbeddedResource Update="**\dotnet-remove-reference\*.resx" Namespace="Microsoft.DotNet.Tools.Remove.ProjectToProjectReference" />

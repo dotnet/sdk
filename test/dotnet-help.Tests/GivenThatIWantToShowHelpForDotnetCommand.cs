@@ -47,6 +47,7 @@ SDK commands:
   new               Create a new .NET project or file.
   nuget             Provides additional NuGet commands.
   pack              Create a NuGet package.
+  package           Provides additional package commands.
   publish           Publish a .NET project for deployment.
   remove            Remove a package or reference from a .NET project.
   restore           Restore dependencies specified in a .NET project.
