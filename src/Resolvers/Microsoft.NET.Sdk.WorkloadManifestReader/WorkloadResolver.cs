@@ -51,7 +51,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 workloadRootPaths = packRootEnvironmentVariable.Split(Path.PathSeparator).Select(path => (path, false)).Concat(workloadRootPaths).ToArray();
             }
 
-            return new WorkloadResolver(manifestProvider, workloadRootPaths, currentRuntimeIdentifiers);
+            try
+            {
+                return new WorkloadResolver(manifestProvider, workloadRootPaths, currentRuntimeIdentifiers);
+            }
+            catch (Exception e)
+            {
+                var ex = new Exception(e.Message, e.InnerException);
+                ex.Data.Add("CLI_User_Displayed_Exception", true);
+                throw ex;
+            }
         }
 
         public static WorkloadResolver CreateForTests(IWorkloadManifestProvider manifestProvider, string dotNetRoot, bool userLocal = false, string? userProfileDir = null, string[]? currentRuntimeIdentifiers = null)
@@ -161,7 +170,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         else
                         {
                             throw new WorkloadManifestCompositionException(Strings.ManifestDependencyMissing, dependency.Key, manifest.Id, manifest.ManifestPath);
-                    }
+                        }
                     }
                 }
 
