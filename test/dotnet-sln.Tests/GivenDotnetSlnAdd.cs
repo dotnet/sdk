@@ -1096,6 +1096,24 @@ Options:
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
         }
 
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".sln")]
+        [InlineData("solution", ".slnx")]
+        public void WhenAddingProjectOutsideDirectoryItShouldNotAddSolutionFolders(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojInParentDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+            var projectToAdd = Path.Combine("..", "Lib", "Lib.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(Path.Join(projectDirectory, "Dir"))
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
+            cmd.Should().Pass(); // TODO: Check actual contents
+        }
+
         private string GetExpectedSlnContents(
             string slnPath,
             string slnTemplateName,
