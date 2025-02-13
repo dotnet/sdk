@@ -613,8 +613,7 @@ public class DiffOperatorsTests : DiffBaseTests
                 """);
     }
 
-    // The checked operator isn't being handled by Roslyn, it's going to be fixed with https://github.com/dotnet/roslyn/pull/77102
-    [Fact(Skip = "https://github.com/dotnet/roslyn/issues/77101")]
+    [Fact]
     public void TestExplicitCheckedOperator()
     {
         RunTest(beforeCode: """
@@ -634,14 +633,14 @@ public class DiffOperatorsTests : DiffBaseTests
                         public static explicit operator checked byte(MyClass value) => checked((byte)(MyClass)value);
                     }
                 }
-                """,
+                """, // Notice they get sorted
                 expectedCode: """
                   namespace MyNamespace
                   {
                       public class MyClass
                       {
-                +         public static explicit operator byte(MyClass value) { throw null; }
                 +         public static explicit operator checked byte(MyClass value) { throw null; }
+                +         public static explicit operator byte(MyClass value) { throw null; }
                       }
                   }
                 """);
@@ -725,10 +724,7 @@ public class DiffOperatorsTests : DiffBaseTests
                 apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32"]);
     }
 
-    // The checked operator isn't being handled by Roslyn, so even when it's not going to show up in the diff,
-    // we try to process it but we end up throwing an exception as it is unrecognized.
-    // It's going to be fixed with https://github.com/dotnet/roslyn/pull/77102
-    [Fact(Skip = "https://github.com/dotnet/roslyn/issues/77101")]
+    [Fact]
     public void TestExcludeUnmodifiedOperator()
     {
         RunTest(beforeCode: """
