@@ -1127,7 +1127,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             bool shouldLog = true)
         {
             ISynchronizingLogger logger =
-                shouldLog ? new TimestampedFileLogger(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now.ToString("u").Replace(':', '_').Replace(' ', '_')}.log"))
+                shouldLog ? new TimestampedFileLogger(Path.Combine(Path.GetTempPath(), string.Create(CultureInfo.InvariantCulture, $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log")))
                           : new NullInstallerLogger();
             InstallClientElevationContext elevationContext = new(logger);
 
