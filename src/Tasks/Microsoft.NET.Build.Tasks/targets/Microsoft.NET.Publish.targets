@@ -22,6 +22,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
     <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
     <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
+
+    <_FirstTargetFrameworkToSupportTrimming>net6.0</_FirstTargetFrameworkToSupportTrimming>
+    <_FirstTargetFrameworkToSupportAot>net7.0</_FirstTargetFrameworkToSupportAot>
+    <_FirstTargetFrameworkToSupportSingleFile>net6.0</_FirstTargetFrameworkToSupportSingleFile>
+
+    <_FirstTargetFrameworkVersionToSupportTrimAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportTrimming)'))</_FirstTargetFrameworkVersionToSupportTrimAnalyzer>
+    <_FirstTargetFrameworkVersionToSupportAotAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportAot)'))</_FirstTargetFrameworkVersionToSupportAotAnalyzer>
+    <_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportSingleFile)'))</_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
@@ -31,7 +39,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemDefinitionGroup>
 
   <Target Name="_ComputeToolPackInputsToProcessFrameworkReferences" BeforeTargets="ProcessFrameworkReferences">
-    <!-- Keep this in sync with the warnings produced for RequiresILLinkPack in ProcessFrameworkReferences.cs. 
+    <!-- Keep this in sync with the warnings produced for RequiresILLinkPack in ProcessFrameworkReferences.cs.
          Must be set late enough to see the inferred value of EnableSingleFileAnalyzer. -->
     <PropertyGroup>
       <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == '' And (
@@ -42,7 +50,6 @@ Copyright (c) .NET Foundation. All rights reserved.
           '$(EnableSingleFileAnalyzer)' == 'true')">true</_RequiresILLinkPack>
       <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == ''">false</_RequiresILLinkPack>
     </PropertyGroup>
-
 
     <!-- ProcessFrameworkReferences warns when the project settings introduce a dependency on a
          tool pack that's not available for the target framework. For trimming, AOT, and single-file, the recommendation
@@ -60,9 +67,6 @@ Copyright (c) .NET Foundation. All rights reserved.
          and silences the warning if it is. -->
 
     <PropertyGroup>
-      <_FirstTargetFrameworkToSupportTrimming>net6.0</_FirstTargetFrameworkToSupportTrimming>
-      <_FirstTargetFrameworkToSupportAot>net7.0</_FirstTargetFrameworkToSupportAot>
-      <_FirstTargetFrameworkToSupportSingleFile>net6.0</_FirstTargetFrameworkToSupportSingleFile>
       <!-- The min non-EOL TFM has already caught up with the first TFM to support trimming/singlefile. No need to compare against it. -->
       <_MinNonEolTargetFrameworkForTrimming>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForTrimming>
       <_MinNonEolTargetFrameworkForSingleFile>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForSingleFile>
@@ -97,7 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Don't warn if the library multitargets and includes TFM that's supported by trimming/AOT and is supported by the min non-EOL TFM that supports trimming/AOT. -->
       <_SilenceIsTrimmableUnsupportedWarning Condition="'$(_SilenceIsTrimmableUnsupportedWarning)' == '' And
                                                         @(_TargetFrameworkToSilenceIsTrimmableUnsupportedWarning->Count()) > 0">true</_SilenceIsTrimmableUnsupportedWarning>
-      <_SilenceIsAotCompatibleUnsupportedWarning Condition="'$(_SilenceIsAotCompatibleUnsupportedWarning)' == '' And 
+      <_SilenceIsAotCompatibleUnsupportedWarning Condition="'$(_SilenceIsAotCompatibleUnsupportedWarning)' == '' And
                                                             @(_TargetFrameworkToSilenceIsAotCompatibleUnsupportedWarning->Count()) > 0">true</_SilenceIsAotCompatibleUnsupportedWarning>
       <_SilenceEnableSingleFileAnalyzerUnsupportedWarning Condition="'$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)' == '' And
                                                           @(_TargetFrameworkToSilenceEnableSingleFileAnalyzerUnsupportedWarning->Count()) > 0">true</_SilenceEnableSingleFileAnalyzerUnsupportedWarning>
@@ -190,7 +194,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="CannotIncludeSymbolsInSingleFile" />
     <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(RuntimeIdentifier)' == ''"
                  ResourceName="CannotHaveSingleFileWithoutRuntimeIdentifier" />
-    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(UseAppHost)' != 'true'"
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(UseAppHost)' != 'true' and '$(PublishAot)' != 'true'"
                  ResourceName="CannotHaveSingleFileWithoutAppHost" />
     <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And
                             '$(EnableCompressionInSingleFile)' == 'true' And
@@ -692,6 +696,60 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+                                        _CreateSingleFileHost
+      Create the single-file host for the publish scenario if app is being published as a self-contained single-file .net5+ app
+    ============================================================
+     -->
+  <Target Name="_CreateSingleFileHost"
+          Inputs="@(IntermediateAssembly);$(SingleFileHostSourcePath)"
+          Outputs="$(SingleFileHostIntermediatePath)"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration"
+          Condition="'$(_UseSingleFileHostForPublish)' == 'true' and
+                     Exists('@(IntermediateAssembly)') and
+                     Exists('$(SingleFileHostSourcePath)')">
+    <CreateAppHost AppHostSourcePath="$(SingleFileHostSourcePath)"
+                   AppHostDestinationPath="$(SingleFileHostIntermediatePath)"
+                   AppBinaryName="$(AssemblyName)$(TargetExt)"
+                   IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
+                   WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)"
+                   Retries="$(CopyRetryCount)"
+                   RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+                   EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   DisableCetCompat="$(_DisableCetCompat)"
+                   />
+  </Target>
+
+  <!--
+    ============================================================
+    _CreateAppHostForPublish
+    Create the apphost for the publish scenario if app is configuring .NET install search behaviour
+    Because there is no SDK support yet for output with a layout conforming to the configuration,
+    only do this on publish, such that the inner dev loop is unaffected.
+    ============================================================
+     -->
+  <Target Name="_CreateAppHostForPublish"
+          Inputs="@(IntermediateAssembly);$(AppHostSourcePath)"
+          Outputs="$(AppHostForPublishIntermediatePath)"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration"
+          Condition="'$(_UpdateAppHostForPublish)' == 'true' and
+                     Exists('@(IntermediateAssembly)') and
+                     Exists('$(AppHostSourcePath)')">
+    <CreateAppHost AppHostSourcePath="$(AppHostSourcePath)"
+                   AppHostDestinationPath="$(AppHostForPublishIntermediatePath)"
+                   AppBinaryName="$(AssemblyName)$(TargetExt)"
+                   IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
+                   WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)"
+                   Retries="$(CopyRetryCount)"
+                   RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+                   EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   DisableCetCompat="$(_DisableCetCompat)"
+                   DotNetSearchLocations="$(AppHostDotNetSearch)"
+                   AppRelativeDotNet="$(AppHostRelativeDotNet)"
+                   />
+  </Target>
+
+  <!--
+    ============================================================
                                         _ComputeCopyToPublishDirectoryItems
     ============================================================
     -->
@@ -732,6 +790,8 @@ Copyright (c) .NET Foundation. All rights reserved.
           KeepDuplicateOutputs=" '$(MSBuildDisableGetCopyToPublishDirectoryItemsOptimization)' == '' "
           DependsOnTargets="AssignTargetPaths;
                             DefaultCopyToPublishDirectoryMetadata;
+                            _CreateSingleFileHost;
+                            _CreateAppHostForPublish;
                             _SplitProjectReferencesByFileExistence;
                             _GetProjectReferenceTargetFrameworkProperties">
 
@@ -820,6 +880,24 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(_UseSingleFileHostForPublish)' == 'true' and Exists('$(SingleFileHostIntermediatePath)')">
+      <!-- Remove non-single-file apphost from items to publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+
+      <!-- Add the single-file host created as part of publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Include="$(SingleFileHostIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(_UpdateAppHostForPublish)' == 'true' and Exists('$(AppHostForPublishIntermediatePath)')">
+      <!-- Remove apphost from build from items to publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+
+      <!-- Add the apphost created as part of publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Include="$(AppHostForPublishIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
     </ItemGroup>
 
     <ItemGroup>
@@ -1019,7 +1097,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="GenerateSingleFileBundle"
-          Condition="'$(PublishSingleFile)' == 'true'"
+          Condition="'$(PublishSingleFile)' == 'true' and '$(PublishAot)' != 'true'"
           DependsOnTargets="_ComputeFilesToBundle;PrepareForBundle;_GenerateSingleFileBundleInputCache"
           Inputs="@(FilesToBundle);$(_GenerateSingleFileBundlePropertyInputsCache)"
           Outputs="$(PublishedSingleFilePath)">

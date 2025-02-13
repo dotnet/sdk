@@ -1,0 +1,25 @@
+// Container suitable for investigating issues with source build
+// Contains the VMR (dotnet/dotnet) with applied changes from the current PR
+// The container supports source-building the SDK
+{
+    "name": "VMR with PR changes",
+    "image": "mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39",
+    "hostRequirements": {
+        // A completely source built .NET is >64 GB with all the repos/artifacts
+        "storage": "128gb"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.csharp"
+            ]
+        },
+        "codespaces": {
+            "openFiles": [
+                "sdk/.devcontainer/vmr/README.md"
+            ]
+        }
+    },
+    "onCreateCommand": "${containerWorkspaceFolder}/sdk/.devcontainer/vmr/init.sh",
+    "workspaceFolder": "/workspaces"
+}

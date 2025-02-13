@@ -147,7 +147,7 @@ setTimeout(async function () {
       // to be a failure. These deltas will get applied later, when Blazor completes initialization.
       deltas.forEach(d => {
         try {
-          window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta)
+          window.Blazor._internal.applyHotReload(d.moduleId, d.metadataDelta, d.ilDelta, d.pdbDelta, d.updatedTypes)
         } catch (error) {
           console.warn(error);
           applyError = error;
