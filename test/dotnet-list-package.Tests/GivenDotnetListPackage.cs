@@ -4,7 +4,7 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.List.PackageReferences;
+using Microsoft.DotNet.Tools.Package.List;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
 {
