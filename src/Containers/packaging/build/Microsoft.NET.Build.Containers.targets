@@ -255,7 +255,6 @@
                     BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
-                    ImageFormat="$(ContainerImageFormat)"
                     BaseImageDigest="$(ContainerBaseDigest)"
                     ImageFormat="$(ContainerImageFormat)"
                     LocalRegistry="$(LocalRegistry)"

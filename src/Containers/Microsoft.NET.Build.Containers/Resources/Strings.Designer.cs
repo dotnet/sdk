@@ -205,6 +205,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Building image &apos;{0}&apos; for runtime identifier &apos;{1}&apos; on top of base image &apos;{2}&apos;..
+        /// </summary>
+        internal static string ContainerBuilder_StartBuildingImageForRid {
+            get {
+                return ResourceManager.GetString("ContainerBuilder_StartBuildingImageForRid", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER3001: Failed creating {0} process..
         /// </summary>
         internal static string ContainerRuntimeProcessCreationFailed {
