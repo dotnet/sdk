@@ -280,5 +280,21 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
             cmd.Should().Pass();
             cmd.StdOut.Should().ContainAll(expectedOutput);
         }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescaped(string solutionCommand)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnxAndSolutionFoldersWithSpecialCharacters", identifier: "GivenDotnetSlnList-Filter-Unescape")
+                .WithSource()
+                .Path;
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "list");
+
+            cmd.Should().Pass();
+        }
     }
 }
