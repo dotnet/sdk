@@ -3,11 +3,11 @@
 
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
-
 
 /// <summary>
 /// The class builds new image based on the base image.
@@ -91,9 +91,10 @@ internal sealed class ImageBuilder
             Config = imageJsonStr,
             ImageDigest = imageDigest,
             ImageSha = imageSha,
-            ImageSize = imageSize,
-            Manifest = newManifest,
-            ManifestMediaType = ManifestMediaType
+            Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
+            ManifestDigest = newManifest.GetDigest(),
+            ManifestMediaType = ManifestMediaType,
+            Layers = _manifest.Layers
         };
     }
 
