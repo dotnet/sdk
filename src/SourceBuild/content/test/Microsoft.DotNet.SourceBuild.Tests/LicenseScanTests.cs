@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using ExclusionsLibrary;
 using TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -195,7 +196,8 @@ public class LicenseScanTests : TestBase
         // In other words, the baseline will be fully representative of the licenses that apply to the files that are listed there.
 
         // We only care about the license expressions that are in the target repo.
-        ExclusionsHelper exclusionsHelper = new("LicenseExclusions.txt", BaselineSubDir, "^" + Regex.Escape(_relativeRepoPath) + "/");
+        string exclusionsFilePath = BaselineHelper.GetBaselineFilePath("LicenseExclusions.txt", BaselineSubDir);
+        ExclusionsHelper exclusionsHelper = new(exclusionsFilePath, "^" + Regex.Escape(_relativeRepoPath) + "/");
 
         for (int i = scancodeResults.Files.Count - 1; i >= 0; i--)
         {
@@ -238,7 +240,7 @@ public class LicenseScanTests : TestBase
                 }
             }
         }
-        exclusionsHelper.GenerateNewBaselineFile(_targetRepo);
+        exclusionsHelper.GenerateNewBaselineFile(updatedFileTag: _targetRepo, targetDirectory: Config.LogsDirectory);
     }
 
     private class ScancodeResults
