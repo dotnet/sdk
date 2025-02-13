@@ -25,6 +25,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public WorkloadResolver.PackInfo TryGetPackInfo(WorkloadPackId packId) => throw new NotImplementedException();
         public bool IsPlatformIncompatibleWorkload(WorkloadId workloadId) => throw new NotImplementedException();
         public string GetManifestVersion(string manifestId) => throw new NotImplementedException();
+        public string GetManifestFeatureBand(string manifestId) => throw new NotImplementedException();
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests() => throw new NotImplementedException();
         public IWorkloadResolver CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider) => throw new NotImplementedException();
         public string GetSdkFeatureBand() => "12.0.400";
