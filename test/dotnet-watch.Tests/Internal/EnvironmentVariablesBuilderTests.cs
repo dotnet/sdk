@@ -9,8 +9,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void Value()
         {
             var builder = new EnvironmentVariablesBuilder();
-            builder.DotNetStartupHookDirective.Add("a");
-            builder.AspNetCoreHostingStartupAssembliesVariable.Add("b");
+            builder.DotNetStartupHooks.Add("a");
+            builder.AspNetCoreHostingStartupAssemblies.Add("b");
 
             var env = builder.GetEnvironment();
             AssertEx.SequenceEqual(
@@ -24,10 +24,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void MultipleValues()
         {
             var builder = new EnvironmentVariablesBuilder();
-            builder.DotNetStartupHookDirective.Add("a1");
-            builder.DotNetStartupHookDirective.Add("a2");
-            builder.AspNetCoreHostingStartupAssembliesVariable.Add("b1");
-            builder.AspNetCoreHostingStartupAssembliesVariable.Add("b2");
+            builder.DotNetStartupHooks.Add("a1");
+            builder.DotNetStartupHooks.Add("a2");
+            builder.AspNetCoreHostingStartupAssemblies.Add("b1");
+            builder.AspNetCoreHostingStartupAssemblies.Add("b2");
 
             var env = builder.GetEnvironment();
             AssertEx.SequenceEqual(
