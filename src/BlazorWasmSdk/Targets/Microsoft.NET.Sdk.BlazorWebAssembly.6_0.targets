@@ -50,9 +50,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
 
+    <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
     <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
-    <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
-    <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true'">false</WasmFingerprintDotnetJs>
+    <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
+
+    <!--  8 <  .NET      we want to fingerprint dotnet.js because it's part of the blazor.boot.json which is loaded from blazor.webassembly.js -->
+    <!--  8 <= .NET < 10 we don't want to fingerprint dotnet.js because it's path is hardcoded in blazor.webassembly.js -->
+    <!-- 10 <= .NET      we want to leave fingerprinting to WasmSDK because it knows if import maps where applied -->
+    <WasmFingerprintDotnetJs Condition="'$(_TargetingNETBefore80)' == 'true'">true</WasmFingerprintDotnetJs>
+    <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true' and '$(_TargetingNETBefore100)' == 'true'">false</WasmFingerprintDotnetJs>
     <WasmEnableWebcil Condition="'$(WasmEnableWebcil)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or '$(_TargetingNET80OrLater)' != 'true')">false</WasmEnableWebcil>
 
     <!-- Turn off parts of the build that do not apply to Blazor projects -->
