@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// The locale-neutral timestamp prefix.
         /// </summary>
-        protected static string TimeStamp => $"[{string.Create(CultureInfo.InvariantCulture, $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log")}]";
+        protected static string TimeStamp => $"[{string.Create(CultureInfo.InvariantCulture, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}")}]";
 
         /// <summary>
         /// Creates a new <see cref="TimestampedFileLogger"/> instance.
