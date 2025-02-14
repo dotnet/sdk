@@ -37,7 +37,23 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             _config = config ?? JoinVerticalsConfig.GetDefaultConfig();
         }
 
-        public IEnumerable<AssetVerticalMatchResult> SelectAssetMatchingVertical(IEnumerable<BuildAssetsManifest> verticalManifests, HashSet<string>? excludeAssetsByName = null)
+        // Temporary solution to exclude some assets from Unified Build
+        private bool ExcludeAsset(AssetVerticalMatchResult assetVerticalMatch)
+        {
+            return
+                // Skip packages with stable version
+                // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4892
+                StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.Diagnostics.NETCore.Client") ||
+                StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.NET.Sdk.Aspire.Manifest-8.0.100") ||
+                // Skip all Nuget packaged as they are missing UB version suffix +100 patch version
+                // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4894
+                StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.Asset.RepoOrigin, "nuget-client") ||
+                // Skip productVersion.txt files from all repos except sdk
+                // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4596
+                (assetVerticalMatch.AssetId.Contains("/productVersion.txt", StringComparison.OrdinalIgnoreCase) && (assetVerticalMatch.Asset.RepoOrigin != "sdk"));
+        }
+
+        public IEnumerable<AssetVerticalMatchResult> SelectAssetMatchingVertical(IEnumerable<BuildAssetsManifest> verticalManifests)
         {
             bool IsExternalAsset(ManifestAsset asset)
             {
@@ -58,17 +74,13 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             {
                 string assetId = assetGroup.Key;
 
-                if (excludeAssetsByName != null && excludeAssetsByName.Contains(assetId))
-                {
-                    continue;
-                }
-
                 int verticalsCount = assetGroup.Count();
                 var verticalNames = assetGroup.Select(o => o.manifest.VerticalName!).ToList();
                 if (verticalsCount > 0)
                 {
                     (AssetVerticalMatchType matchType, string verticalName) = SelectVerticalForAsset(verticalNames);
-                    yield return new AssetVerticalMatchResult
+
+                    AssetVerticalMatchResult assetVerticalMatch = new AssetVerticalMatchResult
                     {
                         AssetId = assetGroup.Key,
                         MatchType = matchType,
@@ -76,6 +88,11 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
                         Asset = assetGroup.FirstOrDefault(o => VerticalNameMatches(o.manifest.VerticalName, verticalName)).asset,
                         OtherVerticals = assetGroup.Select(o => o.manifest.VerticalName!).Where(o => !VerticalNameMatches(o, verticalName)).ToList()
                     };
+
+                    if (!ExcludeAsset(assetVerticalMatch))
+                    {
+                        yield return assetVerticalMatch;
+                    }
                 }
             }
         }
