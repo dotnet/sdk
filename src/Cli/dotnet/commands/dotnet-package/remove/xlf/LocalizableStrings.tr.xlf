@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="AppFullName">
         <source>Remove a NuGet package reference from the project.</source>
-        <target state="new">Remove a NuGet package reference from the project.</target>
+        <target state="translated">Bir NuGet paketi başvurusunu projeden kaldırın.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command to remove package reference.</source>
-        <target state="new">Command to remove package reference.</target>
+        <target state="translated">Paket başvurusunu kaldırma komutu</target>
         <note />
       </trans-unit>
       <trans-unit id="AppHelpText">
         <source>The package reference to remove.</source>
-        <target state="new">The package reference to remove.</target>
+        <target state="translated">Kaldırılacak paket başvurusu.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageReference">
         <source>Specify only one package reference to remove.</source>
-        <target state="new">Specify only one package reference to remove.</target>
+        <target state="translated">Kaldırmak için yalnızca bir paket başvurusu belirtin.</target>
         <note />
       </trans-unit>
     </body>
