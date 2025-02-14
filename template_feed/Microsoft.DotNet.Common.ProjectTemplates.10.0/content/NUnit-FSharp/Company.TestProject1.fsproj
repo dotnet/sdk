@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="UnitTest1.fs"/>
+    <Compile Include="NUnitTestSettings.fs"/>
     <Compile Include="Program.fs"/>
   </ItemGroup>
 
