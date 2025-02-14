@@ -86,13 +86,19 @@ namespace Microsoft.DotNet.Watch
             => false;
 
         /// <summary>
-        /// True to call <see cref="ReportProcessOutput"/> when launched process writes to standard output.
+        /// If true, the output of the process will be prefixed with the project display name.
         /// Used for testing.
         /// </summary>
-        bool EnableProcessOutputReporting { get; }
+        public bool PrefixProcessOutput
+            => false;
 
+        /// <summary>
+        /// Reports the output of a process that is being watched.
+        /// </summary>
+        /// <remarks>
+        /// Not used to report output of dotnet-build processed launched by dotnet-watch to build or evaluate projects.
+        /// </remarks>
         void ReportProcessOutput(OutputLine line);
-        void ReportProcessOutput(ProjectGraphNode project, OutputLine line);
 
         void Report(MessageDescriptor descriptor, params object?[] args)
             => Report(descriptor, prefix: "", args);

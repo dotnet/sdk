@@ -7,11 +7,16 @@ namespace Microsoft.NET.TestFramework.Utilities
 {
     public static class RegexPatternHelper
     {
-        public static string GenerateProjectRegexPattern(string projectName, string result, bool useCurrentVersion, string configuration, string? exitCode = null)
+        public static string GenerateProjectRegexPattern(string projectName, string result, bool useCurrentVersion, string configuration, string? exitCode = null, string? runtime = null)
         {
             string version = useCurrentVersion ? ToolsetInfo.CurrentTargetFramework : DotnetVersionHelper.GetPreviousDotnetVersion();
+
+            string runtimeIdentifier = runtime is not null ?
+                $"{runtime}{PathUtility.GetDirectorySeparatorChar()}" :
+                string.Empty;
+
             string exitCodePattern = exitCode == null ? string.Empty : $@".*\s+Exit code: {exitCode}";
-            return $@".+{configuration}{PathUtility.GetDirectorySeparatorChar()}{version}{PathUtility.GetDirectorySeparatorChar()}{projectName}\.dll\s+\({version}\|[a-zA-Z][1-9]+\)\s{result}{exitCodePattern}";
+            return $@".+{configuration}{PathUtility.GetDirectorySeparatorChar()}{version}{PathUtility.GetDirectorySeparatorChar()}{runtimeIdentifier}{projectName}\.dll\s+\({version}\|[a-zA-Z][1-9]+\)\s{result}{exitCodePattern}";
         }
 
         public static string GenerateProjectRegexPattern(string projectName, bool useCurrentVersion, string configuration, string prefix, List<string>? suffix = null, bool addVersionAndArchPattern = true)

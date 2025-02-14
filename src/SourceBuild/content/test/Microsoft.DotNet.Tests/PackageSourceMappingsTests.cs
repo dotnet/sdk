@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests
 
         private const string NetSdkSupportingFeedName = "net-sdk-supporting-feed";
         private const string ArcadeSourceName = "source-built-arcade";
-        private const string RuntimeSourceName = "source-built-runtime";
+        private const string RuntimeSourceName = "previous-build-pass-runtime";
         private const string PrebuiltSourceName = "prebuilt";
         private const string PreviouslySourceBuiltSourceName = "previously-source-built";
         private const string ReferencePackagesSourceName = "reference-packages";
@@ -89,6 +89,7 @@ namespace Microsoft.DotNet.Tests
                 SbrpCacheSourceName = "source-build-reference-package-cache",
                 SbrpRepoSrcPath = TestSetup.SourceBuildReferencePackagesRepo,
                 SourceBuiltSourceNamePrefix = "source-built-",
+                PreviousBuildPassSourceNamePrefix = "previous-build-pass-",
                 NuGetConfigFile = modifiedNugetConfig,
                 BuildWithOnlineFeeds = useOnlineFeeds,
                 SourceBuildSources = sources,

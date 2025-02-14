@@ -87,7 +87,7 @@ src/roslyn/src/Compilers/Test/Resources/Core/**/*.exe
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.Dll
 src/roslyn/src/ExpressionEvaluator/Core/Source/ExpressionCompiler/Resources/WindowsProxy.winmd
 src/roslyn/src/Workspaces/CoreTest/Resources/*
-src/roslyn/src/Workspaces/MSBuildTest/Resources/Dlls/*.dll
+src/roslyn/src/Workspaces/MSBuild/Test/Resources/Dlls/*.dll
 src/roslyn/**/CodeAnalysisTest/**/*.res
 src/roslyn/**/CodeAnalysisTest/**/*.blah
 src/roslyn/**/CodeAnalysisTest/**/*.RES
