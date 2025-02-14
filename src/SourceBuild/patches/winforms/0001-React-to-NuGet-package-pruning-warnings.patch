@@ -1,0 +1,62 @@
+From 53e3e50488370a0640f0e46b3947bb1be1bd232d Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 14 Feb 2025 12:55:46 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/winforms/pull/12955
+
+---
+ .../src/System.Private.Windows.Core.csproj                       | 1 -
+ .../System.Private.Windows.GdiPlus.csproj                        | 1 -
+ .../src/System.Windows.Forms.Primitives.csproj                   | 1 -
+ src/System.Windows.Forms/src/System.Windows.Forms.csproj         | 1 -
+ 4 files changed, 4 deletions(-)
+
+diff --git a/src/System.Private.Windows.Core/src/System.Private.Windows.Core.csproj b/src/System.Private.Windows.Core/src/System.Private.Windows.Core.csproj
+index 48c1088456c..f46bbd1de3e 100644
+--- a/src/System.Private.Windows.Core/src/System.Private.Windows.Core.csproj
++++ b/src/System.Private.Windows.Core/src/System.Private.Windows.Core.csproj
+@@ -30,7 +30,6 @@
+   <ItemGroup>
+     <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" />
+     <PackageReference Include="System.Formats.Nrbf" />
+-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/System.Private.Windows.GdiPlus/System.Private.Windows.GdiPlus.csproj b/src/System.Private.Windows.GdiPlus/System.Private.Windows.GdiPlus.csproj
+index f795299ef64..f07575a1ae2 100644
+--- a/src/System.Private.Windows.GdiPlus/System.Private.Windows.GdiPlus.csproj
++++ b/src/System.Private.Windows.GdiPlus/System.Private.Windows.GdiPlus.csproj
+@@ -32,7 +32,6 @@
+   <ItemGroup>
+     <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" />
+     <PackageReference Include="System.Formats.Nrbf" />
+-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/System.Windows.Forms.Primitives/src/System.Windows.Forms.Primitives.csproj b/src/System.Windows.Forms.Primitives/src/System.Windows.Forms.Primitives.csproj
+index 027b42e8757..8ff20010026 100644
+--- a/src/System.Windows.Forms.Primitives/src/System.Windows.Forms.Primitives.csproj
++++ b/src/System.Windows.Forms.Primitives/src/System.Windows.Forms.Primitives.csproj
+@@ -45,7 +45,6 @@
+     <PackageReference Include="System.Configuration.ConfigurationManager" />
+     <PackageReference Include="System.Resources.Extensions" />
+     <PackageReference Include="System.Windows.Extensions" />
+-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/System.Windows.Forms/src/System.Windows.Forms.csproj b/src/System.Windows.Forms/src/System.Windows.Forms.csproj
+index 610aa60fc51..d9cd24b3165 100644
+--- a/src/System.Windows.Forms/src/System.Windows.Forms.csproj
++++ b/src/System.Windows.Forms/src/System.Windows.Forms.csproj
+@@ -39,7 +39,6 @@
+     <PackageReference Include="System.Configuration.ConfigurationManager" />
+     <PackageReference Include="System.Resources.Extensions" />
+     <PackageReference Include="System.Windows.Extensions" />
+-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+   </ItemGroup>
+ 
+   <ItemGroup>
