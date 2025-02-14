@@ -110,40 +110,84 @@ namespace Microsoft.NET.Build.Tasks
         {
             Dictionary<string, NuGetVersion> packagesToPrune = new();
 
+            if (key.TargetFrameworkIdentifier.Equals(".NETCoreApp") && key.FrameworkReferences.Count == 0)
+            {
+                //  For .NET Core projects, don't prune any packages if there are no framework references
+                return Array.Empty<TaskItem>();
+            }
+
+            bool useFrameworkPackageData;
+            if (!key.TargetFrameworkIdentifier.Equals(".NETCoreApp") || Version.Parse(key.TargetFrameworkVersion).Major < 10)
+            {
+                //  Use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
+                useFrameworkPackageData = true;
+            }
+            else
+            {
+                //  Use bundled "prune package data" for .NET 10 and higher.  During the redist build, this comes from targeting packs and
+                //  is laid out in the PrunePackageData folder.
+                useFrameworkPackageData = false;
+            }
+
+
             foreach (var frameworkReference in key.FrameworkReferences)
             {
-                var packagesFromFrameworkPackages = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoot);
-                var packagesFromPrunePackageData = LoadPackagesToPruneFromPrunePackageData(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, prunePackageDataRoot);
-
-                //  TODO: What about the WindowsDesktop profiles?
-                if (packagesFromPrunePackageData == null && !frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
+                Dictionary<string, NuGetVersion> packagesForFrameworkReference;
+                if (useFrameworkPackageData)
                 {
-                    log.LogError("NETSDK9999: Prune package data not found for {0}", frameworkReference);
+                    packagesForFrameworkReference = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoot);
                 }
-
-                if (packagesFromPrunePackageData != null)
+                else
                 {
+                    packagesForFrameworkReference = LoadPackagesToPruneFromPrunePackageData(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, prunePackageDataRoot);
 
-                    foreach (var missingPackage in packagesFromFrameworkPackages.Keys.Except(packagesFromPrunePackageData.Keys))
+                    //  For the version of the runtime that matches the current SDK version, we don't include the prune package data in the PrunePackageData folder.  Rather,
+                    //  we can load it from the targeting packs that are packaged with the SDK.
+                    if (packagesForFrameworkReference == null)
                     {
-                        log.LogError("NETSDK9999: Prune package data mismatch: Package {0} was listed in framework packages data but not in prune package data for {1} {2}", missingPackage, frameworkReference, key.TargetFrameworkVersion);
-                    }
-
-                    foreach (var missingPackage in packagesFromPrunePackageData.Keys.Except(packagesFromFrameworkPackages.Keys))
-                    {
-                        log.LogError("NETSDK9999: Prune package data mismatch: Package {0} was listed in prune package data but not in framework packages data for {1} {2}", missingPackage, frameworkReference, key.TargetFrameworkVersion);
-                    }
-
-                    foreach (var package in packagesFromFrameworkPackages)
-                    {
-                        if (packagesFromPrunePackageData.TryGetValue(package.Key, out var other) && package.Value != other)
-                        {
-                            log.LogError($"NETSDK9999: Prune package data mismatch: Package {package.Key} had version {package.Value} in framework packages data but version {other} in prune package data.");
-                        }
+                        packagesForFrameworkReference = LoadPackagesToPruneFromTargetingPack(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoot);
                     }
                 }
 
-                AddPackagesToPrune(packagesToPrune, packagesFromFrameworkPackages.Select(kvp => (kvp.Key, kvp.Value)), log);
+                if (packagesForFrameworkReference == null)
+                {
+                    //  We didn't find the data for packages to prune.  This indicates that there's a bug in the SDK construction, so fail hard here so that we fix that
+                    //  (rather than a warning that might be missed).
+                    //  Since this indicates an error in the SDK build, the message probably doesn't need to be localized.
+                    throw new Exception($"Prune package data not found for {key.TargetFrameworkIdentifier} {key.TargetFrameworkVersion} {frameworkReference}");
+                }
+
+                //var packagesFromFrameworkPackages = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoot);
+                //var packagesFromPrunePackageData = LoadPackagesToPruneFromPrunePackageData(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, prunePackageDataRoot);
+
+                ////  TODO: What about the WindowsDesktop profiles?
+                //if (packagesFromPrunePackageData == null && !frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    log.LogError("NETSDK9999: Prune package data not found for {0}", frameworkReference);
+                //}
+
+                //if (packagesFromPrunePackageData != null)
+                //{
+                //    foreach (var missingPackage in packagesFromFrameworkPackages.Keys.Except(packagesFromPrunePackageData.Keys))
+                //    {
+                //        log.LogError("NETSDK9999: Prune package data mismatch: Package {0} was listed in framework packages data but not in prune package data for {1} {2}", missingPackage, frameworkReference, key.TargetFrameworkVersion);
+                //    }
+
+                //    foreach (var missingPackage in packagesFromPrunePackageData.Keys.Except(packagesFromFrameworkPackages.Keys))
+                //    {
+                //        log.LogError("NETSDK9999: Prune package data mismatch: Package {0} was listed in prune package data but not in framework packages data for {1} {2}", missingPackage, frameworkReference, key.TargetFrameworkVersion);
+                //    }
+
+                //    foreach (var package in packagesFromFrameworkPackages)
+                //    {
+                //        if (packagesFromPrunePackageData.TryGetValue(package.Key, out var other) && package.Value != other)
+                //        {
+                //            log.LogError($"NETSDK9999: Prune package data mismatch: Package {package.Key} had version {package.Value} in framework packages data but version {other} in prune package data.");
+                //        }
+                //    }
+                //}
+
+                AddPackagesToPrune(packagesToPrune, packagesForFrameworkReference.Select(kvp => (kvp.Key, kvp.Value)), log);
             }
 
             return packagesToPrune.Select(p =>
@@ -175,11 +219,20 @@ namespace Microsoft.NET.Build.Tasks
                     var packageOverrideLines = File.ReadAllLines(packageOverridesPath);
                     var overrides = PackageOverride.CreateOverriddenPackages(packageOverrideLines);
                     return overrides.ToDictionary(o => o.id, o => o.version);
-
                 }
             }
 
             return null;
+        }
+
+        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromTargetingPack(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string targetingPackRoot)
+        {
+            var nugetFramework = new NuGetFramework(targetFrameworkIdentifier, Version.Parse(targetFrameworkVersion));
+
+            var frameworkPackages = FrameworkPackages.LoadFrameworkPackagesFromPack(nugetFramework, frameworkReference, targetingPackRoot)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            return frameworkPackages;
         }
 
         static void AddPackagesToPrune(Dictionary<string, NuGetVersion> packagesToPrune, IEnumerable<(string id, NuGetVersion version)> packagesToAdd, Logger log)
@@ -188,9 +241,14 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (packagesToPrune.TryGetValue(package.id, out NuGetVersion existingVersion))
                 {
-                    if (package.version != existingVersion)
+                    if (package.version > existingVersion)
                     {
-                        log.LogError($"NETSDK9999: Conflicting prune package data for {package.id}: {package.version}, {existingVersion}");
+                        //  There are some "inconsistent" versions in the FrameworkPackages data.  This happens because, for example, the ASP.NET Core shared framework for .NET 9 inherits
+                        //  from the ASP.NET Core shared framework for .NET 8, but not from the base Microsoft.NETCore.App framework for .NET 9.  So for something like System.IO.Pipelines,
+                        //  which was in ASP.NET in .NET 8 but moved to the base shared framework in .NET 9, we will see an 8.0 version from the ASP.NET shared framework and a 9.0 version
+                        //  from the base shared framework.  As long as the base shared framework is always referenced together with the ASP.NET shared framework, this shouldn't be a
+                        //  problem, and we can just pick the latest version of the package that we see.
+                        packagesToPrune[package.id] = package.version;
                     }
                 }
                 else
