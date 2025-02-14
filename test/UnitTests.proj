@@ -12,7 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
+    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;**\*.AnalyzerRedirecting.Tests.csproj" />
+    <SDKCustomXUnitProject Condition="$(_AGENTOSNAME) == 'Windows_NT_FullFramework'" Include="**\*.AnalyzerRedirecting.Tests.csproj">
+      <TargetFramework>net472</TargetFramework>
+      <RuntimeTargetFramework>net472</RuntimeTargetFramework>
+    </SDKCustomXUnitProject>
 
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
     <SDKCustomXUnitProject Include="containerize.UnitTests\containerize.UnitTests.csproj" />
