@@ -73,7 +73,7 @@ src/nuget-client/test/TestUtilities/**/compiler/resources/*.nupkg
 src/nuget-client/test/TestUtilities/**/compiler/resources/*.zip
 
 # razor
-src/razor/src/Razor/test/Microsoft.VisualStudio.Razor.IntegrationTests/TestFiles/BlazorProject.zip
+src/razor/src/Razor/test/Microsoft.VisualStudio.Razor.IntegrationTests/TestFiles/*.zip
 src/razor/src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Microbenchmarks/Resources/project.razor.bin
 
 # roslyn

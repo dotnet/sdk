@@ -1,0 +1,66 @@
+From 41fb2135ac3592704846efe6b8731f0d68e744df Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 14 Feb 2025 11:53:15 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/razor/pull/11496
+
+---
+ ...oft.AspNetCore.Razor.Test.MvcShim.Version1_X.Compiler.csproj | 2 +-
+ ...oft.AspNetCore.Razor.Test.MvcShim.Version2_X.Compiler.csproj | 2 +-
+ .../Microsoft.AspNetCore.Razor.ProjectEngineHost.csproj         | 2 +-
+ .../Microsoft.AspNetCore.Razor.Test.Common.csproj               | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/src/Compiler/test/Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X/Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.Compiler.csproj b/src/Compiler/test/Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X/Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.Compiler.csproj
+index bbdec08a718..d2882f3e6f3 100644
+--- a/src/Compiler/test/Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X/Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.Compiler.csproj
++++ b/src/Compiler/test/Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X/Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.Compiler.csproj
+@@ -5,7 +5,7 @@
+     <PreserveCompilationContext>true</PreserveCompilationContext>
+   </PropertyGroup>
+ 
+-  <ItemGroup>
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+     <PackageReference Include="System.Text.Encodings.Web" />
+   </ItemGroup>
+diff --git a/src/Compiler/test/Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X/Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.Compiler.csproj b/src/Compiler/test/Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X/Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.Compiler.csproj
+index bbdec08a718..d2882f3e6f3 100644
+--- a/src/Compiler/test/Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X/Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.Compiler.csproj
++++ b/src/Compiler/test/Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X/Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.Compiler.csproj
+@@ -5,7 +5,7 @@
+     <PreserveCompilationContext>true</PreserveCompilationContext>
+   </PropertyGroup>
+ 
+-  <ItemGroup>
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+     <PackageReference Include="System.Text.Encodings.Web" />
+   </ItemGroup>
+diff --git a/src/Razor/src/Microsoft.AspNetCore.Razor.ProjectEngineHost/Microsoft.AspNetCore.Razor.ProjectEngineHost.csproj b/src/Razor/src/Microsoft.AspNetCore.Razor.ProjectEngineHost/Microsoft.AspNetCore.Razor.ProjectEngineHost.csproj
+index 3e1f302dc61..ff110ab5bd9 100644
+--- a/src/Razor/src/Microsoft.AspNetCore.Razor.ProjectEngineHost/Microsoft.AspNetCore.Razor.ProjectEngineHost.csproj
++++ b/src/Razor/src/Microsoft.AspNetCore.Razor.ProjectEngineHost/Microsoft.AspNetCore.Razor.ProjectEngineHost.csproj
+@@ -16,7 +16,7 @@
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" />
+     <PackageReference Include="MessagePack" />
+-    <PackageReference Include="System.Threading.Tasks.Extensions" />
++    <PackageReference Include="System.Threading.Tasks.Extensions" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+     <PackageReference Include="Microsoft.VisualStudio.Threading" />
+   </ItemGroup>
+ 
+diff --git a/src/Shared/Microsoft.AspNetCore.Razor.Test.Common/Microsoft.AspNetCore.Razor.Test.Common.csproj b/src/Shared/Microsoft.AspNetCore.Razor.Test.Common/Microsoft.AspNetCore.Razor.Test.Common.csproj
+index 389e6c60fee..83a6f29dc8a 100644
+--- a/src/Shared/Microsoft.AspNetCore.Razor.Test.Common/Microsoft.AspNetCore.Razor.Test.Common.csproj
++++ b/src/Shared/Microsoft.AspNetCore.Razor.Test.Common/Microsoft.AspNetCore.Razor.Test.Common.csproj
+@@ -9,7 +9,7 @@
+ 
+   <ItemGroup>
+     <ProjectReference Include="..\..\Compiler\Microsoft.CodeAnalysis.Razor.Compiler\src\Microsoft.CodeAnalysis.Razor.Compiler.csproj" />
+-    <PackageReference Include="Microsoft.CSharp" />
++    <PackageReference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+     <PackageReference Include="Microsoft.CodeAnalysis.Test.Utilities" />

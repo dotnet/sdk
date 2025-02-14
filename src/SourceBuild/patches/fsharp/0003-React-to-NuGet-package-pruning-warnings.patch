@@ -1,0 +1,24 @@
+From ad850b7a69110b29f1709f623bef8bdf8ccd8dd8 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 14 Feb 2025 11:55:23 +0100
+Subject: [PATCH] Contributes to https://github.com/dotnet/sdk/pull/46829
+
+Backport: https://github.com/dotnet/fsharp/pull/18318
+
+---
+ src/Compiler/FSharp.Compiler.Service.fsproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Compiler/FSharp.Compiler.Service.fsproj b/src/Compiler/FSharp.Compiler.Service.fsproj
+index b345d6ed1..493248a11 100644
+--- a/src/Compiler/FSharp.Compiler.Service.fsproj
++++ b/src/Compiler/FSharp.Compiler.Service.fsproj
+@@ -597,7 +597,7 @@
+     <PackageReference Include="FSharp.Core" Version="$(FSharpCoreShippedPackageVersionValue)" />
+   </ItemGroup>
+ 
+-  <ItemGroup>
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" />
+     <PackageReference Include="System.Reflection.Emit" Version="$(SystemReflectionEmitVersion)" />
+     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
