@@ -1,0 +1,297 @@
+From 44702e10e4eedf55277fd9fa3d47ceae72f69deb Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 14 Feb 2025 13:05:31 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/microsoft/vstest/pull/15011
+
+---
+ eng/Versions.props                            |  2 --
+ ...osoft.TestPlatform.AdapterUtilities.csproj |  6 ------
+ .../Microsoft.TestPlatform.Portable.csproj    | 19 +++++++++++--------
+ src/testhost.arm64/testhost.arm64.csproj      | 13 ++++++++-----
+ src/testhost.x86/testhost.x86.csproj          | 12 +++++++-----
+ src/testhost/testhost.csproj                  | 13 ++++++++-----
+ .../SimpleClassLibrary.csproj                 |  6 ++++--
+ 7 files changed, 38 insertions(+), 33 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index eb5534b82f..e88e8c7470 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -68,9 +68,7 @@
+     <SystemCollectionsImmutableVersion>8.0.0</SystemCollectionsImmutableVersion>
+     <SystemComponentModelCompositionVersion>8.0.0</SystemComponentModelCompositionVersion>
+     <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
+-    <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
+     <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
+-    <SystemUriVersion>4.3.2</SystemUriVersion>
+     <TestPlatformExternalsVersion>17.10.0-preview-2-34602-162</TestPlatformExternalsVersion>
+     <MicrosoftInternalTestPlatformExtensions>17.10.0-preview-2-34602-162</MicrosoftInternalTestPlatformExtensions>
+     <TestPlatformMSDiaVersion>17.12.35519.223</TestPlatformMSDiaVersion>
+diff --git a/src/Microsoft.TestPlatform.AdapterUtilities/Microsoft.TestPlatform.AdapterUtilities.csproj b/src/Microsoft.TestPlatform.AdapterUtilities/Microsoft.TestPlatform.AdapterUtilities.csproj
+index 9f62e98bb9..5d34ff1083 100644
+--- a/src/Microsoft.TestPlatform.AdapterUtilities/Microsoft.TestPlatform.AdapterUtilities.csproj
++++ b/src/Microsoft.TestPlatform.AdapterUtilities/Microsoft.TestPlatform.AdapterUtilities.csproj
+@@ -27,12 +27,6 @@
+     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+   </PropertyGroup>
+ 
+-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+-    <!-- CVE-2019-0657 mitigation -->
+-    <PackageReference Include="System.Private.Uri" Version="$(SystemUriVersion)" />
+-    <!-- / CVE-2019-0657 mitigation -->
+-  </ItemGroup>
+-
+   <ItemGroup>
+     <Compile Update="Resources\Resources.Designer.cs">
+       <DesignTime>True</DesignTime>
+diff --git a/src/package/Microsoft.TestPlatform.Portable/Microsoft.TestPlatform.Portable.csproj b/src/package/Microsoft.TestPlatform.Portable/Microsoft.TestPlatform.Portable.csproj
+index 60aef566c6..353675add1 100644
+--- a/src/package/Microsoft.TestPlatform.Portable/Microsoft.TestPlatform.Portable.csproj
++++ b/src/package/Microsoft.TestPlatform.Portable/Microsoft.TestPlatform.Portable.csproj
+@@ -71,20 +71,23 @@
+     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" GeneratePathProperty="true" />
+     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" GeneratePathProperty="true" />
+     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" GeneratePathProperty="true" />
++    <PackageReference Include="Microsoft.Internal.Dia" Version="$(TestPlatformMSDiaVersion)" PrivateAssets="All" GeneratePathProperty="true" />
++  </ItemGroup>
++
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+     <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" GeneratePathProperty="true" />
+     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" GeneratePathProperty="true" />
+-    <PackageReference Include="Microsoft.Internal.Dia" Version="$(TestPlatformMSDiaVersion)" PrivateAssets="All" GeneratePathProperty="true" />
+   </ItemGroup>
+ 
+   <Target Name="CopyFiles" AfterTargets="Build">
+     <ItemGroup>
+-      <MicrosoftCodeCoverageIO Include="$(PkgMicrosoft_CodeCoverage_IO)\lib\netstandard2.0\**\*"></MicrosoftCodeCoverageIO>
+-      <MicrosoftExtensionsDependencyModel Include="$(PkgMicrosoft_Extensions_DependencyModel)\lib\netstandard2.0\*"></MicrosoftExtensionsDependencyModel>
+-      <MicrosoftExtensionsFileSystemGlobbing Include="$(PkgMicrosoft_Extensions_FileSystemGlobbing)\lib\netstandard2.0\*"></MicrosoftExtensionsFileSystemGlobbing>
+-      <NewtonsoftJson Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\*"></NewtonsoftJson>
+-      <SystemCollectionsImmutable Include="$(PkgSystem_Collections_Immutable)\lib\netstandard2.0\*"></SystemCollectionsImmutable>
+-      <SystemReflectionMetadata Include="$(PkgSystem_Reflection_Metadata)\lib\netstandard2.0\*"></SystemReflectionMetadata>
+-      <MicrosoftInternalDia Include="$(PkgMicrosoft_Internal_Dia)\tools\net451\**\*"></MicrosoftInternalDia>
++      <MicrosoftCodeCoverageIO Include="$(PkgMicrosoft_CodeCoverage_IO)\lib\netstandard2.0\**\*" />
++      <MicrosoftExtensionsDependencyModel Include="$(PkgMicrosoft_Extensions_DependencyModel)\lib\netstandard2.0\*" />
++      <MicrosoftExtensionsFileSystemGlobbing Include="$(PkgMicrosoft_Extensions_FileSystemGlobbing)\lib\netstandard2.0\*" />
++      <NewtonsoftJson Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\*" />
++      <SystemCollectionsImmutable Include="$(PkgSystem_Collections_Immutable)\lib\netstandard2.0\*" />
++      <SystemReflectionMetadata Include="$(PkgSystem_Reflection_Metadata)\lib\netstandard2.0\*" />
++      <MicrosoftInternalDia Include="$(PkgMicrosoft_Internal_Dia)\tools\net451\**\*" />
+     </ItemGroup>
+ 
+     <Copy SourceFiles="@(MicrosoftCodeCoverageIO)" DestinationFiles="$(OutDir)\Microsoft.CodeCoverage.IO\%(RecursiveDir)%(Filename)%(Extension)" />
+diff --git a/src/testhost.arm64/testhost.arm64.csproj b/src/testhost.arm64/testhost.arm64.csproj
+index 07ea654d84..218480d5d7 100644
+--- a/src/testhost.arm64/testhost.arm64.csproj
++++ b/src/testhost.arm64/testhost.arm64.csproj
+@@ -1,11 +1,13 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <Project Sdk="Microsoft.NET.Sdk">
++
+   <PropertyGroup>
+     <!-- MSB3270 Suppress warnings about testhost being x64 (AMD64)/x86 when imported into AnyCPU (MSIL) projects. -->
+     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+     <!-- MSB3276 Suppress warnings about conflicts between different versions of the same dependent assembly -->
+     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3276</MSBuildWarningsAsMessages>
+   </PropertyGroup>
++
+   <Import Project="$(RepoRoot)src\Microsoft.TestPlatform.Execution.Shared\Microsoft.TestPlatform.Execution.Shared.projitems" Label="Shared" />
+ 
+   <PropertyGroup>
+@@ -15,16 +17,19 @@
+     <IsTestProject>false</IsTestProject>
+     <ApplicationManifest>app.manifest</ApplicationManifest>
+   </PropertyGroup>
++
+   <PropertyGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) ">
+     <RuntimeIdentifier Condition="'$(DotNetBuildSourceOnly)' != 'true'">win10-arm64</RuntimeIdentifier>
+     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+     <TargetName Condition="'$(TargetFramework)' != '$(NetFrameworkMinimum)'">$(AssemblyName.Replace('.arm64', '')).$(TargetFramework).arm64</TargetName>
+   </PropertyGroup>
++
+   <ItemGroup>
+     <Compile Include="..\testhost.x86\DebugAssertException.cs" Link="DebugAssertException.cs" />
+     <Compile Include="..\testhost.x86\Program.cs;..\testhost.x86\DefaultEngineInvoker.cs;..\testhost.x86\IEngineInvoker.cs;..\testhost.x86\AppDomainEngineInvoker.cs;..\testhost.x86\Friends.cs;..\testhost.x86\UnitTestClient.cs" />
+     <Compile Include="..\testhost.x86\TestHostTraceListener.cs" Link="TestHostTraceListener.cs" />
+   </ItemGroup>
++
+   <ItemGroup>
+     <ProjectReference Include="..\Microsoft.TestPlatform.CommunicationUtilities\Microsoft.TestPlatform.CommunicationUtilities.csproj" />
+     <ProjectReference Include="..\Microsoft.TestPlatform.ObjectModel\Microsoft.TestPlatform.ObjectModel.csproj" />
+@@ -35,12 +40,8 @@
+     <ProjectReference Include="..\Microsoft.TestPlatform.Common\Microsoft.TestPlatform.Common.csproj">
+       <FromP2P>true</FromP2P>
+     </ProjectReference>
+-
+-    <!-- CVE-2019-0657, CVE-2019-0980 and CVE-2019-0981 mitigation -->
+-    <PackageReference Include="System.Private.Uri" Version="$(SystemUriVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+-    <PackageReference Include="Microsoft.NETCore.Targets" Version="1.1.4" Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) " />
+-    <!-- CVE-2019-0657, CVE-2019-0980 and CVE-2019-0981 mitigation -->
+   </ItemGroup>
++
+   <ItemGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) AND '$(OS)' != 'Windows_NT' ">
+     <Reference Include="System" />
+     <Reference Include="System.Runtime" />
+@@ -48,11 +49,13 @@
+     <Reference Include="System.Xml.Linq" />
+     <Reference Include="Microsoft.CSharp" />
+   </ItemGroup>
++
+   <ItemGroup>
+     <!-- API that is common to all frameworks that we build for. -->
+     <AdditionalFiles Include="..\testhost.x86\PublicAPI\PublicAPI.Shipped.txt" Link="PublicAPI\PublicAPI.Shipped.txt" />
+     <AdditionalFiles Include="..\testhost.x86\PublicAPI\PublicAPI.Unshipped.txt" Link="PublicAPI\PublicAPI.Unshipped.txt" />
+   </ItemGroup>
++
+   <ItemGroup>
+     <None Include="..\testhost.x86\app.config" Link="app.config" />
+   </ItemGroup>
+diff --git a/src/testhost.x86/testhost.x86.csproj b/src/testhost.x86/testhost.x86.csproj
+index ebf12d08a8..50245b8159 100644
+--- a/src/testhost.x86/testhost.x86.csproj
++++ b/src/testhost.x86/testhost.x86.csproj
+@@ -1,11 +1,13 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <Project Sdk="Microsoft.NET.Sdk">
++
+   <PropertyGroup>
+     <!-- MSB3270 Suppress warnings about testhost being x64 (AMD64)/x86 when imported into AnyCPU (MSIL) projects. -->
+     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+     <!-- MSB3276 Suppress warnings about conflicts between different versions of the same dependent assembly -->
+     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3276</MSBuildWarningsAsMessages>
+   </PropertyGroup>
++
+   <Import Project="$(RepoRoot)src\Microsoft.TestPlatform.Execution.Shared\Microsoft.TestPlatform.Execution.Shared.projitems" Label="Shared" />
+ 
+   <PropertyGroup>
+@@ -25,13 +27,16 @@
+     <MSBuildWarningsAsMessages>NETSDK1201</MSBuildWarningsAsMessages>
+     <NoWarn>$(NoWarn);NETSDK1201</NoWarn>
+   </PropertyGroup>
++
+   <PropertyGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) ">
+     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+     <TargetName Condition="'$(TargetFramework)' != '$(NetFrameworkMinimum)'">$(AssemblyName.Replace('.x86', '')).$(TargetFramework).x86</TargetName>
+   </PropertyGroup>
++
+   <ItemGroup>
+     <None Include="app.config" />
+   </ItemGroup>
++
+   <ItemGroup>
+     <ProjectReference Include="..\Microsoft.TestPlatform.CommunicationUtilities\Microsoft.TestPlatform.CommunicationUtilities.csproj" />
+     <ProjectReference Include="..\Microsoft.TestPlatform.ObjectModel\Microsoft.TestPlatform.ObjectModel.csproj" />
+@@ -42,12 +47,8 @@
+     <ProjectReference Include="..\Microsoft.TestPlatform.Common\Microsoft.TestPlatform.Common.csproj">
+       <FromP2P>true</FromP2P>
+     </ProjectReference>
+-
+-    <!-- CVE-2019-0657, CVE-2019-0980 and CVE-2019-0981 mitigation -->
+-    <PackageReference Include="System.Private.Uri" Version="$(SystemUriVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'"/>
+-    <PackageReference Include="Microsoft.NETCore.Targets" Version="1.1.4" Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) " />
+-    <!-- CVE-2019-0657, CVE-2019-0980 and CVE-2019-0981 mitigation -->
+   </ItemGroup>
++
+   <ItemGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) AND '$(OS)' != 'Windows_NT' ">
+     <Reference Include="System" />
+     <Reference Include="System.Runtime" />
+@@ -55,6 +56,7 @@
+     <Reference Include="System.Xml.Linq" />
+     <Reference Include="Microsoft.CSharp" />
+   </ItemGroup>
++
+   <ItemGroup>
+     <!-- API that is common to all frameworks that we build for. -->
+     <AdditionalFiles Include="PublicAPI/PublicAPI.Shipped.txt" />
+diff --git a/src/testhost/testhost.csproj b/src/testhost/testhost.csproj
+index 5cb6999771..05f048d7a1 100644
+--- a/src/testhost/testhost.csproj
++++ b/src/testhost/testhost.csproj
+@@ -1,11 +1,13 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <Project Sdk="Microsoft.NET.Sdk">
++
+   <PropertyGroup>
+     <!-- MSB3270 Suppress warnings about testhost being x64 (AMD64)/x86 when imported into AnyCPU (MSIL) projects. -->
+     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+     <!-- MSB3276 Suppress warnings about conflicts between different versions of the same dependent assembly -->
+     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3276</MSBuildWarningsAsMessages>
+   </PropertyGroup>
++
+   <Import Project="$(RepoRoot)src\Microsoft.TestPlatform.Execution.Shared\Microsoft.TestPlatform.Execution.Shared.projitems" Label="Shared" />
+ 
+   <PropertyGroup>
+@@ -15,16 +17,19 @@
+     <IsTestProject>false</IsTestProject>
+     <ApplicationManifest>app.manifest</ApplicationManifest>
+   </PropertyGroup>
++
+   <PropertyGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) ">
+     <RuntimeIdentifier Condition="'$(DotNetBuildSourceOnly)' != 'true'">win7-x64</RuntimeIdentifier>
+     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+     <TargetName Condition="'$(TargetFramework)' != '$(NetFrameworkMinimum)'">$(AssemblyName).$(TargetFramework)</TargetName>
+   </PropertyGroup>
++
+   <ItemGroup>
+     <Compile Include="..\testhost.x86\DebugAssertException.cs" Link="DebugAssertException.cs" />
+     <Compile Include="..\testhost.x86\Program.cs;..\testhost.x86\DefaultEngineInvoker.cs;..\testhost.x86\IEngineInvoker.cs;..\testhost.x86\AppDomainEngineInvoker.cs;..\testhost.x86\Friends.cs;..\testhost.x86\UnitTestClient.cs" />
+     <Compile Include="..\testhost.x86\TestHostTraceListener.cs" Link="TestHostTraceListener.cs" />
+   </ItemGroup>
++
+   <ItemGroup>
+     <ProjectReference Include="..\Microsoft.TestPlatform.CommunicationUtilities\Microsoft.TestPlatform.CommunicationUtilities.csproj" />
+     <ProjectReference Include="..\Microsoft.TestPlatform.ObjectModel\Microsoft.TestPlatform.ObjectModel.csproj" />
+@@ -35,12 +40,8 @@
+     <ProjectReference Include="..\Microsoft.TestPlatform.Common\Microsoft.TestPlatform.Common.csproj">
+       <FromP2P>true</FromP2P>
+     </ProjectReference>
+-
+-    <!-- CVE-2019-0657, CVE-2019-0980 and CVE-2019-0981 mitigation -->
+-    <PackageReference Include="System.Private.Uri" Version="$(SystemUriVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+-    <PackageReference Include="Microsoft.NETCore.Targets" Version="1.1.4" Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) " />
+-    <!-- CVE-2019-0657, CVE-2019-0980 and CVE-2019-0981 mitigation -->
+   </ItemGroup>
++
+   <ItemGroup Condition=" $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '$(NetFrameworkMinimum)')) AND '$(OS)' != 'Windows_NT' ">
+     <Reference Include="System" />
+     <Reference Include="System.Runtime" />
+@@ -48,11 +49,13 @@
+     <Reference Include="System.Xml.Linq" />
+     <Reference Include="Microsoft.CSharp" />
+   </ItemGroup>
++
+   <ItemGroup>
+     <!-- API that is common to all frameworks that we build for. -->
+     <AdditionalFiles Include="..\testhost.x86\PublicAPI\PublicAPI.Shipped.txt" Link="PublicAPI\PublicAPI.Shipped.txt" />
+     <AdditionalFiles Include="..\testhost.x86\PublicAPI\PublicAPI.Unshipped.txt" Link="PublicAPI\PublicAPI.Unshipped.txt" />
+   </ItemGroup>
++
+   <ItemGroup>
+     <None Include="..\testhost.x86\app.config" Link="app.config" />
+   </ItemGroup>
+diff --git a/test/TestAssets/SimpleClassLibrary/SimpleClassLibrary.csproj b/test/TestAssets/SimpleClassLibrary/SimpleClassLibrary.csproj
+index 1501208e37..ac382027ea 100644
+--- a/test/TestAssets/SimpleClassLibrary/SimpleClassLibrary.csproj
++++ b/test/TestAssets/SimpleClassLibrary/SimpleClassLibrary.csproj
+@@ -1,10 +1,11 @@
+ <Project Sdk="Microsoft.NET.Sdk">
++
+   <PropertyGroup>
+     <TargetFrameworks>$(NetFrameworkMinimum);$(NetCoreAppMinimum)</TargetFrameworks>
+   </PropertyGroup>
+ 
+-  <ItemGroup>
+-    <PackageReference Include="System.Net.Http" Version="$(SystemNetHttpVersion)" />
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
++    <Reference Include="System.Net.Http" />
+   </ItemGroup>
+ 
+   <PropertyGroup Condition="$(NetCoreAppTargetFramework) == 'true' and $(Configuration) == 'Debug'">
+@@ -19,4 +20,5 @@
+   <PropertyGroup Condition=" '$(TargetFramework)' == '$(NetFrameworkMinimum)' and $(Configuration) == 'Release'">
+     <DebugType>portable</DebugType>
+   </PropertyGroup>
++
+ </Project>
