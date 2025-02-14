@@ -501,7 +501,7 @@
     <PropertyGroup>
       <FullCommand>$(BuildCommand)</FullCommand>
       <FullCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(FullCommand) /v:$(LogVerbosity)</FullCommand>
-      <FullCommand Condition="'$(MinimalConsoleLogOutput)' == 'true'">$(FullCommand) &gt; $(RepoConsoleLogFile) 2&gt;&amp;1</FullCommand>
+      <FullCommandRedirection Condition="'$(MinimalConsoleLogOutput)' == 'true'">&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</FullCommandRedirection>
     </PropertyGroup>
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(RepoConsoleLogFile)'));
@@ -513,10 +513,27 @@
                           $(AspNetRazorBuildServerLogDir)"
              Condition="'$(EnableExtraDebugging)' == 'true'" />
 
-    <Exec Command="$(FullCommand)"
+    <Exec Command="$(FullCommand) $(FullCommandRedirection)"
           WorkingDirectory="$(ProjectDirectory)"
           EnvironmentVariables="@(EnvironmentVariables);@(BuildEnvironmentVariable)"
-          IgnoreStandardErrorWarningFormat="true">
+          IgnoreStandardErrorWarningFormat="true"
+          Condition="'$(TwoStageRuntimeBuild)' != 'true' or '$(RepositoryName)' != 'runtime'">
+      <Output TaskParameter="ExitCode" PropertyName="RepoBuildExitCode" />
+    </Exec>
+
+    <Exec Command="$(FullCommand) -p:StageOneBuild=true $(FullCommandRedirection)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(EnvironmentVariables);@(BuildEnvironmentVariable)"
+          IgnoreStandardErrorWarningFormat="true"
+          Condition="'$(TwoStageRuntimeBuild)' == 'true' and '$(RepositoryName)' == 'runtime'">
+      <Output TaskParameter="ExitCode" PropertyName="RepoBuildExitCode" />
+    </Exec>
+
+    <Exec Command="$(FullCommand) -p:StageTwoBuild=true $(FullCommandRedirection)"
+          WorkingDirectory="$(ProjectDirectory)"
+          EnvironmentVariables="@(EnvironmentVariables);@(BuildEnvironmentVariable)"
+          IgnoreStandardErrorWarningFormat="true"
+          Condition="'$(TwoStageRuntimeBuild)' == 'true' and '$(RepositoryName)' == 'runtime'">
       <Output TaskParameter="ExitCode" PropertyName="RepoBuildExitCode" />
     </Exec>
 
