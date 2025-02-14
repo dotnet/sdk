@@ -309,7 +309,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!string.IsNullOrEmpty(testOptions.Architecture))
             {
-                builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {testOptions.Architecture}");
+                builder.Append($" {CommonOptions.ArchitectureOption.Name} {testOptions.Architecture}");
             }
 
             if (!string.IsNullOrEmpty(testOptions.Configuration))
