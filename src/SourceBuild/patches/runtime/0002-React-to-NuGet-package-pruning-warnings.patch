@@ -1,4 +1,4 @@
-From 66fb701949fa9d79664e80d383c0385c2a823a85 Mon Sep 17 00:00:00 2001
+From bcfccaa1a3d5a9256b6352d39f1d8dbb20890bda Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Mon, 10 Feb 2025 18:40:38 +0100
 Subject: [PATCH] React to NuGet package pruning warnings
@@ -7,13 +7,18 @@ Backport: https://github.com/dotnet/runtime/pull/112357
 
 ---
  eng/packaging.targets                         | 603 +++++++++---------
+ .../AppHost.Bundle.Tests.csproj               |   3 +
+ ...ft.DotNet.CoreSetup.Packaging.Tests.csproj |   6 +-
+ .../Microsoft.NET.HostModel.Tests.csproj      |   3 +
+ .../tests/TestUtils/TestUtils.csproj          |   3 +
  ...Extensions.Diagnostics.Abstractions.csproj |   7 +-
  ...oft.Extensions.Logging.Abstractions.csproj |   5 +
  ...icrosoft.Extensions.Logging.Console.csproj |   5 +-
  .../ref/System.Formats.Nrbf.csproj            |   4 +-
  .../ref/System.Memory.Data.csproj             |   2 +-
  .../System.Security.Cryptography.Pkcs.csproj  |   2 +-
- 7 files changed, 314 insertions(+), 314 deletions(-)
+ src/libraries/sfx-finish.proj                 |  19 +
+ 12 files changed, 345 insertions(+), 317 deletions(-)
 
 diff --git a/eng/packaging.targets b/eng/packaging.targets
 index c64ccfb2fcc..e03c40614b4 100644
@@ -623,6 +628,70 @@ index c64ccfb2fcc..e03c40614b4 100644
 +  </Target>
 +
 +</Project>
+diff --git a/src/installer/tests/AppHost.Bundle.Tests/AppHost.Bundle.Tests.csproj b/src/installer/tests/AppHost.Bundle.Tests/AppHost.Bundle.Tests.csproj
+index c564835ae9e..13a9b59f64f 100644
+--- a/src/installer/tests/AppHost.Bundle.Tests/AppHost.Bundle.Tests.csproj
++++ b/src/installer/tests/AppHost.Bundle.Tests/AppHost.Bundle.Tests.csproj
+@@ -7,6 +7,9 @@
+     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+     <!-- Reduce the length of the test output dir to make it more reliable on Windows. -->
+     <TestsOutputName>ahb</TestsOutputName>
++    <!-- NuGet warns about a transitive P2P to System.Text.Json that can't be pruned.
++         This is a false positive: https://github.com/NuGet/Home/issues/14103 -->
++    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/installer/tests/Microsoft.DotNet.CoreSetup.Packaging.Tests/Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj b/src/installer/tests/Microsoft.DotNet.CoreSetup.Packaging.Tests/Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj
+index 4e01fdc25bd..49ccc41646d 100644
+--- a/src/installer/tests/Microsoft.DotNet.CoreSetup.Packaging.Tests/Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj
++++ b/src/installer/tests/Microsoft.DotNet.CoreSetup.Packaging.Tests/Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj
+@@ -2,14 +2,14 @@
+ 
+   <PropertyGroup>
+     <TargetFramework>$(TestInfraTargetFramework)</TargetFramework>
+-
+     <IsPackable>false</IsPackable>
++    <!-- NuGet warns about a transitive P2P to System.Text.Json that can't be pruned.
++         This is a false positive: https://github.com/NuGet/Home/issues/14103 -->
++    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+     <PackageReference Include="NuGet.Packaging" Version="$(NugetPackagingVersion)" />
+-    <!-- Upgrade to a non-vulnerable version of Asn1 - which will be ignored in favor of the framework copy  -->
+-    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" ExcludeAssets="All" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/installer/tests/Microsoft.NET.HostModel.Tests/Microsoft.NET.HostModel.Tests.csproj b/src/installer/tests/Microsoft.NET.HostModel.Tests/Microsoft.NET.HostModel.Tests.csproj
+index 053fe5b65fc..a2782a71cbb 100644
+--- a/src/installer/tests/Microsoft.NET.HostModel.Tests/Microsoft.NET.HostModel.Tests.csproj
++++ b/src/installer/tests/Microsoft.NET.HostModel.Tests/Microsoft.NET.HostModel.Tests.csproj
+@@ -6,6 +6,9 @@
+     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+     <!-- Reduce the length of the test output dir to make it more reliable on Windows. -->
+     <TestsOutputName>hm</TestsOutputName>
++    <!-- NuGet warns about a transitive P2P to System.Text.Json that can't be pruned.
++         This is a false positive: https://github.com/NuGet/Home/issues/14103 -->
++    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/installer/tests/TestUtils/TestUtils.csproj b/src/installer/tests/TestUtils/TestUtils.csproj
+index 268d4af5451..2db347c9361 100644
+--- a/src/installer/tests/TestUtils/TestUtils.csproj
++++ b/src/installer/tests/TestUtils/TestUtils.csproj
+@@ -5,6 +5,9 @@
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <AssemblyName>TestUtils</AssemblyName>
+     <PackageId>TestUtils</PackageId>
++    <!-- NuGet warns about a transitive P2P to System.Text.Json that can't be pruned.
++         This is a false positive: https://github.com/NuGet/Home/issues/14103 -->
++    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+ 
+   <ItemGroup>
 diff --git a/src/libraries/Microsoft.Extensions.Diagnostics.Abstractions/ref/Microsoft.Extensions.Diagnostics.Abstractions.csproj b/src/libraries/Microsoft.Extensions.Diagnostics.Abstractions/ref/Microsoft.Extensions.Diagnostics.Abstractions.csproj
 index f7b93cc292f..63b868b9850 100644
 --- a/src/libraries/Microsoft.Extensions.Diagnostics.Abstractions/ref/Microsoft.Extensions.Diagnostics.Abstractions.csproj
@@ -738,3 +807,45 @@ index 168ec510fd0..de6981cf994 100644
      <ProjectReference Include="$(LibrariesProjectRoot)System.Formats.Asn1\src\System.Formats.Asn1.csproj" />
    </ItemGroup>
  
+diff --git a/src/libraries/sfx-finish.proj b/src/libraries/sfx-finish.proj
+index ed1f35bd31d..9f76ac74dcb 100644
+--- a/src/libraries/sfx-finish.proj
++++ b/src/libraries/sfx-finish.proj
+@@ -7,11 +7,16 @@
+     <FrameworkListOutputPath>$(MicrosoftNetCoreAppRefPackDataDir)FrameworkList.xml</FrameworkListOutputPath>
+     <!-- Import the illink file which contains some of the logic required to illink the shared framework assemblies. -->
+     <ExplicitlyImportCustomILLinkTargets>true</ExplicitlyImportCustomILLinkTargets>
++
++    <PackageOverridesInputPath>$(InstallerProjectRoot)pkg\sfx\Microsoft.NETCore.App\PackageOverrides.txt</PackageOverridesInputPath>
++    <PackageOverridesOutputPath>$(MicrosoftNetCoreAppRefPackDataDir)PackageOverrides.txt</PackageOverridesOutputPath>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+     <ProjectReference Include="sfx-src.proj" OutputItemType="SharedFrameworkAssembly" />
+     <ProjectReference Include="sfx-gen.proj" OutputItemType="SharedFrameworkAnalyzerAssembly" />
++
++    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" />
+   </ItemGroup>
+ 
+   <Target Name="GetGenerateFrameworkListFileInputs">
+@@ -51,6 +56,20 @@
+                              RootAttributes="@(FrameworkListRootAttribute)" />
+   </Target>
+ 
++  <Target Name="CreatePackageOverrides"
++          AfterTargets="Build"
++          Inputs="$(PackageOverridesInputPath)"
++          Outputs="$(PackageOverridesOutputPath)">
++    <ItemGroup>
++      <CreatePackageOverridesTemplateProperty Include="ProductVersion=$(ProductVersion)" />
++    </ItemGroup>
++
++    <GenerateFileFromTemplate
++      TemplateFile="$(PackageOverridesInputPath)"
++      Properties="@(CreatePackageOverridesTemplateProperty)"
++      OutputPath="$(PackageOverridesOutputPath)" />
++  </Target>
++
+   <!-- Copy the intellisense file to the targeting pack directory. -->
+   <Target Name="CopyDocumentationFiles" AfterTargets="Build">
+     <ItemGroup>
