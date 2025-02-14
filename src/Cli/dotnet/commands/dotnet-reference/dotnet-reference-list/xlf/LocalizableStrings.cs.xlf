@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="AppFullName">
         <source>List all project-to-project references of the project.</source>
-        <target state="new">List all project-to-project references of the project.</target>
+        <target state="translated">Zobrazí všechny odkazy mezi projekty v projektu.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command to list project to project references</source>
-        <target state="new">Command to list project to project references</target>
+        <target state="translated">Příkaz pro zobrazení seznamu odkazů mezi projekty</target>
         <note />
       </trans-unit>
     </body>

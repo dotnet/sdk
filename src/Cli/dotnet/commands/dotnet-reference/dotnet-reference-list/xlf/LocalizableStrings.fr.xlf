@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="AppFullName">
         <source>List all project-to-project references of the project.</source>
-        <target state="new">List all project-to-project references of the project.</target>
+        <target state="translated">Listez toutes les références projet à projet du projet.</target>
         <note />
       </trans-unit>
       <trans-unit id="AppDescription">
         <source>Command to list project to project references</source>
-        <target state="new">Command to list project to project references</target>
+        <target state="translated">Commande permettant de répertorier les références projet à projet</target>
         <note />
       </trans-unit>
     </body>
