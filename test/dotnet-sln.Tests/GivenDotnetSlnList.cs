@@ -280,5 +280,24 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
             cmd.Should().Pass();
             cmd.StdOut.Should().ContainAll(expectedOutput);
         }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescaped(string solutionCommand)
+        {
+            string[] expectedOutput = { $"{CommandLocalizableStrings.ProjectsHeader}",
+                $"{new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}",
+                $"{Path.Combine("src", "App", "App.csproj")}" };
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndSlnfWithSpecialCharactersInPath", identifier: "GivenDotnetSlnList-Filter-Unescape")
+                .WithSource()
+                .Path;
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "list");
+
+            cmd.Should().Pass();
+        }
     }
 }
