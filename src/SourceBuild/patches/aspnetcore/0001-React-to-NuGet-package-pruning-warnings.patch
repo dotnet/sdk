@@ -1,0 +1,150 @@
+From ccc70ac49e1fc406b488e2c5347c6933073b2c67 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 14 Feb 2025 16:11:41 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/aspnetcore/pull/60395
+
+---
+ ...Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj | 1 -
+ ...icrosoft.AspNetCore.Components.WebAssembly.DevServer.csproj | 1 -
+ .../JsonPatch/src/Microsoft.AspNetCore.JsonPatch.csproj        | 2 +-
+ .../src/Microsoft.Extensions.Logging.AzureAppServices.csproj   | 2 +-
+ .../Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj  | 3 ---
+ .../src/Microsoft.AspNetCore.SignalR.Client.Core.csproj        | 2 +-
+ src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj    | 2 +-
+ src/Tools/GetDocumentInsider/src/GetDocument.Insider.csproj    | 2 +-
+ .../src/Microsoft.dotnet-openapi.csproj                        | 2 --
+ src/Tools/dotnet-sql-cache/src/dotnet-sql-cache.csproj         | 2 --
+ 10 files changed, 5 insertions(+), 14 deletions(-)
+
+diff --git a/src/Azure/AzureAppServices.HostingStartup/src/Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj b/src/Azure/AzureAppServices.HostingStartup/src/Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj
+index fe1c0f19275e..dbc464028962 100644
+--- a/src/Azure/AzureAppServices.HostingStartup/src/Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj
++++ b/src/Azure/AzureAppServices.HostingStartup/src/Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj
+@@ -13,7 +13,6 @@
+   <ItemGroup>
+     <Reference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" />
+     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+-    <Reference Include="System.Text.Json" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Components/WebAssembly/DevServer/src/Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj b/src/Components/WebAssembly/DevServer/src/Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj
+index b24c6bd6ac9e..a320af38fa9c 100644
+--- a/src/Components/WebAssembly/DevServer/src/Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj
++++ b/src/Components/WebAssembly/DevServer/src/Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj
+@@ -21,7 +21,6 @@
+   <ItemGroup>
+     <Reference Include="Microsoft.AspNetCore" />
+     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+-    <Reference Include="System.Text.Json" />
+ 
+     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" AllowExplicitReference="true" />
+   </ItemGroup>
+diff --git a/src/Features/JsonPatch/src/Microsoft.AspNetCore.JsonPatch.csproj b/src/Features/JsonPatch/src/Microsoft.AspNetCore.JsonPatch.csproj
+index 57cc0737ff21..f4027ea5fd71 100644
+--- a/src/Features/JsonPatch/src/Microsoft.AspNetCore.JsonPatch.csproj
++++ b/src/Features/JsonPatch/src/Microsoft.AspNetCore.JsonPatch.csproj
+@@ -22,7 +22,7 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <Reference Include="Microsoft.CSharp" />
++    <Reference Include="Microsoft.CSharp" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+     <Reference Include="Newtonsoft.Json" />
+   </ItemGroup>
+ 
+diff --git a/src/Logging.AzureAppServices/src/Microsoft.Extensions.Logging.AzureAppServices.csproj b/src/Logging.AzureAppServices/src/Microsoft.Extensions.Logging.AzureAppServices.csproj
+index 8c75d85a4ff9..d3e91be03049 100644
+--- a/src/Logging.AzureAppServices/src/Microsoft.Extensions.Logging.AzureAppServices.csproj
++++ b/src/Logging.AzureAppServices/src/Microsoft.Extensions.Logging.AzureAppServices.csproj
+@@ -18,7 +18,7 @@
+     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
+     <Reference Include="Microsoft.Extensions.Logging" />
+-    <Reference Include="System.ValueTuple" />
++    <Reference Include="System.ValueTuple" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+   </ItemGroup>
+ 
+   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">
+diff --git a/src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj b/src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj
+index a3c025d7cb99..c6beee133ff7 100644
+--- a/src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj
++++ b/src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj
+@@ -70,9 +70,6 @@
+ 
+     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
+     <Reference Include="Microsoft.Web.Administration" />
+-    <Reference Include="System.Net.Http" />
+-    <Reference Include="System.Security.Cryptography.X509Certificates" />
+-    <Reference Include="System.Security.Principal.Windows" />
+     <Reference Include="System.ServiceProcess.ServiceController" />
+   </ItemGroup>
+ 
+diff --git a/src/SignalR/clients/csharp/Client.Core/src/Microsoft.AspNetCore.SignalR.Client.Core.csproj b/src/SignalR/clients/csharp/Client.Core/src/Microsoft.AspNetCore.SignalR.Client.Core.csproj
+index 16c662419d25..93470d863615 100644
+--- a/src/SignalR/clients/csharp/Client.Core/src/Microsoft.AspNetCore.SignalR.Client.Core.csproj
++++ b/src/SignalR/clients/csharp/Client.Core/src/Microsoft.AspNetCore.SignalR.Client.Core.csproj
+@@ -33,7 +33,7 @@
+     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
+     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+     <Reference Include="Microsoft.Extensions.Logging" />
+-    <Reference Include="System.Threading.Channels" />
++    <Reference Include="System.Threading.Channels" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+   </ItemGroup>
+ 
+   <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
+diff --git a/src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj b/src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj
+index b791c1e90861..179d80bbba73 100644
+--- a/src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj
++++ b/src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj
+@@ -28,7 +28,7 @@
+     <Reference Include="Microsoft.Extensions.Logging" />
+     <Reference Include="Serilog.Extensions.Logging" />
+     <Reference Include="Serilog.Sinks.File" />
+-    <Reference Include="System.ValueTuple" />
++    <Reference Include="System.ValueTuple" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+ 
+     <!--
+       This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
+diff --git a/src/Tools/GetDocumentInsider/src/GetDocument.Insider.csproj b/src/Tools/GetDocumentInsider/src/GetDocument.Insider.csproj
+index 4e2a913cc920..a5b5cd12beb8 100644
+--- a/src/Tools/GetDocumentInsider/src/GetDocument.Insider.csproj
++++ b/src/Tools/GetDocumentInsider/src/GetDocument.Insider.csproj
+@@ -19,7 +19,7 @@
+     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp2.1'">
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+     <Reference Include="System.Diagnostics.DiagnosticSource" />
+   </ItemGroup>
+ 
+diff --git a/src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj b/src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj
+index 3dda9082146e..8c9bcb4585b3 100644
+--- a/src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj
++++ b/src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj
+@@ -17,8 +17,6 @@
+   <ItemGroup>
+     <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
+     <Reference Include="Microsoft.Build.Locator" />
+-    <Reference Include="System.Private.Uri" />
+-    <Reference Include="System.Text.Json" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Tools/dotnet-sql-cache/src/dotnet-sql-cache.csproj b/src/Tools/dotnet-sql-cache/src/dotnet-sql-cache.csproj
+index 8d0f2d89aad7..9ecfc17f9ef3 100644
+--- a/src/Tools/dotnet-sql-cache/src/dotnet-sql-cache.csproj
++++ b/src/Tools/dotnet-sql-cache/src/dotnet-sql-cache.csproj
+@@ -16,9 +16,7 @@
+   <ItemGroup>
+     <Reference Include="Microsoft.Data.SqlClient" />
+     <Reference Include="Azure.Identity" />
+-    <Reference Include="System.Private.Uri" />
+     <Reference Include="System.Runtime.Caching" />
+-    <Reference Include="System.Text.Json" />
+   </ItemGroup>
+ 
+ </Project>
