@@ -265,4 +265,7 @@ If command is specified without the argument, it lists all the template packages
   <data name="TemplateCommand_Option_Type" xml:space="preserve">
     <value>Specifies the template type to instantiate.</value>
   </data>
+  <data name="ListCommand_Option_Format" xml:space="preserve">
+    <value>Specifies the output format type for the list packages command</value>
+  </data>
 </root>
