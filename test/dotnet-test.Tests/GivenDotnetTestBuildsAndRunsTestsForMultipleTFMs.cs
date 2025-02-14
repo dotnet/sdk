@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration,
-                                    TestingPlatformOptions.ArchitectureOption.Name, "x64");
+                                    CommonOptions.ArchitectureOption.Name, "x64");
 
             if (!TestContext.IsLocalized())
             {

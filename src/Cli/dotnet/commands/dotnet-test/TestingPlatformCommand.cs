@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli
 
                 InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
-                BuildOptions buildOptions = GetBuildOptions(parseResult, degreeOfParallelism);
+                BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
                 _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
                 TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue);
 
@@ -168,41 +168,9 @@ namespace Microsoft.DotNet.Cli
         private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
             new(parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
                 parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption),
+                parseResult.GetValue(CommonOptions.ArchitectureOption),
                 hasFilterMode,
                 isHelp);
-
-        private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
-        {
-            IEnumerable<string> propertyTokens = MSBuildUtility.GetPropertyTokens(parseResult.UnmatchedTokens);
-            IEnumerable<string> binaryLoggerTokens = MSBuildUtility.GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
-
-            var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
-                .Concat(propertyTokens)
-                .Concat(binaryLoggerTokens).ToList();
-
-            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-            unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
-            unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
-
-            PathOptions pathOptions = new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
-                parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
-
-            string runtimeIdentifier = parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
-                    CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, parseResult.GetValue(TestingPlatformOptions.ArchitectureOption)) :
-                    string.Empty;
-
-            return new BuildOptions(
-                pathOptions,
-                parseResult.GetValue(CommonOptions.NoRestoreOption),
-                parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                runtimeIdentifier,
-                degreeOfParallelism,
-                unmatchedTokens,
-                msbuildArgs);
-        }
 
         private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.ShortHelpOptionKey);
 
