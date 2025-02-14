@@ -85,9 +85,14 @@
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries
+
+# Area-ApiCompat
 /test/Microsoft.DotNet.ApiCompatibility*/ @dotnet/area-infrastructure-libraries
 /test/Microsoft.DotNet.ApiCompat*/ @dotnet/area-infrastructure-libraries
 /test/Microsoft.DotNet.PackageValidation*/ @dotnet/area-infrastructure-libraries
+
+# Area-ApiDiff
+/test/Microsoft.DotNet.ApiDiff.Tests/ @dotnet/area-infrastructure-libraries
 
 # Area-GenAPI
 /src/Compatibility/GenAPI/ @dotnet/area-infrastructure-libraries

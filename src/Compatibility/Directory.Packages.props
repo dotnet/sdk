@@ -8,8 +8,4 @@
     <PackageVersion Update="Microsoft.CodeAnalysis.CSharp" Version="4.4.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)" />
-  </ItemGroup>
-
 </Project>

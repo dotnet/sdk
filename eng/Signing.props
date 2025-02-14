@@ -25,9 +25,18 @@
     <FileSignInfo Include="PackageWithFakeNativeDep.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-tool-with-output-name.dll" CertificateName="None" />
 
-    <!-- Third party DLLs used by tests -->
+    <!-- Third party DLLs used by tests-->
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
     <FileSignInfo Include="Moq.dll" CertificateName="None" />
+
+    <!-- Third party DLLs used in src projects not participating in source-build -->
+    <FileSignInfo Include="Argon.dll" CertificateName="None" />
+    <FileSignInfo Include="DiffEngine.dll" CertificateName="None" />
+    <FileSignInfo Include="DiffPlex.dll" CertificateName="None" />
+    <FileSignInfo Include="EmptyFiles.dll" CertificateName="None" />
+    <FileSignInfo Include="SimpleInfoName.dll" CertificateName="None" />
+    <FileSignInfo Include="Verify.dll" CertificateName="None" />
+    <FileSignInfo Include="Verify.DiffPlex.dll" CertificateName="None" />
 
     <!-- Binary test asset -->
     <FileSignInfo Include="testwpf.dll" CertificateName="None" />
