@@ -28,7 +28,6 @@
        <Output TaskParameter="DependencyVersion" PropertyName="DepAspNetCoreVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
     </GetDependencyInfo>
-
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
       DependencyName="Microsoft.WindowsDesktop.App.Ref">

@@ -101,7 +101,7 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         return frameworkPackages.ToArray();
     }
 
-    private static FrameworkPackages LoadFrameworkPackagesFromPack(NuGetFramework framework, string frameworkName, string targetingPackRoot)
+    public static FrameworkPackages LoadFrameworkPackagesFromPack(NuGetFramework framework, string frameworkName, string targetingPackRoot)
     {
         if (framework is null || framework.Framework != FrameworkConstants.FrameworkIdentifiers.NetCoreApp)
         {
