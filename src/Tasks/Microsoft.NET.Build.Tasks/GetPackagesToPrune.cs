@@ -157,36 +157,6 @@ namespace Microsoft.NET.Build.Tasks
                     throw new Exception($"Prune package data not found for {key.TargetFrameworkIdentifier} {key.TargetFrameworkVersion} {frameworkReference}");
                 }
 
-                //var packagesFromFrameworkPackages = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoot);
-                //var packagesFromPrunePackageData = LoadPackagesToPruneFromPrunePackageData(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, prunePackageDataRoot);
-
-                ////  TODO: What about the WindowsDesktop profiles?
-                //if (packagesFromPrunePackageData == null && !frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    log.LogError("NETSDK9999: Prune package data not found for {0}", frameworkReference);
-                //}
-
-                //if (packagesFromPrunePackageData != null)
-                //{
-                //    foreach (var missingPackage in packagesFromFrameworkPackages.Keys.Except(packagesFromPrunePackageData.Keys))
-                //    {
-                //        log.LogError("NETSDK9999: Prune package data mismatch: Package {0} was listed in framework packages data but not in prune package data for {1} {2}", missingPackage, frameworkReference, key.TargetFrameworkVersion);
-                //    }
-
-                //    foreach (var missingPackage in packagesFromPrunePackageData.Keys.Except(packagesFromFrameworkPackages.Keys))
-                //    {
-                //        log.LogError("NETSDK9999: Prune package data mismatch: Package {0} was listed in prune package data but not in framework packages data for {1} {2}", missingPackage, frameworkReference, key.TargetFrameworkVersion);
-                //    }
-
-                //    foreach (var package in packagesFromFrameworkPackages)
-                //    {
-                //        if (packagesFromPrunePackageData.TryGetValue(package.Key, out var other) && package.Value != other)
-                //        {
-                //            log.LogError($"NETSDK9999: Prune package data mismatch: Package {package.Key} had version {package.Value} in framework packages data but version {other} in prune package data.");
-                //        }
-                //    }
-                //}
-
                 AddPackagesToPrune(packagesToPrune, packagesForFrameworkReference.Select(kvp => (kvp.Key, kvp.Value)), log);
             }
 
