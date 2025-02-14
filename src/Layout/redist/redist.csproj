@@ -48,7 +48,6 @@
 
     <!-- Lift up dependencies of dependencies to prevent build tasks from getting pinned to older versions -->
     <PackageReference Include="System.CodeDom" />
-    <PackageReference Include="System.Text.Encoding.CodePages" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="System.Resources.Extensions" />
     <!-- Override to use the newest version. In source-only modes this will be a no-diff change. -->

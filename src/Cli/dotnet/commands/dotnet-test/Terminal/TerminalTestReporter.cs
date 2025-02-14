@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli;
 using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
@@ -47,6 +48,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
+    private bool _isHelp;
     private DateTimeOffset? _testExecutionStartTime;
 
     private DateTimeOffset? _testExecutionEndTime;
@@ -147,9 +149,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress = terminalWithProgress;
     }
 
-    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery)
+    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp)
     {
         _isDiscovery = isDiscovery;
+        _isHelp = isHelp;
         _testExecutionStartTime = testStartTime;
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
@@ -189,7 +192,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
 
-        _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+        if (!_isHelp)
+        {
+            _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+        }
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
@@ -236,7 +242,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
         bool allTestsWereSkipped = totalTests == 0 || totalTests == totalSkippedTests;
         bool anyTestFailed = totalFailedTests > 0;
-        bool runFailed = anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
+        bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success);
+        bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
         terminal.SetColor(runFailed ? TerminalColor.Red : TerminalColor.Green);
 
         terminal.Append(LocalizableStrings.TestRunSummary);
@@ -254,7 +261,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(LocalizableStrings.ZeroTestsRan);
         }
-        else if (anyTestFailed)
+        else if (anyTestFailed || anyAssemblyFailed)
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", LocalizableStrings.Failed));
         }
@@ -280,7 +287,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
             {
                 terminal.Append(SingleIndentation);
                 AppendAssemblySummary(assemblyRun, terminal);
-                terminal.AppendLine();
             }
 
             terminal.AppendLine();
@@ -290,17 +296,28 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int failed = _assemblies.Values.Sum(t => t.FailedTests);
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
+        int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0);
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
-        bool colorizePassed = passed > 0 && _buildErrorsCount == 0 && failed == 0;
-        bool colorizeSkipped = skipped > 0 && skipped == total && _buildErrorsCount == 0 && failed == 0;
+        bool colorizeError = error > 0;
+        bool colorizePassed = passed > 0 && _buildErrorsCount == 0 && failed == 0 && error == 0;
+        bool colorizeSkipped = skipped > 0 && skipped == total && _buildErrorsCount == 0 && failed == 0 && error == 0;
 
+        string errorText = $"{SingleIndentation}error: {error}";
         string totalText = $"{SingleIndentation}total: {total}";
         string failedText = $"{SingleIndentation}failed: {failed}";
         string passedText = $"{SingleIndentation}succeeded: {passed}";
         string skippedText = $"{SingleIndentation}skipped: {skipped}";
         string durationText = $"{SingleIndentation}duration: ";
+
+        if (error > 0)
+        {
+            terminal.SetColor(TerminalColor.Red);
+            terminal.AppendLine(errorText);
+            terminal.ResetColor();
+            terminal.AppendLine();
+        }
 
         terminal.ResetColor();
         terminal.AppendLine(totalText);
@@ -739,11 +756,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int? exitCode, string? outputData, string? errorData)
     {
         TestProgressState assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
+        assemblyRun.ExitCode = exitCode;
+        assemblyRun.Success = exitCode == 0 && assemblyRun.FailedTests == 0;
         assemblyRun.Stopwatch.Stop();
 
         _terminalWithProgress.RemoveWorker(assemblyRun.SlotIndex);
 
-        if (!_isDiscovery && _options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
+        if (!_isHelp && !_isDiscovery && _options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
             _terminalWithProgress.WriteToTerminal(terminal => AppendAssemblySummary(assemblyRun, terminal));
         }
@@ -782,14 +801,16 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
+        terminal.ResetColor();
         int failedTests = assemblyRun.FailedTests;
         int warnings = 0;
 
         AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assemblyRun.Assembly, assemblyRun.TargetFramework, assemblyRun.Architecture);
         terminal.Append(' ');
-        AppendAssemblyResult(terminal, assemblyRun.FailedTests == 0, failedTests, warnings);
+        AppendAssemblyResult(terminal, assemblyRun.Success, failedTests, warnings);
         terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
+        terminal.AppendLine();
     }
 
     /// <summary>
@@ -1015,5 +1036,60 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
+    }
+
+    internal void WriteHelpOptions(ConcurrentDictionary<string, CommandLineOption> commandLineOptionNameToModuleNames, Dictionary<bool, List<DotNet.Cli.CommandLineOption>> allOptions, Dictionary<bool, List<(string, string[])>> moduleToMissingOptions)
+    {
+        WriteOptionsToConsole(commandLineOptionNameToModuleNames, allOptions);
+        WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
+    }
+
+    private void WriteOptionsToConsole(ConcurrentDictionary<string, CommandLineOption> commandLineOptionNameToModuleNames, Dictionary<bool, List<CommandLineOption>> options)
+    {
+        int maxOptionNameLength = commandLineOptionNameToModuleNames.Keys.ToArray().Max(option => option.Length);
+
+        foreach (KeyValuePair<bool, List<CommandLineOption>> optionGroup in options)
+        {
+            WriteMessage(string.Empty);
+            WriteMessage(optionGroup.Key ? LocalizableStrings.HelpOptions : LocalizableStrings.HelpExtensionOptions);
+
+            foreach (CommandLineOption option in optionGroup.Value)
+            {
+                WriteMessage($"{new string(' ', 2)}--{option.Name}{new string(' ', maxOptionNameLength - option.Name.Length)} {option.Description}");
+            }
+        }
+    }
+
+    private void WriteModulesToMissingOptionsToConsole(Dictionary<bool, List<(string, string[])>> modulesWithMissingOptions)
+    {
+        var yellow = new SystemConsoleColor { ConsoleColor = ConsoleColor.Yellow };
+        foreach (KeyValuePair<bool, List<(string, string[])>> groupedModules in modulesWithMissingOptions)
+        {
+            WriteMessage(string.Empty);
+            WriteMessage(groupedModules.Key ? LocalizableStrings.HelpUnavailableOptions : LocalizableStrings.HelpUnavailableExtensionOptions, yellow);
+
+            foreach ((string module, string[] missingOptions) in groupedModules.Value)
+            {
+                if (module.Length == 0)
+                {
+                    continue;
+                }
+
+                StringBuilder line = new();
+                for (int i = 0; i < missingOptions.Length; i++)
+                {
+                    if (i == missingOptions.Length - 1)
+                        line.Append($"--{missingOptions[i]}");
+                    else
+                        line.Append($"--{missingOptions[i]}\n");
+                }
+
+                string format = missingOptions.Length == 1
+                    ? LocalizableStrings.HelpModuleIsMissingTheOptionBelow
+                    : LocalizableStrings.HelpModuleIsMissingTheOptionsBelow;
+                var missing = string.Format(format, module);
+                WriteMessage($"{missing}\n{line}\n");
+            }
+        }
     }
 }

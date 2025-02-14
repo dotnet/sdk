@@ -111,7 +111,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool UsingMicrosoftNETSdkWebAssembly { get; set; }
 
-        public bool UsingMicrosoftNETSdkRazor { get; set; }
+        public bool RequiresAspNetWebAssets { get; set; }
 
         [Required]
         public string NETCoreSdkRuntimeIdentifier { get; set; }
@@ -502,7 +502,7 @@ namespace Microsoft.NET.Build.Tasks
                 AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences);
             }
 
-            if (UsingMicrosoftNETSdkRazor && _normalizedTargetFrameworkVersion.Major >= 10)
+            if (RequiresAspNetWebAssets && _normalizedTargetFrameworkVersion.Major >= 10)
             {
                 if (AddToolPack(ToolPackType.AspNetCore, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
                 {

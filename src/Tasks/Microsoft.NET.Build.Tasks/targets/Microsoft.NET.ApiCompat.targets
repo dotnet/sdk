@@ -16,6 +16,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnablePackageValidation)' == 'true' and
+                        '$(IsPackable)' == 'true' and
                         '$(DisablePackageBaselineValidation)' != 'true' and
                         '$(PackageValidationBaselinePath)' == '' and
                         '$(PackageValidationBaselineVersion)' != ''">

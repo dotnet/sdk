@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
@@ -32,47 +31,34 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
-            string excludedAttributeFile = null,
-            [CallerMemberName] string assemblyName = "")
+            string[] excludedAttributeList = null,
+            [CallerMemberName] string assemblyName = "",
+            // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
+            string header = "")
         {
-            StringWriter stringWriter = new();
-
-            // Configure symbol filters
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                includeInternalSymbols,
-                includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols);
-
-            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(accessibilitySymbolFilter);
-
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludedAttributeFile is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+            using StringWriter stringWriter = new();
 
             Mock<ILog> log = new();
 
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
+                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
+
+            ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
+            ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
+
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
                 log.Object,
+                stringWriter,
+                loader,
                 symbolFilter,
                 attributeDataSymbolFilter,
-                stringWriter,
-                null,
-                false,
+                header: header,
+                exceptionMessage: null,
+                includeAssemblyAttributes: false,
                 MetadataReferences,
                 addPartialModifier: true);
 
-            using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            AssemblySymbolLoader assemblySymbolLoader = new(log.Object, resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
-            IAssemblySymbol assemblySymbol = assemblySymbolLoader.LoadAssembly(assemblyName, assemblyStream);
-
-            csharpFileBuilder.WriteAssembly(assemblySymbol);
+            csharpFileBuilder.WriteAssembly(assemblySymbols.First().Value);
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
             string resultedString = stringBuilder.ToString();
@@ -85,6 +71,48 @@ namespace Microsoft.DotNet.GenAPI.Tests
             // compare SyntaxTree and not string representation
             Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
+        }
+
+        [Fact]
+        public void TestDefaultHeader()
+        {
+            RunTest(original: """
+                namespace A
+                {
+                namespace B {}
+
+                namespace C.D { public struct Bar {} }
+                }
+                """,
+                expected: $@"
+                {CSharpFileBuilder.DefaultFileHeader}
+                namespace A.C.D {{ public partial struct Bar {{}} }}
+                ",
+                header: null);
+        }
+
+        [Fact]
+        public void TestCustomHeader()
+        {
+            string customHeader = """
+            // Licensed to the .NET Foundation under one or more agreements.
+            // The .NET Foundation licenses this file to you under the MIT license.
+
+            """;
+
+            RunTest(original: """
+                namespace A
+                {
+                namespace B {}
+
+                namespace C.D { public struct Bar {} }
+                }
+                """,
+                expected: $@"
+                {customHeader}
+                namespace A.C.D {{ public partial struct Bar {{}} }}
+                ",
+                header: customHeader);
         }
 
         [Fact]
@@ -2764,10 +2792,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestAttributesExcludedWithFilter()
         {
-            using TempDirectory root = new();
-            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
-            File.WriteAllText(filePath, "T:A.AnyTestAttribute");
-
             RunTest(original: """
                     namespace A
                     {
@@ -2803,7 +2827,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false,
-                excludedAttributeFile: filePath);
+                excludedAttributeList: ["T:A.AnyTestAttribute"]);
         }
 
         [Fact]

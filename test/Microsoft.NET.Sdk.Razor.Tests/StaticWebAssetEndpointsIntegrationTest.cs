@@ -41,7 +41,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
 
         var endpoints = manifest.Endpoints;
-        endpoints.Should().HaveCount(15);
+        // blazor.server.js and blazor.web.js assets and endpoints are included automatically
+        // based on the presence of .razor files in projects referencing the web SDK.
+        // In the future we will filter these out based on whether the app references the Endpoints or the Server
+        // assemblies, but for now, just account for them in the tests and ignore them.
+        endpoints.Should().HaveCount(27);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(2);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -197,7 +201,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
             file.Length.Should().Be(length, $"because {endpoint.Route} {file.FullName}");
         }
 
-        endpoints.Should().HaveCount(25);
+        // blazor.server.js and blazor.web.js assets and endpoints are included automatically
+        // based on the presence of .razor files in projects referencing the web SDK.
+        // In the future we will filter these out based on whether the app references the Endpoints or the Server
+        // assemblies, but for now, just account for them in the tests and ignore them.
+        endpoints.Should().HaveCount(45);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(3);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -392,7 +400,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var fingerprintedAppBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleWithFingerprint);
         fingerprintedAppBundleEndpoints.Should().HaveCount(3);
 
-        endpoints.Should().HaveCount(25);
+        // blazor.server.js and blazor.web.js assets and endpoints are included automatically
+        // based on the presence of .razor files in projects referencing the web SDK.
+        // In the future we will filter these out based on whether the app references the Endpoints or the Server
+        // assemblies, but for now, just account for them in the tests and ignore them.
+        endpoints.Should().HaveCount(45);
 
         AssertManifest(publishManifest, LoadPublishManifest());
     }

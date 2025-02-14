@@ -1,0 +1,25 @@
+From 5799a4e22409e5c9c8e69b1003cb266490cf8138 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 7 Feb 2025 13:16:48 -0800
+Subject: [PATCH] Only build the Microsoft.FSharp.Compiler.sln solution in the
+ VMR
+
+Backport: https://github.com/dotnet/fsharp/pull/18299
+---
+ eng/DotNetBuild.props | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index b44b8bae3b4..3098934511e 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -12,8 +12,7 @@
+     the cloned source in the inner build.
+   -->
+   <Target Name="ConfigureInnerBuildArg"
+-          BeforeTargets="GetSourceBuildCommandConfiguration"
+-          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
++          BeforeTargets="GetSourceBuildCommandConfiguration">
+     <PropertyGroup>
+       <InnerBuildArgs>$(InnerBuildArgs) /p:Projects="$(InnerSourceBuildRepoRoot)\Microsoft.FSharp.Compiler.sln"</InnerBuildArgs>
+     </PropertyGroup>

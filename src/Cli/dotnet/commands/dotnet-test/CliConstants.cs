@@ -7,34 +7,43 @@ namespace Microsoft.DotNet.Cli
     {
         public const string DotnetRunCommand = "dotnet run";
         public const string HelpOptionKey = "--help";
+        public const string ShortHelpOptionKey = "-h";
         public const string ServerOptionKey = "--server";
         public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
         public const string FrameworkOptionKey = "--framework";
+        public const string NoProgressOptionKey = "--no-progress";
+        public static string NoAnsiOptionKey = "--no-ansi";
+        public static string OutputOptionKey = "--output";
 
         public const string ServerOptionValue = "dotnettestcli";
 
         public const string ParametersSeparator = "--";
         public const string SemiColon = ";";
-        public const string Colon = ":";
 
         public const string VSTest = "VSTest";
         public const string MicrosoftTestingPlatform = "MicrosoftTestingPlatform";
 
         public const string TestSectionKey = "test";
 
-        public const string RestoreCommand = "restore";
+        public const string RestoreCommand = "Restore";
+        public const string BuildCommand = "Build";
+        public const string Configuration = "Configuration";
+        public const string RuntimeIdentifier = "RuntimeIdentifier";
 
         public static readonly string[] ProjectExtensions = { ".proj", ".csproj", ".vbproj", ".fsproj" };
-        public static readonly string[] SolutionExtensions = { ".sln", ".slnx" };
+        public static readonly string[] SolutionExtensions = { ".sln", ".slnx", ".slnf" };
 
         public const string ProjectExtensionPattern = "*.*proj";
         public const string SolutionExtensionPattern = "*.sln";
         public const string SolutionXExtensionPattern = "*.slnx";
+        public const string SolutionFilterExtensionPattern = "*.slnf";
 
         public const string BinLogFileName = "msbuild.binlog";
 
         public const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
-        public const string DLLExtension = "dll";
+        public const string DLLExtension = ".dll";
+
+        public const string MTPTarget = "_MTPBuild";
     }
 
     internal static class TestStates
