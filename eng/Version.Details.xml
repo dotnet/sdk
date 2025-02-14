@@ -236,22 +236,22 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>6a2ad25617bd0390414c5adef2fc770f39be5fe4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25107-01">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25114-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>4b7642501171db13c4a942fbf5dbe443dffd0fd7</Sha>
+      <Sha>9a148406d5d28e1013a7d6d092e6af3e5a60ad6c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.0-preview-25107-01">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.0-preview-25114-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>4b7642501171db13c4a942fbf5dbe443dffd0fd7</Sha>
+      <Sha>9a148406d5d28e1013a7d6d092e6af3e5a60ad6c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.0-preview-25107-01">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.0-preview-25114-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>4b7642501171db13c4a942fbf5dbe443dffd0fd7</Sha>
+      <Sha>9a148406d5d28e1013a7d6d092e6af3e5a60ad6c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.0-preview-25107-01">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.0-preview-25114-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>4b7642501171db13c4a942fbf5dbe443dffd0fd7</Sha>
+      <Sha>9a148406d5d28e1013a7d6d092e6af3e5a60ad6c</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.0-preview.2.25112.7">
