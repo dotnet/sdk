@@ -9,12 +9,12 @@
       </trans-unit>
       <trans-unit id="PackageDefinition">
         <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
-        <target state="new">Search for, add, remove, or list PackageReferences for a .NET project.</target>
+        <target state="translated">.NET 프로젝트에 대한 PackageReferences를 검색, 추가, 제거 또는 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceDefinition">
         <source>Add, remove, or list ProjectReferences for a .NET project.</source>
-        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <target state="translated">.NET 프로젝트에 대한 ProjectReferences를 추가, 제거 또는 나열합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
