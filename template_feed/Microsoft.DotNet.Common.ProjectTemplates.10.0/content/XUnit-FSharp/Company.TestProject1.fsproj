@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Compile Include="Tests.fs" />
+    <Compile Include="XUnitSettings.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
