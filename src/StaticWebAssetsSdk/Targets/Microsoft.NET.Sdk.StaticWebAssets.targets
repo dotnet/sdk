@@ -437,6 +437,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Manifest paths -->
       <_StaticWebAssetsManifestBase Condition="'$(_StaticWebAssetsManifestBase)' == ''">$(IntermediateOutputPath)</_StaticWebAssetsManifestBase>
       <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.json</StaticWebAssetBuildManifestPath>
+      <StaticWebAssetsBuildManifestCacheFilePath>$(StaticWebAssetBuildManifestPath).cache</StaticWebAssetsBuildManifestCacheFilePath>
       <StaticWebAssetPackManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.pack.json</StaticWebAssetPackManifestPath>
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
       <StaticWebAssetEndpointsBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.endpoints.json</StaticWebAssetEndpointsBuildManifestPath>
@@ -620,7 +621,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetBuildManifestPath)"
+      ManifestCacheFilePath="$(StaticWebAssetsBuildManifestCacheFilePath)">
     </GenerateStaticWebAssetsManifest>
 
     <GenerateStaticWebAssetEndpointsManifest
@@ -628,18 +630,28 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestType="Build"
       Assets="@(StaticWebAsset)"
       Endpoints="@(StaticWebAssetEndpoint)"
-      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)">
+      ManifestPath="$(StaticWebAssetEndpointsBuildManifestPath)"
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetEndpointsManifest>
 
     <GenerateStaticWebAssetsDevelopmentManifest
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
       Source="$(PackageId)"
-      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
+      ManifestPath="$(StaticWebAssetDevelopmentManifestPath)"
+      CacheFilePath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsDevelopmentManifest>
 
     <ItemGroup>
+      <_CachedBuildStaticWebAssets Condition="'@(_CachedBuildStaticWebAssets)' == ''" Include="@(StaticWebAsset)" />
+      <_CachedBuildStaticWebAssetEndpoints Condition="'@(_CachedBuildStaticWebAssetEndpoints)' == ''" Include="@(StaticWebAssetEndpoint)" />
+      <_CachedBuildStaticWebAssetReferencedProjectsConfiguration Condition="'@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)' == ''" Include="@(StaticWebAssetProjectConfiguration)" />
+      <_CachedBuildStaticWebAssetDiscoveryPatterns Condition="'@(_CachedBuildStaticWebAssetDiscoveryPatterns)' == ''" Include="@(StaticWebAssetDiscoveryPattern)" />
+    </ItemGroup>
+
+    <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
+      <FileWrites Include="$(StaticWebAssetsBuildManifestCacheFilePath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
       <FileWrites Include="$(StaticWebAssetEndpointsBuildManifestPath)" />
     </ItemGroup>
@@ -670,11 +682,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+        <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
+        <Output TaskParameter="AssetDetails" ItemName="_ResolveProjectStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(StaticWebAsset)"
-      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      CandidateAssets="@(_CurrentProjectStaticWebAsset)"
+      AssetFileDetails="@(_ResolveProjectStaticWebAssetsDetails)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />

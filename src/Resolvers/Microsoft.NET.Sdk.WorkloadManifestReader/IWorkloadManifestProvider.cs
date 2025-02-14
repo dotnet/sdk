@@ -20,4 +20,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public readonly record struct WorkloadVersionInfo(string Version, bool IsInstalled = true, bool WorkloadSetsEnabledWithoutWorkloadSet = false, string? GlobalJsonPath = null);
     }
+
+    public record WorkloadVersion
+    {
+        public enum Type
+        {
+            WorkloadSet,
+            LooseManifest
+        }
+
+        public string? Version;
+        public Type WorkloadInstallType;
+    }
 }

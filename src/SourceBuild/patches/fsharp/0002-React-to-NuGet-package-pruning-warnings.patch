@@ -1,0 +1,51 @@
+From 33ac19502896addb6693d606ca6e7351ec6610ec Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 10 Feb 2025 15:00:47 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/fsharp/pull/18304
+
+---
+ eng/Versions.props  | 1 -
+ src/fsc/fsc.targets | 9 ++++++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 3b36ad6a7..ce0f5f5ac 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -87,7 +87,6 @@
+     <SystemReflectionMetadataVersion>$(SystemPackageVersionVersion)</SystemReflectionMetadataVersion>
+     <SystemRuntimeCompilerServicesUnsafeVersion>6.1.0</SystemRuntimeCompilerServicesUnsafeVersion>
+     <SystemThreadingTasksDataflow>$(SystemPackageVersionVersion)</SystemThreadingTasksDataflow>
+-    <SystemValueTupleVersion>4.5.0</SystemValueTupleVersion>
+     <MicrosoftDiaSymReaderPortablePdbVersion>1.6.0</MicrosoftDiaSymReaderPortablePdbVersion>
+     <!-- Versions for package groups -->
+     <RoslynVersion>4.11.0-2.24264.2</RoslynVersion>
+diff --git a/src/fsc/fsc.targets b/src/fsc/fsc.targets
+index 1c67ceb39..dc80ab5c4 100644
+--- a/src/fsc/fsc.targets
++++ b/src/fsc/fsc.targets
+@@ -45,13 +45,16 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
++    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
++    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
++    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
++  </ItemGroup>
++
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourceVersion)" />
+     <PackageReference Include="System.Memory" Version="$(SystemMemoryVersion)" />
+     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafeVersion)" />
+     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
+-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
+-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
+-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" />
+   </ItemGroup>
+ 
+ </Project>
+-- 
+2.47.1.windows.2
+

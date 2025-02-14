@@ -7,6 +7,10 @@ namespace Microsoft.NET.TestFramework.Utilities
     {
         public static void AddDisplayMessageToProject(XDocument project, string beforeTargets)
         {
+            if (project.Root is null)
+            {
+                throw new InvalidOperationException($"The project file '{project}' does not have a root element.");
+            }
             XNamespace ns = project.Root.Name.Namespace;
 
             XElement target = new(ns + "Target", new XAttribute("Name", "DisplayMessages"),

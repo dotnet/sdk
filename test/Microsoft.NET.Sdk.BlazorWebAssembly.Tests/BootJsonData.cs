@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
@@ -240,11 +242,6 @@ namespace Microsoft.NET.Sdk.WebAssembly
         /// Load custom icu file provided by the developer.
         /// </summary>
         Custom = 3,
-
-        /// <summary>
-        /// Use the reduced icudt_hybrid.dat file
-        /// </summary>
-        Hybrid = 4,
     }
 
     [DataContract]
