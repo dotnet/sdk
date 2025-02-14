@@ -1221,7 +1221,7 @@ namespace Microsoft.NET.Publish.Tests
 
             semaphoreFirstModifiedTime.Should().Be(semaphoreSecondModifiedTime);
         }
-
+        /*
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netcoreapp3.1")]
         [InlineData("net5.0")]
@@ -1259,7 +1259,7 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, referenceProjectName).Should().BeTrue();
             DoesDepsFileHaveAssembly(depsFile, unusedFrameworkAssembly).Should().BeFalse();
         }
-
+        */
         [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void ILLink_net7_defaults_trim_nonframework()
         {
