@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.ExactlyOne
         };
 
-        public static readonly CliOption<string> ListTestsOption = new("--list-tests")
+        public static readonly CliOption<string> ListTestsOption = new("--list-tests", "-t")
         {
             Description = LocalizableStrings.CmdListTestsDescription,
             Arity = ArgumentArity.Zero
