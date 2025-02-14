@@ -70,12 +70,6 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     private const string _packagesFolderName = "packages";
     private const int _retryCount = 10;
 
-    private readonly HashSet<string> _excludeAssets = new HashSet<string>(
-        [
-            "Microsoft.Diagnostics.NETCore.Client",
-            "Microsoft.NET.Sdk.Aspire.Manifest-8.0.100"
-        ], StringComparer.OrdinalIgnoreCase);
-
     public override bool Execute()
     {
         ExecuteAsync().GetAwaiter().GetResult();
@@ -92,7 +86,8 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         string mainVerticalName = mainVerticalManifest.VerticalName!;
 
         JoinVerticalsAssetSelector joinVerticalsAssetSelector = new JoinVerticalsAssetSelector();
-        List<AssetVerticalMatchResult> selectedVerticals = joinVerticalsAssetSelector.SelectAssetMatchingVertical(manifests, _excludeAssets).ToList();
+
+        List<AssetVerticalMatchResult> selectedVerticals = joinVerticalsAssetSelector.SelectAssetMatchingVertical(manifests).ToList();
 
         var notMatchedAssets = selectedVerticals.Where(o => o.MatchType == AssetVerticalMatchType.NotSpecified).ToList();
         Log.LogMessage(MessageImportance.High, $"### {notMatchedAssets.Count()} Assets not properly matched to vertical: ###");
