@@ -1,4 +1,4 @@
-From bcfccaa1a3d5a9256b6352d39f1d8dbb20890bda Mon Sep 17 00:00:00 2001
+From 0ac07ea33feada76acb74042d00bd81472daf4c5 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Mon, 10 Feb 2025 18:40:38 +0100
 Subject: [PATCH] React to NuGet package pruning warnings
@@ -8,6 +8,7 @@ Backport: https://github.com/dotnet/runtime/pull/112357
 ---
  eng/packaging.targets                         | 603 +++++++++---------
  .../AppHost.Bundle.Tests.csproj               |   3 +
+ .../HostActivation.Tests.csproj               |   3 +
  ...ft.DotNet.CoreSetup.Packaging.Tests.csproj |   6 +-
  .../Microsoft.NET.HostModel.Tests.csproj      |   3 +
  .../tests/TestUtils/TestUtils.csproj          |   3 +
@@ -18,7 +19,7 @@ Backport: https://github.com/dotnet/runtime/pull/112357
  .../ref/System.Memory.Data.csproj             |   2 +-
  .../System.Security.Cryptography.Pkcs.csproj  |   2 +-
  src/libraries/sfx-finish.proj                 |  19 +
- 12 files changed, 345 insertions(+), 317 deletions(-)
+ 13 files changed, 348 insertions(+), 317 deletions(-)
 
 diff --git a/eng/packaging.targets b/eng/packaging.targets
 index c64ccfb2fcc..e03c40614b4 100644
@@ -636,6 +637,20 @@ index c564835ae9e..13a9b59f64f 100644
      <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
      <!-- Reduce the length of the test output dir to make it more reliable on Windows. -->
      <TestsOutputName>ahb</TestsOutputName>
++    <!-- NuGet warns about a transitive P2P to System.Text.Json that can't be pruned.
++         This is a false positive: https://github.com/NuGet/Home/issues/14103 -->
++    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/installer/tests/HostActivation.Tests/HostActivation.Tests.csproj b/src/installer/tests/HostActivation.Tests/HostActivation.Tests.csproj
+index 240237d8525..752922700de 100644
+--- a/src/installer/tests/HostActivation.Tests/HostActivation.Tests.csproj
++++ b/src/installer/tests/HostActivation.Tests/HostActivation.Tests.csproj
+@@ -6,6 +6,9 @@
+     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+     <!-- Reduce the length of the test output dir to make it more reliable on Windows. -->
+     <TestsOutputName>ha</TestsOutputName>
 +    <!-- NuGet warns about a transitive P2P to System.Text.Json that can't be pruned.
 +         This is a false positive: https://github.com/NuGet/Home/issues/14103 -->
 +    <NoWarn>$(NoWarn);NU1511</NoWarn>
