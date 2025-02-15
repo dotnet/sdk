@@ -846,9 +846,20 @@ namespace Microsoft.NET.Build.Tasks
                             {
                                 return ToolPackSupport.UnsupportedForTargetRuntimeIdentifier;
                             }
-                            if (!hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
+
+                            // If we have a separate pack pattern for the runtime pack,
+                            // we should always use the runtime pack (the host pack may not have the tooling we need for the target).
+                            bool useRuntimePackForAllTargets = false;
+                            string targetPackNamePattern = packNamePattern;
+                            if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern)
                             {
-                                var targetIlcPackName = packNamePattern.Replace("**RID**", targetRuntimeIdentifier);
+                                targetPackNamePattern = runtimePackNamePattern;
+                                useRuntimePackForAllTargets = true;
+                            }
+
+                            if (useRuntimePackForAllTargets || !hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
+                            {
+                                var targetIlcPackName = targetPackNamePattern.Replace("**RID**", targetRuntimeIdentifier);
                                 var targetIlcPack = new TaskItem(targetIlcPackName);
                                 targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
                                 targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
