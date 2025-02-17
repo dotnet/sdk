@@ -48,7 +48,8 @@ namespace Microsoft.DotNet.Cli
 
             var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
                 .Concat(propertyTokens)
-                .Concat(binaryLoggerTokens).ToList();
+                .Concat(binaryLoggerTokens)
+                .ToList();
 
             List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
             unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
