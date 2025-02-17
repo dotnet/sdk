@@ -55,7 +55,8 @@ namespace Microsoft.DotNet.Cli
             unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
             unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
 
-            PathOptions pathOptions = new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
+            PathOptions pathOptions = new(parseResult.GetValue(
+                TestingPlatformOptions.ProjectOption),
                 parseResult.GetValue(TestingPlatformOptions.SolutionOption),
                 parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
 
