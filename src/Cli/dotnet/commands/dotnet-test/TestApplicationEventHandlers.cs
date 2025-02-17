@@ -182,7 +182,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!VSTestTrace.TraceEnabled) return;
 
-            if (args.ExitCode != ExitCodes.Success)
+            if (args.ExitCode != ExitCode.Success)
             {
                 VSTestTrace.SafeWriteTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
             }

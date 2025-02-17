@@ -24,6 +24,6 @@ public class GivenDotnetTestsRunsWithDifferentCultures : SdkTest
                                 .WithCulture(locale)
                                 .Execute();
 
-        result.ExitCode.Should().Be(ExitCodes.Success);
+        result.ExitCode.Should().Be(ExitCode.Success);
     }
 }

@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 3");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 3");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
     }
 }

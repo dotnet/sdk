@@ -46,20 +46,20 @@ namespace Microsoft.DotNet.Cli
                 {
                     if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                     {
-                        return ExitCodes.GenericFailure;
+                        return ExitCode.GenericFailure;
                     }
                 }
                 else
                 {
                     if (!_msBuildHandler.RunMSBuild(buildOptions))
                     {
-                        return ExitCodes.GenericFailure;
+                        return ExitCode.GenericFailure;
                     }
 
                     if (!_msBuildHandler.EnqueueTestApplications())
                     {
                         _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
-                        return ExitCodes.GenericFailure;
+                        return ExitCode.GenericFailure;
                     }
                 }
 
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli
                 CleanUp();
             }
 
-            return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+            return hasFailed ? ExitCode.GenericFailure : ExitCode.Success;
         }
 
         private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)

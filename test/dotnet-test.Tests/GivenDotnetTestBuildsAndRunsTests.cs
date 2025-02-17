@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -228,7 +228,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -254,7 +254,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
     }
 }

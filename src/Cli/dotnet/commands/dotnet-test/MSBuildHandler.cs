@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Cli
                 msBuildExitCode = RunBuild(path, buildOptions);
             }
 
-            if (msBuildExitCode != ExitCodes.Success)
+            if (msBuildExitCode != ExitCode.Success)
             {
                 _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
                 return false;
@@ -67,14 +67,14 @@ namespace Microsoft.DotNet.Cli
             if (!solutionOrProjectFileFound)
             {
                 _output.WriteMessage(message);
-                return ExitCodes.GenericFailure;
+                return ExitCode.GenericFailure;
             }
 
             (IEnumerable<Module> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
 
             InitializeTestApplications(projects);
 
-            return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
+            return restored ? ExitCode.Success : ExitCode.GenericFailure;
         }
 
         private int RunBuild(string filePath, bool isSolution, BuildOptions buildOptions)
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Cli
 
             InitializeTestApplications(projects);
 
-            return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
+            return restored ? ExitCode.Success : ExitCode.GenericFailure;
         }
 
         private void InitializeTestApplications(IEnumerable<Module> modules)

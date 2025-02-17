@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .Should().Contain("Discovered 0 tests.");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Discovered 0 tests.*", result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Discovered 1 tests.*", result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Discovered 3 tests.*", result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 2 tests", ["TestMethod1", "TestMethod3"]), result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
     }
 }

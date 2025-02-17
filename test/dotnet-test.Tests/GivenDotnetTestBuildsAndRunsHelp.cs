@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(otherTestProjectPattern, result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
     }
 }
