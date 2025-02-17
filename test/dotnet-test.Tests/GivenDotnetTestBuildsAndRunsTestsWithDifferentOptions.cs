@@ -301,7 +301,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunTestProjectSolutionWithOSOption_ShouldReturnOneAsExitCode(string configuration)
+        public void RunTestProjectSolutionWithOSOption_ShouldReturnZeroAsExitCode(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
