@@ -140,8 +140,7 @@ namespace Microsoft.DotNet.Cli
                     {
                         project.SetProperty(ProjectProperties.TargetFramework, framework);
                         project.ReevaluateIfNecessary();
-                        var module = GetModuleFromProject(project);
-                        if (module != null)
+                        if (GetModuleFromProject(project) is {} module)
                         {
                             projects.Add(module);
                         }
