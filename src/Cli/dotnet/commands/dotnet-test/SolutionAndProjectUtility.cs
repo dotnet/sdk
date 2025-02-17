@@ -128,8 +128,7 @@ namespace Microsoft.DotNet.Cli
 
                 if (string.IsNullOrEmpty(targetFrameworks))
                 {
-                    var module = GetModuleFromProject(project);
-                    if (module != null)
+                    if (GetModuleFromProject(project) is {} module)
                     {
                         projects.Add(module);
                     }
