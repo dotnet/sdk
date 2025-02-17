@@ -9,5 +9,5 @@ namespace Microsoft.DotNet.Cli
 
     internal record BuildProperties(string Configuration, string RuntimeIdentifier, string TargetFramework);
 
-    internal record BuildOptions(PathOptions PathOptions, BuildProperties BuildProperties, bool HasNoRestore, bool HasNoBuild, int DegreeOfParallelism, List<string> UnmatchedTokens, List<string> MSBuildArgs);
+    internal record BuildOptions(PathOptions PathOptions, BuildProperties BuildProperties, bool HasNoRestore, bool HasNoBuild, int DegreeOfParallelism, List<string> UnmatchedTokens, IEnumerable<string> MSBuildArgs);
 }

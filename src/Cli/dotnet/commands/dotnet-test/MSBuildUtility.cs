@@ -48,8 +48,7 @@ namespace Microsoft.DotNet.Cli
 
             var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
                 .Concat(propertyTokens)
-                .Concat(binaryLoggerTokens)
-                .ToList();
+                .Concat(binaryLoggerTokens);
 
             List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
             unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
@@ -109,7 +108,7 @@ namespace Microsoft.DotNet.Cli
 
         private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
         {
-            List<string> msbuildArgs = buildOptions.MSBuildArgs;
+            List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
 
             msbuildArgs.Add(filePath);
             msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
