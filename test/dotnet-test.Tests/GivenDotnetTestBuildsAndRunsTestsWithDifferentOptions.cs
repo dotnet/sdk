@@ -469,7 +469,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunMultiTFMsProjectSolutionWithFrameworkOption_ShouldReturnZeroAsExitCode(string configuration)
+        public void RunMultiTFMsProjectSolutionWithFrameworkOption_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString()).WithSource();
 
