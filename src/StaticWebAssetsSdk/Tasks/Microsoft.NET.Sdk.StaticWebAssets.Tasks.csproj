@@ -122,7 +122,12 @@
     <ItemGroup>
       <Content Include="$(PackageLayoutOutputPath)**\*" PackagePath="\" />
     </ItemGroup>
+
   </Target>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.NET.Sdk.Razor.Tests" />
+  </ItemGroup>
 
   <!-- Global usings -->
   <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->

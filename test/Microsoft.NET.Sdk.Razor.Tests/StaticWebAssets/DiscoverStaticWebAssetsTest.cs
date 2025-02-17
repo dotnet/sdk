@@ -537,6 +537,135 @@ for path 'candidate.js'");
             asset.GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be(expected);
         }
 
+        [Fact]
+        public void DefineStaticWebAssetsCache_UpToDate()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+
+            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, null);
+
+            cache.PrepareForProcessing([], [], [], []);
+            Assert.True(cache.IsUpToDate());
+        }
+
+        [Theory]
+        [InlineData(UpdatedHash.GlobalProperties)]
+        [InlineData(UpdatedHash.FingerprintPatterns)]
+        [InlineData(UpdatedHash.Overrides)]
+        public void DefineStaticWebAssetsCache_Recomputes_All_WhenPropertiesChange(UpdatedHash updated)
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+
+            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, null);
+
+            var inputHashes = new Dictionary<string, ITaskItem>
+            {
+                ["input1"] = new TaskItem("input1"),
+                ["input2"] = new TaskItem("input2")
+            };
+
+            switch (updated)
+            {
+                case UpdatedHash.GlobalProperties:
+                    cache.PrepareForProcessing([1], [], [], inputHashes);
+                    break;
+                case UpdatedHash.FingerprintPatterns:
+                    cache.PrepareForProcessing([], [1], [], inputHashes);
+                    break;
+                case UpdatedHash.Overrides:
+                    cache.PrepareForProcessing([], [], [1], inputHashes);
+                    break;
+            }
+
+            Assert.False(cache.IsUpToDate());
+            Assert.Same(inputHashes, cache.RemainingInputs());
+        }
+
+        [Fact]
+        public void DefineStaticWebAssetsCache_PartialUpdate_WhenOnlySome_InputsChange()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+
+            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, null);
+            cache.InputHashes = ["input2"];
+            var cachedAsset = new TaskItem("input2");
+            cache.CachedAssets = new Dictionary<string, ITaskItem>
+            {
+                ["input2"] = cachedAsset,
+            };
+
+            var inputHashes = new Dictionary<string, ITaskItem>
+            {
+                ["input1"] = new TaskItem("input1"),
+                ["input2"] = cachedAsset
+            };
+
+            cache.PrepareForProcessing([], [], [], inputHashes);
+
+            Assert.False(cache.IsUpToDate());
+            Assert.NotSame(inputHashes, cache.RemainingInputs());
+            var input1 = Assert.Single(cache.RemainingInputs());
+            var ouput = cache.ComputeOutputs();
+            var input2 = Assert.Single(ouput.Assets);
+        }
+
+        [Fact]
+        public void DefineStaticWebAssetsCache_PartialUpdate_NewAssetsCanBeAddedToTheCache()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+
+            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, null);
+            cache.InputHashes = ["input2"];
+            var cachedAsset = new TaskItem("input2");
+            cache.CachedAssets = new Dictionary<string, ITaskItem>
+            {
+                ["input2"] = cachedAsset,
+            };
+
+            var newAsset = new TaskItem("input1");
+            var inputHashes = new Dictionary<string, ITaskItem>
+            {
+                ["input1"] = newAsset,
+                ["input2"] = cachedAsset
+            };
+
+            cache.PrepareForProcessing([], [], [], inputHashes);
+            cache.AppendAsset("input1", newAsset);
+
+            Assert.False(cache.IsUpToDate());
+            Assert.NotSame(inputHashes, cache.RemainingInputs());
+            var input1 = Assert.Single(cache.RemainingInputs());
+
+            Assert.Contains("input1", cache.CachedAssets.Keys);
+
+            var ouput = cache.ComputeOutputs();
+            Assert.Equal(2, ouput.Assets.Count);
+            Assert.Equal("input2", ouput.Assets[0].ItemSpec);
+            Assert.Equal("input1", ouput.Assets[1].ItemSpec);
+        }
+
+        public enum UpdatedHash
+        {
+            GlobalProperties,
+            FingerprintPatterns,
+            Overrides
+        }
 
         private ITaskItem CreateCandidate(
             string itemSpec,

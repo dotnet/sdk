@@ -1,14 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using System.Net.Http.Headers;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -28,7 +32,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     // There is also a RelativePathPattern that is used to automatically transform the relative path of the candidates to match
     // the expected path of the final asset. This is typically use to remove a common path prefix, like `wwwroot` from the target
     // path of the assets and so on.
-    public class DefineStaticWebAssets : Task
+    public partial class DefineStaticWebAssets : Task
     {
         private const string DefaultFingerprintExpression = "#[.{fingerprint}]?";
 
@@ -73,6 +77,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
 
+        public string ManifestPath { get; set; }
+
         [Output]
         public ITaskItem[] Assets { get; set; }
 
@@ -81,11 +87,19 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public override bool Execute()
         {
+            var assetsCache = GetOrCreateAssetsCache();
+
+            if (assetsCache.IsUpToDate())
+            {
+                var outputs = assetsCache.ComputeOutputs();
+                Assets = [.. outputs.Assets];
+                CopyCandidates = [.. outputs.CopyCandidates];
+
+                return !Log.HasLoggedErrors;
+            }
+
             try
             {
-                var results = new List<ITaskItem>();
-                var copyCandidates = new List<ITaskItem>();
-
                 var matcher = !string.IsNullOrEmpty(RelativePathPattern) ? new Matcher().AddInclude(RelativePathPattern) : null;
                 var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
                 var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
@@ -93,9 +107,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern.Substring(1), p => p.Expression);
                 Array.Sort(fingerprintPatterns, (a, b) => a.Pattern.Count(c => c == '.').CompareTo(b.Pattern.Count(c => c == '.')));
 
-                for (var i = 0; i < CandidateAssets.Length; i++)
+                foreach(var kvp in assetsCache.RemainingInputs())
                 {
-                    var candidate = CandidateAssets[i];
+                    var hash = kvp.Key;
+                    var candidate = kvp.Value;
                     var relativePathCandidate = string.Empty;
                     if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                     {
@@ -207,7 +222,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                         if (computed)
                         {
-                            copyCandidates.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
+                            assetsCache.AppendCopyCandidate(hash, new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
                             {
                                 ["TargetPath"] = identity
                             }));
@@ -239,18 +254,34 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         originalItemSpec);
 
                     asset.Normalize();
-                    var item = asset.ToTaskItem();
-                    if (SourceType == StaticWebAsset.SourceTypes.Discovered)
-                    {
-                        item.SetMetadata(nameof(StaticWebAsset.AssetKind), !asset.ShouldCopyToPublishDirectory() ? StaticWebAsset.AssetKinds.Build : StaticWebAsset.AssetKinds.All);
-                        UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
-                    }
-
-                    results.Add(item);
+                    assetsCache.AppendAsset(hash, asset.ToTaskItem());
                 }
 
-                Assets = [.. results];
-                CopyCandidates = [.. copyCandidates];
+                var outputs = assetsCache.ComputeOutputs();
+                var results = outputs.Assets;
+
+                for (int i = 0; i < results.Count; i++)
+                {
+                    var item = results[i];
+                    if (SourceType == StaticWebAsset.SourceTypes.Discovered)
+                    {
+                        item.SetMetadata(
+                            nameof(StaticWebAsset.AssetKind),
+                                !string.Equals(item.GetMetadata(
+                                    nameof(CopyToPublishDirectory)),
+                                    StaticWebAsset.AssetCopyOptions.Never,
+                                    StringComparison.Ordinal) ?
+                            StaticWebAsset.AssetKinds.Build :
+                            StaticWebAsset.AssetKinds.All);
+
+                        UpdateAssetKindIfNecessary(assetsByRelativePath, item.GetMetadata(nameof(StaticWebAsset.RelativePath)), item);
+                    }
+                }
+
+                assetsCache.WriteCacheManifest();
+
+                Assets = [.. outputs.Assets];
+                CopyCandidates = [.. outputs.CopyCandidates];
             }
             catch (Exception ex)
             {
