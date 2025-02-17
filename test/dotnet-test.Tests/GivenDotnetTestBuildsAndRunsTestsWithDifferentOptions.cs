@@ -239,20 +239,24 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
+        [InlineData(TestingConstants.Debug, "x64")]
+        [InlineData(TestingConstants.Release, "x64")]
+        [InlineData(TestingConstants.Debug, "arm64")]
+        [InlineData(TestingConstants.Release, "arm64")]
+        [InlineData(TestingConstants.Debug, "x86")]
+        [InlineData(TestingConstants.Release, "x86")]
         [Theory]
-        public void RunTestProjectSolutionWithArchOption_ShouldReturnExitCodeSuccess(string configuration)
+        public void RunTestProjectSolutionWithArchOption_ShouldReturnExitCodeSuccess(string configuration, string arch)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
-                                    .Execute(CommonOptions.ArchitectureOption.Name, "x64",
-                                    TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(CommonOptions.ArchitectureOption.Name, arch,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, "x64");
+            string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCode.Success);
