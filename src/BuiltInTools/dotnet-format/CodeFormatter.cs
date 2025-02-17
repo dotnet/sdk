@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
+using Microsoft.CodeAnalysis.Tools;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools
@@ -278,6 +279,92 @@ namespace Microsoft.CodeAnalysis.Tools
 
             formattableDocuments.AddRange(sourceGeneratedDocuments);
             return (projectFileCount + sourceGeneratedDocuments.Count, formattableDocuments.ToImmutable());
+        }
+
+        public static bool AnyFSharpFiles(string directoryPath)
+        {
+            foreach (var file in Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories))
+            {
+                if (file.EndsWith(".fs", StringComparison.OrdinalIgnoreCase) ||
+                    file.EndsWith(".fsx", StringComparison.OrdinalIgnoreCase) ||
+                    file.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true; // Early return if any F# file is found
+                }
+            }
+
+            return false; // No F# files found after recursive search
+        }
+
+        // using Microsoft.DotNet.Tools.Tool.List; not possible at the moment,
+        // will replicate records privately with the only data needed atm
+        private record ToolListJsonContractInternal(string PackageId);
+        private record ToolListResponseInternal(ToolListJsonContractInternal[] Data);
+
+        public static async Task<bool> IsFantomasInstalled()
+        {
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "tool list --local --format json",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = new Process { StartInfo = processStartInfo };
+
+            process.Start();
+
+            var outputString = process.StandardOutput.ReadToEnd();
+
+            var result =
+                System.Text.Json.JsonSerializer.Deserialize<ToolListResponseInternal>(
+                    outputString
+                );
+
+            await process.WaitForExitAsync();
+
+            return result is not null
+                && result.Data.Any(r => r.PackageId.Contains("fantomas", StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static Task FantomasFormatAsync(FormatOptions formatOptions, ILogger logger)
+        {
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = $"fantomas {formatOptions.WorkspaceFilePath}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = new Process { StartInfo = processStartInfo };
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+
+            // log fantomas output
+            logger.LogInformation(output);
+
+            return process.WaitForExitAsync();
+        }
+
+        public static void LogFantomasInstallationInstructions(ILogger logger)
+        {
+            var message =
+                """
+                Formatting F# code is not natively supported; however, there is a community project called Fantomas that can format F# code.
+                You can find more information about Fantomas at https://fsprojects.github.io/fantomas/docs/.
+                You can install Fantomas via dotnet tools:
+
+                > dotnet new tool-manifest [ only if no previous manifest is installed ]
+                > dotnet tool install fantomas
+
+                """;
+            logger.LogInformation(message);
         }
     }
 }
