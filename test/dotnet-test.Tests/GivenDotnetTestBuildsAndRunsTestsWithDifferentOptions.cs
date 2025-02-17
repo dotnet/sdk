@@ -239,17 +239,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug, "x64")]
-        [InlineData(TestingConstants.Release, "x64")]
-        [InlineData(TestingConstants.Debug, "arm64")]
-        [InlineData(TestingConstants.Release, "arm64")]
-        [InlineData(TestingConstants.Debug, "x86")]
-        [InlineData(TestingConstants.Release, "x86")]
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunTestProjectSolutionWithArchOption_ShouldReturnExitCodeSuccess(string configuration, string arch)
+        public void RunTestProjectSolutionWithArchOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
+            var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
@@ -257,6 +254,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
+
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
             result.ExitCode.Should().Be(ExitCode.Success);
@@ -289,7 +287,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
-            string arch = "x64";
+            var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
             string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
@@ -329,7 +327,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
 
-            string arch = "x64";
+            var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
             string runtime = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, arch);
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
