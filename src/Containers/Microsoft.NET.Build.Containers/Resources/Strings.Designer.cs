@@ -385,6 +385,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CONTAINER2031: The container image format &apos;{0}&apos; is not supported. Supported formats are &apos;{1}&apos;..
+        /// </summary>
+        internal static string InvalidContainerImageFormat {
+            get {
+                return ResourceManager.GetString("InvalidContainerImageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2015: {0}: &apos;{1}&apos; was not a valid Environment Variable. Ignoring..
         /// </summary>
         internal static string InvalidEnvVar {
@@ -768,6 +777,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string UnableToAccessRepository {
             get {
                 return ResourceManager.GetString("UnableToAccessRepository", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1018: Unable to download image from the repository &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnableToDownloadFromRepository {
+            get {
+                return ResourceManager.GetString("UnableToDownloadFromRepository", resourceCulture);
             }
         }
         

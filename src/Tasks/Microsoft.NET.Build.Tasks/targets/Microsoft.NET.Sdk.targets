@@ -269,11 +269,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'$(_MicrosoftNetSdkCompilersToolsetPackageRootEmpty)' == 'true' and !($(MSBuildProjectFile.EndsWith('_wpftmp.csproj')) or $(MSBuildProjectFile.EndsWith('_wpftmp.vbproj')))" />
   </Target>
 
-  <!-- TODO: this target should not check GeneratePackageOnBuild.
-             remove when https://github.com/NuGet/Home/issues/7801 is fixed.
-    -->
   <Target Name="_CheckForBuildWithNoBuild"
-          Condition="'$(NoBuild)' == 'true' and '$(GeneratePackageOnBuild)' != 'true'">
+          Condition="'$(NoBuild)' == 'true'">
     <NETSdkError ResourceName="NoBuildRequested" />
   </Target>
 
@@ -553,6 +550,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(_ComObjectDescriptorSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Data.DataSet.XmlSerializationIsSupported"
+                                    Condition="'$(_DataSetXmlSerializationSupport)' != ''"
+                                    Value="$(_DataSetXmlSerializationSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"
                                     Condition="'$(DebuggerSupport)' != ''"
                                     Value="$(DebuggerSupport)"
@@ -599,6 +601,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(InvariantGlobalization)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.TimeZoneInfo.Invariant"
+                                    Condition="'$(InvariantTimezone)' != ''"
+                                    Value="$(InvariantTimezone)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Globalization.Hybrid"
                                     Condition="'$(HybridGlobalization)' != ''"
                                     Value="$(HybridGlobalization)"
@@ -607,6 +614,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Globalization.PredefinedCulturesOnly"
                                     Condition="'$(PredefinedCulturesOnly)' != ''"
                                     Value="$(PredefinedCulturesOnly)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Linq.Enumerable.IsSizeOptimized"
+                                    Condition="'$(UseSizeOptimizedLinq)' != ''"
+                                    Value="$(UseSizeOptimizedLinq)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Net.Http.EnableActivityPropagation"
@@ -800,7 +812,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
     <PropertyGroup>
       <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and
                                       ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
       <_UseSingleFileHostForPublish Condition="'$(PublishSingleFile)' == 'true' and
                                                '$(SelfContained)' == 'true' and

@@ -94,6 +94,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <EnableTargetingPackDownload Condition="'$(EnableTargetingPackDownload)' == ''">true</EnableTargetingPackDownload>
       <EnableRuntimePackDownload Condition="'$(EnableRuntimePackDownload)' == ''">true</EnableRuntimePackDownload>
+      <RequiresAspNetWebAssets Condition="'$(RequiresAspNetWebAssets)' == ''">false</RequiresAspNetWebAssets>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -147,7 +148,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 KnownILCompilerPacks="@(KnownILCompilerPack)"
                                 KnownILLinkPacks="@(KnownILLinkPack)"
                                 KnownWebAssemblySdkPacks="@(KnownWebAssemblySdkPack)"
+                                KnownAspNetCorePacks="@(KnownAspNetCorePack)"
                                 UsingMicrosoftNETSdkWebAssembly="$(UsingMicrosoftNETSdkWebAssembly)"
+                                RequiresAspNetWebAssets="$(RequiresAspNetWebAssets)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                 NETCoreSdkPortableRuntimeIdentifier="$(NETCoreSdkPortableRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"

@@ -196,8 +196,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 (string, string)[]? leftAssembliesTransformationPattern = parseResult.GetValue(leftAssembliesTransformationPatternOption);
                 (string, string)[]? rightAssembliesTransformationPattern = parseResult.GetValue(rightAssembliesTransformationPatternOption);
 
-                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
-                ValidateAssemblies.Run(logFactory,
+                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity, noWarn);
+                int exitCode = ValidateAssemblies.Run(logFactory,
                     generateSuppressionFile,
                     preserveUnnecessarySuppressions,
                     permitUnnecessarySuppressions,
@@ -218,6 +218,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     rightAssembliesTransformationPattern);
 
                 roslynResolver.Unregister();
+
+                return exitCode;
             });
 
             // Package command
@@ -318,8 +320,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Dictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences = parseResult.GetValue(baselinePackageAssemblyReferencesOption);
                 string[]? baselinePackageFrameworksToIgnore = parseResult.GetValue(baselinePackageFrameworksToIgnoreOption);
 
-                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
-                ValidatePackage.Run(logFactory,
+                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity, noWarn);
+                int exitCode = ValidatePackage.Run(logFactory,
                     generateSuppressionFile,
                     preserveUnnecessarySuppressions,
                     permitUnnecessarySuppressions,
@@ -342,6 +344,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     baselinePackageFrameworksToIgnore);
 
                 roslynResolver.Unregister();
+
+                return exitCode;
             });
 
             rootCommand.Subcommands.Add(packageCommand);
