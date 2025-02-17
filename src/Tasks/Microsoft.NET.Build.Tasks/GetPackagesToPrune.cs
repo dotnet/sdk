@@ -110,14 +110,19 @@ namespace Microsoft.NET.Build.Tasks
         {
             Dictionary<string, NuGetVersion> packagesToPrune = new();
 
-            if (key.TargetFrameworkIdentifier.Equals(".NETCoreApp") && key.FrameworkReferences.Count == 0)
+            var targetFrameworkVersion = Version.Parse(key.TargetFrameworkVersion);
+
+            if (key.FrameworkReferences.Count == 0)
             {
-                //  For .NET Core projects, don't prune any packages if there are no framework references
-                return Array.Empty<TaskItem>();
+                if (key.TargetFrameworkIdentifier.Equals(".NETCoreApp") && targetFrameworkVersion.Major >= 3)
+                {
+                    //  For .NET Core projects (3.0 and higher), don't prune any packages if there are no framework references
+                    return Array.Empty<TaskItem>();
+                }
             }
 
             bool useFrameworkPackageData;
-            if (!key.TargetFrameworkIdentifier.Equals(".NETCoreApp") || Version.Parse(key.TargetFrameworkVersion).Major < 10)
+            if (!key.TargetFrameworkIdentifier.Equals(".NETCoreApp") || targetFrameworkVersion.Major < 10)
             {
                 //  Use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
                 useFrameworkPackageData = true;
@@ -129,8 +134,8 @@ namespace Microsoft.NET.Build.Tasks
                 useFrameworkPackageData = false;
             }
 
-
-            foreach (var frameworkReference in key.FrameworkReferences)
+            //  Call DefaultIfEmpty() so that target frameworks without framework references will load data
+            foreach (var frameworkReference in key.FrameworkReferences.DefaultIfEmpty(""))
             {
                 Dictionary<string, NuGetVersion> packagesForFrameworkReference;
                 if (useFrameworkPackageData)
@@ -171,6 +176,12 @@ namespace Microsoft.NET.Build.Tasks
         static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromFrameworkPackages(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string targetingPackRoot)
         {
             var nugetFramework = new NuGetFramework(targetFrameworkIdentifier, Version.Parse(targetFrameworkVersion));
+
+            //  FrameworkPackages just has data for .NET Framework 4.6.1 and doesn't handle framework compatibility, so treat anything greater than .NET Framework as if it were 4.6.1
+            if (nugetFramework.IsDesktop() && nugetFramework.Version > new Version(4,6,1))
+            {
+                nugetFramework = NuGetFramework.Parse("net461");
+            }
 
             var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, [frameworkReference], targetingPackRoot)
                 .SelectMany(packages => packages)

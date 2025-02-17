@@ -78,6 +78,11 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
     {
         var frameworkPackages = new List<FrameworkPackages>();
 
+        if (frameworkReferences.Length == 0)
+        {
+            frameworkReferences = [DefaultFrameworkKey];
+        }
+
         foreach (var frameworkReference in frameworkReferences)
         {
             var frameworkKey = GetFrameworkKey(frameworkReference);
