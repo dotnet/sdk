@@ -311,24 +311,60 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         [InlineData("net9.0")]
-        public void PrunePackageDataSucceeds(string targetFramework)
+        [InlineData("net8.0")]
+        [InlineData("net7.0")]
+        [InlineData("net6.0")]
+        [InlineData("netcoreapp3.1")]
+        [InlineData("netcoreapp3.0")]
+        [InlineData("netcoreapp2.1")]
+        [InlineData("netcoreapp2.0")]
+        [InlineData("netcoreapp1.1", false)]
+        [InlineData("netcoreapp1.0", false)]
+        [InlineData("netstandard2.1")]
+        [InlineData("netstandard2.0")]
+        [InlineData("netstandard1.1", false)]
+        [InlineData("netstandard1.0", false)]
+        [InlineData("net451", false)]
+        [InlineData("net462")]
+        [InlineData("net481")]
+        public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true)
         {
+            var nugetFramework = NuGetFramework.Parse(targetFramework);
+
             var testProject = new TestProject()
             {
                 TargetFrameworks = targetFramework
             };
 
-            testProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
-            testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App");
-            testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App.WindowsForms");
+            if (nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && nugetFramework.Version.Major >= 3)
+            {
+                testProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
+                testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App");
+                testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App.WindowsForms");
+            }
+
             testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
+            
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
 
-            buildCommand.Execute().Should().Pass();
+            var prunePackageItemFile = Path.Combine(testAsset.TestRoot, "prunePackageItems.txt");
+            
+            buildCommand.Execute("/t:CollectPrunePackageReferences", "-getItem:PrunePackageReference", $"-getResultOutputFile:{prunePackageItemFile}").Should().Pass();
+
+            var prunedPackages = ParsePrunePackageReferenceJson(File.ReadAllText(prunePackageItemFile));
+            if (shouldPrune)
+            {
+                prunedPackages.Should().NotBeEmpty();
+            }
+            else
+            {
+                prunedPackages.Should().BeEmpty();
+            }
         }
 
         [Fact]
@@ -358,27 +394,28 @@ namespace Microsoft.NET.Build.Tests
             var itemsResult1 = getItemsCommand1.Execute("-getItem:PrunePackageReference");
             itemsResult1.Should().Pass();
 
-            var items1 = ParseItemsJson(itemsResult1.StdOut);
+            var items1 = ParsePrunePackageReferenceJson(itemsResult1.StdOut);
 
             var getItemsCommand2 = new MSBuildCommand(testAsset, "ResolvePackageAssets;AddTransitiveFrameworkReferences;AddPrunePackageReferences");
             var itemsResult2 = getItemsCommand2.Execute("-getItem:PrunePackageReference");
             itemsResult2.Should().Pass();
 
-            var items2 = ParseItemsJson(itemsResult2.StdOut);
+            var items2 = ParsePrunePackageReferenceJson(itemsResult2.StdOut);
 
             items2.Should().BeEquivalentTo(items1);
 
-            static List<KeyValuePair<string,string>> ParseItemsJson(string json)
+        }
+
+        static List<KeyValuePair<string, string>> ParsePrunePackageReferenceJson(string json)
+        {
+            List<KeyValuePair<string, string>> ret = new();
+            var root = JsonNode.Parse(json);
+            var items = (JsonArray)root["Items"]["PrunePackageReference"];
+            foreach (var item in items)
             {
-                List<KeyValuePair<string, string>> ret = new();
-                var root = JsonNode.Parse(json);
-                var items = (JsonArray) root["Items"]["PrunePackageReference"];
-                foreach (var item in items)
-                {
-                    ret.Add(new KeyValuePair<string, string>((string)item["Identity"], (string)item["Version"]));
-                }
-                return ret;
+                ret.Add(new KeyValuePair<string, string>((string)item["Identity"], (string)item["Version"]));
             }
+            return ret;
         }
     }
 }
