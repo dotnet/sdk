@@ -230,7 +230,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.FrameworkOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
-            command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+            command.Options.Add(CommonOptions.RuntimeOption);
             command.Options.Add(CommonOptions.NoRestoreOption);
             command.Options.Add(TestingPlatformOptions.NoBuildOption);
             command.Options.Add(TestingPlatformOptions.NoAnsiOption);
