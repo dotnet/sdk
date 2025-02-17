@@ -106,6 +106,7 @@ namespace Microsoft.DotNet.Tools.Common
 
             IEnumerable<SolutionProjectModel> projects = filteredSolutionProjectPaths
                 .Select(path => path.Replace('\\', Path.DirectorySeparatorChar))
+                .Select(path => Uri.UnescapeDataString(path))
                 .Select(path => originalSolution.FindProject(path) ?? throw new GracefulException(
                         CommonLocalizableStrings.ProjectNotFoundInTheSolution,
                         path,
