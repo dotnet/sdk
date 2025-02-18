@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli
             // If no matches were found, we simply return
             if (!testModulePaths.Any())
             {
-                VSTestTrace.SafeWriteTrace(() => $"No test modules found for the given test module pattern: {testModules} with root directory: {rootDirectory}");
+                TestingPlatformTrace.Write(() => $"No test modules found for the given test module pattern: {testModules} with root directory: {rootDirectory}");
                 return false;
             }
 
