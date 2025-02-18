@@ -112,16 +112,6 @@
       <CombinedSharedHostAndFrameworkArchive>$(NetRuntimeDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And !$(Architecture.StartsWith('arm'))">
-      <AlternateAppHostRid>win-$(AlternateArchitecture)</AlternateAppHostRid>
-      <Arm64AppHostRid>win-arm64</Arm64AppHostRid>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And '$(Architecture)' == 'arm64'">
-      <AlternateAppHostRid>win-x86</AlternateAppHostRid>
-      <x64AppHostRid>win-x64</x64AppHostRid>
-    </PropertyGroup>
-
     <ItemGroup>
       <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
         <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
@@ -152,29 +142,6 @@
 
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
         <PackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <!-- These apphost packages come from different verticals and require a join inside the VMR. Disable for now:
-           https://github.com/dotnet/source-build/issues/4114 -->
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Alternate" Condition="'$(AlternateAppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(AlternateAppHostRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Arm64" Condition="'$(Arm64AppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(Arm64AppHostRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_x64" Condition="'$(x64AppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(x64AppHostRid)</PackageName>
         <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
