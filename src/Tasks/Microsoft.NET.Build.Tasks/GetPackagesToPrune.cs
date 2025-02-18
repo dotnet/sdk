@@ -33,6 +33,9 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] FrameworkReferences { get; set; }
 
         [Required]
+        public ITaskItem[] TargetingPacks { get; set; }
+
+        [Required]
         public string TargetingPackRoot { get; set; }
 
         [Required]
@@ -86,11 +89,27 @@ namespace Microsoft.NET.Build.Tasks
             var filteredFrameworkReferences = FrameworkReferences.Where(
                 i => i.GetMetadata("IsTransitiveFrameworkReference") is string transitiveVal && !transitiveVal.Equals("true", StringComparison.OrdinalIgnoreCase)).ToList();
 
+            //  Map framework references to runtime frameworks, so we can correctly handle framework references to profiles.
+            //  For example, for a framework reference of Microsoft.WindowsDesktop.App.WindowsForms, we map it to the
+            //  runtime framework of Microsoft.WindowsDesktop.App, which is what the pruned packages are defined in terms of
+            List<string> runtimeFrameworks = new List<string>();
+
+            foreach (var frameworkReference in filteredFrameworkReferences)
+            {
+                //  Number of framework references is generally low enough that it's not worth putting the targeting packs into a hash set
+                var targetingPack = TargetingPacks.FirstOrDefault(tp => tp.ItemSpec.Equals(frameworkReference.ItemSpec, StringComparison.OrdinalIgnoreCase));
+                if (targetingPack != null)
+                {
+                    runtimeFrameworks.Add(targetingPack.GetMetadata("RuntimeFrameworkName"));
+                }
+            }
+
+
             CacheKey key = new()
             {
                 TargetFrameworkIdentifier = TargetFrameworkIdentifier,
                 TargetFrameworkVersion = TargetFrameworkVersion,
-                FrameworkReferences = filteredFrameworkReferences.Select(i => i.ItemSpec).ToHashSet()
+                FrameworkReferences = runtimeFrameworks.ToHashSet()
             };
 
             //  Cache framework package values per build

@@ -333,30 +333,35 @@ namespace Microsoft.NET.Build.Tests
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
 
-            var testProject = new TestProject()
+            List<KeyValuePair<string,string>> GetPrunedPackages(string frameworkReference)
             {
-                TargetFrameworks = targetFramework
-            };
+                var testProject = new TestProject()
+                {
+                    TargetFrameworks = targetFramework
+                };
 
-            if (nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && nugetFramework.Version.Major >= 3)
-            {
-                testProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
-                testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App");
-                testProject.FrameworkReferences.Add("Microsoft.WindowsDesktop.App.WindowsForms");
+                testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
+
+                if (!string.IsNullOrEmpty(frameworkReference))
+                {
+                    testProject.FrameworkReferences.Add(frameworkReference);
+                }
+
+
+                var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: nameof(PrunePackageDataSucceeds), identifier: targetFramework + frameworkReference);
+
+                var buildCommand = new BuildCommand(testAsset);
+
+                var prunePackageItemFile = Path.Combine(testAsset.TestRoot, "prunePackageItems.txt");
+
+                buildCommand.Execute("/t:CollectPrunePackageReferences", "-getItem:PrunePackageReference", $"-getResultOutputFile:{prunePackageItemFile}").Should().Pass();
+
+                var prunedPackages = ParsePrunePackageReferenceJson(File.ReadAllText(prunePackageItemFile));
+
+                return prunedPackages;
             }
 
-            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "True";
-            
-
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-
-            var prunePackageItemFile = Path.Combine(testAsset.TestRoot, "prunePackageItems.txt");
-            
-            buildCommand.Execute("/t:CollectPrunePackageReferences", "-getItem:PrunePackageReference", $"-getResultOutputFile:{prunePackageItemFile}").Should().Pass();
-
-            var prunedPackages = ParsePrunePackageReferenceJson(File.ReadAllText(prunePackageItemFile));
+            var prunedPackages = GetPrunedPackages("");
             if (shouldPrune)
             {
                 prunedPackages.Should().NotBeEmpty();
@@ -364,6 +369,19 @@ namespace Microsoft.NET.Build.Tests
             else
             {
                 prunedPackages.Should().BeEmpty();
+            }
+
+            if (nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && nugetFramework.Version.Major >= 3)
+            {
+                foreach(var frameworkReference in new [] {
+                        "Microsoft.AspNetCore.App",
+                        "Microsoft.WindowsDesktop.App",
+                        "Microsoft.WindowsDesktop.App.WindowsForms",
+                    })
+                {
+                    var frameworkPrunedPackages = GetPrunedPackages(frameworkReference);
+                    frameworkPrunedPackages.Count.Should().BeGreaterThan(prunedPackages.Count, frameworkReference + " should have more pruned packages than base framework");
+                }
             }
         }
 
