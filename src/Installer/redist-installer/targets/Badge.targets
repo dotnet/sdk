@@ -17,7 +17,7 @@
       ReplacementStrings="$(Version)" />
   </Target>
 
-  <Target Name="SetBadgeProps" DependsOnTargets="GetCurrentRuntimeInformation">
+  <Target Name="SetBadgeProps">
     <PropertyGroup>
       <VersionBadgeMoniker>$(OSName)_$(Architecture)</VersionBadgeMoniker>
       <VersionBadgeMoniker Condition=" '$(Rid)' == 'linux-musl-x64' ">linux_musl_x64</VersionBadgeMoniker>
