@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Tools;
@@ -23,6 +24,9 @@ namespace Microsoft.DotNet.Cli
                     SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
             ConcurrentBag<Module> projects = GetProjectsProperties(new ProjectCollection(), solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+
+            isBuiltOrRestored |= !projects.IsEmpty;
+
             return (projects, isBuiltOrRestored);
         }
 
@@ -30,9 +34,60 @@ namespace Microsoft.DotNet.Cli
         {
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
 
-            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), new ProjectCollection());
+            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions.BuildProperties), new ProjectCollection());
+
+            isBuiltOrRestored |= projects.Any();
 
             return (projects, isBuiltOrRestored);
+        }
+
+        public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
+        {
+            IEnumerable<string> propertyTokens = GetPropertyTokens(parseResult.UnmatchedTokens);
+            IEnumerable<string> binaryLoggerTokens = GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
+
+            var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
+                .Concat(propertyTokens)
+                .Concat(binaryLoggerTokens);
+
+            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+            unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
+            unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
+
+            PathOptions pathOptions = new(parseResult.GetValue(
+                TestingPlatformOptions.ProjectOption),
+                parseResult.GetValue(TestingPlatformOptions.SolutionOption),
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+
+            BuildProperties buildProperties = new(
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                ResolveRuntimeIdentifier(parseResult),
+                parseResult.GetValue(TestingPlatformOptions.FrameworkOption));
+
+            return new BuildOptions(
+                pathOptions,
+                buildProperties,
+                parseResult.GetValue(CommonOptions.NoRestoreOption),
+                parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
+                parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
+                degreeOfParallelism,
+                unmatchedTokens,
+                msbuildArgs);
+        }
+
+        private static string ResolveRuntimeIdentifier(ParseResult parseResult)
+        {
+            if (parseResult.HasOption(CommonOptions.RuntimeOption))
+            {
+                return parseResult.GetValue(CommonOptions.RuntimeOption);
+            }
+
+            if (!parseResult.HasOption(CommonOptions.OperatingSystemOption) && !parseResult.HasOption(CommonOptions.ArchitectureOption))
+            {
+                return string.Empty;
+            }
+
+            return CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(parseResult.GetValue(CommonOptions.OperatingSystemOption), parseResult.GetValue(CommonOptions.ArchitectureOption));
         }
 
         public static IEnumerable<string> GetPropertyTokens(IEnumerable<string> unmatchedTokens)
@@ -54,7 +109,12 @@ namespace Microsoft.DotNet.Cli
 
         private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
         {
-            List<string> msbuildArgs = buildOptions.MSBuildArgs;
+            List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
+
+            if (buildOptions.Verbosity is null)
+            {
+                msbuildArgs.Add($"-verbosity:quiet");
+            }
 
             msbuildArgs.Add(filePath);
             msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
@@ -73,7 +133,7 @@ namespace Microsoft.DotNet.Cli
                 new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
                 (project) =>
                 {
-                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions), projectCollection);
+                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions.BuildProperties), projectCollection);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);
@@ -83,18 +143,23 @@ namespace Microsoft.DotNet.Cli
             return allProjects;
         }
 
-        private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
+        private static Dictionary<string, string> GetGlobalProperties(BuildProperties buildProperties)
         {
             var globalProperties = new Dictionary<string, string>();
 
-            if (!string.IsNullOrEmpty(buildOptions.Configuration))
+            if (!string.IsNullOrEmpty(buildProperties.Configuration))
             {
-                globalProperties[CliConstants.Configuration] = buildOptions.Configuration;
+                globalProperties[CliConstants.Configuration] = buildProperties.Configuration;
             }
 
-            if (!string.IsNullOrEmpty(buildOptions.RuntimeIdentifier))
+            if (!string.IsNullOrEmpty(buildProperties.RuntimeIdentifier))
             {
-                globalProperties[CliConstants.RuntimeIdentifier] = buildOptions.RuntimeIdentifier;
+                globalProperties[CliConstants.RuntimeIdentifier] = buildProperties.RuntimeIdentifier;
+            }
+
+            if (!string.IsNullOrEmpty(buildProperties.TargetFramework))
+            {
+                globalProperties[CliConstants.TargetFramework] = buildProperties.TargetFramework;
             }
 
             return globalProperties;

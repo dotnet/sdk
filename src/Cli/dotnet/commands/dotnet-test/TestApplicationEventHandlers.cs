@@ -31,11 +31,11 @@ namespace Microsoft.DotNet.Cli
             _executions[testApplication] = appInfo;
             _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
 
-            if (!VSTestTrace.TraceEnabled) return;
+            if (!Logger.TraceEnabled) return;
 
             foreach (var property in args.Handshake.Properties)
             {
-                VSTestTrace.SafeWriteTrace(() => $"{GetHandshakePropertyName(property.Key)}: {property.Value}");
+                Logger.LogTrace(() => $"{GetHandshakePropertyName(property.Key)}: {property.Value}");
             }
         }
 
@@ -65,12 +65,12 @@ namespace Microsoft.DotNet.Cli
                         test.Uid);
             }
 
-            if (!VSTestTrace.TraceEnabled) return;
+            if (!Logger.TraceEnabled) return;
 
-            VSTestTrace.SafeWriteTrace(() => $"DiscoveredTests Execution Id: {args.ExecutionId}");
+            Logger.LogTrace(() => $"DiscoveredTests Execution Id: {args.ExecutionId}");
             foreach (var discoveredTestMessage in args.DiscoveredTests)
             {
-                VSTestTrace.SafeWriteTrace(() => $"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
+                Logger.LogTrace(() => $"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
             }
         }
 
@@ -108,20 +108,20 @@ namespace Microsoft.DotNet.Cli
                     errorOutput: null);
             }
 
-            if (!VSTestTrace.TraceEnabled) return;
+            if (!Logger.TraceEnabled) return;
 
-            VSTestTrace.SafeWriteTrace(() => $"TestResults Execution Id: {args.ExecutionId}");
+            Logger.LogTrace(() => $"TestResults Execution Id: {args.ExecutionId}");
 
             foreach (SuccessfulTestResult successfulTestResult in args.SuccessfulTestResults)
             {
-                VSTestTrace.SafeWriteTrace(() => $"SuccessfulTestResult: {successfulTestResult.Uid}, {successfulTestResult.DisplayName}, " +
+                Logger.LogTrace(() => $"SuccessfulTestResult: {successfulTestResult.Uid}, {successfulTestResult.DisplayName}, " +
                 $"{successfulTestResult.State}, {successfulTestResult.Duration}, {successfulTestResult.Reason}, {successfulTestResult.StandardOutput}," +
                 $"{successfulTestResult.ErrorOutput}, {successfulTestResult.SessionUid}");
             }
 
             foreach (FailedTestResult failedTestResult in args.FailedTestResults)
             {
-                VSTestTrace.SafeWriteTrace(() => $"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
+                Logger.LogTrace(() => $"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
                 $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", failedTestResult.Exceptions?.Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
                 $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
             }
@@ -140,13 +140,13 @@ namespace Microsoft.DotNet.Cli
                     artifact.TestDisplayName, artifact.FullPath);
             }
 
-            if (!VSTestTrace.TraceEnabled) return;
+            if (!Logger.TraceEnabled) return;
 
-            VSTestTrace.SafeWriteTrace(() => $"FileArtifactMessages Execution Id: {args.ExecutionId}");
+            Logger.LogTrace(() => $"FileArtifactMessages Execution Id: {args.ExecutionId}");
 
             foreach (FileArtifact fileArtifactMessage in args.FileArtifacts)
             {
-                VSTestTrace.SafeWriteTrace(() => $"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
+                Logger.LogTrace(() => $"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
                 $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
                 $"{fileArtifactMessage.SessionUid}");
             }
@@ -154,17 +154,17 @@ namespace Microsoft.DotNet.Cli
 
         public void OnSessionEventReceived(object sender, SessionEventArgs args)
         {
-            if (!VSTestTrace.TraceEnabled) return;
+            if (!Logger.TraceEnabled) return;
 
             var sessionEvent = args.SessionEvent;
-            VSTestTrace.SafeWriteTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
+            Logger.LogTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
         }
 
         public void OnErrorReceived(object sender, ErrorEventArgs args)
         {
-            if (!VSTestTrace.TraceEnabled) return;
+            if (!Logger.TraceEnabled) return;
 
-            VSTestTrace.SafeWriteTrace(() => args.ErrorMessage);
+            Logger.LogTrace(() => args.ErrorMessage);
         }
 
         public void OnTestProcessExited(object sender, TestProcessExitEventArgs args)
@@ -180,21 +180,21 @@ namespace Microsoft.DotNet.Cli
                 _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
             }
 
-            if (!VSTestTrace.TraceEnabled) return;
+            if (!Logger.TraceEnabled) return;
 
-            if (args.ExitCode != ExitCodes.Success)
+            if (args.ExitCode != ExitCode.Success)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
+                Logger.LogTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
             }
 
             if (args.OutputData.Count > 0)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Output Data: {string.Join("\n", args.OutputData)}");
+                Logger.LogTrace(() => $"Output Data: {string.Join("\n", args.OutputData)}");
             }
 
             if (args.ErrorData.Count > 0)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Error Data: {string.Join("\n", args.ErrorData)}");
+                Logger.LogTrace(() => $"Error Data: {string.Join("\n", args.ErrorData)}");
             }
         }
 
