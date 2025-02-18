@@ -3,19 +3,19 @@
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal class TestingPlatformTrace
+    internal class Logger
     {
         public static bool TraceEnabled { get; private set; }
         private static readonly string _traceFilePath;
         private static readonly object _lock = new();
 
-        static TestingPlatformTrace()
+        static Logger()
         {
-            _traceFilePath = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTING_PLATFORM_TRACEFILE");
+            _traceFilePath = Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_TRACEFILE");
             TraceEnabled = !string.IsNullOrEmpty(_traceFilePath);
         }
 
-        public static void Write(Func<string> messageLog)
+        public static void LogTrace(Func<string> messageLog)
         {
             if (!TraceEnabled)
             {

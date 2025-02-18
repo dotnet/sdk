@@ -135,19 +135,19 @@ namespace Microsoft.DotNet.Cli
 
         private void LogProjectProperties(IEnumerable<Module> modules)
         {
-            if (!TestingPlatformTrace.TraceEnabled)
+            if (!Logger.TraceEnabled)
             {
                 return;
             }
 
             foreach (var module in modules)
             {
-                TestingPlatformTrace.Write(() => $"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
-                TestingPlatformTrace.Write(() => $"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
-                TestingPlatformTrace.Write(() => $"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
-                TestingPlatformTrace.Write(() => $"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-                TestingPlatformTrace.Write(() => $"{ProjectProperties.TargetPath}: {module.TargetPath}");
-                TestingPlatformTrace.Write(() => $"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
+                Logger.LogTrace(() => $"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
+                Logger.LogTrace(() => $"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
+                Logger.LogTrace(() => $"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
+                Logger.LogTrace(() => $"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
+                Logger.LogTrace(() => $"{ProjectProperties.TargetPath}: {module.TargetPath}");
+                Logger.LogTrace(() => $"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
             }
         }
 
