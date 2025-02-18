@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal class Logger
+    internal static class Logger
     {
         public static bool TraceEnabled { get; private set; }
         private static readonly string _traceFilePath;
