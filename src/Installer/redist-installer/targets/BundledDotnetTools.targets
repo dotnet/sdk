@@ -16,17 +16,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageDownload Include="%(BundledDotnetTool.Identity)" Version="[%(BundledDotnetTool.Version)]" />
+    <PackageDownload Include="@(BundledDotnetTool)" Version="[%(Version)]" />
   </ItemGroup>
 
-  <Target Name="LayoutBundledTools">
+  <Target Name="LayoutBundledTools" Condition="'@(BundledDotnetTool)' != ''">
     <ItemGroup>
       <BundledToolFiles Include="%(BundledDotnetTool.RestoredPackagePath)\**\*.*" PackageToRestore="%(BundledDotnetTool.Identity)" PackageVersionToRestore="%(BundledDotnetTool.Version)" />
       <BundledToolFiles Remove="%(BundledDotnetTool.RestoredPackagePath)\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(BundledToolFiles)"
-          DestinationFiles="@(BundledToolFiles->'$(SdkOutputDirectory)DotnetTools/%(PackageToRestore)\%(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(BundledToolFiles->'$(SdkOutputDirectory)DotnetTools\%(PackageToRestore)\%(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
   </Target>
 
