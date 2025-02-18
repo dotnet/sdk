@@ -11,36 +11,28 @@
 ###   --no-bootstrap              Don't replace portable packages in the download source-built artifacts
 ###   --no-prebuilts              Exclude the download of the prebuilts archive
 ###   --no-sdk                    Exclude the download of the .NET SDK
+###   --no-binary-removal         Don't remove non-SB allowed binaries.
 ###   --artifacts-rid             The RID of the previously source-built artifacts archive to download
 ###                               Default is centos.9-x64
 ###   --rid, --target-rid <value> Overrides the target rid for the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64
 ###   --runtime-source-feed       URL of a remote server or a local directory, from which SDKs and
 ###                               runtimes can be downloaded
 ###   --runtime-source-feed-key   Key for accessing the above server, if necessary
-###
-### Binary-Tooling options:
-###   --no-binary-removal         Don't remove non-SB allowed binaries
-###   --with-sdk                  Use the SDK in the specified directory
-###                               Default is the .NET SDK
-###   --with-packages             Specified directory to use as the source feed for packages
-###                               Default is the previously source-built artifacts archive.
 
 set -euo pipefail
 IFS=$'\n\t'
 
 source="${BASH_SOURCE[0]}"
 REPO_ROOT="$( cd -P "$( dirname "$0" )" && pwd )"
+VMR_TOOLS="$REPO_ROOT/eng/vmr-tools.sh"
 
 function print_help () {
     sed -n '/^### /,/^$/p' "$source" | cut -b 5-
+    "$VMR_TOOLS" --help advanced
 }
 
 # SB prep default arguments
 defaultArtifactsRid='centos.9-x64'
-
-# Binary Tooling default arguments
-defaultDotnetSdk="$REPO_ROOT/.dotnet"
-defaultPackagesDir="$REPO_ROOT/prereqs/packages/previously-source-built"
 
 # SB prep arguments
 buildBootstrap=true
@@ -52,10 +44,6 @@ artifactsRid=$defaultArtifactsRid
 target_rid=''
 runtime_source_feed='' # IBM requested these to support s390x scenarios
 runtime_source_feed_key='' # IBM requested these to support s390x scenarios
-
-# Binary Tooling arguments
-dotnetSdk=$defaultDotnetSdk
-packagesDir=$defaultPackagesDir
 
 positional_args=()
 while :; do
@@ -98,16 +86,10 @@ while :; do
     --no-binary-removal)
       removeBinaries=false
       ;;
-    --with-sdk)
-      dotnetSdk=$2
-      shift
-      ;;
-    --with-packages)
-      packagesDir=$2
-      shift
-      ;;
     *)
-      positional_args+=("$1")
+      if [ -n "$1" ]; then
+        positional_args+=("$1")
+      fi
       ;;
   esac
 
@@ -235,12 +217,11 @@ fi
 
 if [ "$removeBinaries" == true ]; then
 
-  originalPackagesDir=$packagesDir
   # Create working directory for extracking packages
   workingDir=$(mktemp -d)
 
   # If --with-packages is not passed, unpack PSB artifacts
-  if [[ $packagesDir == $defaultPackagesDir ]]; then
+  if ! [[ " ${positional_args[@]} " =~ " --with-packages " ]]; then
     echo "  Extracting previously source-built to $workingDir"
     sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
 
@@ -253,17 +234,13 @@ if [ "$removeBinaries" == true ]; then
     echo "  Unpacking Private.SourceBuilt.Artifacts.*.tar.gz into $workingDir"
     tar -xzf "$sourceBuiltArchive" -C "$workingDir"
 
-    packagesDir=$workingDir
+    positional_args+=("--with-packages" "$workingDir")
   fi
 
   "$REPO_ROOT/eng/detect-binaries.sh" \
   --clean \
   --allowed-binaries-file "$REPO_ROOT/eng/allowed-sb-binaries.txt" \
-  --with-packages $packagesDir \
-  --with-sdk $dotnetSdk \
+  "${positional_args[@]}" \
 
   rm -rf "$workingDir"
-
-  packagesDir=$originalPackagesDir
-  unset originalPackagesDir
 fi
