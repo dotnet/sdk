@@ -88,7 +88,7 @@ Integration with static web assets:
   </ResolveScopedCssOutputsDependsOn>
 
   <!-- When used as a reference, the app will have been built before and as a result the list of static web assets will include the bundle
-  instead of the individual files. We need to correct that in GetCopyToOuputDirectoryItems -->
+  instead of the individual files. We need to correct that in GetCopyToOutputDirectoryItems -->
 
   <GetCurrentProjectStaticWebAssetsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
     $(GetCurrentProjectStaticWebAssetsDependsOn);
@@ -219,7 +219,7 @@ Integration with static web assets:
     <_ScopedCssProjectBundleContentRoot>$(_ScopedCssIntermediatePath)projectbundle\</_ScopedCssProjectBundleContentRoot>
     <_ScopedCssProjectOutputPath>$(_ScopedCssIntermediatePath)projectbundle\$(PackageId).bundle.scp.css</_ScopedCssProjectOutputPath>
     <_ScopedCssProjectOutputFullPath>$([System.IO.Path]::Combine('$(MSBuildProjectFileDirectory)', '$(_ScopedCssIntermediatePath)projectbundle\$(PackageId).bundle.scp.css'))</_ScopedCssProjectOutputFullPath>
-    <!-- We want the scoped css bundle path to always point to the root path of the app, overriding the default base path unless it is not explicitly overriden
+    <!-- We want the scoped css bundle path to always point to the root path of the app, overriding the default base path unless it is not explicitly overridden
     by the user. This is so that when you are developing a server-side application or in the future potentially an ASP.NET application using css isolation,
     you don't have to make the urls in your files relative to "_content/$(PackageId).styles.css".
     If the user chooses to override the base path explicitly, we place the bundle at the root of the defined base path, this allows Blazor WebAssembly applications to be hosted

@@ -1,0 +1,76 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <!-- For product build, this project only builds in the second build pass as it depends on assets from other
+         verticals that are built in the first build pass. -->
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
+    <IsPackable Condition="'$(OS)' == 'Windows_NT' and
+                           '$(Architecture)' == 'x64' and
+                           '$(PgoInstrument)' != 'true'">true</IsPackable>
+    <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
+    <PackageId>VS.Redist.Common.Net.Core.SDK.MSBuildExtensions</PackageId>
+    <PackageDescription>MSBuild extensions bundled with .NET Core SDK for internal Visual Studio build consumption</PackageDescription>
+    <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageDownload Include="NETStandard.Library.NETFramework" Version="[$(NETStandardLibraryNETFrameworkVersion)]" />
+
+    <ProjectReference Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Shared infra to build and use the sdk-tasks -->
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+
+  <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
+    <PropertyGroup>
+      <MSBuildExtensionsOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Build.Extensions</MSBuildExtensionsOutputPath>
+      <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Don't include .NET MS.NET.Build.Extensions tasks in Full Framework MSBuild layout. -->
+      <VSMSBuildExtensionsContent Include="$(MSBuildExtensionsOutputPath)\msbuildExtensions\**\*.*"
+                                  Exclude="$(MSBuildExtensionsOutputPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net*\**;
+                                           $(MSBuildExtensionsOutputPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools\net*.*\**"
+                                  DeploymentSubpath="msbuildExtensions/" />
+
+      <!-- Don't include .NET targets in the Full Framework MSBuild layout. -->
+      <VSMSBuildExtensionsContent Include="$(MSBuildExtensionsOutputPath)\msbuildExtensions-ver\**\*.*"
+                                  Exclude="$(MSBuildExtensionsOutputPath)\msbuildExtensions-ver\SolutionFile\**"
+                                  DeploymentSubpath="msbuildExtensions-ver/" />
+
+      <VSMSBuildExtensionsContent Include="$(NuGetPackageRoot)netstandard.library.netframework\$(NETStandardLibraryNETFrameworkVersion)\build\**\*.*"
+                                  Exclude="$(NuGetPackageRoot)netstandard.library.netframework\$(NETStandardLibraryNETFrameworkVersion)\build\**\*.props;
+                                           $(NuGetPackageRoot)netstandard.library.netframework\$(NETStandardLibraryNETFrameworkVersion)\build\**\*.targets"
+                                  DeploymentSubpath="msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/" />
+
+      <!-- SdkResolver -->
+      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\x86\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/x86/" />
+      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\x64\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/x64/" />
+      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\arm64\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/arm64/" />
+      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.Deployment.DotNet.Releases*.dll" DeploymentSubpath="MSBuildSdkResolver/" />
+      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.DotNet.MSBuildSdkResolver*.dll" DeploymentSubpath="MSBuildSdkResolver/" />
+
+      <VSMSBuildExtensionsContent Update="@(VSMSBuildExtensionsContent)">
+        <DestinationPath>$(OutputPath)/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)</DestinationPath>
+      </VSMSBuildExtensionsContent>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(VSMSBuildExtensionsContent)" DestinationFiles="%(VSMSBuildExtensionsContent.DestinationPath)" />
+
+    <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(OutputPath)"
+                                  OutputFile="$(SdkMSBuildExtensionsSwrFile)" />
+    <ItemGroup>
+      <!-- Include the swr file in the nuget package for VS authoring -->
+      <Content Include="$(SdkMSBuildExtensionsSwrFile)" PackagePath="/" />
+      <Content Include="@(VSMSBuildExtensionsContent)" PackagePath="/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

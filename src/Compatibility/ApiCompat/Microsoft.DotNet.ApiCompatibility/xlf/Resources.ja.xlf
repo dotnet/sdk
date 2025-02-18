@@ -147,11 +147,6 @@
         <target state="translated">{0} インデックスは、0 から {1} の範囲内である必要があります。</target>
         <note />
       </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">任意の検索ディレクトリ '{0}' に一致するアセンブリが見つかりませんでした。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MemberExistsOnLeft">
         <source>Member '{0}' exists on {1} but not on {2}</source>
         <target state="translated">メンバー '{0}' は {1} に存在していますが、{2} には存在しません</target>
