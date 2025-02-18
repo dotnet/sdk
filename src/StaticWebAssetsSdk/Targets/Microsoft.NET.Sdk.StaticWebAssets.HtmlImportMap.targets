@@ -64,7 +64,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveHtmlImportMapBuildConfiguration">
     <PropertyGroup>
-      <_BuildImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(IntermediateOutputPath), 'importmaphtml', 'build'))</_BuildImportMapHtmlPath>
+      <_BuildImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'importmaphtml', 'build'))</_BuildImportMapHtmlPath>
     </PropertyGroup>
 
     <MakeDir Directories="$(_BuildImportMapHtmlPath)"/>
@@ -125,7 +125,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveHtmlImportMapPublishConfiguration">
     <PropertyGroup>
-      <_PublishImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(IntermediateOutputPath), 'importmaphtml', 'publish'))</_PublishImportMapHtmlPath>
+      <_PublishImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'importmaphtml', 'publish'))</_PublishImportMapHtmlPath>
     </PropertyGroup>
 
     <MakeDir Directories="$(_PublishImportMapHtmlPath)"/>

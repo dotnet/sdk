@@ -7,6 +7,7 @@ using Microsoft.Build.Utilities;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -79,13 +80,15 @@ public partial class WriteImportMapToHtml : Task
 
                 if (content != outputContent)
                 {
-                    string outputPath = Path.Combine(OutputPath, Path.GetRandomFileName() + item.GetMetadata("Extension"));
-                    File.WriteAllText(outputPath, outputContent);
                     htmlFilesToRemove.Add(item);
 
-                    var htmlItem = new TaskItem(outputPath, item.CloneCustomMetadata());
-                    htmlCandidates.Add(htmlItem);
-                    fileWrites.Add(outputPath);
+                    string outputPath = Path.Combine(OutputPath, FileHasher.HashString(item.ItemSpec) + item.GetMetadata("Extension"));
+                    if (this.PersistFileIfChanged(Encoding.UTF8.GetBytes(outputContent), outputPath))
+                    {
+                        fileWrites.Add(outputPath);
+                    }
+
+                    htmlCandidates.Add(new TaskItem(outputPath, item.CloneCustomMetadata()));
                 }
             }
         }
