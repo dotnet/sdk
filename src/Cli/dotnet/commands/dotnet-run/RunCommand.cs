@@ -1,12 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
+using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
@@ -19,8 +22,24 @@ namespace Microsoft.DotNet.Tools.Run
         private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
 
         public bool NoBuild { get; }
+
+        /// <summary>
+        /// Value of the <c>--project</c> option.
+        /// </summary>
         public string? ProjectFileOrDirectory { get; }
-        public string ProjectFileFullPath { get; }
+
+        /// <summary>
+        /// Full path to a project file to run.
+        /// <see langword="null"/> if running without a project file
+        /// (then <see cref="EntryPointFileFullPath"/> is not <see langword="null"/>).
+        /// </summary>
+        public string? ProjectFileFullPath { get; }
+
+        /// <summary>
+        /// Full path to an entry-point <c>.cs</c> file to run without a project file.
+        /// </summary>
+        public string? EntryPointFileFullPath { get; }
+
         public string[] Args { get; set; }
         public bool NoRestore { get; }
         public VerbosityOptions? Verbosity { get; }
@@ -57,7 +76,8 @@ namespace Microsoft.DotNet.Tools.Run
         {
             NoBuild = noBuild;
             ProjectFileOrDirectory = projectFileOrDirectory;
-            ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory);
+            ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory, ref args, out string? entryPointFileFullPath);
+            EntryPointFileFullPath = entryPointFileFullPath;
             LaunchProfile = launchProfile;
             NoLaunchProfile = noLaunchProfile;
             NoLaunchProfileArguments = noLaunchProfileArguments;
@@ -76,6 +96,7 @@ namespace Microsoft.DotNet.Tools.Run
                 return 1;
             }
 
+            Func<ProjectCollection, ProjectInstance>? projectFactory = null;
             if (ShouldBuild)
             {
                 if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
@@ -83,12 +104,16 @@ namespace Microsoft.DotNet.Tools.Run
                     Reporter.Output.WriteLine(LocalizableStrings.RunCommandBuilding);
                 }
 
-                EnsureProjectIsBuilt();
+                EnsureProjectIsBuilt(out projectFactory);
+            }
+            else if (EntryPointFileFullPath is not null)
+            {
+                throw new GracefulException(string.Format(LocalizableStrings.RunFileUnsupportedSwitch, RunCommandParser.NoBuildOption.Name, EntryPointFileFullPath));
             }
 
             try
             {
-                ICommand targetCommand = GetTargetCommand();
+                ICommand targetCommand = GetTargetCommand(projectFactory);
                 ApplyLaunchSettingsProfileToCommand(targetCommand, launchSettings);
 
                 // Env variables specified on command line override those specified in launch profile:
@@ -142,6 +167,17 @@ namespace Microsoft.DotNet.Tools.Run
             launchSettingsModel = default;
             if (NoLaunchProfile)
             {
+                return true;
+            }
+
+            if (ProjectFileFullPath is null)
+            {
+                if (!string.IsNullOrEmpty(LaunchProfile))
+                {
+                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunFileUnsupportedSwitch, RunCommandParser.LaunchProfileOption.Name, EntryPointFileFullPath).Bold().Red());
+                    return false;
+                }
+
                 return true;
             }
 
@@ -211,14 +247,41 @@ namespace Microsoft.DotNet.Tools.Run
             }
         }
 
-        private void EnsureProjectIsBuilt()
+        private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory)
         {
-            var buildResult =
-                new RestoringCommand(
+            int buildResult;
+            if (EntryPointFileFullPath is not null)
+            {
+                var command = new VirtualProjectBuildingCommand
+                {
+                    EntryPointFileFullPath = EntryPointFileFullPath,
+                };
+
+                AddUserPassedProperties(command.GlobalProperties, RestoreArgs);
+
+                projectFactory = command.CreateProjectInstance;
+                buildResult = command.Execute(
+                    binaryLoggerArgs: RestoreArgs,
+                    verbosity: Verbosity switch
+                    {
+                        null => Interactive ? LoggerVerbosity.Minimal : LoggerVerbosity.Quiet,
+                        VerbosityOptions.quiet | VerbosityOptions.q => LoggerVerbosity.Quiet,
+                        VerbosityOptions.minimal | VerbosityOptions.m => LoggerVerbosity.Minimal,
+                        VerbosityOptions.normal | VerbosityOptions.n => LoggerVerbosity.Normal,
+                        VerbosityOptions.detailed | VerbosityOptions.d => LoggerVerbosity.Detailed,
+                        VerbosityOptions.diagnostic | VerbosityOptions.diag => LoggerVerbosity.Diagnostic,
+                        _ => throw new Exception($"Unexpected verbosity '{Verbosity}'"),
+                    });
+            }
+            else
+            {
+                projectFactory = null;
+                buildResult = new RestoringCommand(
                     RestoreArgs.Prepend(ProjectFileFullPath),
                     NoRestore,
                     advertiseWorkloadUpdates: false
                 ).Execute();
+            }
 
             if (buildResult != 0)
             {
@@ -247,10 +310,10 @@ namespace Microsoft.DotNet.Tools.Run
             return args.ToArray();
         }
 
-        private ICommand GetTargetCommand()
+        private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
         {
             FacadeLogger? logger = DetermineBinlogger(RestoreArgs);
-            var project = EvaluateProject(ProjectFileFullPath, RestoreArgs, logger);
+            var project = EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
             ValidatePreconditions(project);
             InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity, logger);
             logger?.ReallyShutdown();
@@ -258,8 +321,10 @@ namespace Microsoft.DotNet.Tools.Run
             var command = CreateCommandFromRunProperties(project, runProperties);
             return command;
 
-            static ProjectInstance EvaluateProject(string projectFilePath, string[] restoreArgs, ILogger? binaryLogger)
+            static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[] restoreArgs, ILogger? binaryLogger)
             {
+                Debug.Assert(projectFilePath is not null || projectFactory is not null);
+
                 var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     // This property disables default item globbing to improve performance
@@ -268,16 +333,12 @@ namespace Microsoft.DotNet.Tools.Run
                     { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
                 };
 
-                var userPassedProperties = DeriveUserPassedProperties(restoreArgs);
-                if (userPassedProperties is not null)
-                {
-                    foreach (var (key, values) in userPassedProperties)
-                    {
-                        globalProperties[key] = string.Join(";", values);
-                    }
-                }
+                AddUserPassedProperties(globalProperties, restoreArgs);
+
                 var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-                return collection.LoadProject(projectFilePath).CreateProjectInstance();
+                return projectFilePath is not null
+                    ? collection.LoadProject(projectFilePath).CreateProjectInstance()
+                    : projectFactory(collection);
             }
 
             static void ValidatePreconditions(ProjectInstance project)
@@ -286,35 +347,6 @@ namespace Microsoft.DotNet.Tools.Run
                 {
                     ThrowUnableToRunError(project);
                 }
-            }
-
-            static Dictionary<string, List<string>>? DeriveUserPassedProperties(string[] args)
-            {
-                var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
-                var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
-                var propertyParseResult = propertyParsingConfiguration.Parse(args);
-                var propertyValues = propertyParseResult.GetValue(CommonOptions.PropertiesOption);
-
-                if (propertyValues != null)
-                {
-                    var userPassedProperties = new Dictionary<string, List<string>>(propertyValues.Length, StringComparer.OrdinalIgnoreCase);
-                    foreach (var property in propertyValues)
-                    {
-                        foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
-                        {
-                            if (userPassedProperties.TryGetValue(key, out var existingValues))
-                            {
-                                existingValues.Add(value);
-                            }
-                            else
-                            {
-                                userPassedProperties[key] = [value];
-                            }
-                        }
-                    }
-                    return userPassedProperties;
-                }
-                return null;
             }
 
             static RunProperties ReadRunPropertiesFromProject(ProjectInstance project, string[] applicationArgs)
@@ -414,6 +446,35 @@ namespace Microsoft.DotNet.Tools.Run
             {
                 var dispatcher = new PersistentDispatcher(binaryLoggers);
                 return new FacadeLogger(dispatcher);
+            }
+        }
+
+        /// <param name="globalProperties">
+        /// Should have <see cref="StringComparer.OrdinalIgnoreCase"/>.
+        /// </param>
+        private static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[] args)
+        {
+            var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
+            var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
+            var propertyParseResult = propertyParsingConfiguration.Parse(args);
+            var propertyValues = propertyParseResult.GetValue(CommonOptions.PropertiesOption);
+
+            if (propertyValues != null)
+            {
+                foreach (var property in propertyValues)
+                {
+                    foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
+                    {
+                        if (globalProperties.TryGetValue(key, out var existingValues))
+                        {
+                            globalProperties[key] = existingValues + ";" + value;
+                        }
+                        else
+                        {
+                            globalProperties[key] = value;
+                        }
+                    }
+                }
             }
         }
 
@@ -545,34 +606,78 @@ namespace Microsoft.DotNet.Tools.Run
                         project.GetPropertyValue("OutputType")));
         }
 
-        private string DiscoverProjectFilePath(string? projectFileOrDirectoryPath)
+        private static string? DiscoverProjectFilePath(string? projectFileOrDirectoryPath, ref string[] args, out string? entryPointFilePath)
         {
-            if (string.IsNullOrWhiteSpace(projectFileOrDirectoryPath))
+            bool emptyProjectOption = string.IsNullOrWhiteSpace(projectFileOrDirectoryPath);
+            if (emptyProjectOption)
             {
                 projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
             }
 
-            if (Directory.Exists(projectFileOrDirectoryPath))
-            {
-                projectFileOrDirectoryPath = FindSingleProjectInDirectory(projectFileOrDirectoryPath);
-            }
-            return projectFileOrDirectoryPath;
-        }
+            string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)
+                ? TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
+                : projectFileOrDirectoryPath;
 
-        public static string FindSingleProjectInDirectory(string directory)
-        {
-            string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
+            // If no project exists in the directory and no --project was given,
+            // try to resolve an entry-point file instead.
+            entryPointFilePath = projectFilePath is null && emptyProjectOption
+                ? TryFindEntryPointFilePath(ref args)
+                : null;
 
-            if (projectFiles.Length == 0)
+            if (entryPointFilePath is null && projectFilePath is null)
             {
-                throw new GracefulException(LocalizableStrings.RunCommandExceptionNoProjects, directory, "--project");
-            }
-            else if (projectFiles.Length > 1)
-            {
-                throw new GracefulException(LocalizableStrings.RunCommandExceptionMultipleProjects, directory);
+                throw new GracefulException(LocalizableStrings.RunCommandExceptionNoProjects, projectFileOrDirectoryPath, "--project");
             }
 
-            return projectFiles[0];
+            return projectFilePath;
+
+            static string? TryFindSingleProjectInDirectory(string directory)
+            {
+                string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
+
+                if (projectFiles.Length == 0)
+                {
+                    return null;
+                }
+
+                if (projectFiles.Length > 1)
+                {
+                    throw new GracefulException(LocalizableStrings.RunCommandExceptionMultipleProjects, directory);
+                }
+
+                return projectFiles[0];
+            }
+
+            static string? TryFindEntryPointFilePath(ref string[] args)
+            {
+                if (args is not [var arg, ..] ||
+                    string.IsNullOrWhiteSpace(arg) ||
+                    !arg.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
+                    !File.Exists(arg))
+                {
+                    return null;
+                }
+
+                if (!HasTopLevelStatements(arg))
+                {
+                    throw new GracefulException(LocalizableStrings.NoTopLevelStatements, arg);
+                }
+
+                args = args[1..];
+                return Path.GetFullPath(arg);
+            }
+
+            static bool HasTopLevelStatements(string entryPointFilePath)
+            {
+                var tree = ParseCSharp(entryPointFilePath);
+                return tree.GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().Any();
+            }
+
+            static CSharpSyntaxTree ParseCSharp(string filePath)
+            {
+                using var stream = File.OpenRead(filePath);
+                return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(SourceText.From(stream, Encoding.UTF8), path: filePath);
+            }
         }
     }
 }

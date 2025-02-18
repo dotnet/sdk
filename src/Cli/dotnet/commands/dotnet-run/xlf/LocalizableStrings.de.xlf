@@ -51,6 +51,11 @@ Erstellen Sie eindeutige Profilnamen.</target>
         <target state="translated">Es ist kein Startprofil mit dem Namen "{0}" vorhanden.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
+        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">Nur jeweils ein Projekt kann mithilfe der Option „-p“ angegeben werden.</target>
@@ -149,6 +154,11 @@ Ein ausführbares Projekt muss ein ausführbares TFM (z. B. net5.0) und den Outp
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">"{0}" ist keine gültige Projektdatei.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunFileUnsupportedSwitch">
+        <source>The option '{0}' is not supported when running a file without a project: '{1}'</source>
+        <target state="new">The option '{0}' is not supported when running a file without a project: '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">

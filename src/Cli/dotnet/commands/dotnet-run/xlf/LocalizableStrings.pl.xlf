@@ -51,6 +51,11 @@ Rozróżnij nazwy profilów.</target>
         <target state="translated">Profil uruchamiania o nazwie „{0}” nie istnieje.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
+        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">Jednocześnie można określić tylko jeden projekt przy użyciu opcji -p.</target>
@@ -149,6 +154,11 @@ Bieżący element {1}: „{2}”.</target>
       <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">„{0}” nie jest prawidłowym plikiem projektu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunFileUnsupportedSwitch">
+        <source>The option '{0}' is not supported when running a file without a project: '{1}'</source>
+        <target state="new">The option '{0}' is not supported when running a file without a project: '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">

@@ -244,4 +244,10 @@ Make the profile names distinct.</value>
   <data name="LaunchProfileDoesNotExist" xml:space="preserve">
     <value>A launch profile with the name '{0}' doesn't exist.</value>
   </data>
+  <data name="NoTopLevelStatements" xml:space="preserve">
+    <value>Cannot run a file without top-level statements and without a project: '{0}'</value>
+  </data>
+  <data name="RunFileUnsupportedSwitch" xml:space="preserve">
+    <value>The option '{0}' is not supported when running a file without a project: '{1}'</value>
+  </data>
 </root>
