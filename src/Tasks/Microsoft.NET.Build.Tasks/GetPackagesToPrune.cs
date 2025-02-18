@@ -10,15 +10,6 @@ using Microsoft.NET.Build.Tasks.ConflictResolution;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
-
-//  Use FrameworkPackages data for .NET Core 3.1 through 9.0, as well as .NET Standard and .NET Framework
-//  Use targeting pack data for .NET 10 and higher
-//  Issues to fix in targeting packs:
-//  - Add PackageOverrides to WPF targeting pack
-//  - Add Microsoft.AspNetCore.App package to PackageOverrides.txt for corresponding shared framework - File issue in https://github.com/dotnet/aspnetcore for this
-
-//  .NET Standard?
-
 namespace Microsoft.NET.Build.Tasks
 {
     public class GetPackagesToPrune : TaskBase
@@ -103,7 +94,6 @@ namespace Microsoft.NET.Build.Tasks
                     runtimeFrameworks.Add(targetingPack.GetMetadata("RuntimeFrameworkName"));
                 }
             }
-
 
             CacheKey key = new()
             {
