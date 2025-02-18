@@ -1,0 +1,53 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <SdkBrandName>Microsoft .NET SDK $(Version)</SdkBrandName>
+    <ToolsetBrandName>Microsoft .NET Toolset $(Version)</ToolsetBrandName>
+    <SharedFrameworkBrandName>Microsoft .NET Runtime $(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkBrandName>
+    <NetCoreAppTargetingPackBrandName>Microsoft .NET Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
+    <NetStandardTargetingPackBrandName>Microsoft .NET Standard 2.1 Targeting Pack $(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackBrandName>
+    <NetCoreAppHostPackBrandName>Microsoft .NET AppHost Pack $(MicrosoftNETCoreAppHostHostPackageVersion)</NetCoreAppHostPackBrandName>
+    <SharedHostBrandName>Microsoft .NET Host $(SharedHostVersion)</SharedHostBrandName>
+    <HostFxrBrandName>Microsoft .NET Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>
+    <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
+    <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OSName Condition="'$(OSName)' == '' AND $(Rid) != ''">$(Rid.Substring(0, $(Rid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
+    <PortableOSName Condition=" '$(PortableOSName)' == '' ">$(OSName)</PortableOSName>
+
+    <Rid>$(OSName)-$(Architecture)</Rid>
+    <PortableRid>$(PortableOSName)-$(Architecture)</PortableRid>
+    <ProductMonikerRid Condition="'$(ProductMonikerRid)' == ''">$(Rid)</ProductMonikerRid>
+
+    <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(PortableRid)</PortableProductMonikerRid>
+
+    <PgoTerm>-pgo</PgoTerm>
+    <ArtifactNameSdk>dotnet-sdk-internal$(PgoTerm)</ArtifactNameSdk>
+
+    <ArtifactNameWithVersionSdk>$(ArtifactNameSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+    <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+    <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion],
+              Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradability of the SDK bundle installer. -->
+    <ProductBandCombinedHostHostFxrFrameworkSdkName>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</ProductBandCombinedHostHostFxrFrameworkSdkName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SkipBuildingInstallers Condition="'$(PgoInstrument)' == 'true'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="'$(SkipBuildingInstallers)' == '' AND
+      (
+       $(Rid.StartsWith('freebsd')) OR
+       $(Rid.StartsWith('illumos')) OR
+       $(Rid.StartsWith('linux-musl'))
+      )">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="'$(SkipBuildingInstallers)' == ''">false</SkipBuildingInstallers>
+
+    <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' AND '$(IsLinux)' == 'True' AND !$(Rid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>
+    <HighEntropyVA>true</HighEntropyVA>
+  </PropertyGroup>
+
+</Project>

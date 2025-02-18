@@ -19,7 +19,7 @@
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
 
-  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetBuildDefaults">
+  <Target Name="SetupBundledComponents">
     <PropertyGroup>
       <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
 
@@ -42,6 +42,9 @@
       <!-- Downloaded Installers + Archives -->
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
+      <InstallerTargetArchitecture>$(Architecture)</InstallerTargetArchitecture>
+      <InstallerTargetArchitecture Condition=" '$(IsRPMBasedDistro)' == 'true' and '$(Architecture)' == 'Arm64' ">aarch64</InstallerTargetArchitecture>
+
       <SharedFrameworkInstallerFileRid>$(NetRuntimeRid)</SharedFrameworkInstallerFileRid>
       <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
 

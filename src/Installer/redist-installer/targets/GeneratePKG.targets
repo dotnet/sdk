@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="SetupPKGProps" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions">
+  <Target Name="SetupPKGProps">
     <PropertyGroup>
       <PkgIntermediateDirectory>$(IntermediateOutputPath)pkgs/$(Version)</PkgIntermediateDirectory>
 
@@ -234,8 +234,7 @@
   </Target>
 
   <Target Name="GeneratePkgs"
-          DependsOnTargets="GetCurrentRuntimeInformation;
-                            GenerateSdkPkg;
+          DependsOnTargets="GenerateSdkPkg;
                             GenerateSdkProductArchive" />
 
 </Project>

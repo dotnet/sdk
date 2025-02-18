@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
+  <Target Name="SetupWixProperties">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
       <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(MicrosoftSignedWixVersion).zip</WixDownloadUrl>
