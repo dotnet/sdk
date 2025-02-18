@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
@@ -20,7 +21,7 @@ namespace Microsoft.DotNet.Cli
 
         private Task _testAppPipeConnectionLoop;
         private readonly List<NamedPipeServer> _testAppPipeConnections = new();
-        private ConcurrentDictionary<string, string> _executionIds = [];
+        private readonly ConcurrentDictionary<string, string> _executionIds = [];
 
         public event EventHandler<HandshakeArgs> HandshakeReceived;
         public event EventHandler<HelpEventArgs> HelpRequested;
@@ -30,7 +31,6 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<SessionEventArgs> SessionEventReceived;
         public event EventHandler<ErrorEventArgs> ErrorReceived;
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
-        public event EventHandler<EventArgs> Run;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
         public Module Module => _module;
@@ -46,42 +46,76 @@ namespace Microsoft.DotNet.Cli
             _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
         }
 
-        public async Task<int> RunAsync(bool isFilterMode, bool enableHelp, BuiltInOptions builtInOptions)
+        public async Task<int> RunAsync(TestOptions testOptions)
         {
-            Run?.Invoke(this, EventArgs.Empty);
-
-            if (isFilterMode && !ModulePathExists())
+            if (testOptions.HasFilterMode && !ModulePathExists())
             {
                 return 1;
             }
 
-            bool isDll = _module.DllOrExePath.EndsWith(".dll");
+            bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
+            var processStartInfo = CreateProcessStartInfo(isDll, testOptions);
 
-            ProcessStartInfo processStartInfo = new()
+            _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
+            var testProcessResult = await StartProcess(processStartInfo);
+
+            WaitOnTestApplicationPipeConnectionLoop();
+
+            return testProcessResult;
+        }
+
+        private ProcessStartInfo CreateProcessStartInfo(bool isDll, TestOptions testOptions)
+        {
+            var processStartInfo = new ProcessStartInfo
             {
-                FileName = isFilterMode ? isDll ? Environment.ProcessPath : _module.DllOrExePath : Environment.ProcessPath,
-                Arguments = isFilterMode ? BuildArgs(isDll) : BuildArgsWithDotnetRun(enableHelp, builtInOptions),
+                FileName = GetFileName(testOptions, isDll),
+                Arguments = GetArguments(testOptions, isDll),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
 
-            if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
+            AddRunSettingsFileToEnvironment(processStartInfo);
+
+            return processStartInfo;
+        }
+
+        private string GetFileName(TestOptions testOptions, bool isDll)
+        {
+            if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
             {
-                processStartInfo.EnvironmentVariables.Add("TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE", _module.RunSettingsFilePath);
+                return isDll ? Environment.ProcessPath : _module.TargetPath;
             }
 
-            _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
-            var result = await StartProcess(processStartInfo);
+            return Environment.ProcessPath;
+        }
 
-            WaitOnTestApplicationPipeConnectionLoop();
+        private string GetArguments(TestOptions testOptions, bool isDll)
+        {
+            if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
+            {
+                return BuildArgs(testOptions, isDll);
+            }
 
-            return result;
+            return BuildArgsWithDotnetRun(testOptions);
+        }
+
+        private void AddRunSettingsFileToEnvironment(ProcessStartInfo processStartInfo)
+        {
+            if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
+            {
+                processStartInfo.EnvironmentVariables.Add(CliConstants.TestingPlatformVsTestBridgeRunSettingsFileEnvVar, _module.RunSettingsFilePath);
+            }
+        }
+
+        private static bool IsArchitectureSpecified(TestOptions testOptions)
+        {
+            return !string.IsNullOrEmpty(testOptions.Architecture);
         }
 
         private void WaitOnTestApplicationPipeConnectionLoop()
         {
             _cancellationToken.Cancel();
-            _testAppPipeConnectionLoop.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
+            _testAppPipeConnectionLoop?.Wait((int)TimeSpan.FromSeconds(30).TotalMilliseconds);
         }
 
         private async Task WaitConnectionAsync(CancellationToken token)
@@ -97,9 +131,14 @@ namespace Microsoft.DotNet.Cli
                     _testAppPipeConnections.Add(pipeConnection);
                 }
             }
-            catch (OperationCanceledException ex) when (ex.CancellationToken == token)
+            catch (OperationCanceledException ex)
             {
                 // We are exiting
+                if (VSTestTrace.TraceEnabled)
+                {
+                    string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
+                    VSTestTrace.SafeWriteTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
+                }
             }
             catch (Exception ex)
             {
@@ -200,7 +239,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (VSTestTrace.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Updated args: {processStartInfo.Arguments}");
+                VSTestTrace.SafeWriteTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
             }
 
             var process = Process.Start(processStartInfo);
@@ -236,38 +275,46 @@ namespace Microsoft.DotNet.Cli
 
         private bool ModulePathExists()
         {
-            if (!File.Exists(_module.DllOrExePath))
+            if (!File.Exists(_module.TargetPath))
             {
-                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.DllOrExePath}' not found. Build the test application before or run 'dotnet test'." });
+                ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.TargetPath}' not found. Build the test application before or run 'dotnet test'." });
                 return false;
             }
             return true;
         }
 
-        private string BuildArgsWithDotnetRun(bool hasHelp, BuiltInOptions builtInOptions)
+        private string BuildArgs(TestOptions testOptions, bool isDll)
         {
             StringBuilder builder = new();
 
-            builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectPath}\"");
-
-            if (builtInOptions.HasNoRestore)
+            if (isDll)
             {
-                builder.Append($" {TestingPlatformOptions.NoRestoreOption.Name}");
+                builder.Append($"exec {_module.TargetPath} ");
             }
 
-            if (builtInOptions.HasNoBuild)
+            AppendCommonArgs(builder, testOptions);
+
+            return builder.ToString();
+        }
+
+        private string BuildArgsWithDotnetRun(TestOptions testOptions)
+        {
+            StringBuilder builder = new();
+
+            builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{_module.ProjectFullPath}\"");
+
+            // Because we restored and built before in MSHandler, we will skip those with dotnet run
+            builder.Append($" {CommonOptions.NoRestoreOption.Name}");
+            builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
+
+            if (!string.IsNullOrEmpty(testOptions.Architecture))
             {
-                builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
+                builder.Append($" {CommonOptions.ArchitectureOption.Name} {testOptions.Architecture}");
             }
 
-            if (!string.IsNullOrEmpty(builtInOptions.Architecture))
+            if (!string.IsNullOrEmpty(testOptions.Configuration))
             {
-                builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {builtInOptions.Architecture}");
-            }
-
-            if (!string.IsNullOrEmpty(builtInOptions.Configuration))
-            {
-                builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {builtInOptions.Configuration}");
+                builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {testOptions.Configuration}");
             }
 
             if (!string.IsNullOrEmpty(_module.TargetFramework))
@@ -277,7 +324,19 @@ namespace Microsoft.DotNet.Cli
 
             builder.Append($" {CliConstants.ParametersSeparator} ");
 
-            if (hasHelp)
+            AppendCommonArgs(builder, testOptions);
+
+            return builder.ToString();
+        }
+
+        private void AppendCommonArgs(StringBuilder builder, TestOptions testOptions)
+        {
+            if (testOptions.HasListTests)
+            {
+                builder.Append($" {TestingPlatformOptions.ListTestsOption.Name}");
+            }
+
+            if (testOptions.IsHelp)
             {
                 builder.Append($" {CliConstants.HelpOptionKey} ");
             }
@@ -287,26 +346,6 @@ namespace Microsoft.DotNet.Cli
                 : string.Empty);
 
             builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
-
-            return builder.ToString();
-        }
-
-        private string BuildArgs(bool isDll)
-        {
-            StringBuilder builder = new();
-
-            if (isDll)
-            {
-                builder.Append($"exec {_module.DllOrExePath} ");
-            }
-
-            builder.Append(_args.Count != 0
-                ? _args.Aggregate((a, b) => $"{a} {b}")
-                : string.Empty);
-
-            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
-
-            return builder.ToString();
         }
 
         public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
@@ -314,7 +353,7 @@ namespace Microsoft.DotNet.Cli
             if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
             {
                 AddExecutionId(executionId);
-                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.DllOrExePath, ExecutionId = executionId });
+                ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.TargetPath, ExecutionId = executionId });
             }
             HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
         }
@@ -339,7 +378,7 @@ namespace Microsoft.DotNet.Cli
             {
                 ExecutionId = testResultMessage.ExecutionId,
                 SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
-                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.ErrorMessage, message.ErrorStackTrace, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
+                FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace)).ToArray(), message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
             });
         }
 
@@ -357,20 +396,22 @@ namespace Microsoft.DotNet.Cli
         {
             StringBuilder builder = new();
 
-            if (!string.IsNullOrEmpty(_module.DllOrExePath))
+            if (!string.IsNullOrEmpty(_module.TargetPath))
             {
-                builder.Append($"DLL: {_module.DllOrExePath}");
+                builder.Append($"{ProjectProperties.TargetPath}: {_module.TargetPath}");
             }
 
-            if (!string.IsNullOrEmpty(_module.ProjectPath))
+            if (!string.IsNullOrEmpty(_module.ProjectFullPath))
             {
-                builder.Append($"Project: {_module.ProjectPath}");
-            };
+                builder.Append($"{ProjectProperties.ProjectFullPath}: {_module.ProjectFullPath}");
+            }
+            ;
 
             if (!string.IsNullOrEmpty(_module.TargetFramework))
             {
-                builder.Append($"Target Framework: {_module.TargetFramework}");
-            };
+                builder.Append($"{ProjectProperties.TargetFramework} : {_module.TargetFramework}");
+            }
+            ;
 
             return builder.ToString();
         }

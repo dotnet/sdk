@@ -61,6 +61,12 @@ namespace Microsoft.NET.TestFramework.Commands
             return this;
         }
 
+        public TestCommand WithEnableTestingPlatform()
+        {
+            WithEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE", "1");
+            return this;
+        }
+
         private SdkCommandSpec CreateCommandSpec(IEnumerable<string> args)
         {
             var commandSpec = CreateCommand(args);

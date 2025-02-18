@@ -9,8 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
-using Microsoft.DotNet.GenAPI.Filtering;
+using Moq;
 
 namespace Microsoft.DotNet.GenAPI.Tests
 {
@@ -32,44 +31,34 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
-            string excludedAttributeFile = null,
-            [CallerMemberName] string assemblyName = "")
+            string[] excludedAttributeList = null,
+            [CallerMemberName] string assemblyName = "",
+            // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
+            string header = "")
         {
-            StringWriter stringWriter = new();
+            using StringWriter stringWriter = new();
 
-            // Configure symbol filters
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                includeInternalSymbols,
-                includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols);
+            Mock<ILog> log = new();
 
-            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(accessibilitySymbolFilter);
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
+                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
 
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludedAttributeFile is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+            ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
+            ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols);
 
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
-                new ConsoleLog(MessageImportance.Low),
+                log.Object,
+                stringWriter,
+                loader,
                 symbolFilter,
                 attributeDataSymbolFilter,
-                stringWriter,
-                null,
-                false,
-                MetadataReferences);
+                header: header,
+                exceptionMessage: null,
+                includeAssemblyAttributes: false,
+                MetadataReferences,
+                addPartialModifier: true);
 
-            using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            AssemblySymbolLoader assemblySymbolLoader = new(resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(object).Assembly!.Location!);
-            assemblySymbolLoader.AddReferenceSearchPaths(typeof(DynamicAttribute).Assembly!.Location!);
-            IAssemblySymbol assemblySymbol = assemblySymbolLoader.LoadAssembly(assemblyName, assemblyStream);
-
-            csharpFileBuilder.WriteAssembly(assemblySymbol);
+            csharpFileBuilder.WriteAssembly(assemblySymbols.First().Value);
 
             StringBuilder stringBuilder = stringWriter.GetStringBuilder();
             string resultedString = stringBuilder.ToString();
@@ -82,6 +71,48 @@ namespace Microsoft.DotNet.GenAPI.Tests
             // compare SyntaxTree and not string representation
             Assert.True(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
+        }
+
+        [Fact]
+        public void TestDefaultHeader()
+        {
+            RunTest(original: """
+                namespace A
+                {
+                namespace B {}
+
+                namespace C.D { public struct Bar {} }
+                }
+                """,
+                expected: $@"
+                {CSharpFileBuilder.DefaultFileHeader}
+                namespace A.C.D {{ public partial struct Bar {{}} }}
+                ",
+                header: null);
+        }
+
+        [Fact]
+        public void TestCustomHeader()
+        {
+            string customHeader = """
+            // Licensed to the .NET Foundation under one or more agreements.
+            // The .NET Foundation licenses this file to you under the MIT license.
+
+            """;
+
+            RunTest(original: """
+                namespace A
+                {
+                namespace B {}
+
+                namespace C.D { public struct Bar {} }
+                }
+                """,
+                expected: $@"
+                {customHeader}
+                namespace A.C.D {{ public partial struct Bar {{}} }}
+                ",
+                header: customHeader);
         }
 
         [Fact]
@@ -231,7 +262,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         {
             RunTest(original: """
                 namespace Foo
-                {   
+                {
                     public record RecordClass;
                     public record RecordClass1(int i);
                     public record RecordClass2(string s, int i);
@@ -240,7 +271,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public record DerivedRecord3(string x, int i, double d) : RecordClass2(default(string)!, i);
                     public record DerivedRecord4(double d) : RecordClass2(default(string)!, default);
                     public record DerivedRecord5() : RecordClass2(default(string)!, default);
-                
+
                     public record RecordClassWithMethods(int i)
                     {
                         public void DoSomething() { }
@@ -345,11 +376,11 @@ namespace Microsoft.DotNet.GenAPI.Tests
             RunTest(original: """
                 namespace Foo
                 {
-                    
-                    public record struct RecordStruct;                    
+
+                    public record struct RecordStruct;
                     public record struct RecordStruct1(int i);
                     public record struct RecordStruct2(string s, int i);
-                
+
                     public record struct RecordStructWithMethods(int i)
                     {
                         public void DoSomething() { }
@@ -367,10 +398,10 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public RecordStructWithConstructors() : this(1) { }
                         public RecordStructWithConstructors(string s) : this(int.Parse(s)) { }
                     }
-                
+
                 }
                 """,
-                expected: """                
+                expected: """
                 namespace Foo
                 {
                     public partial struct RecordStruct : System.IEquatable<RecordStruct>
@@ -1644,12 +1675,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public class C : B
                         {
                             internal C() : base(0) {}
                         }
-                    
+
                         public class D : B
                         {
                             internal D(int i) : base(i) {}
@@ -1672,7 +1703,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public partial class C : B
                         {
                             internal C() : base(default) {}
@@ -1702,12 +1733,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         {
                             public B(int i) {}
                         }
-                    
+
                         public class C : B
                         {
                             internal C() : base(0) {}
                         }
-                    
+
                         public class D : B
                         {
                             internal D(int i) : base(i) {}
@@ -1781,8 +1812,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public partial class B
                         {
                             protected B() {}
-                        }                    
-                    
+                        }
+
                         public partial class C : B
                         {
                             internal C() {}
@@ -1935,7 +1966,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         public class D { }
 
                         public class Id { }
-                    
+
                         public class V { }
                     }
                     """,
@@ -2761,10 +2792,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
         [Fact]
         public void TestAttributesExcludedWithFilter()
         {
-            using TempDirectory root = new();
-            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
-            File.WriteAllText(filePath, "T:A.AnyTestAttribute");
-
             RunTest(original: """
                     namespace A
                     {
@@ -2800,7 +2827,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false,
-                excludedAttributeFile: filePath);
+                excludedAttributeList: ["T:A.AnyTestAttribute"]);
         }
 
         [Fact]
@@ -2828,7 +2855,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
                         }
                     }
-                    
+
                     """,
                 // https://github.com/dotnet/sdk/issues/32195 tracks interface expansion
                 expected: """
@@ -2909,7 +2936,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     public ref struct C<T>
                         where T : unmanaged
                     {
-                        public required (string? k, dynamic v, nint n) X { get; init; }    
+                        public required (string? k, dynamic v, nint n) X { get; init; }
                     }
 
                     public static class E
@@ -2918,7 +2945,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                 }
                 """,
-                expected: """                
+                expected: """
                 namespace N
                 {
                     public ref partial struct C<T>
@@ -2982,7 +3009,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     namespace a
                     {
                         #pragma warning disable CS8597
-                        
+
                         public partial class MyStringCollection : ICollection, IEnumerable, IList
                         {
                             public int Count { get { throw null; } }
@@ -3006,7 +3033,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             void ICollection.CopyTo(Array array, int index) { }
                             IEnumerator IEnumerable.GetEnumerator() { throw null; }
                             int IList.Add(object? value) { throw null; }
-                            bool IList.Contains(object? value) { throw null; }                            
+                            bool IList.Contains(object? value) { throw null; }
                             int IList.IndexOf(object? value) { throw null; }
                             void IList.Insert(int index, object? value) { }
                             void IList.Remove(object? value) { }
@@ -3015,7 +3042,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                         #pragma warning restore CS8597
                     }
                     """,
-                expected: """                    
+                expected: """
                     namespace a
                     {
                         public partial class MyStringCollection : System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList

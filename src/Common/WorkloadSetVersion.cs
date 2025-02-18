@@ -11,6 +11,11 @@ namespace Microsoft.DotNet.Workloads.Workload
         private static string[] SeparateCoreComponents(string workloadSetVersion, out string[] sections)
         {
             sections = workloadSetVersion.Split(['-', '+'], 2);
+            if (sections.Length < 1)
+            {
+                return [];
+            }
+
             return sections[0].Split('.');
         }
 

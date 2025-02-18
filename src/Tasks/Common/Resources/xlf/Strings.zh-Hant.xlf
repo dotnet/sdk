@@ -646,6 +646,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1115: 目前的 .NET SDK 不支援在不使用 .NET SDK 預設的情形下使用 .NET Framework。這可能是因為 C++/CLI 專案 CLRSupport 屬性與 TargetFramework 不相符所致。</target>
         <note>{StrBegins="NETSDK1115: "}</note>
       </trans-unit>
+      <trans-unit id="NativeCompilationRequiresPublishing">
+        <source>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</source>
+        <target state="new">NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</target>
+        <note>{StrBegins="NETSDK1225: "}</note>
+      </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
         <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
         <target state="translated">NETSDK1223: 不支援在 Visual Studio 2022 17.11 中以 .NET 9.0 或更高版本為目標。</target>
@@ -1027,11 +1032,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>
         <target state="needs-review-translation">NETSDK1057: 您目前使用的是 .NET 預覽版。請參閱: https://aka.ms/dotnet-support-policy</target>
         <note>{StrBegins="NETSDK1057: "}</note>
-      </trans-unit>
-      <trans-unit id="UsingPreviewUseUwpFeature">
-        <source>NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
-        <target state="needs-review-translation">NETSDK1219: UseUwp 和所有相關聯的功能目前為實驗性功能，並未正式支援。</target>
-        <note>{StrBegins="NETSDK1219: "}</note>
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>

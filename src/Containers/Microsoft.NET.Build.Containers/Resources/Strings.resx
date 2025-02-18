@@ -189,6 +189,10 @@
     <value>CONTAINER1009: Failed to load image from local registry. stdout: {0}</value>
     <comment>{StrBegins="CONTAINER1009: "}</comment>
   </data>
+  <data name="ImageLoadFailed_ContainerdStoreDisabled" xml:space="preserve">
+    <value>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</value>
+    <comment>{StrBegin="CONTAINER1020: "}</comment>
+  </data>
   <data name="InvalidEnvVar" xml:space="preserve">
     <value>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</value>
     <comment>{StrBegins="CONTAINER2015: "}</comment>
@@ -243,9 +247,6 @@
   <data name="MissingLinkToRegistry" xml:space="preserve">
     <value>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</value>
     <comment>{StrBegins="CONTAINER2004: "}</comment>
-  </data>
-  <data name="OciImageMultipleTagsNotSupported" xml:space="preserve">
-    <value>Unable to create tarball for oci image with multiple tags.</value>
   </data>
   <data name="UnsupportedMediaTypeForTarball" xml:space="preserve">
     <value>Unable to create tarball for mediaType '{0}'.</value>
@@ -358,6 +359,10 @@
     <value>Building image '{0}' with tags '{1}' on top of base image '{2}'.</value>
     <comment/>
   </data>
+  <data name="ContainerBuilder_StartBuildingImageForRid" xml:space="preserve">
+    <value>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</value>
+    <comment/>
+  </data>
   <data name="BuildingImageIndex" xml:space="preserve">
     <value>Building image index '{0}' on top of manifests {1}.</value>
     <comment>
@@ -365,19 +370,39 @@
     </comment>
   </data>
   <data name="MixedMediaTypes" xml:space="preserve">
-    <value>'mediaType' of manifests should be the same in manifest list (image index).</value>
+    <value>'mediaType' of manifests should be the same in image index.</value>
     <comment/>
   </data>
   <data name="UnsupportedMediaType" xml:space="preserve">
-    <value>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</value>
+    <value>Cannot create image index for the provided 'mediaType' = '{0}'.</value>
     <comment/>
   </data>
   <data name="ImagesEmpty" xml:space="preserve">
-    <value>Cannot create manifest list (image index) because no images were provided.</value>
+    <value>Cannot create image index because no images were provided.</value>
     <comment/>
   </data>
   <data name="InvalidImageMetadata" xml:space="preserve">
-    <value>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</value>
+    <value>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</value>
+    <comment/>
+  </data>
+  <data name="InvalidImageManifest" xml:space="preserve">
+    <value>Cannot create image index because at least one of the provided images' manifest is invalid.</value>
+    <comment/>
+  </data>
+  <data name="InvalidImageConfig" xml:space="preserve">
+    <value>Cannot create image index because at least one of the provided images' config is invalid.</value>
+    <comment/>
+  </data>
+  <data name="ImageConfigMissingArchitecture" xml:space="preserve">
+    <value>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</value>
+    <comment/>
+  </data>
+  <data name="ImageConfigMissingOs" xml:space="preserve">
+    <value>Cannot create image index because at least one of the provided images' config is missing 'os'.</value>
+    <comment/>
+  </data>
+  <data name="ImageIndex_PodmanNotSupported" xml:space="preserve">
+    <value>Image index creation for Podman is not supported.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">
@@ -436,6 +461,10 @@
     <value>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</value>
     <comment>{StrBegins="CONTAINER1015: "}</comment>
   </data>
+  <data name="UnableToDownloadFromRepository" xml:space="preserve">
+    <value>CONTAINER1018: Unable to download image from the repository '{0}'.</value>
+    <comment>{StrBegins="CONTAINER1018:" }</comment>
+  </data>
   <data name="UnableToAccessRepository" xml:space="preserve">
     <value>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</value>
     <comment>{StrBegins="CONTAINER1016:" }</comment>
@@ -455,5 +484,9 @@
   <data name="GenerateDigestLabelWithoutGenerateLabels" xml:space="preserve">
     <value>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</value>
     <comment>{StrBegins="CONTAINER2030: "}</comment>
+  </data>
+  <data name="InvalidContainerImageFormat" xml:space="preserve">
+    <value>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</value>
+    <comment>{StrBegins="CONTAINER2031: "}</comment>
   </data>
 </root>

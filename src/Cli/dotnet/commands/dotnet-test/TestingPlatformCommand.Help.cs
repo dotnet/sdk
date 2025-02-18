@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.CommandLine.Help;
+using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -16,7 +17,7 @@ namespace Microsoft.DotNet.Cli
         {
             yield return (context) =>
             {
-                Console.WriteLine("Waiting for options and extensions...");
+                Console.WriteLine(LocalizableStrings.HelpWaitingForOptionsAndExtensions);
 
                 Run(context.ParseResult);
 
@@ -26,15 +27,10 @@ namespace Microsoft.DotNet.Cli
                 }
 
                 Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions();
-                WriteOptionsToConsole(allOptions);
-
-                Console.ForegroundColor = ConsoleColor.Yellow;
 
                 Dictionary<bool, List<(string, string[])>> moduleToMissingOptions = GetModulesToMissingOptions(allOptions);
-                WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
 
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.White;
+                _output.WriteHelpOptions(_commandLineOptionNameToModuleNames, allOptions, moduleToMissingOptions);
             };
         }
 
@@ -120,51 +116,6 @@ namespace Microsoft.DotNet.Cli
                 }
             }
             return modulesWithMissingOptions;
-        }
-
-        private void WriteOptionsToConsole(Dictionary<bool, List<CommandLineOption>> options)
-        {
-            int maxOptionNameLength = _commandLineOptionNameToModuleNames.Keys.ToArray().Max(option => option.Length);
-
-            foreach (KeyValuePair<bool, List<CommandLineOption>> optionGroup in options)
-            {
-                Console.WriteLine();
-                Console.WriteLine(optionGroup.Key ? "Options:" : "Extension options:");
-
-                foreach (CommandLineOption option in optionGroup.Value)
-                {
-                    Console.WriteLine($"{new string(' ', 2)}--{option.Name}{new string(' ', maxOptionNameLength - option.Name.Length)} {option.Description}");
-                }
-            }
-        }
-
-        private static void WriteModulesToMissingOptionsToConsole(Dictionary<bool, List<(string, string[])>> modulesWithMissingOptions)
-        {
-            foreach (KeyValuePair<bool, List<(string, string[])>> groupedModules in modulesWithMissingOptions)
-            {
-                Console.WriteLine();
-                Console.WriteLine(groupedModules.Key ? "Unavailable options:" : "Unavailable extension options:");
-
-                foreach ((string module, string[] missingOptions) in groupedModules.Value)
-                {
-                    if (module.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    StringBuilder line = new();
-                    for (int i = 0; i < missingOptions.Length; i++)
-                    {
-                        if (i == missingOptions.Length - 1)
-                            line.Append($"--{missingOptions[i]}");
-                        else
-                            line.Append($"--{missingOptions[i]}\n");
-                    }
-
-                    string verb = missingOptions.Length == 1 ? "" : "(s)";
-                    Console.WriteLine($"{module} is missing the option{verb} below\n{line}\n");
-                }
-            }
         }
     }
 }

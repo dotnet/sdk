@@ -8,14 +8,9 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class TestingPlatformOptions
     {
-        public static readonly CliOption<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules", "-mptm")
+        public static readonly CliOption<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
         {
             Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
-        };
-
-        public static readonly CliOption<string> AdditionalMSBuildParametersOption = new("--additional-msbuild-parameters")
-        {
-            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
         };
 
         public static readonly CliOption<string> TestModulesFilterOption = new("--test-modules")
@@ -28,34 +23,61 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdTestModulesRootDirectoryDescription
         };
 
-        public static readonly CliOption<string> NoBuildOption = new("--no-build")
+        public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
         {
-            Description = LocalizableStrings.CmdNoBuildDescription,
-            Arity = ArgumentArity.Zero
-        };
-
-        public static readonly CliOption<string> NoRestoreOption = new("--no-restore")
-        {
-            Description = LocalizableStrings.CmdNoRestoreDescription,
-            Arity = ArgumentArity.Zero
-        };
-
-        public static readonly CliOption<string> ArchitectureOption = new("--arch")
-        {
-            Description = LocalizableStrings.CmdArchitectureDescription,
-            Arity = ArgumentArity.ExactlyOne
-        };
-
-        public static readonly CliOption<string> ConfigurationOption = new("--configuration")
-        {
-            Description = LocalizableStrings.CmdConfigurationDescription,
-            Arity = ArgumentArity.ExactlyOne
-        };
+            Description = LocalizableStrings.CmdNoBuildDescription
+        }.ForwardAs("-property:MTPNoBuild=true");
 
         public static readonly CliOption<string> ProjectOption = new("--project")
         {
             Description = LocalizableStrings.CmdProjectDescription,
             Arity = ArgumentArity.ExactlyOne
         };
+
+        public static readonly CliOption<string> ListTestsOption = new("--list-tests")
+        {
+            Description = LocalizableStrings.CmdListTestsDescription,
+            Arity = ArgumentArity.Zero
+        };
+
+        public static readonly CliOption<string> SolutionOption = new("--solution")
+        {
+            Description = LocalizableStrings.CmdSolutionDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
+
+        public static readonly CliOption<string> DirectoryOption = new("--directory")
+        {
+            Description = LocalizableStrings.CmdDirectoryDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
+
+        public static readonly CliOption<bool> NoAnsiOption = new("--no-ansi")
+        {
+            Description = LocalizableStrings.CmdNoAnsiDescription,
+            Arity = ArgumentArity.Zero
+        };
+
+        public static readonly CliOption<bool> NoProgressOption = new("--no-progress")
+        {
+            Description = LocalizableStrings.CmdNoProgressDescription,
+            Arity = ArgumentArity.Zero
+        };
+
+        public static readonly CliOption<OutputOptions> OutputOption = new("--output")
+        {
+            Description = LocalizableStrings.CmdTestOutputDescription,
+            Arity = ArgumentArity.ExactlyOne
+        };
+
+        public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+
+        public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    }
+
+    internal enum OutputOptions
+    {
+        Normal,
+        Detailed
     }
 }

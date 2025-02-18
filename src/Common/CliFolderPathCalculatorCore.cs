@@ -7,8 +7,6 @@ namespace Microsoft.DotNet.Configurer
     {
         public const string DotnetHomeVariableName = "DOTNET_CLI_HOME";
         public const string DotnetProfileDirectoryName = ".dotnet";
-        public static readonly string PlatformHomeVariableName =
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME";
 
         public static string? GetDotnetUserProfileFolderPath()
         {
@@ -26,14 +24,10 @@ namespace Microsoft.DotNet.Configurer
             var home = Environment.GetEnvironmentVariable(DotnetHomeVariableName);
             if (string.IsNullOrEmpty(home))
             {
-                home = Environment.GetEnvironmentVariable(PlatformHomeVariableName);
+                home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 if (string.IsNullOrEmpty(home))
                 {
-                    home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                    if (string.IsNullOrEmpty(home))
-                    {
-                        return null;
-                    }
+                    return null;
                 }
             }
 

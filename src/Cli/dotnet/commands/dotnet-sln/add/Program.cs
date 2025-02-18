@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
             }
-            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
+            string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
 
             try
             {
@@ -73,8 +73,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add
 
         private async Task AddProjectsToSolutionAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
         {
-            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
-            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+            SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+            ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
             // set UTF8 BOM encoding for .sln
             if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
             {
@@ -82,15 +82,15 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 {
                     Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
                 });
-            }
-            // Set default configurations and platforms for sln file
-            foreach (var platform in _defaultPlatforms)
-            {
-                solution.AddPlatform(platform);
-            }
-            foreach (var buildType in _defaultBuildTypes)
-            {
-                solution.AddBuildType(buildType);
+                // Set default configurations and platforms for sln file
+                foreach (var platform in _defaultPlatforms)
+                {
+                    solution.AddPlatform(platform);
+                }
+                foreach (var buildType in _defaultBuildTypes)
+                {
+                    solution.AddBuildType(buildType);
+                }
             }
 
             SolutionFolderModel? solutionFolder = (!_inRoot && !string.IsNullOrEmpty(_solutionFolderPath))
@@ -100,8 +100,10 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             foreach (var projectPath in projectPaths)
             {
                 string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
-                // Add fallback solution folder
-                string relativeSolutionFolder = Path.GetDirectoryName(relativePath);
+                // Add fallback solution folder if relative path does not contain `..`.
+                string relativeSolutionFolder =  relativePath.Split(Path.DirectorySeparatorChar).Any(p => p == "..")
+                    ? string.Empty : Path.GetDirectoryName(relativePath);
+
                 if (!_inRoot && solutionFolder is null && !string.IsNullOrEmpty(relativeSolutionFolder))
                 {
                     if (relativeSolutionFolder.Split(Path.DirectorySeparatorChar).LastOrDefault() == Path.GetFileNameWithoutExtension(relativePath))

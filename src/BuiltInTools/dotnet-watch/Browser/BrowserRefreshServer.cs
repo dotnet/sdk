@@ -21,12 +21,15 @@ namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// Communicates with aspnetcore-browser-refresh.js loaded in the browser.
+    /// Associated with a project instance.
     /// </summary>
-    internal sealed class BrowserRefreshServer : IAsyncDisposable
+    internal sealed class BrowserRefreshServer : IAsyncDisposable, IStaticAssetChangeApplier
     {
         private static readonly ReadOnlyMemory<byte> s_reloadMessage = Encoding.UTF8.GetBytes("Reload");
         private static readonly ReadOnlyMemory<byte> s_waitMessage = Encoding.UTF8.GetBytes("Wait");
         private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
+
+        private static bool? s_lazyTlsSupported;
 
         private readonly List<BrowserConnection> _activeConnections = [];
         private readonly RSA _rsa;
@@ -81,8 +84,8 @@ namespace Microsoft.DotNet.Watch
             environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSEndPoint, _serverUrls);
             environmentBuilder.SetVariable(EnvironmentVariables.Names.AspNetCoreAutoReloadWSKey, GetServerKey());
 
-            environmentBuilder.DotNetStartupHookDirective.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
-            environmentBuilder.AspNetCoreHostingStartupAssembliesVariable.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
+            environmentBuilder.DotNetStartupHooks.Add(Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll"));
+            environmentBuilder.AspNetCoreHostingStartupAssemblies.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
 
             if (_reporter.IsVerbose)
             {
@@ -288,7 +291,7 @@ namespace Microsoft.DotNet.Watch
         public ValueTask SendWaitMessageAsync(CancellationToken cancellationToken)
             => SendAsync(s_waitMessage, cancellationToken);
 
-        public ValueTask SendAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+        private ValueTask SendAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
             => SendAndReceiveAsync(request: _ => messageBytes, response: null, cancellationToken);
 
         public async ValueTask SendAndReceiveAsync<TRequest>(
@@ -326,16 +329,25 @@ namespace Microsoft.DotNet.Watch
 
         private async Task<bool> SupportsTlsAsync()
         {
+            var result = s_lazyTlsSupported;
+            if (result.HasValue)
+            {
+                return result.Value;
+            }
+
             try
             {
                 using var process = Process.Start(Options.MuxerPath, "dev-certs https --check --quiet");
                 await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
-                return process.ExitCode == 0;
+                result = process.ExitCode == 0;
             }
             catch
             {
-                return false;
+                result = false;
             }
+
+            s_lazyTlsSupported = result;
+            return result.Value;
         }
 
         public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
@@ -354,6 +366,17 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
+        public async ValueTask UpdateStaticAssetsAsync(IEnumerable<string> relativeUrls, CancellationToken cancellationToken)
+        {
+            // Serialize all requests sent to a single server:
+            foreach (var relativeUrl in relativeUrls)
+            {
+                _reporter.Verbose($"Sending static asset update request to browser: '{relativeUrl}'.");
+                var message = JsonSerializer.SerializeToUtf8Bytes(new UpdateStaticFileMessage { Path = relativeUrl }, s_jsonSerializerOptions);
+                await SendAsync(message, cancellationToken);
+            }
+        }
+
         private readonly struct AspNetCoreHotReloadApplied
         {
             public string Type => "AspNetCoreHotReloadApplied";
@@ -364,6 +387,12 @@ namespace Microsoft.DotNet.Watch
             public string Type => "HotReloadDiagnosticsv1";
 
             public IEnumerable<string> Diagnostics { get; init; }
+        }
+
+        private readonly struct UpdateStaticFileMessage
+        {
+            public string Type => "UpdateStaticFile";
+            public string Path { get; init; }
         }
     }
 }
