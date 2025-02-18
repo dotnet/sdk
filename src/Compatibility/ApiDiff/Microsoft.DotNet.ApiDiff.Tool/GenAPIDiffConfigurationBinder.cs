@@ -48,12 +48,12 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
 
     protected override DiffConfiguration GetBoundValue(BindingContext bindingContext) =>
         new DiffConfiguration(
-            BeforeAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionBeforeAssembliesFolderPath) ?? throw new NullReferenceException("Null before assemblies directory."),
+            BeforeAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionBeforeAssembliesFolderPath) ?? throw new NullReferenceException(Resources.NullBeforeAssembliesDirectory),
             BeforeAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionBeforeAssemblyReferencesFolderPath),
-            AfterAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssembliesFolderPath) ?? throw new NullReferenceException("Null after assemblies directory."),
+            AfterAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssembliesFolderPath) ?? throw new NullReferenceException(Resources.NullAfterAssembliesDirectory),
             AfterAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssemblyReferencesFolderPath),
-            OutputFolderPath: bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory."),
-            TableOfContentsTitle: bindingContext.ParseResult.GetValueForOption(_optionTableOfContentsTitle) ?? throw new NullReferenceException("Null table of contents title."),
+            OutputFolderPath: bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException(Resources.NullOutputDirectory),
+            TableOfContentsTitle: bindingContext.ParseResult.GetValueForOption(_optionTableOfContentsTitle) ?? throw new NullReferenceException(Resources.NullTableOfContentsTitle),
             AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
             ApisToExclude: bindingContext.ParseResult.GetValueForOption(_optionApisToExclude),
             AddPartialModifier: bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
