@@ -10,15 +10,13 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
 {
     public class JoinVerticalsConfig
     {
-        public IReadOnlyList<string> PriorityVerticals { get; set; } = [];
+        public required string PriorityVertical { get; init; }
 
         public static JoinVerticalsConfig GetDefaultConfig()
         {
             JoinVerticalsConfig joinVerticalsConfig = new JoinVerticalsConfig
             {
-                PriorityVerticals = [
-                    "Windows_x64"
-                ]
+                PriorityVertical = "Windows_x64"
             };
             return joinVerticalsConfig;
         }
