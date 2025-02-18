@@ -121,7 +121,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         }
     }
 
-    private string GetFinalAssemblyDiff(string assemblyName, string diffText)
+    private static string GetFinalAssemblyDiff(string assemblyName, string diffText)
     {
         StringBuilder sbAssembly = new();
         sbAssembly.AppendLine($"# {assemblyName}");
@@ -189,7 +189,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         return null;
     }
 
-    private Dictionary<string, MemberDeclarationSyntax> CollectChildrenNodes(SyntaxNode parentNode, SemanticModel model)
+    private static Dictionary<string, MemberDeclarationSyntax> CollectChildrenNodes(SyntaxNode parentNode, SemanticModel model)
     {
         Dictionary<string, MemberDeclarationSyntax> dictionary = new();
 
@@ -276,7 +276,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 }
                 break;
             default:
-                throw new NotSupportedException($"Unexpected change type for node {nodeName}: {changeType}");
+                throw new NotSupportedException(string.Format(Resources.UnexpectedChangeTypeForNode, nodeName, changeType));
         }
 
         return sb.Length > 0 ? sb.ToString() : null;
@@ -299,11 +299,11 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             return namespaceNode.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
         }
 
-        throw new InvalidOperationException($"Unsupported node for removing attributes.");
+        throw new InvalidOperationException(Resources.UnsupportedNodeForRemovingAttributes);
     }
 
     // Returns a non-null string if any attribute was changed (added, deleted or modified). Returns null if all attributes were the same before and after.
-    private string? VisitAttributes(MemberDeclarationSyntax? beforeNode, MemberDeclarationSyntax? afterNode)
+    private static string? VisitAttributes(MemberDeclarationSyntax? beforeNode, MemberDeclarationSyntax? afterNode)
     {
         Dictionary<string, AttributeSyntax>? beforeAttributeNodes = beforeNode != null ? CollectAttributeNodes(beforeNode) : null;
         Dictionary<string, AttributeSyntax>? afterAttributeNodes = afterNode != null ? CollectAttributeNodes(afterNode) : null;
@@ -351,15 +351,15 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private (SyntaxNode rootNode, SemanticModel model) GetAssemblyRootNodeAndModel(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
     {
         CSharpAssemblyDocumentGenerator docGenerator = new(_log,
-                                                             loader,
-                                                             _symbolFilter,
-                                                             _attributeSymbolFilter,
-                                                             exceptionMessage: null,
-                                                             includeAssemblyAttributes: false,
-                                                             loader.MetadataReferences,
-                                                             diagnosticOptions: _diagnosticOptions,
-                                                             addPartialModifier: _addPartialModifier,
-                                                             hideImplicitDefaultConstructors: _hideImplicitDefaultConstructors);
+                                                           loader,
+                                                           _symbolFilter,
+                                                           _attributeSymbolFilter,
+                                                           exceptionMessage: null,
+                                                           includeAssemblyAttributes: false,
+                                                           loader.MetadataReferences,
+                                                           diagnosticOptions: _diagnosticOptions,
+                                                           addPartialModifier: _addPartialModifier,
+                                                           hideImplicitDefaultConstructors: _hideImplicitDefaultConstructors);
 
         // This is a workaround to get the root node and semantic model for a rewritten assembly root node.
         Document oldDocument = docGenerator.GetDocumentForAssembly(assemblySymbol);
@@ -409,7 +409,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         return sb.ToString();
     }
 
-    private SyntaxNode GetChildlessNode(SyntaxNode node)
+    private static SyntaxNode GetChildlessNode(SyntaxNode node)
     {
         SyntaxNode childlessNode = node switch
         {
@@ -472,7 +472,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                         .WithLeadingTrivia(nsDecl.CloseBraceToken.LeadingTrivia.AddRange(_twoSpacesTrivia))
                         .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
 
-            _ => throw new InvalidOperationException("Unexpected node type.")
+            _ => throw new InvalidOperationException(Resources.UnexpectedNodeType)
         };
 
         StringBuilder sb = new();
@@ -507,7 +507,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             }
         }
 
-        throw new NullReferenceException($"Could not get the DocID of the node: {node}");
+        throw new NullReferenceException(string.Format(Resources.CouldNotGetDocIdForNode, node));
     }
 
     private static string? GenerateAddedDiff(SyntaxNode afterNode) =>
@@ -540,14 +540,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 default:
                     break;
             }
-            ;
         }
 
-        if (sb.Length == 0)
-        {
-            return null;
-        }
-
-        return sb.ToString();
+        return sb.Length == 0 ? null : sb.ToString();
     }
 }
