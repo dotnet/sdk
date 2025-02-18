@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             try
             {
-                string message = $"[dotnet test - {DateTimeOffset.UtcNow.ToString(format: "MM/dd/yyyy HH:mm:ss.fff")}]{messageLog()}";
+                string message = $"[dotnet test - {DateTimeOffset.UtcNow:MM/dd/yyyy HH:mm:ss.fff}]{messageLog()}";
 
                 lock (_lock)
                 {
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Tools.Test
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[dotnet test - {DateTimeOffset.UtcNow}]{ex}");
+                Console.WriteLine($"[dotnet test - {DateTimeOffset.UtcNow:MM/dd/yyyy HH:mm:ss.fff}]{ex}");
             }
         }
     }
