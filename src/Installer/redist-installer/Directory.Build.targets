@@ -2,6 +2,13 @@
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
+  <PropertyGroup>
+    <RedistLayoutPath>$(OutputPath)dotnet\</RedistLayoutPath>
+    <SdkInternalLayoutPath>$(OutputPath)i\</SdkInternalLayoutPath>
+    <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
+    <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
+  </PropertyGroup>
+
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
   <Import Project="targets\BundledTemplates.targets" />
   <Import Project="targets\BundledManifests.targets" />
