@@ -7,6 +7,7 @@ namespace Microsoft.DotNet.Tools.Test
     {
         public static bool TraceEnabled { get; private set; }
         private static readonly string _traceFilePath;
+        private static readonly object _lock = new();
 
         static TestingPlatformTrace()
         {
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Tools.Test
             {
                 string message = $"[dotnet test - {DateTimeOffset.UtcNow.ToString(format: "MM/dd/yyyy HH:mm:ss.fff")}]{messageLog()}";
 
-                lock (_traceFilePath)
+                lock (_lock)
                 {
                     using StreamWriter logFile = File.AppendText(_traceFilePath);
                     logFile.WriteLine(message);

@@ -10,7 +10,6 @@ namespace Microsoft.DotNet.Cli
     internal sealed class TestModulesFilterHandler
     {
         private readonly List<string> _args;
-
         private readonly TestApplicationActionQueue _actionQueue;
 
         public TestModulesFilterHandler(List<string> args, TestApplicationActionQueue actionQueue)
