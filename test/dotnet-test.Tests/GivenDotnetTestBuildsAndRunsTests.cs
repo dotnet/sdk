@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
         public void RunTestProjectWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
         public void RunMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
         public void RunTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
         public void RunMultipleTestProjectsWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/46923")]
         public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
         public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/46923")]
         public void RunOnEmptyFolder_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/46923")]
         public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectsWithoutSolution", Guid.NewGuid().ToString())
@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
         public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
         public void RunOnProjectWithClassLibrary_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithClassLibrary", Guid.NewGuid().ToString())
