@@ -153,9 +153,19 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoAnsiDescription">
+        <source>Disable ANSI output.</source>
+        <target state="new">Disable ANSI output.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">运行测试，而不显示 Microsoft Testplatform 版权标志</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoProgressDescription">
+        <source>Disable progress reporting.</source>
+        <target state="new">Disable progress reporting.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
@@ -300,14 +310,19 @@ The specified directory will be created if it does not exist.</source>
         <target state="new">The test modules have the specified root directory.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestOutputDescription">
+        <source>Verbosity of test output.</source>
+        <target state="new">Verbosity of test output.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdUnsupportedMessageRequestTypeException">
         <source>Message Request type '{0}' is unsupported.</source>
         <target state="new">Message Request type '{0}' is unsupported.</target>
         <note>{0} - message request type</note>
       </trans-unit>
       <trans-unit id="CmdUnsupportedTestRunnerDescription">
-        <source>Test runner not supported: {0}.</source>
-        <target state="new">Test runner not supported: {0}.</target>
+        <source>Test runner '{0}' is not supported.</source>
+        <target state="new">Test runner '{0}' is not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
@@ -388,6 +403,41 @@ The specified directory will be created if it does not exist.</source>
       <trans-unit id="HangTimeoutArgumentName">
         <source>TIMESPAN</source>
         <target state="translated">TIMESPAN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpExtensionOptions">
+        <source>Extension Options:</source>
+        <target state="new">Extension Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpModuleIsMissingTheOptionBelow">
+        <source>{0} is missing the option below</source>
+        <target state="new">{0} is missing the option below</target>
+        <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpModuleIsMissingTheOptionsBelow">
+        <source>{0} is missing the options below</source>
+        <target state="new">{0} is missing the options below</target>
+        <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpOptions">
+        <source>Options:</source>
+        <target state="new">Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUnavailableExtensionOptions">
+        <source>Unavailable extension options:</source>
+        <target state="new">Unavailable extension options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUnavailableOptions">
+        <source>Unavailable options:</source>
+        <target state="new">Unavailable options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpWaitingForOptionsAndExtensions">
+        <source>Waiting for options and extensions...</source>
+        <target state="new">Waiting for options and extensions...</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoredArgumentsMessage">

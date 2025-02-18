@@ -100,53 +100,87 @@ namespace Microsoft.DotNet.Cli
             return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
         }
 
-        public static IEnumerable<Module> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection)
+        public static IEnumerable<Module> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
         {
-            var project = projectCollection.LoadProject(projectFilePath);
-            return GetModulesFromProject(project);
+            var projects = new List<Module>();
+
+            var globalPropertiesWithoutTargetFramework = new Dictionary<string, string>(globalProperties);
+            globalPropertiesWithoutTargetFramework.Remove(ProjectProperties.TargetFramework);
+
+            var project = projectCollection.LoadProject(projectFilePath, globalPropertiesWithoutTargetFramework, null);
+
+            // Check if TargetFramework is specified in global properties
+            if (globalProperties.TryGetValue(ProjectProperties.TargetFramework, out string targetFramework))
+            {
+                if (IsValidTargetFramework(project, targetFramework))
+                {
+                    project.SetProperty(ProjectProperties.TargetFramework, targetFramework);
+                    project.ReevaluateIfNecessary();
+                    if (GetModuleFromProject(project) is {} module)
+                    {
+                        projects.Add(module);
+                    }
+                }
+            }
+            else
+            {
+                string targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
+
+                if (string.IsNullOrEmpty(targetFrameworks))
+                {
+                    if (GetModuleFromProject(project) is {} module)
+                    {
+                        projects.Add(module);
+                    }
+                }
+                else
+                {
+                    var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var framework in frameworks)
+                    {
+                        project.SetProperty(ProjectProperties.TargetFramework, framework);
+                        project.ReevaluateIfNecessary();
+                        if (GetModuleFromProject(project) is {} module)
+                        {
+                            projects.Add(module);
+                        }
+                    }
+                }
+            }
+
+            return projects;
         }
 
-        private static List<Module> GetModulesFromProject(Project project)
+
+        private static bool IsValidTargetFramework(Project project, string targetFramework)
+        {
+            string targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
+            if (string.IsNullOrEmpty(targetFrameworks))
+            {
+                return project.GetPropertyValue(ProjectProperties.TargetFramework) == targetFramework;
+            }
+
+            var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
+            return frameworks.Contains(targetFramework);
+        }
+
+        private static Module? GetModuleFromProject(Project project)
         {
             _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
 
             if (!isTestProject)
             {
-                return [];
+                return null;
             }
 
             _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
 
             string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-            string targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
             string targetPath = project.GetPropertyValue(ProjectProperties.TargetPath);
             string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
             string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
-            var projects = new List<Module>();
-
-            if (string.IsNullOrEmpty(targetFrameworks))
-            {
-                projects.Add(new Module(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject));
-            }
-            else
-            {
-                var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var framework in frameworks)
-                {
-                    project.SetProperty(ProjectProperties.TargetFramework, framework);
-                    project.ReevaluateIfNecessary();
-
-                    projects.Add(new Module(project.GetPropertyValue(ProjectProperties.TargetPath),
-                        PathUtility.FixFilePath(projectFullPath),
-                        framework,
-                        runSettingsFilePath,
-                        isTestingPlatformApplication,
-                        isTestProject));
-                }
-            }
-
-            return projects;
+            return new Module(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
         }
     }
 }

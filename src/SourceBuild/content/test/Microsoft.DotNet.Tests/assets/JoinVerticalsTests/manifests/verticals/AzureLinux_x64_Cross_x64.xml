@@ -1,0 +1,1127 @@
+<Build PublishingVersion="3" Name="dotnet-dotnet" BuildId="20250204.4" Branch="refs/heads/main" Commit="78058a4eefdb5a28d9bd4ada15761285361355ae" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/main" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2635437" AzureDevOpsBuildNumber="20250204.4" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2635437/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false" VerticalName="AzureLinux_x64_Cross_x64">
+  <Package Id="Aspire.Tools.Service" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="csc.ARM64.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="csc.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="csi.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="dotnet-dev-certs" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="dotnet-ef" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="dotnet-format" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="dotnet-pgo" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="dotnet-sourcelink" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="dotnet-sql-cache" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="dotnet-user-jwts" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="dotnet-user-secrets" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="FSharp.Compiler.Service" Version="43.9.300-preview.25104.104" RepoOrigin="fsharp" Visibility="External" />
+  <Package Id="FSharp.Core" Version="9.0.300-beta.25104.104" RepoOrigin="fsharp" Visibility="External" />
+  <Package Id="ILCompiler.Reflection.ReadyToRun.Experimental" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="InteractiveHost32.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="InteractiveHost64.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.Arcade.Common" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Analyzers" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.App.Internal.Assets" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.App.Ref" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.App.Ref.Internal" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.App.Runtime.linux-x64" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Certificate" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Facebook" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Google" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Negotiate" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Twitter" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authentication.WsFederation" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Authorization" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.Analyzers" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.Authorization" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.CustomElements" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.Forms" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.QuickGrid" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.SdkAnalyzers" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.Web" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Components.WebView" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.ConcurrencyLimiter" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Connections.Abstractions" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.DataProtection" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.Abstractions" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.Extensions" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.HeaderPropagation" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Hosting.WindowsServices" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Http.Connections.Client" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Http.Connections.Common" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Identity.UI" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.InternalTesting" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.JsonPatch" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Metadata" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.MiddlewareAnalysis" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Analyzers" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Api.Analyzers" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.25104.104" NonShipping="true" RepoOrigin="razor" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.OpenApi" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Owin" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Razor.LanguageServer" Version="9.0.0-preview.25104.104" NonShipping="true" RepoOrigin="razor" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Razor.Test.Common" Version="9.0.0-preview.25104.104" RepoOrigin="razor" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Server.IntegrationTesting" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Client" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Client.Core" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Client.SourceGenerator" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Common" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.Specification.Tests" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SpaProxy" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.SpaServices.Extensions" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.TestHost" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.AspNetCore.WebUtilities" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Authentication.WebAssembly.Msal" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Bcl.Cryptography" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Bcl.Memory" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Bcl.Numerics" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Bcl.TimeProvider" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Build" Version="17.14.0-preview-25104-104" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Framework" Version="17.14.0-preview-25104-104" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Localization" Version="17.14.0-preview-25104-104" NonShipping="true" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.NuGetSdkResolver" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="Microsoft.Build.Runtime" Version="17.14.0-preview-25104-104" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.StandardCI" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.Build.Tasks.Core" Version="17.14.0-preview-25104-104" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Tasks.Git" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.Build.Tasks.Tfvc" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.Build.Templates" Version="17.14.0-preview-25104-104" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Utilities.Core" Version="17.14.0-preview-25104-104" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Cci.Extensions" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Analyzers" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.AnalyzerUtilities" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Build.Tasks" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CodeStyle.Fixes.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CodeStyle.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Collections" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Common" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Compilers" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.CodeStyle.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.EditorFeatures" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ExpressionCompiler.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ResultProvider.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Debugging" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.EditorFeatures" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.EditorFeatures.Common" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.EditorFeatures.Wpf" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExpressionEvaluator.ExpressionCompiler.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExpressionEvaluator.FunctionResolver.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExpressionEvaluator.ResultProvider.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Apex" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.CompilerDeveloperSDK" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Copilot" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Debugger" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.EditorConfigGenerator" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.FSharp" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.OmniSharp" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.CSharp" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Razor" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.VisualDiagnostics" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Xaml" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Features" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.InteractiveHost" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.LanguageServer.linux-x64" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.LanguageServer.neutral" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.LanguageServer.Protocol" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Lsif.Generator" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Metrics" Version="4.0.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.PooledObjects" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.25104.104" NonShipping="true" RepoOrigin="razor" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Remote.ServiceHub" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Remote.Workspaces" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ResxSourceGenerator" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.RulesetToEditorconfigConverter" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Scripting" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Scripting.Common" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.EditorFeatures" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator.ExpressionCompiler.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator.ResultProvider.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.Features" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Workspaces.Desktop" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.CodeCoverage" Version="17.14.0-preview-25104-104" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.CommonLanguageServerProtocol.Framework" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.Data.Sqlite" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.Data.Sqlite.Core" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.25104.104" RepoOrigin="deployment-tools" Visibility="External" />
+  <Package Id="Microsoft.Diagnostics.NETCore.Client" Version="0.2.610504" RepoOrigin="diagnostics" Visibility="External" />
+  <Package Id="Microsoft.DiaSymReader" Version="2.2.0-beta.25104.104" RepoOrigin="symreader" Visibility="External" />
+  <Package Id="Microsoft.dotnet-openapi" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.DotNet.ApiCompat.Task" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.ApiCompat.Tool" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.AsmDiff" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Archives" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Packaging" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.TargetFramework" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Templating" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.VisualStudio" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Workloads" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Cecil" Version="0.11.5-alpha.25104.104" NonShipping="true" RepoOrigin="cecil" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Cli" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Cli.Utils" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.CMake.Sdk" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.CodeAnalysis" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Common.ItemTemplates" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Common.ProjectTemplates.10.0" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Configurer" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Deployment.Tasks.Links" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.GenAPI" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.GenAPI.Task" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.GenAPI.Tool" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.GenFacades" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Git.IssueManager" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Helix.Client" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Helix.JobSender" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.HotReload.Agent" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.HotReload.Agent.PipeRpc" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.ILCompiler" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Internal.SymbolHelper" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.InternalAbstractions" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.DotNet.MacOsPkg" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.NuGetRepack.Tasks" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.PackageTesting" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SharedFramework.Sdk" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SignCheck" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SignTool" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SourceBuild.Tasks" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.CmdLine" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.CodeGenerator" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.MSBuild" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Tar" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.VersionTools" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.VersionTools.Cli" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.VersionTools.Tasks" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Web.Client.ItemTemplates" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Web.ItemTemplates.10.0" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Web.ProjectTemplates.10.0" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.25104.104" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Analyzers" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Cosmos" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.SqlServer.Abstractions" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.SqlServer.HierarchyId" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Tasks" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Templates" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0-alpha.1.25104.104" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.ApiDescription.Client" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.ApiDescription.Server" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Caching.Abstractions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Caching.Memory" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Caching.SqlServer" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.Json" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.KeyPerFile" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Configuration.Xml" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.DependencyInjection" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.DependencyModel" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Diagnostics" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Diagnostics.Abstractions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Features" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.FileProviders.Composite" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.FileProviders.Physical" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.HostFactoryResolver.Sources" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Hosting" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Hosting.Systemd" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Http" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Http.Polly" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Identity.Core" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Identity.Stores" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Localization" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Localization.Abstractions" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging.AzureAppServices" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging.Configuration" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging.Console" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging.Debug" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging.EventLog" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging.EventSource" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Logging.TraceSource" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.ObjectPool" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Options" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.Primitives" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Extensions.WebEncoders" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Internal.Runtime.DotNetApiDocs.Transport" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Internal.Runtime.WindowsDesktop.Transport" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.JSInterop" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.JSInterop.WebAssembly" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.NET.Build.Containers" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Build.Extensions" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.Net.Compilers.Razor.Toolset" Version="9.0.0-preview.25104.104" RepoOrigin="razor" Visibility="External" />
+  <Package Id="Microsoft.Net.Compilers.Toolset" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.Net.Compilers.Toolset.Arm64" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.NET.HostModel" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Net.Http.Headers" Version="10.0.0-alpha.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.NET.ILLink" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NET.ILLink.Tasks" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.Aspire.Manifest-8.0.100" Version="8.2.2" RepoOrigin="aspire" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.BlazorWebAssembly" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.Publish" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.Razor" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.25104.104" NonShipping="true" RepoOrigin="razor" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.StaticWebAssets" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.Web" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.Web.ProjectSystem" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.WebAssembly" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.Worker" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.WorkloadManifestReader" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.NET.StringTools" Version="17.14.0-preview-25104-104" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25104-104" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.NET.WebAssembly.Threading" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NET.Workload.Emscripten.Current.Manifest-10.0.100-preview.2" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="emsdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Workload.Emscripten.Current.Manifest-10.0.100.Transport" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="emsdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Workload.Emscripten.net6.Manifest-10.0.100-preview.2" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="emsdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Workload.Emscripten.net7.Manifest-10.0.100-preview.2" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="emsdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Workload.Emscripten.net8.Manifest-10.0.100-preview.2" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="emsdk" Visibility="External" />
+  <Package Id="Microsoft.NET.Workload.Emscripten.net9.Manifest-10.0.100-preview.2" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="emsdk" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Crossgen2.linux-x64" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Host.linux-x64" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.android-arm" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.android-arm64" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.android-x64" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.android-x86" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.browser-wasm" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.wasi-wasm" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.linux-x64" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.Mono.linux-x64" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.NativeAOT.linux-x64" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.DotNetAppHost" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.Platforms" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.AzureDevOpsServer.Git" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.AzureRepos.Git" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.AzureRepos.Tfvc" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.Bitbucket.Git" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.Common" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.Gitea" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.Gitee" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.GitHub" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.GitLab" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.GitWeb" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.SourceLink.Tools" Version="10.0.0-beta.25104.104" RepoOrigin="sourcelink" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Authoring.CLI" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Authoring.Tasks" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Authoring.Templates" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Cli" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Core" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Core.Contracts" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.IDE" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Samples" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.TemplateLocalizer.Core" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.2.25104.104" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TestPlatform.AdapterUtilities" Version="17.14.0-preview-25104-104" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.TestPlatform.Build" Version="17.14.0-preview-25104-104" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.TestPlatform.CLI" Version="17.14.0-preview-25104-104" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.TestPlatform.Extensions.TrxLogger" Version="17.14.0-preview-25104-104" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.TestPlatform.Internal.Uwp" Version="17.14.0-preview-25104-104" NonShipping="true" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.TestPlatform.ObjectModel" Version="17.14.0-preview-25104-104" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.TestPlatform.TranslationLayer" Version="17.14.0-preview-25104-104" RepoOrigin="vstest" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.DevKit.Razor" Version="9.0.0-preview.25104.104" RepoOrigin="razor" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.CodeLens.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.CSharp.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.DevKit" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.Implementation.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.LiveShare" Version="4.14.0-1.25104.104" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.VisualBasic.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.Xaml.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.Web.Xdt" Version="10.0.0-preview.25104.104" NonShipping="true" RepoOrigin="xdt" Visibility="External" />
+  <Package Id="Microsoft.Win32.Registry.AccessControl" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.Win32.SystemEvents" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.XmlSerializer.Generator" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="NuGet.Build.Tasks" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Build.Tasks.Console" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Build.Tasks.Pack" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.CommandLine.XPlat" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Commands" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Common" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Configuration" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Credentials" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.DependencyResolver.Core" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Frameworks" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.LibraryModel" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.PackageManagement" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Packaging" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.ProjectModel" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Protocol" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Resolver" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="NuGet.Versioning" Version="6.14.0-preview.1.32767" RepoOrigin="nuget-client" Visibility="External" />
+  <Package Id="RazorPageGenerator" Version="10.0.0-alpha.2.25104.104" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Roslyn.Diagnostics.Analyzers" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="runtime.linux-x64.Microsoft.DotNet.ILCompiler" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.linux-x64.Microsoft.NETCore.DotNetAppHost" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.linux-x64.Microsoft.NETCore.ILAsm" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.linux-x64.Microsoft.NETCore.ILDAsm" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.linux-x64.Microsoft.NETCore.TestHost" Version="10.0.0-preview.2.25104.104" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.linux-x64.runtime.native.System.IO.Ports" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.native.System.IO.Ports" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="rzls.linux-x64" Version="9.0.0-preview.25104.104" RepoOrigin="razor" Visibility="External" />
+  <Package Id="rzls.neutral" Version="9.0.0-preview.25104.104" RepoOrigin="razor" Visibility="External" />
+  <Package Id="System.CodeDom" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Collections.Immutable" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.CommandLine" Version="2.0.0-beta4.25104.104" RepoOrigin="command-line-api" Visibility="External" />
+  <Package Id="System.CommandLine.DragonFruit" Version="0.4.0-alpha.25104.104" RepoOrigin="command-line-api" Visibility="External" />
+  <Package Id="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.25104.104" RepoOrigin="command-line-api" Visibility="External" />
+  <Package Id="System.CommandLine.Rendering" Version="0.4.0-alpha.25104.104" RepoOrigin="command-line-api" Visibility="External" />
+  <Package Id="System.ComponentModel.Composition" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.ComponentModel.Composition.Registration" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Composition" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Composition.AttributedModel" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Composition.Convention" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Composition.Hosting" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Composition.Runtime" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Composition.TypedParts" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Configuration.ConfigurationManager" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Data.Odbc" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Data.OleDb" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Diagnostics.DiagnosticSource" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Diagnostics.EventLog" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Diagnostics.PerformanceCounter" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.DirectoryServices" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.DirectoryServices.AccountManagement" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.DirectoryServices.Protocols" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Formats.Asn1" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Formats.Cbor" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Formats.Nrbf" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.IO.Hashing" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.IO.Packaging" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.IO.Pipelines" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.IO.Ports" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Linq.AsyncEnumerable" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Management" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Memory.Data" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Net.Http.Json" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Net.Http.WinHttpHandler" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Net.ServerSentEvents" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Numerics.Tensors" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Reflection.Context" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Reflection.Metadata" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Reflection.MetadataLoadContext" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Resources.Extensions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Runtime.Caching" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Runtime.Serialization.Formatters" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Runtime.Serialization.Schema" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Security.Cryptography.Cose" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Security.Cryptography.Pkcs" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Security.Cryptography.ProtectedData" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Security.Cryptography.Xml" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Security.Permissions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.ServiceModel.Syndication" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.ServiceProcess.ServiceController" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Speech" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Text.Encoding.CodePages" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Text.Encodings.Web" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Text.Json" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Threading.AccessControl" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Threading.Channels" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Threading.RateLimiting" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Threading.Tasks.Dataflow" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="System.Windows.Extensions" Version="10.0.0-preview.2.25104.104" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Text.Analyzers" Version="3.12.0-beta1.25104.104" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="vbc.ARM64.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="vbc.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="VBCSCompiler.ARM64.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="VBCSCompiler.Symbols" Version="4.14.0-1.25104.104" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="aspnetcore/npm/10.0.0-alpha.2.25104.104/microsoft-dotnet-js-interop-10.0.0-alpha.2.25104.104.tgz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/npm/10.0.0-alpha.2.25104.104/microsoft-signalr-10.0.0-alpha.2.25104.104.tgz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/npm/10.0.0-alpha.2.25104.104/microsoft-signalr-protocol-msgpack-10.0.0-alpha.2.25104.104.tgz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore_base_runtime.version" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-productVersion.txt" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-linux-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-linux-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-10.0.0-alpha.2.25104.104-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-composite-10.0.0-alpha.2.25104.104-linux-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-runtime-composite-10.0.0-alpha.2.25104.104-linux-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-linux-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-linux-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/aspnetcore-targeting-pack-10.0.0-alpha.2.25104.104-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-alpha.2.25104.104/productVersion.txt" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Aspire.Tools.Service.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/csc.ARM64.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/csc.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/csi.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dev-certs.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-ef.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-format.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-pgo.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-sourcelink.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-sql-cache.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-user-jwts.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-user-secrets.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/FSharp.Compiler.Service.43.9.300-preview.25104.104.symbols.nupkg" RepoOrigin="fsharp" Visibility="External" />
+  <Blob Id="assets/symbols/FSharp.Core.9.0.300-beta.25104.104.symbols.nupkg" RepoOrigin="fsharp" Visibility="External" />
+  <Blob Id="assets/symbols/ILCompiler.Reflection.ReadyToRun.Experimental.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/InteractiveHost32.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/InteractiveHost64.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Arcade.Common.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Analyzers.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.App.Ref.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.App.Runtime.linux-x64.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.Certificate.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.Facebook.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.Google.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.JwtBearer.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.MicrosoftAccount.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.Negotiate.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.OpenIdConnect.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.Twitter.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authentication.WsFederation.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Authorization.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.AzureAppServices.HostingStartup.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.AzureAppServicesIntegration.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.Analyzers.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.Authorization.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.CustomElements.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.Forms.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.QuickGrid.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.SdkAnalyzers.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.Web.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.WebAssembly.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.WebAssembly.Authentication.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.WebAssembly.DevServer.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.WebAssembly.Server.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Components.WebView.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.ConcurrencyLimiter.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Connections.Abstractions.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Cryptography.Internal.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Cryptography.KeyDerivation.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.DataProtection.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.DataProtection.Abstractions.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.DataProtection.Extensions.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.DataProtection.StackExchangeRedis.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.DeveloperCertificates.XPlat.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.HeaderPropagation.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Hosting.WindowsServices.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Http.Connections.Client.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Http.Connections.Common.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Identity.EntityFrameworkCore.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Identity.UI.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.InternalTesting.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.JsonPatch.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Metadata.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.MiddlewareAnalysis.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Mvc.Analyzers.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Mvc.Api.Analyzers.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Mvc.NewtonsoftJson.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.9.0.0-preview.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Mvc.Testing.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.OpenApi.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Owin.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Razor.LanguageServer.9.0.0-preview.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Razor.Test.Common.9.0.0-preview.25104.104.symbols.nupkg" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Server.IntegrationTesting.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.Client.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.Client.Core.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.Client.SourceGenerator.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.Common.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.Protocols.Json.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.Protocols.MessagePack.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.Specification.Tests.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SignalR.StackExchangeRedis.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SpaProxy.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.SpaServices.Extensions.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.TestHost.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.AspNetCore.WebUtilities.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Authentication.WebAssembly.Msal.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Bcl.AsyncInterfaces.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Bcl.Cryptography.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Bcl.Memory.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Bcl.Numerics.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Bcl.TimeProvider.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.Framework.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.Localization.17.14.0-preview-25104-104.symbols.nupkg" NonShipping="true" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.NuGetSdkResolver.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.Runtime.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.StandardCI.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.Tasks.Core.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.Tasks.Git.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.Tasks.Tfvc.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.Templates.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Build.Utilities.Core.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Cci.Extensions.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Analyzers.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.AnalyzerUtilities.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.BannedApiAnalyzers.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Build.Tasks.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CodeStyle.Fixes.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CodeStyle.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Collections.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Common.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Compilers.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.CodeStyle.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.CodeStyle.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.EditorFeatures.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ExpressionCompiler.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ResultProvider.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.Features.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.Scripting.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.CSharp.Workspaces.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Debugging.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.EditorFeatures.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.EditorFeatures.Common.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.EditorFeatures.Text.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.EditorFeatures.Wpf.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExpressionEvaluator.ExpressionCompiler.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExpressionEvaluator.FunctionResolver.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExpressionEvaluator.ResultProvider.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.Apex.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.CompilerDeveloperSDK.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.Copilot.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.Debugger.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.EditorConfigGenerator.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.FSharp.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.CSharp.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.Razor.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.VisualDiagnostics.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ExternalAccess.Xaml.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Features.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.InteractiveHost.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.LanguageServer.linux-x64.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.LanguageServer.neutral.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.LanguageServer.Protocol.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Lsif.Generator.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Metrics.4.0.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.NetAnalyzers.10.0.0-preview.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.PooledObjects.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.PublicApiAnalyzers.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Razor.Tooling.Internal.9.0.0-preview.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Remote.ServiceHub.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Remote.Workspaces.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.ResxSourceGenerator.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.RulesetToEditorconfigConverter.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Scripting.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Scripting.Common.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.VisualBasic.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.VisualBasic.EditorFeatures.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator.ExpressionCompiler.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator.ResultProvider.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.VisualBasic.Features.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.VisualBasic.Workspaces.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Workspaces.Common.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Workspaces.Desktop.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Workspaces.MSBuild.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CodeCoverage.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.CommonLanguageServerProtocol.Framework.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Data.Sqlite.Core.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Diagnostics.NETCore.Client.0.2.610504.symbols.nupkg" RepoOrigin="diagnostics" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DiaSymReader.2.2.0-beta.25104.104.symbols.nupkg" RepoOrigin="symreader" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.dotnet-openapi.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.ApiCompat.Task.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.ApiCompat.Tool.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Arcade.Sdk.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.AsmDiff.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Archives.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Feed.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Installers.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Packaging.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.TargetFramework.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Templating.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.VisualStudio.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Workloads.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Cecil.0.11.5-alpha.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="cecil" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Cli.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Cli.Utils.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.CMake.Sdk.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.CodeAnalysis.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Common.ItemTemplates.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Common.ProjectTemplates.10.0.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Configurer.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Deployment.Tasks.Links.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.GenAPI.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.GenAPI.Task.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.GenAPI.Tool.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.GenFacades.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Git.IssueManager.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Helix.Client.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Helix.JobSender.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Helix.Sdk.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.HotReload.Agent.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.HotReload.Agent.PipeRpc.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.ILCompiler.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Internal.SymbolHelper.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.InternalAbstractions.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.MacOsPkg.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.NuGetRepack.Tasks.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.PackageTesting.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SharedFramework.Sdk.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SignCheck.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SignTool.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SourceBuild.Tasks.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SwaggerGenerator.CmdLine.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SwaggerGenerator.CodeGenerator.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SwaggerGenerator.MSBuild.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Tar.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.VersionTools.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.VersionTools.Cli.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.VersionTools.Tasks.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.XliffTasks.10.0.0-beta.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Abstractions.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Analyzers.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Cosmos.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Design.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.InMemory.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Proxies.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Relational.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Sqlite.Core.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.SqlServer.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.SqlServer.Abstractions.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.SqlServer.HierarchyId.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.EntityFrameworkCore.Tools.10.0.0-alpha.1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.ApiDescription.Client.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.ApiDescription.Server.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Caching.Abstractions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Caching.Memory.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Caching.SqlServer.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Caching.StackExchangeRedis.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.Abstractions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.Binder.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.CommandLine.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.EnvironmentVariables.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.FileExtensions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.Ini.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.Json.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.KeyPerFile.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.UserSecrets.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Configuration.Xml.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.DependencyInjection.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.DependencyInjection.Abstractions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.DependencyInjection.Specification.Tests.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.DependencyModel.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Diagnostics.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Diagnostics.Abstractions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Diagnostics.HealthChecks.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Features.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.FileProviders.Abstractions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.FileProviders.Composite.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.FileProviders.Embedded.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.FileProviders.Physical.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.FileSystemGlobbing.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.HostFactoryResolver.Sources.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Hosting.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Hosting.Abstractions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Hosting.Systemd.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Hosting.WindowsServices.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Http.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Http.Polly.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Identity.Core.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Identity.Stores.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Localization.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Localization.Abstractions.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.Abstractions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.AzureAppServices.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.Configuration.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.Console.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.Debug.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.EventLog.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.EventSource.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Logging.TraceSource.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.ObjectPool.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Options.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Options.ConfigurationExtensions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Options.DataAnnotations.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.Primitives.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Extensions.WebEncoders.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Internal.Runtime.AspNetCore.Transport.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Internal.Runtime.WindowsDesktop.Transport.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.JSInterop.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.JSInterop.WebAssembly.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Build.Containers.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Build.Extensions.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Net.Compilers.Razor.Toolset.9.0.0-preview.25104.104.symbols.nupkg" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Net.Compilers.Toolset.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Net.Compilers.Toolset.Arm64.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Net.Compilers.Toolset.Framework.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.HostModel.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Net.Http.Headers.10.0.0-alpha.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.ILLink.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.ILLink.Tasks.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.BlazorWebAssembly.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Net.Sdk.Compilers.Toolset.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.Publish.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.Razor.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.Razor.SourceGenerators.Transport.9.0.0-preview.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.StaticWebAssets.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.Web.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.Web.ProjectSystem.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.WebAssembly.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.Worker.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.WorkloadManifestReader.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.StringTools.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.Test.Sdk.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NET.WebAssembly.Threading.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Crossgen2.linux-x64.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Host.linux-x64.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Ref.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.android-arm.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.android-arm64.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.android-x64.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.android-x86.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.browser-wasm.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.AOT.linux-x64.Cross.wasi-wasm.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.linux-x64.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.Mono.linux-x64.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.NativeAOT.linux-x64.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.DotNetAppHost.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.AzureDevOpsServer.Git.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.AzureRepos.Git.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.AzureRepos.Tfvc.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.Bitbucket.Git.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.Common.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.Gitea.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.Gitee.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.GitHub.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.GitLab.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.GitWeb.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.SourceLink.Tools.10.0.0-beta.25104.104.symbols.nupkg" RepoOrigin="sourcelink" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Abstractions.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Authoring.CLI.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Authoring.Tasks.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Authoring.Templates.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Authoring.TemplateVerifier.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Cli.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Core.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Core.Contracts.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Edge.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.IDE.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Samples.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.TemplateLocalizer.Core.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.TestHelper.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateEngine.Utils.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateSearch.Common.10.0.100-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TemplateSearch.TemplateDiscovery.10.0.100-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TestPlatform.AdapterUtilities.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TestPlatform.Build.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TestPlatform.CLI.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TestPlatform.Extensions.TrxLogger.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TestPlatform.Internal.Uwp.17.14.0-preview-25104-104.symbols.nupkg" NonShipping="true" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TestPlatform.ObjectModel.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.TestPlatform.TranslationLayer.17.14.0-preview-25104-104.symbols.nupkg" RepoOrigin="vstest" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.DevKit.Razor.9.0.0-preview.25104.104.symbols.nupkg" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.LanguageServices.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.LanguageServices.CodeLens.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.LanguageServices.CSharp.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.LanguageServices.DevKit.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.LanguageServices.Implementation.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.LanguageServices.LiveShare.4.14.0-1.25104.104.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.LanguageServices.VisualBasic.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.VisualStudio.LanguageServices.Xaml.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Web.Xdt.10.0.0-preview.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="xdt" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Win32.Registry.AccessControl.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Win32.SystemEvents.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.XmlSerializer.Generator.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Build.Tasks.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Build.Tasks.Console.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Build.Tasks.Pack.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.CommandLine.XPlat.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Commands.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Common.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Configuration.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Credentials.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.DependencyResolver.Core.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Frameworks.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.LibraryModel.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.PackageManagement.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Packaging.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.ProjectModel.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Protocol.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Resolver.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/NuGet.Versioning.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
+  <Blob Id="assets/symbols/RazorPageGenerator.10.0.0-alpha.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/Roslyn.Diagnostics.Analyzers.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/runtime.linux-x64.Microsoft.DotNet.ILCompiler.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/runtime.linux-x64.Microsoft.NETCore.DotNetAppHost.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/runtime.linux-x64.Microsoft.NETCore.ILAsm.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/runtime.linux-x64.Microsoft.NETCore.ILDAsm.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/runtime.linux-x64.Microsoft.NETCore.TestHost.10.0.0-preview.2.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/runtime.linux-x64.runtime.native.System.IO.Ports.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/runtime.native.System.IO.Ports.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/rzls.linux-x64.9.0.0-preview.25104.104.symbols.nupkg" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/rzls.neutral.9.0.0-preview.25104.104.symbols.nupkg" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/System.CodeDom.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Collections.Immutable.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.CommandLine.2.0.0-beta4.25104.104.symbols.nupkg" RepoOrigin="command-line-api" Visibility="External" />
+  <Blob Id="assets/symbols/System.CommandLine.DragonFruit.0.4.0-alpha.25104.104.symbols.nupkg" RepoOrigin="command-line-api" Visibility="External" />
+  <Blob Id="assets/symbols/System.CommandLine.NamingConventionBinder.2.0.0-beta4.25104.104.symbols.nupkg" RepoOrigin="command-line-api" Visibility="External" />
+  <Blob Id="assets/symbols/System.CommandLine.Rendering.0.4.0-alpha.25104.104.symbols.nupkg" RepoOrigin="command-line-api" Visibility="External" />
+  <Blob Id="assets/symbols/System.ComponentModel.Composition.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.ComponentModel.Composition.Registration.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Composition.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Composition.AttributedModel.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Composition.Convention.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Composition.Hosting.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Composition.Runtime.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Composition.TypedParts.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Configuration.ConfigurationManager.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Data.Odbc.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Data.OleDb.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Diagnostics.DiagnosticSource.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Diagnostics.EventLog.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Diagnostics.PerformanceCounter.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.DirectoryServices.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.DirectoryServices.AccountManagement.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.DirectoryServices.Protocols.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Formats.Asn1.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Formats.Cbor.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Formats.Nrbf.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.IO.Hashing.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.IO.Packaging.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.IO.Pipelines.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.IO.Ports.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Linq.AsyncEnumerable.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Management.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Memory.Data.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Net.Http.Json.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Net.Http.WinHttpHandler.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Net.ServerSentEvents.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Numerics.Tensors.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Reflection.Context.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Reflection.Metadata.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Reflection.MetadataLoadContext.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Resources.Extensions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Runtime.Caching.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Runtime.Serialization.Formatters.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Runtime.Serialization.Schema.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Security.Cryptography.Cose.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Security.Cryptography.Pkcs.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Security.Cryptography.ProtectedData.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Security.Cryptography.Xml.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Security.Permissions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.ServiceModel.Syndication.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.ServiceProcess.ServiceController.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Speech.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Text.Encoding.CodePages.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Text.Encodings.Web.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Text.Json.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Threading.AccessControl.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Threading.Channels.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Threading.RateLimiting.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Threading.Tasks.Dataflow.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/System.Windows.Extensions.10.0.0-preview.2.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Text.Analyzers.3.12.0-beta1.25104.104.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/vbc.ARM64.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/vbc.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/VBCSCompiler.ARM64.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/VBCSCompiler.Symbols.4.14.0-1.25104.104.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-linux-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-linux-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-apphost-pack-10.0.0-preview.2.25104.104-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-crossgen2-10.0.0-preview.2.25104.104-linux-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-crossgen2-10.0.0-preview.2.25104.104-linux-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-host-10.0.0-preview.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-host-10.0.0-preview.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-host-10.0.0-preview.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-host-10.0.0-preview.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-host-10.0.0-preview.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-host-10.0.0-preview.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-host-10.0.0-preview.2.25104.104-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-host-10.0.0-preview.2.25104.104-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-hostfxr-10.0.0-preview.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-hostfxr-10.0.0-preview.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-hostfxr-10.0.0-preview.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-hostfxr-10.0.0-preview.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-hostfxr-10.0.0-preview.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-hostfxr-10.0.0-preview.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-hostfxr-10.0.0-preview.2.25104.104-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-hostfxr-10.0.0-preview.2.25104.104-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-nethost-10.0.0-preview.2.25104.104-linux-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-nethost-10.0.0-preview.2.25104.104-linux-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-nethost-symbols-linux-x64-10.0.0-preview.2.25104.104.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-nethost-symbols-linux-x64-10.0.0-preview.2.25104.104.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-linux-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-linux-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-10.0.0-preview.2.25104.104-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-azl.3-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-azl.3-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-centos.9-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-centos.9-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-fedora.27-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-fedora.27-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-fedora.34-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-fedora.34-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-opensuse.42-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-opensuse.42-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-oraclelinux.8-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-oraclelinux.8-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-rhel.8-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-rhel.8-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-sles.12-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-sles.12-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-runtime-deps-10.0.0-preview.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-targeting-pack-10.0.0-preview.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-targeting-pack-10.0.0-preview.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-targeting-pack-10.0.0-preview.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-targeting-pack-10.0.0-preview.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-targeting-pack-10.0.0-preview.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-targeting-pack-10.0.0-preview.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-targeting-pack-10.0.0-preview.2.25104.104-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/dotnet-targeting-pack-10.0.0-preview.2.25104.104-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/productVersion.txt" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.2.25104.104/runtime-productVersion.txt" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-cm.1-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-cm.1-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-cm.2-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-cm.2-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-linux-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-linux-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-x64.deb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-x64.deb.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-x64.rpm" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/dotnet-sdk-10.0.100-preview.2.25104.104-x64.rpm.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/linux_x64_Release_version_badge.svg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/linux_x64_Release_version_badge.svg.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/productCommit-linux-x64.json" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/productCommit-linux-x64.json.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/productCommit-linux-x64.txt" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.2.25104.104/productCommit-linux-x64.txt.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+</Build>
