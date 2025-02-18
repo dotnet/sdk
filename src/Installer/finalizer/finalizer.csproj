@@ -10,7 +10,6 @@
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
-    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     <_IsPublishing>true</_IsPublishing>
     <PublishDir>$(ArtifactsDir)bin\finalizer\$(Configuration)\$(SdkTargetFramework)-win-$(Architecture)\publish</PublishDir>
   </PropertyGroup>
