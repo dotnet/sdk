@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,7 +53,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     public required string AzureDevOpsProject { get; init; }
 
     /// <summary>
-    /// Location of sownloaded artifacts from the main vertical
+    /// Location of downloaded artifacts from the main vertical
     /// </summary>
     [Required]
     public required string MainVerticalArtifactsFolder { get; init; }
@@ -63,20 +64,11 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     [Required]
     public required string OutputFolder { get; init; }
 
-    private const string _packageElementName = "Package";
-    private const string _blobElementName = "Blob";
-    private const string _idAttribute = "Id";
-    private const string _visibilityAttribute = "Visibility";
-    private const string _externalVisibility = "External";
-    private const string _internalVisibility = "Internal";
-    private const string _verticalVisibility = "Vertical";
-    private const string _verticalNameAttribute = "VerticalName";
+
     private const string _artifactNameSuffix = "_Artifacts";
     private const string _assetsFolderName = "assets";
     private const string _packagesFolderName = "packages";
     private const int _retryCount = 10;
-
-    private Dictionary<string, List<string>> duplicatedItems = new();
 
     public override bool Execute()
     {
@@ -86,92 +78,105 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
     private async Task ExecuteAsync()
     {
-        List<XDocument> verticalManifests = VerticalManifest.Select(xmlPath => XDocument.Load(xmlPath.ItemSpec)).ToList();
-
-        XDocument mainVerticalManifest = verticalManifests.FirstOrDefault(manifest => GetRequiredRootAttribute(manifest, _verticalNameAttribute) == MainVertical)
+        List<BuildAssetsManifest> manifests = VerticalManifest.Select(xmlPath => BuildAssetsManifest.LoadFromFile(xmlPath.ItemSpec)).ToList();
+        BuildAssetsManifest mainVerticalManifest = manifests
+            .FirstOrDefault(manifest => StringComparer.OrdinalIgnoreCase.Equals(manifest.VerticalName, MainVertical))
             ?? throw new ArgumentException($"Couldn't find main vertical manifest {MainVertical} in vertical manifest list");
 
-        if (!Directory.Exists(MainVerticalArtifactsFolder))
+        string mainVerticalName = mainVerticalManifest.VerticalName!;
+
+        JoinVerticalsAssetSelector joinVerticalsAssetSelector = new JoinVerticalsAssetSelector();
+
+        List<AssetVerticalMatchResult> selectedVerticals = joinVerticalsAssetSelector.SelectAssetMatchingVertical(manifests).ToList();
+
+        var notMatchedAssets = selectedVerticals.Where(o => o.MatchType == AssetVerticalMatchType.NotSpecified).ToList();
+        Log.LogMessage(MessageImportance.High, $"### {notMatchedAssets.Count()} Assets not properly matched to vertical: ###");
+        foreach (var matchResult in notMatchedAssets)
         {
-            throw new ArgumentException($"Main vertical artifacts directory {MainVerticalArtifactsFolder} not found.");
+            Log.LogMessage(MessageImportance.High, $"Asset: {matchResult.AssetId} -- Matched to: {matchResult.VerticalName}, Other verticals: {string.Join(", ", matchResult.OtherVerticals)}");
         }
 
-        string mainVerticalName = GetRequiredRootAttribute(mainVerticalManifest, _verticalNameAttribute);
 
-        Dictionary<string, AddedElement> packageElements = [];
-        Dictionary<string, AddedElement> blobElements = [];
-
-        List<string> addedPackageIds = AddMissingElements(packageElements, mainVerticalManifest, _packageElementName);
-        List<string> addedBlobIds = AddMissingElements(blobElements, mainVerticalManifest, _blobElementName);
-
+        // save manifest and download all the assets
         string packagesOutputDirectory = Path.Combine(OutputFolder, _packagesFolderName);
-        string blobsOutputDirectory = Path.Combine(OutputFolder, _assetsFolderName);
+        ForceDirectory(packagesOutputDirectory);
+        string assetsOutputDirectory = Path.Combine(OutputFolder, _assetsFolderName);
+        ForceDirectory(assetsOutputDirectory);
 
-        CopyMainVerticalAssets(Path.Combine(MainVerticalArtifactsFolder, _packagesFolderName), packagesOutputDirectory);
-        CopyMainVerticalAssets(Path.Combine(MainVerticalArtifactsFolder, _assetsFolderName), blobsOutputDirectory);
+        XDocument mergedManifest = JoinVerticalsManifestExportHelper.ExportMergedManifest(mainVerticalManifest, selectedVerticals);
+        string manifestOutputAssetsPath = Path.Combine(assetsOutputDirectory, "VerticalsMergeManifest.xml");
+        mergedManifest.Save(manifestOutputAssetsPath);
+        string manifestOutputPath = Path.Combine(OutputFolder, "MergedManifest.xml");
+        mergedManifest.Save(manifestOutputPath);
+
+        (AssetVerticalMatchResult matchResult, string fileName) figureOutFileName(AssetVerticalMatchResult matchResult)
+        {
+            string fileName = matchResult.Asset.AssetType switch
+            {
+                ManifestAssetType.Package => $"{matchResult.Asset.Id}.{matchResult.Asset.Version}.nupkg",
+                ManifestAssetType.Blob => matchResult.Asset.Id,
+                _ => throw new ArgumentException($"Unknown asset type {matchResult.Asset.AssetType}")
+            };
+            return (matchResult, fileName);
+        }
 
         using var clientThrottle = new SemaphoreSlim(16, 16);
         List<Task> downloadTasks = new();
 
-        foreach (XDocument verticalManifest in verticalManifests)
+        foreach (var matchResult in selectedVerticals.GroupBy(o => o.VerticalName).OrderByDescending(g => g.Count()))
         {
-            string verticalName = GetRequiredRootAttribute(verticalManifest, _verticalNameAttribute);
+            string verticalName = matchResult.Key;
 
-            // We already processed the main vertical
-            if (verticalName == MainVertical)
+            // go through all verticals and assets inside and download them
+            var assetListPackages = matchResult
+                .Where(o => o.Asset.AssetType == ManifestAssetType.Package)
+                .Select(figureOutFileName)
+                .ToList();
+            var assetListBlobs = matchResult
+                .Where(o => o.Asset.AssetType == ManifestAssetType.Blob)
+                .Select(figureOutFileName)
+                .ToList();
+
+            // copy main vertical assets from the local already downloaded artifacts
+            if (StringComparer.OrdinalIgnoreCase.Equals(verticalName, mainVerticalName))
             {
+                var targetFolderPackages = Path.Combine(MainVerticalArtifactsFolder, _packagesFolderName);
+                downloadTasks.Add(
+                    CopyMainVerticalAssets(targetFolderPackages, packagesOutputDirectory, assetListPackages)
+                );
+                var targetFolderBlobs = Path.Combine(MainVerticalArtifactsFolder, _assetsFolderName);
+                downloadTasks.Add(
+                    CopyMainVerticalAssets(targetFolderBlobs, assetsOutputDirectory, assetListPackages)
+                );
                 continue;
             }
 
-            addedPackageIds = AddMissingElements(packageElements, verticalManifest, _packageElementName);
-            addedBlobIds = AddMissingElements(blobElements, verticalManifest, _blobElementName);
-
-            if (addedPackageIds.Count > 0)
+            if (assetListPackages.Count > 0)
             {
                 downloadTasks.Add(
                     DownloadArtifactFiles(
                         BuildId,
                         $"{verticalName}{_artifactNameSuffix}",
-                        addedPackageIds,
+                        assetListPackages.Select(o => o.fileName).ToList(),
                         packagesOutputDirectory,
-                        clientThrottle));
+                        clientThrottle)
+                );
             }
 
-            if (addedBlobIds.Count > 0)
+            if (assetListBlobs.Count > 0)
             {
                 downloadTasks.Add(
                     DownloadArtifactFiles(
                         BuildId,
                         $"{verticalName}{_artifactNameSuffix}",
-                        addedBlobIds,
-                        blobsOutputDirectory,
-                        clientThrottle));
+                        assetListBlobs.Select(o => o.fileName).ToList(),
+                        assetsOutputDirectory,
+                        clientThrottle)
+                );
             }
         }
 
         await Task.WhenAll(downloadTasks);
-
-        // Create MergedManifest.xml
-        // taking the attributes from the main manifest
-        XElement mainManifestRoot = verticalManifests.First().Root
-            ?? throw new ArgumentException("The root element of the vertical manifest is null.");
-        mainManifestRoot.Attribute(_verticalNameAttribute)!.Remove();
-
-        string manifestOutputPath = Path.Combine(OutputFolder, "MergedManifest.xml");
-        XDocument mergedManifest = new(new XElement(
-            mainManifestRoot.Name,
-            mainManifestRoot.Attributes(),
-            packageElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value),
-            blobElements.Values.Select(v => v.Element).OrderBy(elem => elem.Attribute(_idAttribute)?.Value)));
-
-        File.WriteAllText(manifestOutputPath, mergedManifest.ToString());
-
-        Log.LogMessage(MessageImportance.High, $"### Duplicate items found in the following verticals: ###");
-
-        foreach (var item in duplicatedItems)
-        {
-            Log.LogMessage(MessageImportance.High, $"Item: {item.Key} -- Produced by: {string.Join(", ", item.Value)}");
-        }
     }
 
     /// <summary>
@@ -261,101 +266,28 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         }
     }
 
-    /// <summary>
-    /// Copy all files from the source directory to the destination directory,
-    /// in a flat layout
-    /// </summary>
-    private void CopyMainVerticalAssets(string sourceDirectory, string destinationDirectory)
+    private void ForceDirectory(string directory)
     {
-        var sourceFiles = Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories);
-
-        if (!Directory.Exists(destinationDirectory))
+        if (!Directory.Exists(directory))
         {
-            Directory.CreateDirectory(destinationDirectory);
+            Directory.CreateDirectory(directory);
         }
+    }
 
+    /// <summary>
+    /// Copy all files from the source directory to the destination directory in a flat layout
+    /// </summary>
+    private async Task CopyMainVerticalAssets(string sourceDirectory, string destinationDirectory,
+        IEnumerable<(AssetVerticalMatchResult matchResult, string fileName)> assets)
+    {
+        await Task.Yield();
+
+        var sourceFiles = Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories);
         foreach (var sourceFile in sourceFiles)
         {
             string destinationFilePath = Path.Combine(destinationDirectory, Path.GetFileName(sourceFile));
-
             Log.LogMessage(MessageImportance.High, $"Copying {sourceFile} to {destinationFilePath}");
             File.Copy(sourceFile, destinationFilePath, true);
         }
     }
-
-    /// <summary>
-    /// Find the artifacts from the vertical manifest that are not already in the dictionary and add them
-    /// Return a list of the added artifact ids
-    /// </summary>
-    private List<string> AddMissingElements(Dictionary<string, AddedElement> addedArtifacts, XDocument verticalManifest, string elementName)
-    {
-        List<string> addedFiles = [];
-
-        string verticalName = verticalManifest.Root!.Attribute(_verticalNameAttribute)!.Value;
-
-        foreach (XElement artifactElement in verticalManifest.Descendants(elementName))
-        {
-            string elementId = artifactElement.Attribute(_idAttribute)?.Value
-                ?? throw new ArgumentException($"Required attribute '{_idAttribute}' not found in {elementName} element.");
-
-            // Filter out artifacts that are not "External" visibility.
-            // Artifacts of "Vertical" visibility should have been filtered out in each individual vertical,
-            // but artifacts of "Internal" visibility would have been included in each vertical's manifest (to enable feeding into join verticals).
-            // We need to remove them here so they don't get included in the final merged manifest.
-            // As we're in the final join, there should be no jobs after us. Therefore, we can also skip uploading them to the final artifacts folders
-            // as no job should run after this job that would consume them.
-            string? visibility = artifactElement.Attribute(_visibilityAttribute)?.Value;
-            
-            if (visibility == _verticalVisibility)
-            {
-                Log.LogError($"Artifact {elementId} has 'Vertical' visibility and should not be present in a vertical manifest.");
-                continue;
-            }
-            else if (visibility == _internalVisibility)
-            {
-                Log.LogMessage(MessageImportance.High, $"Artifact {elementId} has 'Internal' visibility and will not be included in the final merged manifest.");
-                continue;
-            }
-            else if (visibility is not (null or "" or _externalVisibility))
-            {
-                Log.LogError($"Artifact {elementId} has unknown visibility: '{visibility}'");
-                continue;
-            }
-
-            if (addedArtifacts.TryAdd(elementId, new AddedElement(verticalName, artifactElement)))
-            {
-                if (elementName == _packageElementName)
-                {
-                    string version = artifactElement.Attribute("Version")?.Value
-                        ?? throw new ArgumentException($"Required attribute 'Version' not found in {elementName} element.");
-
-                    elementId += $".{version}.nupkg";
-                }
-
-                addedFiles.Add(elementId);
-                Log.LogMessage(MessageImportance.High, $"Taking {elementName} '{elementId}' from '{verticalName}'");
-            }
-            else
-            {
-                AddedElement previouslyAddedArtifact = addedArtifacts[elementId];
-                if (previouslyAddedArtifact.VerticalName != MainVertical)
-                {
-                    if (!duplicatedItems.TryAdd(elementId, new List<string> { verticalName, previouslyAddedArtifact.VerticalName }))
-                    {
-                        duplicatedItems[elementId].Add(verticalName);
-                    }
-                }
-            }
-        }
-
-        return addedFiles;
-    }
-
-    private static string GetRequiredRootAttribute(XDocument document, string attributeName)
-    {
-        return document.Root?.Attribute(attributeName)?.Value
-            ?? throw new ArgumentException($"Required attribute '{attributeName}' not found in root element.");
-    }
-
-    private record AddedElement(string VerticalName, XElement Element);
 }

@@ -957,10 +957,7 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1218: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</value>
     <comment>{StrBegins="NETSDK1218: "}</comment>
   </data>
-  <data name="UsingPreviewUseUwpFeature" xml:space="preserve">
-    <value>NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</value>
-    <comment>{StrBegins="NETSDK1219: "}</comment>
-  </data>
+  <!-- Skipping NETSDK1219 on purpose, as that is "UsingPreviewUseUwpFeature" on .NET < 9.0.2xx, and has been removed on new SDK versions -->
   <data name="WindowsSDKXamlInvalidTfm" xml:space="preserve">
     <value>NETSDK1220: UseUwp and all associated functionality require using a TFM of 'net8.0-windows' or greater.</value>
     <comment>{StrBegins="NETSDK1220: "}</comment>

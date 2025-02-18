@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli
 {
-    internal sealed record Module(string? DllOrExePath, string? ProjectPath, string? TargetFramework, string? RunSettingsFilePath, bool IsTestingPlatformApplication, bool IsTestProject);
+    internal sealed record Module(string? TargetPath, string? ProjectFullPath, string? TargetFramework, string? RunSettingsFilePath, bool IsTestingPlatformApplication, bool IsTestProject);
 
     internal sealed record Handshake(Dictionary<byte, string>? Properties);
 
@@ -20,4 +20,6 @@ namespace Microsoft.DotNet.Cli
     internal sealed record FileArtifact(string? FullPath, string? DisplayName, string? Description, string? TestUid, string? TestDisplayName, string? SessionUid);
 
     internal sealed record TestSession(byte? SessionType, string? SessionUid, string? ExecutionId);
+
+    internal record MSBuildBuildAndRestoreSettings(string[] Commands, string Configuration, string RuntimeIdentifier, bool AllowBinLog, string BinLogFileName);
 }

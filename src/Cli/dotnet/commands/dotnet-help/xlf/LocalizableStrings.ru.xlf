@@ -7,6 +7,16 @@
         <target state="translated">Применение настроек стилей к проекту или решению.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDefinition">
+        <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
+        <target state="new">Search for, add, remove, or list PackageReferences for a .NET project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceDefinition">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Накат до версии платформы (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
@@ -122,16 +132,6 @@
         <target state="translated">Команды изменения проекта</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddDefinition">
-        <source>Add a package or reference to a .NET project.</source>
-        <target state="translated">Добавление пакета или ссылки в проект .NET.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveDefinition">
-        <source>Remove a package or reference from a .NET project.</source>
-        <target state="translated">Удаление пакета или ссылки из проекта .NET.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AdvancedCommands">
         <source>Advanced Commands</source>
         <target state="translated">Дополнительные команды</target>
@@ -165,11 +165,6 @@
       <trans-unit id="SlnDefinition">
         <source>Modify Visual Studio solution files.</source>
         <target state="translated">Изменение файлов решения Visual Studio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListDefinition">
-        <source>List packages or references of a .NET project.</source>
-        <target state="translated">Выводит список пакетов или ссылок для проекта .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

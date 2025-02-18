@@ -77,10 +77,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return line.Substring(expectedPrefix.Length);
         }
 
-        public Task<string> AssertOutputLine(Predicate<string> predicate, Predicate<string> failure = null)
-            => Process.GetOutputLineAsync(
-                success: predicate,
-                failure: failure ?? new Predicate<string>(line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal)));
+        public Task<string> AssertOutputLine(Predicate<string> predicate)
+            => Process.GetOutputLineAsync(success: predicate, failure: _ => false);
 
         public async Task AssertOutputLineEquals(string expectedLine)
             => Assert.Equal("", await AssertOutputLineStartsWith(expectedLine));
@@ -127,10 +125,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
 
-            // suppress all DCP timeouts:
+            // suppress all timeouts:
             commandSpec.WithEnvironmentVariable("DCP_IDE_REQUEST_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_TIMEOUT_SECONDS", "100000");
             commandSpec.WithEnvironmentVariable("DCP_IDE_NOTIFICATION_KEEPALIVE_SECONDS", "100000");
+
+            // 0 timeout for process cleanup in tests. We can't send Ctrl+C, so process termination must be forced.
+            commandSpec.WithEnvironmentVariable("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS", "0");
 
             foreach (var env in EnvironmentVariables)
             {

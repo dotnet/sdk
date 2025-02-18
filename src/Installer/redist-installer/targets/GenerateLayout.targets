@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
-    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\internal\</SdkInternalLayoutPath>
+    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\i\</SdkInternalLayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
 
@@ -19,7 +19,7 @@
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
 
-  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetBuildDefaults">
+  <Target Name="SetupBundledComponents">
     <PropertyGroup>
       <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
 
@@ -32,24 +32,17 @@
       <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
       <PublicBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'">$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))</PublicBaseURL>
 
-      <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
-      <NetRuntimeRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd' or '$(OSName)' == 'illumos' or '$(OSName)' == 'solaris') and '$(DotNetBuildSourceOnly)' != 'true' ">$(OSName)-$(Architecture)</NetRuntimeRid>
-      <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
-
       <!-- only the runtime OSX .pkgs have a `-internal` suffix -->
       <InstallerStartSuffix Condition="$([MSBuild]::IsOSPlatform('OSX'))">-internal</InstallerStartSuffix>
 
       <!-- Downloaded Installers + Archives -->
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
+      <InstallerTargetArchitecture>$(Architecture)</InstallerTargetArchitecture>
+      <InstallerTargetArchitecture Condition=" '$(IsRPMBasedDistro)' == 'true' and '$(Architecture)' == 'Arm64' ">aarch64</InstallerTargetArchitecture>
+
       <SharedFrameworkInstallerFileRid>$(NetRuntimeRid)</SharedFrameworkInstallerFileRid>
       <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
-
-      <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
-      <RuntimeDepsInstallerFileRid>$(NetRuntimeRid)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(Architecture)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(IsRPMBasedDistro)' == 'true' And '$(UsePortableLinuxSharedFramework)' != 'true' ">$(OSName)-$(InstallerTargetArchitecture)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(NetRuntimeRid)' == 'rhel.7-x64' And '$(Architecture)' == 'Arm64' And '$(UsePortableLinuxSharedFramework)' == 'true' ">rhel.7-aarch64</RuntimeDepsInstallerFileRid>
 
       <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
       <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
@@ -57,7 +50,6 @@
       <DownloadedHostFxrInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' != 'true' ">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
       <DownloadedSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' and '$(PgoInstrument)' == 'true' ">dotnet-runtime$(InstallerStartSuffix)$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
-      <DownloadedRuntimeDepsInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-runtime-deps-$(SharedHostVersion)-$(RuntimeDepsInstallerFileRid)$(InstallerExtension)</DownloadedRuntimeDepsInstallerFileName>
       <DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName Condition=" '$(InstallerExtension)' != '' ">windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName>
       <DownloadedNetCoreAppTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-targeting-pack-$(MicrosoftNETCoreAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppTargetingPackInstallerFileName>
       <DownloadedNetCoreAppHostPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetCoreAppHostPackInstallerFileName>
@@ -72,16 +64,9 @@
       <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(SharedFrameworkInstallerFileRid)' == 'osx-arm64'">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-osx-x64$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
       <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
 
-      <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
-      <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
-      <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
-      <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' != 'true' ">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' == 'true' ">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
-
-      <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-      <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
 
       <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
       <AspNetCoreArchiveRid>$(AspNetCoreInstallerRid)</AspNetCoreArchiveRid>
@@ -114,16 +99,6 @@
 
       <NetRuntimeDownloadDirectory>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)</NetRuntimeDownloadDirectory>
       <CombinedSharedHostAndFrameworkArchive>$(NetRuntimeDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And !$(Architecture.StartsWith('arm'))">
-      <AlternateAppHostRid>win-$(AlternateArchitecture)</AlternateAppHostRid>
-      <Arm64AppHostRid>win-arm64</Arm64AppHostRid>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And '$(Architecture)' == 'arm64'">
-      <AlternateAppHostRid>win-x86</AlternateAppHostRid>
-      <x64AppHostRid>win-x64</x64AppHostRid>
     </PropertyGroup>
 
     <ItemGroup>
@@ -161,29 +136,6 @@
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
       </BundledLayoutPackage>
 
-      <!-- These apphost packages come from different verticals and require a join inside the VMR. Disable for now:
-           https://github.com/dotnet/source-build/issues/4114 -->
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Alternate" Condition="'$(AlternateAppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(AlternateAppHostRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Arm64" Condition="'$(Arm64AppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(Arm64AppHostRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_x64" Condition="'$(x64AppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(x64AppHostRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
       <BundledLayoutPackage Include="MicrosoftNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
         <PackageName>Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
         <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
@@ -208,12 +160,6 @@
       <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.DotNet.ILCompiler.$(MicrosoftNETCoreAppRuntimePackageVersion).nupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'" />
 
       <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.NET.ILLink.Tasks.$(MicrosoftNETILLinkTasksPackageVersion).nupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'" />
-
-      <BundledInstallerComponent Include="DownloadedRuntimeDepsInstallerFile"
-                                 Condition="('$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true') And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
-        <DownloadFileName>$(DownloadedRuntimeDepsInstallerFileName)</DownloadFileName>
-      </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedSharedFrameworkInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">

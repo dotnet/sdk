@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli;
 using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
@@ -47,6 +48,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
+    private bool _isHelp;
     private DateTimeOffset? _testExecutionStartTime;
 
     private DateTimeOffset? _testExecutionEndTime;
@@ -147,9 +149,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress = terminalWithProgress;
     }
 
-    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery)
+    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp)
     {
         _isDiscovery = isDiscovery;
+        _isHelp = isHelp;
         _testExecutionStartTime = testStartTime;
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
@@ -189,7 +192,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
 
-        _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+        if (!_isHelp)
+        {
+            _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+        }
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
@@ -281,7 +287,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
             {
                 terminal.Append(SingleIndentation);
                 AppendAssemblySummary(assemblyRun, terminal);
-                terminal.AppendLine();
             }
 
             terminal.AppendLine();
@@ -757,7 +762,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         _terminalWithProgress.RemoveWorker(assemblyRun.SlotIndex);
 
-        if (!_isDiscovery && _options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
+        if (!_isHelp && !_isDiscovery && _options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
             _terminalWithProgress.WriteToTerminal(terminal => AppendAssemblySummary(assemblyRun, terminal));
         }
@@ -796,6 +801,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
+        terminal.ResetColor();
         int failedTests = assemblyRun.FailedTests;
         int warnings = 0;
 
@@ -804,6 +810,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         AppendAssemblyResult(terminal, assemblyRun.Success, failedTests, warnings);
         terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
+        terminal.AppendLine();
     }
 
     /// <summary>
@@ -1029,5 +1036,60 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
+    }
+
+    internal void WriteHelpOptions(ConcurrentDictionary<string, CommandLineOption> commandLineOptionNameToModuleNames, Dictionary<bool, List<DotNet.Cli.CommandLineOption>> allOptions, Dictionary<bool, List<(string, string[])>> moduleToMissingOptions)
+    {
+        WriteOptionsToConsole(commandLineOptionNameToModuleNames, allOptions);
+        WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
+    }
+
+    private void WriteOptionsToConsole(ConcurrentDictionary<string, CommandLineOption> commandLineOptionNameToModuleNames, Dictionary<bool, List<CommandLineOption>> options)
+    {
+        int maxOptionNameLength = commandLineOptionNameToModuleNames.Keys.ToArray().Max(option => option.Length);
+
+        foreach (KeyValuePair<bool, List<CommandLineOption>> optionGroup in options)
+        {
+            WriteMessage(string.Empty);
+            WriteMessage(optionGroup.Key ? LocalizableStrings.HelpOptions : LocalizableStrings.HelpExtensionOptions);
+
+            foreach (CommandLineOption option in optionGroup.Value)
+            {
+                WriteMessage($"{new string(' ', 2)}--{option.Name}{new string(' ', maxOptionNameLength - option.Name.Length)} {option.Description}");
+            }
+        }
+    }
+
+    private void WriteModulesToMissingOptionsToConsole(Dictionary<bool, List<(string, string[])>> modulesWithMissingOptions)
+    {
+        var yellow = new SystemConsoleColor { ConsoleColor = ConsoleColor.Yellow };
+        foreach (KeyValuePair<bool, List<(string, string[])>> groupedModules in modulesWithMissingOptions)
+        {
+            WriteMessage(string.Empty);
+            WriteMessage(groupedModules.Key ? LocalizableStrings.HelpUnavailableOptions : LocalizableStrings.HelpUnavailableExtensionOptions, yellow);
+
+            foreach ((string module, string[] missingOptions) in groupedModules.Value)
+            {
+                if (module.Length == 0)
+                {
+                    continue;
+                }
+
+                StringBuilder line = new();
+                for (int i = 0; i < missingOptions.Length; i++)
+                {
+                    if (i == missingOptions.Length - 1)
+                        line.Append($"--{missingOptions[i]}");
+                    else
+                        line.Append($"--{missingOptions[i]}\n");
+                }
+
+                string format = missingOptions.Length == 1
+                    ? LocalizableStrings.HelpModuleIsMissingTheOptionBelow
+                    : LocalizableStrings.HelpModuleIsMissingTheOptionsBelow;
+                var missing = string.Format(format, module);
+                WriteMessage($"{missing}\n{line}\n");
+            }
+        }
     }
 }

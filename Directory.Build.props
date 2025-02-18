@@ -15,9 +15,40 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
-  <PropertyGroup Condition="'$(PgoInstrument)' == 'true'">
-    <SkipBuildingInstallers>true</SkipBuildingInstallers>
-    <PgoTerm>-pgo</PgoTerm>
+  <PropertyGroup>
+    <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$(__DistroRid)</HostRid>
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</HostRid>
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</HostRid>
+
+    <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
+
+    <IsDebianBaseDistro Condition="$(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian'))">true</IsDebianBaseDistro>
+    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('rhel'))">true</IsRPMBasedDistro>
+    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ArchiveExtension>.tar.gz</ArchiveExtension>
+    <ArchiveExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.zip</ArchiveExtension>
+
+    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.msi</InstallerExtension>
+    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.pkg</InstallerExtension>
+    <InstallerExtension Condition="'$(IsDebianBaseDistro)' == 'true'">.deb</InstallerExtension>
+    <InstallerExtension Condition="'$(IsRPMBasedDistro)' == 'true'">.rpm</InstallerExtension>
+
+    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.exe</BundleExtension>
+    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(InstallerExtension)</BundleExtension>
+    <BundleExtension Condition="'$(IsDebianBaseDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
+    <BundleExtension Condition="'$(IsRPMBasedDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
+
+    <ExeExtension>.exe</ExeExtension>
+    <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
   </PropertyGroup>
 
   <PropertyGroup>

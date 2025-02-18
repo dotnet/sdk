@@ -239,9 +239,15 @@
         linux-musl-loongarch64;
         " />
 
+      <Net100RuntimePackRids Include="
+        @(Net90RuntimePackRids);
+        android-arm64;
+        android-x64;
+        " />
+
       <NetCoreAppHostRids Include="@(Net90AppHostRids)" />
 
-      <NetCoreRuntimePackRids Include="@(Net90RuntimePackRids)" />
+      <NetCoreRuntimePackRids Include="@(Net100RuntimePackRids)" />
 
       <!--
         In source-only builds, we build the current RID from source, which may be
@@ -660,7 +666,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="net9.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
-                              DefaultRuntimeFrameworkVersion="$(_NET90RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="9.0.0"
                               LatestRuntimeFrameworkVersion="$(_NET90RuntimePackVersion)"
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(_NET90TargetingPackVersion)"
@@ -719,7 +725,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net9.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop90RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="9.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop90RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop90TargetingPackVersion)"
@@ -731,7 +737,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
                               TargetFramework="net9.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop90RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="9.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop90RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop90TargetingPackVersion)"
@@ -744,7 +750,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
                               TargetFramework="net9.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop90RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="9.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop90RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop90TargetingPackVersion)"
@@ -757,7 +763,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
                               TargetFramework="net9.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
-                              DefaultRuntimeFrameworkVersion="$(_AspNet90RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="9.0.0"
                               LatestRuntimeFrameworkVersion="$(_AspNet90RuntimePackVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(_AspNet90TargetingPackVersion)"

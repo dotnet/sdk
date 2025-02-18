@@ -8,6 +8,7 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -122,13 +123,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             var projectFiles = new List<string>();
             if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
             {
-                slnFiles = Directory.GetFiles(currentDirectory, "*.sln").ToList();
+                slnFiles = SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false).ToList();
                 projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
             }
             else
             {
                 slnFiles = slnOrProjectArgument
-                    .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase))
+                    .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
                     .Select(Path.GetFullPath).ToList();
                 projectFiles = slnOrProjectArgument
                     .Where(s => Path.GetExtension(s).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
@@ -137,12 +138,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
 
             foreach (string file in slnFiles)
             {
-                var solutionFile = SolutionFile.Parse(file);
-                var projects = solutionFile.ProjectsInOrder.Where(p => p.ProjectType != SolutionProjectType.SolutionFolder);
-                foreach (var p in projects)
-                {
-                    projectFiles.Add(p.AbsolutePath);
-                }
+                var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(file);
+                projectFiles.AddRange(solutionFile.SolutionProjects.Select(p => p.FilePath));
             }
 
             if (projectFiles.Count == 0)

@@ -44,6 +44,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsConfigurationIniVersion)" />
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="$(MicrosoftIORedistPackageVersion)" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
@@ -94,8 +95,6 @@
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
-    <PackageVersion Include="System.CommandLine.Rendering" Version="$(SystemCommandLineRenderingVersion)" />
-    <PackageVersion Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageVersion Include="System.Composition.AttributedModel" Version="$(SystemCompositionAttributedModelPackageVersion)" />
     <PackageVersion Include="System.Composition.Convention" Version="$(SystemCompositionConventionPackageVersion)" />
     <PackageVersion Include="System.Composition.Hosting" Version="$(SystemCompositionHostingPackageVersion)" />
@@ -104,14 +103,11 @@
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
     <PackageVersion Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" />
     <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashingPackageVersion)" />
-    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <!-- System.Reflection.Metadata and System.Collections.Immutable cannot be pinned here because of hard dependencies within Roslyn on specific versions that have to work both here and in VS -->
     <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="$(SystemReflectionMetadataLoadContextVersion)" />
     <PackageVersion Include="System.Resources.Extensions" Version="$(SystemResourcesExtensionsPackageVersion)" />
-    <PackageVersion Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="$(SystemSecurityCryptographyProtectedDataPackageVersion)" />
-    <PackageVersion Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <PackageVersion Include="System.Security.Permissions" Version="$(SystemSecurityPermissionsPackageVersion)" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerVersion)" />

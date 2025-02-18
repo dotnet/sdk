@@ -37,6 +37,36 @@
         <target state="translated">La specifica di entrambe le opzioni `-r|--runtime` e `-os` non è supportata.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">Imposta il valore di una variabile di ambiente. 
+Crea la variabile se non esiste e la sostituisce se esiste. 
+In questo modo forza l'esecuzione dei test in un processo isolato. 
+È possibile specificare più volte questo argomento per fornire più variabili.
+
+Esempi:
+-e VARIABLE=abc
+-e VARIABLE="valore con spazi"
+-e VARIABLE="valore;delimitato da;punti e virgola"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="translated">NAME="VALORE"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Consente al comando di arrestare l'esecuzione e attendere l'input o l'azione dell'utente, ad esempio per completare l'autenticazione.</target>
@@ -130,6 +160,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Pubblicare l'applicazione come applicazione dipendente dal framework. Per eseguire l'applicazione, è necessario installare un runtime .NET compatibile nel computer di destinazione.</target>
         <note />
       </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="translated">Variabili di ambiente in formato non corretto: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
         <source>.NET Cli Options:</source>
         <target state="translated">Opzioni dell'interfaccia della riga di comando di .NET:</target>
@@ -221,6 +256,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">Pubblicare il runtime .NET con l'applicazione in modo che non sia necessario installare il runtime nel computer di destinazione.
 Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o una versione inferiore, il valore predefinito è 'true' se viene specificato un identificatore di runtime.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="translated">Cercare le versioni del carico di lavoro disponibili o il contenuto di una versione del carico di lavoro. Per altre informazioni, usare 'dotnet workload search version --help'.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
       </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
