@@ -55,7 +55,7 @@ namespace CompatTests {{
                 CreateType(" abstract class", " public abstract void F();"),
                 CreateType(" abstract class", " public virtual void F() {}"),
                 false,
-                new CompatDifference[] { }
+                CreateDifferences()
             };
             // properties
             yield return new object[] {
@@ -138,6 +138,13 @@ namespace CompatTests {{
                 CreateType(" class", " public virtual void F() {}"),
                 true,
                 CreateDifferences((DifferenceType.Added,"M:CompatTests.First.F" )),
+            };
+            // remove abstract from member
+            yield return new object[] {
+                CreateType(" abstract class", " public abstract void F();"),
+                CreateType(" abstract class", " public void F() {}"),
+                true,
+                CreateDifferences((DifferenceType.Removed, "M:CompatTests.First.F")),
             };
             // abstract -> virtual
             yield return new object[] {
