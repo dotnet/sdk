@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    internal class TestingPlatformTrace
+    internal static class TestingPlatformTrace
     {
         public static bool TraceEnabled { get; private set; }
         private static readonly string _traceFilePath;
