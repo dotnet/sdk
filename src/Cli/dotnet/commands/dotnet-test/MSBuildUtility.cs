@@ -69,6 +69,7 @@ namespace Microsoft.DotNet.Cli
                 buildProperties,
                 parseResult.GetValue(CommonOptions.NoRestoreOption),
                 parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
+                parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
                 degreeOfParallelism,
                 unmatchedTokens,
                 msbuildArgs);
@@ -109,6 +110,11 @@ namespace Microsoft.DotNet.Cli
         private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
         {
             List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
+
+            if (buildOptions.Verbosity is null)
+            {
+                msbuildArgs.Add($"-verbosity:quiet");
+            }
 
             msbuildArgs.Add(filePath);
             msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
