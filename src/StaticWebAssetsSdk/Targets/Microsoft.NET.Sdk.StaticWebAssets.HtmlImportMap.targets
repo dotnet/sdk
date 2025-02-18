@@ -30,6 +30,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(ResolveCompressedFilesDependsOn);
       ResolveHtmlImportMapBuildStaticWebAssets
     </ResolveCompressedFilesDependsOn>
+    <ResolveBuildServiceWorkerStaticWebAssetsDependsOn>
+      $(ResolveBuildServiceWorkerStaticWebAssetsDependsOn);
+      ResolveHtmlImportMapBuildStaticWebAssets
+    </ResolveBuildServiceWorkerStaticWebAssetsDependsOn>
     <ResolveHtmlImportMapBuildStaticWebAssetsDependsOn>
       GenerateHtmlImportMapBuildStaticWebAssets;
       $(ResolveHtmlImportMapBuildStaticWebAssetsDependsOn)
@@ -53,6 +57,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(ResolvePublishCompressedStaticWebAssetsDependsOn);
       ResolveHtmlImportMapPublishStaticWebAssets
     </ResolvePublishCompressedStaticWebAssetsDependsOn>
+    <ResolvePublishServiceWorkerStaticWebAssetsDependsOn>
+      $(ResolvePublishServiceWorkerStaticWebAssetsDependsOn);
+      ResolveHtmlImportMapPublishStaticWebAssets
+    </ResolvePublishServiceWorkerStaticWebAssetsDependsOn>
     <ResolveHtmlImportMapPublishStaticWebAssetsDependsOn>
       GenerateHtmlImportMapPublishStaticWebAssets;
       $(ResolveHtmlImportMapPublishStaticWebAssetsDependsOn)
