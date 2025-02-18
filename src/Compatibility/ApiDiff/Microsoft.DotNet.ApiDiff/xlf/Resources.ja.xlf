@@ -7,9 +7,49 @@
         <target state="new">Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CouldNotGetDocIdForNode">
+        <source>Could not get the DocID for node: {0}</source>
+        <target state="new">Could not get the DocID for node: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NullAfterAssembliesDirectory">
+        <source>Null after assemblies directory.</source>
+        <target state="new">Null after assemblies directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NullBeforeAssembliesDirectory">
+        <source>Null before assemblies directory.</source>
+        <target state="new">Null before assemblies directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NullOutputDirectory">
+        <source>Null output directory.</source>
+        <target state="new">Null output directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NullTableOfContentsTitle">
+        <source>Null table of contents title.</source>
+        <target state="new">Null table of contents title.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ResolveTypeForwardFailed">
         <source>Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</source>
         <target state="new">Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedChangeTypeForNode">
+        <source>Unexpected change type for node {0}: {1}</source>
+        <target state="new">Unexpected change type for node {0}: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedNodeType">
+        <source>Unexpected node type.</source>
+        <target state="new">Unexpected node type.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnsupportedNodeForRemovingAttributes">
+        <source>Unsupported node for removing attributes.</source>
+        <target state="new">Unsupported node for removing attributes.</target>
         <note />
       </trans-unit>
     </body>

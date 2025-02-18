@@ -68,7 +68,8 @@ public abstract class DiffBaseTests
             {
                 Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
                 string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
-                Assert.True(fullExpectedCode.Equals(actualCode), $"\nExpected:\n{fullExpectedCode}\nActual:\n{actualCode}");
+                Assert.Equal(fullExpectedCode, actualCode, ignoreLineEndingDifferences: true);
+                Assert.True(fullExpectedCode.Equals(actualCode), $"\nExpected:\n[{fullExpectedCode}]\nActual:\n[{actualCode}]");
             }
         }
     }
