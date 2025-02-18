@@ -46,6 +46,8 @@ namespace Microsoft.DotNet.Cli
         public const string DLLExtension = ".dll";
 
         public const string MTPTarget = "_MTPBuild";
+
+        public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
     }
 
     internal static class TestStates
