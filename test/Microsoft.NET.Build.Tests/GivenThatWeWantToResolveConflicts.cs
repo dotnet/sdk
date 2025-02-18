@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -347,7 +348,6 @@ namespace Microsoft.NET.Build.Tests
                     testProject.FrameworkReferences.Add(frameworkReference);
                 }
 
-
                 var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: nameof(PrunePackageDataSucceeds), identifier: targetFramework + frameworkReference);
 
                 var buildCommand = new BuildCommand(testAsset);
@@ -357,6 +357,11 @@ namespace Microsoft.NET.Build.Tests
                 buildCommand.Execute("/t:CollectPrunePackageReferences", "-getItem:PrunePackageReference", $"-getResultOutputFile:{prunePackageItemFile}").Should().Pass();
 
                 var prunedPackages = ParsePrunePackageReferenceJson(File.ReadAllText(prunePackageItemFile));
+
+                foreach (var kvp in prunedPackages)
+                {
+                    NuGetVersion.Parse(kvp.Value).Patch.Should().BeGreaterThan(99, $"Patch for {kvp.Key} should be at least 100");
+                }
 
                 return prunedPackages;
             }
