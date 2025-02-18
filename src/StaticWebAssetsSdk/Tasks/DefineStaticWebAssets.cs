@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var tokensByPattern = fingerprintPatterns.Where(p => !string.IsNullOrEmpty(p.Expression)).ToDictionary(p => p.Pattern.Substring(1), p => p.Expression);
                 Array.Sort(fingerprintPatterns, (a, b) => a.Pattern.Count(c => c == '.').CompareTo(b.Pattern.Count(c => c == '.')));
 
-                foreach(var kvp in assetsCache.RemainingInputs())
+                foreach (var kvp in assetsCache.RemainingInputs())
                 {
                     var hash = kvp.Key;
                     var candidate = kvp.Value;
@@ -260,21 +260,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var outputs = assetsCache.ComputeOutputs();
                 var results = outputs.Assets;
 
-                for (int i = 0; i < results.Count; i++)
+                if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
-                    var item = results[i];
-                    if (SourceType == StaticWebAsset.SourceTypes.Discovered)
+                    for (int i = 0; i < results.Count; i++)
                     {
-                        item.SetMetadata(
-                            nameof(StaticWebAsset.AssetKind),
-                                !string.Equals(item.GetMetadata(
-                                    nameof(CopyToPublishDirectory)),
-                                    StaticWebAsset.AssetCopyOptions.Never,
-                                    StringComparison.Ordinal) ?
-                            StaticWebAsset.AssetKinds.Build :
-                            StaticWebAsset.AssetKinds.All);
+                        var item = results[i];
+                        var assetKind = !ShouldCopyToPublishDirectory(item) ? StaticWebAsset.AssetKinds.Build : StaticWebAsset.AssetKinds.All;
+                        item.SetMetadata(nameof(StaticWebAsset.AssetKind), assetKind);
 
-                        UpdateAssetKindIfNecessary(assetsByRelativePath, item.GetMetadata(nameof(StaticWebAsset.RelativePath)), item);
+                        var relativePath = item.GetMetadata(nameof(StaticWebAsset.RelativePath));
+                        UpdateAssetKindIfNecessary(assetsByRelativePath, relativePath, item);
                     }
                 }
 
@@ -289,6 +284,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
 
             return !Log.HasLoggedErrors;
+        }
+
+        private bool ShouldCopyToPublishDirectory(ITaskItem item)
+        {
+            var copyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory));
+            return !string.Equals(copyToPublishDirectory, StaticWebAsset.AssetCopyOptions.Never, StringComparison.Ordinal);
         }
 
         private string AppendFingerprintPattern(

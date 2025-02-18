@@ -54,7 +54,7 @@ internal static class HashingUtils
         for (var i = 0; i < candidateAssets.Length; i++)
         {
             var candidate = candidateAssets[i];
-            hashSet.Add(Convert.ToBase64String(ComputeHash(memoryStream, candidateAssets.AsSpan(1), properties: metadata)), candidate);
+            hashSet.Add(Convert.ToBase64String(ComputeHash(memoryStream, candidateAssets.AsSpan(i, 1), properties: metadata)), candidate);
         }
 
         return hashSet;
