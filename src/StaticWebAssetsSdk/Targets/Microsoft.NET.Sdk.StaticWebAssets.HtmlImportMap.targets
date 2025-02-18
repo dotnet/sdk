@@ -126,9 +126,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     >
       <Output TaskParameter="Endpoints" ItemName="_UpdatedHtmlStaticWebAssetsEndpoint" />
     </DefineStaticWebAssetEndpoints>
+    <FilterStaticWebAssetEndpoints Condition="'@(_HtmlFilesToRemove)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_HtmlFilesToRemove)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_HtmlFileEndpointsToRemove" />
+    </FilterStaticWebAssetEndpoints>
     <ItemGroup>
       <StaticWebAsset Remove="@(_HtmlFilesToRemove)" />
       <StaticWebAsset Include="@(_UpdatedHtmlStaticWebAssets)" />
+      <StaticWebAssetEndpoint Remove="@(_HtmlFileEndpointsToRemove)" />
       <StaticWebAssetEndpoint Include="@(_UpdatedHtmlStaticWebAssetsEndpoint)" />
     </ItemGroup>
   </Target>
@@ -186,9 +194,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     >
       <Output TaskParameter="Endpoints" ItemName="_UpdatedHtmlPublishStaticWebAssetsEndpoint" />
     </DefineStaticWebAssetEndpoints>
+    <FilterStaticWebAssetEndpoints Condition="'@(_HtmlPublishFilesToRemove)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_HtmlPublishFilesToRemove)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_HtmlPublishFileEndpointsToRemove" />
+    </FilterStaticWebAssetEndpoints>
     <ItemGroup>
       <StaticWebAsset Remove="@(_HtmlPublishFilesToRemove)" />
       <StaticWebAsset Include="@(_UpdatedHtmlPublishStaticWebAssets)" />
+      <StaticWebAssetEndpoint Remove="@(_HtmlPublishFileEndpointsToRemove)" />
       <StaticWebAssetEndpoint Include="@(_UpdatedHtmlPublishStaticWebAssetsEndpoint)" />
     </ItemGroup>
   </Target>
