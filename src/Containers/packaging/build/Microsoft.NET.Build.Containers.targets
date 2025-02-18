@@ -257,7 +257,6 @@
                     BaseImageTag="$(ContainerBaseTag)"
                     ImageFormat="$(ContainerImageFormat)"
                     BaseImageDigest="$(ContainerBaseDigest)"
-                    ImageFormat="$(ContainerImageFormat)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
