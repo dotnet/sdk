@@ -16,10 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageDownload Include="@(BundledDotnetTool)" Version="[%(BundledDotnetTool.Version)]" />
+    <PackageDownload Include="%(BundledDotnetTool.Identity)" Version="[%(BundledDotnetTool.Version)]" />
   </ItemGroup>
 
-  <Target Name="LayoutBundledTools" DependsOnTargets="SetupBundledComponents">
+  <Target Name="LayoutBundledTools">
     <ItemGroup>
       <BundledToolFiles Include="%(BundledDotnetTool.RestoredPackagePath)\**\*.*" PackageToRestore="%(BundledDotnetTool.Identity)" PackageVersionToRestore="%(BundledDotnetTool.Version)" />
       <BundledToolFiles Remove="%(BundledDotnetTool.RestoredPackagePath)\*.*" />
