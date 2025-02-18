@@ -1,12 +1,6 @@
 <Project TreatAsLocalProperty="PublicBaseURL">
 
   <PropertyGroup>
-    <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
-    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\i\</SdkInternalLayoutPath>
-    <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
     <!-- In unified build, the layout does match, so use the runtime package versions rather than the VS redist versions -->
     <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreBlobVersion>
@@ -21,8 +15,6 @@
 
   <Target Name="SetupBundledComponents">
     <PropertyGroup>
-      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
-
       <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
       <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
 
