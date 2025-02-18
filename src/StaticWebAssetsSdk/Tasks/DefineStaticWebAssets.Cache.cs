@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -70,7 +72,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 nameof(StaticWebAsset.CopyToPublishDirectory),
                 nameof(StaticWebAsset.OriginalItemSpec));
 
-            var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, ManifestPath);
+            var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, CacheManifestPath);
             assetsCache.PrepareForProcessing(propertiesHash, fingerprintPatternsHash, propertyOverridesHash, inputHashes);
 
             return assetsCache;
@@ -87,7 +89,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
             public DefineStaticWebAssetsCache() { }
 
-            internal DefineStaticWebAssetsCache(TaskLoggingHelper log) : this() => _log = log;
+            internal DefineStaticWebAssetsCache(TaskLoggingHelper log, string manifestPath) : this()
+            {
+                _log = log;
+                _manifestPath = manifestPath;
+            }
 
             // Inputs for the cache
             public byte[] GlobalPropertiesHash { get; set; } = [];
@@ -96,8 +102,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             public HashSet<string> InputHashes { get; set; } = [];
 
             // Outputs for the cache
+            [JsonConverter(typeof(TaskItemDictionaryConverter))]
             public Dictionary<string, ITaskItem> CachedAssets { get; set; } = [];
 
+            [JsonConverter(typeof(TaskItemDictionaryConverter))]
             public Dictionary<string, ITaskItem> CachedCopyCandidates { get; set; } = [];
 
             internal static DefineStaticWebAssetsCache ReadOrCreateCache(TaskLoggingHelper log, string manifestPath)
@@ -111,7 +119,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 }
                 else
                 {
-                    return new DefineStaticWebAssetsCache(log);
+                    return new DefineStaticWebAssetsCache(log, manifestPath);
                 }
             }
 
@@ -131,11 +139,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 }
             }
 
-            public DefineStaticWebAssetsOutputs ComputeOutputs() => new()
-            {
-                CopyCandidates = _copyCandidates,
-                Assets = _assets
-            };
+            public (IList<ITaskItem> CopyCandidates, IList<ITaskItem> Assets) ComputeOutputs() => (_copyCandidates, _assets);
 
             internal void AppendAsset(string hash, ITaskItem taskItem)
             {
@@ -191,8 +195,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     if (!oldHashes.Contains(hash))
                     {
                         remainingCandidates.Add(hash, candidate);
-                    }    
-                    else if(CachedAssets.TryGetValue(hash, out var asset))
+                    }
+                    else if (CachedAssets.TryGetValue(hash, out var asset))
                     {
                         _log.LogMessage(MessageImportance.Low, "Asset {0} is up to date", candidate.ItemSpec);
                         _assets.Add(asset);
@@ -235,11 +239,101 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 }
             }
         }
-    }
 
-    internal class DefineStaticWebAssetsOutputs
-    {
-        public List<ITaskItem> Assets { get; set; }
-        public List<ITaskItem> CopyCandidates { get; set; }
+        [JsonSerializable(typeof(DefineStaticWebAssetsCache), GenerationMode = JsonSourceGenerationMode.Serialization)]
+        internal partial class DefineStaticWebAssetsSerializerContext : JsonSerializerContext
+        {
+        }
+
+        internal class TaskItemDictionaryConverter : JsonConverter<Dictionary<string, ITaskItem>>
+        {
+            public override Dictionary<string, ITaskItem> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                // We need to read an ojbect where all the properties are entries to a dictionary. Each entry is a TaskItem where
+                // the ItemSpec is the "Identity" property and the rest of the properties are metadata.
+                Dictionary<string, ITaskItem> result = [];
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        break;
+                    }
+                    if (reader.TokenType != JsonTokenType.PropertyName)
+                    {
+                        throw new JsonException();
+                    }
+                    var key = reader.GetString();
+                    ReadTaskItem(ref reader, result, key);
+                }
+
+                return result;
+            }
+
+            private void ReadTaskItem(ref Utf8JsonReader reader, Dictionary<string, ITaskItem> result, string key)
+            {
+                // Read the TaskItem as a dictionary with the "Identity" property as the ItemSpec
+                reader.Read();
+                if (reader.TokenType != JsonTokenType.StartObject)
+                {
+                    throw new JsonException();
+                }
+                var itemSpec = "";
+                var metadata = new Dictionary<string, string>();
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonTokenType.EndObject)
+                    {
+                        break;
+                    }
+                    if (reader.TokenType != JsonTokenType.PropertyName)
+                    {
+                        throw new JsonException();
+                    }
+                    var propertyName = reader.GetString();
+                    reader.Read();
+                    if (propertyName == "Identity")
+                    {
+                        itemSpec = reader.GetString();
+                    }
+                    else
+                    {
+                        metadata[propertyName] = reader.GetString();
+                    }
+                }
+                var taskItem = new TaskItem(itemSpec, metadata);
+                result[key] = taskItem;
+            }
+
+            public override void Write(Utf8JsonWriter writer, Dictionary<string, ITaskItem> value, JsonSerializerOptions options)
+            {
+
+                writer.WriteStartObject();
+                foreach (var kvp in value)
+                {
+                    writer.WritePropertyName(kvp.Key);
+                    WriteTaskItem(writer, kvp.Value);
+                }
+                writer.WriteEndObject();
+            }
+
+            private void WriteTaskItem(Utf8JsonWriter writer, ITaskItem taskItem)
+            {
+                writer.WriteStartObject();
+                writer.WritePropertyName("Identity");
+                writer.WriteStringValue(taskItem.ItemSpec);
+                foreach (var metadata in taskItem.CloneCustomMetadata())
+                {
+                    if (metadata is DictionaryEntry kvp)
+                    {
+                        var key = (string)kvp.Key;
+                        var value = (string)kvp.Value;
+                        writer.WritePropertyName(key);
+                        writer.WriteStringValue(value);
+                    }
+                }
+                writer.WriteEndObject();
+            }
+        }
     }
 }

@@ -36,7 +36,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -175,7 +175,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 [
                     CreateCandidate(Path.Combine("wwwroot", fileName))
                 ],
-                FingerprintPatterns = [new TaskItem("JsModule",new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js", ["Expression"] = expression })],
+                FingerprintPatterns = [new TaskItem("JsModule", new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js", ["Expression"] = expression })],
                 FingerprintCandidates = true,
                 RelativePathPattern = "wwwroot\\**",
                 SourceType = "Discovered",
@@ -234,7 +234,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -280,7 +280,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -326,7 +326,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -479,7 +479,7 @@ for path 'candidate.js'");
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -530,7 +530,7 @@ for path 'candidate.js'");
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -658,6 +658,57 @@ for path 'candidate.js'");
             Assert.Equal(2, ouput.Assets.Count);
             Assert.Equal("input2", ouput.Assets[0].ItemSpec);
             Assert.Equal("input1", ouput.Assets[1].ItemSpec);
+        }
+
+        [Fact]
+        public void DefineStaticWebAssetsCache_CanRoundtripManifest()
+        {
+            var manifestPath = Path.Combine(Environment.CurrentDirectory, "CanRoundtripManifest.json");
+            if (File.Exists(manifestPath))
+            {
+                File.Delete(manifestPath);
+            }
+            try
+            {
+                var errorMessages = new List<string>();
+                var buildEngine = new Mock<IBuildEngine>();
+                buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                    .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+                var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+
+
+                var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, manifestPath);
+                cache.InputHashes = ["input2"];
+                var cachedAsset = CreateCandidate(Path.Combine(Environment.CurrentDirectory, "Input1.txt"), "Input1.txt");
+                cache.CachedAssets = new Dictionary<string, ITaskItem>
+                {
+                    ["input2"] = cachedAsset,
+                };
+
+                var newAsset = CreateCandidate(Path.Combine(Environment.CurrentDirectory, "Input2.txt"), "Input2.txt");
+                var inputHashes = new Dictionary<string, ITaskItem>
+                {
+                    ["input1"] = newAsset,
+                    ["input2"] = cachedAsset
+                };
+
+                cache.PrepareForProcessing([], [], [], inputHashes);
+                cache.AppendAsset("input1", newAsset);
+
+                cache.WriteCacheManifest();
+
+                var otherManifest = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, manifestPath);
+                Assert.Equal(cache.InputHashes, otherManifest.InputHashes);
+                Assert.Equal(cache.CachedAssets.Count, otherManifest.CachedAssets.Count);
+                Assert.Equal(cache.CachedAssets["input2"].ItemSpec, otherManifest.CachedAssets["input2"].ItemSpec);
+                Assert.Equal(cache.CachedAssets["input2"].GetMetadata("RelativePath"), otherManifest.CachedAssets["input2"].GetMetadata("RelativePath"));
+                Assert.Equal(cache.CachedAssets["input1"].ItemSpec, otherManifest.CachedAssets["input1"].ItemSpec);
+                Assert.Equal(cache.CachedAssets["input1"].GetMetadata("RelativePath"), otherManifest.CachedAssets["input1"].GetMetadata("RelativePath"));
+            }
+            finally
+            {
+                File.Delete(manifestPath);
+            }
         }
 
         public enum UpdatedHash

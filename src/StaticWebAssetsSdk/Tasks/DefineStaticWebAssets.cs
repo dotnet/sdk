@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
 
-        public string ManifestPath { get; set; }
+        public string CacheManifestPath { get; set; }
 
         [Output]
         public ITaskItem[] Assets { get; set; }
