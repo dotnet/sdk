@@ -52,15 +52,24 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     private static readonly string s_noTopLevelStatements =
         "Cannot run a file without top-level statements and without a project:";
 
+    private static bool HasCaseInsensitiveFileSystem
+    {
+        get
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+        }
+    }
+
     /// <summary>
     /// <c>dotnet run file.cs</c> succeeds without a project file.
     /// </summary>
     [Theory]
-    [InlineData(null)] // will be replaced with an absolute path
-    [InlineData("Program.cs")]
-    [InlineData("./Program.cs")]
-    [InlineData("Program.CS")]
-    public void FilePath(string? path)
+    [InlineData(null, false)] // will be replaced with an absolute path
+    [InlineData("Program.cs", false)]
+    [InlineData("./Program.cs", false)]
+    [InlineData("Program.CS", true)]
+    public void FilePath(string? path, bool differentCasing)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
@@ -70,11 +79,20 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         path ??= programPath;
 
-        new DotnetCommand(Log, "run", path)
+        var result = new DotnetCommand(Log, "run", path)
             .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello from Program");
+            .Execute();
+
+        if (!differentCasing || HasCaseInsensitiveFileSystem)
+        {
+            result.Should().Pass()
+                .And.HaveStdOut("Hello from Program");
+        }
+        else
+        {
+            result.Should().Fail()
+                .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+        }
     }
 
     /// <summary>
@@ -85,11 +103,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-        new DotnetCommand(Log, "run", "program.cs")
+
+        var result = new DotnetCommand(Log, "run", "program.cs")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello from program");
+            .Execute();
+
+        if (HasCaseInsensitiveFileSystem)
+        {
+            result.Should().Pass()
+                .And.HaveStdOut("Hello from program");
+        }
+        else
+        {
+            result.Should().Fail()
+                .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+        }
     }
 
     /// <summary>
