@@ -489,8 +489,4 @@
     <value>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</value>
     <comment>{StrBegins="CONTAINER2031: "}</comment>
   </data>
-  <data name="InvalidContainerImageFormat" xml:space="preserve">
-    <value>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</value>
-    <comment>{StrBegins="CONTAINER2031: "}</comment>
-  </data>
 </root>
