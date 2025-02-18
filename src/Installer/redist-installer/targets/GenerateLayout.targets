@@ -32,10 +32,6 @@
       <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
       <PublicBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'">$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))</PublicBaseURL>
 
-      <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
-      <NetRuntimeRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd' or '$(OSName)' == 'illumos' or '$(OSName)' == 'solaris') and '$(DotNetBuildSourceOnly)' != 'true' ">$(OSName)-$(Architecture)</NetRuntimeRid>
-      <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
-
       <!-- only the runtime OSX .pkgs have a `-internal` suffix -->
       <InstallerStartSuffix Condition="$([MSBuild]::IsOSPlatform('OSX'))">-internal</InstallerStartSuffix>
 
@@ -68,16 +64,9 @@
       <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(SharedFrameworkInstallerFileRid)' == 'osx-arm64'">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-osx-x64$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
       <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
 
-      <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
-      <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
-      <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
-      <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' != 'true' ">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' == 'true' ">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
-
-      <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-      <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
 
       <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
       <AspNetCoreArchiveRid>$(AspNetCoreInstallerRid)</AspNetCoreArchiveRid>
