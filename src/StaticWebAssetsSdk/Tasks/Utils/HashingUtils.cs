@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
@@ -14,8 +9,7 @@ internal static class HashingUtils
 {
     public static byte[] ComputeHash(MemoryStream memoryStream, params string[] values)
     {
-        memoryStream.SetLength(0);
-        using var writer = new StreamWriter(memoryStream, Encoding.UTF8, -1, leaveOpen: true);
+        using var writer = CreateWriter(memoryStream);
         using var sha256 = SHA256.Create();
         for (var i = 0; i < values.Length; i++)
         {
@@ -28,8 +22,7 @@ internal static class HashingUtils
 
     public static byte[] ComputeHash(MemoryStream memoryStream, Span<ITaskItem> items, params string[] properties)
     {
-        memoryStream.SetLength(0);
-        using var writer = new StreamWriter(memoryStream, Encoding.UTF8, -1, leaveOpen: true);
+        using var writer = CreateWriter(memoryStream);
         using var sha256 = SHA256.Create();
         for (var i = 0; i < items.Length; i++)
         {
@@ -58,5 +51,15 @@ internal static class HashingUtils
         }
 
         return hashSet;
+    }
+
+    private static StreamWriter CreateWriter(MemoryStream memoryStream)
+    {
+        memoryStream.SetLength(0);
+#if NET9_0_OR_GREATER
+        return new(memoryStream, encoding: Encoding.UTF8, leaveOpen: true);
+#else
+        return new(memoryStream, Encoding.UTF8, 0, leaveOpen: true);
+#endif
     }
 }
