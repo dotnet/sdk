@@ -28,12 +28,12 @@ public class LinuxInstallerTests : IDisposable
 
     private readonly string[] RpmDistroImages =
     [
-        "mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-40"
+        "mcr.microsoft.com/dotnet/runtime-deps:9.0-azurelinux3.0"
     ];
 
     private readonly string[] DebDistroImages =
     [
-        "mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04"
+        "mcr.microsoft.com/dotnet/runtime-deps:9.0-bookworm-slim"
     ];
 
     private const string NetStandard21RpmPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.rpm";
@@ -327,20 +327,8 @@ public class LinuxInstallerTests : IDisposable
         string matchPattern = "dotnet-runtime-deps-*.deb";
         if (distroType == DistroType.Rpm)
         {
-            string depsId = "fedora";
-            if (baseImage.Contains("fedora"))
-            {
-                depsId = "fedora";
-            }
-            else if (baseImage.Contains("centos"))
-            {
-                depsId = "centos";
-            }
-            else if (baseImage.Contains("rhel"))
-            {
-                depsId = "rhel";
-            }
-            else if (baseImage.Contains("opensuse"))
+            string? depsId = null;
+            if (baseImage.Contains("opensuse"))
             {
                 depsId = "opensuse";
             }
