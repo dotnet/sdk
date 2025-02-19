@@ -26,6 +26,9 @@
     <BuildArgs>$(BuildArgs) /p:CrossArchitectureInstallerBasePath=$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
 
+    <!-- workaround https://github.com/dotnet/sdk/issues/46958 -->
+    <BuildArgs>$(BuildArgs) /p:BuildWithNetFrameworkHostedCompiler=false</BuildArgs>
+
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
     <!-- Tests are failing to build: https://github.com/dotnet/aspnetcore/issues/60095 -->
