@@ -31,12 +31,10 @@
     <DownloadedArm64NetCoreAppHostPackInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-apphost-pack-$(MicrosoftNETCoreAppHostPackageVersion)-$(SharedFrameworkInstallerFileRid)_arm64$(InstallerExtension)</DownloadedArm64NetCoreAppHostPackInstallerFileName>
     <DownloadedWindowsDesktopTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">windowsdesktop-targeting-pack-$(MicrosoftWindowsDesktopAppRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedWindowsDesktopTargetingPackInstallerFileName>
     <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
-
     <!-- osx-arm64 netstandard targeting pack pkg is unavailable. Use osx-x64.
           This should be OK, because the package is just a compressed file containing reference assemblies and
           runtime independent manifest text files. -->
     <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(SharedFrameworkInstallerFileRid)' == 'osx-arm64'">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-osx-x64$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
-    <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
 
     <CombinedFrameworkHostArchiveFileName Condition="'$(PgoInstrument)' != 'true'">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
     <CombinedFrameworkHostArchiveFileName Condition="'$(PgoInstrument)' == 'true'">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
@@ -75,7 +73,6 @@
     <ToolsetArchiveRootUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</ToolsetArchiveRootUrl>
 
     <CombinedSharedHostAndFrameworkArchive>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
-    <NETCoreAppHostPackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</NETCoreAppHostPackageName>
 
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(Architecture)' == 'arm'">false</IncludeWpfAndWinForms>
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT'">true</IncludeWpfAndWinForms>
@@ -87,49 +84,42 @@
     <BundledLayoutPackage Include="MicrosoftNetCoreAppTargetingPackNupkg">
       <PackageName>Microsoft.NETCore.App.Ref</PackageName>
       <PackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</PackageVersion>
-      <TargetFramework>$(TargetFramework)</TargetFramework>
       <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
     </BundledLayoutPackage>
 
     <BundledLayoutPackage Include="MicrosoftNetStandardTargetingPackNupkg">
       <PackageName>NETStandard.Library.Ref</PackageName>
       <PackageVersion>$(NETStandardLibraryRefPackageVersion)</PackageVersion>
-      <TargetFramework>$(NetStandardTargetingPackTargetFramework)</TargetFramework>
       <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
     </BundledLayoutPackage>
 
     <BundledLayoutPackage Include="MicrosoftAspNetCoreAppTargetingPackNupkg">
       <PackageName>Microsoft.AspNetCore.App.Ref</PackageName>
       <PackageVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</PackageVersion>
-      <TargetFramework>$(TargetFramework)</TargetFramework>
       <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
     </BundledLayoutPackage>
 
     <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
       <PackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</PackageName>
       <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-      <TargetFramework>$(TargetFramework)</TargetFramework>
       <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
     </BundledLayoutPackage>
 
     <BundledLayoutPackage Include="MicrosoftNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
       <PackageName>Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
       <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
-      <TargetFramework>$(TargetFramework)</TargetFramework>
       <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
     </BundledLayoutPackage>
 
     <BundledLayoutPackage Include="MicrosoftAspNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
       <PackageName>Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
       <PackageVersion>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</PackageVersion>
-      <TargetFramework>$(TargetFramework)</TargetFramework>
       <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
     </BundledLayoutPackage>
 
     <BundledLayoutPackage Include="MicrosoftDotNetILCompilerPackNupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'">
       <PackageName>runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler</PackageName>
       <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
-      <TargetFramework>$(TargetFramework)</TargetFramework>
       <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
     </BundledLayoutPackage>
 
@@ -137,7 +127,6 @@
                           Condition="'$(IncludeWpfAndWinForms)' != 'false'">
       <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
       <PackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</PackageVersion>
-      <TargetFramework>$(TargetFramework)</TargetFramework>
       <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
     </BundledLayoutPackage>
   </ItemGroup>
@@ -146,7 +135,6 @@
   <!-- Restore bundled packages -->
   <ItemGroup>
     <PackageDownload Include="@(BundledLayoutPackage->Metadata('PackageName'))" Version="[%(PackageVersion)]" />
-    <PackageDownload Include="$(NETCoreAppHostPackageName)" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
   </ItemGroup>
 
   <!-- BEGIN: Bundled layout components -->
@@ -456,6 +444,7 @@
 
   <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
     <PropertyGroup>
+    <NETCoreAppHostPackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</NETCoreAppHostPackageName>
       <AppHostRestorePath>$(NuGetPackageRoot)$(NETCoreAppHostPackageName.ToLowerInvariant())\$(MicrosoftNETCoreAppHostPackageVersion)\</AppHostRestorePath>
       <AppHostTemplatePath>$(SdkOutputDirectory)AppHostTemplate</AppHostTemplatePath>
       <AppHostExecutableName>AppHost$(ExeExtension)</AppHostExecutableName>
