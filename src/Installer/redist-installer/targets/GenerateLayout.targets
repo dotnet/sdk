@@ -41,9 +41,9 @@
     <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
     <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
+    <AspNetCoreArchiveRid>$(AspNetCoreInstallerRid)</AspNetCoreArchiveRid>
     <AspNetCoreInstallerRid Condition="('$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm') AND '$(Architecture)' != 'arm64'">x64</AspNetCoreInstallerRid>
     <AspNetCoreInstallerRid Condition="'$(InstallerExtension)' == '.rpm' AND '$(Architecture)' == 'arm64'">aarch64</AspNetCoreInstallerRid>
-    <AspNetCoreArchiveRid>$(AspNetCoreInstallerRid)</AspNetCoreArchiveRid>
 
     <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' != '' AND !$([MSBuild]::IsOSPlatform('OSX'))">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
     <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-runtime-$(VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
