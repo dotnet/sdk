@@ -46,46 +46,55 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
     }
 
-    [Fact]
-    public void Build_WriteImportMapToHtml()
+    public static TheoryData<string, bool> WriteImportMapToHtmlData => new TheoryData<string, bool>
     {
-        var testAsset = "VanillaWasm";
+        { "VanillaWasm", true },
+        { "BlazorWasmMinimal", false }
+    };
+
+    [Theory]
+    [MemberData(nameof(WriteImportMapToHtmlData))]
+    public void Build_WriteImportMapToHtml(string testAsset, bool assetMainJs)
+    {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
         var build = CreateBuildCommand(ProjectDirectory);
-        ExecuteCommand(build).Should().Pass();
+        ExecuteCommand(build, "-p:WriteImportMapToHtml=true").Should().Pass();
 
         var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
         var indexHtmlPath = Directory.EnumerateFiles(Path.Combine(intermediateOutputPath, "staticwebassets", "importmaphtml", "build"), "*.html").Single();
         var endpointsManifestPath = Path.Combine(intermediateOutputPath, $"staticwebassets.build.endpoints.json");
 
-        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath);
+        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, assetMainJs);
     }
 
-    [Fact]
-    public void Publish_WriteImportMapToHtml()
+    [Theory]
+    [MemberData(nameof(WriteImportMapToHtmlData))]
+    public void Publish_WriteImportMapToHtml(string testAsset, bool assetMainJs)
     {
-        var testAsset = "VanillaWasm";
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
         var publish = CreatePublishCommand(ProjectDirectory);
-        ExecuteCommand(publish).Should().Pass();
+        ExecuteCommand(publish, "-p:WriteImportMapToHtml=true").Should().Pass();
 
         var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
         var indexHtmlPath = Path.Combine(outputPath, "wwwroot", "index.html");
         var endpointsManifestPath = Path.Combine(outputPath, $"{testAsset}.staticwebassets.endpoints.json");
 
-        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath);
+        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, assetMainJs);
     }
 
-    private void AssertImportMapInHtml(string indexHtmlPath, string endpointsManifestPath)
+    private void AssertImportMapInHtml(string indexHtmlPath, string endpointsManifestPath, bool assetMainJs)
     {
         var indexHtmlContent = File.ReadAllText(indexHtmlPath);
         var endpoints = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(File.ReadAllText(endpointsManifestPath));
 
-        var mainJs = GetFingerprintedPath("main.js");
-        Assert.DoesNotContain("src=\"main.js\"", indexHtmlContent);
-        Assert.Contains($"src=\"{mainJs}\"", indexHtmlContent);
+        if (assetMainJs)
+        {
+            var mainJs = GetFingerprintedPath("main.js");
+            Assert.DoesNotContain("src=\"main.js\"", indexHtmlContent);
+            Assert.Contains($"src=\"{mainJs}\"", indexHtmlContent);
+        }
 
         Assert.Contains(GetFingerprintedPath("_framework/dotnet.js"), indexHtmlContent);
         Assert.Contains(GetFingerprintedPath("_framework/dotnet.native.js"), indexHtmlContent);

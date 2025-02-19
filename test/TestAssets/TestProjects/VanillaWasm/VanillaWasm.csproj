@@ -2,9 +2,6 @@
   <PropertyGroup>
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-
-    <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
-    <WriteImportMapToHtml>true</WriteImportMapToHtml>
   </PropertyGroup>
   <ItemGroup>
     <StaticWebAssetFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
