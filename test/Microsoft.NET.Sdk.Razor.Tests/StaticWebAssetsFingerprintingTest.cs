@@ -74,12 +74,14 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
+        var projectName = Path.GetFileNameWithoutExtension(Directory.EnumerateFiles(ProjectDirectory.TestRoot, "*.csproj").Single());
+
         var publish = CreatePublishCommand(ProjectDirectory);
         ExecuteCommand(publish, "-p:WriteImportMapToHtml=true").Should().Pass();
 
         var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
         var indexHtmlPath = Path.Combine(outputPath, "wwwroot", "index.html");
-        var endpointsManifestPath = Path.Combine(outputPath, $"{testAsset}.staticwebassets.endpoints.json");
+        var endpointsManifestPath = Path.Combine(outputPath, $"{projectName}.staticwebassets.endpoints.json");
 
         AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, assetMainJs);
     }
