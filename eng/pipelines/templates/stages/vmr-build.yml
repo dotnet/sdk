@@ -649,6 +649,18 @@ stages:
 
         - template: ../jobs/vmr-build.yml
           parameters:
+            buildName: OSX_Shortstack_Mono_LLVMAOT
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            pool: ${{ parameters.pool_Mac }}
+            useMonoRuntime: true
+            targetOS: osx
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildMonoEnableLLVM=true /p:DotNetBuildMonoAOTEnableLLVM=true /p:DotNetBuildMonoBundleLLVMOptimizer=true
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
             buildName: AzureLinux_x64_Cross
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
@@ -868,6 +880,23 @@ stages:
             - Windows_x86
             - Windows_arm64
 
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x86
+            buildPass: 2
+            reuseBuildArtifactsFrom:
+            - AzureLinux_x64_Cross_x64
+            - AzureLinux_x64_Cross_Alpine_x64
+            - AzureLinux_x64_Cross_arm64
+            - AzureLinux_x64_Cross_Alpine_arm64
+            - AzureLinux_x64_Cross_arm
+            - AzureLinux_x64_Cross_Alpine_arm
+
 ### FINAL JOIN ###
 - ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), ne(variables['Build.Reason'], 'PullRequest')) }}:
   - stage: VMR_Final_Join
@@ -920,11 +949,35 @@ stages:
     displayName: VMR Validation
     dependsOn: VMR_Final_Join
     jobs:
-    - job: ValidateSigning
-      displayName: Validate Signing
+    - job: ValidateSigning_Windows
+      displayName: Validate Signing - Windows
       pool: ${{ parameters.pool_Windows }}
       timeoutInMinutes: 240
       steps:
       - template: ../steps/vmr-validate-signing.yml
         parameters:
+          artifactName: PackageArtifacts
           continueOnError: true
+          OS: Windows_NT
+    
+    - job: ValidateSigning_Mac
+      displayName: Validate Signing - Mac
+      pool: ${{ parameters.pool_Mac }}
+      timeoutInMinutes: 240
+      steps:
+      - template: ../steps/vmr-validate-signing.yml
+        parameters:
+          artifactName: BlobArtifacts
+          continueOnError: true
+          OS: Darwin
+
+    - job: ValidateSigning_Linux
+      displayName: Validate Signing - Linux
+      pool: ${{ parameters.pool_Linux }}
+      timeoutInMinutes: 240
+      steps:
+      - template: ../steps/vmr-validate-signing.yml
+        parameters:
+          artifactName: BlobArtifacts
+          continueOnError: true
+          OS: Linux

@@ -4,7 +4,6 @@
 using NuGet.Packaging;
 using System.Diagnostics;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
@@ -412,15 +411,22 @@ internal sealed class Registry
             return localPath;
         }
 
-        // No local copy, so download one
-        using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
-
         string tempTarballPath = ContentStore.GetTempFile();
-        using (FileStream fs = File.Create(tempTarballPath))
-        {
-            await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
-        }
 
+        try
+        {
+            // No local copy, so download one
+            using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
+
+            using (FileStream fs = File.Create(tempTarballPath))
+            {
+                await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        catch (Exception)
+        {
+            throw new UnableToDownloadFromRepositoryException(repository);
+        }
         cancellationToken.ThrowIfCancellationRequested();
 
         File.Move(tempTarballPath, localPath, overwrite: true);
@@ -529,13 +535,17 @@ internal sealed class Registry
 
     }
 
-    public async Task PushManifestListAsync(string repositoryName, string[] tags, string manifestListJson, string mediaType, CancellationToken cancellationToken)
+    public async Task PushManifestListAsync(
+        MultiArchImage multiArchImage,
+        SourceImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference,
+        CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        foreach (var tag in tags)
+        foreach (var tag in destinationImageReference.Tags)
         {
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-            await _registryAPI.Manifest.PutAsync(repositoryName, tag, manifestListJson, mediaType, cancellationToken).ConfigureAwait(false);
+            await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
         }          
     }
@@ -595,7 +605,7 @@ internal sealed class Registry
         cancellationToken.ThrowIfCancellationRequested();
         using (MemoryStream stringStream = new(Encoding.UTF8.GetBytes(builtImage.Config)))
         {
-            var configDigest = builtImage.ImageDigest;
+            var configDigest = builtImage.ImageDigest!;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
             await UploadBlobAsync(destination.Repository, configDigest, stringStream, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ConfigUploaded);
@@ -604,22 +614,20 @@ internal sealed class Registry
         // Tags can refer to an image manifest or an image manifest list.
         // In the first case, we push tags to the registry.
         // In the second case, we push the manifest digest so the manifest list can refer to it.
-        string manifestJson = JsonSerializer.SerializeToNode(builtImage.Manifest)?.ToJsonString() ?? "";
         if (pushTags)
         {
             Debug.Assert(destination.Tags.Length > 0);
             foreach (string tag in destination.Tags)
             {
                 _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, manifestJson, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
+                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
             }
         }
         else
         {
-            string manifestDigest = builtImage.Manifest.GetDigest();
-            _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
-            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, manifestJson, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, builtImage.ManifestDigest);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, builtImage.ManifestDigest, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }

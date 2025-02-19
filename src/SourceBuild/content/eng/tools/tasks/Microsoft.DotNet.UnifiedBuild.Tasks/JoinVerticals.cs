@@ -86,6 +86,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         string mainVerticalName = mainVerticalManifest.VerticalName!;
 
         JoinVerticalsAssetSelector joinVerticalsAssetSelector = new JoinVerticalsAssetSelector();
+
         List<AssetVerticalMatchResult> selectedVerticals = joinVerticalsAssetSelector.SelectAssetMatchingVertical(manifests).ToList();
 
         var notMatchedAssets = selectedVerticals.Where(o => o.MatchType == AssetVerticalMatchType.NotSpecified).ToList();

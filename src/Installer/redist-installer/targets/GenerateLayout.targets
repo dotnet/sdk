@@ -1,12 +1,6 @@
 <Project TreatAsLocalProperty="PublicBaseURL">
 
   <PropertyGroup>
-    <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
-    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\i\</SdkInternalLayoutPath>
-    <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
     <!-- In unified build, the layout does match, so use the runtime package versions rather than the VS redist versions -->
     <AspNetCoreBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreBlobVersion>
@@ -19,10 +13,8 @@
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
 
-  <Target Name="SetupBundledComponents" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions;SetBuildDefaults">
+  <Target Name="SetupBundledComponents">
     <PropertyGroup>
-      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
-
       <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
       <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
 
@@ -32,16 +24,15 @@
       <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
       <PublicBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'">$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))</PublicBaseURL>
 
-      <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
-      <NetRuntimeRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd' or '$(OSName)' == 'illumos' or '$(OSName)' == 'solaris') and '$(DotNetBuildSourceOnly)' != 'true' ">$(OSName)-$(Architecture)</NetRuntimeRid>
-      <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
-
       <!-- only the runtime OSX .pkgs have a `-internal` suffix -->
       <InstallerStartSuffix Condition="$([MSBuild]::IsOSPlatform('OSX'))">-internal</InstallerStartSuffix>
 
       <!-- Downloaded Installers + Archives -->
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
+      <InstallerTargetArchitecture>$(Architecture)</InstallerTargetArchitecture>
+      <InstallerTargetArchitecture Condition=" '$(IsRPMBasedDistro)' == 'true' and '$(Architecture)' == 'Arm64' ">aarch64</InstallerTargetArchitecture>
+
       <SharedFrameworkInstallerFileRid>$(NetRuntimeRid)</SharedFrameworkInstallerFileRid>
       <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
 
@@ -65,16 +56,9 @@
       <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(SharedFrameworkInstallerFileRid)' == 'osx-arm64'">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-osx-x64$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
       <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
 
-      <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
-      <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
-      <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
-      <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' != 'true' ">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' == 'true' ">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
-
-      <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-      <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
 
       <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
       <AspNetCoreArchiveRid>$(AspNetCoreInstallerRid)</AspNetCoreArchiveRid>
@@ -109,16 +93,6 @@
       <CombinedSharedHostAndFrameworkArchive>$(NetRuntimeDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And !$(Architecture.StartsWith('arm'))">
-      <AlternateAppHostRid>win-$(AlternateArchitecture)</AlternateAppHostRid>
-      <Arm64AppHostRid>win-arm64</Arm64AppHostRid>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And '$(Architecture)' == 'arm64'">
-      <AlternateAppHostRid>win-x86</AlternateAppHostRid>
-      <x64AppHostRid>win-x64</x64AppHostRid>
-    </PropertyGroup>
-
     <ItemGroup>
       <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
         <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
@@ -149,29 +123,6 @@
 
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
         <PackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <!-- These apphost packages come from different verticals and require a join inside the VMR. Disable for now:
-           https://github.com/dotnet/source-build/issues/4114 -->
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Alternate" Condition="'$(AlternateAppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(AlternateAppHostRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Arm64" Condition="'$(Arm64AppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(Arm64AppHostRid)</PackageName>
-        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-        <TargetFramework>$(TargetFramework)</TargetFramework>
-        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-      </BundledLayoutPackage>
-
-      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_x64" Condition="'$(x64AppHostRid)' != '' and '$(DotNetBuild)' != 'true'">
-        <PackageName>Microsoft.NETCore.App.Host.$(x64AppHostRid)</PackageName>
         <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
