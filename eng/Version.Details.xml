@@ -278,22 +278,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cc2019bc0b25e724275dba81ab9c295879ad8cb3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.2.25117.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.3.25119.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>4b4041a88d06cced3b23358f44eccc27ce290aa4</Sha>
+      <Sha>c314b67f37c80762c6403ab2bd029590a3bf408e</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.2.25117.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.3.25119.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>4b4041a88d06cced3b23358f44eccc27ce290aa4</Sha>
+      <Sha>c314b67f37c80762c6403ab2bd029590a3bf408e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.2.25117.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.3.25119.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>4b4041a88d06cced3b23358f44eccc27ce290aa4</Sha>
+      <Sha>c314b67f37c80762c6403ab2bd029590a3bf408e</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.2.25117.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.3.25119.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>4b4041a88d06cced3b23358f44eccc27ce290aa4</Sha>
+      <Sha>c314b67f37c80762c6403ab2bd029590a3bf408e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-preview.2.25117.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
