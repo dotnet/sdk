@@ -18,8 +18,4 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Remove="@(Using)" />
-  </ItemGroup>
-
 </Project>
