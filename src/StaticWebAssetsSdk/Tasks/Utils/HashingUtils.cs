@@ -59,7 +59,7 @@ internal static class HashingUtils
 #if NET9_0_OR_GREATER
         return new(memoryStream, encoding: Encoding.UTF8, leaveOpen: true);
 #else
-        return new(memoryStream, Encoding.UTF8, 0, leaveOpen: true);
+        return new(memoryStream, Encoding.UTF8, 512, leaveOpen: true);
 #endif
     }
 }
