@@ -12,9 +12,7 @@
     <PackageDownload Include="$(RuntimeNETCrossgenPackageName)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
   </ItemGroup>
 
-  <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
-  <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'">
+  <Target Name="CrossgenLayout">
     <PropertyGroup>
       <CrossgenPath>$(NuGetPackageRoot)$(RuntimeNETCrossgenPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools/crossgen2$(ExeExtension)</CrossgenPath>
       <CreateCrossgenSymbols Condition="'$(CreateCrossgenSymbols)' == ''">true</CreateCrossgenSymbols>
