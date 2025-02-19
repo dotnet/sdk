@@ -7,6 +7,7 @@ Param(
 
   # Actions
   [switch]$clean,
+  [switch]$sign,
   [switch][Alias('h')]$help,
   [switch][Alias('t')]$test,
 
@@ -16,7 +17,6 @@ Param(
   [switch][Alias('cwb')]$cleanWhileBuilding,
   [switch][Alias('nobl')]$excludeCIBinarylog,
   [switch] $prepareMachine,
-  [switch] $dev,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
@@ -29,6 +29,7 @@ function Get-Usage() {
 
   Write-Host "Actions:"
   Write-Host "  -clean                  Clean the solution"
+  Write-Host "  -sign                   Sign the build."
   Write-Host "  -help                   Print help and exit (short: -h)"
   Write-Host "  -test                   Run tests (repo tests omitted by default) (short: -t)"
   Write-Host ""
@@ -39,11 +40,8 @@ function Get-Usage() {
   Write-Host "  -cleanWhileBuilding     Cleans each repo after building (reduces disk space usage, short: -cwb)"
   Write-Host "  -excludeCIBinarylog     Don't output binary log (short: -nobl)"
   Write-Host "  -prepareMachine         Prepare machine for CI run, clean up processes after build"
-  Write-Host "  -dev                    Use -dev or -ci versioning instead of .NET official build versions"
   Write-Host ""
 }
-
-$useGlobalNuGetCache=$false
 
 . $PSScriptRoot\common\tools.ps1
 
@@ -60,8 +58,14 @@ $targets = "/t:Build"
 if ($test) {
   $project = Join-Path (Join-Path $RepoRoot "test") "tests.proj"
   $targets += ";VSTest"
+  $arguments += "/p:Test=true"
+
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"
+}
+
+if ($sign) {
+  $arguments += "/p:Sign=true"
 }
 
 if ($buildRepoTests) {
@@ -72,16 +76,8 @@ if ($cleanWhileBuilding) {
   $arguments += "/p:CleanWhileBuilding=true"
 }
 
-if ($dev) {
-  $arguments += "/p:UseOfficialBuildVersioning=false"
-}
-
 function Build {
   InitializeToolset
-
-  # Manually unset NUGET_PACKAGES as InitializeToolset sets it unconditionally.
-  # The env var shouldn't be set so that the RestorePackagesPath msbuild property is respected.
-  $env:NUGET_PACKAGES=''
 
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
 

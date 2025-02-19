@@ -56,6 +56,7 @@
     <Compile Include="..\Microsoft.DotNet.CommandFactory.Tests\**\*.cs" LinkBase="CommandFactory" />
     <Compile Include="..\Microsoft.DotNet.Configurer.UnitTests\**\*.cs" LinkBase="Configurer" />
     <Compile Include="..\Microsoft.DotNet.ShellShim.Tests\**\*.cs" LinkBase="ShellShim" />
+    <Compile Remove="..\dotnet-test.Tests\MSBuildHandlerTests.cs" />
 
     <None Include="..\Microsoft.DotNet.ShellShim.Tests\WpfBinaryTestAsssets\testwpf.dll" LinkBase="WpfBinaryTestAsssets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -116,7 +117,6 @@
 
   <ItemGroup>
     <PackageReference Include="Moq" />
-    <PackageReference Include="System.ComponentModel.TypeConverter" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />

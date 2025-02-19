@@ -1,0 +1,8 @@
+<Build PublishingVersion="3" Name="dotnet-dotnet" BuildId="20250218.1" Branch="refs/heads/main" Commit="46704e275a99c336bdfbebf150c44ffff48c8175" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/main" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2645122" AzureDevOpsBuildNumber="20250218.1" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2645122/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false" VerticalName="MacCatalyst_Shortstack_x64">
+  <Package Id="Microsoft.NETCore.App.Runtime.Mono.maccatalyst-x64" Version="10.0.0-preview.2.25118.101" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.NativeAOT.maccatalyst-x64" Version="10.0.0-preview.2.25118.101" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.maccatalyst-x64.runtime.native.System.IO.Ports" Version="10.0.0-preview.2.25118.101" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.Mono.maccatalyst-x64.10.0.0-preview.2.25118.101.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.NETCore.App.Runtime.NativeAOT.maccatalyst-x64.10.0.0-preview.2.25118.101.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/runtime.maccatalyst-x64.runtime.native.System.IO.Ports.10.0.0-preview.2.25118.101.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+</Build>

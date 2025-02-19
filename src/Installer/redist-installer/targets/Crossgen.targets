@@ -1,31 +1,28 @@
 <Project>
 
+  <PropertyGroup>
+    <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
+    <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
+
+    <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
+  </PropertyGroup>
+
+  <!-- Download the runtime package with the crossgen executable in it -->
+  <ItemGroup>
+    <PackageDownload Include="$(RuntimeNETCrossgenPackageName)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+  </ItemGroup>
+
   <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'"
-          DependsOnTargets="SetSdkBrandingInfo">
+          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'">
     <PropertyGroup>
-      <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
-      <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
       <CrossgenPath>$(NuGetPackageRoot)$(RuntimeNETCrossgenPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools/crossgen2$(ExeExtension)</CrossgenPath>
+      <CreateCrossgenSymbols Condition="'$(CreateCrossgenSymbols)' == ''">true</CreateCrossgenSymbols>
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
       <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx6490PackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx64100PackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
-
-    <!-- Download the runtime package with the crossgen executable in it -->
-    <ItemGroup>
-      <CrossGenDownloadPackageProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
-        <Properties>
-          PackageToRestore=$(RuntimeNETCrossgenPackageName);
-          PackageVersionToRestore=$(MicrosoftNETCoreAppRuntimePackageVersion);
-          TargetFramework=$(TargetFramework)
-        </Properties>
-      </CrossGenDownloadPackageProject>
-    </ItemGroup>
-
-    <MSBuild Projects="@(CrossGenDownloadPackageProject)" />
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
          cross-genned. This tooling multi-targets, and we only want to cross-gen the .NET Core
@@ -33,7 +30,7 @@
          no that we do not silently miss cross-genning some bits. When a TFM for a tool is updated,
          update its path explicitly. If all TFMs match, update DefaultToolTfm -->
     <PropertyGroup>
-      <DefaultToolTfm>net9.0</DefaultToolTfm>
+      <DefaultToolTfm>net10.0</DefaultToolTfm>
 
       <NetSdkTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
       <BlazorWasmTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
@@ -134,13 +131,6 @@
       <RemainingFolders Remove="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
       <RemainingFolders Include="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
     </ItemGroup>
-
-    <!-- Crossgen does not support generating symbols on Mac  -->
-    <PropertyGroup Condition="'$(CreateCrossgenSymbols)' == ''">
-      <CreateCrossgenSymbols>true</CreateCrossgenSymbols>
-      <CreateCrossgenSymbols Condition="'$(OSName)' == 'osx'">false</CreateCrossgenSymbols>
-      <CreateCrossgenSymbols Condition="'$(OSName)' == 'freebsd'">false</CreateCrossgenSymbols>
-    </PropertyGroup>
 
     <Error Text="Potentially missed crossgen for '$(NetSdkTools)', directory does not exist" Condition= "!EXISTS('$(NetSdkTools)') " />
     <Error Text="Potentially missed crossgen for '$(BlazorWasmTools)', directory does not exist" Condition= "!EXISTS('$(BlazorWasmTools)') " />
