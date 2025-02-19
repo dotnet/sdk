@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestPlatform.Utilities;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,18 +27,18 @@ public class LinuxInstallerTests : IDisposable
 
     private readonly string[] RpmDistroImages =
     [
-        "mcr.microsoft.com/dotnet/runtime-deps:9.0-azurelinux3.0"
+        "mcr.microsoft.com/dotnet/nightly/runtime-deps:10.0-preview-azurelinux3.0"
     ];
 
     private readonly string[] DebDistroImages =
     [
-        "mcr.microsoft.com/dotnet/runtime-deps:9.0-bookworm-slim"
+        "mcr.microsoft.com/dotnet/nightly/runtime-deps:10.0-preview-trixie-slim"
     ];
 
     private const string NetStandard21RpmPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.rpm";
     private const string NetStandard21DebPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.deb";
 
-    private enum DistroType
+    private enum PackageType
     {
         Rpm,
         Deb
@@ -76,25 +75,25 @@ public class LinuxInstallerTests : IDisposable
     {
         if (Config.TestRpmPackages)
         {
-            TestAllDistros(DistroType.Rpm);
+            TestAllDistros(PackageType.Rpm);
         }
 
 
         if (Config.TestDebPackages)
         {
-            TestAllDistros(DistroType.Deb);
+            TestAllDistros(PackageType.Deb);
         }
     }
 
-    private void TestAllDistros(DistroType distroType)
+    private void TestAllDistros(PackageType packageType)
     {
-        foreach (string image in (distroType == DistroType.Rpm ? RpmDistroImages : DebDistroImages))
+        foreach (string image in (packageType == PackageType.Rpm ? RpmDistroImages : DebDistroImages))
         {
             try
             {
-                OutputHelper.WriteLine($"Begin testing distro: {image}");
-                DistroTest(image, distroType);
-                OutputHelper.WriteLine($"Finished testing distro: {image}");
+                OutputHelper.WriteLine($"Begin testing installer packages on distro: {image}");
+                DistroTest(image, packageType);
+                OutputHelper.WriteLine($"Finished testing installer packages on distro: {image}");
             }
             catch (Exception ex)
             {
@@ -171,7 +170,7 @@ public class LinuxInstallerTests : IDisposable
         }
     }
 
-    private void DistroTest(string baseImage, DistroType distroType)
+    private void DistroTest(string baseImage, PackageType packageType)
     {
         // Order of installation is important as we do not want to use "--nodeps"
         // We install in correct order, so package dependencies are present.
@@ -180,25 +179,25 @@ public class LinuxInstallerTests : IDisposable
         List<string> packageList =
         [
             // Deps package should be installed first
-            Path.GetFileName(GetMatchingDepsPackage(baseImage, distroType))
+            Path.GetFileName(GetMatchingDepsPackage(baseImage, packageType))
         ];
 
         // Add all other packages in correct install order
-        AddPackage(packageList, "dotnet-host-", distroType);
-        AddPackage(packageList, "dotnet-hostfxr-", distroType);
-        AddPackage(packageList, "dotnet-runtime-", distroType);
-        AddPackage(packageList, "dotnet-targeting-pack-", distroType);
-        AddPackage(packageList, "aspnetcore-runtime-", distroType);
-        AddPackage(packageList, "aspnetcore-targeting-pack-", distroType);
-        AddPackage(packageList, "dotnet-apphost-pack-", distroType);
+        AddPackage(packageList, "dotnet-host-", packageType);
+        AddPackage(packageList, "dotnet-hostfxr-", packageType);
+        AddPackage(packageList, "dotnet-runtime-", packageType);
+        AddPackage(packageList, "dotnet-targeting-pack-", packageType);
+        AddPackage(packageList, "aspnetcore-runtime-", packageType);
+        AddPackage(packageList, "aspnetcore-targeting-pack-", packageType);
+        AddPackage(packageList, "dotnet-apphost-pack-", packageType);
         if (Config.Architecture == "x64")
         {
             // netstandard package exists for x64 only
-            AddPackage(packageList, "netstandard-targeting-pack-", distroType);
+            AddPackage(packageList, "netstandard-targeting-pack-", packageType);
         }
-        AddPackage(packageList, "dotnet-sdk-", distroType);
+        AddPackage(packageList, "dotnet-sdk-", packageType);
 
-        string dockerfile = GenerateDockerfile(packageList, baseImage, distroType);
+        string dockerfile = GenerateDockerfile(packageList, baseImage, packageType);
 
         string tag = $"test-{Path.GetRandomFileName()}";
         string output = "";
@@ -234,7 +233,7 @@ public class LinuxInstallerTests : IDisposable
         }
     }
 
-    private string GenerateDockerfile(List<string> rpmPackageList, string baseImage, DistroType distroType)
+    private string GenerateDockerfile(List<string> packageList, string baseImage, PackageType packageType)
     {
         StringBuilder sb = new();
         sb.AppendLine("FROM " + baseImage);
@@ -251,19 +250,19 @@ public class LinuxInstallerTests : IDisposable
         sb.AppendLine($"COPY packages packages");
 
         sb.AppendLine("");
-        sb.AppendLine("# Copy RPM packages");
-        foreach (string package in rpmPackageList)
+        sb.AppendLine("# Copy installer packages");
+        foreach (string package in packageList)
         {
             sb.AppendLine($"COPY {package} {package}");
         }
         sb.AppendLine("");
-        sb.AppendLine("# Install RPM packages and Microsoft.DotNet.ScenarioTests.SdkTemplateTests tool");
+        sb.AppendLine("# Install the installer packages and Microsoft.DotNet.ScenarioTests.SdkTemplateTests tool");
         sb.Append("RUN");
 
         // TODO: remove --force-all when aspnet package versioning issue have been resolved - https://github.com/dotnet/source-build/issues/4895
-        string packageInstallationCommand = distroType == DistroType.Deb ? "dpkg -i --force-all" : "rpm -i";
+        string packageInstallationCommand = packageType == PackageType.Deb ? "dpkg -i --force-all" : "rpm -i";
         bool useAndOperator = false;
-        foreach (string package in rpmPackageList)
+        foreach (string package in packageList)
         {
             sb.AppendLine(" \\");
             sb.Append($"    {(useAndOperator ? "&&" : "")} {packageInstallationCommand} {package}");
@@ -288,7 +287,7 @@ public class LinuxInstallerTests : IDisposable
         sb.AppendLine("");
         sb.AppendLine($"ENTRYPOINT [ \"dotnet\", \"{scenarioTestsBinary}\", \"--dotnet-root\", \"/usr/share/dotnet\" ]");
 
-        string dockerfile = Path.Combine(_contextDir, Path.GetRandomFileName());
+        string dockerfile = Path.Combine(_contextDir, $"Dockerfile-{Path.GetRandomFileName()}");
         File.WriteAllText(dockerfile, sb.ToString());
         return dockerfile;
     }
@@ -303,29 +302,29 @@ public class LinuxInstallerTests : IDisposable
         return parts["Errors"] > 0 || parts["Failures"] > 0;
     }
 
-    private void AddPackage(List<string> packageList, string prefix, DistroType distroType)
+    private void AddPackage(List<string> packageList, string prefix, PackageType packageType)
     {
-        packageList.Add(Path.GetFileName(GetContentPackage(prefix, distroType)));
+        packageList.Add(Path.GetFileName(GetContentPackage(prefix, packageType)));
     }
 
-    private string GetContentPackage(string prefix, DistroType distroType)
+    private string GetContentPackage(string prefix, PackageType packageType)
     {
-        string matchPattern = DistroType.Deb == distroType ? "*.deb" : "*.rpm";
-        string[] rpmFiles = Directory.GetFiles(_contextDir, prefix + matchPattern, SearchOption.AllDirectories)
+        string matchPattern = PackageType.Deb == packageType ? "*.deb" : "*.rpm";
+        string[] files = Directory.GetFiles(_contextDir, prefix + matchPattern, SearchOption.AllDirectories)
             .Where(p => !Path.GetFileName(p).Contains("dotnet-runtime-deps-"))
             .ToArray();
-        if (rpmFiles.Length == 0)
+        if (files.Length == 0)
         {
             throw new Exception($"RPM package with prefix '{prefix}' not found");
         }
 
-        return rpmFiles.OrderByDescending(f => f).First();
+        return files.OrderByDescending(f => f).First();
     }
 
-    private string GetMatchingDepsPackage(string baseImage, DistroType distroType)
+    private string GetMatchingDepsPackage(string baseImage, PackageType packageType)
     {
         string matchPattern = "dotnet-runtime-deps-*.deb";
-        if (distroType == DistroType.Rpm)
+        if (packageType == PackageType.Rpm)
         {
             string? depsId = null;
             if (baseImage.Contains("opensuse"))

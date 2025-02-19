@@ -9,8 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Installer.Tests;
@@ -221,16 +219,6 @@ public class DockerHelper
     private static string GetDockerArch() => Execute("version -f \"{{ .Server.Arch }}\"");
 
     public string GetImageUser(string image) => ExecuteWithLogging($"inspect -f \"{{{{ .Config.User }}}}\" {image}");
-
-    public IDictionary<string, string> GetEnvironmentVariables(string image)
-    {
-        string envVarsStr = ExecuteWithLogging($"inspect -f \"{{{{json .Config.Env }}}}\" {image}");
-        JArray? envVarsArray = (JArray?)JsonConvert.DeserializeObject(envVarsStr);
-        return envVarsArray!
-            .ToDictionary(
-                item => item.ToString().Split('=')[0],
-                item => item.ToString().Split('=')[1]);
-    }
 
     public static bool ImageExists(string tag) => ResourceExists("image", tag);
 
