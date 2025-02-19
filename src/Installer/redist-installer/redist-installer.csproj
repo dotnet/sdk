@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
@@ -13,10 +13,6 @@
     <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(DotNetBuildOrchestrator)' == 'true'">true</BundleNativeAotCompiler>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
-
-  <ItemGroup>
-    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
