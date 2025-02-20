@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
@@ -275,6 +277,8 @@ namespace Microsoft.DotNet.Tools.Run
             }
             else
             {
+                Debug.Assert(ProjectFileFullPath is not null);
+
                 projectFactory = null;
                 buildResult = new RestoringCommand(
                     RestoreArgs.Prepend(ProjectFileFullPath),
@@ -336,9 +340,14 @@ namespace Microsoft.DotNet.Tools.Run
                 AddUserPassedProperties(globalProperties, restoreArgs);
 
                 var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-                return projectFilePath is not null
-                    ? collection.LoadProject(projectFilePath).CreateProjectInstance()
-                    : projectFactory(collection);
+
+                if (projectFilePath is not null)
+                {
+                    return collection.LoadProject(projectFilePath).CreateProjectInstance();
+                }
+
+                Debug.Assert(projectFactory is not null);
+                return projectFactory(collection);
             }
 
             static void ValidatePreconditions(ProjectInstance project)
@@ -608,9 +617,10 @@ namespace Microsoft.DotNet.Tools.Run
 
         private static string? DiscoverProjectFilePath(string? projectFileOrDirectoryPath, ref string[] args, out string? entryPointFilePath)
         {
-            bool emptyProjectOption = string.IsNullOrWhiteSpace(projectFileOrDirectoryPath);
-            if (emptyProjectOption)
+            bool emptyProjectOption = false;
+            if (string.IsNullOrWhiteSpace(projectFileOrDirectoryPath))
             {
+                emptyProjectOption = true;
                 projectFileOrDirectoryPath = Directory.GetCurrentDirectory();
             }
 
