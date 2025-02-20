@@ -29,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\redist-installer\redist-installer.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\redist-installer\redist-installer.proj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
