@@ -375,16 +375,6 @@
           DestinationFolder="$(RedistLayoutPath)/library-packs"
           SkipUnchangedFiles="true" />
 
-    <!-- From Version.targets in SDK redist -->
-    <PropertyGroup>
-      <ArtifactNameSdk>dotnet-toolset-internal</ArtifactNameSdk>
-    </PropertyGroup>
-
-    <!-- From GenerateLayout.targets in SDK redist -->
-    <PropertyGroup>
-      <SdkLayoutOutputDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\$(ArtifactNameSdk)\</SdkLayoutOutputDirectory>
-    </PropertyGroup>
-
     <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->
     <ItemGroup>
       <DotnetToolsetInternalSource Include="$(SdkLayoutOutputDirectory)**\*" />

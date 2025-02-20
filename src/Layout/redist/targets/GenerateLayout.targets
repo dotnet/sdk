@@ -6,7 +6,6 @@
 
   <Target Name="PublishPortableRuntimeIdentifierGraph"
           BeforeTargets="Build">
-
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/runtime.json"
           DestinationFiles="$(OutputPath)RuntimeIdentifierGraph.json"
           SkipUnchangedFiles="true" />
@@ -14,12 +13,10 @@
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json"
           DestinationFolder="$(OutputPath)"
           SkipUnchangedFiles="true" />
-
   </Target>
 
   <Target Name="PublishVersionFile"
           BeforeTargets="Build">
-
     <WriteLinesToFile File="$(OutputPath)/.toolsetversion"
                       Lines="$(SourceRevisionId);$(Version);$(Rid)"
                       Overwrite="true" />
@@ -35,8 +32,6 @@
 	      The resolution of the product version (https://github.com/dotnet/sdk/blob/main/src/Cli/Microsoft.DotNet.Cli.Utils/DotnetFiles.cs#L21)
 		  then need the version file there as well. -->
     <Copy SourceFiles="$(OutputPath)/.version" DestinationFiles="$(BaseOutputPath)$(Configuration)/.version" SkipUnchangedFiles="true" />
-
-
   </Target>
 
   <Target Name="PublishRoslyn"
@@ -57,7 +52,7 @@
 
   <Target Name="PublishNETAnalyzers"
           BeforeTargets="Build;PublishNetSdk">
-     <PropertyGroup>
+    <PropertyGroup>
       <AnalyzerAssembliesDirectory>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk\analyzers</AnalyzerAssembliesDirectory>
       <AnalyzerTargetsDirectory>$(AnalyzerAssembliesDirectory)\build</AnalyzerTargetsDirectory>
       <AnalyzerConfigDirectory>$(AnalyzerTargetsDirectory)\config</AnalyzerConfigDirectory>
@@ -123,12 +118,27 @@
     <Copy SourceFiles="@(DotnetFormatConfigFiles)" DestinationFiles="@(DotnetFormatConfigFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-  <Target Name="PublishMSBuildExtensions"
-          DependsOnTargets="GenerateMSBuildExtensions"
-          BeforeTargets="Build">
+  <Target Name="PublishMSBuildExtensions">
+    <PropertyGroup>
+      <MSBuildExtensionsPackageName>Microsoft.NET.Build.Extensions</MSBuildExtensionsPackageName>
+      <MSBuildExtensionsVersionSubfolder>Current</MSBuildExtensionsVersionSubfolder>
+      <MSBuildExtensionsSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\$(MSBuildExtensionsPackageName)</MSBuildExtensionsSourceRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Include MSBuild imports that are checked into repo -->
+      <MSBuildExtensionsContent Include="$(MSBuildProjectDirectory)/MSBuildImports/**/*" />
+      <MSBuildExtensionsContent Include="$(MSBuildExtensionsSourceRoot)\msbuildExtensions\**\*.*" />
+
+      <!-- Don't include .NET Framework MS.NET.Build.Extensions tasks in CLI layout -->
+      <MSBuildExtensionsContent Remove="$(MSBuildExtensionsSourceRoot)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools\net472\**" />
+
+      <MSBuildExtensionsContent Include="$(MSBuildExtensionsSourceRoot)\msbuildExtensions-ver\**\*.*"
+                                DeploymentSubpath="$(MSBuildExtensionsVersionSubfolder)/" />
+    </ItemGroup>
+
     <Copy SourceFiles="@(MSBuildExtensionsContent)"
           DestinationFiles="@(MSBuildExtensionsContent->'$(OutputPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
-
   </Target>
 
   <Target Name="PublishNetSdks"
@@ -396,34 +406,6 @@
                                    AssetPath="%(NuPkgContentForMSBuildExtensionsRelativePaths.Identity)" />
   </Target>
 
-  <Target Name="PublishSdks"
-          AfterTargets="Build">
-    <ItemGroup>
-      <SdksToBundle Include="targets\RestoreDependency.proj">
-        <Properties>
-          NuGetPackageRoot=$(NuGetPackageRoot);
-          SdkLayoutDirectory=$(OutputPath)/Sdks/%(BundledSdk.Identity);
-          DependencyPackageName=%(BundledSdk.Identity);
-          DependencyPackageVersion=%(BundledSdk.Version);
-          PreviousStageDirectory=$(PreviousStageDirectory)
-        </Properties>
-      </SdksToBundle>
-    </ItemGroup>
-
-    <MSBuild
-      BuildInParallel="False"
-      Projects="@(SdksToBundle)">
-    </MSBuild>
-
-    <!-- The WPF SDK .nupkg includes some files in the root that we don't want to bundle, so delete them -->
-    <ItemGroup>
-      <SDKFilesToDelete Include="$(OutputPath)/Sdks/Microsoft.NET.Sdk.Wpf/*" />
-      <SDKFilesToDelete Include="$(OutputPath)/Sdks/**/*.nupkg.metadata" />
-      <SDKFilesToDelete Include="$(OutputPath)/Sdks/**/*.signature.p7s" />
-    </ItemGroup>
-    <Delete Files="@(SDKFilesToDelete)" />
-  </Target>
-
   <Target Name="ChmodPublishDir"
           AfterTargets="GenerateCliRuntimeConfigurationFiles"
           Condition=" '$(OSName)' != 'win' ">
@@ -487,10 +469,6 @@
                             RetargetTools;
                             GetDotnetWatchRedistOutputDirectory"
           AfterTargets="Build">
-    <PropertyGroup>
-      <SdkLayoutOutputDirectory>$(BaseOutputPath)$(Configuration)\layouts\$(ArtifactNameSdk)</SdkLayoutOutputDirectory>
-    </PropertyGroup>
-
     <ItemGroup>
       <ToolsetLayoutInput Include="$(OutputPath)/**/*" />
       <!-- Include redist outputs published by dotnet-watch.csproj build. -->
