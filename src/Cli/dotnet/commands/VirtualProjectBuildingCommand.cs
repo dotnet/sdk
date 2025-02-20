@@ -11,6 +11,7 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Run;
 
 namespace Microsoft.DotNet.Tools;
 
@@ -100,9 +101,7 @@ internal sealed class VirtualProjectBuildingCommand
             for (int i = args.Length - 1; i >= 0; i--)
             {
                 var arg = args[i];
-                if (arg.StartsWith("/bl:") || arg.Equals("/bl")
-                    || arg.StartsWith("--binaryLogger:") || arg.Equals("--binaryLogger")
-                    || arg.StartsWith("-bl:") || arg.Equals("-bl"))
+                if (RunCommand.IsBinLogArgument(arg))
                 {
                     return new BinaryLogger
                     {
