@@ -948,6 +948,10 @@ stages:
   - stage: VMR_Validation
     displayName: VMR Validation
     dependsOn: VMR_Final_Join
+    variables:
+    - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      - group: Release-Pipeline
+      - group: DotNetBot-GitHub-AllBranches
     jobs:
     - job: ValidateSigning_Windows
       displayName: Validate Signing - Windows
@@ -981,3 +985,11 @@ stages:
           artifactName: BlobArtifacts
           continueOnError: true
           OS: Linux
+    - job: ValidateAssetBaselines
+      displayName: Validate Asset Baselines
+      pool: ${{ parameters.pool_Windows }}
+      timeoutInMinutes: 180
+      steps:
+      - template: ../steps/vmr-validate-asset-baseline.yml
+        parameters:
+          continueOnError: true

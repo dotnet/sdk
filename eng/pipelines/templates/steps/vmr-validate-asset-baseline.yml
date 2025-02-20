@@ -1,0 +1,37 @@
+steps:
+- task: DownloadBuildArtifacts@1
+  inputs:
+    artifactName: 'AssetManifests'
+    downloadPath: $(Build.ArtifactStagingDirectory)
+    checkDownloadedFiles: true
+  displayName: Download Asset Manifest
+
+- powershell: $(Build.SourcesDirectory)\eng\common\darc-init.ps1 -toolpath $(Build.SourcesDirectory)\artifacts\tools\darc
+  displayName: Install darc
+
+- task: AzureCLI@2
+  displayName: 'Gather Drop'
+  continueOnError: true
+  inputs:
+    azureSubscription: DotNetStaging
+    scriptType: 'pscore'
+    scriptLocation: 'scriptPath'
+    scriptPath: $(Build.SourcesDirectory)\src\sdk\eng\GatherDrops.ps1
+    arguments: -filePath '$(Build.SourcesDirectory)\src\source-manifest.json' -outputPath '$(Build.ArtifactStagingDirectory)\assets\'
+      -darcPath $(Build.SourcesDirectory)\artifacts\tools\darc\darc.exe -githubPat $(BotAccount-dotnet-bot-repo-PAT) -azdevPat $(dn-bot-all-drop-rw-code-rw-release-all)
+
+- task: PowerShell@2
+  inputs:
+    filePath: $(Build.SourcesDirectory)\src\sdk\eng\CheckFiles.ps1
+    arguments: -manifestPath '$(Build.ArtifactStagingDirectory)\AssetManifests\MergedManifest.xml' -assetBasePath '$(Build.ArtifactStagingDirectory)\assets\'
+      -outputFilePath $(Build.SourcesDirectory)\artifacts\AssetBaselines\
+  displayName: Validate Asset Baselines
+
+- task: 1ES.PublishPipelineArtifact@1
+  displayName: Publish Asset Baseline Files
+  continueOnError: true
+  inputs:
+    path: $(Build.SourcesDirectory)\artifacts\AssetBaselines\
+    artifactName: AssetBaselineFiles
+    artifactType: Container
+    parallel: true
