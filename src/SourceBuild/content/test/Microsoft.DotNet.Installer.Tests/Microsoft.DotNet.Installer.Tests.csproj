@@ -6,6 +6,10 @@
     <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotnetTool)</VSTestCLIRunSettings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
+  </ItemGroup>
+
   <Target Name="SetRuntimeConfigOptions"
           BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
     <ItemGroup>

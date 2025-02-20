@@ -13,9 +13,9 @@ using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Microsoft.DotNet.Installer.Tests;
 
@@ -25,18 +25,11 @@ public class LinuxInstallerTests : IDisposable
     private readonly string _tmpDir;
     private readonly string _contextDir;
 
-    private readonly string[] RpmDistroImages =
-    [
-        "mcr.microsoft.com/dotnet/nightly/runtime-deps:10.0-preview-azurelinux3.0"
-    ];
-
-    private readonly string[] DebDistroImages =
-    [
-        "mcr.microsoft.com/dotnet/nightly/runtime-deps:10.0-preview-trixie-slim"
-    ];
-
     private const string NetStandard21RpmPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.rpm";
     private const string NetStandard21DebPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.deb";
+
+    public static bool IncludeRpmTests => Config.TestRpmPackages;
+    public static bool IncludeDebTests => Config.TestDebPackages;
 
     private enum PackageType
     {
@@ -70,36 +63,18 @@ public class LinuxInstallerTests : IDisposable
         }
     }
 
-    [Fact]
-    public void RunScenarioTestsForAllDistros()
+    [ConditionalTheory(typeof(LinuxInstallerTests), nameof(IncludeRpmTests))]
+    [InlineData("mcr.microsoft.com/dotnet/nightly/runtime-deps", "10.0-preview-azurelinux3.0")]
+    public void RpmTest(string repo, string tag)
     {
-        if (Config.TestRpmPackages)
-        {
-            TestAllDistros(PackageType.Rpm);
-        }
-
-
-        if (Config.TestDebPackages)
-        {
-            TestAllDistros(PackageType.Deb);
-        }
+        DistroTest($"{repo}:{tag}", PackageType.Rpm);
     }
 
-    private void TestAllDistros(PackageType packageType)
+    [ConditionalTheory(typeof(LinuxInstallerTests), nameof(IncludeDebTests))]
+    [InlineData("mcr.microsoft.com/dotnet/nightly/runtime-deps", "10.0-preview-trixie-slim")]
+    public void DebTest(string repo, string tag)
     {
-        foreach (string image in (packageType == PackageType.Rpm ? RpmDistroImages : DebDistroImages))
-        {
-            try
-            {
-                OutputHelper.WriteLine($"Begin testing installer packages on distro: {image}");
-                DistroTest(image, packageType);
-                OutputHelper.WriteLine($"Finished testing installer packages on distro: {image}");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail($"Test failed for {image}: {ex}");
-            }
-        }
+        DistroTest($"{repo}:{tag}", PackageType.Deb);
     }
 
     private void InitializeContext()
@@ -201,11 +176,13 @@ public class LinuxInstallerTests : IDisposable
 
         string tag = $"test-{Path.GetRandomFileName()}";
         string output = "";
+        bool buildCompleted = false;
 
         try
         {
             // Build docker image and run the tests
             _dockerHelper.Build(tag, dockerfile: dockerfile, contextDir: _contextDir);
+            buildCompleted = true;
             output = _dockerHelper.Run(tag, tag);
 
             int testResultsSummaryIndex = output.IndexOf("Tests run: ");
@@ -225,7 +202,7 @@ public class LinuxInstallerTests : IDisposable
             {
                 output = e.Message;
             }
-            Assert.Fail($"Build failed: {output}");
+            Assert.Fail($"{(buildCompleted ? "Build" : "Test")} failed: {output}");
         }
         finally
         {
