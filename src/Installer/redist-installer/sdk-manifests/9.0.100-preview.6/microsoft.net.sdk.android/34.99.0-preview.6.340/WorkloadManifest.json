@@ -1,0 +1,109 @@
+{
+  "version": "34.99.0-preview.6.340",
+  "workloads": {
+    "android": {
+      "description": ".NET SDK Workload for building Android applications.",
+      "packs": [
+        "Microsoft.Android.Sdk.net9",
+        "Microsoft.Android.Sdk.net8",
+        "Microsoft.Android.Ref.34",
+        "Microsoft.Android.Runtime.34.android-arm",
+        "Microsoft.Android.Runtime.34.android-arm64",
+        "Microsoft.Android.Runtime.34.android-x86",
+        "Microsoft.Android.Runtime.34.android-x64",
+        "Microsoft.Android.Templates"
+      ],
+      "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" ],
+      "extends" : [ 
+        "microsoft-net-runtime-android-net8",
+        "microsoft-net-runtime-android-aot-net8",
+        "microsoft-net-runtime-android",
+        "microsoft-net-runtime-android-aot"
+      ]
+    },
+    "android-35": {
+      "description": "Preview support for Android API-35.",
+      "packs": [
+        "Microsoft.Android.Ref.35",
+        "Microsoft.Android.Runtime.35.android-arm",
+        "Microsoft.Android.Runtime.35.android-arm64",
+        "Microsoft.Android.Runtime.35.android-x86",
+        "Microsoft.Android.Runtime.35.android-x64"
+      ],
+      "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" ],
+      "extends" : [ "android" ]
+    }
+  },
+  "packs": {
+    "Microsoft.Android.Sdk.net9": {
+      "kind": "sdk",
+      "version": "34.99.0-preview.6.340",
+      "alias-to": {
+        "osx-x64": "Microsoft.Android.Sdk.Darwin",
+        "osx-arm64": "Microsoft.Android.Sdk.Darwin",
+        "win-x86": "Microsoft.Android.Sdk.Windows",
+        "win-x64": "Microsoft.Android.Sdk.Windows",
+        "win-arm64": "Microsoft.Android.Sdk.Windows",
+        "linux-x64": "Microsoft.Android.Sdk.Linux",
+        "linux-arm64": "Microsoft.Android.Sdk.Linux"
+      }
+    },
+    "Microsoft.Android.Sdk.net8": {
+      "kind": "sdk",
+      "version": "34.0.113",
+      "alias-to": {
+        "osx-x64": "Microsoft.Android.Sdk.Darwin",
+        "osx-arm64": "Microsoft.Android.Sdk.Darwin",
+        "win-x86": "Microsoft.Android.Sdk.Windows",
+        "win-x64": "Microsoft.Android.Sdk.Windows",
+        "win-arm64": "Microsoft.Android.Sdk.Windows",
+        "linux-x64": "Microsoft.Android.Sdk.Linux",
+        "linux-arm64": "Microsoft.Android.Sdk.Linux"
+      }
+    },
+    "Microsoft.Android.Ref.34": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Runtime.34.android-arm": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Runtime.34.android-arm64": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Runtime.34.android-x86": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Runtime.34.android-x64": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Ref.35": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Runtime.35.android-arm": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Runtime.35.android-arm64": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Runtime.35.android-x86": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Runtime.35.android-x64": {
+      "kind": "framework",
+      "version": "34.99.0-preview.6.340"
+    },
+    "Microsoft.Android.Templates": {
+      "kind": "template",
+      "version": "34.99.0-preview.6.340"
+    }
+  }
+}
