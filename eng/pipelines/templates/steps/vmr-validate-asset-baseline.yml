@@ -24,7 +24,7 @@ steps:
   inputs:
     filePath: $(Build.SourcesDirectory)\src\sdk\eng\CheckFiles.ps1
     arguments: -manifestPath '$(Build.ArtifactStagingDirectory)\AssetManifests\MergedManifest.xml' -assetBasePath '$(Build.ArtifactStagingDirectory)\assets\'
-      -outputFilePath $(Build.SourcesDirectory)\artifacts\AssetBaselines\
+      -outputFilePath '$(Build.SourcesDirectory)\artifacts\AssetBaselines\'
   displayName: Validate Asset Baselines
 
 - task: 1ES.PublishPipelineArtifact@1
