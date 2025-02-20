@@ -103,7 +103,7 @@
       DependsOnTargets="CalculateLinuxNativeInstallerDependencyVersions">
 
     <PropertyGroup>
-      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)../redist-installer/packaging/deb/postinst</DebianPostinstTemplateFile>
+      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)deb/postinst</DebianPostinstTemplateFile>
       <DebianPostinstFile>$(BaseIntermediateOutputPath)debian/postinst</DebianPostinstFile>
     </PropertyGroup>
 
