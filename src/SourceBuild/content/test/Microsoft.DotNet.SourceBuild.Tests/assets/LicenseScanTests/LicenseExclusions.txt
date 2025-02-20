@@ -78,6 +78,8 @@ src/efcore/test/EFCore.Tests/ChangeTracking/PropertyEntryTest.cs|proprietary-lic
 
 # Applies to installer, not source
 src/fsharp/setup/resources/eula/*.rtf
+
+# False positive
 src/fsharp/tests/fsharp/core/members/ops/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 
 #

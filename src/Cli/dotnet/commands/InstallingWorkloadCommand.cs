@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
         {
-            return GetCurrentInstallState(sdkFeatureBand, dotnetDir).UseWorkloadSets ?? false;
+            return GetCurrentInstallState(sdkFeatureBand, dotnetDir).ShouldUseWorkloadSets();
         }
 
         protected void UpdateWorkloadManifests(WorkloadHistoryRecorder recorder, ITransactionContext context, DirectoryPath? offlineCache)
@@ -352,7 +352,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, workloadSetVersion));
             var workloadSet = _workloadInstaller.InstallWorkloadSet(context, workloadSetVersion);
 
-            return _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
+            return workloadSet is null ? Enumerable.Empty<ManifestVersionUpdate>() : _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null,

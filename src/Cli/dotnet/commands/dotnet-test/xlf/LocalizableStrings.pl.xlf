@@ -88,8 +88,8 @@ Implies --blame.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameHangDescription">
-        <source>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout. Implies --blame-hang.</source>
-        <target state="translated">Uruchamia testy w trybie blame i włącza zbieranie zrzutów w stanie zawieszenia, gdy test przekroczy podany limit czasu. Implikuje użycie parametru --blame-hang.</target>
+        <source>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</source>
+        <target state="translated">Uruchamia testy w trybie blame i włącza zbieranie zrzutów w stanie zawieszenia, gdy test przekroczy podany limit czasu.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameHangDumpTypeDescription">
@@ -153,9 +153,19 @@ W przypadku platformy MSTest przed wersją 2.2.4 limit czasu jest używany dla w
         <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoAnsiDescription">
+        <source>Disable ANSI output.</source>
+        <target state="new">Disable ANSI output.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="translated">Uruchom testy bez wyświetlania baneru platformy testowej firmy Microsoft</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoProgressDescription">
+        <source>Disable progress reporting.</source>
+        <target state="new">Disable progress reporting.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
@@ -300,14 +310,19 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
         <target state="new">The test modules have the specified root directory.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestOutputDescription">
+        <source>Verbosity of test output.</source>
+        <target state="new">Verbosity of test output.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdUnsupportedMessageRequestTypeException">
         <source>Message Request type '{0}' is unsupported.</source>
         <target state="new">Message Request type '{0}' is unsupported.</target>
         <note>{0} - message request type</note>
       </trans-unit>
       <trans-unit id="CmdUnsupportedTestRunnerDescription">
-        <source>Test runner not supported: {0}.</source>
-        <target state="new">Test runner not supported: {0}.</target>
+        <source>Test runner '{0}' is not supported.</source>
+        <target state="new">Test runner '{0}' is not supported.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
@@ -388,6 +403,41 @@ Jeśli określony katalog nie istnieje, zostanie utworzony.</target>
       <trans-unit id="HangTimeoutArgumentName">
         <source>TIMESPAN</source>
         <target state="translated">TIMESPAN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpExtensionOptions">
+        <source>Extension Options:</source>
+        <target state="new">Extension Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpModuleIsMissingTheOptionBelow">
+        <source>{0} is missing the option below</source>
+        <target state="new">{0} is missing the option below</target>
+        <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpModuleIsMissingTheOptionsBelow">
+        <source>{0} is missing the options below</source>
+        <target state="new">{0} is missing the options below</target>
+        <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpOptions">
+        <source>Options:</source>
+        <target state="new">Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUnavailableExtensionOptions">
+        <source>Unavailable extension options:</source>
+        <target state="new">Unavailable extension options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUnavailableOptions">
+        <source>Unavailable options:</source>
+        <target state="new">Unavailable options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpWaitingForOptionsAndExtensions">
+        <source>Waiting for options and extensions...</source>
+        <target state="new">Waiting for options and extensions...</target>
         <note />
       </trans-unit>
       <trans-unit id="IgnoredArgumentsMessage">

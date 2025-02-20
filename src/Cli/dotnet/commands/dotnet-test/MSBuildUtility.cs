@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
+using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Logging;
+using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
@@ -16,64 +15,113 @@ namespace Microsoft.DotNet.Cli
     {
         public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
         {
-            var projectCollection = new ProjectCollection();
-            string rootDirectory = SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
-
             SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
 
-            if (solutionFilePath.HasExtension(".slnf"))
-            {
-                solutionFilePath = HandleFilteredSolutionFilePath(solutionFilePath, out rootDirectory);
-            }
+            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
-            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
-                solutionFilePath,
-                projectCollection,
-                buildOptions,
-                GetCommands(buildOptions.HasNoRestore, buildOptions.HasNoBuild));
+            string rootDirectory = solutionFilePath.HasExtension(".slnf") ?
+                    Path.GetDirectoryName(solutionModel.Description) :
+                    SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
-            ConcurrentBag<Module> projects = GetProjectsProperties(projectCollection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+            ConcurrentBag<Module> projects = GetProjectsProperties(new ProjectCollection(), solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+
+            isBuiltOrRestored |= !projects.IsEmpty;
+
             return (projects, isBuiltOrRestored);
         }
 
         public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
         {
-            var projectCollection = new ProjectCollection();
-            bool isBuiltOrRestored = true;
+            bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
 
-            if (!buildOptions.HasNoRestore)
-            {
-                isBuiltOrRestored = BuildOrRestoreProjectOrSolution(
-                    projectFilePath,
-                    projectCollection,
-                    buildOptions,
-                    [CliConstants.RestoreCommand]);
-            }
+            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions.BuildProperties), new ProjectCollection());
 
-            if (!buildOptions.HasNoBuild)
-            {
-                isBuiltOrRestored = isBuiltOrRestored && BuildOrRestoreProjectOrSolution(
-                    projectFilePath,
-                    projectCollection,
-                    buildOptions,
-                    [CliConstants.BuildCommand]);
-            }
-
-            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), projectCollection);
+            isBuiltOrRestored |= projects.Any();
 
             return (projects, isBuiltOrRestored);
         }
 
-        private static bool BuildOrRestoreProjectOrSolution(string filePath, ProjectCollection projectCollection, BuildOptions buildOptions, string[] commands)
+        public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
         {
-            var parameters = GetBuildParameters(projectCollection, buildOptions);
-            var globalProperties = GetGlobalProperties(buildOptions);
+            IEnumerable<string> propertyTokens = GetPropertyTokens(parseResult.UnmatchedTokens);
+            IEnumerable<string> binaryLoggerTokens = GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
 
-            var buildRequestData = new BuildRequestData(filePath, globalProperties, null, commands, null);
+            var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
+                .Concat(propertyTokens)
+                .Concat(binaryLoggerTokens);
 
-            BuildResult buildResult = BuildManager.DefaultBuildManager.Build(parameters, buildRequestData);
+            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+            unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
+            unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
 
-            return buildResult.OverallResult == BuildResultCode.Success;
+            PathOptions pathOptions = new(parseResult.GetValue(
+                TestingPlatformOptions.ProjectOption),
+                parseResult.GetValue(TestingPlatformOptions.SolutionOption),
+                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+
+            BuildProperties buildProperties = new(
+                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                ResolveRuntimeIdentifier(parseResult),
+                parseResult.GetValue(TestingPlatformOptions.FrameworkOption));
+
+            return new BuildOptions(
+                pathOptions,
+                buildProperties,
+                parseResult.GetValue(CommonOptions.NoRestoreOption),
+                parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
+                parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
+                degreeOfParallelism,
+                unmatchedTokens,
+                msbuildArgs);
+        }
+
+        private static string ResolveRuntimeIdentifier(ParseResult parseResult)
+        {
+            if (parseResult.HasOption(CommonOptions.RuntimeOption))
+            {
+                return parseResult.GetValue(CommonOptions.RuntimeOption);
+            }
+
+            if (!parseResult.HasOption(CommonOptions.OperatingSystemOption) && !parseResult.HasOption(CommonOptions.ArchitectureOption))
+            {
+                return string.Empty;
+            }
+
+            return CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(parseResult.GetValue(CommonOptions.OperatingSystemOption), parseResult.GetValue(CommonOptions.ArchitectureOption));
+        }
+
+        public static IEnumerable<string> GetPropertyTokens(IEnumerable<string> unmatchedTokens)
+        {
+            return unmatchedTokens.Where(token =>
+                token.StartsWith("--property:", StringComparison.OrdinalIgnoreCase) ||
+                token.StartsWith("/property:", StringComparison.OrdinalIgnoreCase) ||
+                token.StartsWith("-p:", StringComparison.OrdinalIgnoreCase) ||
+                token.StartsWith("/p:", StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static IEnumerable<string> GetBinaryLoggerTokens(IEnumerable<string> args)
+        {
+            return args.Where(arg =>
+                arg.StartsWith("/bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("/bl", StringComparison.OrdinalIgnoreCase) ||
+                arg.StartsWith("--binaryLogger:", StringComparison.OrdinalIgnoreCase) || arg.Equals("--binaryLogger", StringComparison.OrdinalIgnoreCase) ||
+                arg.StartsWith("-bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("-bl", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
+        {
+            List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
+
+            if (buildOptions.Verbosity is null)
+            {
+                msbuildArgs.Add($"-verbosity:quiet");
+            }
+
+            msbuildArgs.Add(filePath);
+            msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
+
+            int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore || buildOptions.HasNoBuild).Execute();
+
+            return result == (int)BuildResultCode.Success;
         }
 
         private static ConcurrentBag<Module> GetProjectsProperties(ProjectCollection projectCollection, IEnumerable<string> projects, BuildOptions buildOptions)
@@ -85,7 +133,7 @@ namespace Microsoft.DotNet.Cli
                 new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
                 (project) =>
                 {
-                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions), projectCollection);
+                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions.BuildProperties), projectCollection);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);
@@ -95,115 +143,26 @@ namespace Microsoft.DotNet.Cli
             return allProjects;
         }
 
-        private static string HandleFilteredSolutionFilePath(string solutionFilterFilePath, out string rootDirectory)
-        {
-            string solution = SlnFileFactory.GetSolutionPathFromFilteredSolutionFile(solutionFilterFilePath);
-
-            // Resolve the solution path relative to the .slnf file directory
-            string solutionFilterDirectory = Path.GetDirectoryName(solutionFilterFilePath);
-            string solutionFullPath = Path.GetFullPath(solution, solutionFilterDirectory);
-            rootDirectory = Path.GetDirectoryName(solutionFullPath);
-
-            return solutionFullPath;
-        }
-
-        internal static bool IsBinaryLoggerEnabled(ref List<string> args, out string binLogFileName)
-        {
-            binLogFileName = string.Empty;
-            var binLogArgs = new List<string>();
-
-            foreach (var arg in args)
-            {
-                if (arg.StartsWith("/bl:") || arg.Equals("/bl")
-                    || arg.StartsWith("--binaryLogger:") || arg.Equals("--binaryLogger")
-                    || arg.StartsWith("-bl:") || arg.Equals("-bl"))
-                {
-                    binLogArgs.Add(arg);
-
-                }
-            }
-
-            if (binLogArgs.Count > 0)
-            {
-                // Remove all BinLog args from the list of args
-                args.RemoveAll(arg => binLogArgs.Contains(arg));
-
-                // Get BinLog filename
-                var binLogArg = binLogArgs.LastOrDefault();
-
-                if (binLogArg.Contains(CliConstants.Colon))
-                {
-                    var parts = binLogArg.Split(CliConstants.Colon, 2);
-                    binLogFileName = !string.IsNullOrEmpty(parts[1]) ? parts[1] : CliConstants.BinLogFileName;
-                }
-                else
-                {
-                    binLogFileName = CliConstants.BinLogFileName;
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        private static BuildParameters GetBuildParameters(ProjectCollection projectCollection, BuildOptions buildOptions)
-        {
-            BuildParameters parameters = new(projectCollection)
-            {
-                Loggers = [new ConsoleLogger(LoggerVerbosity.Quiet)]
-            };
-
-            if (!buildOptions.AllowBinLog)
-                return parameters;
-
-            parameters.Loggers =
-            [
-                .. parameters.Loggers,
-                .. new[]
-                {
-                    new BinaryLogger
-                    {
-                        Parameters = buildOptions.BinLogFileName
-                    }
-                },
-            ];
-
-            return parameters;
-        }
-
-        private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
+        private static Dictionary<string, string> GetGlobalProperties(BuildProperties buildProperties)
         {
             var globalProperties = new Dictionary<string, string>();
 
-            if (!string.IsNullOrEmpty(buildOptions.Configuration))
+            if (!string.IsNullOrEmpty(buildProperties.Configuration))
             {
-                globalProperties[CliConstants.Configuration] = buildOptions.Configuration;
+                globalProperties[CliConstants.Configuration] = buildProperties.Configuration;
             }
 
-            if (!string.IsNullOrEmpty(buildOptions.RuntimeIdentifier))
+            if (!string.IsNullOrEmpty(buildProperties.RuntimeIdentifier))
             {
-                globalProperties[CliConstants.RuntimeIdentifier] = buildOptions.RuntimeIdentifier;
+                globalProperties[CliConstants.RuntimeIdentifier] = buildProperties.RuntimeIdentifier;
+            }
+
+            if (!string.IsNullOrEmpty(buildProperties.TargetFramework))
+            {
+                globalProperties[CliConstants.TargetFramework] = buildProperties.TargetFramework;
             }
 
             return globalProperties;
-        }
-
-        private static string[] GetCommands(bool hasNoRestore, bool hasNoBuild)
-        {
-            var commands = ImmutableArray.CreateBuilder<string>();
-
-            if (!hasNoRestore)
-            {
-                commands.Add(CliConstants.RestoreCommand);
-            }
-
-            if (!hasNoBuild)
-            {
-                commands.Add(CliConstants.BuildCommand);
-            }
-
-            return [.. commands];
         }
     }
 }

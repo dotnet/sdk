@@ -61,10 +61,7 @@ resources:
     ref: refs/tags/release
 
 extends:
-  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-    template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
-  ${{ else }}:
-    template: v1/1ES.Unofficial.PipelineTemplate.yml@1esPipelines
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     containers:
       alpine319WithNode:
@@ -110,7 +107,7 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          locBranch: release/9.0.2xx
+          locBranch: release/9.0.3xx
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
           preSteps:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force

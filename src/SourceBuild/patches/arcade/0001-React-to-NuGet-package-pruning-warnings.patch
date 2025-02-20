@@ -1,0 +1,28 @@
+From 6c7d07924bdfdf7c17b89ff50f1574e76618c381 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 14 Feb 2025 13:31:06 +0100
+Subject: [PATCH] React to NuGet package pruning warnings
+
+Backport: https://github.com/dotnet/arcade/pull/15518
+
+---
+ .../Client/CSharp/Microsoft.DotNet.Helix.Client.csproj       | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DotNet.Helix/Client/CSharp/Microsoft.DotNet.Helix.Client.csproj b/src/Microsoft.DotNet.Helix/Client/CSharp/Microsoft.DotNet.Helix.Client.csproj
+index 5204d4117..e0e56b3ae 100644
+--- a/src/Microsoft.DotNet.Helix/Client/CSharp/Microsoft.DotNet.Helix.Client.csproj
++++ b/src/Microsoft.DotNet.Helix/Client/CSharp/Microsoft.DotNet.Helix.Client.csproj
+@@ -14,8 +14,11 @@
+ 
+   <ItemGroup>
+     <PackageReference Include="Azure.Core" />
+-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+     <PackageReference Include="Newtonsoft.Json" />
++  </ItemGroup>
++
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
++    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+     <PackageReference Include="System.Collections.Immutable" />
+     <PackageReference Include="System.Text.Encodings.Web" />
+   </ItemGroup>

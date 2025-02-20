@@ -32,11 +32,11 @@ namespace Microsoft.DotNet.Cli
             {
                 PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
-                InitializeOutput(degreeOfParallelism, testOptions.IsHelp);
+                InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
 
                 InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
-                BuildOptions buildOptions = GetBuildOptions(parseResult, degreeOfParallelism);
+                BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
                 _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
                 TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue);
 
@@ -46,20 +46,20 @@ namespace Microsoft.DotNet.Cli
                 {
                     if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                     {
-                        return ExitCodes.GenericFailure;
+                        return ExitCode.GenericFailure;
                     }
                 }
                 else
                 {
                     if (!_msBuildHandler.RunMSBuild(buildOptions))
                     {
-                        return ExitCodes.GenericFailure;
+                        return ExitCode.GenericFailure;
                     }
 
                     if (!_msBuildHandler.EnqueueTestApplications())
                     {
                         _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
-                        return ExitCodes.GenericFailure;
+                        return ExitCode.GenericFailure;
                     }
                 }
 
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli
                 CleanUp();
             }
 
-            return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+            return hasFailed ? ExitCode.GenericFailure : ExitCode.Success;
         }
 
         private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
@@ -110,22 +110,22 @@ namespace Microsoft.DotNet.Cli
             };
         }
 
-        private void InitializeOutput(int degreeOfParallelism, bool isHelp)
+        private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, bool isHelp)
         {
             var console = new SystemConsole();
+            var showPassedTests = parseResult.GetValue<OutputOptions>(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
+            var noProgress = parseResult.HasOption(TestingPlatformOptions.NoProgressOption);
+            var noAnsi = parseResult.HasOption(TestingPlatformOptions.NoAnsiOption);
             _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
             {
-                ShowPassedTests = Environment.GetEnvironmentVariable("SHOW_PASSED") == "1" ? () => true : () => false,
-                ShowProgress = () => Environment.GetEnvironmentVariable("NO_PROGRESS") != "1",
-                UseAnsi = Environment.GetEnvironmentVariable("NO_ANSI") != "1",
+                ShowPassedTests = () => showPassedTests,
+                ShowProgress = () => !noProgress,
+                UseAnsi = !noAnsi,
                 ShowAssembly = true,
                 ShowAssemblyStartAndComplete = true,
             });
 
-            if (!isHelp)
-            {
-                _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
-            }
+            _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
         }
 
         private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions)
@@ -168,31 +168,11 @@ namespace Microsoft.DotNet.Cli
         private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
             new(parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
                 parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption),
+                parseResult.GetValue(CommonOptions.ArchitectureOption),
                 hasFilterMode,
                 isHelp);
 
-        private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
-        {
-            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-            bool allowBinLog = MSBuildUtility.IsBinaryLoggerEnabled(ref unmatchedTokens, out string binLogFileName);
-
-            return new BuildOptions(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
-                parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-                parseResult.GetValue(TestingPlatformOptions.DirectoryOption),
-                parseResult.HasOption(TestingPlatformOptions.NoRestoreOption),
-                parseResult.HasOption(TestingPlatformOptions.NoBuildOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
-                    CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, parseResult.GetValue(TestingPlatformOptions.ArchitectureOption)) :
-                    string.Empty,
-                allowBinLog,
-                binLogFileName,
-                degreeOfParallelism,
-                unmatchedTokens);
-        }
-
-        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.HelpOptionKey.Substring(0, 2));
+        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.ShortHelpOptionKey);
 
         private void CompleteRun()
         {
@@ -204,7 +184,7 @@ namespace Microsoft.DotNet.Cli
 
         private void CleanUp()
         {
-            _msBuildHandler.Dispose();
+            _msBuildHandler?.Dispose();
             foreach (var execution in _executions)
             {
                 execution.Key.Dispose();

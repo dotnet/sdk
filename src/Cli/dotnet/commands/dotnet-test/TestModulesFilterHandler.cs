@@ -10,7 +10,6 @@ namespace Microsoft.DotNet.Cli
     internal sealed class TestModulesFilterHandler
     {
         private readonly List<string> _args;
-
         private readonly TestApplicationActionQueue _actionQueue;
 
         public TestModulesFilterHandler(List<string> args, TestApplicationActionQueue actionQueue)
@@ -44,7 +43,7 @@ namespace Microsoft.DotNet.Cli
             // If no matches were found, we simply return
             if (!testModulePaths.Any())
             {
-                VSTestTrace.SafeWriteTrace(() => $"No test modules found for the given test module pattern: {testModules} with root directory: {rootDirectory}");
+                Logger.LogTrace(() => $"No test modules found for the given test module pattern: {testModules} with root directory: {rootDirectory}");
                 return false;
             }
 

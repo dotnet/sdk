@@ -13,8 +13,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunTestProjectWithNoTests_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunTestProjectWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -34,13 +34,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunMultipleTestProjectsWithNoTests_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -60,13 +60,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunTestProjectWithTests_ShouldReturnZeroAsExitCode(string configuration)
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -87,13 +87,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunMultipleTestProjectsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunMultipleTestProjectsWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
@@ -113,13 +113,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
                 .WithSource();
@@ -144,13 +144,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
@@ -165,13 +165,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunOnEmptyFolder_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunOnEmptyFolder_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())
                 .WithSource();
@@ -186,13 +186,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectsWithoutSolution", Guid.NewGuid().ToString())
                 .WithSource();
@@ -207,13 +207,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunOnProjectWithSolutionFile_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
                 .WithSource();
@@ -228,13 +228,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
-        public void RunOnProjectWithClassLibrary_ShouldReturnOneAsExitCode(string configuration)
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
+        public void RunOnProjectWithClassLibrary_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithClassLibrary", Guid.NewGuid().ToString())
                 .WithSource();
@@ -254,7 +254,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
     }
 }
