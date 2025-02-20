@@ -1,0 +1,27 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <RedistLayoutPath>$(OutputPath)dotnet\</RedistLayoutPath>
+    <SdkInternalLayoutPath>$(OutputPath)i\</SdkInternalLayoutPath>
+    <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
+    <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+  <Import Project="targets\BundledTemplates.targets" />
+  <Import Project="targets\BundledManifests.targets" />
+  <Import Project="targets\BundledDotnetTools.targets" />
+  <Import Project="targets\GenerateBundledVersions.targets" />
+  <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
+  <Import Project="targets\Crossgen.targets"
+          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'" />
+  <Import Project="targets\GenerateLayout.targets" />
+  <Import Project="targets\GenerateArchives.targets" Condition="'$(PackInstaller)' != 'false'"/>
+  <Import Project="targets\GenerateMSIs.targets" />
+  <Import Project="targets\GeneratePKG.targets" Condition="'$(PackInstaller)' != 'false'"/>
+  <Import Project="targets\GenerateInstallers.targets" Condition="'$(PackInstaller)' != 'false'"/>
+  <Import Project="targets\Badge.targets" />
+
+</Project>

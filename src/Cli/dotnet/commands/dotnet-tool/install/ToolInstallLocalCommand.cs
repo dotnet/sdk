@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool _allowRollForward;
         private readonly bool _updateAll;
 
-        internal readonly RestoreActionConfig _restoreActionConfig;
+        internal RestoreActionConfig restoreActionConfig;
 
         public ToolInstallLocalCommand(
             ParseResult parseResult,
@@ -56,11 +56,13 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                                   new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
-            _restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-                NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
+
+            restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+                NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-                Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));   
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, runtimeJsonPathForTests, _restoreActionConfig);
+                Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
+
+            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader, runtimeJsonPathForTests, restoreActionConfig);
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
         }
@@ -144,7 +146,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     manifestFile,
                     packageId,
                     toolDownloadedPackage.Version,
-                    toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
+                    [toolDownloadedPackage.Command.Name]);
                 _reporter.WriteLine(
                     string.Format(
                         Update.LocalizableStrings.UpdateLocalToolSucceeded,
@@ -170,7 +172,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 manifestFile,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version,
-                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray(),
+                [toolDownloadedPackage.Command.Name],
                 _allowRollForward);
 
             _localToolsResolverCache.SaveToolPackage(
@@ -180,7 +182,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _reporter.WriteLine(
                 string.Format(
                     LocalizableStrings.LocalToolInstallationSucceeded,
-                    string.Join(", ", toolDownloadedPackage.Commands.Select(c => c.Name)),
+                    toolDownloadedPackage.Command.Name,
                     toolDownloadedPackage.Id,
                     toolDownloadedPackage.Version.ToNormalizedString(),
                     manifestFile.Value).Green());

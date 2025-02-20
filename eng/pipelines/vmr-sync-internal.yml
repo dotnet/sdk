@@ -9,6 +9,7 @@ trigger:
     - internal/release/*.0.2xx
     - internal/release/*.0.3xx
     - internal/release/*.0.4xx
+    - internal/release/8.0.4*
 
 resources:
   repositories:
