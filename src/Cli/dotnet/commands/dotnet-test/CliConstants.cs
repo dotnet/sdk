@@ -27,8 +27,10 @@ namespace Microsoft.DotNet.Cli
 
         public const string RestoreCommand = "Restore";
         public const string BuildCommand = "Build";
+
         public const string Configuration = "Configuration";
         public const string RuntimeIdentifier = "RuntimeIdentifier";
+        public const string TargetFramework = "TargetFramework";
 
         public static readonly string[] ProjectExtensions = { ".proj", ".csproj", ".vbproj", ".fsproj" };
         public static readonly string[] SolutionExtensions = { ".sln", ".slnx", ".slnf" };
@@ -44,6 +46,8 @@ namespace Microsoft.DotNet.Cli
         public const string DLLExtension = ".dll";
 
         public const string MTPTarget = "_MTPBuild";
+
+        public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
     }
 
     internal static class TestStates

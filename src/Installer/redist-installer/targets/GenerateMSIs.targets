@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
+  <Target Name="SetupWixProperties">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
       <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(MicrosoftSignedWixVersion).zip</WixDownloadUrl>
@@ -117,7 +117,7 @@
   </Target>
 
   <Target Name="GenerateSdkMsi"
-          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo"
+          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs"
           Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkInternalLayoutPath)**/*;
                     $(SdkGenerateMsiPowershellScript)"
@@ -194,7 +194,7 @@
   </Target>
 
   <Target Name="GenerateTemplatesMsis"
-          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetSdkBrandingInfo;SetupTemplatesMsis"
+          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetupTemplatesMsis"
           Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'"
           Inputs="@(TemplatesMsiComponent);$(TemplatesGenerateMsiPowershellScript)"
           Outputs="%(TemplatesMsiComponent.MSIInstallerFile)">

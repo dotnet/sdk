@@ -267,7 +267,7 @@ Implies --blame.</value>
     <value>The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.</value>
   </data>
   <data name="CmdBlameHangDescription" xml:space="preserve">
-    <value>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout. Implies --blame-hang.</value>
+    <value>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</value>
   </data>
   <data name="CmdBlameHangDumpTypeDescription" xml:space="preserve">
     <value>The type of crash dump to be collected. The supported values are full (default), mini, and none. When 'none' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.</value>

@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Cli
                 msBuildExitCode = RunBuild(path, buildOptions);
             }
 
-            if (msBuildExitCode != ExitCodes.Success)
+            if (msBuildExitCode != ExitCode.Success)
             {
                 _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
                 return false;
@@ -67,14 +67,14 @@ namespace Microsoft.DotNet.Cli
             if (!solutionOrProjectFileFound)
             {
                 _output.WriteMessage(message);
-                return ExitCodes.GenericFailure;
+                return ExitCode.GenericFailure;
             }
 
             (IEnumerable<Module> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
 
             InitializeTestApplications(projects);
 
-            return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
+            return restored ? ExitCode.Success : ExitCode.GenericFailure;
         }
 
         private int RunBuild(string filePath, bool isSolution, BuildOptions buildOptions)
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Cli
 
             InitializeTestApplications(projects);
 
-            return restored ? ExitCodes.Success : ExitCodes.GenericFailure;
+            return restored ? ExitCode.Success : ExitCode.GenericFailure;
         }
 
         private void InitializeTestApplications(IEnumerable<Module> modules)
@@ -135,23 +135,19 @@ namespace Microsoft.DotNet.Cli
 
         private void LogProjectProperties(IEnumerable<Module> modules)
         {
-            if (!VSTestTrace.TraceEnabled)
+            if (!Logger.TraceEnabled)
             {
                 return;
             }
 
             foreach (var module in modules)
             {
-                Console.WriteLine();
-
-                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
-                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
-                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
-                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.TargetPath}: {module.TargetPath}");
-                VSTestTrace.SafeWriteTrace(() => $"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
-
-                Console.WriteLine();
+                Logger.LogTrace(() => $"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
+                Logger.LogTrace(() => $"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
+                Logger.LogTrace(() => $"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
+                Logger.LogTrace(() => $"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
+                Logger.LogTrace(() => $"{ProjectProperties.TargetPath}: {module.TargetPath}");
+                Logger.LogTrace(() => $"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
             }
         }
 

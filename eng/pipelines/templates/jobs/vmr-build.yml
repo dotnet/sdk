@@ -411,7 +411,7 @@ jobs:
         $(signArguments)
         $(buildPassArguments)
         $(ibcArguments)
-        $(_SignDiagnosicFilesArgs)
+        $(_SignDiagnosticFilesArgs)
         ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
