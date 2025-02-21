@@ -160,12 +160,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BlazorJSStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(FileName)' == '%(_BlazorJSFile.FileName)'" />
       <_BlazorJSPublishCandidate Include="%(_BlazorJSStaticWebAsset.RelativeDir)%(_BlazorJSStaticWebAsset.FileName).%(_BlazorJSStaticWebAsset.Fingerprint)%(_BlazorJSStaticWebAsset.Extension)" />
+      <_BlazorJSPublishCandidate>
+        <RelativePath>_framework/$([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)'))%(Extension)</RelativePath>
+      </_BlazorJSPublishCandidate>
     </ItemGroup>
 
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorJSPublishCandidate)"
       FingerprintCandidates="true"
-      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
       AssetKind="All"
