@@ -27,6 +27,8 @@ public class LinuxInstallerTests : IDisposable
 
     private const string NetStandard21RpmPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.rpm";
     private const string NetStandard21DebPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.deb";
+    private const string RuntimeDepsRepo = "mcr.microsoft.com/dotnet/nightly/runtime-deps";
+    private const string RuntimeDepsVersion = "10.0-preview";
 
     public static bool IncludeRpmTests => Config.TestRpmPackages;
     public static bool IncludeDebTests => Config.TestDebPackages;
@@ -64,14 +66,14 @@ public class LinuxInstallerTests : IDisposable
     }
 
     [ConditionalTheory(typeof(LinuxInstallerTests), nameof(IncludeRpmTests))]
-    [InlineData("mcr.microsoft.com/dotnet/nightly/runtime-deps", "10.0-preview-azurelinux3.0")]
+    [InlineData(RuntimeDepsRepo, $"{RuntimeDepsVersion}-azurelinux3.0")]
     public void RpmTest(string repo, string tag)
     {
         DistroTest($"{repo}:{tag}", PackageType.Rpm);
     }
 
     [ConditionalTheory(typeof(LinuxInstallerTests), nameof(IncludeDebTests))]
-    [InlineData("mcr.microsoft.com/dotnet/nightly/runtime-deps", "10.0-preview-trixie-slim")]
+    [InlineData(RuntimeDepsRepo, $"{RuntimeDepsVersion}-trixie-slim")]
     public void DebTest(string repo, string tag)
     {
         DistroTest($"{repo}:{tag}", PackageType.Deb);
@@ -206,7 +208,10 @@ public class LinuxInstallerTests : IDisposable
         }
         finally
         {
-            _dockerHelper.DeleteImage(tag);
+            if (!Config.KeepDockerImages)
+            {
+                _dockerHelper.DeleteImage(tag);
+            }
         }
     }
 

@@ -32,6 +32,9 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TestDebPackages">
         <Value>$(TestDebPackages)</Value>
       </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).KeepDockerImages">
+        <Value>$(KeepDockerImages)</Value>
+      </RuntimeHostConfigurationOption>
     </ItemGroup>
   </Target>
 

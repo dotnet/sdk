@@ -29,6 +29,9 @@ public static class Config
     public static bool TestDebPackages { get; } = TryGetRuntimeConfig(TestDebPackagesSwitch, out bool value) ? value : false;
     const string TestDebPackagesSwitch = RuntimeConfigSwitchPrefix + nameof(TestDebPackages);
 
+    public static bool KeepDockerImages { get; } = TryGetRuntimeConfig(KeepDockerImagesSwitch, out bool value) ? value : false;
+    const string KeepDockerImagesSwitch = RuntimeConfigSwitchPrefix + nameof(KeepDockerImages);
+
     public const string RuntimeConfigSwitchPrefix = "Microsoft.DotNet.Installer.Tests.";
 
     public static string GetRuntimeConfig(string key)
