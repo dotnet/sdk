@@ -25,6 +25,10 @@ public class LinuxInstallerTests : IDisposable
     private readonly string _tmpDir;
     private readonly string _contextDir;
 
+    private bool _rpmContextInitialized = false;
+    private bool _debContextInitialized = false;
+    private bool _sharedContextInitialized = false;
+
     private const string NetStandard21RpmPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.rpm";
     private const string NetStandard21DebPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.deb";
     private const string RuntimeDepsRepo = "mcr.microsoft.com/dotnet/nightly/runtime-deps";
@@ -50,8 +54,6 @@ public class LinuxInstallerTests : IDisposable
         Directory.CreateDirectory(_tmpDir);
         _contextDir = Path.Combine(_tmpDir, Path.GetRandomFileName());
         Directory.CreateDirectory(_contextDir);
-
-        InitializeContext();
     }
 
     public void Dispose()
@@ -69,6 +71,8 @@ public class LinuxInstallerTests : IDisposable
     [InlineData(RuntimeDepsRepo, $"{RuntimeDepsVersion}-azurelinux3.0")]
     public void RpmTest(string repo, string tag)
     {
+        InitializeContext(PackageType.Rpm);
+
         DistroTest($"{repo}:{tag}", PackageType.Rpm);
     }
 
@@ -76,52 +80,66 @@ public class LinuxInstallerTests : IDisposable
     [InlineData(RuntimeDepsRepo, $"{RuntimeDepsVersion}-trixie-slim")]
     public void DebTest(string repo, string tag)
     {
+        InitializeContext(PackageType.Deb);
+
         DistroTest($"{repo}:{tag}", PackageType.Deb);
     }
 
-    private void InitializeContext()
+    private void InitializeContext(PackageType packageType)
     {
-        // For rpm enumerate RPM packages, excluding those that contain ".cm." in the name
-        List<string> rpmPackages = Directory.GetFiles(Config.AssetsDirectory, "*.rpm", SearchOption.AllDirectories)
-            .Where(p => !Path.GetFileName(p).Contains("-cm.") && !Path.GetFileName(p).EndsWith("azl.rpm"))
-            .ToList();
-
-        foreach (string rpmPackage in rpmPackages)
+        if (packageType == PackageType.Rpm && !_rpmContextInitialized)
         {
-            File.Copy(rpmPackage, Path.Combine(_contextDir, Path.GetFileName(rpmPackage)));
+            // For rpm enumerate RPM packages, excluding those that contain ".cm." in the name
+            List<string> rpmPackages = Directory.GetFiles(Config.AssetsDirectory, "*.rpm", SearchOption.AllDirectories)
+                .Where(p => !Path.GetFileName(p).Contains("-cm.") && !Path.GetFileName(p).EndsWith("azl.rpm"))
+                .ToList();
+
+            foreach (string rpmPackage in rpmPackages)
+            {
+                File.Copy(rpmPackage, Path.Combine(_contextDir, Path.GetFileName(rpmPackage)));
+            }
+
+            DownloadFileAsync(NetStandard21RpmPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21RpmPackage))).Wait();
+            _rpmContextInitialized = true;
+        }
+        else if (!_debContextInitialized)
+        {
+            // Copy all DEB packages as well
+            foreach (string debPackage in Directory.GetFiles(Config.AssetsDirectory, "*.deb", SearchOption.AllDirectories))
+            {
+                File.Copy(debPackage, Path.Combine(_contextDir, Path.GetFileName(debPackage)));
+            }
+
+            // Download NetStandard 2.1 packages
+            DownloadFileAsync(NetStandard21DebPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21DebPackage))).Wait();
+            _debContextInitialized = true;
         }
 
-        // Copy all DEB packages as well
-        foreach (string debPackage in Directory.GetFiles(Config.AssetsDirectory, "*.deb", SearchOption.AllDirectories))
+        if (!_sharedContextInitialized)
         {
-            File.Copy(debPackage, Path.Combine(_contextDir, Path.GetFileName(debPackage)));
+            // Copy nuget packages
+            string nugetPackagesDir = Path.Combine(_contextDir, "packages");
+            Directory.CreateDirectory(nugetPackagesDir);
+            foreach (string package in Directory.GetFiles(Config.PackagesDirectory, "*.nupkg", SearchOption.AllDirectories))
+            {
+                File.Copy(package, Path.Combine(nugetPackagesDir, Path.GetFileName(package)));
+            }
+
+            // Copy and update NuGet.config from scenario-tests repo
+            string newNuGetConfig = Path.Combine(_contextDir, "NuGet.config");
+            File.Copy(Config.ScenarioTestsNuGetConfigPath, newNuGetConfig);
+            InsertLocalPackagesPathToNuGetConfig(newNuGetConfig, "/packages");
+
+            // Find the scenario-tests package and unpack it to the context dir, subfolder "scenario-tests"
+            string? scenarioTestsPackage = Directory.GetFiles(nugetPackagesDir, "Microsoft.DotNet.ScenarioTests.SdkTemplateTests*.nupkg", SearchOption.AllDirectories).FirstOrDefault();
+            if (scenarioTestsPackage == null)
+            {
+                Assert.Fail("Scenario tests package not found");
+            }
+
+            ZipFile.ExtractToDirectory(scenarioTestsPackage, Path.Combine(_contextDir, "scenario-tests"));
+            _sharedContextInitialized = true;
         }
-
-        // Download NetStandard 2.1 packages
-        DownloadFileAsync(NetStandard21RpmPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21RpmPackage))).Wait();
-        DownloadFileAsync(NetStandard21DebPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21DebPackage))).Wait();
-
-        // Copy nuget packages
-        string nugetPackagesDir = Path.Combine(_contextDir, "packages");
-        Directory.CreateDirectory(nugetPackagesDir);
-        foreach (string package in Directory.GetFiles(Config.PackagesDirectory, "*.nupkg", SearchOption.AllDirectories))
-        {
-            File.Copy(package, Path.Combine(nugetPackagesDir, Path.GetFileName(package)));
-        }
-
-        // Copy and update NuGet.config from scenario-tests repo
-        string newNuGetConfig = Path.Combine(_contextDir, "NuGet.config");
-        File.Copy(Config.ScenarioTestsNuGetConfigPath, newNuGetConfig);
-        InsertLocalPackagesPathToNuGetConfig(newNuGetConfig, "/packages");
-
-        // Find the scenario-tests package and unpack it to the context dir, subfolder "scenario-tests"
-        string? scenarioTestsPackage = Directory.GetFiles(nugetPackagesDir, "Microsoft.DotNet.ScenarioTests.SdkTemplateTests*.nupkg", SearchOption.AllDirectories).FirstOrDefault();
-        if (scenarioTestsPackage == null)
-        {
-            Assert.Fail("Scenario tests package not found");
-        }
-
-        ZipFile.ExtractToDirectory(scenarioTestsPackage, Path.Combine(_contextDir, "scenario-tests"));
     }
 
     private void InsertLocalPackagesPathToNuGetConfig(string nuGetConfig, string localPackagesPath)
