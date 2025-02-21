@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="SetupWixProperties">
+  <Target Name="SetupWixProperties" DependsOnTargets="GetAssemblyVersion">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
       <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(MicrosoftSignedWixVersion).zip</WixDownloadUrl>
@@ -54,7 +54,6 @@
 
       <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
       <SDKBundleVersion>$(FileVersion)</SDKBundleVersion>
-      <SDKBundleVersion Condition=" '$(SDKBundleVersion)' == '' ">$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
     </PropertyGroup>
   </Target>
 
