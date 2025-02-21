@@ -189,10 +189,6 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 // ^ Workaround in some shells.
 ```
 
-## IDE
-
-Roslyn/VSCode should be updated so that users get IntelliSense in file-based programs.
-
 ## Other commands
 
 We can consider supporting other commands like `dotnet build`, `dotnet pack`, `dotnet watch`.
