@@ -540,15 +540,25 @@ for path 'candidate.js'");
         [Fact]
         public void DefineStaticWebAssetsCache_UpToDate()
         {
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+            // Arrange
+            var (cache, inputHashes) = SetupCache([], []);
+            // Assert
+            cache.PrepareForProcessing([], [], [], inputHashes);
 
-            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, null);
+            // Assert
+            Assert.True(cache.IsUpToDate());
+        }
 
-            cache.PrepareForProcessing([], [], [], []);
+        [Fact]
+        public void DefineStaticWebAssetsCache_UpToDate_WithAssets()
+        {
+            // Arrange
+            var (cache, inputHashes) = SetupCache(["input1"], ["input1"]);
+
+            // Act
+            cache.PrepareForProcessing([], [], [], inputHashes);
+
+            // Assert
             Assert.True(cache.IsUpToDate());
         }
 
@@ -558,20 +568,10 @@ for path 'candidate.js'");
         [InlineData(UpdatedHash.Overrides)]
         public void DefineStaticWebAssetsCache_Recomputes_All_WhenPropertiesChange(UpdatedHash updated)
         {
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+            // Arrange
+            var (cache, inputHashes) = SetupCache(["input1", "input2"], ["input1", "input2"]);
 
-            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, null);
-
-            var inputHashes = new Dictionary<string, ITaskItem>
-            {
-                ["input1"] = new TaskItem("input1"),
-                ["input2"] = new TaskItem("input2")
-            };
-
+            // Act
             switch (updated)
             {
                 case UpdatedHash.GlobalProperties:
@@ -586,37 +586,23 @@ for path 'candidate.js'");
             }
 
             Assert.False(cache.IsUpToDate());
-            Assert.Same(inputHashes, cache.RemainingInputs());
+            Assert.Same(inputHashes, cache.OutOfDateInputs());
         }
 
         [Fact]
         public void DefineStaticWebAssetsCache_PartialUpdate_WhenOnlySome_InputsChange()
         {
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+            // Arrange
+            var (cache, inputHashes) = SetupCache(["input1"], ["input2"], appendCachedToInputHashes: true);
+            var cachedAsset = cache.CachedAssets.Values.Single();
 
-            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, null);
-            cache.InputHashes = ["input2"];
-            var cachedAsset = new TaskItem("input2");
-            cache.CachedAssets = new Dictionary<string, ITaskItem>
-            {
-                ["input2"] = cachedAsset,
-            };
-
-            var inputHashes = new Dictionary<string, ITaskItem>
-            {
-                ["input1"] = new TaskItem("input1"),
-                ["input2"] = cachedAsset
-            };
-
+            // Act
             cache.PrepareForProcessing([], [], [], inputHashes);
 
+            // Assert
             Assert.False(cache.IsUpToDate());
-            Assert.NotSame(inputHashes, cache.RemainingInputs());
-            var input1 = Assert.Single(cache.RemainingInputs());
+            Assert.NotSame(inputHashes, cache.OutOfDateInputs());
+            var input1 = Assert.Single(cache.OutOfDateInputs());
             var ouput = cache.ComputeOutputs();
             var input2 = Assert.Single(ouput.Assets);
         }
@@ -624,34 +610,19 @@ for path 'candidate.js'");
         [Fact]
         public void DefineStaticWebAssetsCache_PartialUpdate_NewAssetsCanBeAddedToTheCache()
         {
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
-
-            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, null);
-            cache.InputHashes = ["input2"];
-            var cachedAsset = new TaskItem("input2");
-            cache.CachedAssets = new Dictionary<string, ITaskItem>
-            {
-                ["input2"] = cachedAsset,
-            };
-
-            var newAsset = new TaskItem("input1");
-            var inputHashes = new Dictionary<string, ITaskItem>
-            {
-                ["input1"] = newAsset,
-                ["input2"] = cachedAsset
-            };
-
+            // Arrange
+            var (cache, inputHashes) = SetupCache(["input1"], ["input2"], appendCachedToInputHashes: true);
             cache.PrepareForProcessing([], [], [], inputHashes);
-            cache.AppendAsset("input1", newAsset);
 
+            // Act
+            var newAssetItem = inputHashes["input1"];
+            var newAsset = new StaticWebAsset { Identity = newAssetItem.ItemSpec };
+            cache.AppendAsset("input1", newAsset, newAssetItem);
+
+            // Assert
             Assert.False(cache.IsUpToDate());
-            Assert.NotSame(inputHashes, cache.RemainingInputs());
-            var input1 = Assert.Single(cache.RemainingInputs());
-
+            Assert.NotSame(inputHashes, cache.OutOfDateInputs());
+            var input1 = Assert.Single(cache.OutOfDateInputs());
             Assert.Contains("input1", cache.CachedAssets.Keys);
 
             var ouput = cache.ComputeOutputs();
@@ -670,45 +641,55 @@ for path 'candidate.js'");
             }
             try
             {
-                var errorMessages = new List<string>();
-                var buildEngine = new Mock<IBuildEngine>();
-                buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                    .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-                var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+                var (cache, inputHashes) = SetupCache([], [], appendCachedToInputHashes: true, manifestPath: manifestPath);
 
-
-                var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, manifestPath);
+                var cachedAsset = CreateCandidate(Path.Combine(Environment.CurrentDirectory, "Input2.txt"), "Input2.txt");
                 cache.InputHashes = ["input2"];
-                var cachedAsset = CreateCandidate(Path.Combine(Environment.CurrentDirectory, "Input1.txt"), "Input1.txt");
-                cache.CachedAssets = new Dictionary<string, ITaskItem>
-                {
-                    ["input2"] = cachedAsset,
-                };
+                cache.CachedAssets["input2"] = new StaticWebAsset { Identity = cachedAsset.ItemSpec, RelativePath = "Input2.txt" };
+                inputHashes["input2"] = cachedAsset;
 
-                var newAsset = CreateCandidate(Path.Combine(Environment.CurrentDirectory, "Input2.txt"), "Input2.txt");
-                var inputHashes = new Dictionary<string, ITaskItem>
-                {
-                    ["input1"] = newAsset,
-                    ["input2"] = cachedAsset
-                };
+                var newAsset = CreateCandidate(Path.Combine(Environment.CurrentDirectory, "Input1.txt"), "Input1.txt");
+                inputHashes["input1"] = newAsset;
 
                 cache.PrepareForProcessing([], [], [], inputHashes);
-                cache.AppendAsset("input1", newAsset);
-
+                cache.AppendAsset("input1", new StaticWebAsset { Identity = newAsset.ItemSpec, RelativePath = "Input1.txt" }, newAsset);
                 cache.WriteCacheManifest();
 
-                var otherManifest = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, manifestPath);
+                var otherManifest = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(CreateLogger(), manifestPath);
                 Assert.Equal(cache.InputHashes, otherManifest.InputHashes);
                 Assert.Equal(cache.CachedAssets.Count, otherManifest.CachedAssets.Count);
-                Assert.Equal(cache.CachedAssets["input2"].ItemSpec, otherManifest.CachedAssets["input2"].ItemSpec);
-                Assert.Equal(cache.CachedAssets["input2"].GetMetadata("RelativePath"), otherManifest.CachedAssets["input2"].GetMetadata("RelativePath"));
-                Assert.Equal(cache.CachedAssets["input1"].ItemSpec, otherManifest.CachedAssets["input1"].ItemSpec);
-                Assert.Equal(cache.CachedAssets["input1"].GetMetadata("RelativePath"), otherManifest.CachedAssets["input1"].GetMetadata("RelativePath"));
+                Assert.Equal(cache.CachedAssets["input2"].Identity, otherManifest.CachedAssets["input2"].Identity);
+                Assert.Equal(cache.CachedAssets["input2"].RelativePath, otherManifest.CachedAssets["input2"].RelativePath);
+                Assert.Equal(cache.CachedAssets["input1"].Identity, otherManifest.CachedAssets["input1"].Identity);
+                Assert.Equal(cache.CachedAssets["input1"].RelativePath, otherManifest.CachedAssets["input1"].RelativePath);
             }
             finally
             {
                 File.Delete(manifestPath);
             }
+        }
+        private static TaskLoggingHelper CreateLogger()
+        {
+            var errorMessages = new List<string>();
+            var buildEngine = new Mock<IBuildEngine>();
+            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+            var loggingHelper = new TaskLoggingHelper(buildEngine.Object, "DefineStaticWebAssets");
+            return loggingHelper;
+        }
+
+        private (DefineStaticWebAssets.DefineStaticWebAssetsCache cache, Dictionary<string, ITaskItem> inputHashes) SetupCache(
+            string[] newAssets,
+            string[] cached,
+            bool appendCachedToInputHashes = false,
+            string manifestPath = null)
+        {
+            var loggingHelper = CreateLogger();
+            var cache = DefineStaticWebAssets.DefineStaticWebAssetsCache.ReadOrCreateCache(loggingHelper, manifestPath);
+            cache.InputHashes = [.. cached];
+            cache.CachedAssets = cached.ToDictionary(c => c, c => new StaticWebAsset { Identity = c });
+
+            return (cache, newAssets.Concat(appendCachedToInputHashes ? cached : []).ToDictionary(c => c, c => new TaskItem(c) as ITaskItem));
         }
 
         public enum UpdatedHash
