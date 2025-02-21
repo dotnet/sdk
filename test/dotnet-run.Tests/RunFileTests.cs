@@ -565,4 +565,33 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Select(f => f.Name)
             .Should().BeEmpty();
     }
+
+    /// <summary>
+    /// Default projects include and compile also non-C# files, like resources.
+    /// </summary>
+    [Fact]
+    public void EmbeddedResource()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            using var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Program.Resources.resources")!;
+            using var reader = new System.Resources.ResourceReader(stream);
+            Console.WriteLine(reader.Cast<System.Collections.DictionaryEntry>().Single());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), """
+            <root>
+              <data name="MyString">
+                <value>TestValue</value>
+              </data>
+            </root>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                [MyString, TestValue]
+                """);
+    }
 }
