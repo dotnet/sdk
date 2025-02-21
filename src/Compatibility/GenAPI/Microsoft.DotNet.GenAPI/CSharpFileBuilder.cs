@@ -52,8 +52,8 @@ namespace Microsoft.DotNet.GenAPI
         public void WriteAssembly(IAssemblySymbol assemblySymbol)
         {
             _textWriter.Write(GetFormattedHeader(_header));
-            Document document = _docGenerator.GetDocumentForAssembly(assemblySymbol);
-            _docGenerator.GetFormattedRootNodeForDocument(document).WriteTo(_textWriter);
+            Document document = _docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).Result;
+            _docGenerator.GetFormattedRootNodeForDocument(document).Result.WriteTo(_textWriter);
         }
 
         private static string GetFormattedHeader(string? customHeader)

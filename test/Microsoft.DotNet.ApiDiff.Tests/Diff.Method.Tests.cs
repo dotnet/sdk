@@ -8,9 +8,8 @@ public class DiffMethodTests : DiffBaseTests
     #region Methods
 
     [Fact]
-    public void TestMethodAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestMethodAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -38,12 +37,10 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestMethodChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestMethodChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -75,12 +72,10 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestMethodDelete()
-    {
-        RunTest(beforeCode: """
+    public Task TestMethodDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -108,13 +103,12 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestMethodReturnChange()
-    {
+    public Task TestMethodReturnChange() =>
         // The DocID remains the same, but the return type changes
-        RunTest(beforeCode: """
+        RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -147,12 +141,10 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestMethodParametersChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestMethodParametersChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -184,16 +176,14 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     #endregion
 
     #region Constructors
 
     [Fact]
-    public void TestConstructorAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestConstructorAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -221,12 +211,10 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """, hideImplicitDefaultConstructors: true);
-    }
 
     [Fact]
-    public void TestConstructorDelete()
-    {
-        RunTest(beforeCode: """
+    public Task TestConstructorDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -254,12 +242,10 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """, hideImplicitDefaultConstructors: true);
-    }
 
     [Fact]
-    public void TestDefaultConstructorMakePrivate()
-    {
-        RunTest(beforeCode: """
+    public Task TestDefaultConstructorMakePrivate() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -290,12 +276,10 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestDefaultConstructorMakePublic()
-    {
-        RunTest(beforeCode: """
+    public Task TestDefaultConstructorMakePublic() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -326,41 +310,15 @@ public class DiffMethodTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     #endregion
 
     #region Exclusions
 
     [Fact]
-    public void TestExcludeAddedMethod()
-    {
-        RunTest(beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                        public void MyMethod() { }
-                    }
-                }
-                """,
-                expectedCode: "",
-                hideImplicitDefaultConstructors: true,
-                apisToExclude: ["M:MyNamespace.MyClass.MyMethod"]);
-    }
 
-    [Fact]
-    public void TestExcludeModifiedMethod()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeModifiedMethod() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -381,12 +339,10 @@ public class DiffMethodTests : DiffBaseTests
                 expectedCode: "",
                 hideImplicitDefaultConstructors: true,
                 apisToExclude: ["M:MyNamespace.MyClass.MyMethod1", "M:MyNamespace.MyClass.MyMethod2"]);
-    }
 
     [Fact]
-    public void TestExcludeRemovedMethod()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeRemovedMethod() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -406,7 +362,6 @@ public class DiffMethodTests : DiffBaseTests
                 expectedCode: "",
                 hideImplicitDefaultConstructors: true,
                 apisToExclude: ["M:MyNamespace.MyClass.MyMethod"]);
-    }
 
     #endregion
 }

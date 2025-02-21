@@ -8,9 +8,8 @@ public class DiffAttributeTests : DiffBaseTests
     #region Type attributes
 
     [Fact]
-    public void TestTypeAttributeAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestTypeAttributeAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.All)]
@@ -46,13 +45,12 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """, hideImplicitDefaultConstructors: true);
-    }
 
     [Fact]
-    public void TestTypeAttributeDeleteAndAdd()
-    {
+    public Task TestTypeAttributeDeleteAndAdd() =>
         // Added APIs always show up at the end.
-        RunTest(beforeCode: """
+        RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.All)]
@@ -103,12 +101,10 @@ public class DiffAttributeTests : DiffBaseTests
                   }
                 """,
                 attributesToExclude: []);
-    }
 
     [Fact]
-    public void TestTypeAttributeSwitch()
-    {
-        RunTest(beforeCode: """
+    public Task TestTypeAttributeSwitch() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.All)]
@@ -158,12 +154,10 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestTypeChangeAndAttributeAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestTypeChangeAndAttributeAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.All)]
@@ -206,12 +200,10 @@ public class DiffAttributeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestTypeChangeButAttributeStays()
-    {
-        RunTest(beforeCode: """
+    public Task TestTypeChangeButAttributeStays() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.All)]
@@ -256,7 +248,6 @@ public class DiffAttributeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     #endregion
 
@@ -268,9 +259,8 @@ public class DiffAttributeTests : DiffBaseTests
 
     //[Fact]
     [ActiveIssue("Parameter attributes are not showing up in the syntax tree.")]
-    internal void TestParameterAttributeAdd()
-    {
-        RunTest(beforeCode: """
+    internal void TestParameterAttributeAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.Parameter)]
@@ -312,16 +302,14 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """, hideImplicitDefaultConstructors: true);
-    }
 
     #endregion
 
     #region Attribute list expansion
 
     [Fact]
-    public void TestTypeAttributeListExpansion()
-    {
-        RunTest(beforeCode: """
+    public Task TestTypeAttributeListExpansion() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.All)]
@@ -368,12 +356,10 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """, hideImplicitDefaultConstructors: true);
-    }
 
     [Fact]
-    public void TestMethodAttributeListExpansion()
-    {
-        RunTest(beforeCode: """
+    public Task TestMethodAttributeListExpansion() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.All)]
@@ -423,13 +409,11 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """, hideImplicitDefaultConstructors: true);
-    }
 
     //[Fact]
     [ActiveIssue("Parameter attributes are not showing up in the syntax tree.")]
-    internal void TestParameterAttributeListNoExpansion()
-    {
-        RunTest(beforeCode: """
+    internal void TestParameterAttributeListNoExpansion() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     [System.AttributeUsage(System.AttributeTargets.Parameter)]
@@ -481,18 +465,17 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """, hideImplicitDefaultConstructors: true);
-    }
 
     #endregion
 
     #region Attribute exclusion
 
     [Fact]
-    public void TestSuppressAllDefaultAttributes()
-    {
+    public Task TestSuppressAllDefaultAttributes() =>
         // The attributes that should get hidden in this test must all be part of
         // the DiffGeneratorFactory.DefaultAttributesToExclude list.
-        RunTest(beforeCode: """
+        RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -532,12 +515,10 @@ public class DiffAttributeTests : DiffBaseTests
                   }
                 """,
                 attributesToExclude: null); // null forces using the default list
-    }
 
     [Fact]
-    public void TestSuppressNone()
-    {
-        RunTest(beforeCode: """
+    public Task TestSuppressNone() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -581,12 +562,10 @@ public class DiffAttributeTests : DiffBaseTests
                   }
                 """,
                 attributesToExclude: []); // empty list is respected as is
-    }
 
     [Fact]
-    public void TestSuppressOnlyCustom()
-    {
-        RunTest(beforeCode: """
+    public Task TestSuppressOnlyCustom() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -629,12 +608,10 @@ public class DiffAttributeTests : DiffBaseTests
                   }
                 """,
                 attributesToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Overrides the default list
-    }
 
     [Fact]
-    public void TestSuppressTypeAndAttributeUsage()
-    {
-        RunTest(beforeCode: """
+    public Task TestSuppressTypeAndAttributeUsage() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -659,7 +636,6 @@ public class DiffAttributeTests : DiffBaseTests
                 hideImplicitDefaultConstructors: true,
                 attributesToExclude: ["T:MyNamespace.MyAttributeAttribute"], // Exclude the attribute decorating other APIs
                 apisToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Excludes the type definition of the attribute itself
-    }
 
     #endregion
 }

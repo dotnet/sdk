@@ -37,6 +37,8 @@ public sealed class CSharpAssemblyDocumentGenerator
     private readonly bool _hideImplicitDefaultConstructors;
     private readonly CSharpCompilationOptions _compilationOptions;
 
+    private static readonly SingleLineStatementCSharpSyntaxRewriter s_SingleLineRewriter = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CSharpAssemblyDocumentGenerator"/> class.
     /// </summary>
@@ -84,7 +86,7 @@ public sealed class CSharpAssemblyDocumentGenerator
     /// </summary>
     /// <param name="assemblySymbol">The assembly symbol that represents the loaded assembly.</param>
     /// <returns>The source code document instance of the specified assembly symbol.</returns>
-    public Document GetDocumentForAssembly(IAssemblySymbol assemblySymbol)
+    public async Task<Document> GetDocumentForAssemblyAsync(IAssemblySymbol assemblySymbol)
     {
         Project project = _adhocWorkspace.AddProject(ProjectInfo.Create(
             ProjectId.CreateNewId(), VersionStamp.Create(), assemblySymbol.Name, assemblySymbol.Name, LanguageNames.CSharp,
@@ -118,8 +120,8 @@ public sealed class CSharpAssemblyDocumentGenerator
         compilationUnit = compilationUnit.NormalizeWhitespace(eol: Environment.NewLine);
 
         Document document = project.AddDocument(assemblySymbol.Name, compilationUnit);
-        document = Simplifier.ReduceAsync(document).Result;
-        document = Formatter.FormatAsync(document, DefineFormattingOptions()).Result;
+        document = await Simplifier.ReduceAsync(document).ConfigureAwait(false);
+        document = await Formatter.FormatAsync(document, DefineFormattingOptions()).ConfigureAwait(false);
 
         return document;
     }
@@ -129,7 +131,11 @@ public sealed class CSharpAssemblyDocumentGenerator
     /// </summary>
     /// <param name="document">A source code document instance.</param>
     /// <returns>The root syntax node of the specified document.</returns>
-    public SyntaxNode GetFormattedRootNodeForDocument(Document document) => document.GetSyntaxRootAsync().Result!.Rewrite(new SingleLineStatementCSharpSyntaxRewriter());
+    public async Task<SyntaxNode> GetFormattedRootNodeForDocument(Document document)
+    {
+        SyntaxNode? root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
+        return root.Rewrite(s_SingleLineRewriter);
+    }
 
     private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)
     {

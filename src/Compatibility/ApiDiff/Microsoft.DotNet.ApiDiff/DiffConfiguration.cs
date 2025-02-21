@@ -13,9 +13,10 @@ public record DiffConfiguration(
     string? BeforeAssemblyReferencesFolderPath,
     string OutputFolderPath,
     string TableOfContentsTitle,
+    string[]? AssembliesToExclude,
     string[]? AttributesToExclude,
     string[]? ApisToExclude,
     bool AddPartialModifier,
     bool HideImplicitDefaultConstructors,
-    bool Debug
+    bool AttachDebugger
 );

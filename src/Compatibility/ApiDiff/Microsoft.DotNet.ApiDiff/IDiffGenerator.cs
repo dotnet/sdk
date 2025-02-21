@@ -6,12 +6,12 @@ namespace Microsoft.DotNet.ApiDiff;
 public interface IDiffGenerator
 {
     /// <summary>
-    /// Gets the results of the diff. The key is the assembly name and the value is the diff. This dictionary might get populated after calling <see cref="Run" />, depending on the use case.
+    /// Gets the results of the diff. The key is the assembly name and the value is the diff. This dictionary might get populated after calling <see cref="RunAsync" />, depending on the use case.
     /// </summary>
     IReadOnlyDictionary<string, string> Results { get; }
 
     /// <summary>
-    /// Runs the diff generator and may populate the <see cref="Results"/> dictionary depending on the use case.
+    /// Asynchronously runs the diff generator and may populate the <see cref="Results"/> dictionary depending on the use case.
     /// </summary>
-    void Run();
+    Task RunAsync();
 }

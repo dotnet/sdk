@@ -8,9 +8,8 @@ public class DiffTypeTests : DiffBaseTests
     #region Classes
 
     [Fact]
-    public void TestClassAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestClassAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -38,12 +37,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestClassChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestClassChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -78,12 +75,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestClassDelete()
-        {
-            RunTest(beforeCode: """
+    public Task TestClassDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -111,16 +106,14 @@ public class DiffTypeTests : DiffBaseTests
                 -     }
                   }
                 """);
-        }
 
     #endregion
 
     #region Structs
 
     [Fact]
-    public void TestStructAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestStructAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -147,12 +140,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestStructChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestStructChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyBeforeStruct
@@ -179,12 +170,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestStructDelete()
-    {
-        RunTest(beforeCode: """
+    public Task TestStructDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -211,16 +200,14 @@ public class DiffTypeTests : DiffBaseTests
                 -     }
                   }
                 """);
-    }
 
     #endregion
 
     #region Records
 
     [Fact]
-    public void TestRecordAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestRecordAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public record MyStruct
@@ -245,12 +232,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestRecordChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestRecordChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public record MyBeforeRecord(int a);
@@ -273,12 +258,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestRecordDelete()
-    {
-        RunTest(beforeCode: """
+    public Task TestRecordDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public record MyStruct
@@ -303,16 +286,14 @@ public class DiffTypeTests : DiffBaseTests
                 -     }
                   }
                 """);
-    }
 
     #endregion
 
     #region Delegates
 
     [Fact]
-    public void TestDelegateAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestDelegateAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -335,12 +316,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     public delegate void MyDelegate();
                   }
                 """);
-    }
 
     [Fact]
-    public void TestDelegateChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestDelegateChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public delegate void MyBeforeDelegate();
@@ -359,12 +338,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     public delegate void MyAfterDelegate();
                   }
                 """);
-    }
 
     [Fact]
-    public void TestDelegateDelete()
-    {
-        RunTest(beforeCode: """
+    public Task TestDelegateDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -387,16 +364,14 @@ public class DiffTypeTests : DiffBaseTests
                 -     public delegate void MyDelegate();
                   }
                 """);
-    }
 
     #endregion
 
     #region Interfaces
 
     [Fact]
-    public void TestInterfaceAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestInterfaceAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -423,12 +398,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestInterfaceChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestInterfaceChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public interface IMyBeforeInterface
@@ -455,12 +428,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestInterfaceDelete()
-    {
-        RunTest(beforeCode: """
+    public Task TestInterfaceDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -487,16 +458,14 @@ public class DiffTypeTests : DiffBaseTests
                 -     }
                   }
                 """);
-    }
 
     #endregion
 
     #region Classes - Hide Default constructors
 
     [Fact]
-    public void TestTypeAddHideImplicitDefaultConstructors()
-    {
-        RunTest(beforeCode: """
+    public Task TestTypeAddHideImplicitDefaultConstructors() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public delegate void MyDelegate();
@@ -527,12 +496,10 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """,
                 hideImplicitDefaultConstructors: true);
-    }
 
     [Fact]
-    public void TestTypeChangeHideImplicitDefaultConstructors()
-    {
-        RunTest(beforeCode: """
+    public Task TestTypeChangeHideImplicitDefaultConstructors() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyBeforeClass1
@@ -574,12 +541,10 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """,
                 hideImplicitDefaultConstructors: true);
-    }
 
     [Fact]
-    public void TestNestedTypeAddHideImplicitDefaultConstructors()
-    {
-        RunTest(beforeCode: """
+    public Task TestNestedTypeAddHideImplicitDefaultConstructors() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public delegate void MyDelegate();
@@ -616,12 +581,10 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """,
                 hideImplicitDefaultConstructors: true);
-    }
 
     [Fact]
-    public void TestNestedTypeChangeHideImplicitDefaultConstructors()
-    {
-        RunTest(beforeCode: """
+    public Task TestNestedTypeChangeHideImplicitDefaultConstructors() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass1
@@ -672,16 +635,14 @@ public class DiffTypeTests : DiffBaseTests
                   }
                 """,
                 hideImplicitDefaultConstructors: true);
-    }
 
     #endregion
 
     #region Nested types
 
     [Fact]
-    public void TestNestedTypeAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestNestedTypeAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyType
@@ -712,12 +673,10 @@ public class DiffTypeTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestNestedTypeChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestNestedTypeChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyType
@@ -755,12 +714,10 @@ public class DiffTypeTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestNestedTypeRemove()
-    {
-        RunTest(beforeCode: """
+    public Task TestNestedTypeRemove() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyType
@@ -791,12 +748,10 @@ public class DiffTypeTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestNestedTypeMemberAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestNestedTypeMemberAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyType
@@ -831,12 +786,10 @@ public class DiffTypeTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestNestedTypeMemberChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestNestedTypeMemberChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyType
@@ -873,12 +826,10 @@ public class DiffTypeTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestNestedTypeMemberRemove()
-    {
-        RunTest(beforeCode: """
+    public Task TestNestedTypeMemberRemove() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyType
@@ -913,16 +864,14 @@ public class DiffTypeTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     #endregion
 
     #region Exclusions
 
     [Fact]
-    public void TestExcludeAddedType()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeAddedType() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -944,12 +893,10 @@ public class DiffTypeTests : DiffBaseTests
                 expectedCode: "",
                 hideImplicitDefaultConstructors: true,
                 apisToExclude: ["T:MyNamespace.MyStruct"]);
-    }
 
     [Fact]
-    public void TestExcludeModifiedType()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeModifiedType() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -974,12 +921,10 @@ public class DiffTypeTests : DiffBaseTests
                 expectedCode: "",
                 hideImplicitDefaultConstructors: true,
                 apisToExclude: ["T:MyNamespace.MyStruct1", "T:MyNamespace.MyStruct2"]);
-    }
 
     [Fact]
-    public void TestExcludeRemovedType()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeRemovedType() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -995,17 +940,16 @@ public class DiffTypeTests : DiffBaseTests
                 expectedCode: "", // The removal is not shown
                 hideImplicitDefaultConstructors: true,
                 apisToExclude: ["T:MyNamespace.MyStruct"]);
-    }
 
     #endregion
 
     #region General
 
     [Fact]
-    public void TestTypeKindChange()
-    {
+    public Task TestTypeKindChange() =>
         // Name remains the same (as well as DocID), but the kind changes
-        RunTest(beforeCode: """
+        RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public struct MyType
@@ -1033,12 +977,10 @@ public class DiffTypeTests : DiffBaseTests
                 +     }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestShowPartial()
-    {
-        RunTest(beforeCode: "",
+    public Task TestShowPartial() => RunTestAsync(
+                beforeCode: "",
                 afterCode: """
                 namespace MyNamespace
                 {
@@ -1070,7 +1012,6 @@ public class DiffTypeTests : DiffBaseTests
                 + }
                 """,
                 addPartialModifier: true);
-    }
 
     #endregion
 }

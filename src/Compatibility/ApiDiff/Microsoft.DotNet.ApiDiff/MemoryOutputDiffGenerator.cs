@@ -1,17 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using DiffPlex.DiffBuilder;
+using DiffPlex.DiffBuilder.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using DiffPlex.DiffBuilder;
-using DiffPlex.DiffBuilder.Model;
-using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions;
-using System.Diagnostics;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.DotNet.ApiDiff;
 
@@ -78,20 +81,30 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     public IReadOnlyDictionary<string, string> Results => _results.AsReadOnly();
 
     /// <inheritdoc/>
-    public void Run()
+    public async Task RunAsync()
     {
+        Stopwatch swRun = Stopwatch.StartNew();
         foreach ((string assemblyName, IAssemblySymbol beforeAssemblySymbol) in _beforeAssemblySymbols)
         {
             StringBuilder sb = new();
 
-            (SyntaxNode beforeAssemblyNode, SemanticModel beforeModel) = GetAssemblyRootNodeAndModel(_beforeLoader, beforeAssemblySymbol);
+            _log.LogMessage($"Assembly: {beforeAssemblySymbol.Name}:");
+            Stopwatch swAssembly = Stopwatch.StartNew();
+            (SyntaxNode beforeAssemblyNode, SemanticModel beforeModel) = await GetAssemblyRootNodeAndModelAsync(_beforeLoader, beforeAssemblySymbol).ConfigureAwait(false);
+            _log.LogMessage($"        Left doc load: {swAssembly.Elapsed.TotalMilliseconds/1000.0:F2}s");
 
             // See if an assembly with the same name can be found in the diff folder.
             if (_afterAssemblySymbols.TryGetValue(assemblyName, out IAssemblySymbol? afterAssemblySymbol))
             {
-                (SyntaxNode afterAssemblyNode, SemanticModel afterModel) = GetAssemblyRootNodeAndModel(_afterLoader, afterAssemblySymbol);
+                swAssembly = Stopwatch.StartNew();
+                (SyntaxNode afterAssemblyNode, SemanticModel afterModel) = await GetAssemblyRootNodeAndModelAsync(_afterLoader, afterAssemblySymbol).ConfigureAwait(false);
+                _log.LogMessage($"        Right doc load: {swAssembly.Elapsed.TotalMilliseconds / 1000.0:F2}s");
+
                 // We don't care about changed assembly attributes (for now).
+                swAssembly = Stopwatch.StartNew();
                 sb.Append(VisitChildren(beforeAssemblyNode, afterAssemblyNode, beforeModel, afterModel, wereParentAttributesChanged: false));
+                _log.LogMessage($"        Visit: {swAssembly.Elapsed.TotalMilliseconds / 1000.0:F2}s");
+
                 // Remove the found ones. The remaining ones will be processed at the end because they're new.
                 _afterAssemblySymbols.Remove(assemblyName);
             }
@@ -111,7 +124,10 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         foreach ((string assemblyName, IAssemblySymbol afterAssemblySymbol) in _afterAssemblySymbols)
         {
             StringBuilder sb = new();
-            (SyntaxNode afterAssemblyNode, _) = GetAssemblyRootNodeAndModel(_afterLoader, afterAssemblySymbol);
+            _log.LogMessage($"Assembly: {afterAssemblySymbol.Name}:");
+            Stopwatch swNew = Stopwatch.StartNew();
+            (SyntaxNode afterAssemblyNode, _) = await GetAssemblyRootNodeAndModelAsync(_afterLoader, afterAssemblySymbol).ConfigureAwait(false);
+            _log.LogMessage($"        Right doc load only: {swNew.Elapsed.TotalMilliseconds / 1000.0:F2}s");
             sb.Append(GenerateAddedDiff(afterAssemblyNode));
 
             if (sb.Length > 0)
@@ -119,6 +135,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 _results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
             }
         }
+
+        _log.LogMessage($"TOTAL: {swRun.Elapsed.TotalMilliseconds / 1000.0 / 60.0:F2} mins.");
     }
 
     private static string GetFinalAssemblyDiff(string assemblyName, string diffText)
@@ -348,7 +366,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         return sb.Length > 0 ? sb.ToString() : null;
     }
 
-    private (SyntaxNode rootNode, SemanticModel model) GetAssemblyRootNodeAndModel(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
+    private async Task<(SyntaxNode rootNode, SemanticModel model)> GetAssemblyRootNodeAndModelAsync(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
     {
         CSharpAssemblyDocumentGenerator docGenerator = new(_log,
                                                            loader,
@@ -362,13 +380,13 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                                                            hideImplicitDefaultConstructors: _hideImplicitDefaultConstructors);
 
         // This is a workaround to get the root node and semantic model for a rewritten assembly root node.
-        Document oldDocument = docGenerator.GetDocumentForAssembly(assemblySymbol);
-        SyntaxNode oldRootNode = docGenerator.GetFormattedRootNodeForDocument(oldDocument); // This method rewrites the node and detaches it from the original document.
+        Document oldDocument = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false);
+        SyntaxNode oldRootNode = await docGenerator.GetFormattedRootNodeForDocument(oldDocument).ConfigureAwait(false); // This method rewrites the node and detaches it from the original document.
         Document newDocument = oldDocument.WithSyntaxRoot(oldRootNode); // This links the rewritten node to the document and returns that document, but...
-        SyntaxNode newRootNode = newDocument.GetSyntaxRootAsync().Result!; // ... we need to retrieve the root node with the one linked to the document (it's a two way linking).
-        SemanticModel model = newDocument.GetSemanticModelAsync().Result!;
+        SyntaxNode? newRootNode = await newDocument.GetSyntaxRootAsync().ConfigureAwait(false); // ... we need to retrieve the root node with the one linked to the document (it's a two way linking).
+        SemanticModel? model = await newDocument.GetSemanticModelAsync().ConfigureAwait(false);
 
-        return (newRootNode, model);
+        return (newRootNode!, model!);
     }
 
     // For types, members and namespaces.
