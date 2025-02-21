@@ -166,12 +166,12 @@
       </trans-unit>
       <trans-unit id="ImageConfigMissingArchitecture">
         <source>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</source>
-        <target state="new">Cannot create image index because at least one of the provided images' config is missing 'architecture'.</target>
+        <target state="translated">Não é possível criar o índice de imagem porque a configuração 'architecture' está ausente em pelo menos uma das imagens fornecidas.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageConfigMissingOs">
         <source>Cannot create image index because at least one of the provided images' config is missing 'os'.</source>
-        <target state="new">Cannot create image index because at least one of the provided images' config is missing 'os'.</target>
+        <target state="translated">Não é possível criar o índice de imagem porque pelo menos uma das imagens fornecidas está sem a configuração 'os'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
@@ -181,7 +181,7 @@
       </trans-unit>
       <trans-unit id="ImageIndex_PodmanNotSupported">
         <source>Image index creation for Podman is not supported.</source>
-        <target state="new">Image index creation for Podman is not supported.</target>
+        <target state="translated">Não há suporte para a criação de índice de imagem para Podman.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_ContainerdStoreDisabled">
         <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
-        <target state="new">CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</target>
+        <target state="translated">CONTAINER1020: falha ao carregar a imagem porque o repositório de imagens em contêineres não está habilitado para o Docker. Dica: você pode habilita-la verificando 'Usar contêiner para extrair e armazenar imagens' nas configurações do Docker Desktop.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -201,12 +201,12 @@
       </trans-unit>
       <trans-unit id="ImagesEmpty">
         <source>Cannot create image index because no images were provided.</source>
-        <target state="new">Cannot create image index because no images were provided.</target>
+        <target state="translated">Não é possível criar índice de imagem porque nenhuma imagem foi fornecida.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
-        <target state="new">CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</target>
+        <target state="translated">CONTAINER2031: não há suporte para o formato '{0}' imagem do contêiner. Os formatos com suporte são '{1}'.</target>
         <note>{StrBegins="CONTAINER2031: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
@@ -216,17 +216,17 @@
       </trans-unit>
       <trans-unit id="InvalidImageConfig">
         <source>Cannot create image index because at least one of the provided images' config is invalid.</source>
-        <target state="new">Cannot create image index because at least one of the provided images' config is invalid.</target>
+        <target state="translated">Não é possível criar o índice de imagem porque pelo menos uma das imagens fornecidas é inválida.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageManifest">
         <source>Cannot create image index because at least one of the provided images' manifest is invalid.</source>
-        <target state="new">Cannot create image index because at least one of the provided images' manifest is invalid.</target>
+        <target state="translated">Não é possível criar o índice de imagem porque pelo menos um dos manifestos das imagens fornecidas é inválido.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
         <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <target state="translated">Não é possível criar o índice de imagem porque as imagens fornecidas são inválidas. Os itens devem ter metadados 'Config', 'Manifest', 'ManifestMediaType' e 'ManifestDigest'.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -316,7 +316,7 @@
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
         <source>'mediaType' of manifests should be the same in image index.</source>
-        <target state="new">'mediaType' of manifests should be the same in image index.</target>
+        <target state="translated">'mediaType' dos manifestos deve ser o mesmo no índice de imagem.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -451,7 +451,7 @@
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
         <source>Cannot create image index for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create image index for the provided 'mediaType' = '{0}'.</target>
+        <target state="translated">Não é possível criar índice de imagem para o 'mediaType' = '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">

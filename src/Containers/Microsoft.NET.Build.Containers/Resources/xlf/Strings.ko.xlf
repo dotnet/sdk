@@ -166,12 +166,12 @@
       </trans-unit>
       <trans-unit id="ImageConfigMissingArchitecture">
         <source>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</source>
-        <target state="new">Cannot create image index because at least one of the provided images' config is missing 'architecture'.</target>
+        <target state="translated">제공된 이미지 구성 중 하나 이상에 'architecture'가 없으므로 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageConfigMissingOs">
         <source>Cannot create image index because at least one of the provided images' config is missing 'os'.</source>
-        <target state="new">Cannot create image index because at least one of the provided images' config is missing 'os'.</target>
+        <target state="translated">제공된 이미지 구성 중 하나 이상에 'os'가 없으므로 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
@@ -181,7 +181,7 @@
       </trans-unit>
       <trans-unit id="ImageIndex_PodmanNotSupported">
         <source>Image index creation for Podman is not supported.</source>
-        <target state="new">Image index creation for Podman is not supported.</target>
+        <target state="translated">Podman에 대한 이미지 인덱스 만들기는 지원되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_ContainerdStoreDisabled">
         <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
-        <target state="new">CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</target>
+        <target state="translated">CONTAINER1020: 컨테이너화된 이미지 저장소가 Docker에 대해 사용하도록 설정되어 있지 않으므로 이미지를 로드하지 못했습니다. 팁: Docker Desktop 설정에서 '이미지를 풀하고 저장하는 데 컨테이너 사용'을 선택하여 사용하도록 설정할 수 있습니다.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -201,12 +201,12 @@
       </trans-unit>
       <trans-unit id="ImagesEmpty">
         <source>Cannot create image index because no images were provided.</source>
-        <target state="new">Cannot create image index because no images were provided.</target>
+        <target state="translated">이미지가 제공되지 않았으므로 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
-        <target state="new">CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</target>
+        <target state="translated">CONTAINER2031: 컨테이너 이미지 형식 '{0}' 지원되지 않습니다. 지원되는 형식은 '{1}'.</target>
         <note>{StrBegins="CONTAINER2031: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
@@ -216,17 +216,17 @@
       </trans-unit>
       <trans-unit id="InvalidImageConfig">
         <source>Cannot create image index because at least one of the provided images' config is invalid.</source>
-        <target state="new">Cannot create image index because at least one of the provided images' config is invalid.</target>
+        <target state="translated">제공된 이미지의 구성 중 하나 이상이 잘못되었으므로 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageManifest">
         <source>Cannot create image index because at least one of the provided images' manifest is invalid.</source>
-        <target state="new">Cannot create image index because at least one of the provided images' manifest is invalid.</target>
+        <target state="translated">제공된 이미지의 매니페스트 중 하나 이상이 잘못되었으므로 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
         <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <target state="translated">제공된 이미지가 잘못되었으므로 이미지 인덱스를 만들 수 없습니다. 항목에는 'Config', 'Manifest', 'ManifestMediaType' 및 'ManifestDigest' 메타데이터가 있어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -316,7 +316,7 @@
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
         <source>'mediaType' of manifests should be the same in image index.</source>
-        <target state="new">'mediaType' of manifests should be the same in image index.</target>
+        <target state="translated">매니페스트의 'mediaType'은 이미지 인덱스에서 같아야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -451,7 +451,7 @@
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
         <source>Cannot create image index for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create image index for the provided 'mediaType' = '{0}'.</target>
+        <target state="translated">제공된 'mediaType' = '{0}' 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
