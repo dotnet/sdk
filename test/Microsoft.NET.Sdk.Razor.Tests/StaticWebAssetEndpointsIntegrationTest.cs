@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 
@@ -40,7 +41,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
 
         var endpoints = manifest.Endpoints;
-        endpoints.Should().HaveCount(15);
+        // blazor.server.js and blazor.web.js assets and endpoints are included automatically
+        // based on the presence of .razor files in projects referencing the web SDK.
+        // In the future we will filter these out based on whether the app references the Endpoints or the Server
+        // assemblies, but for now, just account for them in the tests and ignore them.
+        endpoints.Should().HaveCount(27);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(2);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -196,7 +201,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
             file.Length.Should().Be(length, $"because {endpoint.Route} {file.FullName}");
         }
 
-        endpoints.Should().HaveCount(25);
+        // blazor.server.js and blazor.web.js assets and endpoints are included automatically
+        // based on the presence of .razor files in projects referencing the web SDK.
+        // In the future we will filter these out based on whether the app references the Endpoints or the Server
+        // assemblies, but for now, just account for them in the tests and ignore them.
+        endpoints.Should().HaveCount(45);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(3);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -391,12 +400,16 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var fingerprintedAppBundleEndpoints = endpoints.Where(MatchUncompressedAppBundleWithFingerprint);
         fingerprintedAppBundleEndpoints.Should().HaveCount(3);
 
-        endpoints.Should().HaveCount(25);
+        // blazor.server.js and blazor.web.js assets and endpoints are included automatically
+        // based on the presence of .razor files in projects referencing the web SDK.
+        // In the future we will filter these out based on whether the app references the Endpoints or the Server
+        // assemblies, but for now, just account for them in the tests and ignore them.
+        endpoints.Should().HaveCount(45);
 
         AssertManifest(publishManifest, LoadPublishManifest());
     }
 
-    [Fact]
+    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Build_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -423,7 +436,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(buildOutputDirectory, "blazorwasm", readFromDevManifest: true);
     }
 
-    [Fact]
+    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void BuildHosted_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -449,7 +462,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(buildOutputDirectory, "blazorhosted", readFromDevManifest: true);
     }
 
-    [Fact]
+    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Publish_EndpointManifestContainsEndpoints()
     {
         // Arrange
@@ -474,7 +487,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(publishOutputDirectory, "blazorwasm");
     }
 
-    [Fact]
+    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void PublishHosted_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -545,8 +558,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         {
             if (!readFromDevManifest)
             {
-                return new(Directory.GetFiles(Path.Combine(outputDirectory, "wwwroot"), "*", SearchOption.AllDirectories)
-                        .Select(a => StaticWebAsset.Normalize(Path.GetRelativePath(Path.Combine(outputDirectory, "wwwroot"), a))));
+                return [.. Directory.GetFiles(Path.Combine(outputDirectory, "wwwroot"), "*", SearchOption.AllDirectories)
+                        .Select(a => StaticWebAsset.Normalize(Path.GetRelativePath(Path.Combine(outputDirectory, "wwwroot"), a)))];
             }
             else
             {

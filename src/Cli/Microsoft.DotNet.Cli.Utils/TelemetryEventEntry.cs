@@ -7,19 +7,19 @@ namespace Microsoft.DotNet.Cli.Utils
 {
     public static class TelemetryEventEntry
     {
-        public static event EventHandler<InstrumentationEventArgs> EntryPosted;
+        public static event EventHandler<InstrumentationEventArgs>? EntryPosted;
         public static ITelemetryFilter TelemetryFilter { get; set; } = new BlockFilter();
 
         public static void TrackEvent(
-            string eventName = null,
-            IDictionary<string, string> properties = null,
-            IDictionary<string, double> measurements = null)
+            string? eventName = null,
+            IDictionary<string, string?>? properties = null,
+            IDictionary<string, double>? measurements = null)
         {
             EntryPosted?.Invoke(typeof(TelemetryEventEntry),
                 new InstrumentationEventArgs(eventName, properties, measurements));
         }
 
-        public static void SendFiltered(object o = null)
+        public static void SendFiltered(object? o = null)
         {
             if (o == null)
             {
@@ -32,11 +32,9 @@ namespace Microsoft.DotNet.Cli.Utils
             }
         }
 
-        public static void Subscribe(Action<string,
-            IDictionary<string, string>,
-            IDictionary<string, double>> subscriber)
+        public static void Subscribe(Action<string?, IDictionary<string, string?>?, IDictionary<string, double>?> subscriber)
         {
-            void Handler(object sender, InstrumentationEventArgs eventArgs)
+            void Handler(object? sender, InstrumentationEventArgs eventArgs)
             {
                 subscriber(eventArgs.EventName, eventArgs.Properties, eventArgs.Measurements);
             }
@@ -47,11 +45,11 @@ namespace Microsoft.DotNet.Cli.Utils
 
     public sealed class PerformanceMeasurement : IDisposable
     {
-        private readonly Stopwatch _timer;
-        private readonly Dictionary<string, double> _data;
-        private readonly string _name;
+        private readonly Stopwatch? _timer;
+        private readonly Dictionary<string, double>? _data;
+        private readonly string? _name;
 
-        public PerformanceMeasurement(Dictionary<string, double> data, string name)
+        public PerformanceMeasurement(Dictionary<string, double>? data, string name)
         {
             // Measurement is a no-op if we don't have a dictionary to store the entry.
             if (data == null)
@@ -64,7 +62,13 @@ namespace Microsoft.DotNet.Cli.Utils
             _timer = Stopwatch.StartNew();
         }
 
-        public void Dispose() => _data?.Add(_name, _timer.Elapsed.TotalMilliseconds);
+        public void Dispose()
+        {
+            if (_name is not null && _timer is not null)
+            {
+                _data?.Add(_name, _timer.Elapsed.TotalMilliseconds);
+            }
+        }
     }
 
     public class BlockFilter : ITelemetryFilter
@@ -78,39 +82,39 @@ namespace Microsoft.DotNet.Cli.Utils
     public class InstrumentationEventArgs : EventArgs
     {
         internal InstrumentationEventArgs(
-            string eventName,
-            IDictionary<string, string> properties,
-            IDictionary<string, double> measurements)
+            string? eventName,
+            IDictionary<string, string?>? properties,
+            IDictionary<string, double>? measurements)
         {
             EventName = eventName;
             Properties = properties;
             Measurements = measurements;
         }
 
-        public string EventName { get; }
-        public IDictionary<string, string> Properties { get; }
-        public IDictionary<string, double> Measurements { get; }
+        public string? EventName { get; }
+        public IDictionary<string, string?>? Properties { get; }
+        public IDictionary<string, double>? Measurements { get; }
     }
 
     public class ApplicationInsightsEntryFormat
     {
         public ApplicationInsightsEntryFormat(
-            string eventName = null,
-            IDictionary<string, string> properties = null,
-            IDictionary<string, double> measurements = null)
+            string? eventName = null,
+            IDictionary<string, string?>? properties = null,
+            IDictionary<string, double>? measurements = null)
         {
             EventName = eventName;
             Properties = properties;
             Measurements = measurements;
         }
 
-        public string EventName { get; }
-        public IDictionary<string, string> Properties { get; }
-        public IDictionary<string, double> Measurements { get; }
+        public string? EventName { get; }
+        public IDictionary<string, string?>? Properties { get; }
+        public IDictionary<string, double>? Measurements { get; }
 
-        public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string, string> func)
+        public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string?, string> func)
         {
-            var appliedProperties = Properties.ToDictionary(p => p.Key, p => func(p.Value));
+            var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value));
             return new ApplicationInsightsEntryFormat(EventName, appliedProperties, Measurements);
         }
     }

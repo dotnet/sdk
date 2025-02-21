@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.ZeroOrMore
         };
 
-        public static readonly CliOption<string> OuputOption = new ForwardedOption<string>("--output", "-o")
+        public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
         {
             Description = LocalizableStrings.OutputOptionDescription,
             HelpName = LocalizableStrings.OutputOption
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli
             command.Arguments.Add(SlnOrProjectArgument);
             RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
 
-            command.Options.Add(OuputOption);
+            command.Options.Add(OutputOption);
             command.Options.Add(CommonOptions.ArtifactsPathOption);
             command.Options.Add(ManifestOption);
             command.Options.Add(NoBuildOption);

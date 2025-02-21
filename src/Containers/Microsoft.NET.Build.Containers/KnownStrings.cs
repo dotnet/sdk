@@ -41,6 +41,7 @@ internal static class KnownStrings
         public static readonly string PublishTrimmed = nameof(PublishTrimmed);
         public static readonly string PublishSelfContained = nameof(PublishSelfContained);
         public static readonly string InvariantGlobalization = nameof(InvariantGlobalization);
+        public static readonly string InvariantTimezone = nameof(InvariantTimezone);
     }
 
     public static class Items
