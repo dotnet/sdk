@@ -6,9 +6,8 @@ namespace Microsoft.DotNet.ApiDiff.Tests;
 public class DiffAssemblyTests : DiffBaseTests
 {
     [Fact]
-    public void TestAssemblyAdd()
-    {
-        RunTest(before: [],
+    public Task TestAssemblyAdd() => RunTestAsync(
+                before: [],
                 after: [("MyAddedAssembly.dll", """
                 namespace MyNamespace
                 {
@@ -27,12 +26,10 @@ public class DiffAssemblyTests : DiffBaseTests
                     + }
                     """ }
                 });
-    }
 
     [Fact]
-    public void TestAssemblyChange()
-    {
-        RunTest(before: [("MyBeforeAssembly.dll", """
+    public Task TestAssemblyChange() => RunTestAsync(
+                before: [("MyBeforeAssembly.dll", """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -66,12 +63,10 @@ public class DiffAssemblyTests : DiffBaseTests
                     + }
                     """ }
                 });
-    }
 
     [Fact]
-    public void TestAssemblyDelete()
-    {
-        RunTest(before: [("MyRemovedAssembly.dll", """
+    public Task TestAssemblyDelete() => RunTestAsync(
+                before: [("MyRemovedAssembly.dll", """
                 namespace MyNamespace
                 {
                     public struct MyStruct
@@ -90,5 +85,4 @@ public class DiffAssemblyTests : DiffBaseTests
                     - }
                     """ }
                 });
-    }
 }

@@ -28,6 +28,16 @@ public class DiffDiskTests
 
         """;
 
+    private const string ExpectedEmptyTableOfContents = $"""
+        # API difference between {BeforeFolderName} and {AfterFolderName}
+
+        API listing follows standard diff formatting.
+        Lines preceded by a '+' are additions and a '-' indicates removal.
+
+
+
+        """;
+
     private const string BeforeCode = """
         namespace MyNamespace
         {
@@ -48,6 +58,7 @@ public class DiffDiskTests
             }
         }
         """;
+
     private const string DefaultExpectedMarkdown = $@"# {DefaultAssemblyName}
 
 ```diff
@@ -70,22 +81,54 @@ public class DiffDiskTests
     /// The output goes to disk.
     /// </summary>
     [Fact]
-    public void Test_DiskRead_DiskWrite()
+    public async Task Test_DiskRead_DiskWrite()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
 
-        IDiffGenerator generator = TestDiskShared(inputFolderPath.DirPath, DefaultTableOfContentsTitle, DefaultBeforeAssemblyAndCodeFiles, DefaultAfterAssemblyAndCodeFiles, outputFolderPath.DirPath, writeToDisk: true);
-        generator.Run();
+        IDiffGenerator generator = TestDiskShared(
+            inputFolderPath.DirPath,
+            DefaultTableOfContentsTitle,
+            DefaultBeforeAssemblyAndCodeFiles,
+            DefaultAfterAssemblyAndCodeFiles,
+            assembliesToExclude: [],
+            outputFolderPath.DirPath,
+            writeToDisk: true);
+
+        await generator.RunAsync();
 
         VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedTableOfContents, DefaultExpectedAssemblyMarkdowns);
+    }
+
+    /// <summary>
+    /// This test reads two DLLs, where the assembly is explicitly excluded.
+    /// The output is disk is simply the table of contents markdown file with no assembly list. No other files.
+    /// </summary>
+    [Fact]
+    public async Task Test_DiskRead_DiskWrite_ExcludeAssembly()
+    {
+        using TempDirectory inputFolderPath = new();
+        using TempDirectory outputFolderPath = new();
+
+        IDiffGenerator generator = TestDiskShared(
+            inputFolderPath.DirPath,
+            DefaultTableOfContentsTitle,
+            DefaultBeforeAssemblyAndCodeFiles,
+            DefaultAfterAssemblyAndCodeFiles,
+            assembliesToExclude: [DefaultAssemblyName],
+            outputFolderPath.DirPath,
+            writeToDisk: true);
+
+        await generator.RunAsync();
+
+        VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedEmptyTableOfContents, []);
     }
 
     /// <summary>
     ///  Many namespaces belonging to a single assembly should go into the same output markdown file for that assembly.
     /// </summary>
     [Fact]
-    public void Test_DiskRead_DiskWrite_MultiNamespaces()
+    public async Task Test_DiskRead_DiskWrite_MultiNamespaces()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
@@ -156,8 +199,16 @@ public class DiffDiskTests
         Dictionary<string, string[]> afterAssemblyAndCodeFiles = new() { { DefaultAssemblyName, [afterCode1, afterCode2] } };
         Dictionary<string, string> expectedAssemblyMarkdowns = new() { { DefaultAssemblyName, expectedMarkdown } };
 
-        IDiffGenerator generator = TestDiskShared(inputFolderPath.DirPath, DefaultTableOfContentsTitle, beforeAssemblyAndCodeFiles, afterAssemblyAndCodeFiles, outputFolderPath.DirPath, writeToDisk: true);
-        generator.Run();
+        IDiffGenerator generator = TestDiskShared(
+            inputFolderPath.DirPath,
+            DefaultTableOfContentsTitle,
+            beforeAssemblyAndCodeFiles,
+            afterAssemblyAndCodeFiles,
+            assembliesToExclude: [],
+            outputFolderPath.DirPath,
+            writeToDisk: true);
+
+        await generator.RunAsync();
 
         VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedTableOfContents, expectedAssemblyMarkdowns);
     }
@@ -167,13 +218,21 @@ public class DiffDiskTests
     /// The output is the Results dictionary.
     /// </summary>
     [Fact]
-    public void Test_DiskRead_MemoryWrite()
+    public async Task Test_DiskRead_MemoryWrite()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
 
-        IDiffGenerator generator = TestDiskShared(inputFolderPath.DirPath, DefaultTableOfContentsTitle, DefaultBeforeAssemblyAndCodeFiles, DefaultAfterAssemblyAndCodeFiles, outputFolderPath.DirPath, writeToDisk: false);
-        generator.Run();
+        IDiffGenerator generator = TestDiskShared(
+            inputFolderPath.DirPath,
+            DefaultTableOfContentsTitle,
+            DefaultBeforeAssemblyAndCodeFiles,
+            DefaultAfterAssemblyAndCodeFiles,
+            assembliesToExclude: [],
+            outputFolderPath.DirPath,
+            writeToDisk: false);
+
+        await generator.RunAsync();
 
         string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}.md");
         Assert.Contains(tableOfContentsMarkdownFilePath, generator.Results.Keys);
@@ -186,7 +245,44 @@ public class DiffDiskTests
         Assert.Equal(DefaultExpectedMarkdown, generator.Results[myAssemblyMarkdownFilePath]);
     }
 
-    private IDiffGenerator TestDiskShared(string inputFolderPath, string tableOfContentsTitle, Dictionary<string, string[]> beforeAssemblyAndCodeFiles, Dictionary<string, string[]> afterAssemblyAndCodeFiles, string outputFolderPath, bool writeToDisk)
+    /// <summary>
+    /// This test reads two DLLs, where the assembly is explicitly excluded.
+    /// The output is an empty Results dictionary.
+    /// </summary>
+    [Fact]
+    public async Task Test_DiskRead_MemoryWrite_ExcludeAssembly()
+    {
+        using TempDirectory inputFolderPath = new();
+        using TempDirectory outputFolderPath = new();
+
+        IDiffGenerator generator = TestDiskShared(
+            inputFolderPath.DirPath,
+            DefaultTableOfContentsTitle,
+            DefaultBeforeAssemblyAndCodeFiles,
+            DefaultAfterAssemblyAndCodeFiles,
+            assembliesToExclude: [DefaultAssemblyName],
+            outputFolderPath.DirPath,
+            writeToDisk: false);
+
+        await generator.RunAsync();
+
+        string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}.md");
+        Assert.Contains(tableOfContentsMarkdownFilePath, generator.Results.Keys);
+
+        Assert.Equal(ExpectedEmptyTableOfContents, generator.Results[tableOfContentsMarkdownFilePath]);
+
+        string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}_{DefaultAssemblyName}.md");
+        Assert.DoesNotContain(myAssemblyMarkdownFilePath, generator.Results.Keys);
+    }
+
+    private IDiffGenerator TestDiskShared(
+        string inputFolderPath,
+        string tableOfContentsTitle,
+        Dictionary<string, string[]> beforeAssemblyAndCodeFiles,
+        Dictionary<string, string[]> afterAssemblyAndCodeFiles,
+        string[] assembliesToExclude,
+        string outputFolderPath,
+        bool writeToDisk)
     {
         string beforeAssembliesFolderPath = Path.Join(inputFolderPath, BeforeFolderName);
         string afterAssembliesFolderPath = Path.Join(inputFolderPath, AfterFolderName);
@@ -206,6 +302,7 @@ public class DiffDiskTests
             afterAssemblyReferencesFolderPath: null,
             outputFolderPath,
             tableOfContentsTitle,
+            assembliesToExclude: assembliesToExclude,
             attributesToExclude: null,
             apisToExclude: null,
             addPartialModifier: false,

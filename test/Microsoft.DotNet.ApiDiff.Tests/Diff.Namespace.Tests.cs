@@ -8,9 +8,8 @@ public class DiffNamespaceTests : DiffBaseTests
     #region Block-scoped namespaces
 
     [Fact]
-    public void TestBlockScopedNamespaceAdd()
-    {
-        RunTest(beforeCode: "",
+    public Task TestBlockScopedNamespaceAdd() => RunTestAsync(
+                beforeCode: "",
                 afterCode: """
                 namespace MyAddedNamespace
                 {
@@ -27,12 +26,10 @@ public class DiffNamespaceTests : DiffBaseTests
                 +     }
                 + }
                 """);
-    }
 
     [Fact]
-    public void TestBlockScopedNamespaceChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestBlockScopedNamespaceChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyBeforeNamespace
                 {
                     public struct MyStruct
@@ -62,12 +59,10 @@ public class DiffNamespaceTests : DiffBaseTests
                 +     }
                 + }
                 """);
-    }
 
     [Fact]
-    public void TestBlockScopedNamespaceDelete()
-    {
-        RunTest(beforeCode: """
+    public Task TestBlockScopedNamespaceDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyDeletedNamespace
                 {
                     public struct MyStruct
@@ -84,13 +79,12 @@ public class DiffNamespaceTests : DiffBaseTests
                 -     }
                 - }
                 """);
-    }
 
     [Fact]
-    public void TestBlockScopedNamespaceSortAlphabetically()
-    {
+    public Task TestBlockScopedNamespaceSortAlphabetically() =>
         // The output is block scoped
-        RunTest(beforeCode: "",
+        RunTestAsync(
+                beforeCode: "",
                 afterCode: """
                 namespace C
                 {
@@ -143,17 +137,16 @@ public class DiffNamespaceTests : DiffBaseTests
                 +     }
                 + }
                 """);
-    }
 
     #endregion
 
     #region File-scoped namespaces
 
     [Fact]
-    public void TestFileScopedNamespaceAdd()
-    {
+    public Task TestFileScopedNamespaceAdd() =>
         // The output is block scoped
-        RunTest(beforeCode: "",
+        RunTestAsync(
+                beforeCode: "",
                 afterCode: """
                 namespace MyAddedNamespace;
                 public struct MyStruct
@@ -168,13 +161,12 @@ public class DiffNamespaceTests : DiffBaseTests
                 +     }
                 + }
                 """);
-    }
 
     [Fact]
-    public void TestFileScopedNamespaceChange()
-    {
+    public Task TestFileScopedNamespaceChange() =>
         // The output is block scoped
-        RunTest(beforeCode: """
+        RunTestAsync(
+                beforeCode: """
                 namespace MyBeforeNamespace;
                 public struct MyStruct
                 {
@@ -200,13 +192,12 @@ public class DiffNamespaceTests : DiffBaseTests
                 +     }
                 + }
                 """);
-    }
 
     [Fact]
-    public void TestFileScopedNamespaceDelete()
-    {
+    public Task TestFileScopedNamespaceDelete() =>
         // The output is block scoped
-        RunTest(beforeCode: """
+        RunTestAsync(
+                beforeCode: """
                 namespace MyDeletedNamespace;
                 public struct MyStruct
                 {
@@ -221,16 +212,14 @@ public class DiffNamespaceTests : DiffBaseTests
                 -     }
                 - }
                 """);
-    }
 
     #endregion
 
     #region Exclusions
 
     [Fact]
-    public void TestExcludeAddedNamespace()
-    {
-        RunTest(beforeCode: "",
+    public Task TestExcludeAddedNamespace() => RunTestAsync(
+                beforeCode: "",
                 afterCode: """
                 namespace MyNamespace
                 {
@@ -238,12 +227,10 @@ public class DiffNamespaceTests : DiffBaseTests
                 """,
                 expectedCode: "",
                 apisToExclude: ["N:MyNamespace.MyNamespace"]);
-    }
 
     [Fact]
-    public void TestExcludeModifiedNamespace()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeModifiedNamespace() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace1
                 {
                 }
@@ -255,12 +242,10 @@ public class DiffNamespaceTests : DiffBaseTests
                 """,
                 expectedCode: "",
                 apisToExclude: ["N:MyNamespace.MyNamespace1", "N:MyNamespace.MyNamespace2"]);
-    }
 
     [Fact]
-    public void TestExcludeRemovedNamespace()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeRemovedNamespace() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                 }
@@ -268,7 +253,6 @@ public class DiffNamespaceTests : DiffBaseTests
                 afterCode: "",
                 expectedCode: "",
                 apisToExclude: ["N:MyNamespace.MyNamespace"]);
-    }
 
 
     #endregion

@@ -20,6 +20,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     private readonly string[] _afterAssemblyReferencesFolderPaths;
     private readonly string _outputFolderPath;
     private readonly string _tableOfContentsTitle;
+    private readonly string[] _assembliesToExclude;
     private readonly string[] _attributesToExclude;
     private readonly string[] _apisToExclude;
     private readonly bool _addPartialModifier;
@@ -38,11 +39,12 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     /// <param name="afterAssemblyReferencesFolderPath"></param>
     /// <param name="outputFolderPath"></param>
     /// <param name="tableOfContentsTitle"></param>
+    /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff.</param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier"></param>
     /// <param name="hideImplicitDefaultConstructors"></param>
-    /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="Run"/>, the generated markdown files get written to disk, and no item is added to the <see cref="Run"/> dictionary. If <see langword="false"/>, when calling <see cref="Run"/>, the generated markdown files get added to the <see cref="Run"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
+    /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="RunAsync"/>, the generated markdown files get added to the <see cref="RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
     /// <param name="diagnosticOptions"></param>
     internal FileOutputDiffGenerator(ILog log,
                                     string beforeAssembliesFolderPath,
@@ -51,6 +53,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                                     string? afterAssemblyReferencesFolderPath,
                                     string outputFolderPath,
                                     string tableOfContentsTitle,
+                                    string[]? assembliesToExclude,
                                     string[]? attributesToExclude,
                                     string[]? apisToExclude,
                                     bool addPartialModifier,
@@ -66,6 +69,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         _afterAssemblyReferencesFolderPaths = afterAssemblyReferencesFolderPath != null ? [afterAssemblyReferencesFolderPath] : [];
         _outputFolderPath = outputFolderPath;
         _tableOfContentsTitle = tableOfContentsTitle;
+        _assembliesToExclude = assembliesToExclude ?? [];
         _attributesToExclude = attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude;
         _apisToExclude = apisToExclude ?? [];
         _addPartialModifier = addPartialModifier;
@@ -79,7 +83,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     public IReadOnlyDictionary<string, string> Results => _results.AsReadOnly();
 
     /// <inheritdoc/>
-    public void Run()
+    public async Task RunAsync()
     {
         Debug.Assert(_beforeAssembliesFolderPaths.Length == 1);
         Debug.Assert(_afterAssembliesFolderPaths.Length == 1);
@@ -89,6 +93,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                 _log,
                 assembliesPaths: _beforeAssembliesFolderPaths,
                 assemblyReferencesPaths: _beforeAssemblyReferencesFolderPaths,
+                assembliesToExclude: _assembliesToExclude,
                 diagnosticOptions: _diagnosticOptions);
 
         (IAssemblySymbolLoader afterLoader, Dictionary<string, IAssemblySymbol> afterAssemblySymbols) =
@@ -96,6 +101,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                 _log,
                 assembliesPaths: _afterAssembliesFolderPaths,
                 assemblyReferencesPaths: _afterAssemblyReferencesFolderPaths,
+                assembliesToExclude: _assembliesToExclude,
                 diagnosticOptions: _diagnosticOptions);
 
         MemoryOutputDiffGenerator generator = new(_log,
@@ -108,7 +114,8 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                                                   _addPartialModifier,
                                                   _hideImplicitDefaultConstructors,
                                                   _diagnosticOptions);
-        generator.Run();
+
+        await generator.RunAsync().ConfigureAwait(false);
 
         // If true, output is disk. Otherwise, it's the Results dictionary.
         if (_writeToDisk)
@@ -134,7 +141,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
             string filePath = Path.Combine(_outputFolderPath, fileName);
             if (_writeToDisk)
             {
-                File.WriteAllText(filePath, text);
+                await File.WriteAllTextAsync(filePath, text).ConfigureAwait(false);
             }
             else
             {
@@ -150,7 +157,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
 
         if (_writeToDisk)
         {
-            File.WriteAllText(tableOfContentsFilePath, tableOfContents.ToString());
+            await File.WriteAllTextAsync(tableOfContentsFilePath, tableOfContents.ToString()).ConfigureAwait(false);
         }
         else
         {
