@@ -59,6 +59,13 @@ public static class Program
             IsRequired = true
         };
 
+        Option<string[]?> optionAssembliesToExclude = new(["--assembliesToExclude", "-eas"], () => null)
+        {
+            Description = "Assemblies to exclude from the diff.",
+            Arity = ArgumentArity.ZeroOrMore,
+            IsRequired = false,
+        };
+
         Option<string[]?> optionAttributesToExclude = new(["--attributesToExclude", "-eattrs"], () => null)
         {
             Description = "Attributes to exclude from the diff.",
@@ -83,7 +90,7 @@ public static class Program
             Description = "Hide implicit default constructors from types."
         };
 
-        Option<bool> optionDebug = new(["--attachDebugger", "-d"], () => false)
+        Option<bool> optionAttachDebugger = new(["--attachDebugger", "-d"], () => false)
         {
             Description = "Stops the tool at startup, prints the process ID and waits for a debugger to attach."
         };
@@ -95,11 +102,12 @@ public static class Program
         rootCommand.Add(optionAfterRefAssembliesFolderPath);
         rootCommand.Add(optionOutputFolderPath);
         rootCommand.Add(optionTableOfContentsTitle);
+        rootCommand.Add(optionAssembliesToExclude);
         rootCommand.Add(optionAttributesToExclude);
         rootCommand.Add(optionApisToExclude);
         rootCommand.Add(optionAddPartialModifier);
         rootCommand.Add(optionHideImplicitDefaultConstructors);
-        rootCommand.Add(optionDebug);
+        rootCommand.Add(optionAttachDebugger);
 
         GenAPIDiffConfigurationBinder c = new(optionBeforeAssembliesFolderPath,
                                               optionBeforeRefAssembliesFolderPath,
@@ -107,22 +115,24 @@ public static class Program
                                               optionAfterRefAssembliesFolderPath,
                                               optionOutputFolderPath,
                                               optionTableOfContentsTitle,
+                                              optionAssembliesToExclude,
                                               optionAttributesToExclude,
                                               optionApisToExclude,
                                               optionAddPartialModifier,
                                               optionHideImplicitDefaultConstructors,
-                                              optionDebug);
+                                              optionAttachDebugger);
 
-        rootCommand.SetHandler(HandleCommand, c);
+        rootCommand.SetHandler(async (DiffConfiguration diffConfig) => await HandleCommandAsync(diffConfig).ConfigureAwait(false), c);
         await rootCommand.InvokeAsync(args);
     }
 
-    private static void HandleCommand(DiffConfiguration diffConfig)
+    private static Task HandleCommandAsync(DiffConfiguration diffConfig)
     {
         var log = new ConsoleLog(MessageImportance.Normal);
 
-        string attributesToExclude = diffConfig.AttributesToExclude != null ? string.Join(", ", diffConfig.AttributesToExclude) : string.Empty;
-        string apisToExclude = diffConfig.ApisToExclude != null ? string.Join(", ", diffConfig.ApisToExclude) : string.Empty;
+        string assembliesToExclude = string.Join(", ", diffConfig.AssembliesToExclude ?? []);
+        string attributesToExclude = string.Join(", ", diffConfig.AttributesToExclude ?? []);
+        string apisToExclude = string.Join(", ", diffConfig.ApisToExclude ?? []);
 
         // Custom ordering to match help menu.
         log.LogMessage("Selected options:");
@@ -131,15 +141,16 @@ public static class Program
         log.LogMessage($" - 'Before' reference assemblies:      {diffConfig.BeforeAssemblyReferencesFolderPath}");
         log.LogMessage($" - 'After'  reference assemblies:      {diffConfig.AfterAssemblyReferencesFolderPath}");
         log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
+        log.LogMessage($" - Assemblies to exclude:              {assembliesToExclude}");
         log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
         log.LogMessage($" - APIs to exclude:                    {apisToExclude}");
         log.LogMessage($" - Table of contents title:            {diffConfig.TableOfContentsTitle}");
         log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
         log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
-        log.LogMessage($" - Debug:                              {diffConfig.Debug}");
+        log.LogMessage($" - Attach debugger:                    {diffConfig.AttachDebugger}");
         log.LogMessage("");
 
-        if (diffConfig.Debug)
+        if (diffConfig.AttachDebugger)
         {
             WaitForDebugger();
         }
@@ -151,6 +162,7 @@ public static class Program
                                                                    diffConfig.AfterAssemblyReferencesFolderPath,
                                                                    diffConfig.OutputFolderPath,
                                                                    diffConfig.TableOfContentsTitle,
+                                                                   diffConfig.AssembliesToExclude,
                                                                    diffConfig.AttributesToExclude,
                                                                    diffConfig.ApisToExclude,
                                                                    diffConfig.AddPartialModifier,
@@ -159,7 +171,7 @@ public static class Program
                                                                    diagnosticOptions: null // TODO: If needed, add CLI option to pass specific diagnostic options
                                                                    );
 
-        diffGenerator.Run();
+        return diffGenerator.RunAsync();
     }
 
     private static void WaitForDebugger()

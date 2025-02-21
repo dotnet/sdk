@@ -13,14 +13,16 @@ public abstract class DiffBaseTests
     private readonly ConsoleLog _log = new(MessageImportance.Normal);
     protected const string AssemblyName = "MyAssembly";
 
-    protected void RunTest(string beforeCode,
+    protected Task RunTestAsync(
+                           string beforeCode,
                            string afterCode,
                            string expectedCode,
                            string[]? attributesToExclude = null,
                            string[]? apisToExclude = null,
                            bool addPartialModifier = false,
                            bool hideImplicitDefaultConstructors = false)
-        => RunTest(before: [($"{AssemblyName}.dll", beforeCode)],
+        => RunTestAsync(
+                   before: [($"{AssemblyName}.dll", beforeCode)],
                    after: [($"{AssemblyName}.dll", afterCode)],
                    expected: new() { { AssemblyName, expectedCode } },
                    attributesToExclude,
@@ -28,7 +30,8 @@ public abstract class DiffBaseTests
                    addPartialModifier,
                    hideImplicitDefaultConstructors);
 
-    protected void RunTest((string, string)[] before,
+    protected async Task RunTestAsync(
+                           (string, string)[] before,
                            (string, string)[] after,
                            Dictionary<string, string> expected,
                            string[]? attributesToExclude = null,
@@ -37,8 +40,10 @@ public abstract class DiffBaseTests
                            bool hideImplicitDefaultConstructors = false)
     {
         // CreateFromTexts will assert on any loader diagnostics via SyntaxFactory.
+
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols)
             = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: before, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
+
         (IAssemblySymbolLoader afterLoader, Dictionary<string, IAssemblySymbol> afterAssemblySymbols)
             = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: after, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
 
@@ -56,7 +61,7 @@ public abstract class DiffBaseTests
             hideImplicitDefaultConstructors,
             DiffGeneratorFactory.DefaultDiagnosticOptions);
 
-        generator.Run();
+        await generator.RunAsync();
 
         foreach ((string expectedAssemblyName, string expectedCode) in expected)
         {
@@ -74,9 +79,7 @@ public abstract class DiffBaseTests
         }
     }
 
-    private static string GetExpected(string expectedCode, string expectedAssemblyName)
-    {
-        return $"""
+    private static string GetExpected(string expectedCode, string expectedAssemblyName) => $"""
                 # {Path.GetFileNameWithoutExtension(expectedAssemblyName)}
 
                 ```diff
@@ -84,5 +87,4 @@ public abstract class DiffBaseTests
                 ```
 
                 """;
-    }
 }

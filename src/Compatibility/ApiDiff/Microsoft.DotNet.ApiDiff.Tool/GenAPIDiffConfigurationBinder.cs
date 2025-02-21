@@ -15,11 +15,12 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
     private readonly Option<string> _optionAfterAssemblyReferencesFolderPath;
     private readonly Option<string> _optionOutputFolderPath;
     private readonly Option<string> _optionTableOfContentsTitle;
+    private readonly Option<string[]?> _optionAssembliesToExclude;
     private readonly Option<string[]?> _optionAttributesToExclude;
     private readonly Option<string[]?> _optionApisToExclude;
     private readonly Option<bool> _optionAddPartialModifier;
     private readonly Option<bool> _optionHideImplicitDefaultConstructors;
-    private readonly Option<bool> _optionDebug;
+    private readonly Option<bool> _optionAttachDebugger;
 
     internal GenAPIDiffConfigurationBinder(Option<string> optionBeforeAssembliesFolderPath,
                                            Option<string> optionBeforeAssemblyReferencesFolderPath,
@@ -27,11 +28,12 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
                                            Option<string> optionAfterAssemblyReferencesFolderPath,
                                            Option<string> optionOutputFolderPath,
                                            Option<string> optionTableOfContentsTitle,
+                                           Option<string[]?> optionAssembliesToExclude,
                                            Option<string[]?> optionAttributesToExclude,
                                            Option<string[]?> optionApisToExclude,
                                            Option<bool> optionAddPartialModifier,
                                            Option<bool> optionHideImplicitDefaultConstructors,
-                                           Option<bool> optionDebug)
+                                           Option<bool> optionAttachDebugger)
     {
         _optionBeforeAssembliesFolderPath = optionBeforeAssembliesFolderPath;
         _optionBeforeAssemblyReferencesFolderPath = optionBeforeAssemblyReferencesFolderPath;
@@ -39,11 +41,12 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
         _optionAfterAssemblyReferencesFolderPath = optionAfterAssemblyReferencesFolderPath;
         _optionOutputFolderPath = optionOutputFolderPath;
         _optionTableOfContentsTitle = optionTableOfContentsTitle;
+        _optionAssembliesToExclude = optionAssembliesToExclude;
         _optionAttributesToExclude = optionAttributesToExclude;
         _optionApisToExclude = optionApisToExclude;
         _optionAddPartialModifier = optionAddPartialModifier;
         _optionHideImplicitDefaultConstructors = optionHideImplicitDefaultConstructors;
-        _optionDebug = optionDebug;
+        _optionAttachDebugger = optionAttachDebugger;
     }
 
     protected override DiffConfiguration GetBoundValue(BindingContext bindingContext) =>
@@ -54,10 +57,11 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
             AfterAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssemblyReferencesFolderPath),
             OutputFolderPath: bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory"),
             TableOfContentsTitle: bindingContext.ParseResult.GetValueForOption(_optionTableOfContentsTitle) ?? throw new NullReferenceException("Null table of contents title"),
+            AssembliesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAssembliesToExclude),
             AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
             ApisToExclude: bindingContext.ParseResult.GetValueForOption(_optionApisToExclude),
             AddPartialModifier: bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
             HideImplicitDefaultConstructors: bindingContext.ParseResult.GetValueForOption(_optionHideImplicitDefaultConstructors),
-            Debug: bindingContext.ParseResult.GetValueForOption(_optionDebug)
+            AttachDebugger: bindingContext.ParseResult.GetValueForOption(_optionAttachDebugger)
         );
 }

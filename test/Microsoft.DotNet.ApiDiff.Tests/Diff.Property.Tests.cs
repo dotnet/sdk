@@ -6,9 +6,8 @@ namespace Microsoft.DotNet.ApiDiff.Tests;
 public class DiffPropertyTests : DiffBaseTests
 {
     [Fact]
-    public void TestPropertyAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertyAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -34,12 +33,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertyChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertyChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -67,12 +64,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertyDelete()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertyDelete() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -98,12 +93,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertySetAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertySetAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -131,12 +124,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertySetRemove()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertySetRemove() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -164,12 +155,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertySetVisibilityProtected()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertySetVisibilityProtected() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -197,12 +186,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertySetVisibilityPrivate()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertySetVisibilityPrivate() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -230,12 +217,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertyReturnChange()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertyReturnChange() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -263,12 +248,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertyNullabilityAdd()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertyNullabilityAdd() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -296,12 +279,10 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     [Fact]
-    public void TestPropertyNullabilityRemove()
-    {
-        RunTest(beforeCode: """
+    public Task TestPropertyNullabilityRemove() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -329,14 +310,12 @@ public class DiffPropertyTests : DiffBaseTests
                       }
                   }
                 """);
-    }
 
     #region Exclusions
 
     [Fact]
-    public void TestExcludeAddedProperty()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeAddedProperty() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -356,12 +335,10 @@ public class DiffPropertyTests : DiffBaseTests
                 expectedCode: "",
                 hideImplicitDefaultConstructors: true,
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty"]);
-    }
 
     [Fact]
-    public void TestExcludeModifiedProperty()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeModifiedProperty() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -382,12 +359,10 @@ public class DiffPropertyTests : DiffBaseTests
                 expectedCode: "",
                 hideImplicitDefaultConstructors: true,
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty1", "P:MyNamespace.MyClass.MyProperty2"]);
-    }
 
     [Fact]
-    public void TestExcludeRemovedProperty()
-    {
-        RunTest(beforeCode: """
+    public Task TestExcludeRemovedProperty() => RunTestAsync(
+                beforeCode: """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -407,7 +382,6 @@ public class DiffPropertyTests : DiffBaseTests
                 expectedCode: "",
                 hideImplicitDefaultConstructors: true,
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty"]);
-    }
 
     #endregion
 }
