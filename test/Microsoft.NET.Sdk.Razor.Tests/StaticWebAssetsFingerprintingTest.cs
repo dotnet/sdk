@@ -46,17 +46,18 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
     }
 
-    public static TheoryData<string, string> WriteImportMapToHtmlData => new TheoryData<string, string>
+    public static TheoryData<string, string, string> WriteImportMapToHtmlData => new TheoryData<string, string, string>
     {
-        { "VanillaWasm", "main.js" },
-        { "BlazorWasmMinimal", "_framework/blazor.webassembly.js" }
+        { "VanillaWasm", "main.js", null },
+        { "BlazorWasmMinimal", "_framework/blazor.webassembly.js", "_framework/blazor.webassembly#[.{fingerprint}].js" }
     };
 
     [Theory]
     [MemberData(nameof(WriteImportMapToHtmlData))]
-    public void Build_WriteImportMapToHtml(string testAsset, string scriptPath)
+    public void Build_WriteImportMapToHtml(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern)
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+        ReplaceStringInIndexHtml(ProjectDirectory, scriptPath, scriptPathWithFingerprintPattern);
 
         var build = CreateBuildCommand(ProjectDirectory);
         ExecuteCommand(build, "-p:WriteImportMapToHtml=true").Should().Pass();
@@ -70,9 +71,10 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
 
     [Theory]
     [MemberData(nameof(WriteImportMapToHtmlData))]
-    public void Publish_WriteImportMapToHtml(string testAsset, string scriptPath)
+    public void Publish_WriteImportMapToHtml(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern)
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+        ReplaceStringInIndexHtml(ProjectDirectory, scriptPath, scriptPathWithFingerprintPattern);
 
         var projectName = Path.GetFileNameWithoutExtension(Directory.EnumerateFiles(ProjectDirectory.TestRoot, "*.csproj").Single());
 
@@ -80,10 +82,24 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         ExecuteCommand(publish, "-p:WriteImportMapToHtml=true").Should().Pass();
 
         var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
-        var indexHtmlPath = Path.Combine(outputPath, "wwwroot", "index.html");
+        var indexHtmlOutputPath = Path.Combine(outputPath, "wwwroot", "index.html");
         var endpointsManifestPath = Path.Combine(outputPath, $"{projectName}.staticwebassets.endpoints.json");
 
-        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, scriptPath);
+        AssertImportMapInHtml(indexHtmlOutputPath, endpointsManifestPath, scriptPath);
+    }
+
+    private void ReplaceStringInIndexHtml(TestAsset testAsset, string scriptPath, string scriptPathWithFingerprintPattern)
+    {
+        if (scriptPathWithFingerprintPattern != null)
+        {
+            var indexHtmlPath = Path.Combine(testAsset.TestRoot, "wwwroot", "index.html");
+            var indexHtmlContent = File.ReadAllText(indexHtmlPath);
+            var newIndexHtmlContent = indexHtmlContent.Replace(scriptPath, scriptPathWithFingerprintPattern);
+            if (indexHtmlContent == newIndexHtmlContent)
+                throw new Exception($"Script replacement '{scriptPath}' for '{scriptPathWithFingerprintPattern}' didn't produce any change in '{indexHtmlPath}'");
+
+            File.WriteAllText(indexHtmlPath, newIndexHtmlContent);
+        }
     }
 
     private void AssertImportMapInHtml(string indexHtmlPath, string endpointsManifestPath, string scriptPath)
