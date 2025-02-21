@@ -214,7 +214,7 @@ The plan is to implement the feature in stages (the order might be different):
 
 - Bare bones `dotnet run file.cs` support: only files, not folders; a single entry-point; no optimizations.
 - Optimizations (caching / up-to-date check).
-- Multiple entrypoints.
+- Multiple entry points.
 - Grow up command.
 - Folder support: `dotnet run ./dir/`.
 - Package references via `#r`.
