@@ -37,11 +37,12 @@ public static class DiffGeneratorFactory
     /// <param name="afterAssemblyReferencesFolderPath"></param>
     /// <param name="outputFolderPath"></param>
     /// <param name="tableOfContentsTitle"></param>
+    /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff. If <see langword="null"/>.</param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier"></param>
     /// <param name="hideImplicitDefaultConstructors"></param>
-    /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="IDiffGenerator.Run"/>, the generated markdown files get written to disk, and no item is added to the <see cref="IDiffGenerator.Run"/> dictionary. If <see langword="false"/>, when calling <see cref="IDiffGenerator.Run"/>, the generated markdown files get added to the <see cref="IDiffGenerator.Run"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
+    /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="IDiffGenerator.RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get added to the <see cref="IDiffGenerator.RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
     /// <param name="diagnosticOptions"></param>
     /// <returns></returns>
     public static IDiffGenerator Create(ILog log,
@@ -51,6 +52,7 @@ public static class DiffGeneratorFactory
                                         string? afterAssemblyReferencesFolderPath,
                                         string outputFolderPath,
                                         string tableOfContentsTitle,
+                                        string[]? assembliesToExclude,
                                         string[]? attributesToExclude,
                                         string[]? apisToExclude,
                                         bool addPartialModifier,
@@ -65,6 +67,7 @@ public static class DiffGeneratorFactory
                                            afterAssemblyReferencesFolderPath,
                                            outputFolderPath,
                                            tableOfContentsTitle,
+                                           assembliesToExclude,
                                            attributesToExclude,
                                            apisToExclude,
                                            addPartialModifier,
