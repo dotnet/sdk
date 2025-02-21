@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Ella Hathaway <ellahathaway@microsoft.com>
+Date: Fri, 21 Feb 2025 21:57:05 +0000
+Subject: [PATCH] Add System.Reflection.MetadataLoadContext for PVP flow
+
+---
+ eng/Version.Details.xml | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index ab1618839..f7bdbc5d1 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -50,6 +50,10 @@
+       <Uri>https://github.com/dotnet/runtime</Uri>
+       <Sha>2aade6beb02ea367fd97c4070a4198802fe61c03</Sha>
+     </Dependency>
++    <Dependency Name="System.Reflection.MetadataLoadContext" Version="8.0.0">
++      <Uri>https://github.com/dotnet/runtime</Uri>
++      <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
++    </Dependency>
+   </ProductDependencies>
+   <ToolsetDependencies>
+     <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.24203.1">
