@@ -162,6 +162,9 @@ foreach ($file in $allFiles) {
         }
     }
 }
+
+New-Item -ItemType Directory -Force -Path $outputFilePath
+
 $missingPackagesShipping | ForEach-Object { Add-Content -Path "$outputFilePath/MissingShippingPackages.txt" -Value $_ }
 $missingPackagesNonShipping | ForEach-Object { Add-Content -Path "$outputFilePath/MissingNonShippingPackages.txt" -Value $_ }
 $missingBlobsShipping | ForEach-Object { Add-Content -Path "$outputFilePath/MissingShippingBlobs.txt" -Value $_ }
