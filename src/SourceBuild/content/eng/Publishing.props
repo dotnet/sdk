@@ -1,0 +1,91 @@
+<Project InitialTargets="DiscoverArtifacts">
+  <PropertyGroup>
+    <PushToLocalStorage>true</PushToLocalStorage>
+    <PreserveRepoOrigin>true</PreserveRepoOrigin>
+    <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
+    <ArtifactsStagingDir Condition="'$(ArtifactsStagingDir)' == ''">$(ArtifactsDir)/staging/</ArtifactsStagingDir>
+    <SourceBuiltAssetsDir>$(ArtifactsStagingDir)/assets/$(Configuration)</SourceBuiltAssetsDir>
+    <SourceBuiltAssetManifestsDir>$(ArtifactsStagingDir)/manifests/$(Configuration)</SourceBuiltAssetManifestsDir>
+    <SourceBuiltPdbArtifactsDir>$(ArtifactsStagingDir)/PDB/$(Configuration)</SourceBuiltPdbArtifactsDir>
+    <PrereqsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'prereqs'))</PrereqsDir>
+    <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'packages'))</PrereqsPackagesDir>
+    <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
+    <PublishingUseHardlinksIfPossible>true</PublishingUseHardlinksIfPossible>
+    <AssetManifestName Condition="'$(VerticalName)' != ''">$(VerticalName).xml</AssetManifestName>
+    <AssetManifestName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(AssetManifestName)' == ''">VerticalManifest.xml</AssetManifestName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <SourceBuiltShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
+    <SourceBuiltNonShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/NonShipping</SourceBuiltNonShippingPackagesDir>
+  </PropertyGroup>
+  <!--
+    When building from source, the Private.SourceBuilt.Artifacts archive will contain the nuget packages, so don't push them where we'll upload from.
+  -->
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <SourceBuiltShippingPackagesDir>$(ArtifactsTmpDir)/staging/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
+    <SourceBuiltNonShippingPackagesDir>$(ArtifactsTmpDir)/staging/packages/$(Configuration)/NonShipping</SourceBuiltNonShippingPackagesDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'manifests', '$(Configuration)'))</AssetManifestsIntermediateDir>
+    <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
+  </PropertyGroup>
+
+  <!--
+    Don't binplace any artifacts with vertical visibility. These are only used for building other repos within this vertical
+    and shouldn't be pushed to build storage.
+  -->
+  <ItemGroup>
+    <ArtifactVisibilityToPublish Include="Internal;External" />
+  </ItemGroup>
+
+  <!-- Build task assembly paths -->
+  <PropertyGroup>
+    <MicrosoftDotNetUnifiedBuildTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.UnifiedBuild.Tasks', '$(Configuration)', 'Microsoft.DotNet.UnifiedBuild.Tasks.dll'))</MicrosoftDotNetUnifiedBuildTasksAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+
+  <Target Name="DiscoverArtifacts">
+    <ItemGroup>
+      <!-- Repo manifests from individual repos -->
+      <RepoManifests Include="$(AssetManifestsIntermediateDir)/**/*.xml" />
+    </ItemGroup>
+    <!-- Get produced packages and assets from the manifests -->
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoManifests)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
+    </GetKnownArtifactsFromAssetManifests>
+    <ItemGroup>
+      <ProducedPackage>
+        <IsShipping Condition="'%(ProducedPackage.NonShipping)' != 'true'">true</IsShipping>
+        <IsShipping Condition="'%(ProducedPackage.NonShipping)' == 'true'">false</IsShipping>
+        <Kind>Package</Kind>
+        <PublishFlatContainer>false</PublishFlatContainer>
+      </ProducedPackage>
+      <ProducedPackage>
+        <ShippingFolder Condition="'%(ProducedPackage.NonShipping)' != 'true'">Shipping</ShippingFolder>
+        <ShippingFolder Condition="'%(ProducedPackage.NonShipping)' == 'true'">NonShipping</ShippingFolder>
+      </ProducedPackage>
+
+      <ReferencePackage Include="@(ProducedPackage->'$(ReferencePackagesDir)%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' == 'source-build-reference-packages'" />
+    </ItemGroup>
+
+    <!-- Create Artifact items for produced packages and assets -->
+    <ItemGroup>
+      <Artifact Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' != 'source-build-reference-packages'" />
+      <Artifact Include="@(ReferencePackage)" RepoOrigin="SourceBuildReferencePackages" />
+      <Artifact Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')">
+        <Kind>Asset</Kind>
+      </Artifact>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="FinishSourceBuild" AfterTargets="Publish" Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <MSBuild
+      Projects="$(RepositoryEngineeringDir)finish-source-only.proj"
+      Targets="Restore"
+      Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
+    <MSBuild
+      Projects="$(RepositoryEngineeringDir)finish-source-only.proj" />
+  </Target>
+</Project>

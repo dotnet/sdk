@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <EnableDefaultArtifacts>false</EnableDefaultArtifacts>
+  </PropertyGroup>
+</Project>

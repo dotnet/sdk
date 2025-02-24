@@ -11,7 +11,6 @@
     <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
     <ProjectReference Include="$(TasksDir)Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj" />
     <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" />
-    <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" />
   </ItemGroup>
 
   <!-- After building, generate a prebuilt usage report. -->
@@ -132,7 +131,7 @@
       <PoisonFileToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
       <PoisonFileToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
       <!-- Include shipping nuget packages. -->
-      <PoisonFileToCheck Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
+      <PoisonFileToCheck Include="$(ArtifactsTmpDir)/staging/packages/$(Configuration)/Shipping/*.nupkg" />
       <!-- Add and mark SBRP packages to validate that they have the correct poison attribute. -->
       <PoisonFileToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
     </ItemGroup>
@@ -216,8 +215,8 @@
           DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion;ResolveProjectReferences">
     <!-- Inputs: Packages to include in the tarball -->
     <ItemGroup>
-      <ArtifactsPackageToBundle Include="$(ArtifactsShippingPackagesDir)**;
-                                          $(ArtifactsNonShippingPackagesDir)**"
+      <ArtifactsPackageToBundle Include="$(ArtifactsTmpDir)/staging/packages/$(Configuration)/Shipping/**;
+                                          $(ArtifactsTmpDir)/staging/packages/$(Configuration)/NonShipping/**"
                                 Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
       <ReferencePackageToBundle Include="$(ReferencePackagesDir)**"
                                 Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
