@@ -378,14 +378,11 @@
     <!-- From Version.targets in SDK redist -->
     <PropertyGroup>
       <ArtifactNameSdk>dotnet-toolset-internal</ArtifactNameSdk>
-      <ArtifactNameSdkLanguagePack>dotnet-toolset-langpack</ArtifactNameSdkLanguagePack>
     </PropertyGroup>
 
     <!-- From GenerateLayout.targets in SDK redist -->
     <PropertyGroup>
-      <LayoutDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\</LayoutDirectory>
-      <SdkLayoutOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdk)\</SdkLayoutOutputDirectory>
-      <SdkLanguagePackOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdkLanguagePack)\</SdkLanguagePackOutputDirectory>
+      <SdkLayoutOutputDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\$(ArtifactNameSdk)\</SdkLayoutOutputDirectory>
     </PropertyGroup>
 
     <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->

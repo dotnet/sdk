@@ -488,37 +488,18 @@
                             GetDotnetWatchRedistOutputDirectory"
           AfterTargets="Build">
     <PropertyGroup>
-      <LayoutDirectory>$(BaseOutputPath)$(Configuration)\layouts\</LayoutDirectory>
-      <SdkLayoutOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdk)</SdkLayoutOutputDirectory>
-      <SdkLanguagePackOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdkLanguagePack)</SdkLanguagePackOutputDirectory>
+      <SdkLayoutOutputDirectory>$(BaseOutputPath)$(Configuration)\layouts\$(ArtifactNameSdk)</SdkLayoutOutputDirectory>
     </PropertyGroup>
 
     <ItemGroup>
       <ToolsetLayoutInput Include="$(OutputPath)/**/*" />
-      <ToolsetLanguagePackInput Include="$(OutputPath)/**/*.resources.dll" />
-
-      <!--
-        Include redist outputs published by dotnet-watch.csproj build.
-      -->
+      <!-- Include redist outputs published by dotnet-watch.csproj build. -->
       <ToolsetLayoutInput Include="$(DotnetWatchRedistOutputDirectory)/**/*" LayoutSubdirectory="DotnetTools\dotnet-watch\"/>
-      <ToolsetLanguagePackInput Include="$(DotnetWatchRedistOutputDirectory)/**/*.resources.dll" LayoutSubdirectory="DotnetTools\dotnet-watch\"/>
     </ItemGroup>
 
-    <!-- Set up Items Defining Layouts for easy change -->
-    <ItemGroup>
-      <LayoutDefinition Include="Sdk">
-        <InputFiles>@(ToolsetLayoutInput)</InputFiles>
-        <OutputFiles>@(ToolsetLayoutInput -> '$(SdkLayoutOutputDirectory)\%(LayoutSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')</OutputFiles>
-      </LayoutDefinition>
-
-      <LayoutDefinition Include="SdkLanguagePack">
-        <InputFiles>@(ToolsetLanguagePackInput)</InputFiles>
-        <OutputFiles>@(ToolsetLanguagePackInput -> '$(SdkLanguagePackOutputDirectory)\%(LayoutSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')</OutputFiles>
-      </LayoutDefinition>
-    </ItemGroup>
-
-    <Copy SourceFiles="%(LayoutDefinition.InputFiles)"
-          DestinationFiles="%(LayoutDefinition.OutputFiles)"
+    <Copy SourceFiles="@(ToolsetLayoutInput)"
+          DestinationFiles="@(ToolsetLayoutInput->'$(SdkLayoutOutputDirectory)\%(LayoutSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
   </Target>
+
 </Project>
