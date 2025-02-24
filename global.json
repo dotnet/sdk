@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "10.0.100-preview.2.25118.3",
+    "dotnet": "10.0.100-preview.3.25122.1",
     "runtimes": {
       "dotnet": [
         "$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)"
@@ -17,8 +17,8 @@
     "cmake": "latest"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25120.6",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25120.6",
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25124.2",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25124.2",
     "Microsoft.Build.NoTargets": "3.7.0",
     "Microsoft.DotNet.CMake.Sdk": "9.0.0-beta.24217.1"
   }
