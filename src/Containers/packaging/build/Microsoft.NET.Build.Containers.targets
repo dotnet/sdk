@@ -405,7 +405,7 @@
 
   <Target Name="PublishContainer"
   DependsOnTargets="$(PublishContainerDependsOn)"
-  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
+  Condition="'$(IsPublishable)' == 'true'">
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
       <!-- we are multi-RID if:
@@ -424,6 +424,7 @@
     <CallTarget Condition="'$(_IsSingleRIDBuild)' == 'true' " Targets="_PublishSingleContainer" />
 
     <Error Condition="'$(_IsMultiTFMBuild)' == 'true'" Code="CONTAINERS0666" Text="Containers cannot be published for multiple TargetFrameworks at this time. Please specify a TargetFramework." />
+    <Error Condition="'$(EnableSdkContainerSupport)' != 'true'" Code="CONTAINERS0667" Text="Publishing to container requires EnableSdkContainerSupport be set to true." />
   </Target>
 
 </Project>
