@@ -154,7 +154,7 @@ public class LinuxInstallerTests : IDisposable
                 if (clearElement != null)
                 {
                     XElement newAddElement = new XElement("add",
-                    new XAttribute("key", "local-packages"),
+                        new XAttribute("key", "local-packages"),
                         new XAttribute("value", localPackagesPath));
 
                     clearElement.AddAfterSelf(newAddElement);
