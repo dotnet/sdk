@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -32,8 +33,8 @@ namespace Microsoft.DotNet.Cli
             if (!OperatingSystem.IsWindows() && IsRunningUnderSudo() && IsRunningWorkloadCommand(parseResult))
             {
                 string sudoHome = PathUtilities.CreateTempSubdirectory();
-                var homeBeforeOverride = Path.Combine(Environment.GetEnvironmentVariable("HOME"));
-                Environment.SetEnvironmentVariable("HOME", sudoHome);
+                var homeBeforeOverride = Path.Combine(Environment.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName));
+                Environment.SetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, sudoHome);
 
                 CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride);
             }
@@ -55,15 +56,15 @@ namespace Microsoft.DotNet.Cli
                 .Select(fileName => Path.Combine(userSettingsDir, fileName))
                 .FirstOrDefault(f => File.Exists(f));
 
-            var overridenSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-            var overridenNugetConfig = Path.Combine(overridenSettingsDir, Settings.DefaultSettingsFileName);
+            var overriddenSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var overriddenNugetConfig = Path.Combine(overriddenSettingsDir, Settings.DefaultSettingsFileName);
 
-            if (File.Exists(overridenNugetConfig))
+            if (File.Exists(overriddenNugetConfig))
             {
                 try
                 {
                     FileAccessRetrier.RetryOnIOException(
-                        () => File.Delete(overridenNugetConfig));
+                        () => File.Delete(overriddenNugetConfig));
                 }
                 catch
                 {
@@ -76,7 +77,7 @@ namespace Microsoft.DotNet.Cli
                 try
                 {
                     FileAccessRetrier.RetryOnIOException(
-                        () => File.Copy(userNuGetConfig, overridenNugetConfig, overwrite: true));
+                        () => File.Copy(userNuGetConfig, overriddenNugetConfig, overwrite: true));
                 }
                 catch
                 {

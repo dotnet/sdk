@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Setup.Configuration;
 namespace Microsoft.DotNet.Workloads.Workload
 {
     /// <summary>
-    /// Provides functionality to query the status of .NET workloads in Visual Studio.    
+    /// Provides functionality to query the status of .NET workloads in Visual Studio.
     /// </summary>
 #if NETCOREAPP
     [SupportedOSPlatform("windows")]
