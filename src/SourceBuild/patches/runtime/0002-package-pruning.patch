@@ -1,0 +1,989 @@
+From 729607fa308bb45d0c0759d99de71b2f3f2a7491 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Thu, 20 Feb 2025 15:32:39 +0100
+Subject: Address some of the NU1510 and NU1511 warnings
+
+Backport: https://github.com/dotnet/runtime/pull/112730
+---
+diff --git a/src/installer/tests/Microsoft.DotNet.CoreSetup.Packaging.Tests/Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj b/src/installer/tests/Microsoft.DotNet.CoreSetup.Packaging.Tests/Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj
+index 247a015b394..49ccc41646d 100644
+--- a/src/installer/tests/Microsoft.DotNet.CoreSetup.Packaging.Tests/Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj
++++ b/src/installer/tests/Microsoft.DotNet.CoreSetup.Packaging.Tests/Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj
+@@ -32,4 +32,6 @@
+       BuildInParallel="$(BuildInParallel)" />
+   </Target>
+ 
++  <Import Project="$(RepositoryEngineeringDir)PackageDownloadAndReference.targets" />
++
+ </Project>
+diff --git a/src/libraries/Microsoft.Extensions.DependencyInjection/tests/DI.External.Tests/Microsoft.Extensions.DependencyInjection.ExternalContainers.Tests.csproj b/src/libraries/Microsoft.Extensions.DependencyInjection/tests/DI.External.Tests/Microsoft.Extensions.DependencyInjection.ExternalContainers.Tests.csproj
+index a9dab8c3709..8aabb459526 100644
+--- a/src/libraries/Microsoft.Extensions.DependencyInjection/tests/DI.External.Tests/Microsoft.Extensions.DependencyInjection.ExternalContainers.Tests.csproj
++++ b/src/libraries/Microsoft.Extensions.DependencyInjection/tests/DI.External.Tests/Microsoft.Extensions.DependencyInjection.ExternalContainers.Tests.csproj
+@@ -4,6 +4,9 @@
+     <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+     <EnableDefaultItems>true</EnableDefaultItems>
+     <NoWarn>$(NoWarn);CS8002</NoWarn>
++
++    <!-- third party DI containers bring in NS1.x dependencies -->
++    <FlagNetStandard1XDependencies>false</FlagNetStandard1XDependencies>
+   </PropertyGroup>
+ 
+   <!-- DesignTimeBuild requires all the TargetFramework Derived Properties to not be present in the first property group. -->
+@@ -20,11 +23,17 @@
+     <PackageReference Include="LightInject.Microsoft.DependencyInjection" Version="3.7.1" />
+     <PackageReference Include="Grace.DependencyInjection.Extensions" Version="7.1.0" />
+     <PackageReference Include="Stashbox.Extensions.Dependencyinjection" Version="4.2.3" />
++    <!-- Update the transitive STJ to a non-vulnerable version. -->
++    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
+   </ItemGroup>
+ 
+   <!-- These packages don't support .NETFramework -->
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+     <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="8.0.1" />
++    <!-- Lamar depends on System.Runtime.Loader which brings in 1.x packages. 
++         Those have audit warnings when runtime.* packages are brought in for RID-specific restore.
++         Avoid by referencing the latest Microsoft.NETCore.Targets which will prevent all 1.x runtime.* packages from being referenced. -->
++    <PackageReference Include="Microsoft.NETCore.Targets" Version="5.0.0" />
+   </ItemGroup>
+ 
+ </Project>
+diff --git a/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn3.11.Tests.csproj b/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn3.11.Tests.csproj
+index 477019528c0..a4ba910907f 100644
+--- a/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn3.11.Tests.csproj
++++ b/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn3.11.Tests.csproj
+@@ -3,6 +3,8 @@
+   <PropertyGroup>
+     <RoslynApiVersion>$(MicrosoftCodeAnalysisVersion_3_11)</RoslynApiVersion>
+     <IsHighAotMemoryUsageTest>true</IsHighAotMemoryUsageTest>
++    <!-- this Roslyn version brings in NS1.x dependencies -->
++    <FlagNetStandard1XDependencies>false</FlagNetStandard1XDependencies>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn4.0.Tests.csproj b/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn4.0.Tests.csproj
+index 2f4cb04d421..6f2b057c80d 100644
+--- a/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn4.0.Tests.csproj
++++ b/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn4.0.Tests.csproj
+@@ -5,6 +5,8 @@
+     <DefineConstants>$(DefineConstants);ROSLYN4_0_OR_GREATER</DefineConstants>
+     <IsHighAotMemoryUsageTest>true</IsHighAotMemoryUsageTest>
+     <EmccLinkOptimizationFlag Condition="'$(ContinuousIntegrationBuild)' == 'true'">-O1</EmccLinkOptimizationFlag>
++    <!-- this Roslyn version brings in NS1.x dependencies -->
++    <FlagNetStandard1XDependencies>false</FlagNetStandard1XDependencies>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn4.8.Tests.csproj b/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn4.8.Tests.csproj
+index 1bb07c89807..e480e542b15 100644
+--- a/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn4.8.Tests.csproj
++++ b/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.Roslyn4.8.Tests.csproj
+@@ -5,6 +5,8 @@
+     <DefineConstants>$(DefineConstants);ROSLYN4_0_OR_GREATER;ROSLYN4_8_OR_GREATER</DefineConstants>
+     <IsHighAotMemoryUsageTest>true</IsHighAotMemoryUsageTest>
+     <EmccLinkOptimizationFlag Condition="'$(ContinuousIntegrationBuild)' == 'true'">-O1</EmccLinkOptimizationFlag>
++    <!-- this Roslyn version brings in NS1.x dependencies -->
++    <FlagNetStandard1XDependencies>false</FlagNetStandard1XDependencies>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.targets b/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.targets
+index dfc5b8e9ad7..115a93167b3 100644
+--- a/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.targets
++++ b/src/libraries/Microsoft.Extensions.Logging.Abstractions/tests/Microsoft.Extensions.Logging.Generators.Tests/Microsoft.Extensions.Logging.Generators.targets
+@@ -19,6 +19,11 @@
+   <ItemGroup>
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Extensions.Logging.Abstractions\src\Microsoft.Extensions.Logging.Abstractions.csproj" />
+     <PackageReference Include="Microsoft.CodeAnalysis" Version="$(RoslynApiVersion)" />
++    <!-- Ensure we are using live dependencies for CodeAnalysis rather than old packages -->
++    <PackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryVersion)" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.Composition\src\System.Composition.csproj" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.IO.Pipelines\src\System.IO.Pipelines.csproj" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.Reflection.Metadata\src\System.Reflection.Metadata.csproj" />
+     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawbundle_greenVersion)" />
+   </ItemGroup>
+ 
+diff --git a/src/libraries/Microsoft.Extensions.Logging.Console/tests/Microsoft.Extensions.Logging.Console.Tests/Microsoft.Extensions.Logging.Console.Tests.csproj b/src/libraries/Microsoft.Extensions.Logging.Console/tests/Microsoft.Extensions.Logging.Console.Tests/Microsoft.Extensions.Logging.Console.Tests.csproj
+index 7d7c040d331..6c3acbcaeb4 100644
+--- a/src/libraries/Microsoft.Extensions.Logging.Console/tests/Microsoft.Extensions.Logging.Console.Tests/Microsoft.Extensions.Logging.Console.Tests.csproj
++++ b/src/libraries/Microsoft.Extensions.Logging.Console/tests/Microsoft.Extensions.Logging.Console.Tests/Microsoft.Extensions.Logging.Console.Tests.csproj
+@@ -10,10 +10,6 @@
+   <ItemGroup>
+     <Compile Include="$(CoreLibSharedDir)System\Runtime\CompilerServices\IsExternalInit.cs" Link="Common\System\Runtime\CompilerServices\IsExternalInit.cs" />
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Extensions.Logging.Console\src\Microsoft.Extensions.Logging.Console.csproj" SkipUseReferenceAssembly="true" />
+-  </ItemGroup>
+-
+-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Diagnostics.DiagnosticSource\src\System.Diagnostics.DiagnosticSource.csproj" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/Microsoft.XmlSerializer.Generator/tests/Microsoft.XmlSerializer.Generator.Tests.csproj b/src/libraries/Microsoft.XmlSerializer.Generator/tests/Microsoft.XmlSerializer.Generator.Tests.csproj
+index 419f2d96dea..2f10f4d0574 100644
+--- a/src/libraries/Microsoft.XmlSerializer.Generator/tests/Microsoft.XmlSerializer.Generator.Tests.csproj
++++ b/src/libraries/Microsoft.XmlSerializer.Generator/tests/Microsoft.XmlSerializer.Generator.Tests.csproj
+@@ -1,8 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+     <DefineConstants>$(DefineConstants);XMLSERIALIZERGENERATORTESTS</DefineConstants>
++    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+     <SkipTestsOnPlatform Condition="'$(TargetsMobile)' == 'true' or '$(TargetOS)' == 'freebsd' or '$(TargetArchitecture)' == 'arm' or '$(TargetArchitecture)' == 'arm64' or '$(TargetArchitecture)' == 'armel' or '$(TargetArchitecture)' == 'wasm'">true</SkipTestsOnPlatform>
+   </PropertyGroup>
+ 
+diff --git a/src/libraries/Microsoft.XmlSerializer.Generator/tests/SerializableAssembly.csproj b/src/libraries/Microsoft.XmlSerializer.Generator/tests/SerializableAssembly.csproj
+index ee6512e4a6a..ab08ca5fa8f 100644
+--- a/src/libraries/Microsoft.XmlSerializer.Generator/tests/SerializableAssembly.csproj
++++ b/src/libraries/Microsoft.XmlSerializer.Generator/tests/SerializableAssembly.csproj
+@@ -1,13 +1,16 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+     <!-- We need a separate assembly in order to run SGen during the test build because if we just run
+     SGen on the test assembly itself, everytime we move the shared framework assemblies to VNext.0.0
+     or to target a new TFM, since we use the SDK to invoke SGen and there is no recent SDK with
+     VNext.0.0 then SGen fails when it tries to load the types to serialize. -->
+-    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
++    <TargetFramework>netstandard2.1</TargetFramework>
+   </PropertyGroup>
+ 
++  <ItemGroup>
++    <ProjectReference Include="$(LibrariesProjectRoot)System.Reflection.Metadata\src\System.Reflection.Metadata.csproj" />
++  </ItemGroup>
++
+   <ItemGroup>
+     <Compile Include="$(TestSourceFolder)..\..\System.Runtime.Serialization.Xml\tests\SerializationTypes.cs" />
+   </ItemGroup>
+diff --git a/src/libraries/System.Collections.Immutable/tests/System.Collections.Immutable.Tests.csproj b/src/libraries/System.Collections.Immutable/tests/System.Collections.Immutable.Tests.csproj
+index 3d80be9e790..3f734f107c9 100644
+--- a/src/libraries/System.Collections.Immutable/tests/System.Collections.Immutable.Tests.csproj
++++ b/src/libraries/System.Collections.Immutable/tests/System.Collections.Immutable.Tests.csproj
+@@ -1,19 +1,14 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+     <NoWarn>$(NoWarn);0436</NoWarn>
++    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and ('$(TargetOS)' == 'browser' or '$(TargetOS)' == 'wasi')">true</DebuggerSupport>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+-    <!-- This test library intentionally references an inbox P2P as it needs the implementation, instead of the contract.
+-         Suppress the NU1511 warning in the whole project as putting it on a P2P doesn't work: https://github.com/NuGet/Home/issues/14121 -->
+-    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+     <RdXmlFile Include="default.rd.xml" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <Compile Include="$(CommonTestPath)System\Collections\DictionaryExtensions.cs" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" Link="Common\System\Collections\DictionaryExtensions.cs" />
+     <!-- Reference internal product components for testing -->
+@@ -76,12 +71,9 @@
+     <Compile Include="$(CommonTestPath)System\Collections\DebugView.Tests.cs" Link="Common\System\Collections\DebugView.Tests.cs" />
+     <Compile Include="$(CommonTestPath)System\Collections\TestingTypes.cs" Link="Common\System\Collections\TestingTypes.cs" />
+   </ItemGroup>
+-
+-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
++  <ItemGroup Condition="'$(TargetFramework)' == '$(NetCoreAppCurrent)'">
+     <!-- Some internal types are needed, so we reference the implementation assembly, rather than the reference assembly. -->
+     <ProjectReference Include="..\src\System.Collections.Immutable.csproj" SkipUseReferenceAssembly="true" />
+-    <Compile Include="Frozen\FrozenDictionaryAlternateLookupTests.cs" />
+-    <Compile Include="Frozen\FrozenSetAlternateLookupTests.cs" />
+     <Compile Include="ImmutableListTestBase.cs" />
+     <Compile Include="ImmutableListTest.cs" />
+     <Compile Include="ImmutableListBuilderTest.cs" />
+@@ -99,10 +91,12 @@
+     <Compile Include="ImmutableSortedSetBuilderTest.nonnetstandard.cs" />
+     <Compile Include="ImmutableSortedDictionaryTest.nonnetstandard.cs" />
+   </ItemGroup>
+-
++  <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
++    <Compile Include="Frozen\FrozenDictionaryAlternateLookupTests.cs" />
++    <Compile Include="Frozen\FrozenSetAlternateLookupTests.cs" />
++  </ItemGroup>
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <ProjectReference Include="..\src\System.Collections.Immutable.csproj" />
+     <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Diagnostics.DiagnosticSource/tests/System.Diagnostics.DiagnosticSource.Tests.csproj b/src/libraries/System.Diagnostics.DiagnosticSource/tests/System.Diagnostics.DiagnosticSource.Tests.csproj
+index fe68c58eef9..4b9d949f96b 100644
+--- a/src/libraries/System.Diagnostics.DiagnosticSource/tests/System.Diagnostics.DiagnosticSource.Tests.csproj
++++ b/src/libraries/System.Diagnostics.DiagnosticSource/tests/System.Diagnostics.DiagnosticSource.Tests.csproj
+@@ -1,19 +1,18 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+     <IncludeRemoteExecutor>true</IncludeRemoteExecutor>
++    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+   </PropertyGroup>
+-
+-  <!-- DesignTimeBuild requires all the TargetFramework Derived Properties to not be present in the first property group. -->
+   <PropertyGroup>
+     <DefineConstants Condition="$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) == '.NETCoreApp'">$(DefineConstants);MEMORYMARSHAL_SUPPORT</DefineConstants>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <RdXmlFile Include="default.rd.xml" />
+   </ItemGroup>
+-
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
++    <Compile Include="DiagnosticSourceEventSourceBridgeTests.cs" />
++    <Compile Include="TestNotSupported.cs" />
++  </ItemGroup>
+   <ItemGroup>
+     <Compile Include="..\src\System\Diagnostics\DsesSamplerBuilder.cs" Link="DsesSamplerBuilder.cs" />
+     <Compile Include="..\src\System\Diagnostics\Helpers.cs" Link="Helpers.cs" />
+@@ -40,24 +39,19 @@
+     <Compile Include="PropagatorTests.cs" />
+     <Compile Include="TagListTests.cs" />
+   </ItemGroup>
+-
+-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+-    <Compile Include="DiagnosticSourceEventSourceBridgeTests.cs" />
+-    <Compile Include="RuntimeMetricsTests.cs" />
+-    <Compile Include="TestNotSupported.cs" />
+-  </ItemGroup>
+-
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <Compile Include="HttpHandlerDiagnosticListenerTests.cs" />
+     <Compile Include="ActivityDateTimeTests.cs" />
+     <Compile Include="$(CommonTestPath)System\Net\Configuration.cs" Link="Common\System\Net\Configuration.cs" />
+     <Compile Include="$(CommonTestPath)System\Net\Configuration.Http.cs" Link="Common\System\Net\Configuration.Http.cs" />
+   </ItemGroup>
+-
++  <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">
++    <Compile Include="RuntimeMetricsTests.cs" />
++  </ItemGroup>
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+-    <ProjectReference Include="..\src\System.Diagnostics.DiagnosticSource.csproj" />
+-
+     <Reference Include="System.Net.Http" />
+   </ItemGroup>
+-
++  <ItemGroup>
++    <ProjectReference Include="..\src\System.Diagnostics.DiagnosticSource.csproj" />
++  </ItemGroup>
+ </Project>
+\ No newline at end of file
+diff --git a/src/libraries/System.IO.Pipelines/tests/System.IO.Pipelines.Tests.csproj b/src/libraries/System.IO.Pipelines/tests/System.IO.Pipelines.Tests.csproj
+index d41bfd533ed..19851efa3ec 100644
+--- a/src/libraries/System.IO.Pipelines/tests/System.IO.Pipelines.Tests.csproj
++++ b/src/libraries/System.IO.Pipelines/tests/System.IO.Pipelines.Tests.csproj
+@@ -1,13 +1,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+-    <!-- This test library intentionally references an inbox P2P as it needs the implementation, instead of the contract.
+-         Suppress the NU1511 warning in the whole project as putting it on a P2P doesn't work: https://github.com/NuGet/Home/issues/14121 -->
+-    <NoWarn>$(NoWarn);NU1511</NoWarn>
++    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <Compile Include="Infrastructure\BasePipeReader.cs" />
+     <Compile Include="Infrastructure\HeapBufferPool.cs" />
+@@ -51,7 +46,6 @@
+     <Compile Include="UnflushedBytesTests.cs" />
+     <Compile Include="PipeLengthTests.cs" />
+   </ItemGroup>
+-
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+     <Compile Include="BufferSegmentPoolTest.cs" />
+     <Compile Include="PipeReaderWriterFacts.nonnetstandard.cs" />
+@@ -60,18 +54,14 @@
+     <Compile Include="PipeWriterStreamTests.nonnetstandard.cs" />
+     <Compile Include="PipeReaderWriterStreamTests.nonnetstandard.cs" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <!-- Some internal types are needed, so we reference the implementation assembly, rather than the reference assembly. -->
+     <ProjectReference Include="..\src\System.IO.Pipelines.csproj" SkipUseReferenceAssembly="true" />
+   </ItemGroup>
+-
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+     <ProjectReference Include="$(CommonTestPath)StreamConformanceTests\StreamConformanceTests.csproj" />
+   </ItemGroup>
+-
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafeVersion)" />
+   </ItemGroup>
+-
+ </Project>
+\ No newline at end of file
+diff --git a/src/libraries/System.Linq.AsyncEnumerable/tests/System.Linq.AsyncEnumerable.Tests.csproj b/src/libraries/System.Linq.AsyncEnumerable/tests/System.Linq.AsyncEnumerable.Tests.csproj
+index 4b045a52e3d..164e0e77aa6 100644
+--- a/src/libraries/System.Linq.AsyncEnumerable/tests/System.Linq.AsyncEnumerable.Tests.csproj
++++ b/src/libraries/System.Linq.AsyncEnumerable/tests/System.Linq.AsyncEnumerable.Tests.csproj
+@@ -1,10 +1,8 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+     <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+     <NoWarn>$(NoWarn);CS1998</NoWarn>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <Compile Include="AggregateByTests.cs" />
+     <Compile Include="AggregateAsyncTests.cs" />
+@@ -74,12 +72,12 @@
+     <Compile Include="AllAsyncTests.cs" />
+     <Compile Include="AsyncEnumerableTests.cs" />
+   </ItemGroup>
+-
+-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
++  <ItemGroup>
+     <ProjectReference Include="..\src\System.Linq.AsyncEnumerable.csproj" />
+     <ProjectReference Include="..\..\System.Threading.Channels\src\System.Threading.Channels.csproj" />
++  </ItemGroup>
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <Compile Include="$(CoreLibSharedDir)System\Runtime\CompilerServices\CompilerFeatureRequiredAttribute.cs" />
+     <Compile Include="$(CoreLibSharedDir)System\Runtime\CompilerServices\IsExternalInit.cs" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Net.Http/tests/FunctionalTests/System.Net.Http.Functional.Tests.csproj b/src/libraries/System.Net.Http/tests/FunctionalTests/System.Net.Http.Functional.Tests.csproj
+index 44e576ea14a..7f914dfaacb 100644
+--- a/src/libraries/System.Net.Http/tests/FunctionalTests/System.Net.Http.Functional.Tests.csproj
++++ b/src/libraries/System.Net.Http/tests/FunctionalTests/System.Net.Http.Functional.Tests.csproj
+@@ -1,5 +1,4 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <Import Condition="'$(TargetOS)' == 'browser' or '$(TargetOS)' == 'wasi'" Project="$(CommonTestPath)System/Net/Prerequisites/LocalEchoServer.props" />
+ 
+   <PropertyGroup>
+@@ -241,25 +240,21 @@
+     <Compile Include="$(CommonPath)System\Net\StreamBuffer.cs"
+              Link="ProductionCode\Common\System\Net\StreamBuffer.cs" />
+   </ItemGroup>
+-
+   <!-- Windows specific files -->
+   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows'">
+     <Compile Include="NtAuthTests.Windows.cs" />
+     <Compile Include="ImpersonatedAuthTests.cs" />
+   </ItemGroup>
+-
+   <!-- Linux specific files -->
+   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'linux' or '$(TargetPlatformIdentifier)' == 'browser'">
+     <Compile Include="$(CommonPath)Interop\Linux\Interop.Libraries.cs"
+              Link="Common\Interop\Linux\Interop.Libraries.cs" />
+   </ItemGroup>
+-
+   <!-- OSX specific files -->
+   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'osx' ">
+     <Compile Include="$(CommonPath)Interop\OSX\Interop.Libraries.cs"
+              Link="Common\Interop\OSX\Interop.Libraries.cs" />
+   </ItemGroup>
+-
+   <!-- Android specific files -->
+   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
+     <Compile Include="AndroidKeyStoreHelper.cs" />
+@@ -276,7 +271,6 @@
+     <Compile Include="$(CommonPath)Interop\Android\System.Security.Cryptography.Native.Android\SafeKeyHandle.cs"
+              Link="Common\Interop\Android\System.Security.Cryptography.Native.Android\SafeKeyHandle.cs" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <Compile Include="CustomContent.netcore.cs" />
+     <Compile Include="HPackTest.cs" />
+@@ -318,7 +312,6 @@
+     <Compile Include="LoopbackSocksServer.cs" />
+     <Compile Include="SocksProxyTest.cs" />
+   </ItemGroup>
+-
+   <!-- NTLM/Negotiate authentication fakes -->
+   <ItemGroup>
+     <Compile Include="$(CommonPath)System\Net\Security\MD4.cs"
+@@ -330,17 +323,17 @@
+     <Compile Include="$(CommonTestPath)System\Net\Security\FakeNegotiateServer.cs"
+              Link="Common\System\Net\Security\FakeNegotiateServer.cs" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <EmbeddedResource Include="SelectedSitesTest.txt">
+       <Link>SelectedSitesTest.txt</Link>
+     </EmbeddedResource>
+   </ItemGroup>
+-
+   <ItemGroup>
+     <PackageReference Include="System.Net.TestData" Version="$(SystemNetTestDataVersion)" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.DirectoryServices.Protocols\src\System.DirectoryServices.Protocols.csproj" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.IO.Pipelines\src\System.IO.Pipelines.csproj" />
++  </ItemGroup>
++  <ItemGroup>
+     <ProjectReference Include="$(CommonTestPath)StreamConformanceTests\StreamConformanceTests.csproj" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Private.CoreLib/tests/IntrinsicsInSystemPrivatecoreLibAnalyzer.Tests/IntrinsicsInSystemPrivateCoreLib.Tests.csproj b/src/libraries/System.Private.CoreLib/tests/IntrinsicsInSystemPrivatecoreLibAnalyzer.Tests/IntrinsicsInSystemPrivateCoreLib.Tests.csproj
+index 594def676a1..526ad7319b7 100644
+--- a/src/libraries/System.Private.CoreLib/tests/IntrinsicsInSystemPrivatecoreLibAnalyzer.Tests/IntrinsicsInSystemPrivateCoreLib.Tests.csproj
++++ b/src/libraries/System.Private.CoreLib/tests/IntrinsicsInSystemPrivatecoreLibAnalyzer.Tests/IntrinsicsInSystemPrivateCoreLib.Tests.csproj
+@@ -10,6 +10,13 @@
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(CompilerPlatformTestingVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(CompilerPlatformTestingVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(CompilerPlatformTestingVersion)" />
++
++    <!-- Upgrade transitive references of Microsoft.CodeAnalysis.Analyzer.Testing which bring in NS 1.x deps -->
++    <PackageReference Include="DiffPlex" Version="$(CompilerPlatformTestingDiffPlexVersion)" />
++    <PackageReference Include="Microsoft.VisualBasic" Version="$(CompilerPlatformTestingMicrosoftVisualBasicVersion)" />
++    <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(CompilerPlatformTestingMicrosoftVisualStudioCompositionVersion)" />
++    <!-- Upgrade to a non-vulnerable version of Asn1 - which will be ignored in favor of the framework copy  -->
++    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" ExcludeAssets="All" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/libraries/System.Private.Xml/tests/System.Private.Xml.Tests.csproj b/src/libraries/System.Private.Xml/tests/System.Private.Xml.Tests.csproj
+index 1ce5192ef4a..b19efe835a7 100644
+--- a/src/libraries/System.Private.Xml/tests/System.Private.Xml.Tests.csproj
++++ b/src/libraries/System.Private.Xml/tests/System.Private.Xml.Tests.csproj
+@@ -1,8 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+     <RootNamespace>System.Xml.Tests</RootNamespace>
++    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/libraries/System.Reflection.Emit/tests/System.Reflection.Emit.Tests.csproj b/src/libraries/System.Reflection.Emit/tests/System.Reflection.Emit.Tests.csproj
+index 598d0516beb..f92aaea6308 100644
+--- a/src/libraries/System.Reflection.Emit/tests/System.Reflection.Emit.Tests.csproj
++++ b/src/libraries/System.Reflection.Emit/tests/System.Reflection.Emit.Tests.csproj
+@@ -1,11 +1,9 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+     <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+     <TestRuntime>true</TestRuntime>
+     <IncludeRemoteExecutor>true</IncludeRemoteExecutor>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <Compile Include="AssemblyBuilderTests.cs" />
+     <Compile Include="OpCodesTests.cs" />
+@@ -132,9 +130,8 @@
+     <Compile Include="Utilities.cs" />
+     <Compile Include="$(CommonTestPath)System\IO\TempFile.cs" Link="Common\System\IO\TempFile.cs" />
+   </ItemGroup>
+-
+   <ItemGroup>
++    <ProjectReference Include="..\src\System.Reflection.Emit.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Reflection.MetadataLoadContext\src\System.Reflection.MetadataLoadContext.csproj" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Reflection.Metadata/tests/System.Reflection.Metadata.Tests.csproj b/src/libraries/System.Reflection.Metadata/tests/System.Reflection.Metadata.Tests.csproj
+index bb61c7204c8..e952494537b 100644
+--- a/src/libraries/System.Reflection.Metadata/tests/System.Reflection.Metadata.Tests.csproj
++++ b/src/libraries/System.Reflection.Metadata/tests/System.Reflection.Metadata.Tests.csproj
+@@ -1,16 +1,13 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <ExternallyShipping>false</ExternallyShipping>
+     <!-- 436: Type conflicts on "Interop" due to InternalsVisibleTo access
+          SYSLIB0037: AssemblyName members HashAlgorithm, ProcessorArchitecture, and VersionCompatibility are obsolete. -->
+     <NoWarn>$(NoWarn);436;SYSLIB0037</NoWarn>
++    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+     <DefineConstants Condition="'$(TargetOS)' == 'browser'">$(DefineConstants);TARGET_BROWSER</DefineConstants>
+-    <!-- This test library intentionally references an inbox P2P as it needs the implementation, instead of the contract.
+-         Suppress the NU1511 warning in the whole project as putting it on a P2P doesn't work: https://github.com/NuGet/Home/issues/14121 -->
+-    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+@@ -28,8 +25,8 @@
+              Link="Common\Microsoft\Win32\SafeHandles\SafeLibraryHandle.cs" />
+     <Compile Include="$(CommonTestPath)System\IO\TempFile.cs"
+              Link="Common\System\IO\TempFile.cs" />
+-
+     <Compile Include="Metadata\AssemblyNameInfoTests.cs" />
++
+     <Compile Include="Metadata\BlobContentIdTests.cs" />
+     <Compile Include="Metadata\BlobTests.cs" />
+     <Compile Include="Metadata\BlobUtilitiesTests.cs" />
+@@ -151,11 +148,10 @@
+     <ProjectReference Include="..\src\System.Reflection.Metadata.csproj" SkipUseReferenceAssembly="true" />
+   </ItemGroup>
+ 
+-  <!-- For IncrementalHash -->
++    <!-- For IncrementalHash -->
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <PackageReference Include="System.ValueTuple" Version="$(SystemValueTupleVersion)" />
+   </ItemGroup>
+-  
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+     <!-- Reference the `NetCoreAppMinimum` build which has a functional BinaryFormatter and force a private copy to ensure it's not excluded -->
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Runtime.Serialization.Formatters\src\System.Runtime.Serialization.Formatters.csproj"
+diff --git a/src/libraries/System.Runtime.InteropServices.JavaScript/tests/JSImportGenerator.UnitTest/JSImportGenerator.Unit.Tests.csproj b/src/libraries/System.Runtime.InteropServices.JavaScript/tests/JSImportGenerator.UnitTest/JSImportGenerator.Unit.Tests.csproj
+index 95d183e4b51..57de5cdbe53 100644
+--- a/src/libraries/System.Runtime.InteropServices.JavaScript/tests/JSImportGenerator.UnitTest/JSImportGenerator.Unit.Tests.csproj
++++ b/src/libraries/System.Runtime.InteropServices.JavaScript/tests/JSImportGenerator.UnitTest/JSImportGenerator.Unit.Tests.csproj
+@@ -1,12 +1,10 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+     <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+     <Nullable>enable</Nullable>
+     <TestRunRequiresLiveRefPack>true</TestRunRequiresLiveRefPack>
+     <IgnoreForCI Condition="'$(TargetsMobile)' == 'true' or '$(TargetsLinuxBionic)' == 'true' or '$(TargetArchitecture)' == 'ARMv6'">true</IgnoreForCI>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <Compile Include="$(CommonTestPath)SourceGenerators\LiveReferencePack.cs" Link="Common\SourceGenerators\LiveReferencePack.cs" />
+     <Compile Include="$(LibrariesProjectRoot)System.Runtime.InteropServices\tests\Common\TestUtils.cs" Link="Common\TestUtils.cs" />
+@@ -15,7 +13,6 @@
+     <Compile Include="Compiles.cs" />
+     <Compile Include="JSTestUtils.cs" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(CompilerPlatformTestingVersion)" />
+@@ -23,7 +20,14 @@
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Runtime.InteropServices\tests\Ancillary.Interop\Ancillary.Interop.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Runtime.InteropServices.JavaScript\gen\JSImportGenerator\JSImportGenerator.csproj" />
+ 
++    <!-- Upgrade transitive references of Microsoft.CodeAnalysis.Analyzer.Testing which bring in NS 1.x deps -->
++    <PackageReference Include="DiffPlex" Version="$(CompilerPlatformTestingDiffPlexVersion)" />
++    <PackageReference Include="Microsoft.VisualBasic" Version="$(CompilerPlatformTestingMicrosoftVisualBasicVersion)" />
++    <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(CompilerPlatformTestingMicrosoftVisualStudioCompositionVersion)" />
++
++    <!-- Upgrade to a non-vulnerable version of Asn1 - which will be ignored in favor of the framework copy  -->
++    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" ExcludeAssets="all" />
++
+     <None Include="$(RepoRoot)/NuGet.config" Link="NuGet.config" CopyToOutputDirectory="PreserveNewest" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Runtime.InteropServices.JavaScript/tests/JavaScriptLibrary/JavaScriptLibrary.csproj b/src/libraries/System.Runtime.InteropServices.JavaScript/tests/JavaScriptLibrary/JavaScriptLibrary.csproj
+index 5d46e8e5fef..9d1b9c04271 100644
+--- a/src/libraries/System.Runtime.InteropServices.JavaScript/tests/JavaScriptLibrary/JavaScriptLibrary.csproj
++++ b/src/libraries/System.Runtime.InteropServices.JavaScript/tests/JavaScriptLibrary/JavaScriptLibrary.csproj
+@@ -1,30 +1,19 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCoreAppCurrent)-browser</TargetFrameworks>
++    <TargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</TargetPlatformIdentifier>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
++    <TargetFrameworks>$(NetCoreAppCurrent)-browser</TargetFrameworks>
+     <!-- Use following lines to write the generated files to disk. -->
+     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+-    <!-- This test library intentionally references inbox P2Ps as it needs the implementation, instead of the contract.
+-         Suppress the NU1511 warning in the whole project as putting it on a P2P doesn't work: https://github.com/NuGet/Home/issues/14121 -->
+-    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+-
+   <!-- Make debugging easier -->
+   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+     <WasmNativeDebugSymbols>true</WasmNativeDebugSymbols>
+     <WasmNativeStrip>false</WasmNativeStrip>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <Compile Include="$(MSBuildThisFileDirectory)JavaScriptInterop.cs" />
+-  </ItemGroup>
+-
+-  <ItemGroup>
+     <InternalsVisibleTo Include="System.Runtime.InteropServices.JavaScript.Tests" />
+-  </ItemGroup>
+-
+-  <ItemGroup>
+     <ProjectReference Include="$(CoreLibProject)" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Private.Uri\src\System.Private.Uri.csproj" PrivateAssets="all" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Collections\src\System.Collections.csproj" />
+@@ -34,5 +23,4 @@
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Threading.Thread\src\System.Threading.Thread.csproj" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Runtime.InteropServices.JavaScript\src\System.Runtime.InteropServices.JavaScript.csproj" SkipUseReferenceAssembly="true" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Runtime.InteropServices.JavaScript/tests/System.Runtime.InteropServices.JavaScript.UnitTests/System.Runtime.InteropServices.JavaScript.Tests.csproj b/src/libraries/System.Runtime.InteropServices.JavaScript/tests/System.Runtime.InteropServices.JavaScript.UnitTests/System.Runtime.InteropServices.JavaScript.Tests.csproj
+index 846442cca6c..70b12693650 100644
+--- a/src/libraries/System.Runtime.InteropServices.JavaScript/tests/System.Runtime.InteropServices.JavaScript.UnitTests/System.Runtime.InteropServices.JavaScript.Tests.csproj
++++ b/src/libraries/System.Runtime.InteropServices.JavaScript/tests/System.Runtime.InteropServices.JavaScript.UnitTests/System.Runtime.InteropServices.JavaScript.Tests.csproj
+@@ -17,9 +17,6 @@
+     <XunitShowProgress Condition="'$(FeatureWasmManagedThreads)' == 'true'">true</XunitShowProgress>
+     <NoWarn>$(NoWarn);IL2103;IL2025;IL2111;IL2122</NoWarn>
+     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+-    <!-- This test library intentionally references inbox P2Ps as it needs the implementation, instead of the contract.
+-         Suppress the NU1511 warning in the whole project as putting it on a P2P doesn't work: https://github.com/NuGet/Home/issues/14121 -->
+-    <NoWarn>$(NoWarn);NU1511</NoWarn>
+   </PropertyGroup>
+ 
+   <!-- Make debugging easier -->
+diff --git a/src/libraries/System.Runtime.InteropServices/tests/ComInterfaceGenerator.Unit.Tests/ComInterfaceGenerator.Unit.Tests.csproj b/src/libraries/System.Runtime.InteropServices/tests/ComInterfaceGenerator.Unit.Tests/ComInterfaceGenerator.Unit.Tests.csproj
+index c612c394035..c2d8e9ef2cb 100644
+--- a/src/libraries/System.Runtime.InteropServices/tests/ComInterfaceGenerator.Unit.Tests/ComInterfaceGenerator.Unit.Tests.csproj
++++ b/src/libraries/System.Runtime.InteropServices/tests/ComInterfaceGenerator.Unit.Tests/ComInterfaceGenerator.Unit.Tests.csproj
+@@ -27,6 +27,14 @@
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(CompilerPlatformTestingVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(CompilerPlatformTestingVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(CompilerPlatformTestingVersion)" />
++
++    <!-- Upgrade transitive references of Microsoft.CodeAnalysis.Analyzer.Testing which bring in NS 1.x deps -->
++    <PackageReference Include="DiffPlex" Version="$(CompilerPlatformTestingDiffPlexVersion)" />
++    <PackageReference Include="Microsoft.VisualBasic" Version="$(CompilerPlatformTestingMicrosoftVisualBasicVersion)" />
++    <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(CompilerPlatformTestingMicrosoftVisualStudioCompositionVersion)" />
++
++    <!-- Upgrade to a non-vulnerable version of Asn1 - which will be ignored in favor of the framework copy  -->
++    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" ExcludeAssets="All" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/libraries/System.Runtime.InteropServices/tests/LibraryImportGenerator.UnitTests/LibraryImportGenerator.Unit.Tests.csproj b/src/libraries/System.Runtime.InteropServices/tests/LibraryImportGenerator.UnitTests/LibraryImportGenerator.Unit.Tests.csproj
+index f442060dc18..ac398b9cce9 100644
+--- a/src/libraries/System.Runtime.InteropServices/tests/LibraryImportGenerator.UnitTests/LibraryImportGenerator.Unit.Tests.csproj
++++ b/src/libraries/System.Runtime.InteropServices/tests/LibraryImportGenerator.UnitTests/LibraryImportGenerator.Unit.Tests.csproj
+@@ -31,6 +31,14 @@
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="$(CompilerPlatformTestingVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(CompilerPlatformTestingVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" Version="$(CompilerPlatformTestingVersion)" />
++
++    <!-- Upgrade transitive references of Microsoft.CodeAnalysis.Analyzer.Testing which bring in NS 1.x deps -->
++    <PackageReference Include="DiffPlex" Version="$(CompilerPlatformTestingDiffPlexVersion)" />
++    <PackageReference Include="Microsoft.VisualBasic" Version="$(CompilerPlatformTestingMicrosoftVisualBasicVersion)" />
++    <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(CompilerPlatformTestingMicrosoftVisualStudioCompositionVersion)" />
++
++    <!-- Upgrade to a non-vulnerable version of Asn1 - which will be ignored in favor of the framework copy  -->
++    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" ExcludeAssets="All" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/libraries/System.Runtime.Serialization.Xml/tests/ReflectionOnly/System.Runtime.Serialization.Xml.ReflectionOnly.Tests.csproj b/src/libraries/System.Runtime.Serialization.Xml/tests/ReflectionOnly/System.Runtime.Serialization.Xml.ReflectionOnly.Tests.csproj
+index fa41e930519..d128172dd2a 100644
+--- a/src/libraries/System.Runtime.Serialization.Xml/tests/ReflectionOnly/System.Runtime.Serialization.Xml.ReflectionOnly.Tests.csproj
++++ b/src/libraries/System.Runtime.Serialization.Xml/tests/ReflectionOnly/System.Runtime.Serialization.Xml.ReflectionOnly.Tests.csproj
+@@ -1,10 +1,12 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+     <DefineConstants>$(DefineConstants);ReflectionOnly</DefineConstants>
++    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+   </PropertyGroup>
+-
++  <ItemGroup>
++    <ProjectReference Include="..\..\..\Microsoft.XmlSerializer.Generator\tests\SerializableAssembly.csproj" />
++    <TrimmerRootAssembly Include="SerializableAssembly" />
++  </ItemGroup>
+   <ItemGroup>
+     <Compile Include="$(CommonTestPath)System\Runtime\Serialization\Utils.cs" />
+     <Compile Include="$(TestSourceFolder)..\DataContractSerializerStressTests.cs" />
+@@ -48,16 +50,9 @@
+              Link="SerializationTestTypes\SelfRefAndCycles.cs" />
+     <Compile Include="$(TestSourceFolder)..\System.Xml\XmlBinaryNodeType.cs"
+              Link="System.Xml\XmlBinaryNodeType.cs" />
+-  </ItemGroup>
+-
+-  <ItemGroup>
+     <TrimmerRootDescriptor Include="$(ILLinkDescriptorsPath)ILLink.Descriptors.Serialization.xml" />
+-    <TrimmerRootAssembly Include="SerializableAssembly" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <ProjectReference Include="$(LibrariesProjectRoot)System.CodeDom\src\System.CodeDom.csproj" />
+-    <ProjectReference Include="..\..\..\Microsoft.XmlSerializer.Generator\tests\SerializableAssembly.csproj" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Runtime.Serialization.Xml/tests/System.Runtime.Serialization.Xml.Tests.csproj b/src/libraries/System.Runtime.Serialization.Xml/tests/System.Runtime.Serialization.Xml.Tests.csproj
+index 7f40960460a..c299e17295d 100644
+--- a/src/libraries/System.Runtime.Serialization.Xml/tests/System.Runtime.Serialization.Xml.Tests.csproj
++++ b/src/libraries/System.Runtime.Serialization.Xml/tests/System.Runtime.Serialization.Xml.Tests.csproj
+@@ -1,9 +1,11 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+     <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+   </PropertyGroup>
+-
++  <ItemGroup>
++    <ProjectReference Include="..\..\Microsoft.XmlSerializer.Generator\tests\SerializableAssembly.csproj" />
++    <TrimmerRootAssembly Include="SerializableAssembly" />
++  </ItemGroup>
+   <ItemGroup>
+     <Compile Include="$(TestSourceFolder)DataContractSerializerStressTests.cs" />
+     <None Include="$(TestSourceFolder)SerializationTypes.cs" />
+@@ -51,16 +53,9 @@
+     <None Include="XsdDataContractExporterTests\SerializationTypes\SerializableTypes.cs" />
+     <Compile Include="System.Xml\XmlBinaryNodeType.cs" />
+   </ItemGroup>
+-
+-  <ItemGroup>
+-    <TrimmerRootAssembly Include="SerializableAssembly" />
+-    <TrimmerRootDescriptor Include="$(ILLinkDescriptorsPath)ILLink.Descriptors.Serialization.xml" />
+-  </ItemGroup>
+-
+   <ItemGroup>
+     <ProjectReference Include="$(LibrariesProjectRoot)System.CodeDom\src\System.CodeDom.csproj" />
+     <ProjectReference Include=".\XsdDataContractExporterTests\SerializationTypes\SerializationTypes.csproj" />
+-    <ProjectReference Include="..\..\Microsoft.XmlSerializer.Generator\tests\SerializableAssembly.csproj" />
++    <TrimmerRootDescriptor Include="$(ILLinkDescriptorsPath)ILLink.Descriptors.Serialization.xml" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Runtime/tests/System.Text.Encoding.Tests/System.Text.Encoding.Tests.csproj b/src/libraries/System.Runtime/tests/System.Text.Encoding.Tests/System.Text.Encoding.Tests.csproj
+index 1347b584e42..697bc05b2da 100644
+--- a/src/libraries/System.Runtime/tests/System.Text.Encoding.Tests/System.Text.Encoding.Tests.csproj
++++ b/src/libraries/System.Runtime/tests/System.Text.Encoding.Tests/System.Text.Encoding.Tests.csproj
+@@ -1,15 +1,13 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <TestRuntime>true</TestRuntime>
+     <IncludeRemoteExecutor>true</IncludeRemoteExecutor>
++    <TargetFramework>$(NetCoreAppCurrent)</TargetFramework>
+     <!-- Encoding.UTF7 and UTF7Encoding are obsolete, but we're the unit test project for it, so suppress warnings -->
+     <NoWarn>$(NoWarn),SYSLIB0001</NoWarn>
+     <EnableUnsafeUTF7Encoding>true</EnableUnsafeUTF7Encoding>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <Compile Include="Ascii\CaseConversionTests.cs" />
+     <Compile Include="Ascii\EqualsTests.cs" />
+@@ -94,13 +92,11 @@
+     <Compile Include="$(CommonPath)System\Net\MultiArrayBuffer.cs" Link="ProductionCode\Common\System\Net\MultiArrayBuffer.cs" />
+     <Compile Include="$(CommonPath)System\Net\StreamBuffer.cs" Link="ProductionCode\Common\System\Net\StreamBuffer.cs" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <PackageReference Include="Moq" Version="$(MoqVersion)" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <ProjectReference Include="$(CommonTestPath)StreamConformanceTests\StreamConformanceTests.csproj" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.IO.Pipelines\src\System.IO.Pipelines.csproj" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Tests/System.Text.Json.SourceGeneration.Tests.targets b/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Tests/System.Text.Json.SourceGeneration.Tests.targets
+index a18436db438..17f03cf208c 100644
+--- a/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Tests/System.Text.Json.SourceGeneration.Tests.targets
++++ b/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Tests/System.Text.Json.SourceGeneration.Tests.targets
+@@ -17,10 +17,7 @@
+     <!-- SYSLIB1223: Suppress derived JsonConverterAttribute warnings -->
+     <!-- SYSLIB1030: Suppress warnings from skipped ref struct members -->
+     <NoWarn>$(NoWarn);SYSLIB0020;SYSLIB0049;SYSLIB1030;SYSLIB1034;SYSLIB1037;SYSLIB1038;SYSLIB1039;SYSLIB1220;SYSLIB1222;SYSLIB1223;SYSLIB1225</NoWarn>
+-    <IgnoreForCI Condition="'$(TargetsMobile)' == 'true' or '$(TargetsLinuxBionic)' == 'true' or '$(TargetArchitecture)' == 'ARMv6'">true</IgnoreForCI>
+-    <!-- NuGet warns about a transitive P2P to System.Text.Json that can't be pruned.
+-         This is a false positive: https://github.com/NuGet/Home/issues/14103 -->
+-    <NoWarn>$(NoWarn);NU1511</NoWarn>
++    <IgnoreForCI Condition="'$(TargetsMobile)' == 'true' or '$(TargetsLinuxBionic)' == 'true' or '$(TargetArchitecture)' == 'ARMv6'">true</IgnoreForCI> 
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+diff --git a/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Unit.Tests/System.Text.Json.SourceGeneration.Unit.Tests.targets b/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Unit.Tests/System.Text.Json.SourceGeneration.Unit.Tests.targets
+index ff591bb4136..96e0f7a5885 100644
+--- a/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Unit.Tests/System.Text.Json.SourceGeneration.Unit.Tests.targets
++++ b/src/libraries/System.Text.Json/tests/System.Text.Json.SourceGeneration.Unit.Tests/System.Text.Json.SourceGeneration.Unit.Tests.targets
+@@ -7,7 +7,13 @@
+ 
+   <ItemGroup>
+     <PackageReference Include="Microsoft.CodeAnalysis" Version="$(RoslynApiVersion)" />
++    <!-- Ensure we are using live dependencies for CodeAnalysis rather than old packages -->
++    <PackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryVersion)" />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Composition\src\System.Composition.csproj" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.IO.Pipelines\src\System.IO.Pipelines.csproj" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.Reflection.Metadata\src\System.Reflection.Metadata.csproj" />
++
++    <ProjectReference Include="..\..\src\System.Text.Json.csproj" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+@@ -19,10 +25,6 @@
+   </ItemGroup>
+ 
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+-    <ProjectReference Include="..\..\src\System.Text.Json.csproj" />
+-    <ProjectReference Include="$(LibrariesProjectRoot)System.IO.Pipelines\src\System.IO.Pipelines.csproj" />
+-    <ProjectReference Include="$(LibrariesProjectRoot)System.Reflection.Metadata\src\System.Reflection.Metadata.csproj" />
+-
+     <Reference Include="System" />
+   </ItemGroup>
+ 
+diff --git a/src/libraries/System.Text.Json/tests/System.Text.Json.Tests/System.Text.Json.Tests.csproj b/src/libraries/System.Text.Json/tests/System.Text.Json.Tests/System.Text.Json.Tests.csproj
+index 9225d8944bd..85cc1a9a572 100644
+--- a/src/libraries/System.Text.Json/tests/System.Text.Json.Tests/System.Text.Json.Tests.csproj
++++ b/src/libraries/System.Text.Json/tests/System.Text.Json.Tests/System.Text.Json.Tests.csproj
+@@ -1,5 +1,4 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+     <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
+     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+@@ -21,13 +20,11 @@
+          Enable reflection and preserve required assemblies -->
+     <JsonSerializerIsReflectionEnabledByDefault Condition="'$(EnableAggressiveTrimming)' == 'true' and '$(UseNativeAotRuntime)' != 'true'">true</JsonSerializerIsReflectionEnabledByDefault>
+     <!-- Disable nullability public only feature for NullabilityInfoContextTests -->
+-    <Features>$(Features.Replace('nullablePublicOnly', ''))</Features>
++    <Features>$(Features.Replace('nullablePublicOnly', '')</Features>
+   </PropertyGroup>
+-
+   <PropertyGroup Condition="'$(TargetOS)' == 'browser'">
+     <WasmXHarnessMaxParallelThreads>1</WasmXHarnessMaxParallelThreads>
+   </PropertyGroup>
+-
+   <ItemGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
+     <HighAotMemoryUsageAssembly Include="System.Text.Json.Tests.dll" />
+   </ItemGroup>
+@@ -269,17 +266,18 @@
+     <Compile Include="$(CoreLibSharedDir)System\Runtime\CompilerServices\RequiredMemberAttribute.cs" Link="System.Private.CoreLib\System\Runtime\CompilerServices\RequiredMemberAttribute.cs" />
+   </ItemGroup>
+ 
++  <ItemGroup>
++    <ProjectReference Include="..\..\src\System.Text.Json.csproj" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.IO.Pipelines\src\System.IO.Pipelines.csproj" />
++    <ProjectReference Include="$(LibrariesProjectRoot)System.Linq.AsyncEnumerable\src\System.Linq.AsyncEnumerable.csproj" />
++  </ItemGroup>
++
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <ProjectReference Include="..\..\gen\System.Text.Json.SourceGeneration.Roslyn4.0.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+-    <ProjectReference Include="..\..\src\System.Text.Json.csproj"  />
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Collections.Immutable\src\System.Collections.Immutable.csproj" />
+-    <ProjectReference Include="$(LibrariesProjectRoot)System.IO.Pipelines\src\System.IO.Pipelines.csproj" Condition="'$(TargetFramework)' != '$(NetCoreAppCurrent)'" />
+-    <ProjectReference Include="$(LibrariesProjectRoot)System.Linq.AsyncEnumerable\src\System.Linq.AsyncEnumerable.csproj" />
+-
+     <Reference Include="Microsoft.CSharp" />
+     <PackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsVersion)" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <!-- Apple mobile trimming descriptor for Mono runtime -->
+     <TrimmerRootDescriptor Condition="'$(TargetsAppleMobile)' == 'true' and '$(EnableAggressiveTrimming)' == 'true' and '$(UseNativeAotRuntime)' != 'true'" Include="$(MSBuildThisFileDirectory)ILLink.Descriptors.xml" />
+@@ -288,5 +286,4 @@
+   <ItemGroup>
+     <PackageReference Include="JsonSchema.Net" Version="$(JsonSchemaNetVersion)" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/libraries/System.Text.RegularExpressions/tests/FunctionalTests/System.Text.RegularExpressions.Tests.csproj b/src/libraries/System.Text.RegularExpressions/tests/FunctionalTests/System.Text.RegularExpressions.Tests.csproj
+index f57cd73cf2d..e84848318f7 100644
+--- a/src/libraries/System.Text.RegularExpressions/tests/FunctionalTests/System.Text.RegularExpressions.Tests.csproj
++++ b/src/libraries/System.Text.RegularExpressions/tests/FunctionalTests/System.Text.RegularExpressions.Tests.csproj
+@@ -1,12 +1,11 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+-
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+     <IncludeRemoteExecutor>true</IncludeRemoteExecutor>
+     <!-- xUnit2008 is about regexes and isn't appropriate in the test project for regexes -->
+     <!-- SYSLIB0036 is about obsoletion of regex members -->
+     <!-- SYSLIB1045 is for switching to GeneratedRegex -->
+     <NoWarn>$(NoWarn);xUnit2008;SYSLIB0036;SYSLIB1045</NoWarn>
++    <TargetFrameworks>$(NetCoreAppCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(TargetOS)' == 'browser'">true</DebuggerSupport>
+     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+     <IsHighAotMemoryUsageTest>true</IsHighAotMemoryUsageTest> <!-- to avoid OOMs with source generation in wasm: https://github.com/dotnet/runtime/pull/60701 -->
+@@ -14,7 +13,6 @@
+      <!-- some tests require full ICU data, force it -->
+     <WasmIncludeFullIcuData>true</WasmIncludeFullIcuData>
+   </PropertyGroup>
+-
+   <ItemGroup>
+     <Compile Include="AttRegexTests.cs" />
+     <Compile Include="CaptureCollectionTests.cs" />
+@@ -41,17 +39,14 @@
+     <Compile Include="RegexPcreTests.cs" />
+     <Compile Include="RegexRustTests.cs" />
+   </ItemGroup>
+-
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <Compile Include="..\..\src\System\Text\RegularExpressions\RegexParseError.cs" Link="System\Text\RegularExpressions\RegexParseError.cs" />
+     <Compile Include="RegexAssert.netfx.cs" />
+     <Compile Include="RegexParserTests.netfx.cs" />
+     <Compile Include="RegexGeneratorHelper.netfx.cs" />
+     <Compile Include="$(CoreLibSharedDir)System\Diagnostics\CodeAnalysis\StringSyntaxAttribute.cs" />
+-
+     <ProjectReference Include="$(LibrariesProjectRoot)System.Text.Json\src\System.Text.Json.csproj" />
+   </ItemGroup>
+-
+   <ItemGroup Condition="'$(TargetFramework)' == '$(NetCoreAppCurrent)'">
+     <Compile Include="CustomDerivedRegexScenarioTest.cs" />
+     <Compile Include="CSharpCodeFixVerifier`2.cs" />
+@@ -81,6 +76,14 @@
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(CompilerPlatformTestingVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
+ 
++    <!-- Upgrade transitive references of Microsoft.CodeAnalysis.Analyzer.Testing which bring in NS 1.x deps -->
++    <PackageReference Include="DiffPlex" Version="$(CompilerPlatformTestingDiffPlexVersion)" />
++    <PackageReference Include="Microsoft.VisualBasic" Version="$(CompilerPlatformTestingMicrosoftVisualBasicVersion)" />
++    <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(CompilerPlatformTestingMicrosoftVisualStudioCompositionVersion)" />
++
++    <!-- Upgrade to a non-vulnerable version of Asn1 - which will be dropped by conflict resolution -->
++    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" ExcludeAssets="All" />
++
+     <ProjectReference Include="..\..\gen\System.Text.RegularExpressions.Generator.csproj"
+                       SetTargetFramework="TargetFramework=netstandard2.0"
+                       OutputItemType="Analyzer"
+@@ -91,13 +94,10 @@
+                       Private="true"
+                       SetTargetFramework="TargetFramework=$(NetCoreAppMinimum)" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <PackageReference Include="System.Text.RegularExpressions.TestData" Version="$(SystemTextRegularExpressionsTestDataVersion)" />
+   </ItemGroup>
+-
+   <ItemGroup>
+     <HighAotMemoryUsageAssembly Include="Microsoft.CodeAnalysis.CSharp.dll" />
+   </ItemGroup>
+-
+ </Project>
+diff --git a/src/mono/wasm/Wasm.Build.Tests/Blazor/BuildPublishTests.cs b/src/mono/wasm/Wasm.Build.Tests/Blazor/BuildPublishTests.cs
+index e9335ea1942..56364a1a09c 100644
+--- a/src/mono/wasm/Wasm.Build.Tests/Blazor/BuildPublishTests.cs
++++ b/src/mono/wasm/Wasm.Build.Tests/Blazor/BuildPublishTests.cs
+@@ -61,6 +61,8 @@ public void DefaultTemplate_AOT_WithWorkload(Configuration config, bool testUnic
+     [Theory]
+     [InlineData(Configuration.Debug, false)]
+     [InlineData(Configuration.Release, false)]
++    [InlineData(Configuration.Debug, true)]
++    [InlineData(Configuration.Release, true)]
+     public void DefaultTemplate_CheckFingerprinting(Configuration config, bool expectFingerprintOnDotnetJs)
+     {
+         var extraProperty = expectFingerprintOnDotnetJs ?
+diff --git a/src/mono/wasm/Wasm.Build.Tests/Wasm.Build.Tests.csproj b/src/mono/wasm/Wasm.Build.Tests/Wasm.Build.Tests.csproj
+index 498dc2dc54b..5897710687e 100644
+--- a/src/mono/wasm/Wasm.Build.Tests/Wasm.Build.Tests.csproj
++++ b/src/mono/wasm/Wasm.Build.Tests/Wasm.Build.Tests.csproj
+@@ -48,6 +48,8 @@
+   <ItemGroup>
+     <PackageReference Include="Microsoft.Playwright" Version="1.47.0" />
+     <PackageReference Include="MSBuild.StructuredLogger" Version="2.2.350" />
++    <!-- Update the transitive STJ to a non-vulnerable version. -->
++    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
+     <ProjectReference Include="$(RepoRoot)src\tasks\Microsoft.NET.Sdk.WebAssembly.Pack.Tasks\Microsoft.NET.Sdk.WebAssembly.Pack.Tasks.csproj" />
+     <Compile Include="$(BrowserProjectRoot)debugger\DebuggerTestSuite\BrowserLocator.cs" />
+ 
+diff --git a/src/tools/illink/test/ILLink.RoslynAnalyzer.Tests/ILLink.RoslynAnalyzer.Tests.csproj b/src/tools/illink/test/ILLink.RoslynAnalyzer.Tests/ILLink.RoslynAnalyzer.Tests.csproj
+index 8323dd02f82..47a4fe47d0f 100644
+--- a/src/tools/illink/test/ILLink.RoslynAnalyzer.Tests/ILLink.RoslynAnalyzer.Tests.csproj
++++ b/src/tools/illink/test/ILLink.RoslynAnalyzer.Tests/ILLink.RoslynAnalyzer.Tests.csproj
+@@ -22,6 +22,13 @@
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" Version="$(CompilerPlatformTestingVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
+ 
++    <!-- Upgrade transitive references of Microsoft.CodeAnalysis.Analyzer.Testing which bring in NS 1.x deps -->
++    <PackageReference Include="DiffPlex" Version="$(CompilerPlatformTestingDiffPlexVersion)" />
++    <PackageReference Include="Microsoft.VisualBasic" Version="$(CompilerPlatformTestingMicrosoftVisualBasicVersion)" />
++    <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(CompilerPlatformTestingMicrosoftVisualStudioCompositionVersion)" />
++    <!-- Upgrade to a non-vulnerable version of Asn1 - which will be ignored in favor of the framework copy  -->
++    <PackageReference Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" ExcludeAssets="All" />
++
+     <ProjectReference Include="..\..\src\ILLink.CodeFix\ILLink.CodeFixProvider.csproj" />
+     <ProjectReference Include="..\..\src\ILLink.RoslynAnalyzer\ILLink.RoslynAnalyzer.csproj" />
+     <ProjectReference Include="..\Mono.Linker.Tests.Cases\**\*.csproj" />
