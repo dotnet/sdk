@@ -582,5 +582,53 @@ namespace CompatTests
                 // CompatTests.First.E_add and CompatTests.First.E_remove aren't reported as the symbol's DisplayString doesn't include the parameter type.
             }, differences);
         }
+
+        [Fact]
+        public void MembersPushedDownMustMatchSignature()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  public class MyType : Base
+  {
+    public void MyMethod() { }
+    public string MethodWithArguments(string a) => MethodWithArguments(a, string.Empty);
+    public string MethodWithArguments(string a, string b) => MethodWithArguments(a, string.Empty, string.Empty);
+    public string MethodWithArguments(string a, string b, string c) => c;
+  }
+  public class Base { }
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+  public class MyType : NewBase
+  {
+    public void MyMethod() { }
+  }
+  public class NewBase : Base
+  {
+    public string MethodWithArguments(int a, int b) => MethodWithArguments(a, b, 0);
+  }
+  public class Base
+  { 
+    public string MethodWithArguments(string a) => MethodWithArguments(0, 0, 0);
+    public string MethodWithArguments(int a, int b, int c) => c.ToString();
+  }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            CompatDifference[] expectedDiffs =
+            {
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.MyType.MethodWithArguments(System.String,System.String)"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.MyType.MethodWithArguments(System.String,System.String,System.String)"),
+            };
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+            Assert.Equal(expectedDiffs, differences);
+        }
     }
 }

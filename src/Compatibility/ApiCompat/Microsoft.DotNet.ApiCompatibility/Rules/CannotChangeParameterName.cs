@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
     /// <summary>
-    /// This class implements a rule to check that the parameter names between public methods do not change.
+    /// This class implements a rule to check that the parameter names do not change.  It evaluates method parameters, and generic type and member parameters.
     /// </summary>
     public class CannotChangeParameterName : IRule
     {

@@ -35,6 +35,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
         public static string ToComparisonDisplayString(this ISymbol symbol)
         {
+            // See https://github.com/dotnet/roslyn/issues/73051
+            // ToDisplayString doesn't offer the formatting options we need, so we implement our own from parts. 
             var parts = symbol.ToDisplayParts(s_comparisonFormat);
 
             // Type parameter names are not significant. Remove these leaving behind
