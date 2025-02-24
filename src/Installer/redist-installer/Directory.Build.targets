@@ -11,7 +11,8 @@
 
   <PropertyGroup>
     <!-- Any properties that depend on Version and are not in a Target must not be defined in Directory.Build.props as Version won't be available yet. -->
-    <ArtifactNameWithVersionSdk>$(ArtifactNameSdk)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+    <PgoTerm Condition="'$(PgoInstrument)' == 'true'">-pgo</PgoTerm>
+    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
     <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
     <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion],
               Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradability of the SDK bundle installer. -->
