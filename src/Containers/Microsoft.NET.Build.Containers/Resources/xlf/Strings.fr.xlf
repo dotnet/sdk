@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_ContainerdStoreDisabled">
         <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
-        <target state="new">CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</target>
+        <target state="translated">CONTAINER1020: échec du chargement de l’image, car le magasin d’images en conteneur n’est pas activé pour Docker. Conseil : vous pouvez l’activer en vérifiant « Utiliser conteneur pour extraire et stocker des images » dans les paramètres de Docker Desktop.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -206,7 +206,7 @@
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
-        <target state="new">CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</target>
+        <target state="translated">CONTAINER2031: le format d’image conteneur «{0}» n’est pas pris en charge. Les formats pris en charge sont « {1} ».</target>
         <note>{StrBegins="CONTAINER2031: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">

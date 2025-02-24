@@ -81,7 +81,7 @@
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImageForRid">
         <source>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</source>
-        <target state="new">Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</target>
+        <target state="translated">Sestavování image {0} pro identifikátor modulu runtime {1} nad základní imagí {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">

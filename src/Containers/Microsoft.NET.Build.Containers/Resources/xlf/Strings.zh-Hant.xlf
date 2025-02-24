@@ -81,7 +81,7 @@
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImageForRid">
         <source>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</source>
-        <target state="new">Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</target>
+        <target state="translated">在基礎映像 '{2}' 上建立具有執行階段識別碼 '{1}' 的映像 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_ContainerdStoreDisabled">
         <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
-        <target state="new">CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</target>
+        <target state="translated">CONTAINER1020: 因為 Docker 未啟用容器映像存放區，所以無法載入映像。提示: 您可以在 [Docker 桌面] 設定中勾選 [使用容器化來提取和儲存映像] 來啟用此功能。</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -206,7 +206,7 @@
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
-        <target state="new">CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</target>
+        <target state="translated">CONTAINER2031: 不支援容器映像格式 '{0}'。支援的格式為 '{1}'。</target>
         <note>{StrBegins="CONTAINER2031: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">

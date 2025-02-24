@@ -81,7 +81,7 @@
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImageForRid">
         <source>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</source>
-        <target state="new">Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</target>
+        <target state="translated">Criando a imagem "{0}" para o identificador de tempo de execução "{1}" com base na imagem base "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
