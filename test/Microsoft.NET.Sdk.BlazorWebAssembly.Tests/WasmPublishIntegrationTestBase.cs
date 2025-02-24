@@ -1,16 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public abstract class WasmPublishIntegrationTestBase : AspNetSdkTest
+    public abstract class WasmPublishIntegrationTestBase(ITestOutputHelper log) : AspNetSdkTest(log)
     {
-        public WasmPublishIntegrationTestBase(ITestOutputHelper log) : base(log) { }
-
         protected static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)
         {
             var bootManifestResolvedPath = Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json");

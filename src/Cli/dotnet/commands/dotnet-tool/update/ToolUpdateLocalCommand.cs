@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -19,7 +20,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IToolManifestEditor _toolManifestEditor;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly Lazy<ToolInstallLocalCommand> _toolInstallLocalCommand;
+        internal readonly Lazy<ToolInstallLocalCommand> _toolInstallLocalCommand;
         private readonly IReporter _reporter;
 
         public ToolUpdateLocalCommand(
@@ -52,9 +53,16 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
+            PackageId? packageId = null;
+            if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument) is string s)
+            {
+                packageId = new PackageId(s);
+            }
+
             _toolInstallLocalCommand = new Lazy<ToolInstallLocalCommand>(
                 () => new ToolInstallLocalCommand(
                     parseResult,
+                    packageId,
                     _toolPackageDownloader,
                     _toolManifestFinder,
                     _toolManifestEditor,

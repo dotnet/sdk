@@ -1438,6 +1438,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 // Scan PackageDependencies to build the set of packages in our target.
                 var allowItemSpecs = GetPackageDependencies();
+                var diagnosticLevels = GetPackageDiagnosticLevels();
 
                 foreach (var package in _lockFile.Libraries)
                 {
@@ -1477,8 +1478,11 @@ namespace Microsoft.NET.Build.Tasks
                             : itemPath) ?? string.Empty;
                         WriteMetadata(MetadataKeys.Path, path);
 
-                        string itemDiagnosticLevel = GetPackageDiagnosticLevel(package);
-                        var diagnosticLevel = itemDiagnosticLevel ?? string.Empty;
+                        string diagnosticLevel = string.Empty;
+                        if (diagnosticLevels?.TryGetValue(package.Name, out LogLevel level) ?? false)
+                        {
+                            diagnosticLevel = level.ToString();
+                        }
                         WriteMetadata(MetadataKeys.DiagnosticLevel, diagnosticLevel);
                     }
                 }
@@ -1506,28 +1510,92 @@ namespace Microsoft.NET.Build.Tasks
 
                 static string GetPackageId(LockFileTargetLibrary package) => $"{package.Name}/{package.Version.ToNormalizedString()}";
 
-                string GetPackageDiagnosticLevel(LockFileLibrary package)
+                Dictionary<string, LogLevel> GetPackageDiagnosticLevels()
                 {
-                    string target = _task.TargetFramework ?? "";
-
-                    var messages = _lockFile.LogMessages.Where(log =>
-                        log.LibraryId == package.Name &&
-                        log.TargetGraphs.Any(tg =>
-                        {
-                            var parts = tg.Split(LockFile.DirectorySeparatorChar);
-                            var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
-                            var alias = _lockFile.PackageSpec.TargetFrameworks
-                                .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
-                                ?.TargetAlias ?? tg;
-                            return alias == target;
-                        }));
-
-                    if (!messages.Any())
+                    if (_lockFile.LogMessages.Count == 0)
                     {
-                        return string.Empty;
+                        return null;
                     }
 
-                    return messages.Max(log => log.Level).ToString();
+                    var packageReverseDependencies = GetReverseDependencies();
+                    var result = new Dictionary<string, LogLevel>();
+                    for (int i = 0; i < _lockFile.LogMessages.Count; i++)
+                    {
+                        var message = _lockFile.LogMessages[i];
+                        if (string.IsNullOrEmpty(message.LibraryId)) continue;
+
+                        if (message.TargetGraphs is null || message.TargetGraphs.Count == 0 || message.TargetGraphs.Any(ForCurrentTargetFramework))
+                        {
+                            ApplyDiagnosticLevel(message.LibraryId, message.Level, result, packageReverseDependencies);
+                        }
+                    }
+
+                    return result;
+
+                    Dictionary<string, HashSet<string>> GetReverseDependencies()
+                    {
+                        var packageReverseDependencies = new Dictionary<string, HashSet<string>>(_compileTimeTarget.Libraries.Count, StringComparer.OrdinalIgnoreCase);
+                        for (int i = 0; i < _compileTimeTarget.Libraries.Count; i++)
+                        {
+                            var parentPackage = _compileTimeTarget.Libraries[i];
+                            if (string.IsNullOrEmpty(parentPackage.Name)) continue;
+
+                            if (!packageReverseDependencies.ContainsKey(parentPackage.Name))
+                            {
+                                packageReverseDependencies[parentPackage.Name] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            }
+
+                            for (int j = 0; j < parentPackage.Dependencies.Count; j++)
+                            {
+                                var dependency = parentPackage.Dependencies[j].Id;
+
+                                if (!packageReverseDependencies.TryGetValue(dependency, out HashSet<string> parentPackages))
+                                {
+                                    parentPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                    packageReverseDependencies[dependency] = parentPackages;
+                                }
+
+                                parentPackages.Add(parentPackage.Name);
+                            }
+                        }
+                        return packageReverseDependencies;
+                    }
+
+                    bool ForCurrentTargetFramework(string targetFramework)
+                    {
+                        var parts = targetFramework.Split(LockFile.DirectorySeparatorChar);
+                        var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
+                        var alias = _lockFile.PackageSpec.TargetFrameworks
+                            .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
+                            ?.TargetAlias ?? targetFramework;
+                        return alias == _task.TargetFramework;
+                    }
+
+                    void ApplyDiagnosticLevel(string package, LogLevel messageLevel, Dictionary<string, LogLevel> diagnosticLevels, Dictionary<string, HashSet<string>> reverseDependencies)
+                    {
+                        if (!reverseDependencies.TryGetValue(package, out HashSet<string> parentPackages))
+                        {
+                            // The package is not used in the current TargetFramework
+                            return;
+                        }
+
+                        if (diagnosticLevels.TryGetValue(package, out LogLevel cachedLevel))
+                        {
+                            // Only continue if we need to increase the level
+                            if (cachedLevel >= messageLevel)
+                            {
+                                return;
+                            }
+                        }
+
+                        diagnosticLevels[package] = messageLevel;
+
+                        // Flow changes upwards, towards the direct PackageReference
+                        foreach (var parentPackage in parentPackages)
+                        {
+                            ApplyDiagnosticLevel(parentPackage, messageLevel, diagnosticLevels, reverseDependencies);
+                        }
+                    }
                 }
 
                 static DependencyType GetDependencyType(string dependencyTypeString)

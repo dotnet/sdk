@@ -35,7 +35,10 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             OSPlatform targetOS = RuntimeIdentifier.StartsWith("win") ? OSPlatform.Windows :
-                                  RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX : OSPlatform.Linux;
+                                  RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX :
+                                  RuntimeIdentifier.StartsWith("freebsd") ? OSPlatform.Create("FREEBSD") :
+                                  RuntimeIdentifier.StartsWith("illumos") ? OSPlatform.Create("ILLUMOS") :
+                                  OSPlatform.Linux;
 
             Architecture targetArch = RuntimeIdentifier.EndsWith("-x64") || RuntimeIdentifier.Contains("-x64-") ? Architecture.X64 :
                                       RuntimeIdentifier.EndsWith("-x86") || RuntimeIdentifier.Contains("-x86-") ? Architecture.X86 :
@@ -43,6 +46,7 @@ namespace Microsoft.NET.Build.Tasks
                                       RuntimeIdentifier.EndsWith("-arm") || RuntimeIdentifier.Contains("-arm-") ? Architecture.Arm :
 #if !NETFRAMEWORK
                                       RuntimeIdentifier.EndsWith("-riscv64") || RuntimeIdentifier.Contains("-riscv64-") ? Architecture.RiscV64 :
+                                      RuntimeIdentifier.EndsWith("-loongarch64") || RuntimeIdentifier.Contains("-loongarch64-") ? Architecture.LoongArch64 :
 #endif
                                       throw new ArgumentException(nameof(RuntimeIdentifier));
 

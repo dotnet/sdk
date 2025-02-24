@@ -1,28 +1,33 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmJsModulesIntegrationTests : BlazorWasmBaselineTests
+    public class WasmJsModulesIntegrationTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        public WasmJsModulesIntegrationTests(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.js"), "console.log('Hello initializer')");
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(ProjectDirectory);
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
@@ -33,7 +38,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
 
-            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, "blazor.boot.json.patch"));
+            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, "blazor.boot.json"));
             blazorBootJson.Should().Exist();
             var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
@@ -43,18 +48,28 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void JSModules_ManifestIncludesModuleTargetPaths()
         {
             // Arrange
             var testAsset = "BlazorHosted";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                        itemGroup.Add(fingerprintAssets);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "blazorwasm", "wwwroot", "blazorwasm.lib.module.js"), "console.log('Hello initializer')");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "razorclasslibrary", "wwwroot", "razorclasslibrary.lib.module.js"), "console.log('Hello RCL initializer')");
 
-            var build = new BuildCommand(ProjectDirectory, "blazorhosted");
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var buildResult = build.Execute();
+            var build = CreateBuildCommand(ProjectDirectory, "blazorhosted");
+            var buildResult = ExecuteCommand(build);
             buildResult.Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm).ToString();
@@ -65,7 +80,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
 
-            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), "blazor.boot.json.patch"));
+            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), "blazor.boot.json"));
             blazorBootJson.Should().Exist();
             var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
@@ -79,17 +94,24 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorhosted.modules.json")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Publish_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
+
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.js"), "console.log('Hello initializer')");
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -100,7 +122,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, "blazor.publish.boot.json"));
+            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, "publish.blazor.boot.json"));
             blazorBootJson.Should().Exist();
             var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
@@ -119,18 +141,30 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void JsModules_CanHaveDifferentBuildAndPublishModules()
         {
             // Arrange
             var testAsset = "BlazorWasmMinimal";
-            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
 
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.js"), "console.log('Publish initializer')");
             File.WriteAllText(Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "blazorwasm-minimal.lib.module.build.js"), "console.log('Build initializer')");
 
             ProjectDirectory.WithProjectChanges(document =>
             {
+                var itemGroup = new XElement("PropertyGroup");
+                var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                itemGroup.Add(fingerprintAssets);
+                document.Root.Add(itemGroup);
+
                 document.Root.Add(new XElement("ItemGroup",
                     new XElement("Content",
                         new XAttribute("Update", "wwwroot\\blazorwasm-minimal.lib.module.build.js"),
@@ -138,10 +172,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                         new XAttribute("TargetPath", "wwwroot\\blazorwasm-minimal.lib.module.js"))));
             });
 
-
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -152,8 +184,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var buildLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "blazor.boot.json.patch"));
-            var publishLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "blazor.publish.boot.json"));
+            var buildLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "blazor.boot.json"));
+            var publishLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "publish.blazor.boot.json"));
 
             publishLibrary.GetString().Should().NotBe(buildLibrary.GetString());
 
@@ -181,7 +213,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105393")]
         public void JsModules_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -191,6 +223,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             ProjectDirectory.WithProjectChanges(document =>
             {
+                document.Root.Add(new XElement("PropertyGroup",
+                    new XElement("WasmFingerprintAssets", false)));
                 document.Root.Add(
                     XElement.Parse(@"
 <PropertyGroup>
@@ -213,9 +247,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 </Target>"));
             });
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -226,8 +259,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var publishExtension = GetPublishExtension(Path.Combine(intermediateOutputPath, "blazor.publish.boot.json"));
-            GetPublishExtensionEntriesCount(Path.Combine(intermediateOutputPath, "blazor.publish.boot.json")).Should().Be(1);
+            var publishExtension = GetPublishExtension(Path.Combine(intermediateOutputPath, "publish.blazor.boot.json"));
+            GetPublishExtensionEntriesCount(Path.Combine(intermediateOutputPath, "publish.blazor.boot.json")).Should().Be(1);
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
             var lib = new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.lib.module.js"));
@@ -245,7 +278,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105393")]
         public void JsModules_Hosted_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -257,6 +290,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             {
                 if (Path.GetFileNameWithoutExtension(path) == "blazorwasm")
                 {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    document.Root.Add(itemGroup);
+
                     document.Root.Add(
                         XElement.Parse(@"
 <PropertyGroup>
@@ -280,9 +318,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            var publish = new PublishCommand(ProjectDirectory, "blazorhosted");
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publish = CreatePublishCommand(ProjectDirectory, "blazorhosted");
+            var publishResult = ExecuteCommand(publish);
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -293,7 +330,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var publishExtension = GetPublishExtension(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), "blazor.publish.boot.json"));
+            var publishExtension = GetPublishExtension(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), "publish.blazor.boot.json"));
 
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorhosted.modules.json")).Should().Exist();
             var lib = new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm.lib.module.js"));

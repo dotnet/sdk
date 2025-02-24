@@ -36,6 +36,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(GetVerifyCommand());
             command.Subcommands.Add(GetTrustCommand());
             command.Subcommands.Add(GetSignCommand());
+            NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(command);
 
             command.SetAction(NuGetCommand.Run);
 
@@ -124,13 +125,13 @@ namespace Microsoft.DotNet.Cli
             CliOption<bool> allowUntrustedRoot = new("--allow-untrusted-root");
             CliOption<string> owners = new("--owners");
 
-            trustCommand.Subcommands.Add (new CliCommand("list"));
-            trustCommand.Subcommands.Add (AuthorCommand());
-            trustCommand.Subcommands.Add (RepositoryCommand());
-            trustCommand.Subcommands.Add (SourceCommand());
-            trustCommand.Subcommands.Add (CertificateCommand());
-            trustCommand.Subcommands.Add (RemoveCommand());
-            trustCommand.Subcommands.Add (SyncCommand());
+            trustCommand.Subcommands.Add(new CliCommand("list"));
+            trustCommand.Subcommands.Add(AuthorCommand());
+            trustCommand.Subcommands.Add(RepositoryCommand());
+            trustCommand.Subcommands.Add(SourceCommand());
+            trustCommand.Subcommands.Add(CertificateCommand());
+            trustCommand.Subcommands.Add(RemoveCommand());
+            trustCommand.Subcommands.Add(SyncCommand());
 
             CliOption<string> configFile = new("--configfile");
 
@@ -167,7 +168,8 @@ namespace Microsoft.DotNet.Cli
                 new CliOption<string>("--source-url"),
             };
 
-            CliCommand CertificateCommand() {
+            CliCommand CertificateCommand()
+            {
                 CliOption<string> algorithm = new("--algorithm")
                 {
                     DefaultValueFactory = (_argResult) => "SHA256"

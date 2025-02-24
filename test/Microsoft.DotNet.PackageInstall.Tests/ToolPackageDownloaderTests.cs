@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -54,7 +56,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -82,7 +85,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     targetFramework: _testTargetframework,
-                    isGlobalTool: true);
+                    isGlobalTool: true,
+                    verifySignatures: false);
 
                 transactionScope.Complete();
             }
@@ -108,7 +112,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -117,7 +122,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                <root>/packageid/version/packageid/version/tools/framework/rid/mytool.dll
                                        /project.assets.json
              */
-            var assetJsonPath = package.Commands[0].Executable
+            var assetJsonPath = package.Command.Executable
                 .GetDirectoryPath()
                 .GetParentPath()
                 .GetParentPath()
@@ -171,11 +176,59 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
             uninstaller.Uninstall(package.PackageDirectory);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GivenAllButNoPackageVersionItReturnLatestStableVersion(bool testMockBehaviorIsInSync)
+        {
+            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+                useMock: testMockBehaviorIsInSync,
+                writeLocalFeedToNugetConfig: nugetConfigPath);
+
+            var package = downloader.GetNuGetVersion(
+                new PackageLocation(nugetConfig: nugetConfigPath),
+                packageId: TestPackageId,
+                verbosity: TestVerbosity,
+                isGlobalTool: true);
+
+            package.OriginalVersion.Should().Be(TestPackageVersion);
+        }
+
+        [Theory]
+        [InlineData(false, "1.0.0-rc*", TestPackageVersion)]
+        [InlineData(true, "1.0.0-rc*", TestPackageVersion)]
+        [InlineData(false, "1.*", TestPackageVersion)]
+        [InlineData(true, "1.*", TestPackageVersion)]
+        [InlineData(false, TestPackageVersion, TestPackageVersion)]
+        [InlineData(true, TestPackageVersion, TestPackageVersion)]
+        public void GivenASpecificVersionGetCorrectVersion(bool testMockBehaviorIsInSync, string requestedVersion, string expectedVersion)
+        {
+            var nugetConfigPath = GenerateRandomNugetConfigFilePath();
+            var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            Directory.CreateDirectory(emptySource);
+
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
+                useMock: testMockBehaviorIsInSync,
+                writeLocalFeedToNugetConfig: nugetConfigPath);
+
+            var package = downloader.GetNuGetVersion(new PackageLocation(nugetConfig: nugetConfigPath,
+                    additionalFeeds: new[] { emptySource }),
+                packageId: TestPackageId,
+                verbosity: TestVerbosity,
+                versionRange: VersionRange.Parse(requestedVersion),
+                isGlobalTool: true);
+
+            package.OriginalVersion.Should().Be(expectedVersion);
         }
 
         [Theory]
@@ -194,7 +247,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -216,7 +270,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -239,7 +294,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -263,7 +319,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -286,7 +343,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -312,7 +370,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -343,7 +402,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
-                        isGlobalTool: true);
+                        isGlobalTool: true,
+                        verifySignatures: false);
 
                     FailedStepAfterSuccessRestore();
                     t.Complete();
@@ -377,7 +437,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
-                        isGlobalTool: true);
+                        isGlobalTool: true,
+                        verifySignatures: false);
 
                     first.Should().NotThrow();
 
@@ -386,7 +447,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
-                        isGlobalTool: true);
+                        isGlobalTool: true,
+                        verifySignatures: false);
 
                     t.Complete();
                 }
@@ -427,7 +489,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         packageId: TestPackageId,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
-                        targetFramework: _testTargetframework);
+                        targetFramework: _testTargetframework,
+                        verifySignatures: false);
 
                     fileSystem
                     .Directory
@@ -477,14 +540,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         packageId: TestPackageId,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
-                        targetFramework: _testTargetframework);
+                        targetFramework: _testTargetframework,
+                        verifySignatures: false);
 
 
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                         packageId: TestPackageId,
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
-                        targetFramework: _testTargetframework);
+                        targetFramework: _testTargetframework,
+                        verifySignatures: false);
 
                     t.Complete();
                 }
@@ -507,7 +572,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -516,7 +582,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             reporter.Lines.Should().BeEmpty();
 
@@ -559,7 +626,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -585,7 +653,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -620,7 +689,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -650,7 +720,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 packageId: new PackageId("GlObAl.TooL.coNsoLe.DemO"),
                 verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -682,12 +753,14 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, store);
 
             new ToolPackageUninstaller(store).Uninstall(package.PackageDirectory);
         }
+
 
         [Theory]
         [InlineData(false)]
@@ -709,7 +782,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse("1.0.0-rc*"),
                 targetFramework: _testTargetframework,
-                isGlobalTool: true);
+                isGlobalTool: true,
+                verifySignatures: false);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -765,7 +839,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
                 action.Should().NotThrow<ToolConfigurationException>();
 
-                fileSystem.File.Exists(package.Commands[0].Executable.Value).Should().BeTrue($"{package.Commands[0].Executable.Value} should exist");
+                fileSystem.File.Exists(package.Command.Executable.Value).Should().BeTrue($"{package.Command.Executable.Value} should exist");
 
                 uninstaller.Uninstall(package.PackageDirectory);
             }
@@ -794,10 +868,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Should()
                 .Equal(TestPackageVersion);
 
-            package.Commands.Count.Should().Be(1);
-            fileSystem.File.Exists(package.Commands[0].Executable.Value).Should()
-                .BeTrue($"{package.Commands[0].Executable.Value} should exist");
-            package.Commands[0].Executable.Value.Should().Contain(store.Root.Value);
+            package.Command.Should().NotBeNull();
+            fileSystem.File.Exists(package.Command.Executable.Value).Should()
+                .BeTrue($"{package.Command.Executable.Value} should exist");
+            package.Command.Executable.Value.Should().Contain(store.Root.Value);
         }
 
         private static void AssertInstallRollBack(IFileSystem fileSystem, IToolPackageStore store)

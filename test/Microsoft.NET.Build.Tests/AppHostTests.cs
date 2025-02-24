@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
@@ -39,8 +42,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.1.0.60101")]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
@@ -152,71 +153,46 @@ namespace Microsoft.NET.Build.Tests
             Directory.Delete(buildProjDir, true);
         }
 
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void It_codesigns_a_framework_dependent_app(string targetFramework)
+        [Theory]
+        [InlineData("net6.0", "osx-x64")]
+        [InlineData("net6.0", "osx-arm64")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64")]
+        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid)
         {
+            const string testAssetName = "HelloWorld";
             var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand
-                .Execute()
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
-
-            // Check that the apphost is signed
-            var codesignPath = @"/usr/bin/codesign";
-            new RunExeCommand(Log, codesignPath, new string[] { "-s", "-", appHostFullPath })
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdErrContaining($"{appHostFullPath}: is already signed");
-        }
-
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1", false)]
-        [InlineData("netcoreapp3.1", true)]
-        [InlineData("net5.0", false)]
-        [InlineData("net5.0", true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
-        public void It_codesigns_an_app_targeting_osx(string targetFramework, bool selfContained)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework, allowCopyIfPresent: true)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}" };
-            if (!selfContained)
-                buildArgs.Add("/p:PublishSingleFile=true");
-
+            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={rid}" };
             buildCommand
                 .Execute(buildArgs.ToArray())
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
+            var appHostFullPath = Path.Combine(outputDirectory.FullName, testAssetName);
 
             // Check that the apphost is signed
-            var codesignPath = @"/usr/bin/codesign";
-            new RunExeCommand(Log, codesignPath, new string[] { "-s", "-", appHostFullPath })
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdErrContaining($"{appHostFullPath}: is already signed");
+            HasMachOSignatureLoadCommand(new FileInfo(appHostFullPath)).Should().BeTrue();
+            // When on a Mac, use the codesign tool to verify the signature as well
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                var codesignPath = @"/usr/bin/codesign";
+                new RunExeCommand(Log, codesignPath, ["-s", "-", appHostFullPath])
+                    .Execute()
+                    .Should()
+                    .Fail()
+                    .And
+                    .HaveStdErrContaining($"{appHostFullPath}: is already signed");
+                new RunExeCommand(Log, codesignPath, ["-v", appHostFullPath])
+                    .Execute()
+                    .Should()
+                    .Pass();
+            }
         }
 
         [Theory]
@@ -282,6 +258,87 @@ namespace Microsoft.NET.Build.Tests
             {
                 IsPE32(apphostPath).Should().Be(!Environment.Is64BitProcess);
             }
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_can_disable_cetcompat(bool? cetCompat)
+        {
+            string rid = "win-x64"; // CET compat support is currently only on Windows x64
+            var testProject = new TestProject()
+            {
+                Name = "CetCompat",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = rid,
+                IsExe = true,
+            };
+            if (cetCompat.HasValue)
+            {
+                testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(runtimeIdentifier: rid);
+            string apphostPath = Path.Combine(outputDirectory.FullName, $"{testProject.Name}.exe");
+            bool isCetCompatible = PeReaderUtils.IsCetCompatible(apphostPath);
+
+            // CetCompat not set : enabled
+            // CetCompat = true  : enabled
+            // CetCompat = false : disabled
+            isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
+        }
+
+        [Fact]
+        public void It_does_not_configure_dotnet_search_options_on_build()
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = new TestProject()
+            {
+                Name = "AppHostDotNetSearch",
+                TargetFrameworks = targetFramework,
+                RuntimeIdentifier = runtimeIdentifier,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("AppHostDotNetSearch", "AppRelative");
+            testProject.AdditionalProperties.Add("AppHostRelativeDotNet", "subdirectory");
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(runtimeIdentifier: runtimeIdentifier);
+            outputDirectory.Should().HaveFiles(new[] { $"{testProject.Name}{Constants.ExeSuffix}" });
+
+            // Value in default apphost executable for configuration of how it will search for the .NET install
+            const string dotNetSearchPlaceholder = "\0\019ff3e9c3602ae8e841925bb461a0adb064a1f1903667a5e0d87e8f608f425ac";
+
+            // Output apphost should not have .NET search location options changed, so it
+            // should have the same placeholder sequence as in the default apphost binary
+            ReadOnlySpan<byte> expectedBytes = Encoding.UTF8.GetBytes(dotNetSearchPlaceholder);
+            ReadOnlySpan<byte> appBytes = File.ReadAllBytes(Path.Combine(outputDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}"));
+            bool found = false;
+            for (int i = 0; i < appBytes.Length - expectedBytes.Length; i++)
+            {
+                if (!appBytes.Slice(i, expectedBytes.Length).SequenceEqual(expectedBytes))
+                    continue;
+
+                found = true;
+                break;
+            }
+
+            Assert.True(found, "Expected placeholder sequence for .NET install search options was not found");
         }
 
         [WindowsOnlyFact]
@@ -430,5 +487,62 @@ namespace Microsoft.NET.Build.Tests
                 return reader.PEHeaders.PEHeader.Magic == PEMagic.PE32;
             }
         }
+
+        // Reads the Mach-O load commands and returns true if an LC_CODE_SIGNATURE command is found, otherwise returns false
+        static bool HasMachOSignatureLoadCommand(FileInfo file)
+        {
+            /* Mach-O files have the following structure:
+             * 32 byte header beginning with a magic number and info about the file and load commands
+             * A series of load commands with the following structure:
+             * - 4-byte command type
+             * - 4-byte command size
+             * - variable length command-specific data
+             */
+            const uint LC_CODE_SIGNATURE = 0x1D;
+            using (var stream = file.OpenRead())
+            {
+                // Read the MachO magic number to determine endianness
+                Span<byte> eightByteBuffer = stackalloc byte[8];
+                stream.ReadExactly(eightByteBuffer);
+                // Determine if the magic number is in the same or opposite endianness as the runtime
+                bool reverseEndinanness = BitConverter.ToUInt32(eightByteBuffer.Slice(0, 4)) switch
+                {
+                    0xFEEDFACF => false,
+                    0xCFFAEDFE => true,
+                    _ => throw new InvalidOperationException("Not a 64-bit Mach-O file")
+                };
+                // 4-byte value at offset 16 is the number of load commands
+                // 4-byte value at offset 20 is the size of the load commands
+                stream.Position = 16;
+                ReadUInts(stream, eightByteBuffer, out uint loadCommandsCount, out uint loadCommandsSize);
+                // Mach-0 64 byte headers are 32 bytes long, and the first load command will be right after
+                stream.Position = 32;
+                bool hasSignature = false;
+                for (int commandIndex = 0; commandIndex < loadCommandsCount; commandIndex++)
+                {
+                    ReadUInts(stream, eightByteBuffer, out uint commandType, out uint commandSize);
+                    if (commandType == LC_CODE_SIGNATURE)
+                    {
+                        hasSignature = true;
+                    }
+                    stream.Position += commandSize - eightByteBuffer.Length;
+                }
+                Debug.Assert(stream.Position == loadCommandsSize + 32);
+                return hasSignature;
+
+                void ReadUInts(Stream stream, Span<byte> buffer, out uint val1, out uint val2)
+                {
+                    stream.ReadExactly(buffer);
+                    val1 = BitConverter.ToUInt32(buffer.Slice(0, 4));
+                    val2 = BitConverter.ToUInt32(buffer.Slice(4, 4));
+                    if (reverseEndinanness)
+                    {
+                        val1 = BinaryPrimitives.ReverseEndianness(val1);
+                        val2 = BinaryPrimitives.ReverseEndianness(val2);
+                    }
+                }
+            }
+        }
+
     }
 }

@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.Extensions.Configuration;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -21,12 +22,6 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.CmdListTestsDescription
         }.ForwardAs("-property:VSTestListTests=true");
-
-        public static readonly CliOption<IEnumerable<string>> EnvOption = new CliOption<IEnumerable<string>>("--environment", "-e")
-        {
-            Description = LocalizableStrings.CmdEnvironmentVariableDescription,
-            HelpName = LocalizableStrings.CmdEnvironmentVariableExpression
-        }.AllowSingleArgPerToken();
 
         public static readonly CliOption<string> FilterOption = new ForwardedOption<string>("--filter")
         {
@@ -157,7 +152,96 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
+        public static string GetTestRunnerName()
+        {
+            var builder = new ConfigurationBuilder();
+
+            string dotnetConfigPath = GetDotnetConfigPath(Environment.CurrentDirectory);
+
+            if (!File.Exists(dotnetConfigPath))
+            {
+                return CliConstants.VSTest;
+            }
+
+            builder.AddIniFile(dotnetConfigPath);
+
+            IConfigurationRoot config = builder.Build();
+            var testSection = config.GetSection("dotnet.test");
+
+            if (!testSection.Exists())
+            {
+                return CliConstants.VSTest;
+            }
+
+            string runnerNameSection = testSection["runner:name"];
+
+            if (string.IsNullOrEmpty(runnerNameSection))
+            {
+                return CliConstants.VSTest;
+            }
+
+            return runnerNameSection;
+        }
+
+        private static string? GetDotnetConfigPath(string? startDir)
+        {
+            string? directory = startDir;
+            while (directory != null)
+            {
+                string dotnetConfigPath = Path.Combine(directory, "dotnet.config");
+                if (File.Exists(dotnetConfigPath))
+                {
+                    return dotnetConfigPath;
+                }
+
+                directory = Path.GetDirectoryName(directory);
+            }
+            return null;
+        }
+
         private static CliCommand ConstructCommand()
+        {
+            string testRunnerName = GetTestRunnerName();
+
+            if (testRunnerName.Equals(CliConstants.VSTest, StringComparison.OrdinalIgnoreCase))
+            {
+                return GetVSTestCliCommand();
+            }
+            else if (testRunnerName.Equals(CliConstants.MicrosoftTestingPlatform, StringComparison.OrdinalIgnoreCase))
+            {
+                return GetTestingPlatformCliCommand();
+            }
+
+            throw new InvalidOperationException(string.Format(LocalizableStrings.CmdUnsupportedTestRunnerDescription, testRunnerName));
+        }
+
+        private static CliCommand GetTestingPlatformCliCommand()
+        {
+            var command = new TestingPlatformCommand("test");
+            command.SetAction(parseResult => command.Run(parseResult));
+            command.Options.Add(TestingPlatformOptions.ProjectOption);
+            command.Options.Add(TestingPlatformOptions.SolutionOption);
+            command.Options.Add(TestingPlatformOptions.DirectoryOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
+            command.Options.Add(TestingPlatformOptions.ListTestsOption);
+            command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
+            command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(TestingPlatformOptions.ConfigurationOption);
+            command.Options.Add(TestingPlatformOptions.FrameworkOption);
+            command.Options.Add(CommonOptions.OperatingSystemOption);
+            command.Options.Add(CommonOptions.RuntimeOption);
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(CommonOptions.NoRestoreOption);
+            command.Options.Add(TestingPlatformOptions.NoBuildOption);
+            command.Options.Add(TestingPlatformOptions.NoAnsiOption);
+            command.Options.Add(TestingPlatformOptions.NoProgressOption);
+            command.Options.Add(TestingPlatformOptions.OutputOption);
+
+            return command;
+        }
+
+        private static CliCommand GetVSTestCliCommand()
         {
             DocumentedCommand command = new("test", DocsLink, LocalizableStrings.AppFullName)
             {
@@ -169,7 +253,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Options.Add(SettingsOption);
             command.Options.Add(ListTestsOption);
-            command.Options.Add(EnvOption);
+            command.Options.Add(CommonOptions.EnvOption);
             command.Options.Add(FilterOption);
             command.Options.Add(AdapterOption);
             command.Options.Add(LoggerOption);
@@ -196,7 +280,6 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
-
             command.SetAction(TestCommand.Run);
 
             return command;

@@ -4,17 +4,19 @@
 
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal static class HotReloadProfileReader
     {
-        public static HotReloadProfile InferHotReloadProfile(ProjectGraph projectGraph, IReporter reporter)
+        public static HotReloadProfile InferHotReloadProfile(ProjectGraphNode projectNode, IReporter reporter)
         {
-            var queue = new Queue<ProjectGraphNode>(projectGraph.EntryPointNodes);
+            var queue = new Queue<ProjectGraphNode>();
+            queue.Enqueue(projectNode);
 
             ProjectInstance? aspnetCoreProject = null;
+
+            var visited = new HashSet<ProjectGraphNode>();
 
             while (queue.Count > 0)
             {
@@ -44,7 +46,10 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 foreach (var project in currentNode.ProjectReferences)
                 {
-                    queue.Enqueue(project);
+                    if (visited.Add(project))
+                    {
+                        queue.Enqueue(project);
+                    }
                 }
             }
 

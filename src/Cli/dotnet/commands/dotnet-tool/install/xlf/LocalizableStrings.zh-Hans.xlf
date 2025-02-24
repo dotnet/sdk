@@ -58,9 +58,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">如果你打算安装全局工具，请在命令中添加 `--global`。
-如果你想要创建一个清单，请使用 `dotnet new tool-manifest`，通常位于存储库的根目录中。</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">如果打算安装全局工具，请将 `--global` 添加到命令。
+如果要创建清单，请将 `--create-manifest-if-needed` 标志与 `dotnet tool install` 命令结合使用，或使用 `dotnet new tool-manifest`(通常在存储库根目录中)。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
@@ -91,6 +91,16 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
       <trans-unit id="RollForwardOptionDescription">
         <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
         <target state="translated">如果未安装所面向的运行时，则允许 .NET 工具向前滚动到较新版本的 .NET 运行时。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">将安装期间要使用的所有 NuGet 包源替换为这些源。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -183,8 +193,8 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

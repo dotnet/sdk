@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            bool includeUnlisted = false,
+            bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
             PackageSourceMapping packageSourceMapping = null);
 
@@ -26,6 +26,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder);
 
         Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId,
+             PackageSourceLocation packageSourceLocation = null,
+             bool includePreview = false);
+
+        Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId,
+             int numberOfResults,
              PackageSourceLocation packageSourceLocation = null,
              bool includePreview = false);
 

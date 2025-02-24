@@ -58,9 +58,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">Genel bir aracı yüklemeyi amaçlıyorsanız komuta '--global' ifadesini ekleyin.
-Bir bildirim oluşturmak istiyorsanız 'dotnet new tool-manifest' ifadesini kullanın. Bu ifade genelde depo kök dizinine eklenir.</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">Bir genel araç yüklemek istiyorsanız komuta `--global` ifadesini ekleyin.
+Bir bildirim oluşturmak istiyorsanız, `dotnet tool install` komutuyla birlikte `--create-manifest-if-needed` bayrağını kullanın veya 'dotnet new tool-manifest' ifadesini kullanın. Bu ifade genelde depo kök dizinine eklenir.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
@@ -91,6 +91,16 @@ Bir bildirim oluşturmak istiyorsanız 'dotnet new tool-manifest' ifadesini kull
       <trans-unit id="RollForwardOptionDescription">
         <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
         <target state="translated">Hedeflediği çalışma zamanı yüklü değilse, bir .NET aracının daha yeni .NET çalışma zamanı sürümlerine ileri alınmasına izin verin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Yükleme sırasında kullanılacak tüm NuGet paket kaynaklarını bu kaynaklarla değiştirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">KAYNAK</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -183,8 +193,8 @@ Paket adlandırma zorlaması dahil diğer nedenler için şu adresi ziyaret edin
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

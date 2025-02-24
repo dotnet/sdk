@@ -76,8 +76,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
       >
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_ServiceWorkersBuildStaticWebAsset" />
     </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_ServiceWorkersBuildStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_ServiceWorkersBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_ServiceWorkersBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_ServiceWorkersBuildStaticWebAssetEndpoint)" />
+    </ItemGroup>
 
   </Target>
 
@@ -193,8 +206,22 @@ Copyright (c) .NET Foundation. All rights reserved.
       BasePath="$(StaticWebAssetBasePath)"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
     >
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_ServiceWorkersPublishStaticWebAsset" />
     </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_ServiceWorkersPublishStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_ServiceWorkersPublishStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_ServiceWorkersPublishStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_ServiceWorkersPublishStaticWebAssetEndpoint)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="GeneratePublishServiceWorkerStaticWebAssets" DependsOnTargets="$(GeneratePublishServiceWorkerStaticWebAssetsDependsOn)">

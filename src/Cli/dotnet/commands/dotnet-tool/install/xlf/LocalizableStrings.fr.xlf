@@ -58,9 +58,9 @@ L'outil '{1}' (version '{2}') a été correctement installé. L'entrée est ajou
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">Si vous avez l'intention d'installer un outil global, ajoutez '--global' à la commande.
-Si vous souhaitez créer un manifeste, utilisez 'dotnet new tool-manifest', généralement dans le répertoire racine de dépôt.</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">Si vous avez l’intention d’installer un outil global, ajoutez « --global » à la commande.
+Si vous souhaitez créer un manifeste, utilisez l’option `--create-manifest-if-need` avec la commande `dotnet tool install`, ou utilisez `dotnet new tool-manifest`, généralement dans le répertoire racine du référentiel.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
@@ -91,6 +91,16 @@ Si vous souhaitez créer un manifeste, utilisez 'dotnet new tool-manifest', gén
       <trans-unit id="RollForwardOptionDescription">
         <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
         <target state="translated">Autorisez un outil .NET à être restauré par progression vers des versions plus récentes du runtime .NET si le runtime qu’il cible n’est pas installé.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Remplacer toutes les sources de package NuGet à utiliser pendant l’installation par celles-ci.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">SOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
@@ -183,8 +193,8 @@ Pour plus d'informations, notamment sur le nommage de package, accédez à https
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

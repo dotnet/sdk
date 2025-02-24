@@ -107,10 +107,16 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem[] KnownWebAssemblySdkPacks { get; set; } = Array.Empty<ITaskItem>();
 
+        public ITaskItem[] KnownAspNetCorePacks { get; set; } = Array.Empty<ITaskItem>();
+
         public bool UsingMicrosoftNETSdkWebAssembly { get; set; }
+
+        public bool RequiresAspNetWebAssets { get; set; }
 
         [Required]
         public string NETCoreSdkRuntimeIdentifier { get; set; }
+
+        public string NETCoreSdkPortableRuntimeIdentifier { get; set; }
 
         [Required]
         public string NetCoreRoot { get; set; }
@@ -379,6 +385,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     runtimeFramework.SetMetadata(MetadataKeys.Version, runtimeFrameworkVersion);
                     runtimeFramework.SetMetadata(MetadataKeys.FrameworkName, knownFrameworkReference.Name);
+                    runtimeFramework.SetMetadata("Profile", knownFrameworkReference.Profile);
 
                     runtimeFrameworks.Add(runtimeFramework);
                 }
@@ -493,6 +500,14 @@ namespace Microsoft.NET.Build.Tasks
             {
                 // WebAssemblySdk is used for .NET >= 6, it's ok if no pack is added.
                 AddToolPack(ToolPackType.WebAssemblySdk, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences);
+            }
+
+            if (RequiresAspNetWebAssets && _normalizedTargetFrameworkVersion.Major >= 10)
+            {
+                if (AddToolPack(ToolPackType.AspNetCore, _normalizedTargetFrameworkVersion, packagesToDownload, implicitPackageReferences) is not ToolPackSupport.Supported)
+                {
+                    Log.LogWarning(Strings.AspNetCorePackUnsupportedTargetFramework);
+                }
             }
 
             if (packagesToDownload.Any())
@@ -724,7 +739,8 @@ namespace Microsoft.NET.Build.Tasks
             Crossgen2,
             ILCompiler,
             ILLink,
-            WebAssemblySdk
+            WebAssemblySdk,
+            AspNetCore,
         }
 
         enum ToolPackSupport
@@ -747,6 +763,7 @@ namespace Microsoft.NET.Build.Tasks
                 ToolPackType.ILCompiler => KnownILCompilerPacks,
                 ToolPackType.ILLink => KnownILLinkPacks,
                 ToolPackType.WebAssemblySdk => KnownWebAssemblySdkPacks,
+                ToolPackType.AspNetCore => KnownAspNetCorePacks,
                 _ => throw new ArgumentException($"Unknown package type {toolPackType}", nameof(toolPackType))
             };
 
@@ -777,9 +794,17 @@ namespace Microsoft.NET.Build.Tasks
                 var packNamePattern = knownPack.GetMetadata(packName + "PackNamePattern");
                 var packSupportedRuntimeIdentifiers = knownPack.GetMetadata(packName + "RuntimeIdentifiers").Split(';');
 
+                // When publishing for the non-portable RID that matches NETCoreSdkRuntimeIdentifier, prefer NETCoreSdkRuntimeIdentifier for the host.
+                // Otherwise prefer the NETCoreSdkPortableRuntimeIdentifier.
+                // This makes non-portable SDKs behave the same as portable SDKs except for the specific case of targetting the non-portable RID.
+                // It also enables the non-portable ILCompiler to be packaged separately from the SDK and
+                // only required when publishing for the non-portable SDK RID.
+                string portableSdkRid = !string.IsNullOrEmpty(NETCoreSdkPortableRuntimeIdentifier) ? NETCoreSdkPortableRuntimeIdentifier : NETCoreSdkRuntimeIdentifier;
+                bool targetsNonPortableSdkRid = RuntimeIdentifier == NETCoreSdkRuntimeIdentifier && NETCoreSdkRuntimeIdentifier != portableSdkRid;
+                string hostRuntimeIdentifier = targetsNonPortableSdkRid ? NETCoreSdkRuntimeIdentifier : portableSdkRid;
                 // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
                 var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
-                var hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, NETCoreSdkRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph);
+                hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, hostRuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph);
                 if (hostRuntimeIdentifier == null)
                 {
                     return ToolPackSupport.UnsupportedForHostRuntimeIdentifier;
@@ -787,16 +812,23 @@ namespace Microsoft.NET.Build.Tasks
 
                 var runtimePackName = packNamePattern.Replace("**RID**", hostRuntimeIdentifier);
 
-                if (EnableRuntimePackDownload)
+                var runtimePackItem = new TaskItem(runtimePackName);
+                runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageId, runtimePackName);
+                runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
+
+                string runtimePackPath = GetPackPath(runtimePackName, packVersion);
+                if (runtimePackPath != null)
+                {
+                    runtimePackItem.SetMetadata(MetadataKeys.PackageDirectory, runtimePackPath);
+                }
+                else if (EnableRuntimePackDownload)
                 {
                     // We need to download the runtime pack
                     runtimePackToDownload = new TaskItem(runtimePackName);
                     runtimePackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
                 }
 
-                var runtimePackItem = new TaskItem(runtimePackName);
-                runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageId, runtimePackName);
-                runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
+                runtimePackItem.SetMetadata(MetadataKeys.RuntimeIdentifier, hostRuntimeIdentifier);
 
                 switch (toolPackType)
                 {

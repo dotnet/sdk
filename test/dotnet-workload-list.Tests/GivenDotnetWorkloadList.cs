@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using ManifestReaderTests;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using ListStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
@@ -34,7 +37,20 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             command.Execute();
 
             // Expected number of lines for table headers
-            _reporter.Lines.Count.Should().Be(6);
+            // Expecting a workload set adds two lines
+            _reporter.Lines.Count.Should().Be(8);
+        }
+
+        [WindowsOnlyFact]
+        public void GivenAvailableWorkloadsItCanComputeVisualStudioIds()
+        {
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(("SampleManifest", _manifestPath, "5.0.0", "6.0.100")), Directory.GetCurrentDirectory());
+
+#pragma warning disable CA1416 // Validate platform compatibility
+            var availableWorkloads = VisualStudioWorkloads.GetAvailableVisualStudioWorkloads(workloadResolver);
+            availableWorkloads.Should().Contain("mock.workload.1", "mock-workload-1");
+            availableWorkloads.Should().Contain("Microsoft.NET.Component.mock.workload.1", "mock-workload-1");
+#pragma warning restore CA1416 // Validate platform compatibility
         }
 
         [Fact]
@@ -55,7 +71,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             _reporter.Clear();
             var expectedWorkloads = new List<WorkloadId>() { new WorkloadId("mock-workload-1"), new WorkloadId("mock-workload-2"), new WorkloadId("mock-workload-3") };
             var workloadInstaller = new MockWorkloadRecordRepo(expectedWorkloads);
-            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(("SampleManifest", _manifestPath, "6.0.100")), Directory.GetCurrentDirectory());
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(("SampleManifest", _manifestPath, "5.0.0", "6.0.100")), Directory.GetCurrentDirectory());
             var command = new WorkloadListCommand(_parseResult, _reporter, workloadInstaller, "6.0.100", workloadResolver: workloadResolver);
             command.Execute();
 

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.DependencyModel;
 using NuGet.Packaging;
@@ -253,7 +254,7 @@ namespace Microsoft.NET.Build.Tasks
             return this;
         }
 
-        public DependencyContext Build()
+        public DependencyContext Build(string[] userRuntimeAssemblies = null)
         {
             CalculateExcludedLibraries();
 
@@ -269,7 +270,7 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var library in _dependencyLibraries.Values
                 .Where(l => !l.ExcludeFromRuntime && l.Type != "runtimepack"))
             {
-                var runtimeLibrary = GetRuntimeLibrary(library);
+                var runtimeLibrary = GetRuntimeLibrary(library, userRuntimeAssemblies);
                 if (runtimeLibrary != null)
                 {
                     runtimeLibraries.Add(runtimeLibrary);
@@ -505,7 +506,7 @@ namespace Microsoft.NET.Build.Tasks
             });
         }
 
-        private RuntimeLibrary GetRuntimeLibrary(DependencyLibrary library)
+        private RuntimeLibrary GetRuntimeLibrary(DependencyLibrary library, string[] userRuntimeAssemblies)
         {
             GetCommonLibraryProperties(library,
                 out string hash,
@@ -527,7 +528,12 @@ namespace Microsoft.NET.Build.Tasks
 
             if (library.Type == "project" && !(referenceProjectInfo is UnreferencedProjectInfo))
             {
-                runtimeAssemblyGroups.Add(new RuntimeAssetGroup(string.Empty, referenceProjectInfo.OutputName));
+                var fileName = Path.GetFileNameWithoutExtension(library.Path);
+                var assemblyPath = userRuntimeAssemblies?.FirstOrDefault(p => Path.GetFileNameWithoutExtension(p).Equals(fileName));
+                var runtimeFile = !string.IsNullOrWhiteSpace(assemblyPath) && File.Exists(assemblyPath) ? CreateRuntimeFile(referenceProjectInfo.OutputName, assemblyPath) :
+                                  !string.IsNullOrWhiteSpace(library.Path) && File.Exists(library.Path) ? CreateRuntimeFile(referenceProjectInfo.OutputName, library.Path) :
+                                  new RuntimeFile(referenceProjectInfo.OutputName, string.Empty, string.Empty);
+                runtimeAssemblyGroups.Add(new RuntimeAssetGroup(string.Empty, [runtimeFile]));
 
                 resourceAssemblies.AddRange(referenceProjectInfo.ResourceAssemblies
                                 .Select(r => new ResourceAssembly(r.RelativePath, r.Culture)));

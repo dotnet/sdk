@@ -1,9 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -60,11 +61,14 @@ public class ResolveCompressedAssets : Task
         var includePatterns = SplitPattern(IncludePatterns);
         var excludePatterns = SplitPattern(ExcludePatterns);
 
-        var matcher = new Matcher();
-        matcher.AddIncludePatterns(includePatterns);
-        matcher.AddExcludePatterns(excludePatterns);
+        var matcher = new StaticWebAssetGlobMatcherBuilder()
+            .AddIncludePatterns(includePatterns)
+            .AddExcludePatterns(excludePatterns)
+            .Build();
 
         var matchingCandidateAssets = new List<StaticWebAsset>();
+
+        var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
 
         // Add each candidate asset to each compression configuration with a matching pattern.
         foreach (var asset in candidates)
@@ -73,15 +77,17 @@ public class ResolveCompressedAssets : Task
             {
                 Log.LogMessage(
                     MessageImportance.Low,
-                    "Ignoring asset '{0}' for compression because it is already compressed.",
-                    asset.Identity);
+                    "Ignoring asset '{0}' for compression because it is already compressed asset for '{1}'.",
+                    asset.Identity,
+                    asset.RelatedAsset);
                 continue;
             }
 
-            var relativePath = asset.RelativePath;
-            var match = matcher.Match(relativePath);
+            var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
+            matchContext.SetPathAndReinitialize(relativePath.AsSpan());
+            var match = matcher.Match(matchContext);
 
-            if (!match.HasMatches)
+            if (!match.IsMatch)
             {
                 Log.LogMessage(
                     MessageImportance.Low,
@@ -137,7 +143,7 @@ public class ResolveCompressedAssets : Task
                     existingFormats.Add(format);
 
                     Log.LogMessage(
-                        "Created compressed asset '{0}' for '{1}'.",
+                        "Accepted compressed asset '{0}' for '{1}'.",
                         compressedAsset.ItemSpec,
                         itemSpec);
                 }
@@ -149,6 +155,11 @@ public class ResolveCompressedAssets : Task
                 }
             }
         }
+
+        Log.LogMessage(
+            "Resolved {0} compressed assets for {1} candidate assets.",
+            assetsToCompress.Count,
+            matchingCandidateAssets.Count);
 
         AssetsToCompress = [.. assetsToCompress];
 
@@ -252,9 +263,14 @@ public class ResolveCompressedAssets : Task
         }
 
         var originalItemSpec = asset.OriginalItemSpec;
-        var relativePath = asset.RelativePath;
+        var relativePath = asset.EmbedTokens(asset.RelativePath);
 
-        var fileName = FileHasher.GetFileHash(originalItemSpec) + fileExtension;
+        // Make the hash name more unique by including source id, base path, asset kind and relative path.
+        // This combination must be unique across all assets, so this will avoid collisions when two files on
+        // the same project have the same contents, when it happens across different projects or between Build/Publish
+        // assets.
+        var pathHash = FileHasher.HashString(asset.SourceId + asset.BasePath + asset.AssetKind + asset.RelativePath);
+        var fileName = $"{pathHash}-{asset.Fingerprint}{fileExtension}";
         var itemSpec = Path.GetFullPath(Path.Combine(OutputPath, fileName));
 
         var res = new StaticWebAsset(asset)
@@ -264,7 +280,7 @@ public class ResolveCompressedAssets : Task
             OriginalItemSpec = asset.Identity,
             RelatedAsset = asset.Identity,
             AssetRole = "Alternative",
-            AssetTraitName = "Content-Encoding",            
+            AssetTraitName = "Content-Encoding",
             AssetTraitValue = assetTraitValue,
             ContentRoot = outputPath,
             // Set integrity and fingerprint to null so that they get recalculated for the compressed asset.

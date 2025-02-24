@@ -1,7 +1,62 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
-<Project>
+<!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
+<Project TreatAsLocalProperty="Platform">
+
+  <PropertyGroup>
+    <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
+    <Architecture Condition="'$(Architecture)' == '' AND ('$(BuildArchitecture)' == 'arm64')">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
+
+    <!--
+      The finalizer.nativeproject needs to have Platform set to build for the correct architecture, but this value being set below isn't used by the project because of the build hierarchy when using the CMake SDK.
+      Instead, the Platform being set here is prior to calling the Arcade SDK, which sets PlatformName in RepoDefaults.props and modifies the OutputPath in ProjectLayout.props to include a PlatformName folder in the path.
+      Note: The redist-installer project does use Architecture. The Arcade SDK does not use either BuildArchitecture or Architecture.
+    -->
+    <Platform Condition="'$(SetPlatformFromArchitecture)' == 'true' And ('$(Platform)' == '' Or '$(Platform)' == 'AnyCPU')">$(Architecture)</Platform>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
+
+  <PropertyGroup>
+    <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$(__DistroRid)</HostRid>
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</HostRid>
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</HostRid>
+
+    <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
+
+    <IsDebianBaseDistro Condition="$(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian'))">true</IsDebianBaseDistro>
+    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('rhel'))">true</IsRPMBasedDistro>
+    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ArchiveExtension>.tar.gz</ArchiveExtension>
+    <ArchiveExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.zip</ArchiveExtension>
+
+    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.msi</InstallerExtension>
+    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.pkg</InstallerExtension>
+    <InstallerExtension Condition="'$(IsDebianBaseDistro)' == 'true'">.deb</InstallerExtension>
+    <InstallerExtension Condition="'$(IsRPMBasedDistro)' == 'true'">.rpm</InstallerExtension>
+
+    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.exe</BundleExtension>
+    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(InstallerExtension)</BundleExtension>
+    <BundleExtension Condition="'$(IsDebianBaseDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
+    <BundleExtension Condition="'$(IsRPMBasedDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
+
+    <ExeExtension>.exe</ExeExtension>
+    <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
+  </PropertyGroup>
 
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -11,19 +66,20 @@
     <!-- Default to all packages generating a corresponding symbol package -->
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
-    <SdkTargetFramework>net9.0</SdkTargetFramework>
+    <SdkTargetFramework>net10.0</SdkTargetFramework>
+    <!-- TODO: Remove when Arcade updated NetCurrent to net10.0. -->
+    <NetCurrent>net10.0</NetCurrent>
+    <NetToolMinimum Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(NetCurrent)</NetToolMinimum>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
+    <VisualStudioServiceTargetFramework>net8.0</VisualStudioServiceTargetFramework>
 
-    <!-- VS for Mac may run on a lower version of .NET than the SDK is targeting, but needs to load the resolvers.  So the resolvers and dependencies
-         may target a lower version of .NET -->
-    <ResolverTargetFramework>net8.0</ResolverTargetFramework>
-    <!-- Source build does not need to worry about running on VS for Mac -->
-    <ResolverTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SdkTargetFramework)</ResolverTargetFramework>
+    <!-- We used to have scenarios where the MSBuild host (VSMac) had an older .NET, but don't any more. -->
+    <ResolverTargetFramework>$(SdkTargetFramework)</ResolverTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
-    <NoWarn>$(NoWarn);NU1701;NU1507</NoWarn>
+    <NoWarn>$(NoWarn);NU1701;NU1507;NU1202</NoWarn>
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
@@ -56,5 +112,18 @@
     <Using Include="System.Xml.Linq" />
   </ItemGroup>
 
+  <!-- These aliases need to live outside of Versions.props as VMR / source-build overwrites some of the version properties for live builds. -->
+  <PropertyGroup>
+    <!-- Runtime and Apphost pack versions are the same for all RIDs. We flow the x64 version above and create aliases without the winx64 here for clarity elsewhere. -->
+    <MicrosoftNETCoreAppHostPackageVersion>$(MicrosoftNETCoreAppHostwinx64PackageVersion)</MicrosoftNETCoreAppHostPackageVersion>
+    <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
+    <MicrosoftAspNetCoreAppRuntimePackageVersion>$(MicrosoftAspNetCoreAppRuntimewinx64PackageVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
+
+    <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
+    <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>
+  </PropertyGroup>
+
   <Import Project="build/GenerateResxSource.targets" />
+
 </Project>

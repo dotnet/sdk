@@ -7,9 +7,24 @@
         <target state="translated">Aplicar preferencias de estilo a un proyecto o solución.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageDefinition">
+        <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
+        <target state="translated">Busque, agregue, quite o enumere PackageReferences para un proyecto de .NET.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ReferenceDefinition">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="translated">Agregue, quite o enumere ProjectReferences para un proyecto de .NET.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
         <target state="translated">Reenviar a la versión del marco (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SDKOptionsHelpDefinition">
+        <source>Show command line help.</source>
+        <target state="translated">Muestra ayuda de la línea de comandos.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkDefinition">
@@ -48,8 +63,8 @@
         <note />
       </trans-unit>
       <trans-unit id="HelpDefinition">
-        <source>Show command line help.</source>
-        <target state="translated">Muestra ayuda de la línea de comandos.</target>
+        <source>Opens the reference page in a browser for the specified command.</source>
+        <target state="translated">Abre la página de referencia en un explorador para el comando especificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostOptions">
@@ -117,16 +132,6 @@
         <target state="translated">Comandos de modificación del proyecto</target>
         <note />
       </trans-unit>
-      <trans-unit id="AddDefinition">
-        <source>Add a package or reference to a .NET project.</source>
-        <target state="translated">Agrega un paquete o una referencia a un proyecto de .NET.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RemoveDefinition">
-        <source>Remove a package or reference from a .NET project.</source>
-        <target state="translated">Quita un paquete o una referencia de un proyecto de .NET.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AdvancedCommands">
         <source>Advanced Commands</source>
         <target state="translated">Comandos avanzados</target>
@@ -160,11 +165,6 @@
       <trans-unit id="SlnDefinition">
         <source>Modify Visual Studio solution files.</source>
         <target state="translated">Modifica los archivos de la solución de Visual Studio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListDefinition">
-        <source>List project references of a .NET project.</source>
-        <target state="translated">Enumera las referencias de proyecto de un proyecto de .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandDoesNotExist">

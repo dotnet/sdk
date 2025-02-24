@@ -75,7 +75,10 @@ internal readonly record struct DestinationImageReference
         }
         else if (!string.IsNullOrEmpty(outputRegistry))
         {
-            destinationImageReference = new DestinationImageReference(new Registry(outputRegistry, loggerFactory.CreateLogger<Registry>()), repository, imageTags);
+            destinationImageReference = new DestinationImageReference(
+                new Registry(outputRegistry, loggerFactory.CreateLogger<Registry>(), RegistryMode.Push),
+                repository,
+                imageTags);
         }
         else
         {
@@ -84,6 +87,29 @@ internal readonly record struct DestinationImageReference
         }
 
         return destinationImageReference;
+    }
+
+    public string[] FullyQualifiedImageNames()
+    {
+        switch (Kind)
+        {
+            case DestinationImageReferenceKind.RemoteRegistry:
+                return GenerateRegistryNames(RemoteRegistry!, Repository!, Tags);
+            case DestinationImageReferenceKind.LocalRegistry:
+                return GenerateLocalNames(Repository!, Tags);
+            default:
+                return Array.Empty<string>();
+        }
+
+        string[] GenerateRegistryNames(Registry registry, string repository, string[] tags)
+        {
+            return tags.Select(tag => $"{registry}:{repository}:{tag}").ToArray();
+        }
+
+        string[] GenerateLocalNames(string repository, string[] tags)
+        {
+            return tags.Select(tag => $"{repository}:{tag}").ToArray();
+        }
     }
 
     public override string ToString()

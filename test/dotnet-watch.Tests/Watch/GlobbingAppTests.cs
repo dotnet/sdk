@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Watcher.Tools;
-
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class GlobbingAppTests : DotNetWatchTestBase
     {
@@ -14,7 +12,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
@@ -23,7 +21,7 @@ namespace Microsoft.DotNet.Watcher.Tests
                .WithSource();
 
             App.UsePollingWatcher = usePollingWatcher;
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
@@ -32,66 +30,70 @@ namespace Microsoft.DotNet.Watcher.Tests
             File.WriteAllText(fileToChange, programCs);
 
             await App.AssertFileChanged();
-            await App.AssertRestarted();
+            await App.AssertStarted();
             await AssertCompiledAppDefinedTypes(expected: 2);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task DeleteCompiledFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
             var fileToChange = Path.Combine(testAsset.Path, "include", "Foo.cs");
             File.Delete(fileToChange);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task DeleteSourceFolder()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
 
             await AssertCompiledAppDefinedTypes(expected: 2);
 
             var folderToDelete = Path.Combine(testAsset.Path, "include");
             Directory.Delete(folderToDelete, recursive: true);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task RenameCompiledFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
+
+            await App.AssertStarted();
 
             var oldFile = Path.Combine(testAsset.Path, "include", "Foo.cs");
             var newFile = Path.Combine(testAsset.Path, "include", "Foo_new.cs");
             File.Move(oldFile, newFile);
 
-            await App.AssertRestarted();
+            await App.AssertStarted();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
         public async Task ChangeExcludedFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
                .WithSource();
 
-            await App.StartWatcherAsync(testAsset);
+            App.Start(testAsset, ["--no-hot-reload"]);
+
+            await App.AssertStarted();
 
             var changedFile = Path.Combine(testAsset.Path, "exclude", "Baz.cs");
             File.WriteAllText(changedFile, "");
@@ -108,9 +110,9 @@ namespace Microsoft.DotNet.Watcher.Tests
                .WithSource();
 
             App.DotnetWatchArgs.Clear();
-            App.Start(testAsset, new[] { "--list" });
+            App.Start(testAsset, ["--list"]);
             var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
-            var files = lines.Where(l => !l.StartsWith("watch :"));
+            var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
 
             AssertEx.EqualFileList(
                 testAsset.Path,

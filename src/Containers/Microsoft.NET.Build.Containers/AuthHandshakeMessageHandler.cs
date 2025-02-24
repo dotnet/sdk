@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -38,12 +39,14 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
 
     private readonly string _registryName;
     private readonly ILogger _logger;
+    private readonly RegistryMode _registryMode;
     private static ConcurrentDictionary<string, AuthenticationHeaderValue?> _authenticationHeaders = new();
 
-    public AuthHandshakeMessageHandler(string registryName, HttpMessageHandler innerHandler, ILogger logger) : base(innerHandler)
+    public AuthHandshakeMessageHandler(string registryName, HttpMessageHandler innerHandler, ILogger logger, RegistryMode mode) : base(innerHandler)
     {
         _registryName = registryName;
         _logger = logger;
+        _registryMode = mode;
     }
 
     /// <summary>
@@ -68,18 +71,19 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         if (header.Scheme is not null)
         {
             scheme = header.Scheme;
-            var keyValues = ParseBearerArgs(header.Parameter);
-            if (keyValues is null)
-            {
-                return false;
-            }
 
             if (header.Scheme.Equals(BasicAuthScheme, StringComparison.OrdinalIgnoreCase))
             {
-                return TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out bearerAuthInfo);
+                bearerAuthInfo = null;
+                return true;
             }
             else if (header.Scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
             {
+                var keyValues = ParseBearerArgs(header.Parameter);
+                if (keyValues is null)
+                {
+                    return false;
+                }
                 return TryParseBearerAuthInfo(keyValues, out bearerAuthInfo);
             }
             else
@@ -105,12 +109,6 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 authInfo = null;
                 return false;
             }
-        }
-
-        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, out AuthInfo? authInfo)
-        {
-            authInfo = null;
-            return true;
         }
 
         static Dictionary<string, string>? ParseBearerArgs(string? bearerHeaderArgs)
@@ -156,14 +154,9 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> GetAuthenticationAsync(string registry, string scheme, AuthInfo? bearerAuthInfo, CancellationToken cancellationToken)
     {
-        // Allow overrides for auth via environment variables
-        string? credU = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectUser);
-        string? credP = Environment.GetEnvironmentVariable(ContainerHelpers.HostObjectPass);
-
-        // fetch creds for the host
         DockerCredentials? privateRepoCreds;
-
-        if (!string.IsNullOrEmpty(credU) && !string.IsNullOrEmpty(credP))
+        // Allow overrides for auth via environment variables
+        if (GetDockerCredentialsFromEnvironment(_registryMode) is (string credU, string credP))
         {
             privateRepoCreds = new DockerCredentials(credU, credP);
         }
@@ -181,18 +174,81 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         {
             Debug.Assert(bearerAuthInfo is not null);
 
-            var authenticationValueAndDuration = await TryOAuthPostAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
-            if (authenticationValueAndDuration is not null)
+            // Obtain a Bearer token, when the credentials are:
+            // - an identity token: use it for OAuth
+            // - a username/password: use them for Basic auth, and fall back to OAuth
+
+            if (string.IsNullOrWhiteSpace(privateRepoCreds.IdentityToken))
             {
-                return authenticationValueAndDuration;
+                var authenticationValueAndDuration = await TryTokenGetAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
+                if (authenticationValueAndDuration is not null)
+                {
+                    return authenticationValueAndDuration;
+                }
             }
 
-            authenticationValueAndDuration = await TryTokenGetAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
-            return authenticationValueAndDuration;
+            return await TryOAuthPostAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
         }
         else
         {
             return null;
+        }
+    }
+
+    internal static (string credU, string credP)? TryGetCredentialsFromEnvVars(string unameVar, string passwordVar)
+    {
+        var credU = Environment.GetEnvironmentVariable(unameVar);
+        var credP = Environment.GetEnvironmentVariable(passwordVar);
+        if (!string.IsNullOrEmpty(credU) && !string.IsNullOrEmpty(credP))
+        {
+            return (credU, credP);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets docker credentials from the environment variables based on registry mode.
+    /// </summary>
+    internal static (string credU, string credP)? GetDockerCredentialsFromEnvironment(RegistryMode mode)
+    {
+        if (mode == RegistryMode.Push)
+        {
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.PushHostObjectUser, ContainerHelpers.PushHostObjectPass) is (string, string) pushCreds)
+            {
+                return pushCreds;
+            }
+
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUser, ContainerHelpers.HostObjectPass) is (string, string) genericCreds)
+            {
+                return genericCreds;
+            }
+
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUserLegacy, ContainerHelpers.HostObjectPassLegacy);
+        }
+        else if (mode == RegistryMode.Pull)
+        {
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.PullHostObjectUser, ContainerHelpers.PullHostObjectPass);
+        }
+        else if (mode == RegistryMode.PullFromOutput)
+        {
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.PullHostObjectUser, ContainerHelpers.PullHostObjectPass) is (string, string) pullCreds)
+            {
+                return pullCreds;
+            }
+
+            if (TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUser, ContainerHelpers.HostObjectPass) is (string, string) genericCreds)
+            {
+                return genericCreds;
+            }
+
+            return TryGetCredentialsFromEnvVars(ContainerHelpers.HostObjectUserLegacy, ContainerHelpers.HostObjectPassLegacy);
+        }
+        else
+        {
+            throw new InvalidEnumArgumentException(nameof(mode), (int)mode, typeof(RegistryMode));
         }
     }
 
@@ -237,8 +293,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         if (!postResponse.IsSuccessStatusCode)
         {
             await postResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
-            //return null to try HTTP GET instead
-            return null;
+            return null; // try next method
         }
         _logger.LogTrace("Received '{statuscode}'.", postResponse.StatusCode);
         TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(postResponse.Content.ReadAsStream(cancellationToken));
@@ -250,8 +305,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         else
         {
             _logger.LogTrace(Resource.GetString(nameof(Strings.CouldntDeserializeJsonToken)));
-            // logging and returning null to try HTTP GET instead
-            return null;
+            return null; // try next method
         }
     }
 
@@ -262,9 +316,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     {
         // this doesn't seem to be called out in the spec, but actual username/password auth information should be converted into Basic auth here,
         // even though the overall Scheme we're authenticating for is Bearer
-        var header = privateRepoCreds.Username == "<token>"
-                        ? new AuthenticationHeaderValue(BearerAuthScheme, privateRepoCreds.Password)
-                        : new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
+        var header = new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
         var builder = new UriBuilder(new Uri(bearerAuthInfo.Realm));
 
         _logger.LogTrace("Attempting to authenticate on {uri} using GET.", bearerAuthInfo.Realm);
@@ -284,7 +336,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
         if (!tokenResponse.IsSuccessStatusCode)
         {
-            throw new UnableToAccessRepositoryException(_registryName);
+            await tokenResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
+            return null; // try next method
         }
 
         TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
@@ -333,6 +386,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
 
         int retryCount = 0;
+        List<Exception>? requestExceptions = null;
 
         while (retryCount < MaxRequestRetries)
         {
@@ -355,7 +409,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                         request.Headers.Authorization = authHeader;
                         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
                     }
-                    return response;
+
+                    throw new UnableToAccessRepositoryException(_registryName);
                 }
                 else
                 {
@@ -364,8 +419,11 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
             catch (HttpRequestException e) when (e.InnerException is IOException ioe && ioe.InnerException is SocketException se)
             {
+                requestExceptions ??= new();
+                requestExceptions.Add(e);
+
                 retryCount += 1;
-                _logger.LogInformation("Encountered a SocketException with message \"{message}\". Pausing before retry.", se.Message);
+                _logger.LogInformation("Encountered a HttpRequestException {error} with message \"{message}\". Pausing before retry.", e.HttpRequestError, se.Message);
                 _logger.LogTrace("Exception details: {ex}", se);
                 await Task.Delay(TimeSpan.FromSeconds(1.0 * Math.Pow(2, retryCount)), cancellationToken).ConfigureAwait(false);
 
@@ -374,7 +432,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             }
         }
 
-        throw new ApplicationException(Resource.GetString(nameof(Strings.TooManyRetries)));
+        throw new ApplicationException(Resource.GetString(nameof(Strings.TooManyRetries)), new AggregateException(requestExceptions!));
     }
 
     [GeneratedRegex("(?<key>\\w+)=\"(?<value>[^\"]*)\"(?:,|$)")]

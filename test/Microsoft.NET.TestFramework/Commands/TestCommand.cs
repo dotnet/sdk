@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -14,15 +14,15 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public ITestOutputHelper Log { get; }
 
-        public string WorkingDirectory { get; set; }
+        public string? WorkingDirectory { get; set; }
 
         public List<string> Arguments { get; set; } = new List<string>();
 
         public List<string> EnvironmentToRemove { get; } = new List<string>();
 
         //  These only work via Execute(), not when using GetProcessStartInfo()
-        public Action<string> CommandOutputHandler { get; set; }
-        public Action<Process> ProcessStartedHandler { get; set; }
+        public Action<string>? CommandOutputHandler { get; set; }
+        public Action<Process>? ProcessStartedHandler { get; set; }
 
         protected TestCommand(ITestOutputHelper log)
         {
@@ -58,6 +58,12 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithTraceOutput()
         {
             WithEnvironmentVariable("DOTNET_CLI_VSTEST_TRACE", "1");
+            return this;
+        }
+
+        public TestCommand WithEnableTestingPlatform()
+        {
+            WithEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE", "1");
             return this;
         }
 
@@ -120,34 +126,49 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
-            var command = CreateCommandSpec(args)
+            var spec = CreateCommandSpec(args);
+
+            var command = spec
                 .ToCommand(_doNotEscapeArguments)
                 .CaptureStdOut()
                 .CaptureStdErr();
 
-            if (CommandOutputHandler != null)
+            command.OnOutputLine(line =>
             {
-                command.OnOutputLine(CommandOutputHandler);
-            }
+                Log.WriteLine($"》{line}");
+                CommandOutputHandler?.Invoke(line);
+            });
 
+            command.OnErrorLine(line =>
+            {
+                Log.WriteLine($"❌{line}");
+            });
+
+            var display = $"dotnet {string.Join(" ", spec.Arguments)}";
+
+            Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);
+            Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
 
-            Log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
-            Log.WriteLine(result.StdOut);
+            return result;
+        }
+
+        public static void LogCommandResult(ITestOutputHelper log, CommandResult result)
+        {
+            log.WriteLine($"> {result.StartInfo.FileName} {result.StartInfo.Arguments}");
+            log.WriteLine(result.StdOut);
 
             if (!string.IsNullOrEmpty(result.StdErr))
             {
-                Log.WriteLine("");
-                Log.WriteLine("StdErr:");
-                Log.WriteLine(result.StdErr);
+                log.WriteLine("");
+                log.WriteLine("StdErr:");
+                log.WriteLine(result.StdErr);
             }
 
             if (result.ExitCode != 0)
             {
-                Log.WriteLine($"Exit Code: {result.ExitCode}");
+                log.WriteLine($"Exit Code: {result.ExitCode}");
             }
-
-            return result;
         }
     }
 }

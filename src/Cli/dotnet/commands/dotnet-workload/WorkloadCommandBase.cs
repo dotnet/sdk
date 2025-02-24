@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         public WorkloadCommandBase(
             ParseResult parseResult,
             CliOption<VerbosityOptions> verbosityOptions = null,
-            IReporter reporter = null,
+            IReporter? reporter = null,
             string tempDirPath = null,
             INuGetPackageDownloader nugetPackageDownloader = null) : base(parseResult)
         {
@@ -116,7 +116,8 @@ namespace Microsoft.DotNet.Workloads.Workload
                 nugetLogger,
                 Reporter,
                 restoreActionConfig: RestoreActionConfiguration,
-                verifySignatures: VerifySignatures);
+                verifySignatures: VerifySignatures,
+                shouldUsePackageSourceMapping: true);
         }
 
         /// <summary>

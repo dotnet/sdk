@@ -133,10 +133,16 @@
     <value>The version of the tool package to install.</value>
   </data>
   <data name="AddSourceOptionName" xml:space="preserve">
-    <value>SOURCE</value>
+    <value>ADDSOURCE</value>
   </data>
   <data name="AddSourceOptionDescription" xml:space="preserve">
     <value>Add an additional NuGet package source to use during installation.</value>
+  </data>
+  <data name="SourceOptionName" xml:space="preserve">
+    <value>SOURCE</value>
+  </data>
+  <data name="SourceOptionDescription" xml:space="preserve">
+    <value>Replace all NuGet package sources to use during installation with these.</value>
   </data>
   <data name="CommandDescription" xml:space="preserve">
     <value>Install global or local tool. Local tools are added to manifest and restored.</value>
@@ -224,7 +230,7 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
   </data>
   <data name="NoManifestGuide" xml:space="preserve">
     <value>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</value>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</value>
   </data>
   <data name="InvalidRuntimeIdentifier" xml:space="preserve">
     <value>The runtime identifier {0} is invalid. Valid runtime identifiers are: {1}.</value>

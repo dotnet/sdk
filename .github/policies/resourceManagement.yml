@@ -58,7 +58,7 @@ configuration:
           label: Area-ILLink
       then:
       - addReply:
-          reply: '@dotnet/illink-contrib a new issue has been filed in the ILLink area, please triage'
+          reply: '@dotnet/illink a new issue has been filed in the ILLink area, please triage'
       description: Notify linker of new untriaged bugs
     - if:
       - payloadType: Pull_Request

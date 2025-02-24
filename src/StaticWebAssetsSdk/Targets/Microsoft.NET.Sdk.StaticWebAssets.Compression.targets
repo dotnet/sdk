@@ -14,7 +14,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.BrotliCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GZipCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DiscoverPrecompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveCompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCompressionNegotiation" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
 
@@ -220,8 +222,37 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefineStaticWebAssets
       CandidateAssets="@(_CompressedStaticWebAssets)"
     >
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_CompressionBuildStaticWebAsset" />
+      <Output TaskParameter="AssetDetails" ItemName="_ResolveBuildCompressedStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_CompressionBuildStaticWebAsset);@(_PrecompressedStaticWebAssets)"
+      AssetFileDetails="@(_ResolveBuildCompressedStaticWebAssetsDetails)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_CompressionBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_CompressionBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_CompressionBuildStaticWebAssetEndpoint)" />
+      <_CompressionCurrentProjectBuildAssets Include="@(StaticWebAsset)" />
+    </ItemGroup>
+
+    <ApplyCompressionNegotiation
+      CandidateEndpoints="@(StaticWebAssetEndpoint)"
+      AssetFileDetails="@(_ResolveBuildCompressedStaticWebAssetsDetails)"
+      CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
+    >
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />
+    </ApplyCompressionNegotiation>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Remove="@(_UpdatedCompressionBuildEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedCompressionBuildEndpoints)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="GenerateBuildCompressedStaticWebAssets" DependsOnTargets="$(GenerateBuildCompressedStaticWebAssetsDependsOn);$(CompressFilesDependsOn)">
@@ -248,6 +279,27 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ResolveBuildCompressedStaticWebAssetsConfiguration" DependsOnTargets="ResolveStaticWebAssetsInputs;$(ResolveCompressedFilesDependsOn)">
+    <!-- There might be assets that are precompressed on packages or that are precompressed by other tools.
+         In this case, we need to detect those assets, remove them and their endpoints, adjust the asset definition
+         and recreate the endpoints for those assets as the original ones will not be correct.
+     -->
+    <DiscoverPrecompressedAssets CandidateAssets="@(StaticWebAsset)">
+      <Output TaskParameter="DiscoveredCompressedAssets" ItemName="_PrecompressedStaticWebAssets" />
+    </DiscoverPrecompressedAssets>
+
+    <FilterStaticWebAssetEndpoints Condition="'@(_PrecompressedStaticWebAssets)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_PrecompressedStaticWebAssets)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_PrecompressedEndpointsToRemove" />
+    </FilterStaticWebAssetEndpoints>
+
+    <ItemGroup Condition="'@(_PrecompressedStaticWebAssets)' != ''">
+      <StaticWebAssetEndpoint Remove="@(_PrecompressedEndpointsToRemove)" />
+      <StaticWebAsset Remove="@(_PrecompressedStaticWebAssets)" />
+      <StaticWebAsset Include="@(_PrecompressedStaticWebAssets)" />
+    </ItemGroup>
 
     <ResolveCompressedAssets
       CandidateAssets="@(StaticWebAsset)"
@@ -263,7 +315,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </ResolveCompressedAssets>
 
-    <ItemGroup>
+    <ItemGroup Condition="'$(IsPackable)' == 'true'">
       <_StaticWebAssetExcludedFromPack Include="@(_CompressedStaticWebAssets)" />
     </ItemGroup>
 
@@ -275,8 +327,35 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefineStaticWebAssets
       CandidateAssets="@(_CompressedStaticWebAssetsForPublish)"
     >
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_CompressionPublishStaticWebAsset" />
     </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_CompressionPublishStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_CompressionPublishStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_CompressionPublishStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_CompressionPublishStaticWebAssetEndpoint)" />
+      <_CompressionCurrentProjectPublishAssets Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build'" />
+    </ItemGroup>
+
+    <ApplyCompressionNegotiation
+      CandidateEndpoints="@(StaticWebAssetEndpoint)"
+      CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
+    >
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
+    </ApplyCompressionNegotiation>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Remove="@(_UpdatedCompressionPublishEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedCompressionPublishEndpoints)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="GeneratePublishCompressedStaticWebAssets" DependsOnTargets="$(CompressFilesForPublishDependsOn);$(GeneratePublishCompressedStaticWebAssetsDependsOn)">

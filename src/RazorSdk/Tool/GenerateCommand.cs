@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
@@ -75,7 +77,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
 
             var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: []);
+            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
 
             var sourceItems = GetSourceItems(
                 Sources.Values, Outputs.Values, RelativePaths.Values,
@@ -230,7 +232,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             foreach (var result in results)
             {
-                var errorCount = result.CSharpDocument.Diagnostics.Count;
+                var errorCount = result.CSharpDocument.Diagnostics.Length;
                 for (var i = 0; i < errorCount; i++)
                 {
                     var error = result.CSharpDocument.Diagnostics[i];
@@ -255,7 +257,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 {
                     // Only output the file if we generated it without errors.
                     var outputFilePath = result.InputItem.OutputPath;
-                    var generatedCode = result.CSharpDocument.GeneratedCode;
+                    var generatedCode = result.CSharpDocument.Text.ToString();
                     if (isGeneratingDeclaration)
                     {
                         // When emiting declarations, only write if it the contents are different.
@@ -267,7 +269,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                         }
                     }
 
-                    File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
+                    File.WriteAllText(outputFilePath, generatedCode);
                 }
             }
 
@@ -397,10 +399,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             public string CssScope { get; }
         }
 
-        private class StaticTagHelperFeature : ITagHelperFeature
+        private class StaticTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
         {
-            public RazorEngine Engine { get; set; }
-
             public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
 
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors() => TagHelpers;

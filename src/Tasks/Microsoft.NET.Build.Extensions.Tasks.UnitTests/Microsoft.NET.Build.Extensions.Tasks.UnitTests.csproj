@@ -24,11 +24,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" />
+    <ProjectReference Include="..\..\..\test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\..\..\test\Common\Program.UnitTests.cs" />
+    <Compile Include="..\..\..\test\Common\Program.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockBuildEngine.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockTaskItem.cs" />
   </ItemGroup>

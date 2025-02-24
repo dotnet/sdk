@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class ApplicationPartDiscoveryIntegrationTest : AspNetSdkTest
@@ -67,7 +69,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.AppendAllText(Path.Combine(build.ProjectRootPath, "Program.cs"), " ");
 
             build = new BuildCommand(projectDirectory, "AppWithP2PReference");
-            build.Execute().Should().Pass();
+            build.ExecuteWithoutRestore().Should().Pass();
 
             File.Exists(generatedAttributeFile).Should().BeTrue();
             Assert.Equal(thumbPrint, FileThumbPrint.Create(generatedAttributeFile));

@@ -107,6 +107,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--baseimagetag ", BaseImageTag);
         }
+        if (!string.IsNullOrWhiteSpace(BaseImageDigest))
+        {
+            builder.AppendSwitchIfNotNull("--baseimagedigest ", BaseImageDigest);
+        }
         if (!string.IsNullOrWhiteSpace(OutputRegistry))
         {
             builder.AppendSwitchIfNotNull("--outputregistry ", OutputRegistry);
@@ -119,12 +123,16 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--appcommandinstruction ", AppCommandInstruction);
         }
+        if (!string.IsNullOrWhiteSpace(ImageFormat))
+        {
+            builder.AppendSwitchIfNotNull("--image-format ", ImageFormat);
+        }
 
-        AppendSwitchIfNotNullSantized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);
-        AppendSwitchIfNotNullSantized(builder, "--entrypointargs ", nameof(EntrypointArgs), EntrypointArgs);
-        AppendSwitchIfNotNullSantized(builder, "--defaultargs ", nameof(DefaultArgs), DefaultArgs);
-        AppendSwitchIfNotNullSantized(builder, "--appcommand ", nameof(AppCommand), AppCommand);
-        AppendSwitchIfNotNullSantized(builder, "--appcommandargs ", nameof(AppCommandArgs), AppCommandArgs);
+        AppendSwitchIfNotNullSanitized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);
+        AppendSwitchIfNotNullSanitized(builder, "--entrypointargs ", nameof(EntrypointArgs), EntrypointArgs);
+        AppendSwitchIfNotNullSanitized(builder, "--defaultargs ", nameof(DefaultArgs), DefaultArgs);
+        AppendSwitchIfNotNullSanitized(builder, "--appcommand ", nameof(AppCommand), AppCommand);
+        AppendSwitchIfNotNullSanitized(builder, "--appcommandargs ", nameof(AppCommandArgs), AppCommandArgs);
 
         if (Labels.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
         {
@@ -192,9 +200,19 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
             builder.AppendSwitchIfNotNull("--archiveoutputpath ", ArchiveOutputPath);
         }
 
+        if (GenerateLabels)
+        {
+            builder.AppendSwitch("--generate-labels");
+        }
+
+        if (GenerateDigestLabel)
+        {
+            builder.AppendSwitch("--generate-digest-label");
+        }
+
         return builder.ToString();
 
-        void AppendSwitchIfNotNullSantized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)
+        void AppendSwitchIfNotNullSanitized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)
         {
             ITaskItem[] santized = value.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
             if (santized.Length != value.Length)

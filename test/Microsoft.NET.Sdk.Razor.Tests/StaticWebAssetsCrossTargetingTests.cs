@@ -4,16 +4,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class StaticWebAssetsCrossTargetingTests : AspNetSdkBaselineTest
+    public class StaticWebAssetsCrossTargetingTests(ITestOutputHelper log)
+        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(StaticWebAssetsCrossTargetingTests))
     {
-        public StaticWebAssetsCrossTargetingTests(ITestOutputHelper log) : base(log, GenerateBaselines) { }
-
         // Build Standalone project
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void Build_CrosstargetingTests_CanIncludeBrowserAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -40,9 +41,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var wwwroot = Directory.CreateDirectory(Path.Combine(ProjectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(wwwroot.FullName, "test.js"), "console.log('hello')");
 
-            var build = new BuildCommand(ProjectDirectory);
-            build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute("/bl").Should().Pass();
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -85,13 +85,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var wwwroot = Directory.CreateDirectory(Path.Combine(ProjectDirectory.TestRoot, "wwwroot"));
             File.WriteAllText(Path.Combine(wwwroot.FullName, "test.js"), "console.log('hello')");
 
-            var restore = new RestoreCommand(ProjectDirectory);
-            restore.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            restore.Execute().Should().Pass();
+            var restore = CreateRestoreCommand(ProjectDirectory);
+            ExecuteCommand(restore).Should().Pass();
 
-            var publish = new PublishCommand(ProjectDirectory);
-            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            publish.ExecuteWithoutRestore("/bl", "/p:TargetFramework=net9.0").Should().Pass();
+            var publish = CreatePublishCommand(ProjectDirectory);
+            ExecuteCommandWithoutRestore(publish, "/bl", "/p:TargetFramework=net10.0").Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();

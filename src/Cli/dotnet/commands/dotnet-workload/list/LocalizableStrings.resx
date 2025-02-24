@@ -128,4 +128,13 @@
     <value>Use `dotnet workload search` to find additional workloads to install.</value>
     <comment>{Locked="dotnet workload search"}</comment>
   </data>
+  <data name="WorkloadSetVersion" xml:space="preserve">
+    <value>Workload version: {0}</value>
+  </data>
+  <data name="WorkloadSetFromGlobalJsonInstalled" xml:space="preserve">
+    <value>Using workload version {0}, which was specified in the global.json file at {1}.</value>
+  </data>
+  <data name="WorkloadVersionNotInstalledShort" xml:space="preserve">
+    <value>(not installed)</value>
+  </data>
 </root>

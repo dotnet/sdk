@@ -154,7 +154,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
-    Trigger an error if targeting a higher version of .NET Core or .NET Standard than is supported by the current SDK.
+    Trigger an error if targeting a higher version of .NET Core than is supported by the current SDK.
   -->
   <Target Name="_CheckForUnsupportedNETCoreVersion" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;Restore;CollectPackageReferences"
           Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And '$(NETCoreAppMaximumVersion)' != ''">
@@ -172,6 +172,21 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="UnsupportedVisualStudioVersion"
                  FormatArguments=".NET;$(_TargetFrameworkVersionWithoutV);$(NETCoreAppMaximumVersion);$(MinimumVisualStudioVersionForUnsupportedTargetFrameworkVersion)"
       />
+  </Target>
+
+  <!--
+    Trigger a warning if targeting a lower version of .NET Standard than is recommended
+  -->
+  <Target Name="_CheckForNotRecommendedNETStandardVersion" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;Restore;CollectPackageReferences"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard' and $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '2.0'))">
+    <PropertyGroup>
+      <!-- Default the check to true, but allow developers to turn the warning off. -->
+      <CheckNotRecommendedTargetFramework Condition="'$(CheckNotRecommendedTargetFramework)' == ''" >true</CheckNotRecommendedTargetFramework>
+    </PropertyGroup>
+
+    <NETSdkWarning Condition="'$(CheckNotRecommendedTargetFramework)' == 'true'"
+          ResourceName="TargetFrameworkIsNotRecommended"
+          FormatArguments="https://aka.ms/dotnet/dotnet-standard-guidance" />
   </Target>
 
   <!--

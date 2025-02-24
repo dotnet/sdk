@@ -1,11 +1,13 @@
 awaiter
 crossgen
+csharp
 cshtml
 deserializer
 msbuild
 nuget
 nupkg
 nuspec
+roslyn
 sdk
 sdks
 tfm

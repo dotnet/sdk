@@ -5,7 +5,6 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <Nullable>Enable</Nullable>
     <NoWarn>$(NoWarn);8002</NoWarn>
     <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
     <RollForward>LatestMajor</RollForward>
@@ -18,11 +17,17 @@
     <!-- Copy nuget assemblies to build directory. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
+    <SignableShimRuntimeIdentifiers>win-x64;win-x86;osx-x64</SignableShimRuntimeIdentifiers>
+
     <!--
       These identifiers are for generating the shim'd core executables for signing. Not all options
       from $(RoslynPortableRuntimeIdentifiers) work or make sense in this context.
     -->
-    <PackAsToolShimRuntimeIdentifiers Condition=" '$(DotnetBuildFromSource)' != 'true' ">win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
+    <PackAsToolShimRuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true'">win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
+    <PackAsToolShimRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true' and $(SignableShimRuntimeIdentifier.Contains('$(TargetRid)'))">$(TargetRid)</PackAsToolShimRuntimeIdentifiers>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,7 +49,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
 
     <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="System.CommandLine.Rendering" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ShellShim;
@@ -12,6 +14,8 @@ using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using Microsoft.DotNet.InternalAbstractions;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -22,20 +26,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
         private readonly ToolPackageStoreMock _store;
         private readonly PackageId _packageId = new("global.tool.console.demo");
+        private readonly PackageId _packageId2 = new("global.tool.console.demo.second.one");
         private readonly List<MockFeed> _mockFeeds;
         private const string LowerPackageVersion = "1.0.4";
         private const string HigherPackageVersion = "1.0.5";
         private const string HigherPreviewPackageVersion = "1.0.5-preview3";
         private readonly string _shimsDirectory;
         private readonly string _toolsDirectory;
+        private readonly string _tempDirectory;
 
         public ToolUpdateGlobalOrToolPathCommandTests()
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
-            var tempDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
-            _shimsDirectory = Path.Combine(tempDirectory, "shims");
-            _toolsDirectory = Path.Combine(tempDirectory, "tools");
+            _tempDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            _shimsDirectory = Path.Combine(_tempDirectory, "shims");
+            _toolsDirectory = Path.Combine(_tempDirectory, "tools");
             _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, _shimsDirectory);
             _store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
             _mockFeeds = new List<MockFeed>
@@ -62,10 +68,47 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                             PackageId = _packageId.ToString(),
                             Version = HigherPreviewPackageVersion,
                             ToolCommandName = "SimulatorCommand"
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageId2.ToString(),
+                            Version = LowerPackageVersion,
+                            ToolCommandName = "SimulatorCommand2"
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageId2.ToString(),
+                            Version = HigherPackageVersion,
+                            ToolCommandName = "SimulatorCommand2"
+                        },
+                        new MockFeedPackage
+                        {
+                            PackageId = _packageId2.ToString(),
+                            Version = HigherPreviewPackageVersion,
+                            ToolCommandName = "SimulatorCommand2"
                         }
                     }
                 }
             };
+        }
+
+        [Fact]
+        public void WhenPassingRestoreActionConfigOptions()
+        {
+            var parseResult = Parser.Instance.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
+            var toolUpdateCommand = new ToolUpdateGlobalOrToolPathCommand(parseResult);
+            toolUpdateCommand._toolInstallGlobalOrToolPathCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+        }
+
+        [Fact]
+        public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
+        {
+            _fileSystem.File.WriteAllText(Path.Combine(_tempDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
+
+            var command = CreateUpdateCommand($"-g {_packageId} --ignore-failed-sources");
+
+            command.Execute().Should().Be(0);
+            _fileSystem.File.Delete(Path.Combine(_tempDirectory, "nuget.config"));
         }
 
         [Fact]
@@ -107,6 +150,20 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenAnExistedLowerVersionInstallationItCanUpdateAllThePackageVersion()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            CreateInstallCommand($"-g {_packageId2} --version {LowerPackageVersion}", _packageId2.ToString()).Execute();
+
+            CreateUpdateCommand($"--all -g -v:d").Execute();
+
+            _store.EnumeratePackageVersions(_packageId).Single().Version.ToFullString().Should()
+                .Be(HigherPackageVersion);
+            _store.EnumeratePackageVersions(_packageId2).Single().Version.ToFullString().Should()
+                .Be(HigherPackageVersion);
+        }
+
+        [Fact]
         public void GivenAnExistedLowerversionInstallationWhenCallFromRedirectorItCanUpdateThePackageVersion()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -115,7 +172,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUpdateGlobalOrToolPathCommand = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                         fileSystem: _fileSystem,
                         reporter: _reporter,
@@ -150,6 +207,36 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.First().Should().Contain(string.Format(
                 LocalizableStrings.UpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
+        }
+
+        [Fact]
+        public void GivenAnExistedLowerversionInstallationWhenUpdateAllItCanPrintSuccessMessage()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g --all --verbosity minimal");
+
+            command.Execute();
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                LocalizableStrings.UpdateSucceeded,
+                _packageId, LowerPackageVersion, HigherPackageVersion));
+        }
+
+        [Fact]
+        public void GivenAnExistedPreviewVersionInstallationWhenUpdateToHigherVersionItSucceeds()
+        {
+            var installCommand = CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
+            installCommand.Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPackageVersion} --verbosity minimal");
+            command.Execute().Should().Be(0);
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                LocalizableStrings.UpdateSucceeded,
+                _packageId, HigherPreviewPackageVersion, HigherPackageVersion));
         }
 
         [Fact]
@@ -243,7 +330,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceededStableVersionNoChange,
+                Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings.ToolAlreadyInstalled,
                 _packageId, HigherPackageVersion));
         }
 
@@ -258,7 +345,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceededPreVersionNoChange,
+                Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings.ToolAlreadyInstalled,
                 _packageId, HigherPreviewPackageVersion));
         }
 
@@ -272,7 +359,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store,
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store,
                     new ToolPackageDownloaderMock(
                         store: _store,
                         fileSystem: _fileSystem,
@@ -299,7 +386,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store,
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store,
                     new ToolPackageDownloaderMock(
                         store: _store,
                         fileSystem: _fileSystem,
@@ -337,7 +424,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (_, _) => (_store, _store, new ToolPackageDownloaderMock(
+                (_, _, _) => (_store, _store, new ToolPackageDownloaderMock(
                         store:_store,
                         fileSystem: _fileSystem,
                         reporter: _reporter,
@@ -360,7 +447,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }
         }
 
-        private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
+        private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options, string packageId = null)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
             var store = new ToolPackageStoreMock(
@@ -369,7 +456,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                packageId is null ? _packageId : new PackageId(packageId) ,
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                     fileSystem: _fileSystem,
                     _reporter,
@@ -386,7 +474,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             return new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                     fileSystem: _fileSystem,
                     _reporter,
@@ -394,7 +482,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     ),
                     new ToolPackageUninstallerMock(_fileSystem, _store)),
                 (_, _) => GetMockedShellShimRepository(),
-                _reporter);
+                _reporter,
+                _store);
         }
 
         private ShellShimRepository GetMockedShellShimRepository()
@@ -406,6 +495,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem),
                     filePermissionSetter: new ToolInstallGlobalOrToolPathCommandTests.NoOpFilePermissionSetter());
         }
+
+        private string _nugetConfigWithInvalidSources = @"{
+<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget"" value=""https://api.nuget.org/v3/index.json"" />
+    <add key=""invalid_source"" value=""https://api.nuget.org/v3/invalid.json"" />
+  </packageSources>
+</configuration>
+}";
     }
 }
 

@@ -17,4 +17,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <VSTestTargets Condition="'$(VSTestTargets)'==''">$(MSBuildExtensionsPath)\Microsoft.TestPlatform.targets</VSTestTargets>
   </PropertyGroup>
   <Import Condition="Exists('$(VSTestTargets)')" Project="$(VSTestTargets)" />
+  <Target Name="_MTPBuild">
+    <CallTarget Condition="'$(MTPNoBuild)' != 'true'" Targets="Build" />
+  </Target>
 </Project>

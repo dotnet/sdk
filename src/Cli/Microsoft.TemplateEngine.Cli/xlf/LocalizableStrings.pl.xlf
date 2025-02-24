@@ -228,6 +228,11 @@ Uruchom polecenie "dotnet {1}--show-aliases" bez argumentów, aby wyświetlić w
         <target state="translated">Trwa wyszukiwanie szablonów...</target>
         <note />
       </trans-unit>
+      <trans-unit id="Colon_Separator_Deprecated">
+        <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
+        <target state="new">The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ColumnNameAuthor">
         <source>Author</source>
         <target state="translated">Autor</target>
@@ -825,6 +830,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Chcesz uruchomić tę akcję [{0}(tak)|{1}(nie)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotBoolean">
+        <source>Post action argument '{0}' is not a valid boolean value.</source>
+        <target state="translated">Argument akcji „{0}” nie jest prawidłową wartością logiczną.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
         <source>Post action argument '{0}' is mandatory, but not configured.</source>
         <target state="translated">Argument po wystąpieniu akcji „{0}” jest obowiązkowy, ale nie jest skonfigurowany.</target>
@@ -848,6 +858,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="PostAction_ModifyJson_Succeeded">
         <source>Successfully modified {0}.</source>
         <target state="translated">Pomyślnie zmodyfikowano {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile">
+        <source>Attempting to find json file '{0}' in '{1}'</source>
+        <target state="translated">Próba znalezienia pliku JSON „{0}” w „{1}”</target>
         <note />
       </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">

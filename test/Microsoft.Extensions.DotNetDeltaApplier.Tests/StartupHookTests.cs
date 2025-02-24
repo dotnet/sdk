@@ -1,67 +1,65 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.DotNetDeltaApplier
+using Microsoft.DotNet.HotReload;
+
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class StartupHookTests
     {
-        [Fact]
-        public void ClearHotReloadEnvironmentVariables_ClearsStartupHook()
+        [Theory]
+        [CombinatorialData]
+        public void IsMatchingProcess_Matching_SimpleName(
+            [CombinatorialValues("", ".dll", ".exe")] string extension,
+            [CombinatorialValues("", ".dll", ".exe")] string targetExtension)
         {
-            // Arrange
-            var environmentVariables = new Dictionary<string, string?>
-            {
-                ["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug",
-                ["DOTNET_STARTUP_HOOKS"] = typeof(StartupHook).Assembly.Location
-            };
+            var dir = Path.GetDirectoryName(typeof(StartupHookTests).Assembly.Location)!;
+            var name = "a";
+            var processPath = Path.Combine(dir, name + extension);
+            var targetProcessPath = Path.Combine(dir, "a" + targetExtension);
 
-            // Act
-            StartupHook.ClearHotReloadEnvironmentVariables(
-                (name) => environmentVariables[name],
-                (name, value) => environmentVariables[name] = value);
-
-            // Assert
-            Assert.True(string.IsNullOrEmpty(environmentVariables["DOTNET_STARTUP_HOOKS"]));
+            Assert.True(StartupHook.IsMatchingProcess(processPath, targetProcessPath));
         }
 
-        [Fact]
-        public void ClearHotReloadEnvironmentVariables_PreservedOtherStartupHooks()
+        [Theory]
+        [CombinatorialData]
+        public void IsMatchingProcess_Matching_DotInName(
+            [CombinatorialValues("", ".dll", ".exe")] string extension,
+            [CombinatorialValues("", ".dll", ".exe")] string targetExtension)
         {
-            // Arrange
-            var customStartupHook = "/path/mycoolstartup.dll";
-            var environmentVariables = new Dictionary<string, string?>
-            {
-                ["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug",
-                ["DOTNET_STARTUP_HOOKS"] = typeof(StartupHook).Assembly.Location + Path.PathSeparator + customStartupHook,
-            };
+            var dir = Path.GetDirectoryName(typeof(StartupHookTests).Assembly.Location)!;
+            var name = "a.b";
+            var processPath = Path.Combine(dir, name + extension);
+            var targetProcessPath = Path.Combine(dir, name + targetExtension);
 
-            // Act
-            StartupHook.ClearHotReloadEnvironmentVariables(
-                (name) => environmentVariables[name],
-                (name, value) => environmentVariables[name] = value);
-
-            // Assert
-            Assert.Equal(customStartupHook, environmentVariables["DOTNET_STARTUP_HOOKS"]);
+            Assert.True(StartupHook.IsMatchingProcess(processPath, targetProcessPath));
         }
 
-        [Fact]
-        public void ClearHotReloadEnvironmentVariables_RemovesHotReloadStartup_InCaseInvariantManner()
+        [Theory]
+        [CombinatorialData]
+        public void IsMatchingProcess_Matching_DotDllInName(
+            [CombinatorialValues("", ".dll", ".exe")] string extension,
+            [CombinatorialValues("", ".dll", ".exe")] string targetExtension)
         {
-            // Arrange
-            var customStartupHook = "/path/mycoolstartup.dll";
-            var environmentVariables = new Dictionary<string, string?>
-            {
-                ["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug",
-                ["DOTNET_STARTUP_HOOKS"] = customStartupHook + Path.PathSeparator + typeof(StartupHook).Assembly.Location.ToUpperInvariant(),
-            };
+            var dir = Path.GetDirectoryName(typeof(StartupHookTests).Assembly.Location)!;
+            var name = "a.dll";
+            var processPath = Path.Combine(dir, name + extension);
+            var targetProcessPath = Path.Combine(dir, name + targetExtension);
 
-            // Act
-            StartupHook.ClearHotReloadEnvironmentVariables(
-                (name) => environmentVariables[name],
-                (name, value) => environmentVariables[name] = value);
+            Assert.True(StartupHook.IsMatchingProcess(processPath, targetProcessPath));
+        }
 
-            // Assert
-            Assert.Equal(customStartupHook, environmentVariables["DOTNET_STARTUP_HOOKS"]);
+        [Theory]
+        [CombinatorialData]
+        public void IsMatchingProcess_NotMatching(
+            [CombinatorialValues("", ".dll", ".exe")] string extension,
+            [CombinatorialValues("", ".dll", ".exe")] string targetExtension)
+        {
+            var dir = Path.GetDirectoryName(typeof(StartupHookTests).Assembly.Location)!;
+            var processPath = Path.Combine(dir, "a" + extension);
+            var targetProcessPath = Path.Combine(dir, "b" + targetExtension);
+
+            Assert.False(StartupHook.IsMatchingProcess(processPath, targetProcessPath));
         }
     }
 }

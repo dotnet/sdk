@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "alias feature is not implemented yet")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42539")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanInstantiateTemplate_WithAlias()
         {

@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.IO;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -17,21 +17,19 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly ParseResult _parseResult;
         public string TargetFrameworkToInstall { get; private set; }
 
-        private readonly IToolPackageStore _toolPackageStore;
         private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly PackageId _packageId;
-        private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string[] _sources;
         private readonly VerbosityOptions _verbosity;
+        private readonly RestoreActionConfig _restoreActionConfig;
 
         public ToolInstallLocalInstaller(
             ParseResult parseResult,
-            IToolPackageDownloader toolPackageDownloader = null)
+            IToolPackageDownloader toolPackageDownloader = null,
+            string runtimeJsonPathForTests = null,
+            RestoreActionConfig restoreActionConfig = null)
         {
             _parseResult = parseResult;
-            _packageId = new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
-            _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             _verbosity = parseResult.GetValue(ToolInstallCommandParser.VerbosityOption);
@@ -40,15 +38,14 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 IToolPackageStoreQuery,
                 IToolPackageDownloader downloader) toolPackageStoresAndDownloader
                     = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()));
-            _toolPackageStore = toolPackageStoresAndDownloader.store;
-            _toolPackageDownloader = toolPackageDownloader?? toolPackageStoresAndDownloader.downloader;
-            
-            
+                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()), runtimeJsonPathForTests: runtimeJsonPathForTests);
+            _toolPackageDownloader = toolPackageDownloader ?? toolPackageStoresAndDownloader.downloader;
+            _restoreActionConfig = restoreActionConfig;
+
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
         }
 
-        public IToolPackage Install(FilePath manifestFile)
+        public IToolPackage Install(FilePath manifestFile, PackageId packageId)
         {
             if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
             {
@@ -73,10 +70,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                             nugetConfig: configFile,
                             additionalFeeds: _sources,
                             rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
-                        _packageId,
+                        packageId,
                         verbosity: _verbosity,
                         versionRange,
-                        TargetFrameworkToInstall
+                        TargetFrameworkToInstall,
+                        restoreActionConfig: _restoreActionConfig
                         );
 
                 return toolDownloadedPackage;
@@ -84,7 +82,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             catch (Exception ex) when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
             {
                 throw new GracefulException(
-                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId),
+                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId),
                     verboseMessages: new[] { ex.ToString() },
                     isUserError: false);
             }

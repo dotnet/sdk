@@ -29,6 +29,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
+        public bool IsPrerelease => !string.IsNullOrEmpty(_featureBand.Prerelease);
+        public int Major => _featureBand.Major;
+        public int Minor => _featureBand.Minor;
+
         public bool Equals(SdkFeatureBand other)
         {
             return _featureBand.Equals(other._featureBand);

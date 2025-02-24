@@ -1,24 +1,28 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class VanillaWasmTests : BlazorWasmBaselineTests
+    public class VanillaWasmTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        public VanillaWasmTests(ITestOutputHelper log) : base(log, GenerateBaselines)
-        {
-        }
-
         [CoreMSBuildOnlyFact]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
-            var targetFramework = "net8.0";
-            var testInstance = CreateAspNetSdkTestAsset(testAsset);
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var testInstance = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((p, doc) =>
+                {
+                    var itemGroup = new XElement("PropertyGroup");
+                    var fingerprintAssets = new XElement("WasmFingerprintAssets", false);
+                    itemGroup.Add(fingerprintAssets);
+                    doc.Root.Add(itemGroup);
+                });
 
-            var build = new BuildCommand(testInstance);
-            build.WithWorkingDirectory(testInstance.Path);
-            build.Execute("/bl")
+            var build = CreateBuildCommand(testInstance);
+            ExecuteCommand(build)
                 .Should()
                 .Pass();
 

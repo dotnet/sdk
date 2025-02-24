@@ -249,17 +249,31 @@ namespace Microsoft.DotNet.ToolManifest
         {
             var result = new List<FilePath>();
             bool findAnyManifest = false;
+            DirectoryPath? rootPath = null;
             foreach ((FilePath possibleManifest,
                     DirectoryPath correspondingDirectory)
                 in EnumerateDefaultAllPossibleManifests())
             {
+                if (rootPath is not null)
+                {
+                    if (!correspondingDirectory.Value.Equals(rootPath.Value))
+                    {
+                        break;
+                    }
+                }
+
                 if (_fileSystem.File.Exists(possibleManifest.Value))
                 {
                     findAnyManifest = true;
-                    if (_toolManifestEditor.Read(possibleManifest, correspondingDirectory).content
-                        .Any(t => t.PackageId.Equals(packageId)))
+                    (List<ToolManifestPackage> content, bool isRoot) = _toolManifestEditor.Read(possibleManifest, correspondingDirectory);
+                    if (content.Any(t => t.PackageId.Equals(packageId)))
                     {
                         result.Add(possibleManifest);
+                    }
+
+                    if (isRoot)
+                    {
+                        rootPath = correspondingDirectory;
                     }
                 }
             }

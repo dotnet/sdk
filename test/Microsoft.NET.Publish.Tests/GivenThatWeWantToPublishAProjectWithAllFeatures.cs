@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using FluentAssertions.Json;
 using Microsoft.Extensions.DependencyModel;
@@ -58,15 +60,23 @@ namespace Microsoft.NET.Publish.Tests
         ""configProperties"": {
             ""Microsoft.Extensions.DependencyInjection.VerifyOpenGenericServiceTrimmability"": true,
             ""System.AggressiveAttributeTrimming"": true,
+            ""System.ComponentModel.DefaultValueAttribute.IsSupported"": true,
+            ""System.ComponentModel.Design.IDesignerHost.IsSupported"": true,
             ""System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"": false,
+            ""System.Data.DataSet.XmlSerializationIsSupported"": true,
+            ""System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"": false,
             ""System.Diagnostics.Debugger.IsSupported"": true,
             ""System.Diagnostics.Metrics.Meter.IsSupported"": false,
+            ""System.Diagnostics.StackTrace.IsSupported"": false,
             ""System.Diagnostics.Tracing.EventSource.IsSupported"": false,
+            ""System.Drawing.Design.UITypeEditor.IsSupported"": true,
             ""System.Globalization.Invariant"": true,
+            ""System.TimeZoneInfo.Invariant"": true,
             ""System.Globalization.PredefinedCulturesOnly"": true,
             ""System.GC.Concurrent"": false,
             ""System.GC.Server"": true,
             ""System.GC.RetainVM"": false,
+            ""System.Linq.Enumerable.IsSizeOptimized"": true,
             ""System.Net.Http.EnableActivityPropagation"": false,
             ""System.Net.Http.UseNativeHttpHandler"": true,
             ""System.Net.Security.UseManagedNtlm"": true,
@@ -90,6 +100,13 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Threading.ThreadPool.MinThreads"": 2,
             ""System.Threading.ThreadPool.MaxThreads"": 9,
             ""System.Threading.ThreadPool.UseWindowsThreadPool"": true,
+            ""System.Windows.Forms.ActiveXImpl.IsSupported"": true,
+            ""System.Windows.Forms.Binding.IsSupported"": true,
+            ""System.Windows.Forms.Control.AreDesignTimeFeaturesSupported"": true,
+            ""System.Windows.Forms.Control.UseComponentModelRegisteredTypes"": false,
+            ""System.Windows.Forms.ImageIndexConverter.IsSupported"": true,
+            ""System.Windows.Forms.MdiWindowDialog.IsSupported"": true,
+            ""System.Windows.Forms.Primitives.TypeConverterHelper.UseComponentModelRegisteredTypes"": false,
             ""System.Xml.XmlResolver.IsNetworkingEnabledByDefault"": false,
             ""extraProperty"": true
         },

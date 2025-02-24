@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.Runtime.CompilerServices;
 using ManifestReaderTests;
@@ -8,11 +10,16 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Workloads.Workload.Config;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Workload.Search.Tests;
+using Microsoft.DotNet.Workloads.Workload.History;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -27,6 +34,83 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             _reporter = new BufferedReporter();
             _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
             _parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update" });
+        }
+
+        [Fact]
+        public void GivenWorkloadUpdateFromHistory()
+        {
+            string workloadHistoryRecord = @"{
+              ""TimeStarted"": ""2023-11-13T13:25:49.8011987-08:00"",
+              ""TimeCompleted"": ""2023-11-13T13:25:52.8522942-08:00"",
+              ""CommandName"": ""update"",
+              ""WorkloadArguments"": [],
+              ""RollbackFileContents"": null,
+              ""CommandLineArgs"": [],
+              ""Succeeded"": true,
+              ""ErrorMessage"": null,
+              ""StateBeforeCommand"": {
+                ""ManifestVersions"": {
+                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1"",
+                  ""microsoft.net.sdk.aspire"": ""8.0.0-alpha.23471.13/8.0.100-rc.1""
+                },
+                ""InstalledWorkloads"": []
+              },
+              ""StateAfterCommand"": {
+                ""ManifestVersions"": {
+                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1"",
+                  ""microsoft.net.sdk.aspire"": ""8.0.0-alpha.23471.13/8.0.100-rc.1""
+                },
+                ""InstalledWorkloads"": [""maui-android"", ""aspire""]
+              }
+            }";
+
+            var mauiAndroidPack = new PackInfo(new WorkloadPackId("maui-android-pack"), "34.0", WorkloadPackKind.Sdk, "androidDir", "maui-android-pack");
+            var mauiIosPack = new PackInfo(new WorkloadPackId("maui-ios-pack"), "16.4", WorkloadPackKind.Framework, "iosDir", "maui-ios-pack");
+            var aspirePack = new PackInfo(new WorkloadPackId("aspire-pack"), "8.0", WorkloadPackKind.Library, "aspireDir", "aspire-pack");
+
+            IEnumerable<WorkloadManifestInfo> installedManifests = new List<WorkloadManifestInfo>() {
+                                                new WorkloadManifestInfo("microsoft.net.sdk.android", "34.0.0-rc.1", "androidDirectory", "8.0.100-rc.1"),
+                                                new WorkloadManifestInfo("microsoft.net.sdk.ios", "16.4.8825", "iosDirectory", "8.0.100-rc.1") };
+
+            var workloadResolver = new MockWorkloadResolver(
+                                        new string[] { "maui-android", "maui-ios", "aspire" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
+                                        installedManifests,
+                                        id => new List<WorkloadPackId>() { new WorkloadPackId(id.ToString() + "-pack") },
+                                        id => id.ToString().Contains("android") ? mauiAndroidPack :
+                                              id.ToString().Contains("ios") ? mauiIosPack :
+                                              id.ToString().Contains("aspire") ? aspirePack :
+                                              null);
+
+            IWorkloadResolverFactory mockResolverFactory = new MockWorkloadResolverFactory(
+                    Path.Combine(Path.GetTempPath(), "dotnetTestPath"),
+                    "7.0.0",
+                    workloadResolver,
+                    "userProfileDir");
+
+            MockPackWorkloadInstaller mockInstaller = new MockPackWorkloadInstaller(
+                installedWorkloads: new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios"), },
+                installedPacks: new List<PackInfo>() { mauiAndroidPack, mauiIosPack },
+                records: new List<WorkloadHistoryRecord>() { JsonSerializer.Deserialize<WorkloadHistoryRecord>(workloadHistoryRecord) })
+            {
+                WorkloadResolver = workloadResolver
+            };
+
+            IWorkloadManifestUpdater mockUpdater = new MockWorkloadManifestUpdater(resolver: workloadResolver);
+
+            WorkloadUpdateCommand update = new(
+                Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-history", "2" }),
+                Reporter.Output,
+                mockResolverFactory,
+                mockInstaller,
+                new MockNuGetPackageDownloader(),
+                mockUpdater);
+
+            mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios") });
+            mockInstaller.GarbageCollectionCalled.Should().BeFalse();
+            update.Execute();
+            mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("aspire") });
+            mockInstaller.GarbageCollectionCalled.Should().BeTrue();
+            mockInstaller.InstalledManifests.Select(m => m.manifestUpdate.ManifestId.ToString()).Should().BeEquivalentTo(new List<string>() { "microsoft.net.sdk.android", "microsoft.net.sdk.aspire" });
         }
 
         [Theory]
@@ -130,6 +214,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var sdkFeatureVersion = "6.0.100";
             var installingWorkload = "simple-workload";
 
+            //  Mock up a 5.0.1xx SDK install so that the installation records for that feature band won't be deleted
+            string dotnetDllPath = Path.Combine(dotnetRoot, "sdk", "5.0.110", "dotnet.dll");
+            Directory.CreateDirectory(Path.GetDirectoryName(dotnetDllPath));
+            File.Create(dotnetDllPath).Close();
+
             string installRoot = userLocal ? userProfileDir : dotnetRoot;
             if (userLocal)
             {
@@ -149,18 +238,30 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             foreach (var pack in workloadPacks)
             {
                 Directory.CreateDirectory(Path.Combine(packRecordDir, pack.Id, pack.Version));
-                File.Create(Path.Combine(packRecordDir, pack.Id, pack.Version, oldFeatureBand));
+                File.Create(Path.Combine(packRecordDir, pack.Id, pack.Version, oldFeatureBand)).Close();
             }
             Directory.CreateDirectory(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads"));
             Directory.CreateDirectory(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads"));
-            File.Create(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads", installingWorkload));
-            File.Create(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads", installingWorkload));
+            File.Create(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads", installingWorkload)).Close();
+            File.Create(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads", installingWorkload)).Close();
 
             // Update workload (without installing any workloads to this feature band)
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: workloadResolverFactory).Execute().Should().Be(0);
             var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-previous-sdk" });
             var updateCommand = new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
+            var installStatePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(new SdkFeatureBand(sdkFeatureVersion), installRoot), "default.json");
+            var oldInstallState = InstallStateContents.FromPath(installStatePath);
+            oldInstallState.Manifests = new Dictionary<string, string>()
+            {
+                {installingWorkload, $"6.0.102/{sdkFeatureVersion}" }
+            };
+            Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
+            File.WriteAllText(installStatePath, oldInstallState.ToString());
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
             updateCommand.Execute();
+            var newInstallState = InstallStateContents.FromPath(installStatePath);
+            newInstallState.Manifests.Should().BeNull();
 
             foreach (var pack in workloadPacks)
             {
@@ -188,6 +289,110 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             installer.CachePath.Should().BeNull();
             installer.InstalledPacks.Count.Should().Be(8);
             installer.InstalledPacks.Where(pack => pack.Id.ToString().Contains("Android")).Count().Should().Be(8);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void UpdateViaWorkloadSet(bool upgrade)
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory(identifier: upgrade.ToString());
+            string dotnetDir = Path.Combine(testDir.Path, "dotnet");
+            string userProfileDir = Path.Combine(testDir.Path, "userProfileDir");
+
+            var sdkVersion = "8.0.300";
+            var workloadSetVersion = "8.0.302";
+            var workloadSetContents = @"
+{
+""android"": ""2.3.4/8.0.200""
+}
+";
+            var nugetPackageDownloader = new MockNuGetPackageDownloader();
+            var workloadResolver = new MockWorkloadResolver([new WorkloadInfo(new WorkloadId("android"), string.Empty)], getPacks: id => [], installedManifests: []);
+            var workloadInstaller = new MockPackWorkloadInstaller(
+                dotnetDir,
+                installedWorkloads: [new WorkloadId("android")],
+                workloadSetContents: new Dictionary<string, string>() { { "8.0.302", workloadSetContents } })
+            {
+                WorkloadResolver = workloadResolver
+            };
+            var oldVersion = upgrade ? "2.3.2" : "2.3.6";
+            var workloadManifestUpdater = new MockWorkloadManifestUpdater(
+                manifestUpdates: [
+                    new ManifestUpdateWithWorkloads(new ManifestVersionUpdate(new ManifestId("android"), new ManifestVersion("2.3.4"), "8.0.200"), Enumerable.Empty<KeyValuePair<WorkloadId, WorkloadDefinition>>().ToDictionary())
+                ],
+                fromWorkloadSet: true, workloadSetVersion: workloadSetVersion);
+            var resolverFactory = new MockWorkloadResolverFactory(dotnetDir, sdkVersion, workloadResolver, userProfileDir);
+            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater);
+
+            var installStatePath = Path.Combine(dotnetDir, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkVersion, "InstallState", "default.json");
+            var contents = new InstallStateContents();
+            contents.UseWorkloadSets = true;
+
+            Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
+            File.WriteAllText(installStatePath, contents.ToString());
+            updateCommand.Execute();
+
+            workloadInstaller.InstalledManifests.Count.Should().Be(1);
+            workloadInstaller.InstalledManifests[0].manifestUpdate.NewVersion.ToString().Should().Be("2.3.4");
+        }
+
+        [Fact]
+        public void GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents()
+        {
+            string workloadSet1 = @"{
+""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet2 = @"{
+""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet3 = @"{
+""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.Maui"": ""14.5.92/9.0.100""
+}
+";
+            string workloadSet4 = @"{
+""Microsoft.NET.Sdk.iOS"": ""17.5.9/9.0.100"",
+""Microsoft.NET.Sdk.macOS"": ""14.5.93/9.0.100""
+}
+";
+            Dictionary<string, string> workloadSets = new()
+            {
+                { "9.0.100", workloadSet1 },
+                { "9.0.101", workloadSet2 },
+                { "9.0.102", workloadSet3 },
+                { "9.0.103", workloadSet4 }
+            };
+
+            var parseResult = Parser.Instance.Parse("dotnet workload update --version ios@17.5.9 macos@14.5.92");
+            MockPackWorkloadInstaller installer = new(workloadSetContents: workloadSets);
+            var testDirectory = _testAssetsManager.CreateTestDirectory(testName: "GivenWorkloadUpdateItFindsGreatestWorkloadSetWithSpecifiedComponents").Path;
+            WorkloadManifest iosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.iOS");
+            WorkloadManifest macosManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.macOS");
+            WorkloadManifest mauiManifest = WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui");
+            MockWorkloadResolver resolver = new([new WorkloadInfo(new WorkloadId("ios"), ""), new WorkloadInfo(new WorkloadId("macos"), ""), new WorkloadInfo(new WorkloadId("maui"), "")],
+                installedManifests: [
+                    new WorkloadManifestInfo("Microsoft.NET.Sdk.iOS", "17.4.3", Path.Combine(testDirectory, "iosManifest"), "9.0.100"),
+                    new WorkloadManifestInfo("Microsoft.NET.Sdk.macOS", "14.4.3", Path.Combine(testDirectory, "macosManifest"), "9.0.100"),
+                    new WorkloadManifestInfo("Microsoft.NET.Sdk.Maui", "14.4.3", Path.Combine(testDirectory, "mauiManifest"), "9.0.100")
+                    ],
+                getManifest: id => id.ToString().Equals("ios") ? iosManifest : id.ToString().Equals("macos") ? macosManifest : mauiManifest);
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.103.0"), new NuGetVersion("9.102.0"), new NuGetVersion("9.101.0"), new NuGetVersion("9.100.0")]);
+            WorkloadUpdateCommand command = new(
+                parseResult,
+                reporter: null,
+                workloadResolverFactory: new MockWorkloadResolverFactory(Path.Combine(testDirectory, "dotnet"), "9.0.100", resolver, userProfileDir: testDirectory),
+                workloadInstaller: installer,
+                nugetPackageDownloader: nugetPackageDownloader,
+                workloadManifestUpdater: new MockWorkloadManifestUpdater()
+                );
+            command.Execute();
+
+            installer.InstalledWorkloadSet.Version.Should().Be("9.0.101");
         }
 
         [Fact]
@@ -326,20 +531,22 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), existingSdkFeatureBand, new ManifestVersion("2.0.0"), newSdkFeatureBand), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("2.0.0"), newSdkFeatureBand), null),
                     };
             (var dotnetPath, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
-            updateCommand.UpdateWorkloads();
+            parseResult = Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]);
+            WorkloadConfigCommand configCommand = new(parseResult);
+            configCommand.Execute().Should().Be(0);
+            updateCommand.Execute()
+                .Should().Be(0);
 
             packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
             packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
             packInstaller.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewFeatureBand);
-            packInstaller.InstalledManifests[0].manifestUpdate.ExistingVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.ExistingVersion);
-            packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be(manifestsToUpdate[0].ManifestUpdate.ExistingFeatureBand);
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
 
-            var defaultJsonPath = Path.Combine(dotnetPath, "metadata", "workloads", "6.0.300", "InstallState", "default.json");
+            var defaultJsonPath = Path.Combine(dotnetPath, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), "6.0.300", "InstallState", "default.json");
             File.Exists(defaultJsonPath).Should().BeTrue();
             var json = JsonDocument.Parse(new FileStream(defaultJsonPath, FileMode.Open, FileAccess.Read), new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
             json.RootElement.Should().NotBeNull();
@@ -354,22 +561,20 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var manifestsToUpdate =
                 new ManifestUpdateWithWorkloads[]
                     {
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-1"), new ManifestVersion("1.0.0"), "6.0.300", new ManifestVersion("2.0.0"), "6.0.100"), null),
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-2"), new ManifestVersion("1.0.0"), "6.0.100", new ManifestVersion("2.0.0"), "6.0.300"), null),
-                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-3"), new ManifestVersion("1.0.0"), "5.0.100", new ManifestVersion("2.0.0"), "6.0.100"), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-1"), new ManifestVersion("2.0.0"), "6.0.100"), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-2"), new ManifestVersion("2.0.0"), "6.0.300"), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-3"), new ManifestVersion("2.0.0"), "6.0.100"), null),
                     };
             (_, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", installedFeatureBand: "6.0.300");
 
-            updateCommand.UpdateWorkloads();
+            updateCommand.Execute()
+                .Should().Be(0);
 
             packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
             packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
             packInstaller.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be("6.0.100");
             packInstaller.InstalledManifests[1].manifestUpdate.NewFeatureBand.Should().Be("6.0.300");
             packInstaller.InstalledManifests[2].manifestUpdate.NewFeatureBand.Should().Be("6.0.100");
-            packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be("6.0.300");
-            packInstaller.InstalledManifests[1].manifestUpdate.ExistingFeatureBand.Should().Be("6.0.100");
-            packInstaller.InstalledManifests[2].manifestUpdate.ExistingFeatureBand.Should().Be("5.0.100");
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
         }
 

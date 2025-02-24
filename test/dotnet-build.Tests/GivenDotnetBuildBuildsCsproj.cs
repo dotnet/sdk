@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
+using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
@@ -85,6 +88,24 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             var testAppName = "MSBuildTestApp";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
+
+            new DotnetBuildCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--no-restore")
+                .Should().Fail()
+                .And.HaveStdOutContaining("project.assets.json");
+        }
+
+        [Fact]
+        public void ItDoesNotImplicitlyRestoreFromResponseFileWithTheNoRestoreOption()
+        {
+            var testAppName = "MSBuildTestApp";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            string responseFilePath = Path.Combine(testInstance.Path, "Directory.Build.rsp");
+
+            File.WriteAllText(responseFilePath, @"-restore");
 
             new DotnetBuildCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
@@ -359,7 +380,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         static readonly List<string> nugetRoots = new()
         {
             TestContext.Current.NuGetCachePath,
-            Path.Combine(FileConstants.UserProfileFolder, ".dotnet", "NuGetFallbackFolder")
+            Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder")
         };
 
         static string RelativeNuGetPath(string absoluteNuGetPath)

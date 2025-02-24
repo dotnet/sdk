@@ -1,4 +1,17 @@
 <Project>
+
+  <PropertyGroup>
+    <!-- The FullNugetVersion.version file only gets produced in the initial build pass. -->
+    <RelativeBlobPathParent Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">Sdk/$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version').Trim())</RelativeBlobPathParent>
+    <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
+    <InternalCertificateId Condition="'$(InternalCertificateId)' == ''">MicrosoftDotNet500</InternalCertificateId>
+    <UseDotNetCertificate>true</UseDotNetCertificate>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Dlls from packages created for tests to consume -->
     <FileSignInfo Include="dotnet-dependency-context-test.dll" CertificateName="None" />
@@ -15,12 +28,14 @@
     <!-- Third party DLLs used by tests -->
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
     <FileSignInfo Include="Moq.dll" CertificateName="None" />
-    
+
     <!-- Binary test asset -->
     <FileSignInfo Include="testwpf.dll" CertificateName="None" />
 
     <!-- Files in the layout that should not be signed -->
     <FileSignInfo Include="apphost.exe" CertificateName="None" />
+    <FileSignInfo Include="comhost.dll" CertificateName="None" />
+    <FileSignInfo Include="singlefilehost.exe" CertificateName="None" />
 
     <!-- .ttf and .js files come in from some older aspnetcore packages (e.g. 2.1).
           These files in the 5.0 packages are NOT signed. When doing postbuild signing,
@@ -28,8 +43,13 @@
           pulled in from aspnetcore, and aspnetcore said not to sign them. This info is not
           available for the 2.1 packages, so we need to avoid signing these in this repo. -->
     <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
+    <FileExtensionSignInfo Include=".otf" CertificateName="None" />
     <FileExtensionSignInfo Remove=".js" />
     <FileExtensionSignInfo Include=".js" CertificateName="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FileExtensionSignInfo Include=".msi" CertificateName="$(InternalCertificateId)" />
   </ItemGroup>
 
   <!--
@@ -37,30 +57,63 @@
     are already signed. However, they must be signed with a 3rd party certificate.
   -->
   <ItemGroup>
-    <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="MessagePack.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="CommandLine.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="FluentAssertions.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="FluentAssertions.Core.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="FluentAssertions.Json.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Microsoft.3rdpartytools.MarkdownLog.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="xunit.performance.api.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="xunit.performance.core.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="xunit.performance.execution.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="3PartySHA2" />
-    <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="CommandLine.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="FluentAssertions.Core.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="FluentAssertions.Json.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Microsoft.3rdpartytools.MarkdownLog.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="xunit.performance.api.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="xunit.performance.core.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="xunit.performance.execution.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
 
   <!-- Filter out any test packages from ItemsToSign -->
   <ItemGroup>
-    <ItemsToSignPostBuild Remove="*tests*.nupkg" />
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <UseDotNetCertificate>true</UseDotNetCertificate>
-  </PropertyGroup>
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'true'">
+    <Artifact Include="$(ArtifactsPackagesDir)**\VS.Tools.*.nupkg;
+                       $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
+              IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
+              PublishFlatContainer="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" IsShipping="true" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.exe" IsShipping="true" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.deb" IsShipping="true" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.rpm" IsShipping="true" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" IsShipping="true" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" IsShipping="true" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.svg" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <!-- Only publish this file from windows x64 so that we don't end up with duplicates -->
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.swr" IsShipping="false" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.msi" IsShipping="false" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+
+    <!-- dotnet-toolset zips are added above for specific builds only. -->
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" Exclude="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.pkg" IsShipping="false" />
+
+    <Artifact Include="@(SdkArtifact)"
+              RelativeBlobPath="$(RelativeBlobPathParent)/%(Filename)%(Extension)">
+      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </Artifact>
+  </ItemGroup>
+
 </Project>

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -113,7 +115,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     foreach (var key in _nodeList)
                     {
                         var kvp = new KeyValuePair<TKey, TValue>(key, _cache[key].Value);
+#pragma warning disable CS9237 // 'yield return' should not be used in the body of a lock statement
                         yield return kvp;
+#pragma warning restore CS9237
                     }
                 }
             }

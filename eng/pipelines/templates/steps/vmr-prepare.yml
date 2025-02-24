@@ -1,0 +1,18 @@
+### These steps clone the VMR (https://github.com/dotnet/dotnet) into $(Agent.BuildDirectory)/vmr for installer
+
+parameters:
+- name: vmrBranch
+  displayName: dotnet/dotnet branch to use
+  type: string
+
+steps:
+  - checkout: vmr
+    displayName: Clone dotnet/dotnet
+    path: vmr
+    clean: true
+
+  - script: |
+      git checkout --track origin/${{ parameters.vmrBranch }}
+      echo "##vso[task.setvariable variable=vmrBranch]${{ parameters.vmrBranch }}"
+    displayName: Check out ${{ parameters.vmrBranch }}
+    workingDirectory: $(Agent.BuildDirectory)/vmr

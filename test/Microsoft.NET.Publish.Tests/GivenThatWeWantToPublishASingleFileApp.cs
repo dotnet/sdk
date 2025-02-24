@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
@@ -307,7 +309,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/runtime/issues/60308")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_supports_composite_r2r(bool extractAll)
@@ -552,6 +554,44 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
+        public void It_uses_appropriate_host_on_selfcontained_publish_with_no_build()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+            TestAsset testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            // Build will create app using apphost
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            // Publish without build should create app using singlefilehost
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+                .Execute(PublishSingleFile, "/p:NoBuild=true")
+                .Should()
+                .Pass();
+            string singleFilePath = Path.Combine(
+                GetPublishDirectory(publishCommand).FullName,
+                $"{testProject.Name}{Constants.ExeSuffix}");
+
+            // Make sure published app runs correctly
+            var command = new RunExeCommand(Log, singleFilePath);
+            command.Execute()
+                .Should()
+                .Pass()
+                .And.HaveStdOutContaining("Hello World");
+        }
+
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void It_rewrites_the_apphost_for_single_file_publish()
         {
             var publishCommand = GetPublishCommand();
@@ -755,14 +795,6 @@ class C
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("netcoreapp3.0", false, IncludeDefault)]
-        [InlineData("netcoreapp3.0", true, IncludeDefault)]
-        [InlineData("netcoreapp3.0", false, IncludePdb)]
-        [InlineData("netcoreapp3.0", true, IncludePdb)]
-        [InlineData("netcoreapp3.1", false, IncludeDefault)]
-        [InlineData("netcoreapp3.1", true, IncludeDefault)]
-        [InlineData("netcoreapp3.1", false, IncludePdb)]
-        [InlineData("netcoreapp3.1", true, IncludePdb)]
         [InlineData("net6.0", false, IncludeDefault)]
         [InlineData("net6.0", false, IncludeNative)]
         [InlineData("net6.0", false, IncludeAllContent)]
@@ -803,6 +835,43 @@ class C
                 .Pass()
                 .And
                 .HaveStdOutContaining("Hello World");
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_can_disable_cetcompat(bool? cetCompat)
+        {
+            string rid = "win-x64"; // CET compat support is currently only on Windows x64
+            var testProject = new TestProject()
+            {
+                Name = "CetCompat",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                RuntimeIdentifier = rid,
+                IsExe = true,
+            };
+            if (cetCompat.HasValue)
+            {
+                testProject.AdditionalProperties.Add("CetCompat", cetCompat.ToString());
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute(PublishSingleFile)
+                .Should()
+                .Pass();
+
+            DirectoryInfo publishDir = publishCommand.GetOutputDirectory(
+                targetFramework: testProject.TargetFrameworks,
+                runtimeIdentifier: rid);
+            string singleFilePath = Path.Combine(publishDir.FullName, $"{testProject.Name}.exe");
+            bool isCetCompatible = PeReaderUtils.IsCetCompatible(singleFilePath);
+
+            // CetCompat not set : enabled
+            // CetCompat = true  : enabled
+            // CetCompat = false : disabled
+            isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
         }
 
         [RequiresMSBuildVersionTheory("16.8.0")]

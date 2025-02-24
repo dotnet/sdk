@@ -22,8 +22,6 @@ namespace Microsoft.DotNet.Cli
             Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
         };
 
-        internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = new();
-
         public static readonly CliCommand InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
 
         // Subcommands
@@ -44,6 +42,7 @@ namespace Microsoft.DotNet.Cli
             PackageCommandParser.GetCommand(),
             ParseCommandParser.GetCommand(),
             PublishCommandParser.GetCommand(),
+            ReferenceCommandParser.GetCommand(),
             RemoveCommandParser.GetCommand(),
             RestoreCommandParser.GetCommand(),
             RunCommandParser.GetCommand(),
@@ -224,11 +223,11 @@ namespace Microsoft.DotNet.Cli
 
             private static void SetHelpCustomizations(HelpBuilder builder)
             {
-                foreach (var option in HelpDescriptionCustomizations.Keys)
+                foreach (var option in OptionForwardingExtensions.HelpDescriptionCustomizations.Keys)
                 {
                     Func<HelpContext, string> descriptionCallback = (HelpContext context) =>
                     {
-                        foreach (var (command, helpText) in HelpDescriptionCustomizations[option])
+                        foreach (var (command, helpText) in OptionForwardingExtensions.HelpDescriptionCustomizations[option])
                         {
                             if (context.ParseResult.CommandResult.Command.Equals(command))
                             {
@@ -239,6 +238,8 @@ namespace Microsoft.DotNet.Cli
                     };
                     builder.CustomizeSymbol(option, secondColumnText: descriptionCallback);
                 }
+
+                builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CommonLocalizableStrings.ShortWorkloadSearchVersionDescription);
             }
 
             public void additionalOption(HelpContext context)
@@ -335,7 +336,7 @@ namespace Microsoft.DotNet.Cli
                     else if (command.Name.Equals(AddPackageParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
                     {
                         // Don't show package completions in help
-                        AddPackageParser.CmdPackageArgument.CompletionSources.Clear();
+                        PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
                     }
 
                     base.Write(context);

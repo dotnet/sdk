@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <!-- Use the repo root build script -->
+    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
+
+    <IsSpecialFlavorBuild Condition="'$(PgoInstrument)' == 'true'">true</IsSpecialFlavorBuild>
+    <!--
+      When building a vertical where we explicitly request using the Mono runtime, only build the Mono runtime.
+      This is generally used in source-build scenarios where the target RID is only supported on Mono
+      or Mono-LLVMAOT runtime pack builds.
+    -->
+    <IsSpecialFlavorBuild Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">true</IsSpecialFlavorBuild>
+
+    <!-- If this build is not a "special flavor" build, build everything that can be built for this target. -->
+    <BuildArgs Condition="'$(IsSpecialFlavorBuild)' != 'true'">$(BuildArgs) /p:DotNetBuildAllRuntimePacks=true</BuildArgs>
+
+    <!-- Pass the properties for this special build flavor down to the runtime repo build. -->
+    <BuildArgs Condition="'$(DotNetBuildRuntimeWasmEnableThreads)' == 'true'">$(BuildArgs) /p:DotNetBuildRuntimeWasmEnableThreads=true</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildMonoEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoEnableLLVM=$(DotNetBuildMonoEnableLLVM)</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildMonoAOTEnableLLVM)' != ''">$(BuildArgs) /p:DotNetBuildMonoAOTEnableLLVM=$(DotNetBuildMonoAOTEnableLLVM)</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildMonoBundleLLVMOptimizer)' != ''">$(BuildArgs) /p:DotNetBuildMonoBundleLLVMOptimizer=$(DotNetBuildMonoBundleLLVMOptimizer)</BuildArgs>
+    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)pgoinstrument</BuildArgs>
+
+    <BuildArgs Condition="'$(UseSystemLibs)' != ''">$(BuildArgs) /p:UseSystemLibs=$(UseSystemLibs)</BuildArgs>
+
+    <!-- When we're actually doing signing and the ESRP tool is available, forward down the path to the repo builds. -->
+    <BuildArgs Condition="'$(Sign)' == 'true' and '$(ForceDryRunSigning)' != 'true' and '$(DotNetEsrpToolPath)' != ''">$(BuildArgs) /p:DotNetEsrpToolPath=$(DotNetEsrpToolPath)</BuildArgs>
+
+    <!-- Needed until https://github.com/dotnet/runtime/issues/109329 is fixed. -->
+    <BuildArgs>$(BuildArgs) /p:NetCoreAppToolCurrentVersion=10.0</BuildArgs>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="cecil" />
+    <RepositoryReference Include="command-line-api" />
+    <RepositoryReference Include="emsdk" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_X" Version="%24(MicrosoftCodeAnalysisVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_4" Version="%24(MicrosoftCodeAnalysisVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_8" Version="%24(MicrosoftCodeAnalysisVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisVersion)" />
+  </ItemGroup>
+
+</Project>

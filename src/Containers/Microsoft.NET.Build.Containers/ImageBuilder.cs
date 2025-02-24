@@ -3,17 +3,21 @@
 
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
-
 
 /// <summary>
 /// The class builds new image based on the base image.
 /// </summary>
 internal sealed class ImageBuilder
 {
+    // a snapshot of the manifest that this builder is based on
+    private readonly ManifestV2 _baseImageManifest;
+
+    // the mutable internal manifest that we're building by modifying the base and applying customizations
     private readonly ManifestV2 _manifest;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
@@ -27,13 +31,15 @@ internal sealed class ImageBuilder
     public ImageConfig BaseImageConfig => _baseImageConfig;
 
     /// <summary>
-    /// MediaType of the output manifest.
+    /// MediaType of the output manifest. By default, this will be the same as the base image manifest.
     /// </summary>
-    public string ManifestMediaType => _manifest.MediaType; // output the same media type as the base image manifest.
+    public string ManifestMediaType { get; set; }
 
-    internal ImageBuilder(ManifestV2 manifest, ImageConfig baseImageConfig, ILogger logger)
+    internal ImageBuilder(ManifestV2 manifest, string manifestMediaType, ImageConfig baseImageConfig, ILogger logger)
     {
-        _manifest = manifest;
+        _baseImageManifest = manifest;
+        _manifest = new ManifestV2() { SchemaVersion = manifest.SchemaVersion, Config = manifest.Config, Layers = new(manifest.Layers), MediaType = manifest.MediaType };
+        ManifestMediaType = manifestMediaType;
         _baseImageConfig = baseImageConfig;
         _logger = logger;
     }
@@ -42,6 +48,9 @@ internal sealed class ImageBuilder
     /// Gets a value indicating whether the base image is has a Windows operating system.
     /// </summary>
     public bool IsWindows => _baseImageConfig.IsWindows;
+
+    // For tests
+    internal string ManifestConfigDigest => _manifest.Config.digest;
 
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
@@ -60,12 +69,21 @@ internal sealed class ImageBuilder
         ManifestConfig newManifestConfig = _manifest.Config with
         {
             digest = imageDigest,
-            size = imageSize
+            size = imageSize,
+            mediaType = ManifestMediaType switch
+            {
+                SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
+                SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
+                _ => SchemaTypes.OciImageConfigV1 // opinion - defaulting to modern here, but really this should never happen
+            }
         };
 
-        ManifestV2 newManifest = _manifest with
+        ManifestV2 newManifest = new ManifestV2()
         {
-            Config = newManifestConfig
+            Config = newManifestConfig,
+            SchemaVersion = _manifest.SchemaVersion,
+            MediaType = ManifestMediaType,
+            Layers = _manifest.Layers
         };
 
         return new BuiltImage()
@@ -73,8 +91,10 @@ internal sealed class ImageBuilder
             Config = imageJsonStr,
             ImageDigest = imageDigest,
             ImageSha = imageSha,
-            ImageSize = imageSize,
-            Manifest = newManifest,
+            Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
+            ManifestDigest = newManifest.GetDigest(),
+            ManifestMediaType = ManifestMediaType,
+            Layers = _manifest.Layers
         };
     }
 
@@ -85,6 +105,11 @@ internal sealed class ImageBuilder
     {
         _manifest.Layers.Add(new(l.Descriptor.MediaType, l.Descriptor.Size, l.Descriptor.Digest, l.Descriptor.Urls));
         _baseImageConfig.AddLayer(l);
+    }
+
+    internal void AddBaseImageDigestLabel()
+    {
+        AddLabel("org.opencontainers.image.base.digest", _baseImageManifest.GetDigest());
     }
 
     /// <summary>

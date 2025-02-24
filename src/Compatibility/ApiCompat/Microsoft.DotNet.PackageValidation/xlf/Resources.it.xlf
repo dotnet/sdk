@@ -9,12 +9,12 @@
       </trans-unit>
       <trans-unit id="BaselineTargetFrameworkIgnoredButPresentInCurrentPackage">
         <source>Target framework '{0}' in the baseline package is ignored but exists in the current package.</source>
-        <target state="new">Target framework '{0}' in the baseline package is ignored but exists in the current package.</target>
+        <target state="translated">Il framework di destinazione '{0}' nel pacchetto di base viene ignorato ma esiste nel pacchetto corrente.</target>
         <note />
       </trans-unit>
       <trans-unit id="BaselineTargetFrameworksIgnored">
         <source>Target frameworks '{0}' were ignored from the baseline package.</source>
-        <target state="new">Target frameworks '{0}' were ignored from the baseline package.</target>
+        <target state="translated">I framework di destinazione '{0}' sono stati ignorati dal pacchetto di base.</target>
         <note />
       </trans-unit>
       <trans-unit id="EmptyPackagePath">

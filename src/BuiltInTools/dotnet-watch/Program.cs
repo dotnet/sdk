@@ -3,17 +3,13 @@
 
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
-using Microsoft.Build.Graph;
 using Microsoft.Build.Locator;
-using Microsoft.DotNet.Watcher.Internal;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
-using IConsole = Microsoft.Extensions.Tools.Internal.IConsole;
 
-namespace Microsoft.DotNet.Watcher
+namespace Microsoft.DotNet.Watch
 {
-    internal sealed class Program(IConsole console, IReporter reporter, CommandLineOptions options, EnvironmentOptions environmentOptions)
+    internal sealed class Program(IConsole console, IReporter reporter, ProjectOptions rootProjectOptions, CommandLineOptions options, EnvironmentOptions environmentOptions)
     {
         public static async Task<int> Main(string[] args)
         {
@@ -35,19 +31,19 @@ namespace Microsoft.DotNet.Watcher
                 // Register listeners that load Roslyn-related assemblies from the `Roslyn/bincore` directory.
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);
 
-                var console = PhysicalConsole.Singleton;
-                var verbose = EnvironmentVariables.VerboseCliOutput;
                 var environmentOptions = EnvironmentOptions.FromEnvironment();
 
-                var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis), console.Out, out var errorCode);
-                if (options == null)
-                {
-                    // an error reported or help printed:
-                    return errorCode;
-                }
+                var program = TryCreate(
+                    args,
+                    new PhysicalConsole(environmentOptions.TestFlags),
+                    environmentOptions,
+                    EnvironmentVariables.VerboseCliOutput,
+                    out var exitCode);
 
-                var reporter = new ConsoleReporter(console, verbose || options.Verbose, options.Quiet, environmentOptions.SuppressEmojis);
-                var program = new Program(console, reporter, options, environmentOptions);
+                if (program == null)
+                {
+                    return exitCode;
+                }
 
                 return await program.RunAsync();
             }
@@ -59,232 +55,167 @@ namespace Microsoft.DotNet.Watcher
             }
         }
 
+        private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, bool verbose, out int errorCode)
+        {
+            var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis), console.Out, out errorCode);
+            if (options == null)
+            {
+                // an error reported or help printed:
+                return null;
+            }
+
+            var reporter = new ConsoleReporter(console, verbose || options.GlobalOptions.Verbose, options.GlobalOptions.Quiet, environmentOptions.SuppressEmojis);
+            return TryCreate(options, console, environmentOptions, reporter, out errorCode);
+        }
+
+        // internal for testing
+        internal static Program? TryCreate(CommandLineOptions options, IConsole console, EnvironmentOptions environmentOptions, IReporter reporter, out int errorCode)
+        {
+            var workingDirectory = environmentOptions.WorkingDirectory;
+            reporter.Verbose($"Working directory: '{workingDirectory}'");
+
+            if (environmentOptions.TestFlags != TestFlags.None)
+            {
+                reporter.Verbose($"Test flags: {environmentOptions.TestFlags}");
+            }
+
+            string projectPath;
+            try
+            {
+                projectPath = MsBuildProjectFinder.FindMsBuildProject(workingDirectory, options.ProjectPath);
+            }
+            catch (FileNotFoundException ex)
+            {
+                reporter.Error(ex.Message);
+                errorCode = 1;
+                return null;
+            }
+
+            var rootProjectOptions = options.GetProjectOptions(projectPath, workingDirectory);
+            errorCode = 0;
+            return new Program(console, reporter, rootProjectOptions, options, environmentOptions);
+        }
+
+        // internal for testing
         internal async Task<int> RunAsync()
         {
-            var cancellationSource = new CancellationTokenSource();
-            var cancellationToken = cancellationSource.Token;
-            console.CancelKeyPress += OnCancelKeyPress;
+            var shutdownCancellationSourceDisposed = false;
+            var shutdownCancellationSource = new CancellationTokenSource();
+            var shutdownCancellationToken = shutdownCancellationSource.Token;
+
+            console.KeyPressed += key =>
+            {
+                if (!shutdownCancellationSourceDisposed && key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key == ConsoleKey.C)
+                {
+                    // if we already canceled, we force immediate shutdown:
+                    var forceShutdown = shutdownCancellationSource.IsCancellationRequested;
+
+                    if (!forceShutdown)
+                    {
+                        reporter.Report(MessageDescriptor.ShutdownRequested);
+                        shutdownCancellationSource.Cancel();
+                    }
+                    else
+                    {
+                        Environment.Exit(0);
+                    }
+                }
+            };
 
             try
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (shutdownCancellationToken.IsCancellationRequested)
                 {
                     return 1;
                 }
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(cancellationToken);
+                    return await ListFilesAsync(shutdownCancellationToken);
                 }
-                else
-                {
-                    return await RunAsync(cancellationToken);
-                }
+
+                var watcher = CreateWatcher(runtimeProcessLauncherFactory: null);
+                await watcher.WatchAsync(shutdownCancellationToken);
+                return 0;
+            }
+            catch (OperationCanceledException) when (shutdownCancellationToken.IsCancellationRequested)
+            {
+                // Ctrl+C forced an exit
+                return 0;
             }
             catch (Exception ex)
             {
-                if (ex is TaskCanceledException || ex is OperationCanceledException)
-                {
-                    // swallow when only exception is the CTRL+C forced an exit
-                    return 0;
-                }
-
                 reporter.Error(ex.ToString());
                 reporter.Error("An unexpected error occurred");
                 return 1;
             }
             finally
             {
-                console.CancelKeyPress -= OnCancelKeyPress;
-                cancellationSource.Dispose();
-            }
-
-            void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs args)
-            {
-                // suppress CTRL+C on the first press
-                args.Cancel = !cancellationSource.IsCancellationRequested;
-
-                if (args.Cancel)
-                {
-                    reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.", emoji: "🛑");
-                }
-
-                cancellationSource.Cancel();
+                shutdownCancellationSourceDisposed = true;
+                shutdownCancellationSource.Dispose();
             }
         }
 
-        private async Task<int> RunAsync(CancellationToken cancellationToken)
+        // internal for testing
+        internal Watcher CreateWatcher(IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
         {
-            string workingDirectory = environmentOptions.WorkingDirectory;
-            reporter.Verbose($"Working directory: '{workingDirectory}'");
-
-            string projectFile;
-            try
-            {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(workingDirectory, options.Project);
-            }
-            catch (FileNotFoundException ex)
-            {
-                reporter.Error(ex.Message);
-                return 1;
-            }
-
-            var fileSetFactory = new MsBuildFileSetFactory(
-                environmentOptions,
-                reporter,
-                projectFile,
-                options.TargetFramework,
-                options.BuildProperties,
-                outputSink: null,
-                trace: true);
-
             if (environmentOptions.IsPollingEnabled)
             {
                 reporter.Output("Polling file watcher is enabled");
             }
 
-            var projectDirectory = Path.GetDirectoryName(projectFile);
-            Debug.Assert(projectDirectory != null);
-
-            var projectGraph = TryReadProject(projectFile, options);
+            var fileSetFactory = new MSBuildFileSetFactory(
+                rootProjectOptions.ProjectPath,
+                rootProjectOptions.BuildArguments,
+                environmentOptions,
+                reporter);
 
             bool enableHotReload;
-            if (options.Command != "run")
+            if (rootProjectOptions.Command != "run")
             {
-                reporter.Verbose($"Command '{options.Command}' does not support Hot Reload.");
+                reporter.Verbose($"Command '{rootProjectOptions.Command}' does not support Hot Reload.");
                 enableHotReload = false;
             }
-            else if (options.NoHotReload)
+            else if (options.GlobalOptions.NoHotReload)
             {
                 reporter.Verbose("Hot Reload disabled by command line switch.");
                 enableHotReload = false;
             }
-            else if (projectGraph is null || !IsHotReloadSupported(projectGraph))
-            {
-                reporter.Verbose("Project does not support Hot Reload.");
-                enableHotReload = false;
-            }
             else
             {
-                reporter.Verbose("Watching with Hot Reload.");
+                reporter.Report(MessageDescriptor.WatchingWithHotReload);
                 enableHotReload = true;
             }
 
-            var launchProfile = (options.NoLaunchProfile == true ? null : LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, options.LaunchProfileName, reporter)) ?? new();
-
             var context = new DotNetWatchContext
             {
-                ProjectGraph = projectGraph,
                 Reporter = reporter,
-                LaunchSettingsProfile = launchProfile,
-                Options = options,
+                Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
+                RootProjectOptions = rootProjectOptions,
             };
 
-            var processSpec = new ProcessSpec
-            {
-                WorkingDirectory = workingDirectory,
-                Arguments = options.LaunchProcessArguments,
-                EnvironmentVariables =
-                {
-                    [EnvironmentVariables.Names.DotnetWatch] = "1",
-                    [EnvironmentVariables.Names.DotnetLaunchProfile] = launchProfile.LaunchProfileName ?? string.Empty
-                }
-            };
-
-            if (enableHotReload)
-            {
-                var watcher = new HotReloadDotNetWatcher(context, console, fileSetFactory);
-                await watcher.WatchAsync(processSpec, cancellationToken);
-            }
-            else
-            {
-                var watcher = new DotNetWatcher(context, fileSetFactory);
-                await watcher.WatchAsync(processSpec, cancellationToken);
-            }
-
-            return 0;
-        }
-
-        private ProjectGraph? TryReadProject(string project, CommandLineOptions options)
-        {
-            var globalOptions = new Dictionary<string, string>();
-            if (options.TargetFramework != null)
-            {
-                globalOptions.Add("TargetFramework", options.TargetFramework);
-            }
-
-            if (options.BuildProperties != null)
-            {
-                foreach (var (name, value) in options.BuildProperties)
-                {
-                    globalOptions[name] = value;
-                }
-            }
-
-            try
-            {
-                return new ProjectGraph(project, globalOptions);
-            }
-            catch (Exception ex)
-            {
-                reporter.Verbose("Reading the project instance failed.");
-                reporter.Verbose(ex.ToString());
-            }
-
-            return null;
-        }
-
-        private static bool IsHotReloadSupported(ProjectGraph projectGraph)
-        {
-            var projectInstance = projectGraph.EntryPointNodes.FirstOrDefault()?.ProjectInstance;
-            if (projectInstance is null)
-            {
-                return false;
-            }
-
-            var projectCapabilities = projectInstance.GetItems("ProjectCapability");
-            foreach (var item in projectCapabilities)
-            {
-                if (item.EvaluatedInclude == "SupportsHotReload")
-                {
-                    return true;
-                }
-            }
-            return false;
+            return enableHotReload
+                ? new HotReloadDotNetWatcher(context, console, fileSetFactory, runtimeProcessLauncherFactory)
+                : new DotNetWatcher(context, fileSetFactory);
         }
 
         private async Task<int> ListFilesAsync(CancellationToken cancellationToken)
         {
-            // TODO multiple projects should be easy enough to add here
-            string projectFile;
-            try
-            {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(environmentOptions.WorkingDirectory, options.Project);
-            }
-            catch (FileNotFoundException ex)
-            {
-                reporter.Error(ex.Message);
-                return 1;
-            }
-
-            var fileSetFactory = new MsBuildFileSetFactory(
+            var fileSetFactory = new MSBuildFileSetFactory(
+                rootProjectOptions.ProjectPath,
+                rootProjectOptions.BuildArguments,
                 environmentOptions,
-                reporter,
-                projectFile,
-                options.TargetFramework,
-                options.BuildProperties,
-                outputSink: null,
-                trace: false);
+                reporter);
 
-            if (await fileSetFactory.TryCreateAsync(cancellationToken) is not (_, var files))
+            if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)
             {
                 return 1;
             }
 
-            foreach (var file in files)
+            foreach (var (filePath, _) in evaluationResult.Files.OrderBy(e => e.Key))
             {
-                console.Out.WriteLine(file.FilePath);
+                console.Out.WriteLine(filePath);
             }
 
             return 0;

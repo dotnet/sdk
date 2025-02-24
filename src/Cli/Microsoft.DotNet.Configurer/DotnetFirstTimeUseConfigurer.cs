@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Configurer
         private readonly IAspNetCoreCertificateGenerator _aspNetCoreCertificateGenerator;
         private readonly IFileSentinel _toolPathSentinel;
         private readonly IEnvironmentPath _pathAdder;
-        private readonly Dictionary<string, double> _performanceMeasurements;
+        private readonly Dictionary<string, double>? _performanceMeasurements;
 
         public DotnetFirstTimeUseConfigurer(
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel,
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Configurer
             DotnetFirstRunConfiguration dotnetFirstRunConfiguration,
             IReporter reporter,
             IEnvironmentPath pathAdder,
-            Dictionary<string, double> performanceMeasurements = null)
+            Dictionary<string, double>? performanceMeasurements = null)
         {
             _firstTimeUseNoticeSentinel = firstTimeUseNoticeSentinel;
             _aspNetCertificateSentinel = aspNetCertificateSentinel;
@@ -83,14 +83,11 @@ namespace Microsoft.DotNet.Configurer
 
                     if (canShowFirstUseMessages)
                     {
-                        var aspNetCertMessage = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
-                            // The instructions in this message only apply to Windows and MacOS.
-                            LocalizableStrings.FirstTimeMessageAspNetCertificate :
-                            // The instructions in this message only apply to Linux (various distros).
-                            // OSPlatform.FreeBSD would also see this message, which is acceptable since we have no specific FreeBSD instructions.
-                            LocalizableStrings.FirstTimeMessageAspNetCertificateLinux;
+                        // This message is slightly misleading for (e.g.) FreeBSD, which doesn't officially
+                        // support `dotnet dev-certs https --trust`, but the link in the message should help
+                        // users find the right steps for their platform.
                         _reporter.WriteLine();
-                        _reporter.WriteLine(aspNetCertMessage);
+                        _reporter.WriteLine(LocalizableStrings.FirstTimeMessageAspNetCertificate);
                     }
                 }
             }

@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--no-incremental", "-o", "myoutput", "-r", "myruntime", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
                                   "-target:Rebuild -property:RuntimeIdentifier=myruntime -property:_CommandLineDefinedRuntimeIdentifier=true -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild")]
         [InlineData(new string[] { "/t:CustomTarget" }, "/t:CustomTarget")]
-        [InlineData(new string[] { "--disable-build-servers" }, "-p:UseRazorBuildServer=false -p:UseSharedCompilation=false /nodeReuse:false")]
+        [InlineData(new string[] { "--disable-build-servers" }, "--property:UseRazorBuildServer=false --property:UseSharedCompilation=false /nodeReuse:false")]
         public void MsbuildInvocationIsCorrect(string[] args, string expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -56,15 +56,15 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [Theory]
-        [InlineData(new string[] { "-f", "tfm" }, "-target:Restore", "-property:TargetFramework=tfm")]
-        [InlineData(new string[] { "-p:TargetFramework=tfm" }, "-target:Restore", "--property:TargetFramework=tfm")]
-        [InlineData(new string[] { "/p:TargetFramework=tfm" }, "-target:Restore", "--property:TargetFramework=tfm")]
-        [InlineData(new string[] { "-t:Run", "-f", "tfm" }, "-target:Restore", "-property:TargetFramework=tfm -t:Run")]
-        [InlineData(new string[] { "/t:Run", "-f", "tfm" }, "-target:Restore", "-property:TargetFramework=tfm /t:Run")]
+        [InlineData(new string[] { "-f", "tfm" }, "-target:Restore -tlp:verbosity=quiet", "-property:TargetFramework=tfm")]
+        [InlineData(new string[] { "-p:TargetFramework=tfm" }, "-target:Restore -tlp:verbosity=quiet", "--property:TargetFramework=tfm")]
+        [InlineData(new string[] { "/p:TargetFramework=tfm" }, "-target:Restore -tlp:verbosity=quiet", "--property:TargetFramework=tfm")]
+        [InlineData(new string[] { "-t:Run", "-f", "tfm" }, "-target:Restore -tlp:verbosity=quiet", "-property:TargetFramework=tfm -t:Run")]
+        [InlineData(new string[] { "/t:Run", "-f", "tfm" }, "-target:Restore -tlp:verbosity=quiet", "-property:TargetFramework=tfm /t:Run")]
         [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
-                                  "-target:Restore -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild",
+                                  "-target:Restore -tlp:verbosity=quiet -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild",
                                   "-property:TargetFramework=tfm -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild")]
-        [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" }, "-target:Restore -nologo -verbosity:quiet", "-property:TargetFramework=tfm -getItem:Compile -getProperty:TargetFramework -getTargetResult:Build")]
+        [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" }, "-target:Restore -tlp:verbosity=quiet -nologo -verbosity:quiet", "-property:TargetFramework=tfm -getItem:Compile -getProperty:TargetFramework -getTargetResult:Build")]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
             string[] args,
             string expectedAdditionalArgsForRestore,

@@ -1,40 +1,44 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Testing;
-using Microsoft.DotNet.Watcher.Tools;
-using Microsoft.Extensions.Tools.Internal;
+#nullable disable
 
-namespace Microsoft.DotNet.Watcher.Tests
+namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class ProgramTests : DotNetWatchTestBase
+    public class ProgramTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        public ProgramTests(ITestOutputHelper logger)
-            : base(logger)
-        {
-        }
-
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux, Skip = "https://github.com/dotnet/aspnetcore/issues/23394")]
+        [Fact]
         public async Task ConsoleCancelKey()
         {
-            var console = new TestConsole(Logger);
             var testAsset = TestAssets.CopyTestAsset("WatchKitchenSink")
-                .WithSource()
-                .Path;
+                .WithSource();
 
-            var reporter = new ConsoleReporter(console, verbose: true, quiet: false, suppressEmojis: false);
-            var options = CommandLineOptions.Parse(["run"], reporter, console.Out, out var _);
-            var app = new Program(console, reporter, options, new EnvironmentOptions(WorkingDirectory: testAsset, MuxerPath: ""));
+            var console = new TestConsole(Logger);
+            var reporter = new TestReporter(Logger);
 
-            var run = app.RunAsync();
+            var watching = reporter.RegisterSemaphore(MessageDescriptor.WatchingWithHotReload);
+            var shutdownRequested = reporter.RegisterSemaphore(MessageDescriptor.ShutdownRequested);
 
-            await console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
-            console.ConsoleCancelKey();
+            var program = Program.TryCreate(
+                TestOptions.GetCommandLineOptions(["--verbose"]),
+                console,
+                TestOptions.GetEnvironmentOptions(workingDirectory: testAsset.Path, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset),
+                reporter,
+                out var errorCode);
 
-            var exitCode = await run.TimeoutAfter(TimeSpan.FromSeconds(30));
+            Assert.Equal(0, errorCode);
+            Assert.NotNull(program);
 
-            Assert.Contains("Shutdown requested. Press Ctrl+C again to force exit.", console.GetOutput());
+            var run = program.RunAsync();
+
+            await watching.WaitAsync();
+
+            console.PressKey(new ConsoleKeyInfo('C', ConsoleKey.C, shift: false, alt: false, control: true));
+
+            var exitCode = await run;
             Assert.Equal(0, exitCode);
+
+            await shutdownRequested.WaitAsync();
         }
 
         [Theory]
@@ -87,16 +91,15 @@ namespace Microsoft.DotNet.Watcher.Tests
             [
                 "--no-hot-reload",
                 "run",
-                "-f",         // dotnet watch does not recognize this arg -> dotnet run arg
+                "-f",
                 "net6.0",
                 "--property:AssemblyVersion=1.2.3.4",
                 "--property",
                 "AssemblyTitle= | A=B'\tC | ",
-                "--",         // the following args are not dotnet watch args
-                "-v",         // dotnet run arg
+                "-v",
                 "minimal",
-                "--",         // the following args are not dotnet run args
-                "-v",         // application arg
+                "--",         // the following args are application args
+                "-v",         
             ]);
 
             Assert.Equal("-v", await App.AssertOutputLineStartsWith("Arguments = "));
@@ -192,16 +195,21 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.Start(testAsset, ["--verbose", "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
-            await App.AssertOutputLineEquals("The following Tests are available:");
-            await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            App.AssertOutputContains("The following Tests are available:");
+            App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
+            App.Process.ClearOutput();
 
             // update file:
             var testFile = Path.Combine(testAsset.Path, "UnitTest1.cs");
             var content = File.ReadAllText(testFile, Encoding.UTF8);
             File.WriteAllText(testFile, content.Replace("VSTestXunitPassTest", "VSTestXunitPassTest2"), Encoding.UTF8);
 
-            await App.AssertOutputLineEquals("The following Tests are available:");
-            await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            App.AssertOutputContains("The following Tests are available:");
+            App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
         }
 
         [Fact]
@@ -210,7 +218,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("XunitMulti")
                 .WithSource();
 
-            App.Start(testAsset, ["--verbose", "--framework", ToolsetInfo.CurrentTargetFramework, "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
+            App.Start(testAsset, ["--verbose", "test", "--framework", ToolsetInfo.CurrentTargetFramework, "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
             await App.AssertOutputLineEquals("The following Tests are available:");
             await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitFailTestNetCoreApp");
@@ -224,7 +232,115 @@ namespace Microsoft.DotNet.Watcher.Tests
 
             App.Start(testAsset, ["--verbose", "--property", "TestProperty=123", "build", "/t:TestTarget"]);
 
-            await App.AssertOutputLine(line => line.Contains("warning : The value of property is '123'", StringComparison.Ordinal));
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            // evaluation affected by -c option:
+            Assert.Contains("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
+
+            App.AssertOutputContains("dotnet watch ⌚ Command 'build' does not support Hot Reload.");
+            App.AssertOutputContains("dotnet watch ⌚ Command 'build' does not support browser refresh.");
+            App.AssertOutputContains("warning : The value of property is '123'");
+        }
+
+        [Fact]
+        public async Task MSBuildCommand()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            App.Start(testAsset, ["--verbose", "/p:TestProperty=123", "msbuild", "/t:TestTarget"]);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            // TestProperty is not passed to evaluation since msbuild command doesn't include it in forward options:
+            Assert.DoesNotContain("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
+
+            App.AssertOutputContains("dotnet watch ⌚ Command 'msbuild' does not support Hot Reload.");
+            App.AssertOutputContains("dotnet watch ⌚ Command 'msbuild' does not support browser refresh.");
+            App.AssertOutputContains("warning : The value of property is '123'");
+        }
+
+        [Fact]
+        public async Task PackCommand()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            App.Start(testAsset, ["--verbose", "pack", "-c", "Release"]);
+
+            var packagePath = Path.Combine(testAsset.Path, "bin", "Release", "WatchNoDepsApp.1.0.0.nupkg");
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            // evaluation affected by -c option:
+            Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
+
+            App.AssertOutputContains("dotnet watch ⌚ Command 'pack' does not support Hot Reload.");
+            App.AssertOutputContains("dotnet watch ⌚ Command 'pack' does not support browser refresh.");
+            App.AssertOutputContains($"Successfully created package '{packagePath}'");
+        }
+
+        [Fact]
+        public async Task PublishCommand()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            App.Start(testAsset, ["--verbose", "publish", "-c", "Release"]);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            // evaluation affected by -c option:
+            Assert.Contains("-property:Configuration=Release", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
+            
+            App.AssertOutputContains("dotnet watch ⌚ Command 'publish' does not support Hot Reload.");
+            App.AssertOutputContains("dotnet watch ⌚ Command 'publish' does not support browser refresh.");
+
+            App.AssertOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
+        }
+
+        [Fact]
+        public async Task FormatCommand()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            App.DotnetWatchArgs.Clear();
+            App.Start(testAsset, ["--verbose", "format", "--verbosity", "detailed"]);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+
+            App.AssertOutputContains("dotnet watch ⌚ Command 'format' does not support Hot Reload.");
+            App.AssertOutputContains("dotnet watch ⌚ Command 'format' does not support browser refresh.");
+
+            App.AssertOutputContains("format --verbosity detailed");
+            App.AssertOutputContains("Format complete in");
+        }
+
+        [Fact]
+        public async Task ProjectGraphLoadFailure()
+        {
+            var testAsset = TestAssets
+                .CopyTestAsset("WatchAppWithProjectDeps")
+                .WithSource()
+                .WithProjectChanges((path, proj) =>
+                {
+                    if (Path.GetFileName(path) == "App.WithDeps.csproj")
+                    {
+                        proj.Root.Descendants()
+                            .Single(e => e.Name.LocalName == "ItemGroup")
+                            .Add(XElement.Parse("""
+                            <ProjectReference Include="NonExistentDirectory\X.csproj" />
+                            """));
+                    }
+                });
+
+            App.Start(testAsset, [], "AppWithDeps");
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Fix the error to continue or press Ctrl+C to exit.");
+
+            App.AssertOutputContains(@"dotnet watch ⌚ Failed to load project graph.");
+            App.AssertOutputContains($"dotnet watch ❌ The project file could not be loaded. Could not find a part of the path '{Path.Combine(testAsset.Path, "AppWithDeps", "NonExistentDirectory", "X.csproj")}'");
         }
     }
 }

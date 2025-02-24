@@ -13,7 +13,7 @@ namespace Microsoft.NET.TestFramework.Utilities
             const int CROSSGEN_FLAG = 4;
             bool isCrossgened = false;
 
-            if (peReader.HasMetadata)
+            if (peReader.HasMetadata && peReader.PEHeaders.CorHeader is not null)
             {
                 // 4 is the magic numbers that is set in the CLR header's flags when crossgened.
                 isCrossgened = ((int)peReader.PEHeaders.CorHeader.Flags & CROSSGEN_FLAG) == CROSSGEN_FLAG;
@@ -22,7 +22,33 @@ namespace Microsoft.NET.TestFramework.Utilities
             return isCrossgened;
         }
 
-        public static string GetAssemblyAttributeValue(string assemblyPath, string attributeName)
+        public static bool IsCetCompatible(string filePath)
+        {
+            using (PEReader reader = new PEReader(new FileStream(filePath, FileMode.Open, FileAccess.Read)))
+            {
+                foreach (DebugDirectoryEntry entry in reader.ReadDebugDirectory())
+                {
+                    // https://learn.microsoft.com/windows/win32/debug/pe-format#debug-type
+                    const int IMAGE_DEBUG_TYPE_EX_DLLCHARACTERISTICS = 20;
+                    if ((int)entry.Type != IMAGE_DEBUG_TYPE_EX_DLLCHARACTERISTICS)
+                        continue;
+
+                    // Get the extended DLL characteristics debug directory entry
+                    PEMemoryBlock data = reader.GetSectionData(entry.DataRelativeVirtualAddress);
+                    ushort dllCharacteristics = data.GetReader().ReadUInt16();
+
+                    // Check for the CET compat bit
+                    // https://learn.microsoft.com/windows/win32/debug/pe-format#extended-dll-characteristics
+                    const ushort IMAGE_DLLCHARACTERISTICS_EX_CET_COMPAT = 0x1;
+                    return (dllCharacteristics & IMAGE_DLLCHARACTERISTICS_EX_CET_COMPAT) != 0;
+                }
+
+                // Not marked compatible - no debug directory entry for extended DLL characteristics
+                return false;
+            }
+        }
+
+        public static string? GetAssemblyAttributeValue(string assemblyPath, string attributeName)
         {
             if (!File.Exists(assemblyPath))
             {
@@ -116,7 +142,7 @@ namespace Microsoft.NET.TestFramework.Utilities
                 if (signatureTypeCode == SignatureTypeCode.String)
                 {
                     // Custom attribute constructor must take only strings
-                    arguments.Add(valueReader.ReadSerializedString());
+                    arguments.Add(valueReader.ReadSerializedString() ?? string.Empty);
                 }
             }
 

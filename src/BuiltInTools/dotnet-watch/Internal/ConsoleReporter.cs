@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
@@ -13,7 +13,15 @@ namespace Microsoft.Extensions.Tools.Internal
         public bool IsQuiet { get; } = quiet;
         public bool SuppressEmojis { get; } = suppressEmojis;
 
-        private readonly object _writeLock = new();
+        private readonly Lock _writeLock = new();
+
+        public void ReportProcessOutput(OutputLine line)
+        {
+            lock (_writeLock)
+            {
+                (line.IsError ? console.Error : console.Out).WriteLine(line.Content);
+            }
+        }
 
         private void WriteLine(TextWriter writer, string message, ConsoleColor? color, string emoji)
         {
@@ -37,34 +45,38 @@ namespace Microsoft.Extensions.Tools.Internal
             }
         }
 
-        public void Error(string message, string emoji = "❌")
+        public void Report(MessageDescriptor descriptor, string prefix, object?[] args)
         {
-            WriteLine(console.Error, message, ConsoleColor.Red, emoji);
-        }
-
-        public void Warn(string message, string emoji = "⌚")
-        {
-            WriteLine(console.Out, message, ConsoleColor.Yellow, emoji);
-        }
-
-        public void Output(string message, string emoji = "⌚")
-        {
-            if (IsQuiet)
+            if (!descriptor.TryGetMessage(prefix, args, out var message))
             {
                 return;
             }
 
-            WriteLine(console.Out, message, color: null, emoji);
-        }
-
-        public void Verbose(string message, string emoji = "⌚")
-        {
-            if (!IsVerbose)
+            switch (descriptor.Severity)
             {
-                return;
-            }
+                case MessageSeverity.Error:
+                    // Use stdout for error messages to preserve ordering with respect to other output.
+                    WriteLine(console.Out, message, ConsoleColor.Red, descriptor.Emoji);
+                    break;
 
-            WriteLine(console.Out, message, ConsoleColor.DarkGray, emoji);
+                case MessageSeverity.Warning:
+                    WriteLine(console.Out, message, ConsoleColor.Yellow, descriptor.Emoji);
+                    break;
+
+                case MessageSeverity.Output:
+                    if (!IsQuiet)
+                    {
+                        WriteLine(console.Out, message, color: null, descriptor.Emoji);
+                    }
+                    break;
+
+                case MessageSeverity.Verbose:
+                    if (IsVerbose)
+                    {
+                        WriteLine(console.Out, message, ConsoleColor.DarkGray, descriptor.Emoji);
+                    }
+                    break;
+            }
         }
     }
 }

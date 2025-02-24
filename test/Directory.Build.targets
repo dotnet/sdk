@@ -5,7 +5,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe' AND '$(DotNetBuildSourceOnly)' != 'true'">
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND '$(CanRunTestAsTool)' != 'false' AND '$(OutputType)' == 'Exe' AND '$(DotNetBuildSourceOnly)' != 'true'">
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>$(PackageId)</ToolCommandName>
@@ -22,13 +22,6 @@
   
   <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <Compile Include="$(MSBuildThisFileDirectory)Common\Program.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-
-    <!-- Note: These items are showing up in solution explorer even though Visible is set to false -->
-    <None Include="$(MSBuildThisFileDirectory)..\src\Assets\**\*.*" Exclude="$(MSBuildThisFileDirectory)..\src\Assets\TestPackages\dotnet-new\**\*" CopyToPublishDirectory="PreserveNewest" 
-          LinkBase="Assets" Visible="false" />
   </ItemGroup>
 
   <Target Name="TestAsTool" DependsOnTargets="Pack;_InnerGetTestsToRun">

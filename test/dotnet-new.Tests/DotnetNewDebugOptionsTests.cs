@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [UsesVerify]
     public class DotnetNewDebugOptionsTests : BaseIntegrationTest
     {
         private readonly ITestOutputHelper _log;
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void DoesNotCreateCacheWhenVirtualHiveIsUsed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            string envVariable = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME";
+            string envVariable = CliFolderPathCalculator.DotnetHomePath;
 
             new DotnetNewCommand(_log, "--debug:ephemeral-hive")
                .WithoutCustomHive()

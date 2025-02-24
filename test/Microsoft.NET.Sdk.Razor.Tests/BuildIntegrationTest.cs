@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -110,7 +112,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var customDefine = "AspNetSdkTest";
             var build = new BuildCommand(projectDirectory);
-            build.Execute($"/p:DefineConstants={customDefine}").Should().Pass();
+            build.Execute($"/p:DefineConstants={customDefine}", "/p:BuildWithNetFrameworkHostedCompiler=false").Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 

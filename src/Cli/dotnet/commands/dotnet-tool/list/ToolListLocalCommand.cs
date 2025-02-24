@@ -36,9 +36,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
             {
                 packageId = new PackageId(packageIdArgument);
             }
-            var packageEnumerable = _toolManifestInspector.Inspect().Where(
-                (t) => PackageIdMatches(t.toolManifestPackage, packageId)
-            );
+            var packageEnumerable = GetPackages(packageId);
 
             var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
             if (formatValue is ToolListOutputFormat.json)
@@ -56,6 +54,13 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 return 1;
             }
             return 0;
+        }
+
+        public IEnumerable<(ToolManifestPackage, FilePath)> GetPackages(PackageId? packageId)
+        {
+            return _toolManifestInspector.Inspect().Where(
+                 (t) => PackageIdMatches(t.toolManifestPackage, packageId)
+                 );
         }
 
         private bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)

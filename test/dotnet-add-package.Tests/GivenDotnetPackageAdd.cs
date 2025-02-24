@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
@@ -55,6 +57,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
             var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
+            // disable implicit use of the Roslyn Toolset compiler package
+            testProject.AdditionalProperties["BuildWithNetFrameworkHostedCompiler"] = false.ToString();
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
 

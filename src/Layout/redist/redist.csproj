@@ -17,14 +17,13 @@
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1205</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
-  <Import Project="targets\BuildToolsetTasks.targets" />
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
   <Import Project="targets\Version.targets" />
   <Import Project="targets\BundledSdks.targets" />
   <Import Project="targets\BundledTools.targets" />
   <Import Project="targets\PublishDotnetWatch.targets" />
   <Import Project="targets\GenerateLayout.targets" />
-  <Import Project="targets\GenerateArchive.targets" />
   <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
   <Import Project="targets\MSBuildExtensions.targets" />
 
@@ -47,7 +46,6 @@
 
     <!-- Lift up dependencies of dependencies to prevent build tasks from getting pinned to older versions -->
     <PackageReference Include="System.CodeDom" />
-    <PackageReference Include="System.Text.Encoding.CodePages" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="System.Resources.Extensions" />
     <!-- Override to use the newest version. In source-only modes this will be a no-diff change. -->
