@@ -18,15 +18,11 @@
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
-  <Import Project="targets\GetRuntimeInformation.targets" />
-  <Import Project="targets\Version.targets" />
   <Import Project="targets\BundledSdks.targets" />
   <Import Project="targets\BundledTools.targets" />
   <Import Project="targets\PublishDotnetWatch.targets" />
   <Import Project="targets\GenerateLayout.targets" />
-  <Import Project="targets\GenerateArchive.targets" />
   <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
-  <Import Project="targets\MSBuildExtensions.targets" />
 
   <ItemGroup>
     <PackageReference Include="NuGet.Build.Tasks" />

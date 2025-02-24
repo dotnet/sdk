@@ -1,4 +1,5 @@
-<Project ToolsVersion="14.0" DefaultTargets="Test">
+<Project>
+
   <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateLayout">
     <PropertyGroup>
       <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
@@ -111,7 +112,6 @@
       WorkloadManifestPath="%(MonoToolchainCurrentWorkloadManifests.FullPath)" />
   </Target>
 
-
   <Target Name="PublishTestWorkloads"
           AfterTargets="OverlaySdkOnLKG">
     <PropertyGroup>
@@ -134,6 +134,6 @@
 
     <Copy SourceFiles="@(WorkloadPackContent)"
       DestinationFiles="@(WorkloadPackContent->'$(RedistLayoutPath)\packs\%(RecursiveDir)%(Filename)%(Extension)')" />
-
   </Target>
+
 </Project>
