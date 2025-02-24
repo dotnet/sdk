@@ -63,8 +63,8 @@ The file-based build and run kicks in only when:
 > [!NOTE]
 > This means that `dotnet run path` stops working when a file-based program [grows up](#grow-up) into a project-based program.
 >
-> Users could avoid that by using `cd path; dotnet run` instead (except for [multi-entry-point programs](#multiple-entry-points)).
-> For that to work, `dotnet run` without a `--project` argument and without a project file in the current directory
+> Users could avoid that by using `cd path; dotnet run` instead. For that to work always (before and after grow up),
+> `dotnet run` without a `--project` argument and without a project file in the current directory
 > would need to search for a file-based program in the current directory instead of failing.
 >
 > We can also consider adding some universal option that would work with both project-based and file-based programs,
@@ -104,6 +104,12 @@ That might be unexpected, hence we could consider reporting an error in such sit
 However, the same problem exists for normal builds with explicit project files
 and usually the build fails because there are multiple entry points or other clashes.
 
+Similarly, we could report an error if there are many nested directories and files,
+so for example if someone puts a C# file into `C:/`
+and executes `dotnet run C:/file.cs` or opens that in the IDE, we do not walk the whole drive.
+Again, this problem exists with project-based programs as well, albeit it's likely uncommon there
+since creating projects with `dotnet new` or an IDE creates them in a directory.
+
 ### Multiple entry points
 
 If there are multiple entry-point files in the target directory, the target path must be a file
@@ -118,7 +124,9 @@ App/Program2.cs
 ```
 where either `Program1.cs` or `Program2.cs` can be run and both of them have access to `Util.cs`.
 
-In this case, there are multiple implicit projects (and similarly multiple projects are materialized during [grow up](#grow-up)):
+In this case, there are multiple implicit projects
+(and during [grow up](#grow-up), multiple project files are materialized
+and the original C# files are moved to the corresponding project subdirectories):
 ```
 App/Shared/Util.cs
 App/Shared/Shared.csproj
@@ -156,11 +164,14 @@ See [the corresponding language proposal][pound].
 If these directives were limited by the language to only appear near the top of the file (similar to `#define` directives),
 the dotnet CLI could be more efficient in searching for them.
 
+It should be also possible to look for these directives from the dotnet CLI via a regex instead of parsing the whole C# file via Roslyn.
+
 We can also consider reporting an error or warning if `#r` directives are spread among multiple files,
 to encourage users to keep them in a single place for clarity.
-However, we cannot merely allow them just in entry-point files,
-because that would mean non-entry-point files in [multi-entry-point scenarios](#multiple-entry-points)
-could not reference external NuGet packages.
+Furthermore, if the directives are limited to just one file per virtual project,
+it is more efficient to search for them by the dotnet CLI
+(after the initial search, we can only look at a couple of files on re-runs).
+For example, users could put their `#r`s into `Program1.cs`, `Program2.cs`, and `Util.cs`, but not `Util2.cs`.
 
 ## Shebang
 
@@ -172,6 +183,7 @@ Console.WriteLine("Hello");
 ```
 
 It might be beneficial to also ship `dotnet-run` binary
+(or `dotnet-run-file` that would only work with file-based programs, not project-based ones)
 because some shells do not support multiple command-line arguments in the shebang
 which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executable
 (although `-S` argument can be sometimes used to enable multiple argument support):
@@ -200,6 +212,9 @@ The build is performed using MSBuild APIs on in-memory project files.
 ### Optimizations
 
 MSBuild invocation can be skipped in subsequent `dotnet run file.cs` invocations if an up-to-date check detects that inputs didn't change.
+We always need to re-run MSBuild if implicit build files like `Directory.Build.props` change but
+from `.cs` files, the only relevant MSBuild inputs are the `#r` directives,
+hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#r` directives.
 If only `.cs` files change, it is enough to invoke `csc.exe` (directly or via a build server)
 re-using command-line arguments that the last MSBuild invocation passed to the compiler.
 If no inputs change, it is enough to start the target executable without invoking the build at all.
