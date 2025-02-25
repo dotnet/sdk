@@ -118,7 +118,7 @@
       "choices": [
         {
           "choice": "MSTest",
-          "description": "Use MSTest Runner (Microsoft.Testing.Platform)"
+          "description": "Use Microsoft.Testing.Platform"
         },
         {
           "choice": "VSTest",
