@@ -1,3 +1,5 @@
+# This script compares a VMR manifest to a gathered drop of VMR input builds
+
 [CmdletBinding()]
 param(
   [Parameter(Mandatory=$true)]

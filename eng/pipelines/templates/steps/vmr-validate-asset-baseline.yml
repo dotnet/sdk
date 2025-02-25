@@ -18,11 +18,11 @@ steps:
     scriptLocation: 'scriptPath'
     scriptPath: $(Build.SourcesDirectory)\src\sdk\eng\GatherDrops.ps1
     arguments: -filePath '$(Build.SourcesDirectory)\src\source-manifest.json' -outputPath '$(Build.ArtifactStagingDirectory)\assets\'
-      -darcPath $(Build.SourcesDirectory)\artifacts\tools\darc\darc.exe -githubPat $(BotAccount-dotnet-bot-repo-PAT) -azdevPat $(dn-bot-all-drop-rw-code-rw-release-all)
+      -darcPath '$(Build.SourcesDirectory)\artifacts\tools\darc\darc.exe' -githubPat $(BotAccount-dotnet-bot-repo-PAT) -azdevPat $(dn-bot-all-drop-rw-code-rw-release-all)
 
 - task: PowerShell@2
   inputs:
-    filePath: $(Build.SourcesDirectory)\src\sdk\eng\CheckFiles.ps1
+    filePath: $(Build.SourcesDirectory)\src\sdk\eng\CompareVMRArtifactsToManifest.ps1
     arguments: -manifestPath '$(Build.ArtifactStagingDirectory)\AssetManifests\MergedManifest.xml' -assetBasePath '$(Build.ArtifactStagingDirectory)\assets\'
       -outputFilePath '$(Build.SourcesDirectory)\artifacts\AssetBaselines\'
   displayName: Validate Asset Baselines
