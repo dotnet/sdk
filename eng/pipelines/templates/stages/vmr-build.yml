@@ -375,6 +375,17 @@ stages:
         targetArchitecture: x64
         extraProperties: /p:DotNetBuildTests=true
 
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      - template: ../jobs/vmr-build.yml
+        parameters:
+          buildName: Windows_BuildTests
+          isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+          vmrBranch: ${{ variables.VmrBranch }}
+          pool: ${{ parameters.pool_Windows }}
+          targetOS: windows
+          targetArchitecture: x64
+          extraProperties: /p:DotNetBuildTests=true
+
 #### VERTICAL BUILD (Official) ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
   - stage: VMR_Vertical_Build
@@ -853,17 +864,6 @@ stages:
             targetOS: windows
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
-
-        - template: ../jobs/vmr-build.yml
-          parameters:
-            buildName: Windows_BuildTests
-            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-            vmrBranch: ${{ variables.VmrBranch }}
-            sign: false
-            pool: ${{ parameters.pool_Windows }}
-            targetOS: windows
-            targetArchitecture: x64
-            extraProperties: /p:DotNetBuildTests=true
 
         # Build Pass 2 verticals
 
