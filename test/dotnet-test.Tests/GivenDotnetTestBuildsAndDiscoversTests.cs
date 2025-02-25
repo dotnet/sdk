@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [Theory(Skip= "https://github.com/dotnet/sdk/issues/46923")]
         public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
