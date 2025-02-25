@@ -5,9 +5,7 @@
     <NonShipping>true</NonShipping>
     <UseAppHost>false</UseAppHost>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <!-- Executable code, so set this in non-source build or repo source-build. Full
-         source build will use the incoming, pre-set MicrosoftCodeAnalysisVersion. -->
-    <MicrosoftCodeAnalysisVersion Condition="'$(DotNetBuildSourceOnly)' != 'true' or '$(DotNetBuildOrchestrator)' != 'true'">$(MicrosoftCodeAnalysisVersionForExecution)</MicrosoftCodeAnalysisVersion>
+    <MicrosoftCodeAnalysisVersion Condition="'$(MicrosoftCodeAnalysisVersion)' == ''">$(MicrosoftCodeAnalysisVersionForExecution)</MicrosoftCodeAnalysisVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\Microsoft.CodeAnalysis.Analyzers\Core\MetaAnalyzers\ReleaseTrackingHelper.cs" Link="ReleaseTrackingHelper.cs" />
