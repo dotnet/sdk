@@ -26,7 +26,6 @@
     <BuildArgs>$(BuildArgs) /p:Rid=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:Architecture=$(TargetArchitecture)</BuildArgs>
 
-    <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(TargetRid)</BuildArgs>
     <!-- sdk always wants to build portable on FreeBSD etc. -->
     <BuildArgs Condition="('$(TargetOS)' == 'freebsd' or '$(TargetOS)' == 'solaris') and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:NetRuntimeRid=$(TargetRid)</BuildArgs>
@@ -62,7 +61,7 @@
     <RepositoryReference Include="symreader" />
     <RepositoryReference Include="templating" />
     <RepositoryReference Include="vstest" />
-    <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
+    <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows' and '$(DotNetBuildSourceOnly)' != 'true'" />
     <RepositoryReference Include="xdt" />
   </ItemGroup>
 

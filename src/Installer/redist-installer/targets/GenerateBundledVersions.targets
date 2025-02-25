@@ -75,7 +75,7 @@
 
   </Target>
 
-  <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
+  <Target Name="GenerateBundledVersionsProps">
     <PropertyGroup>
       <BundledVersionsPropsFileName>Microsoft.NETCoreSdk.BundledVersions.props</BundledVersionsPropsFileName>
     </PropertyGroup>
@@ -1348,7 +1348,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       Overwrite="true" />
   </Target>
 
-  <Target Name="GenerateBundledCliToolsProps" DependsOnTargets="SetupBundledComponents">
+  <Target Name="GenerateBundledCliToolsProps">
     <PropertyGroup>
       <BundledBundledCliToolsPropsFileName>Microsoft.NETCoreSdk.BundledCliTools.props</BundledBundledCliToolsPropsFileName>
     </PropertyGroup>
@@ -1383,7 +1383,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       Overwrite="true" />
   </Target>
 
-  <Target Name="GenerateBundledMSBuildProps" DependsOnTargets="SetupBundledComponents">
+  <Target Name="GenerateBundledMSBuildProps">
     <PropertyGroup>
       <MinimumMSBuildVersionFile>$(RedistLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
       <BundledMSBuildPropsFileName>Microsoft.NETCoreSdk.BundledMSBuildInformation.props</BundledMSBuildPropsFileName>

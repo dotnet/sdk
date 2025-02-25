@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     int result = await action(testApp);
 
-                    if (result != ExitCodes.Success)
+                    if (result != ExitCode.Success)
                     {
                         _hasFailed = true;
                     }

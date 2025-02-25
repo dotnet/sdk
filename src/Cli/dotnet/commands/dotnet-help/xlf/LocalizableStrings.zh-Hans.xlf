@@ -9,12 +9,12 @@
       </trans-unit>
       <trans-unit id="PackageDefinition">
         <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
-        <target state="new">Search for, add, remove, or list PackageReferences for a .NET project.</target>
+        <target state="translated">搜索、添加、删除或列出 .NET 项目的 PackageReferences。</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceDefinition">
         <source>Add, remove, or list ProjectReferences for a .NET project.</source>
-        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <target state="translated">添加、删除或列出 .NET 项目的 ProjectReferences。</target>
         <note />
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
