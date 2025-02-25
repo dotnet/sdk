@@ -174,6 +174,7 @@ public class LinuxInstallerTests : IDisposable
     {
         List<string> packageList = GetPackageList(baseImage, packageType);
         string dockerfile = GenerateDockerfile(packageList, baseImage, packageType);
+        string testCommand = $"dotnet {GetScenarioTestsBinaryPath()} --dotnet-root /usr/share/dotnet/";
 
         string tag = $"test-{Path.GetRandomFileName()}";
         string output = "";
@@ -184,7 +185,7 @@ public class LinuxInstallerTests : IDisposable
             // Build docker image and run the tests
             _dockerHelper.Build(tag, dockerfile: dockerfile, contextDir: _contextDir);
             buildCompleted = true;
-            output = _dockerHelper.Run(tag, tag);
+            output = _dockerHelper.Run(tag, tag, testCommand);
 
             int testResultsSummaryIndex = output.IndexOf("Tests run: ");
             if (testResultsSummaryIndex >= 0)
@@ -212,6 +213,18 @@ public class LinuxInstallerTests : IDisposable
                 _dockerHelper.DeleteImage(tag);
             }
         }
+    }
+
+    private string GetScenarioTestsBinaryPath()
+    {
+        // Find scenario-tests binary in context/scenario-tests
+        string? scenarioTestsBinary = Directory.GetFiles(Path.Combine(_contextDir, "scenario-tests"), "Microsoft.DotNet.ScenarioTests.SdkTemplateTests.dll", SearchOption.AllDirectories).FirstOrDefault();
+        if (scenarioTestsBinary == null)
+        {
+            throw new Exception("Scenario tests binary not found");
+        }
+
+        return scenarioTestsBinary.Replace(_contextDir, "").Replace("\\", "/");
     }
 
     private List<string> GetPackageList(string baseImage, PackageType packageType)
@@ -285,18 +298,6 @@ public class LinuxInstallerTests : IDisposable
         sb.AppendLine("");
         sb.AppendLine("# Set custom nuget.config");
         sb.AppendLine("ENV RestoreConfigFile=/NuGet.config");
-
-        // Find scenario-tests binary in context/scenario-tests
-        string? scenarioTestsBinary = Directory.GetFiles(Path.Combine(_contextDir, "scenario-tests"), "Microsoft.DotNet.ScenarioTests.SdkTemplateTests.dll", SearchOption.AllDirectories).FirstOrDefault();
-        if (scenarioTestsBinary == null)
-        {
-            throw new Exception("Scenario tests binary not found");
-        }
-        scenarioTestsBinary = scenarioTestsBinary.Replace(_contextDir, "").Replace("\\", "/");
-
-        // Set entry point
-        sb.AppendLine("");
-        sb.AppendLine($"ENTRYPOINT [ \"dotnet\", \"{scenarioTestsBinary}\", \"--dotnet-root\", \"/usr/share/dotnet\" ]");
 
         string dockerfile = Path.Combine(_contextDir, $"Dockerfile-{Path.GetRandomFileName()}");
         File.WriteAllText(dockerfile, sb.ToString());
