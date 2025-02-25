@@ -24,6 +24,7 @@ public class LinuxInstallerTests : IDisposable
     private readonly DockerHelper _dockerHelper;
     private readonly string _tmpDir;
     private readonly string _contextDir;
+    private readonly ITestOutputHelper _outputHelper;
 
     private bool _rpmContextInitialized = false;
     private bool _debContextInitialized = false;
@@ -43,12 +44,10 @@ public class LinuxInstallerTests : IDisposable
         Deb
     }
 
-    private ITestOutputHelper OutputHelper { get; set; }
-
     public LinuxInstallerTests(ITestOutputHelper outputHelper)
     {
-        OutputHelper = outputHelper;
-        _dockerHelper = new DockerHelper(OutputHelper);
+        _outputHelper = outputHelper;
+        _dockerHelper = new DockerHelper(_outputHelper);
 
         _tmpDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(_tmpDir);
@@ -60,7 +59,7 @@ public class LinuxInstallerTests : IDisposable
     {
         try
         {
-            Directory.Delete(_tmpDir, recursive: true);
+            //Directory.Delete(_tmpDir, recursive: true);
         }
         catch
         {
@@ -71,6 +70,12 @@ public class LinuxInstallerTests : IDisposable
     [InlineData(RuntimeDepsRepo, $"{RuntimeDepsVersion}-azurelinux3.0")]
     public void RpmTest(string repo, string tag)
     {
+        if (!tag.Contains("azurelinux"))
+        {
+            // Only Azure Linux is currently supported for RPM tests
+            Assert.Fail("Only Azure Linux is currently supported for RPM tests");
+        }
+
         InitializeContext(PackageType.Rpm);
 
         DistroTest($"{repo}:{tag}", PackageType.Rpm);
@@ -167,31 +172,7 @@ public class LinuxInstallerTests : IDisposable
 
     private void DistroTest(string baseImage, PackageType packageType)
     {
-        // Order of installation is important as we do not want to use "--nodeps"
-        // We install in correct order, so package dependencies are present.
-
-        // Prepare the package list in correct install order
-        List<string> packageList =
-        [
-            // Deps package should be installed first
-            Path.GetFileName(GetMatchingDepsPackage(baseImage, packageType))
-        ];
-
-        // Add all other packages in correct install order
-        AddPackage(packageList, "dotnet-host-", packageType);
-        AddPackage(packageList, "dotnet-hostfxr-", packageType);
-        AddPackage(packageList, "dotnet-runtime-", packageType);
-        AddPackage(packageList, "dotnet-targeting-pack-", packageType);
-        AddPackage(packageList, "aspnetcore-runtime-", packageType);
-        AddPackage(packageList, "aspnetcore-targeting-pack-", packageType);
-        AddPackage(packageList, "dotnet-apphost-pack-", packageType);
-        if (Config.Architecture == "x64")
-        {
-            // netstandard package exists for x64 only
-            AddPackage(packageList, "netstandard-targeting-pack-", packageType);
-        }
-        AddPackage(packageList, "dotnet-sdk-", packageType);
-
+        List<string> packageList = GetPackageList(baseImage, packageType);
         string dockerfile = GenerateDockerfile(packageList, baseImage, packageType);
 
         string tag = $"test-{Path.GetRandomFileName()}";
@@ -233,6 +214,36 @@ public class LinuxInstallerTests : IDisposable
         }
     }
 
+    private List<string> GetPackageList(string baseImage, PackageType packageType)
+    {
+        // Order of installation is important as we do not want to use "--nodeps"
+        // We install in correct order, so package dependencies are present.
+
+        // Prepare the package list in correct install order
+        List<string> packageList =
+        [
+            // Deps package should be installed first
+            Path.GetFileName(GetMatchingDepsPackage(baseImage, packageType))
+        ];
+
+        // Add all other packages in correct install order
+        AddPackage(packageList, "dotnet-host-", packageType);
+        AddPackage(packageList, "dotnet-hostfxr-", packageType);
+        AddPackage(packageList, "dotnet-runtime-", packageType);
+        AddPackage(packageList, "dotnet-targeting-pack-", packageType);
+        AddPackage(packageList, "aspnetcore-runtime-", packageType);
+        AddPackage(packageList, "aspnetcore-targeting-pack-", packageType);
+        AddPackage(packageList, "dotnet-apphost-pack-", packageType);
+        if (Config.Architecture == "x64")
+        {
+            // netstandard package exists for x64 only
+            AddPackage(packageList, "netstandard-targeting-pack-", packageType);
+        }
+        AddPackage(packageList, "dotnet-sdk-", packageType);
+
+        return packageList;
+    }
+
     private string GenerateDockerfile(List<string> packageList, string baseImage, PackageType packageType)
     {
         StringBuilder sb = new();
@@ -259,7 +270,7 @@ public class LinuxInstallerTests : IDisposable
         sb.AppendLine("# Install the installer packages and Microsoft.DotNet.ScenarioTests.SdkTemplateTests tool");
         sb.Append("RUN");
 
-        // TODO: remove --force-all when aspnet package versioning issue have been resolved - https://github.com/dotnet/source-build/issues/4895
+        // TODO: remove --force-all after deps image issue has been resolved - https://github.com/dotnet/dotnet-docker/issues/6271
         string packageInstallationCommand = packageType == PackageType.Deb ? "dpkg -i --force-all" : "rpm -i";
         bool useAndOperator = false;
         foreach (string package in packageList)
@@ -295,9 +306,9 @@ public class LinuxInstallerTests : IDisposable
     private bool AnyTestFailures(string testResultSummary)
     {
         var parts = testResultSummary.Split(',')
-         .Select(part => part.Split(':').Select(p => p.Trim()).ToArray())
-         .Where(p => p.Length == 2)
-         .ToDictionary(p => p[0], p => int.Parse(p[1]));
+            .Select(part => part.Split(':').Select(p => p.Trim()).ToArray())
+            .Where(p => p.Length == 2)
+            .ToDictionary(p => p[0], p => int.Parse(p[1]));
 
         return parts["Errors"] > 0 || parts["Failures"] > 0;
     }
@@ -323,29 +334,9 @@ public class LinuxInstallerTests : IDisposable
 
     private string GetMatchingDepsPackage(string baseImage, PackageType packageType)
     {
-        string matchPattern = "dotnet-runtime-deps-*.deb";
-        if (packageType == PackageType.Rpm)
-        {
-            string? depsId = null;
-            if (baseImage.Contains("opensuse"))
-            {
-                depsId = "opensuse";
-            }
-            else if (baseImage.Contains("sles"))
-            {
-                depsId = "sles";
-            }
-            else if (baseImage.Contains("azurelinux"))
-            {
-                depsId = "azl";
-            }
-            else
-            {
-                throw new Exception($"Unknown distro: {baseImage}");
-            }
-
-            matchPattern = $"dotnet-runtime-deps-*{depsId}*.rpm";
-        }
+        string matchPattern = packageType == PackageType.Deb
+            ? "dotnet-runtime-deps-*.deb"
+            : "dotnet-runtime-deps-*azl*.rpm"; // We currently only support Azure Linux deps image
 
         string[] files = Directory.GetFiles(_contextDir, matchPattern, SearchOption.AllDirectories);
         if (files.Length == 0)
