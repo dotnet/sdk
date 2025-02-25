@@ -118,7 +118,7 @@
       "choices": [
         {
           "choice": "Microsoft.Testing.Platform",
-          "description": "Use Microsoft.Testing.Platform"
+          "description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information."
         },
         {
           "choice": "VSTest",
