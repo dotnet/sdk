@@ -112,7 +112,7 @@
       "type": "parameter",
       "datatype": "choice",
       "enableQuotelessLiterals": true,
-      "description": "Select the runner/platform. More information at https://aka.ms/mstest/sdk/extensions-profile",
+      "description": "Select the runner/platform.",
       "displayName": "Test runner",
       "defaultValue": "VSTest",
       "choices": [
