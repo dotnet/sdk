@@ -146,7 +146,7 @@
     "ExtensionsProfile": {
       "type": "parameter",
       "datatype": "choice",
-      "description": "Select the SDK extensions profile when using MSTest Runner. More information at https://aka.ms/mstest/sdk/extensions-profile",
+      "description": "Select the SDK extensions profile when using Microsoft.Testing.Platform. More information at https://aka.ms/mstest/sdk/extensions-profile",
       "displayName": "Testing extensions profile",
       "isEnabled": "UseMSTestSdk && (TestRunner == Microsoft.Testing.Platform)",
       "defaultValue": "Default",
