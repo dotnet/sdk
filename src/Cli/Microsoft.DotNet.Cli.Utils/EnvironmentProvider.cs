@@ -7,9 +7,9 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         private static char[] s_pathSeparator = new char[] { Path.PathSeparator };
         private static char[] s_quote = new char[] { '"' };
-        private IEnumerable<string> _searchPaths;
+        private IEnumerable<string>? _searchPaths;
         private readonly Lazy<string> _userHomeDirectory = new(() => Environment.GetEnvironmentVariable("HOME") ?? string.Empty);
-        private IEnumerable<string> _executableExtensions;
+        private IEnumerable<string>? _executableExtensions;
 
         public IEnumerable<string> ExecutableExtensions
         {
@@ -17,12 +17,11 @@ namespace Microsoft.DotNet.Cli.Utils
             {
                 if (_executableExtensions == null)
                 {
-
                     _executableExtensions = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                        ? Environment.GetEnvironmentVariable("PATHEXT")
+                        ? Environment.GetEnvironmentVariable("PATHEXT")?
                             .Split(';')
-                            .Select(e => e.ToLower().Trim('"'))
-                        : new[] { string.Empty };
+                            .Select(e => e.ToLower().Trim('"')) ?? [string.Empty]
+                        : [string.Empty];
                 }
 
                 return _executableExtensions;
@@ -38,11 +37,11 @@ namespace Microsoft.DotNet.Cli.Utils
                     var searchPaths = new List<string> { AppContext.BaseDirectory };
 
                     searchPaths.AddRange(Environment
-                        .GetEnvironmentVariable("PATH")
+                        .GetEnvironmentVariable("PATH")?
                         .Split(s_pathSeparator)
                         .Select(p => p.Trim(s_quote))
                         .Where(p => !string.IsNullOrWhiteSpace(p))
-                        .Select(p => ExpandTildeSlash(p)));
+                        .Select(p => ExpandTildeSlash(p)) ?? []);
 
                     _searchPaths = searchPaths;
                 }
@@ -65,14 +64,14 @@ namespace Microsoft.DotNet.Cli.Utils
         }
 
         public EnvironmentProvider(
-            IEnumerable<string> extensionsOverride = null,
-            IEnumerable<string> searchPathsOverride = null)
+            IEnumerable<string>? extensionsOverride = null,
+            IEnumerable<string>? searchPathsOverride = null)
         {
             _executableExtensions = extensionsOverride;
             _searchPaths = searchPathsOverride;
         }
 
-        public string GetCommandPath(string commandName, params string[] extensions)
+        public string? GetCommandPath(string commandName, params string[] extensions)
         {
             if (!extensions.Any())
             {
@@ -88,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return commandPath;
         }
 
-        public string GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
+        public string? GetCommandPathFromRootPath(string rootPath, string commandName, params string[] extensions)
         {
             if (!extensions.Any())
             {
@@ -101,14 +100,14 @@ namespace Microsoft.DotNet.Cli.Utils
             return commandPath;
         }
 
-        public string GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
+        public string? GetCommandPathFromRootPath(string rootPath, string commandName, IEnumerable<string> extensions)
         {
             var extensionsArr = extensions.OrEmptyIfNull().ToArray();
 
             return GetCommandPathFromRootPath(rootPath, commandName, extensionsArr);
         }
 
-        public string GetEnvironmentVariable(string name)
+        public string? GetEnvironmentVariable(string name)
         {
             return Environment.GetEnvironmentVariable(name);
         }
@@ -136,7 +135,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
         }
 
-        public string GetEnvironmentVariable(string variable, EnvironmentVariableTarget target)
+        public string? GetEnvironmentVariable(string variable, EnvironmentVariableTarget target)
         {
             return Environment.GetEnvironmentVariable(variable, target);
         }

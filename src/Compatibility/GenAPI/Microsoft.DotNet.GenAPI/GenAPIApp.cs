@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
-using Microsoft.DotNet.GenAPI.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -19,11 +18,11 @@ namespace Microsoft.DotNet.GenAPI
     public static class GenAPIApp
     {
         /// <summary>
-        /// Initialize and run Roslyn-based GenAPI tool.
+        /// Initialize and run Roslyn-based GenAPI tool specifying the assemblies to load.
         /// </summary>
-        public static void Run(ILog logger,
-            string[] assemblies,
-            string[]? assemblyReferences,
+        public static void Run(ILog log,
+            string[] assembliesPaths,
+            string[]? assemblyReferencesPaths,
             string? outputPath,
             string? headerFile,
             string? exceptionMessage,
@@ -32,74 +31,70 @@ namespace Microsoft.DotNet.GenAPI
             bool respectInternals,
             bool includeAssemblyAttributes)
         {
-            bool resolveAssemblyReferences = assemblyReferences?.Length > 0;
+            (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = AssemblySymbolLoader.CreateFromFiles(
+                log,
+                assembliesPaths,
+                assemblyReferencesPaths,
+                respectInternals: respectInternals);
 
-            // Create, configure and execute the assembly loader.
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences, respectInternals);
-            if (assemblyReferences is not null)
-            {
-                loader.AddReferenceSearchPaths(assemblyReferences);
-            }
-            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(assemblies);
+            Run(log,
+                loader,
+                assemblySymbols,
+                outputPath,
+                headerFile,
+                exceptionMessage,
+                excludeApiFiles,
+                excludeAttributesFiles,
+                respectInternals,
+                includeAssemblyAttributes);
+        }
 
-            string headerFileText = ReadHeaderFile(headerFile);
-
+        /// <summary>
+        /// Initialize and run Roslyn-based GenAPI tool using an assembly symbol loader that pre-loaded the assemblies separately.
+        /// </summary>
+        public static void Run(ILog log,
+            IAssemblySymbolLoader loader,
+            Dictionary<string, IAssemblySymbol> assemblySymbols,
+            string? outputPath,
+            string? headerFile,
+            string? exceptionMessage,
+            string[]? excludeApiFiles,
+            string[]? excludeAttributesFiles,
+            bool respectInternals,
+            bool includeAssemblyAttributes)
+        {
+            // Shared accessibility filter for the API and Attribute composite filters.
             AccessibilitySymbolFilter accessibilitySymbolFilter = new(
                 respectInternals,
                 includeEffectivelyPrivateSymbols: true,
                 includeExplicitInterfaceImplementationSymbols: true);
 
-            // Configure the symbol filter
-            CompositeSymbolFilter symbolFilter = new();
-            if (excludeApiFiles is not null)
-            {
-                symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
-            }
-            symbolFilter.Add(new ImplicitSymbolFilter());
-            symbolFilter.Add(accessibilitySymbolFilter);
-
-            // Configure the attribute data symbol filter
-            CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (excludeAttributesFiles is not null)
-            {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
-            }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
-
             // Invoke the CSharpFileBuilder for each directly loaded assembly.
-            foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
+            foreach (KeyValuePair<string, IAssemblySymbol> kvp in assemblySymbols)
             {
-                if (assemblySymbol is null)
-                    continue;
+                using TextWriter textWriter = GetTextWriter(outputPath, kvp.Key);
 
-                using TextWriter textWriter = GetTextWriter(outputPath, assemblySymbol.Name);
-                textWriter.Write(headerFileText);
+                ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromFiles(
+                        excludeApiFiles, accessibilitySymbolFilter,
+                        respectInternals: respectInternals);
+                ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromFiles(
+                        excludeAttributesFiles, accessibilitySymbolFilter,
+                        respectInternals: respectInternals);
 
-                using CSharpFileBuilder fileBuilder = new(logger,
+                string? headerText = headerFile != null ? File.ReadAllText(headerFile) : null;
+
+                CSharpFileBuilder fileBuilder = new(log,
+                    textWriter,
+                    loader,
                     symbolFilter,
                     attributeDataSymbolFilter,
-                    textWriter,
+                    headerText,
                     exceptionMessage,
                     includeAssemblyAttributes,
-                    loader.MetadataReferences);
+                    loader.MetadataReferences,
+                    addPartialModifier: true);
 
-                fileBuilder.WriteAssembly(assemblySymbol);
-            }
-
-            if (loader.HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> roslynDiagnostics))
-            {
-                foreach (Diagnostic warning in roslynDiagnostics)
-                {
-                    logger.LogWarning(warning.Id, warning.ToString());
-                }
-            }
-
-            if (loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> loadWarnings))
-            {
-                foreach (AssemblyLoadWarning warning in loadWarnings)
-                {
-                    logger.LogWarning(warning.DiagnosticId, warning.Message);
-                }
+                fileBuilder.WriteAssembly(kvp.Value);
             }
         }
 
@@ -118,34 +113,6 @@ namespace Microsoft.DotNet.GenAPI
             }
 
             return File.CreateText(outputDirPath);
-        }
-
-        // Read the header file if specified, or use default one.
-        private static string ReadHeaderFile(string? headerFile)
-        {
-            const string defaultFileHeader = """
-            //------------------------------------------------------------------------------
-            // <auto-generated>
-            //     This code was generated by a tool.
-            //
-            //     Changes to this file may cause incorrect behavior and will be lost if
-            //     the code is regenerated.
-            // </auto-generated>
-            //------------------------------------------------------------------------------
-
-            """;
-
-            string header = !string.IsNullOrEmpty(headerFile) ?
-                File.ReadAllText(headerFile) :
-                defaultFileHeader;
-
-#if NET
-            header = header.ReplaceLineEndings();
-#else
-            header = Regex.Replace(header, @"\r\n|\n\r|\n|\r", Environment.NewLine);
-#endif
-
-            return header;
         }
     }
 }

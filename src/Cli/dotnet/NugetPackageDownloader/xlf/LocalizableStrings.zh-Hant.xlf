@@ -74,11 +74,6 @@
         <target state="translated">封裝 {1} 小於 {0} 的版本</target>
         <note />
       </trans-unit>
-      <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
-        <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
-        <target state="translated">略過 NuGet 套件簽署驗證。NuGet 套件簽署驗證在 Linux 或 macOS 上無法使用 https://aka.ms/workloadskippackagevalidation。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
         <target state="translated">已驗證 NuGet 套件「{0}」具備有效簽章。</target>

@@ -138,9 +138,6 @@
   <data name="NuGetPackageShouldNotBeSigned" xml:space="preserve">
     <value>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</value>
   </data>
-  <data name="SkipNuGetpackageSigningValidationmacOSLinux" xml:space="preserve">
-    <value>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</value>
-  </data>
   <data name="FailedToValidatePackageSigning" xml:space="preserve">
     <value>Failed to validate package signing.
 {0}</value>
