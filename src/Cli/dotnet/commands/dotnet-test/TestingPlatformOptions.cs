@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class TestingPlatformOptions
     {
-        public static readonly CliOption<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules", "-mptm")
+        public static readonly CliOption<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
         {
             Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
         };
@@ -27,18 +27,6 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.CmdNoBuildDescription
         }.ForwardAs("-property:MTPNoBuild=true");
-
-        public static readonly CliOption<string> ArchitectureOption = new ForwardedOption<string>("--arch", "-a")
-        {
-            Description = LocalizableStrings.CmdArchitectureDescription,
-            Arity = ArgumentArity.ExactlyOne
-        }.SetForwardingFunction(CommonOptions.ResolveArchOptionToRuntimeIdentifier);
-
-        public static readonly CliOption<string> ConfigurationOption = new ForwardedOption<string>("--configuration", "-c")
-        {
-            Description = LocalizableStrings.CmdConfigurationDescription,
-            Arity = ArgumentArity.ExactlyOne
-        }.ForwardAsSingle(p => $"/p:configuration={p}");
 
         public static readonly CliOption<string> ProjectOption = new("--project")
         {
@@ -81,6 +69,10 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdTestOutputDescription,
             Arity = ArgumentArity.ExactlyOne
         };
+
+        public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+
+        public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
     }
 
     internal enum OutputOptions

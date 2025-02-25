@@ -5,7 +5,7 @@ trigger:
   branches:
     include:
     - main
-    - release/9.0.3xx
+    - release/10.0.1xx-*
     - internal/release/*
     - exp/*
 
@@ -209,6 +209,14 @@ extends:
             - categoryName: Portable
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              runTests: false
+            - categoryName: Portable
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false

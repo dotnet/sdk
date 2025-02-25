@@ -212,6 +212,8 @@ jobs:
 
     ### Signing variables
     - ${{ if eq(parameters.sign, 'True') }}:
+      - name: _SignDiagnosticFilesArgs
+        value: ''
       - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
         # The _SignType variable is used by microbuild installation
         - name: _SignType
@@ -223,8 +225,15 @@ jobs:
           value: real
         - name: signArguments
           value: -sign /p:DotNetSignType=real /p:TeamName=$(_TeamName)
+        - name: _EnableDacSigning
+          ${{ if and(eq(parameters.isBuiltFromVmr, true), ne(parameters.buildSourceOnly, 'True')) }}:
+            value: true
+          ${{ else }}:
+            value: false
     - ${{ else }}:
       - name: signArguments
+        value: ''
+      - name: _SignDiagnosticFilesArgs
         value: ''
 
     ### Build Pass
@@ -384,15 +393,35 @@ jobs:
       inputs:
         versionSpec: 20.x
 
+    - ${{ if eq(variables['_EnableDacSigning'], 'true') }}:
+      # TODO: Once we turn off the dotnet/runtime official build, move these templates into the VMR's eng folder.
+      - template: ${{ variables['Build.SourcesDirectory'] }}/src/runtime/eng/pipelines/coreclr/templates/install-diagnostic-certs.yml
+        parameters:
+          isOfficialBuild: ${{ variables.isOfficialBuild }}
+          certNames:
+          - 'dotnetesrp-diagnostics-aad-ssl-cert'
+          - 'dotnet-diagnostics-esrp-pki-onecert'
+          vaultName: 'clrdiag-esrp-id'
+          azureSubscription: 'diagnostics-esrp-kvcertuser'
+          scriptRoot: '$(Build.SourcesDirectory)/src/runtime'
+
     - script: build.cmd
         $(baseArguments)
         $(targetArguments)
         $(signArguments)
         $(buildPassArguments)
         $(ibcArguments)
+        $(_SignDiagnosticFilesArgs)
         ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
+
+    - ${{ if eq(variables['_EnableDacSigning'], 'true') }}:
+      # TODO: Once we turn off the dotnet/runtime official build, move these templates into the VMR's eng folder.
+      - template: ${{ variables['Build.SourcesDirectory'] }}/src/runtime/eng/pipelines/coreclr/templates/remove-diagnostic-certs.yml
+        parameters:
+          isOfficialBuild: ${{ variables.isOfficialBuild }}
+          scriptRoot: '$(Build.SourcesDirectory)/src/runtime'
 
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: build.cmd
