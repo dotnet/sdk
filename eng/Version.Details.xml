@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-preview.3.25119.5">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-preview.3.25124.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>712d83f2dbaaff5e354f1d943c06f8200d688b2d</Sha>
+      <Sha>7895acc2b61bd280b236865942068494297be0a4</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.3.25124.11">
@@ -489,7 +489,7 @@
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
          one under source build. -->
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.DiaSymReader" Version="2.2.0-beta.25103.1">
+    <Dependency Name="Microsoft.DiaSymReader" Version="2.2.0-beta.25123.1">
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>f8fde62a2b44a75ba5c1445f17cef0dcb13abd58</Sha>
     </Dependency>
@@ -552,7 +552,7 @@
       <SourceBuild RepoName="deployment-tools" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.2.0-beta.25103.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.2.0-beta.25123.1">
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>f8fde62a2b44a75ba5c1445f17cef0dcb13abd58</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
@@ -674,13 +674,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>db681fb307d754c3746ffb40e0634e4c4e0caa9e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25118.2">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25125.3">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>3c92af97cbae024598eca9f7749fde6cf121a07a</Sha>
+      <Sha>d8d25dc7fcd728b79510f4ad76eb53bdc4bde635</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25118.2">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25125.3">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>3c92af97cbae024598eca9f7749fde6cf121a07a</Sha>
+      <Sha>d8d25dc7fcd728b79510f4ad76eb53bdc4bde635</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="10.0.0-preview.24602.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
@@ -715,13 +715,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.7.0-preview.25119.14">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.7.0-preview.25124.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>1d72cd03b28b06a261b5c4cf634c24c57e04b89b</Sha>
+      <Sha>149076dbc8fccb0fd932f490cefa55261c942d9a</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.9.0-preview.25119.14">
+    <Dependency Name="MSTest" Version="3.9.0-preview.25124.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>1d72cd03b28b06a261b5c4cf634c24c57e04b89b</Sha>
+      <Sha>149076dbc8fccb0fd932f490cefa55261c942d9a</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.3.25124.11">
       <Uri>https://github.com/dotnet/runtime</Uri>
