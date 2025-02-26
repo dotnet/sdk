@@ -252,6 +252,37 @@ Options:
         [InlineData("solution", ".sln")]
         [InlineData("sln", ".slnx")]
         [InlineData("solution", ".slnx")]
+        public async Task WhenPassedAReferenceWithoutExtensionItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
+
+            var projectToRemove = "Lib";
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, Path.Combine(projectToRemove, "Lib.csproj")));
+
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public void WhenSolutionItemsExistInFolderParentFoldersAreNotRemoved(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
