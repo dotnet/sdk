@@ -362,7 +362,7 @@
     </ItemGroup>
 
     <!-- BundledLayoutPackage with SkipExtractPackage=true metadata -->
-    <ItemGroup>
+    <ItemGroup Condition="'@(BundledLayoutPackage->AnyHaveMetadataValue('SkipExtractPackage', 'true'))' == 'true'">
       <BundledUncompressedLayoutPackage Include="@(BundledLayoutPackage->WithMetadataValue('SkipExtractPackage', 'true'))" />
       <BundledUncompressedLayoutPackageFile Include="$(NuGetPackageRoot)\%(BundledUncompressedLayoutPackage.LoweredPackageName)\%(BundledUncompressedLayoutPackage.PackageVersion)\%(BundledUncompressedLayoutPackage.LoweredPackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg"
                                             DestinationPath="$(RedistLayoutPath)%(BundledUncompressedLayoutPackage.RelativeLayoutPath)\%(BundledUncompressedLayoutPackage.PackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg" />
