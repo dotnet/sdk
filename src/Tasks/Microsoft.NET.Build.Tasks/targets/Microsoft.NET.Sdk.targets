@@ -632,8 +632,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Net.Security.UseManagedNtlm"
-                                    Condition="'$(_UseManagedNtlm)' != ''"
-                                    Value="$(_UseManagedNtlm)"
+                                    Condition="'$(UseManagedNtlm)' != ''"
+                                    Value="$(UseManagedNtlm)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Reflection.Metadata.MetadataUpdater.IsSupported"
