@@ -311,7 +311,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
+        [CoreMSBuildOnlyTheory]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         [InlineData("net9.0")]
         [InlineData("net8.0")]
@@ -346,6 +346,11 @@ namespace Microsoft.NET.Build.Tests
                 if (!string.IsNullOrEmpty(frameworkReference))
                 {
                     testProject.FrameworkReferences.Add(frameworkReference);
+                }
+
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && frameworkReference != null && frameworkReference.StartsWith("Microsoft.WindowsDesktop", StringComparison.OrdinalIgnoreCase))
+                {
+                    testProject.AdditionalProperties["EnableWindowsTargeting"] = "True";
                 }
 
                 var testAsset = _testAssetsManager.CreateTestProject(testProject, callingMethod: nameof(PrunePackageDataSucceeds), identifier: targetFramework + frameworkReference);
