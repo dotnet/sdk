@@ -25,20 +25,18 @@
     <ProductMonikerRid Condition="'$(ProductMonikerRid)' == ''">$(Rid)</ProductMonikerRid>
 
     <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(PortableRid)</PortableProductMonikerRid>
-
-    <PgoTerm Condition="'$(PgoInstrument)' == 'true'">-pgo</PgoTerm>
-    <ArtifactNameSdk>dotnet-sdk-internal$(PgoTerm)</ArtifactNameSdk>
   </PropertyGroup>
 
   <PropertyGroup>
+    <SkipBuildingInstallers Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' == 'arm'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SkipBuildingInstallers>
     <SkipBuildingInstallers Condition="'$(PgoInstrument)' == 'true'">true</SkipBuildingInstallers>
-    <SkipBuildingInstallers Condition="'$(SkipBuildingInstallers)' == '' AND
+    <SkipBuildingInstallers Condition="
       (
        $(Rid.StartsWith('freebsd')) OR
        $(Rid.StartsWith('illumos')) OR
        $(Rid.StartsWith('linux-musl'))
       )">true</SkipBuildingInstallers>
-    <SkipBuildingInstallers Condition="'$(SkipBuildingInstallers)' == ''">false</SkipBuildingInstallers>
 
     <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
     <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' AND '$(IsLinux)' == 'true' AND !$(Rid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>

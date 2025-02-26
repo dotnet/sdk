@@ -898,7 +898,7 @@ stages:
             - AzureLinux_x64_Cross_Alpine_arm
 
 ### FINAL JOIN ###
-- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), ne(variables['Build.Reason'], 'PullRequest')) }}:
+- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
   - stage: VMR_Final_Join
     displayName: VMR Final Join
     dependsOn: VMR_Vertical_Build
@@ -914,19 +914,19 @@ stages:
       templateContext:
         outputParentDirectory: $(Build.ArtifactStagingDirectory)/artifacts
         outputs:
-        - output: buildArtifacts
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
-          ArtifactName: AssetManifests
+        - output: pipelineArtifact
+          path: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
+          artifact: AssetManifests
           displayName: Publish Merged Manifest
           sbomEnabled: false
-        - output: buildArtifacts
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/assets
-          ArtifactName: BlobArtifacts
+        - output: pipelineArtifact
+          path: $(Build.ArtifactStagingDirectory)/artifacts/assets
+          artifact: BlobArtifacts
           displayName: Publish Blob Artifacts
           sbomEnabled: false
-        - output: buildArtifacts
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/packages
-          ArtifactName: PackageArtifacts
+        - output: pipelineArtifact
+          path: $(Build.ArtifactStagingDirectory)/artifacts/packages
+          artifact: PackageArtifacts
           displayName: Publish Package Artifacts
           sbomEnabled: false
       steps:
@@ -948,6 +948,10 @@ stages:
   - stage: VMR_Validation
     displayName: VMR Validation
     dependsOn: VMR_Final_Join
+    variables:
+    - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      - group: Release-Pipeline
+      - group: DotNetBot-GitHub-AllBranches
     jobs:
     - job: ValidateSigning_Windows
       displayName: Validate Signing - Windows
@@ -981,3 +985,11 @@ stages:
           artifactName: BlobArtifacts
           continueOnError: true
           OS: Linux
+    - job: ValidateAssetBaselines
+      displayName: Validate Asset Baselines
+      pool: ${{ parameters.pool_Windows }}
+      timeoutInMinutes: 180
+      steps:
+      - template: ../steps/vmr-validate-asset-baseline.yml
+        parameters:
+          continueOnError: true

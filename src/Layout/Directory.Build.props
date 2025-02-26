@@ -1,0 +1,12 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <OSName Condition="'$(OSName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</OSName>
+    <OSName Condition="'$(OSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</OSName>
+    <OSName Condition="'$(OSName)' == '' ">linux</OSName>
+    <Rid Condition="'$(Rid)' == ''">$(OSName)-$(Architecture)</Rid>
+  </PropertyGroup>
+
+</Project>
