@@ -74,12 +74,6 @@ File-based programs are processed by `dotnet run` equivalently to project-based 
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
 (except for the arguments recognized by `dotnet run` unless they are after the `--` separator).
 
-### Unsupported `dotnet run` options
-
-These `dotnet run` options are not supported by file-based programs (they result in an error):
-- `--launch-profile`
-- `--no-build`
-
 ## Entry points
 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
@@ -91,7 +85,14 @@ other files in the target directory or its subdirectories are included in the co
 For example, other `.cs` files but also `.resx` (embedded resources).
 Similarly, implicit build files like `Directory.Build.props` are used during the build.
 
-### Nested project files
+> [!NOTE]
+> Performance issues might arise if there are many [nested files](#nested-files) (possibly unintentionally),
+> and also it might not be clear to users that `dotnet run file.cs` will include other `.cs` files in the compilation.
+> Therefore we could consider some switch (a command-line option and/or a `#` language directive) to enable/disable this behavior.
+> When disabled, [grow up](#grow-up) would generate projects in subdirectories similarly to [multi-entry-point scenarios](#multiple-entry-points)
+> to preserve the behavior.
+
+### Nested files
 
 If there are nested project files like
 ```
@@ -172,6 +173,9 @@ Furthermore, if the directives are limited to just one file per virtual project,
 it is more efficient to search for them by the dotnet CLI
 (after the initial search, we can only look at a couple of files on re-runs).
 For example, users could put their `#r`s into `Program1.cs`, `Program2.cs`, and `Util.cs`, but not `Util2.cs`.
+
+During [grow up](#grow-up), `#r` directives are removed from the `.cs` files and turned into `<PackageReference>` elements in the corresponding `.csproj` files.
+For project-based programs, `#r` directives are an error.
 
 ## Shebang
 
