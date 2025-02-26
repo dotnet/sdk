@@ -21,13 +21,19 @@
     <PackageDownload Include="@(BundledTemplates)" Version="[%(PackageVersion)]" />
   </ItemGroup>
 
-  <Target Name="CalculateTemplatesVersions" DependsOnTargets="SetupWixProperties">
+  <Target Name="CalculateTemplatesVersions" DependsOnTargets="GetAssemblyVersion">
+    <PropertyGroup>
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day)
+           Fallback to 0 when patch number is not set. This happens only during CI. -->
+      <_ArcadePatchNumber>$([MSBuild]::ValueOrDefault('$(_PatchNumber)', '000000'))</_ArcadePatchNumber>
+    </PropertyGroup>
+
     <CalculateTemplateVersions
       BundledTemplates="@(BundledTemplates)"
       FullNugetVersion="$(FullNugetVersion)"
       ProductMonikerRid="$(ProductMonikerRid)"
       InstallerExtension="$(InstallerExtension)"
-      CombinedBuildNumberAndRevision="$(CombinedBuildNumberAndRevision)">
+      CombinedBuildNumberAndRevision="$(_ArcadePatchNumber)">
       <Output TaskParameter="BundledTemplatesWithInstallPaths" ItemName="BundledTemplatesWithInstallPaths" />
       <Output TaskParameter="TemplatesComponents" ItemName="TemplatesComponents" />
     </CalculateTemplateVersions>
