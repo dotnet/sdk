@@ -182,6 +182,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             var expected = new[] {
                 "--api-key",
+                "--configfile",
                 "--disable-buffering",
                 "--force-english-output",
                 "--help",
