@@ -753,9 +753,6 @@ namespace Microsoft.TemplateEngine.Cli
                                     .WithSubcommand<UninstallCommand>()
                                     .WithArgument(BaseUninstallCommand.NameArgument, managedPackages.First().Identifier));
                         }
-
-                        //TODO:
-                        //Reporter.Error.WriteLine($"To list the templates installed in a package, use dotnet new3 <new option> <package name>.");
                     }
                     else
                     {
