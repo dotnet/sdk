@@ -22,7 +22,7 @@ See also [dotnet/source-build](https://github.com/dotnet/source-build) for more 
 
 
 ## Installing the SDK
-You can download the .NET SDK as either an installer (MSI, PKG) or a zip (zip, tar.gz). The .NET SDK contains both the .NET runtime and CLI tools.
+You can download the .NET SDK either as an installer (MSI, PKG) or as an archive (zip, tar.gz). The .NET SDK contains both the .NET runtime and CLI tools.
 
 - [**Latest builds table**](docs/package-table.md)
 
