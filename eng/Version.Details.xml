@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-preview.2.25123.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-preview.2.25125.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>c63d11d4e58f74429f1fe9e7780ea48a5c323924</Sha>
+      <Sha>0379c785e527a833c28589c07d6082b3a513adff</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.2.25125.14">
