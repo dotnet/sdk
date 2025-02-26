@@ -38,6 +38,9 @@
        $(Rid.StartsWith('linux-musl'))
       )">true</SkipBuildingInstallers>
 
+    <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
+    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true'">true</BundleNativeAotCompiler>
+
     <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
     <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' AND '$(IsLinux)' == 'true' AND !$(Rid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>
     <HighEntropyVA>true</HighEntropyVA>

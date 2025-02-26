@@ -75,54 +75,63 @@
 
   <!-- BEGIN: Bundled layout packages -->
   <ItemGroup>
-    <BundledLayoutPackage Include="MicrosoftNetCoreAppTargetingPackNupkg">
-      <PackageName>Microsoft.NETCore.App.Ref</PackageName>
-      <PackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Ref"
+      PackageName="Microsoft.NETCore.App.Ref"
+      PackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftNetStandardTargetingPackNupkg">
-      <PackageName>NETStandard.Library.Ref</PackageName>
-      <PackageVersion>$(NETStandardLibraryRefPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="NETStandard.Library.Ref"
+      PackageName="NETStandard.Library.Ref"
+      PackageVersion="$(NETStandardLibraryRefPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftAspNetCoreAppTargetingPackNupkg">
-      <PackageName>Microsoft.AspNetCore.App.Ref</PackageName>
-      <PackageVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.AspNetCore.App.Ref"
+      PackageName="Microsoft.AspNetCore.App.Ref"
+      PackageVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
-      <PackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</PackageName>
-      <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Host.$(SharedFrameworkRid)"
+      PackageName="Microsoft.NETCore.App.Host.$(SharedFrameworkRid)"
+      PackageVersion="$(MicrosoftNETCoreAppHostPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
-      <PackageName>Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
-      <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)"
+      PackageName="Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)"
+      Condition="'$(BundleRuntimePacks)' == 'true'"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftAspNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
-      <PackageName>Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
-      <PackageVersion>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)"
+      PackageName="Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)"
+      Condition="'$(BundleRuntimePacks)' == 'true'"
+      PackageVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftDotNetILCompilerPackNupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'">
-      <PackageName>runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler</PackageName>
-      <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.WindowsDesktop.App.Ref"
+      PackageName="Microsoft.WindowsDesktop.App.Ref"
+      Condition="'$(IncludeWpfAndWinForms)' != 'false'"
+      PackageVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg"
-                          Condition="'$(IncludeWpfAndWinForms)' != 'false'">
-      <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
-      <PackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
+
+    <BundledLayoutPackage Include="Microsoft.DotNet.ILCompiler"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="Microsoft.DotNet.ILCompiler"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="library-packs"
+      SkipExtractPackage="true" />
+
+    <BundledLayoutPackage Include="Microsoft.NET.ILLink.Tasks"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="Microsoft.NET.ILLink.Tasks"
+      PackageVersion="$(MicrosoftNETILLinkTasksPackageVersion)"
+      RelativeLayoutPath="library-packs"
+      SkipExtractPackage="true" />
   </ItemGroup>
   <!-- END: Bundled layout packages -->
 
@@ -330,42 +339,39 @@
         <LoweredPackageName>$([MSBuild]::ValueOrDefault('%(BundledLayoutPackage.PackageName)', '').ToLowerInvariant())</LoweredPackageName>
       </BundledLayoutPackage>
 
-      <BundledLayoutPackageDownloadFiles Include="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\**\*.*">
+      <!-- Remove files from the root of the package, as these are either files NuGet writes, or not necessary -->
+      <BundledLayoutPackageDownloadFiles Include="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\**\*.*"
+                                         Exclude="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\*.*"
+                                         Condition="%(BundledLayoutPackage.SkipExtractPackage) != 'true'">
         <RelativeLayoutPath>%(BundledLayoutPackage.RelativeLayoutPath)</RelativeLayoutPath>
         <LayoutPackageDescription>%(BundledLayoutPackage.Identity)</LayoutPackageDescription>
       </BundledLayoutPackageDownloadFiles>
-
-      <!-- Remove files from the root of the package, as these are either files NuGet writes, or not necessary -->
-      <BundledLayoutPackageDownloadFiles Remove="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\*.*" />
 
       <!-- Set destination path in layout -->
       <BundledLayoutPackageDownloadFiles>
         <DestinationPath>%(BundledLayoutPackageDownloadFiles.RecursiveDir)%(BundledLayoutPackageDownloadFiles.Filename)%(BundledLayoutPackageDownloadFiles.Extension)</DestinationPath>
       </BundledLayoutPackageDownloadFiles>
       <BundledLayoutPackageDownloadFiles>
-        <DestinationPath>$(RedistLayoutPath)/%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
+        <DestinationPath>$(RedistLayoutPath)%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
       </BundledLayoutPackageDownloadFiles>
       <BundledLayoutPackageDownloadFiles>
         <DestinationPath>$([MSBuild]::NormalizePath(%(BundledLayoutPackageDownloadFiles.DestinationPath)))</DestinationPath>
       </BundledLayoutPackageDownloadFiles>
 
-      <!-- Creating a new item here isn't strictly necessary, but makes it easier to see what's going on in the .binlog,
-           since the metadata updates don't show up there -->
       <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledLayoutPackageDownloadFiles)" />
+    </ItemGroup>
+
+    <!-- BundledLayoutPackage with SkipExtractPackage=true metadata -->
+    <ItemGroup>
+      <BundledUncompressedLayoutPackage Include="@(BundledLayoutPackage->WithMetadataValue('SkipExtractPackage', 'true'))" />
+      <BundledUncompressedLayoutPackageFile Include="$(NuGetPackageRoot)\%(BundledUncompressedLayoutPackage.LoweredPackageName)\%(BundledUncompressedLayoutPackage.PackageVersion)\%(BundledUncompressedLayoutPackage.LoweredPackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg"
+                                            DestinationPath="$(RedistLayoutPath)%(BundledUncompressedLayoutPackage.RelativeLayoutPath)\%(BundledUncompressedLayoutPackage.PackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg" />
+      
+      <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledUncompressedLayoutPackageFile)" />
     </ItemGroup>
 
     <Copy SourceFiles="@(BundledLayoutPackageDownloadFilesWithDestination)"
           DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
-          SkipUnchangedFiles="true" />
-
-    <ItemGroup>
-      <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.DotNet.ILCompiler.$(MicrosoftNETCoreAppRuntimePackageVersion).nupkg;
-                                            $(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.NET.ILLink.Tasks.$(MicrosoftNETILLinkTasksPackageVersion).nupkg"
-                                  Condition="'$(BundleNativeAotCompiler)' == 'true'" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(BundledLayoutLibraryPackage)"
-          DestinationFolder="$(RedistLayoutPath)/library-packs"
           SkipUnchangedFiles="true" />
 
     <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->
