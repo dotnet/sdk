@@ -67,9 +67,6 @@
     <NetStandardTargetingPackRootUrl>$(OfficialBaseURL)Runtime/$(NETStandardTargetingPackBlobVersion)</NetStandardTargetingPackRootUrl>
     <AspNetCoreSharedFxRootUrl>$(PublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
     <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
-    <ToolsetArchiveRootUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</ToolsetArchiveRootUrl>
-
-    <CombinedSharedHostAndFrameworkArchive>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
 
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(Architecture)' == 'arm'">false</IncludeWpfAndWinForms>
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT'">true</IncludeWpfAndWinForms>
