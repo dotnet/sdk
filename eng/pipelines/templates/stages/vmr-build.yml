@@ -914,19 +914,19 @@ stages:
       templateContext:
         outputParentDirectory: $(Build.ArtifactStagingDirectory)/artifacts
         outputs:
-        - output: buildArtifacts
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
-          ArtifactName: AssetManifests
+        - output: pipelineArtifact
+          path: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
+          artifact: AssetManifests
           displayName: Publish Merged Manifest
           sbomEnabled: false
-        - output: buildArtifacts
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/assets
-          ArtifactName: BlobArtifacts
+        - output: pipelineArtifact
+          path: $(Build.ArtifactStagingDirectory)/artifacts/assets
+          artifact: BlobArtifacts
           displayName: Publish Blob Artifacts
           sbomEnabled: false
-        - output: buildArtifacts
-          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/packages
-          ArtifactName: PackageArtifacts
+        - output: pipelineArtifact
+          path: $(Build.ArtifactStagingDirectory)/artifacts/packages
+          artifact: PackageArtifacts
           displayName: Publish Package Artifacts
           sbomEnabled: false
       steps:
