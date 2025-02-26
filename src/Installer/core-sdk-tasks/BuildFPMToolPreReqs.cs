@@ -169,6 +169,9 @@ namespace Microsoft.DotNet.Build.Tasks
             parameters.Add(string.Concat("--iteration ", configJson.Release.Package_Revision));
             parameters.Add(string.Concat("--url ", "\"", EscapeArg(configJson.Homepage), "\""));
             parameters.Add("--verbose");
+            // make sure that as we add new file paths under the root directories that matching
+            // directories are added to the package. this means we won't leave orphaned directories upon uninstall
+            parameters.Add("--rpm-auto-add-directories");
 
             // Map all the payload directories as they need to install on the system 
             if (configJson.Install_Root != null)
