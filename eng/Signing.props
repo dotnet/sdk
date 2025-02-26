@@ -101,13 +101,11 @@
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.swr" IsShipping="false" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.msi" IsShipping="false" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
-
-    <!-- dotnet-toolset zips are added above for specific builds only. -->
-    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
-    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" Exclude="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.pkg" IsShipping="false" />
 
     <Artifact Include="@(SdkArtifact)"
