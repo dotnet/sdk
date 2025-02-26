@@ -97,6 +97,7 @@
 
     <!-- we don't produce the Windows version of this package but that's the one sdk keys off of for the ASP.NET version -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimewinx64PackageVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
 
     <!-- Used by installer partition to determine the non-shipping runtime version -->
     <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreTargetingPackx64100PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
