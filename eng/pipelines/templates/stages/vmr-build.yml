@@ -898,7 +898,7 @@ stages:
             - AzureLinux_x64_Cross_Alpine_arm
 
 ### FINAL JOIN ###
-- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), ne(variables['Build.Reason'], 'PullRequest')) }}:
+- ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
   - stage: VMR_Final_Join
     displayName: VMR Final Join
     dependsOn: VMR_Vertical_Build
