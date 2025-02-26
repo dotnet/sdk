@@ -200,16 +200,16 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
-    <MicrosoftTemplateEngineAbstractionsPackageVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateEngineAbstractionsPackageVersion>
-    <MicrosoftTemplateEngineEdgePackageVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateEngineEdgePackageVersion>
-    <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
-    <MicrosoftTemplateEngineUtilsPackageVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateEngineUtilsPackageVersion>
-    <MicrosoftTemplateSearchCommonPackageVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateSearchCommonPackageVersion>
+    <MicrosoftTemplateEngineAbstractionsPackageVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateEngineAbstractionsPackageVersion>
+    <MicrosoftTemplateEngineEdgePackageVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateEngineEdgePackageVersion>
+    <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
+    <MicrosoftTemplateEngineUtilsPackageVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateEngineUtilsPackageVersion>
+    <MicrosoftTemplateSearchCommonPackageVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateSearchCommonPackageVersion>
     <!-- test dependencies -->
-    <MicrosoftTemplateEngineMocksPackageVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateEngineMocksPackageVersion>
-    <MicrosoftTemplateEngineTestHelperPackageVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateEngineTestHelperPackageVersion>
-    <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
-    <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>10.0.100-preview.3.25119.5</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineTestHelperPackageVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateEngineTestHelperPackageVersion>
+    <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
+    <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>10.0.100-preview.3.25124.2</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/visualfsharp -->
