@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli
         public const string SemiColon = ";";
 
         public const string VSTest = "VSTest";
-        public const string MicrosoftTestingPlatform = "MicrosoftTestingPlatform";
+        public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
 
         public const string TestSectionKey = "test";
 
