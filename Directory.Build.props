@@ -92,6 +92,8 @@
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+
+    <SdkLayoutOutputDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\dotnet-toolset-internal\</SdkLayoutOutputDirectory>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">

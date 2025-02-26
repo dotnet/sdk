@@ -25,9 +25,6 @@
     <ProductMonikerRid Condition="'$(ProductMonikerRid)' == ''">$(Rid)</ProductMonikerRid>
 
     <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(PortableRid)</PortableProductMonikerRid>
-
-    <PgoTerm Condition="'$(PgoInstrument)' == 'true'">-pgo</PgoTerm>
-    <ArtifactNameSdk>dotnet-sdk-internal$(PgoTerm)</ArtifactNameSdk>
   </PropertyGroup>
 
   <PropertyGroup>
