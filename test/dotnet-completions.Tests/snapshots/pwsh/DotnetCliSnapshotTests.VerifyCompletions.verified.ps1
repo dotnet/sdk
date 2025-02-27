@@ -30,20 +30,18 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--info', '--info', [CompletionResultType]::ParameterName, "--info")
                 [CompletionResult]::new('--list-sdks', '--list-sdks', [CompletionResultType]::ParameterName, "--list-sdks")
                 [CompletionResult]::new('--list-runtimes', '--list-runtimes', [CompletionResultType]::ParameterName, "--list-runtimes")
-                [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, ".NET Add Command")
                 [CompletionResult]::new('build', 'build', [CompletionResultType]::ParameterValue, ".NET Builder")
                 [CompletionResult]::new('build-server', 'build-server', [CompletionResultType]::ParameterValue, "Interact with servers started from a build.")
                 [CompletionResult]::new('clean', 'clean', [CompletionResultType]::ParameterValue, ".NET Clean Command")
                 [CompletionResult]::new('format', 'format', [CompletionResultType]::ParameterValue, "format")
                 [CompletionResult]::new('fsi', 'fsi', [CompletionResultType]::ParameterValue, "fsi")
-                [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, "List references or packages of a .NET project.")
                 [CompletionResult]::new('msbuild', 'msbuild', [CompletionResultType]::ParameterValue, ".NET Builder")
                 [CompletionResult]::new('new', 'new', [CompletionResultType]::ParameterValue, "Template Instantiation Commands for .NET CLI.")
                 [CompletionResult]::new('nuget', 'nuget', [CompletionResultType]::ParameterValue, "nuget")
                 [CompletionResult]::new('pack', 'pack', [CompletionResultType]::ParameterValue, ".NET Core NuGet Package Packer")
                 [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, "package")
                 [CompletionResult]::new('publish', 'publish', [CompletionResultType]::ParameterValue, "Publisher for the .NET Platform")
-                [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, ".NET Remove Command")
+                [CompletionResult]::new('reference', 'reference', [CompletionResultType]::ParameterValue, ".NET Remove Command")
                 [CompletionResult]::new('restore', 'restore', [CompletionResultType]::ParameterValue, ".NET dependency restorer")
                 [CompletionResult]::new('run', 'run', [CompletionResultType]::ParameterValue, ".NET Run Command")
                 [CompletionResult]::new('solution', 'solution', [CompletionResultType]::ParameterValue, ".NET modify solution file command")
@@ -56,50 +54,6 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('sdk', 'sdk', [CompletionResultType]::ParameterValue, ".NET SDK Command")
                 [CompletionResult]::new('workload', 'workload', [CompletionResultType]::ParameterValue, "Install or work with workloads that extend the .NET experience.")
                 [CompletionResult]::new('completions', 'completions', [CompletionResultType]::ParameterValue, "Commands for generating and registering completions for supported shells")
-            )
-            $completions += $staticCompletions
-            break
-        }
-        'testhost;add' {
-            $staticCompletions = @(
-                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, "Add a NuGet package reference to the project.")
-                [CompletionResult]::new('reference', 'reference', [CompletionResultType]::ParameterValue, "Add a project-to-project reference to the project.")
-            )
-            $completions += $staticCompletions
-            break
-        }
-        'testhost;add;package' {
-            $staticCompletions = @(
-                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the package to add.")
-                [CompletionResult]::new('--version', '-v', [CompletionResultType]::ParameterName, "The version of the package to add.")
-                [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "Add the reference only when targeting a specific framework.")
-                [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "Add the reference only when targeting a specific framework.")
-                [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Add the reference without performing restore preview and compatibility check.")
-                [CompletionResult]::new('--no-restore', '-n', [CompletionResultType]::ParameterName, "Add the reference without performing restore preview and compatibility check.")
-                [CompletionResult]::new('--source', '--source', [CompletionResultType]::ParameterName, "The NuGet package source to use during the restore.")
-                [CompletionResult]::new('--source', '-s', [CompletionResultType]::ParameterName, "The NuGet package source to use during the restore.")
-                [CompletionResult]::new('--package-directory', '--package-directory', [CompletionResultType]::ParameterName, "The directory to restore packages to.")
-                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
-                [CompletionResult]::new('--prerelease', '--prerelease', [CompletionResultType]::ParameterName, "Allows prerelease packages to be installed.")
-                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-            )
-            $completions += $staticCompletions
-            $text = $commandAst.ToString()
-            $dotnetCompleteResults = @(dotnet complete --position $cursorPosition "$text") | Where-Object { $_ -NotMatch "^-|^/" }
-            $dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }
-            $completions += $dynamicCompletions
-            break
-        }
-        'testhost;add;reference' {
-            $staticCompletions = @(
-                [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "Add the reference only when targeting a specific framework.")
-                [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "Add the reference only when targeting a specific framework.")
-                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
-                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
             $completions += $staticCompletions
             break
@@ -190,50 +144,6 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             break
         }
         'testhost;fsi' {
-            $staticCompletions = @(
-                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-            )
-            $completions += $staticCompletions
-            break
-        }
-        'testhost;list' {
-            $staticCompletions = @(
-                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, "List all package references of the project or solution.")
-                [CompletionResult]::new('reference', 'reference', [CompletionResultType]::ParameterValue, "List all project-to-project references of the project.")
-            )
-            $completions += $staticCompletions
-            break
-        }
-        'testhost;list;package' {
-            $staticCompletions = @(
-                [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
-                [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
-                [CompletionResult]::new('--outdated', '--outdated', [CompletionResultType]::ParameterName, "Lists packages that have newer versions. Cannot be combined with `'--deprecated`' or `'--vulnerable`' options.")
-                [CompletionResult]::new('--deprecated', '--deprecated', [CompletionResultType]::ParameterName, "Lists packages that have been deprecated. Cannot be combined with `'--vulnerable`' or `'--outdated`' options.")
-                [CompletionResult]::new('--vulnerable', '--vulnerable', [CompletionResultType]::ParameterName, "Lists packages that have known vulnerabilities. Cannot be combined with `'--deprecated`' or `'--outdated`' options.")
-                [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.")
-                [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.")
-                [CompletionResult]::new('--include-transitive', '--include-transitive', [CompletionResultType]::ParameterName, "Lists transitive and top-level packages.")
-                [CompletionResult]::new('--include-prerelease', '--include-prerelease', [CompletionResultType]::ParameterName, "Consider packages with prerelease versions when searching for newer packages. Requires the `'--outdated`' option.")
-                [CompletionResult]::new('--highest-patch', '--highest-patch', [CompletionResultType]::ParameterName, "Consider only the packages with a matching major and minor version numbers when searching for newer packages. Requires the `'--outdated`' option.")
-                [CompletionResult]::new('--highest-minor', '--highest-minor', [CompletionResultType]::ParameterName, "Consider only the packages with a matching major version number when searching for newer packages. Requires the `'--outdated`' option.")
-                [CompletionResult]::new('--config', '--config', [CompletionResultType]::ParameterName, "The path to the NuGet config file to use. Requires the `'--outdated`', `'--deprecated`' or `'--vulnerable`' option.")
-                [CompletionResult]::new('--config', '--configfile', [CompletionResultType]::ParameterName, "The path to the NuGet config file to use. Requires the `'--outdated`', `'--deprecated`' or `'--vulnerable`' option.")
-                [CompletionResult]::new('--source', '--source', [CompletionResultType]::ParameterName, "The NuGet sources to use when searching for newer packages. Requires the `'--outdated`', `'--deprecated`' or `'--vulnerable`' option.")
-                [CompletionResult]::new('--source', '-s', [CompletionResultType]::ParameterName, "The NuGet sources to use when searching for newer packages. Requires the `'--outdated`', `'--deprecated`' or `'--vulnerable`' option.")
-                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
-                [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "Specifies the output format type for the list packages command.")
-                [CompletionResult]::new('--output-version', '--output-version', [CompletionResultType]::ParameterName, "Specifies the version of machine-readable output. Requires the `'--format json`' option.")
-                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-            )
-            $completions += $staticCompletions
-            break
-        }
-        'testhost;list;reference' {
             $staticCompletions = @(
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
@@ -472,6 +382,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--no-service-endpoint', '--no-service-endpoint', [CompletionResultType]::ParameterName, "--no-service-endpoint")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "--interactive")
                 [CompletionResult]::new('--skip-duplicate', '--skip-duplicate', [CompletionResultType]::ParameterName, "--skip-duplicate")
+                [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "--configfile")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -656,6 +567,9 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, "Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.")
+                [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, "Add a NuGet package reference to the project.")
+                [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, "List all package references of the project or solution.")
+                [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, "Remove a NuGet package reference from the project.")
             )
             $completions += $staticCompletions
             break
@@ -671,6 +585,67 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior")
                 [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "Format the output accordingly. Either ``table``, or ``json``. The default value is ``table``.")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Display this amount of details in the output: ``normal``, ``minimal``, ``detailed``. The default is ``normal``")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+            )
+            $completions += $staticCompletions
+            break
+        }
+        'testhost;package;add' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the package to add.")
+                [CompletionResult]::new('--version', '-v', [CompletionResultType]::ParameterName, "The version of the package to add.")
+                [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "Add the reference only when targeting a specific framework.")
+                [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "Add the reference only when targeting a specific framework.")
+                [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Add the reference without performing restore preview and compatibility check.")
+                [CompletionResult]::new('--no-restore', '-n', [CompletionResultType]::ParameterName, "Add the reference without performing restore preview and compatibility check.")
+                [CompletionResult]::new('--source', '--source', [CompletionResultType]::ParameterName, "The NuGet package source to use during the restore.")
+                [CompletionResult]::new('--source', '-s', [CompletionResultType]::ParameterName, "The NuGet package source to use during the restore.")
+                [CompletionResult]::new('--package-directory', '--package-directory', [CompletionResultType]::ParameterName, "The directory to restore packages to.")
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
+                [CompletionResult]::new('--prerelease', '--prerelease', [CompletionResultType]::ParameterName, "Allows prerelease packages to be installed.")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+            )
+            $completions += $staticCompletions
+            $text = $commandAst.ToString()
+            $dotnetCompleteResults = @(dotnet complete --position $cursorPosition "$text") | Where-Object { $_ -NotMatch "^-|^/" }
+            $dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }
+            $completions += $dynamicCompletions
+            break
+        }
+        'testhost;package;list' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--outdated', '--outdated', [CompletionResultType]::ParameterName, "Lists packages that have newer versions. Cannot be combined with `'--deprecated`' or `'--vulnerable`' options.")
+                [CompletionResult]::new('--deprecated', '--deprecated', [CompletionResultType]::ParameterName, "Lists packages that have been deprecated. Cannot be combined with `'--vulnerable`' or `'--outdated`' options.")
+                [CompletionResult]::new('--vulnerable', '--vulnerable', [CompletionResultType]::ParameterName, "Lists packages that have known vulnerabilities. Cannot be combined with `'--deprecated`' or `'--outdated`' options.")
+                [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.")
+                [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.")
+                [CompletionResult]::new('--include-transitive', '--include-transitive', [CompletionResultType]::ParameterName, "Lists transitive and top-level packages.")
+                [CompletionResult]::new('--include-prerelease', '--include-prerelease', [CompletionResultType]::ParameterName, "Consider packages with prerelease versions when searching for newer packages. Requires the `'--outdated`' option.")
+                [CompletionResult]::new('--highest-patch', '--highest-patch', [CompletionResultType]::ParameterName, "Consider only the packages with a matching major and minor version numbers when searching for newer packages. Requires the `'--outdated`' option.")
+                [CompletionResult]::new('--highest-minor', '--highest-minor', [CompletionResultType]::ParameterName, "Consider only the packages with a matching major version number when searching for newer packages. Requires the `'--outdated`' option.")
+                [CompletionResult]::new('--config', '--config', [CompletionResultType]::ParameterName, "The path to the NuGet config file to use. Requires the `'--outdated`', `'--deprecated`' or `'--vulnerable`' option.")
+                [CompletionResult]::new('--config', '--configfile', [CompletionResultType]::ParameterName, "The path to the NuGet config file to use. Requires the `'--outdated`', `'--deprecated`' or `'--vulnerable`' option.")
+                [CompletionResult]::new('--source', '--source', [CompletionResultType]::ParameterName, "The NuGet sources to use when searching for newer packages. Requires the `'--outdated`', `'--deprecated`' or `'--vulnerable`' option.")
+                [CompletionResult]::new('--source', '-s', [CompletionResultType]::ParameterName, "The NuGet sources to use when searching for newer packages. Requires the `'--outdated`', `'--deprecated`' or `'--vulnerable`' option.")
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
+                [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "Specifies the output format type for the list packages command.")
+                [CompletionResult]::new('--output-version', '--output-version', [CompletionResultType]::ParameterName, "Specifies the version of machine-readable output. Requires the `'--format json`' option.")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+            )
+            $completions += $staticCompletions
+            break
+        }
+        'testhost;package;remove' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -711,29 +686,44 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $completions += $staticCompletions
             break
         }
-        'testhost;remove' {
+        'testhost;reference' {
             $staticCompletions = @(
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, "Remove a NuGet package reference from the project.")
-                [CompletionResult]::new('reference', 'reference', [CompletionResultType]::ParameterValue, "Remove a project-to-project reference from the project.")
+                [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, "Add a project-to-project reference to the project.")
+                [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, "List all project-to-project references of the project.")
+                [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, "Remove a project-to-project reference from the project.")
             )
             $completions += $staticCompletions
             break
         }
-        'testhost;remove;package' {
+        'testhost;reference;add' {
             $staticCompletions = @(
+                [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "Add the reference only when targeting a specific framework.")
+                [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "Add the reference only when targeting a specific framework.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
             $completions += $staticCompletions
             break
         }
-        'testhost;remove;reference' {
+        'testhost;reference;list' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+            )
+            $completions += $staticCompletions
+            break
+        }
+        'testhost;reference;remove' {
             $staticCompletions = @(
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "Remove the reference only when targeting a specific framework.")
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "Remove the reference only when targeting a specific framework.")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -802,6 +792,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--os', '--os', [CompletionResultType]::ParameterName, "The target operating system.")
                 [CompletionResult]::new('--disable-build-servers', '--disable-build-servers', [CompletionResultType]::ParameterName, "Force the command to ignore any persistent build servers.")
                 [CompletionResult]::new('--artifacts-path', '--artifacts-path', [CompletionResultType]::ParameterName, "The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.")
+                [CompletionResult]::new('--environment', '--environment', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;seperated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
+                [CompletionResult]::new('--environment', '-e', [CompletionResultType]::ParameterName, "Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples: -e VARIABLE=abc -e VARIABLE=`"value with spaces`" -e VARIABLE=`"value;seperated with;semicolons`" -e VAR1=abc -e VAR2=def -e VAR3=ghi ")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -906,7 +898,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--blame-crash', '--blame-crash', [CompletionResultType]::ParameterName, "Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.    For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.  Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.  The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump    To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.  Implies --blame.")
                 [CompletionResult]::new('--blame-crash-dump-type', '--blame-crash-dump-type', [CompletionResultType]::ParameterName, "The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.")
                 [CompletionResult]::new('--blame-crash-collect-always', '--blame-crash-collect-always', [CompletionResultType]::ParameterName, "Enables collecting crash dump on expected as well as unexpected testhost exit.")
-                [CompletionResult]::new('--blame-hang', '--blame-hang', [CompletionResultType]::ParameterName, "Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout. Implies --blame-hang.")
+                [CompletionResult]::new('--blame-hang', '--blame-hang', [CompletionResultType]::ParameterName, "Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.")
                 [CompletionResult]::new('--blame-hang-dump-type', '--blame-hang-dump-type', [CompletionResultType]::ParameterName, "The type of crash dump to be collected. The supported values are full (default), mini, and none. When `'none`' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.")
                 [CompletionResult]::new('--blame-hang-timeout', '--blame-hang-timeout', [CompletionResultType]::ParameterName, "Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h. The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds. When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case, For MSTest before 2.2.4, the timeout is used for all testcases.")
                 [CompletionResult]::new('--nologo', '--nologo', [CompletionResultType]::ParameterName, "Run test(s), without displaying Microsoft Testplatform banner")
@@ -1136,7 +1128,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
-                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "Update to the specified workload version.")
+                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "A workload version to display or one or more workloads and their versions joined by the `'@`' character.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -1152,7 +1144,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--temp-dir', '--temp-dir', [CompletionResultType]::ParameterName, "Specify a temporary directory for this command to download and extract NuGet packages (must be secure).")
                 [CompletionResult]::new('--from-previous-sdk', '--from-previous-sdk', [CompletionResultType]::ParameterName, "Include workloads installed with earlier SDK versions in update.")
                 [CompletionResult]::new('--advertising-manifests-only', '--advertising-manifests-only', [CompletionResultType]::ParameterName, "Only update advertising manifests.")
-                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "Update to the specified workload version.")
+                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "A workload version to display or one or more workloads and their versions joined by the `'@`' character.")
                 [CompletionResult]::new('--disable-parallel', '--disable-parallel', [CompletionResultType]::ParameterName, "Prevent restoring multiple projects in parallel.")
                 [CompletionResult]::new('--ignore-failed-sources', '--ignore-failed-sources', [CompletionResultType]::ParameterName, "Treat package source failures as warnings.")
                 [CompletionResult]::new('--no-http-cache', '--no-http-cache', [CompletionResultType]::ParameterName, "Do not cache packages and http requests.")
@@ -1179,7 +1171,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('version', 'version', [CompletionResultType]::ParameterValue, "Output a list of the latest released workload versions. Takes the --take option to specify how many to provide and --format to alter the format.")
+                [CompletionResult]::new('version', 'version', [CompletionResultType]::ParameterValue, "`'dotnet workload search version`' has three functions depending on its argument:       1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.          Example:            dotnet workload search version --take 2 --format json            [{`"workloadVersion`":`"9.0.201`"},{`"workloadVersion`":`"9.0.200.1`"}]       2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.          Example:            dotnet workload search version 9.0.201            Workload manifest ID                               Manifest feature band      Manifest Version            ------------------------------------------------------------------------------------------------            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80            microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1            microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9            microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.sdk.aspire                           8.0.100                    8.2.0       3. If one or more workloads are provided along with their versions (by joining them with the `'@`' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.          Example:            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1            9.0.201     ")
             )
             $completions += $staticCompletions
             break
@@ -1236,7 +1228,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
-                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "Update to the specified workload version.")
+                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "A workload version to display or one or more workloads and their versions joined by the `'@`' character.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

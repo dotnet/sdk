@@ -33,72 +33,6 @@ _testhost() {
             (( CURRENT += 1 ))
             curcontext="${curcontext%:*:*}:testhost-command-$line[1]:"
             case $line[1] in
-                (add)
-                    _arguments "${_arguments_options[@]}" : \
-                        '--help[Show command line help.]' \
-                        '-h[Show command line help.]' \
-                        '::PROJECT -- The project file to operate on. If a file is not specified, the command will search the current directory for one.: ' \
-                        ":: :_testhost__add_commands" \
-                        "*::: :->add" \
-                        && ret=0
-                        case $state in
-                            (add)
-                                words=($line[2] "${words[@]}")
-                                (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-add-command-$line[2]:"
-                                case $line[2] in
-                                    (package)
-                                        _arguments "${_arguments_options[@]}" : \
-                                            '--version=[The version of the package to add.]:VERSION:->dotnet_dynamic_complete' \
-                                            '-v=[The version of the package to add.]:VERSION:->dotnet_dynamic_complete' \
-                                            '--framework=[Add the reference only when targeting a specific framework.]:FRAMEWORK: ' \
-                                            '-f=[Add the reference only when targeting a specific framework.]:FRAMEWORK: ' \
-                                            '--no-restore[Add the reference without performing restore preview and compatibility check.]' \
-                                            '-n[Add the reference without performing restore preview and compatibility check.]' \
-                                            '--source=[The NuGet package source to use during the restore.]:SOURCE: ' \
-                                            '-s=[The NuGet package source to use during the restore.]:SOURCE: ' \
-                                            '--package-directory=[The directory to restore packages to.]:PACKAGE_DIR: ' \
-                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--prerelease[Allows prerelease packages to be installed.]' \
-                                            '--help[Show command line help.]' \
-                                            '-h[Show command line help.]' \
-                                            ':PACKAGE_NAME -- The package reference to add.:->dotnet_dynamic_complete' \
-                                            && ret=0
-                                            case $state in
-                                                (dotnet_dynamic_complete)
-                                                    local completions=()
-                                                    local result=$(dotnet complete -- "${original_args[@]}")
-                                                    for line in ${(f)result}; do
-                                                        completions+=(${(q)line})
-                                                    done
-                                                    _describe 'completions' $completions && ret=0
-                                                ;;
-                                            esac
-                                        ;;
-                                    (reference)
-                                        _arguments "${_arguments_options[@]}" : \
-                                            '--framework=[Add the reference only when targeting a specific framework.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                                            '-f=[Add the reference only when targeting a specific framework.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--help[Show command line help.]' \
-                                            '-h[Show command line help.]' \
-                                            '*::PROJECT_PATH -- The paths to the projects to add as references.: ' \
-                                            && ret=0
-                                            case $state in
-                                                (dotnet_dynamic_complete)
-                                                    local completions=()
-                                                    local result=$(dotnet complete -- "${original_args[@]}")
-                                                    for line in ${(f)result}; do
-                                                        completions+=(${(q)line})
-                                                    done
-                                                    _describe 'completions' $completions && ret=0
-                                                ;;
-                                            esac
-                                        ;;
-                                esac
-                            ;;
-                        esac
-                    ;;
                 (build)
                     _arguments "${_arguments_options[@]}" : \
                         '--use-current-runtime[Use current runtime as the target runtime.]' \
@@ -213,54 +147,6 @@ _testhost() {
                         '-h[Show command line help.]' \
                         '*::arguments: ' \
                         && ret=0
-                    ;;
-                (list)
-                    _arguments "${_arguments_options[@]}" : \
-                        '--help[Show command line help.]' \
-                        '-h[Show command line help.]' \
-                        '::PROJECT | SOLUTION -- The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.: ' \
-                        ":: :_testhost__list_commands" \
-                        "*::: :->list" \
-                        && ret=0
-                        case $state in
-                            (list)
-                                words=($line[2] "${words[@]}")
-                                (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-list-command-$line[2]:"
-                                case $line[2] in
-                                    (package)
-                                        _arguments "${_arguments_options[@]}" : \
-                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '--outdated[Lists packages that have newer versions. Cannot be combined with '\''--deprecated'\'' or '\''--vulnerable'\'' options.]' \
-                                            '--deprecated[Lists packages that have been deprecated. Cannot be combined with '\''--vulnerable'\'' or '\''--outdated'\'' options.]' \
-                                            '--vulnerable[Lists packages that have known vulnerabilities. Cannot be combined with '\''--deprecated'\'' or '\''--outdated'\'' options.]' \
-                                            '*--framework=[Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.]:FRAMEWORK | FRAMEWORK\RID: ' \
-                                            '*-f=[Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.]:FRAMEWORK | FRAMEWORK\RID: ' \
-                                            '--include-transitive[Lists transitive and top-level packages.]' \
-                                            '--include-prerelease[Consider packages with prerelease versions when searching for newer packages. Requires the '\''--outdated'\'' option.]' \
-                                            '--highest-patch[Consider only the packages with a matching major and minor version numbers when searching for newer packages. Requires the '\''--outdated'\'' option.]' \
-                                            '--highest-minor[Consider only the packages with a matching major version number when searching for newer packages. Requires the '\''--outdated'\'' option.]' \
-                                            '--config=[The path to the NuGet config file to use. Requires the '\''--outdated'\'', '\''--deprecated'\'' or '\''--vulnerable'\'' option.]:CONFIG_FILE: ' \
-                                            '--configfile=[The path to the NuGet config file to use. Requires the '\''--outdated'\'', '\''--deprecated'\'' or '\''--vulnerable'\'' option.]:CONFIG_FILE: ' \
-                                            '*--source=[The NuGet sources to use when searching for newer packages. Requires the '\''--outdated'\'', '\''--deprecated'\'' or '\''--vulnerable'\'' option.]:SOURCE: ' \
-                                            '*-s=[The NuGet sources to use when searching for newer packages. Requires the '\''--outdated'\'', '\''--deprecated'\'' or '\''--vulnerable'\'' option.]:SOURCE: ' \
-                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--format=[Specifies the output format type for the list packages command.]: :((console\:"console" json\:"json" ))' \
-                                            '--output-version=[Specifies the version of machine-readable output. Requires the '\''--format json'\'' option.]: : ' \
-                                            '--help[Show command line help.]' \
-                                            '-h[Show command line help.]' \
-                                            && ret=0
-                                        ;;
-                                    (reference)
-                                        _arguments "${_arguments_options[@]}" : \
-                                            '--help[Show command line help.]' \
-                                            '-h[Show command line help.]' \
-                                            && ret=0
-                                        ;;
-                                esac
-                            ;;
-                        esac
                     ;;
                 (msbuild)
                     _arguments "${_arguments_options[@]}" : \
@@ -478,6 +364,7 @@ _testhost() {
                                             '--no-service-endpoint[]' \
                                             '--interactive=[]: :((False\:"False" True\:"True" ))' \
                                             '--skip-duplicate[]' \
+                                            '--configfile=[]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::package-paths: ' \
@@ -693,6 +580,69 @@ _testhost() {
                                             '::SearchTerm -- Search term to filter package names, descriptions, and tags. Used as a literal value. Example\: \`dotnet package search some.package\`. See also \`--exact-match\`.: ' \
                                             && ret=0
                                         ;;
+                                    (add)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--version=[The version of the package to add.]:VERSION:->dotnet_dynamic_complete' \
+                                            '-v=[The version of the package to add.]:VERSION:->dotnet_dynamic_complete' \
+                                            '--framework=[Add the reference only when targeting a specific framework.]:FRAMEWORK: ' \
+                                            '-f=[Add the reference only when targeting a specific framework.]:FRAMEWORK: ' \
+                                            '--no-restore[Add the reference without performing restore preview and compatibility check.]' \
+                                            '-n[Add the reference without performing restore preview and compatibility check.]' \
+                                            '--source=[The NuGet package source to use during the restore.]:SOURCE: ' \
+                                            '-s=[The NuGet package source to use during the restore.]:SOURCE: ' \
+                                            '--package-directory=[The directory to restore packages to.]:PACKAGE_DIR: ' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--prerelease[Allows prerelease packages to be installed.]' \
+                                            '--project=[]: : ' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            ':PACKAGE_NAME -- The package reference to add.:->dotnet_dynamic_complete' \
+                                            && ret=0
+                                            case $state in
+                                                (dotnet_dynamic_complete)
+                                                    local completions=()
+                                                    local result=$(dotnet complete -- "${original_args[@]}")
+                                                    for line in ${(f)result}; do
+                                                        completions+=(${(q)line})
+                                                    done
+                                                    _describe 'completions' $completions && ret=0
+                                                ;;
+                                            esac
+                                        ;;
+                                    (list)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '--outdated[Lists packages that have newer versions. Cannot be combined with '\''--deprecated'\'' or '\''--vulnerable'\'' options.]' \
+                                            '--deprecated[Lists packages that have been deprecated. Cannot be combined with '\''--vulnerable'\'' or '\''--outdated'\'' options.]' \
+                                            '--vulnerable[Lists packages that have known vulnerabilities. Cannot be combined with '\''--deprecated'\'' or '\''--outdated'\'' options.]' \
+                                            '*--framework=[Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.]:FRAMEWORK | FRAMEWORK\RID: ' \
+                                            '*-f=[Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.]:FRAMEWORK | FRAMEWORK\RID: ' \
+                                            '--include-transitive[Lists transitive and top-level packages.]' \
+                                            '--include-prerelease[Consider packages with prerelease versions when searching for newer packages. Requires the '\''--outdated'\'' option.]' \
+                                            '--highest-patch[Consider only the packages with a matching major and minor version numbers when searching for newer packages. Requires the '\''--outdated'\'' option.]' \
+                                            '--highest-minor[Consider only the packages with a matching major version number when searching for newer packages. Requires the '\''--outdated'\'' option.]' \
+                                            '--config=[The path to the NuGet config file to use. Requires the '\''--outdated'\'', '\''--deprecated'\'' or '\''--vulnerable'\'' option.]:CONFIG_FILE: ' \
+                                            '--configfile=[The path to the NuGet config file to use. Requires the '\''--outdated'\'', '\''--deprecated'\'' or '\''--vulnerable'\'' option.]:CONFIG_FILE: ' \
+                                            '*--source=[The NuGet sources to use when searching for newer packages. Requires the '\''--outdated'\'', '\''--deprecated'\'' or '\''--vulnerable'\'' option.]:SOURCE: ' \
+                                            '*-s=[The NuGet sources to use when searching for newer packages. Requires the '\''--outdated'\'', '\''--deprecated'\'' or '\''--vulnerable'\'' option.]:SOURCE: ' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--format=[Specifies the output format type for the list packages command.]: :((console\:"console" json\:"json" ))' \
+                                            '--output-version=[Specifies the version of machine-readable output. Requires the '\''--format json'\'' option.]: : ' \
+                                            '--project=[]: : ' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            && ret=0
+                                        ;;
+                                    (remove)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--project=[]: : ' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            '*::PACKAGE_NAME -- The package reference to remove.: ' \
+                                            && ret=0
+                                        ;;
                                 esac
                             ;;
                         esac
@@ -740,32 +690,53 @@ _testhost() {
                             ;;
                         esac
                     ;;
-                (remove)
+                (reference)
                     _arguments "${_arguments_options[@]}" : \
+                        '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        '::PROJECT -- The project file to operate on. If a file is not specified, the command will search the current directory for one.: ' \
-                        ":: :_testhost__remove_commands" \
-                        "*::: :->remove" \
+                        ":: :_testhost__reference_commands" \
+                        "*::: :->reference" \
                         && ret=0
                         case $state in
-                            (remove)
-                                words=($line[2] "${words[@]}")
+                            (reference)
+                                words=($line[1] "${words[@]}")
                                 (( CURRENT += 1 ))
-                                curcontext="${curcontext%:*:*}:testhost-remove-command-$line[2]:"
-                                case $line[2] in
-                                    (package)
+                                curcontext="${curcontext%:*:*}:testhost-reference-command-$line[1]:"
+                                case $line[1] in
+                                    (add)
                                         _arguments "${_arguments_options[@]}" : \
+                                            '--framework=[Add the reference only when targeting a specific framework.]:FRAMEWORK:->dotnet_dynamic_complete' \
+                                            '-f=[Add the reference only when targeting a specific framework.]:FRAMEWORK:->dotnet_dynamic_complete' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '*::PACKAGE_NAME -- The package reference to remove.: ' \
+                                            '*::PROJECT_PATH -- The paths to the projects to add as references.: ' \
+                                            && ret=0
+                                            case $state in
+                                                (dotnet_dynamic_complete)
+                                                    local completions=()
+                                                    local result=$(dotnet complete -- "${original_args[@]}")
+                                                    for line in ${(f)result}; do
+                                                        completions+=(${(q)line})
+                                                    done
+                                                    _describe 'completions' $completions && ret=0
+                                                ;;
+                                            esac
+                                        ;;
+                                    (list)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
                                             && ret=0
                                         ;;
-                                    (reference)
+                                    (remove)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--framework=[Remove the reference only when targeting a specific framework.]:FRAMEWORK: ' \
                                             '-f=[Remove the reference only when targeting a specific framework.]:FRAMEWORK: ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PROJECT_PATH -- The paths to the referenced projects to remove.:->dotnet_dynamic_complete' \
@@ -852,6 +823,8 @@ _testhost() {
                         '--os=[The target operating system.]:OS: ' \
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
+                        '*--environment=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
+                        '*-e=[Sets the value of an environment variable.  Creates the variable if it does not exist, overrides if it does.  This will force the tests to be run in an isolated process.  This argument can be specified multiple times to provide multiple variables.  Examples\: -e VARIABLE=abc -e VARIABLE=\"value with spaces\" -e VARIABLE=\"value;seperated with;semicolons\" -e VAR1=abc -e VAR2=def -e VAR3=ghi ]:NAME="VALUE": ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         '*::applicationArguments -- Arguments passed to the application that is being run.: ' \
@@ -975,7 +948,7 @@ _testhost() {
                         '--blame-crash[Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.    For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.  Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.  The tools can be downloaded here\: https\://docs.microsoft.com/sysinternals/downloads/procdump    To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.  Implies --blame.]' \
                         '--blame-crash-dump-type=[The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.]:DUMP_TYPE:((full\:"full" mini\:"mini" ))' \
                         '--blame-crash-collect-always[Enables collecting crash dump on expected as well as unexpected testhost exit.]' \
-                        '--blame-hang[Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout. Implies --blame-hang.]' \
+                        '--blame-hang[Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.]' \
                         '--blame-hang-dump-type=[The type of crash dump to be collected. The supported values are full (default), mini, and none. When '\''none'\'' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.]:DUMP_TYPE:((full\:"full" mini\:"mini" none\:"none" ))' \
                         '--blame-hang-timeout=[Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h. The timeout value is specified in the following format\: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds. When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case, For MSTest before 2.2.4, the timeout is used for all testcases.]:TIMESPAN: ' \
                         '--nologo[Run test(s), without displaying Microsoft Testplatform banner]' \
@@ -1206,7 +1179,7 @@ _testhost() {
                                             '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '--version=[Update to the specified workload version.]: : ' \
+                                            '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::workloadId -- The NuGet package ID of the workload to install.: ' \
@@ -1221,7 +1194,7 @@ _testhost() {
                                             '--temp-dir=[Specify a temporary directory for this command to download and extract NuGet packages (must be secure).]: : ' \
                                             '--from-previous-sdk=[Include workloads installed with earlier SDK versions in update.]: :((False\:"False" True\:"True" ))' \
                                             '--advertising-manifests-only[Only update advertising manifests.]' \
-                                            '--version=[Update to the specified workload version.]: : ' \
+                                            '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
@@ -1261,7 +1234,7 @@ _testhost() {
                                                                 '--include-previews=[]: :((False\:"False" True\:"True" ))' \
                                                                 '--help[Show command line help.]' \
                                                                 '-h[Show command line help.]' \
-                                                                '::WORKLOAD_VERSION -- Output workload manifest versions associated with the provided workload version.: ' \
+                                                                '*::WORKLOAD_VERSION -- Output workload manifest versions associated with the provided workload version.: ' \
                                                                 && ret=0
                                                             ;;
                                                     esac
@@ -1306,7 +1279,7 @@ _testhost() {
                                             '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '--version=[Update to the specified workload version.]: : ' \
+                                            '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PROJECT | SOLUTION -- The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.: ' \
@@ -1368,20 +1341,18 @@ _testhost() {
 (( $+functions[_testhost_commands] )) ||
 _testhost_commands() {
     local commands; commands=(
-        'add:.NET Add Command' \
         'build:.NET Builder' \
         'build-server:Interact with servers started from a build.' \
         'clean:.NET Clean Command' \
         'format:' \
         'fsi:' \
-        'list:List references or packages of a .NET project.' \
         'msbuild:.NET Builder' \
         'new:Template Instantiation Commands for .NET CLI.' \
         'nuget:' \
         'pack:.NET Core NuGet Package Packer' \
         'package:' \
         'publish:Publisher for the .NET Platform' \
-        'remove:.NET Remove Command' \
+        'reference:.NET Remove Command' \
         'restore:.NET dependency restorer' \
         'run:.NET Run Command' \
         'solution:.NET modify solution file command' \
@@ -1395,27 +1366,6 @@ _testhost_commands() {
         'completions:Commands for generating and registering completions for supported shells' \
     )
     _describe -t commands 'testhost commands' commands "$@"
-}
-
-(( $+functions[_testhost__add_commands] )) ||
-_testhost__add_commands() {
-    local commands; commands=(
-        'package:Add a NuGet package reference to the project.' \
-        'reference:Add a project-to-project reference to the project.' \
-    )
-    _describe -t commands 'testhost add commands' commands "$@"
-}
-
-(( $+functions[_testhost__add__package_commands] )) ||
-_testhost__add__package_commands() {
-    local commands; commands=()
-    _describe -t commands 'testhost add package commands' commands "$@"
-}
-
-(( $+functions[_testhost__add__reference_commands] )) ||
-_testhost__add__reference_commands() {
-    local commands; commands=()
-    _describe -t commands 'testhost add reference commands' commands "$@"
 }
 
 (( $+functions[_testhost__build_commands] )) ||
@@ -1454,27 +1404,6 @@ _testhost__format_commands() {
 _testhost__fsi_commands() {
     local commands; commands=()
     _describe -t commands 'testhost fsi commands' commands "$@"
-}
-
-(( $+functions[_testhost__list_commands] )) ||
-_testhost__list_commands() {
-    local commands; commands=(
-        'package:List all package references of the project or solution.' \
-        'reference:List all project-to-project references of the project.' \
-    )
-    _describe -t commands 'testhost list commands' commands "$@"
-}
-
-(( $+functions[_testhost__list__package_commands] )) ||
-_testhost__list__package_commands() {
-    local commands; commands=()
-    _describe -t commands 'testhost list package commands' commands "$@"
-}
-
-(( $+functions[_testhost__list__reference_commands] )) ||
-_testhost__list__reference_commands() {
-    local commands; commands=()
-    _describe -t commands 'testhost list reference commands' commands "$@"
 }
 
 (( $+functions[_testhost__msbuild_commands] )) ||
@@ -1655,6 +1584,9 @@ _testhost__pack_commands() {
 _testhost__package_commands() {
     local commands; commands=(
         'search:Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.' \
+        'add:Add a NuGet package reference to the project.' \
+        'list:List all package references of the project or solution.' \
+        'remove:Remove a NuGet package reference from the project.' \
     )
     _describe -t commands 'testhost package commands' commands "$@"
 }
@@ -1665,31 +1597,56 @@ _testhost__package__search_commands() {
     _describe -t commands 'testhost package search commands' commands "$@"
 }
 
+(( $+functions[_testhost__package__add_commands] )) ||
+_testhost__package__add_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost package add commands' commands "$@"
+}
+
+(( $+functions[_testhost__package__list_commands] )) ||
+_testhost__package__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost package list commands' commands "$@"
+}
+
+(( $+functions[_testhost__package__remove_commands] )) ||
+_testhost__package__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost package remove commands' commands "$@"
+}
+
 (( $+functions[_testhost__publish_commands] )) ||
 _testhost__publish_commands() {
     local commands; commands=()
     _describe -t commands 'testhost publish commands' commands "$@"
 }
 
-(( $+functions[_testhost__remove_commands] )) ||
-_testhost__remove_commands() {
+(( $+functions[_testhost__reference_commands] )) ||
+_testhost__reference_commands() {
     local commands; commands=(
-        'package:Remove a NuGet package reference from the project.' \
-        'reference:Remove a project-to-project reference from the project.' \
+        'add:Add a project-to-project reference to the project.' \
+        'list:List all project-to-project references of the project.' \
+        'remove:Remove a project-to-project reference from the project.' \
     )
-    _describe -t commands 'testhost remove commands' commands "$@"
+    _describe -t commands 'testhost reference commands' commands "$@"
 }
 
-(( $+functions[_testhost__remove__package_commands] )) ||
-_testhost__remove__package_commands() {
+(( $+functions[_testhost__reference__add_commands] )) ||
+_testhost__reference__add_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost remove package commands' commands "$@"
+    _describe -t commands 'testhost reference add commands' commands "$@"
 }
 
-(( $+functions[_testhost__remove__reference_commands] )) ||
-_testhost__remove__reference_commands() {
+(( $+functions[_testhost__reference__list_commands] )) ||
+_testhost__reference__list_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost remove reference commands' commands "$@"
+    _describe -t commands 'testhost reference list commands' commands "$@"
+}
+
+(( $+functions[_testhost__reference__remove_commands] )) ||
+_testhost__reference__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost reference remove commands' commands "$@"
 }
 
 (( $+functions[_testhost__restore_commands] )) ||
@@ -1871,7 +1828,7 @@ _testhost__workload__list_commands() {
 (( $+functions[_testhost__workload__search_commands] )) ||
 _testhost__workload__search_commands() {
     local commands; commands=(
-        'version:Output a list of the latest released workload versions. Takes the --take option to specify how many to provide and --format to alter the format.' \
+        'version:'\''dotnet workload search version'\'' has three functions depending on its argument\:       1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.          Example\:            dotnet workload search version --take 2 --format json            \[{\"workloadVersion\"\:\"9.0.201\"},{\"workloadVersion\"\:\"9.0.200.1\"}\]       2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.          Example\:            dotnet workload search version 9.0.201            Workload manifest ID                               Manifest feature band      Manifest Version            ------------------------------------------------------------------------------------------------            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3            microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80            microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1            microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9            microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1            microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7            microsoft.net.sdk.aspire                           8.0.100                    8.2.0       3. If one or more workloads are provided along with their versions (by joining them with the '\''@'\'' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.          Example\:            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1            9.0.201     ' \
     )
     _describe -t commands 'testhost workload search commands' commands "$@"
 }
