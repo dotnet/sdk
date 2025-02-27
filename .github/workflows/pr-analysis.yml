@@ -18,7 +18,7 @@ jobs:
           WORKFLOW_NAME: PR Analysis
         with:
           script: |
-            const { data: runs } = await github.actions.listRepoWorkflowRuns({
+            const { data: runs } = await github.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: context.workflow,
