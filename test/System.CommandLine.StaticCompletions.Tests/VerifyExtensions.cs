@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.CommandLine.StaticCompletions.Shells;
 using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
@@ -13,6 +14,7 @@ public static class VerifyExtensions
     {
         // Can't use sourceFile directly because in CI the file may be rooted at a different location than the compile-time location
         // We do have the source code available, just at a different root, so we can use that compute
+        DumpEnv(log);
         var settings = new VerifySettings();
         if (Environment.GetEnvironmentVariable("CI") is string ci && ci.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
@@ -33,6 +35,16 @@ public static class VerifyExtensions
         var completions = provider.GenerateCompletions(command);
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings, sourceFile: sourceFile);
     }
+
+    private static void DumpEnv(ITestOutputHelper log)
+    {
+        log.WriteLine("Environment Variables:");
+        foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
+        {
+            log.WriteLine($"  {de.Key} = {de.Value}");
+        }
+    }
+
 
     private static DirectoryInfo? GetClosestExistingDirectory(DirectoryInfo? path)
     {
