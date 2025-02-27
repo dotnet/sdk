@@ -84,59 +84,85 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     public async Task RunAsync()
     {
         Stopwatch swRun = Stopwatch.StartNew();
+
+        List<Task> mainForLoopTasks = new();
+
         foreach ((string assemblyName, IAssemblySymbol beforeAssemblySymbol) in _beforeAssemblySymbols)
         {
-            StringBuilder sb = new();
-
-            _log.LogMessage($"Assembly: {beforeAssemblySymbol.Name}:");
-            Stopwatch swAssembly = Stopwatch.StartNew();
-            (SyntaxNode beforeAssemblyNode, SemanticModel beforeModel) = await GetAssemblyRootNodeAndModelAsync(_beforeLoader, beforeAssemblySymbol).ConfigureAwait(false);
-            _log.LogMessage($"        Left doc load: {swAssembly.Elapsed.TotalMilliseconds/1000.0:F2}s");
-
-            // See if an assembly with the same name can be found in the diff folder.
-            if (_afterAssemblySymbols.TryGetValue(assemblyName, out IAssemblySymbol? afterAssemblySymbol))
+            mainForLoopTasks.Add(Task.Run(async () =>
             {
-                swAssembly = Stopwatch.StartNew();
-                (SyntaxNode afterAssemblyNode, SemanticModel afterModel) = await GetAssemblyRootNodeAndModelAsync(_afterLoader, afterAssemblySymbol).ConfigureAwait(false);
-                _log.LogMessage($"        Right doc load: {swAssembly.Elapsed.TotalMilliseconds / 1000.0:F2}s");
+                StringBuilder sb = new();
 
-                // We don't care about changed assembly attributes (for now).
-                swAssembly = Stopwatch.StartNew();
-                sb.Append(VisitChildren(beforeAssemblyNode, afterAssemblyNode, beforeModel, afterModel, wereParentAttributesChanged: false));
-                _log.LogMessage($"        Visit: {swAssembly.Elapsed.TotalMilliseconds / 1000.0:F2}s");
+                _log.LogMessage($"Visiting assembly {beforeAssemblySymbol.Name} (before vs after)...");
 
-                // Remove the found ones. The remaining ones will be processed at the end because they're new.
-                _afterAssemblySymbols.Remove(assemblyName);
-            }
-            else
-            {
-                // The assembly was removed in the diff.
-                sb.Append(GenerateDeletedDiff(beforeAssemblyNode));
-            }
+                Stopwatch swAssembly = Stopwatch.StartNew();
+                (SyntaxNode beforeAssemblyNode, SemanticModel beforeModel) = await GetAssemblyRootNodeAndModelAsync(_beforeLoader, beforeAssemblySymbol).ConfigureAwait(false);
+                string finalMessage = $"Finished visiting {beforeAssemblySymbol.Name} (before) in {swAssembly.Elapsed.TotalMilliseconds / 1000.0:F2}s\n";
 
-            if (sb.Length > 0)
-            {
-                _results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
-            }
+                // See if an assembly with the same name can be found in the diff folder.
+                if (_afterAssemblySymbols.TryGetValue(assemblyName, out IAssemblySymbol? afterAssemblySymbol))
+                {
+                    swAssembly = Stopwatch.StartNew();
+                    (SyntaxNode afterAssemblyNode, SemanticModel afterModel) = await GetAssemblyRootNodeAndModelAsync(_afterLoader, afterAssemblySymbol).ConfigureAwait(false);
+                    finalMessage += $"Finished visiting {afterAssemblySymbol.Name} (after) in {swAssembly.Elapsed.TotalMilliseconds / 1000.0:F2}s\n";
+
+                    // We don't care about changed assembly attributes (for now).
+                    swAssembly = Stopwatch.StartNew();
+                    sb.Append(VisitChildren(beforeAssemblyNode, afterAssemblyNode, beforeModel, afterModel, wereParentAttributesChanged: false));
+                    finalMessage += $"Finished generating diff for {afterAssemblySymbol.Name} (before vs after) in {swAssembly.Elapsed.TotalMilliseconds / 1000.0:F2}s\n";
+
+                    _log.LogMessage(finalMessage);
+                    swAssembly.Stop();
+
+                    // Remove the found ones. The remaining ones will be processed at the end because they're new.
+                    _afterAssemblySymbols.Remove(assemblyName);
+                }
+                else
+                {
+                    // The assembly was removed in the diff.
+                    sb.Append(GenerateDeletedDiff(beforeAssemblyNode));
+                }
+
+                if (sb.Length > 0)
+                {
+                    _results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
+                }
+            }));
         }
+
+        await Task.WhenAll(mainForLoopTasks).ConfigureAwait(false);
+
+        List<Task> rightSideForLoopTasks = new();
 
         // Process the remaining assemblies in the diff folder.
         foreach ((string assemblyName, IAssemblySymbol afterAssemblySymbol) in _afterAssemblySymbols)
         {
-            StringBuilder sb = new();
-            _log.LogMessage($"Assembly: {afterAssemblySymbol.Name}:");
-            Stopwatch swNew = Stopwatch.StartNew();
-            (SyntaxNode afterAssemblyNode, _) = await GetAssemblyRootNodeAndModelAsync(_afterLoader, afterAssemblySymbol).ConfigureAwait(false);
-            _log.LogMessage($"        Right doc load only: {swNew.Elapsed.TotalMilliseconds / 1000.0:F2}s");
-            sb.Append(GenerateAddedDiff(afterAssemblyNode));
-
-            if (sb.Length > 0)
+            rightSideForLoopTasks.Add(Task.Run(async () =>
             {
-                _results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
-            }
+                StringBuilder sb = new();
+                _log.LogMessage($"Visiting *new* assembly {afterAssemblySymbol.Name}...");
+
+                Stopwatch swNew = Stopwatch.StartNew();
+                (SyntaxNode afterAssemblyNode, _) = await GetAssemblyRootNodeAndModelAsync(_afterLoader, afterAssemblySymbol).ConfigureAwait(false);
+                string finalMessage = $"Finished visiting *new* assembly {afterAssemblySymbol.Name} in {swNew.Elapsed.TotalMilliseconds / 1000.0:F2}s\n";
+
+                swNew = Stopwatch.StartNew();
+                sb.Append(GenerateAddedDiff(afterAssemblyNode));
+                finalMessage += $"Finished generating diff for *new* assembly {afterAssemblySymbol.Name} in {swNew.Elapsed.TotalMilliseconds / 1000.0:F2}s\n";
+                _log.LogMessage(finalMessage);
+                swNew.Stop();
+
+                if (sb.Length > 0)
+                {
+                    _results.Add(assemblyName, GetFinalAssemblyDiff(assemblyName, sb.ToString()));
+                }
+            }));
         }
 
-        _log.LogMessage($"TOTAL: {swRun.Elapsed.TotalMilliseconds / 1000.0 / 60.0:F2} mins.");
+        await Task.WhenAll(rightSideForLoopTasks).ConfigureAwait(false);
+
+        _log.LogMessage($"FINAL TOTAL: {swRun.Elapsed.TotalMilliseconds / 1000.0 / 60.0:F2} mins.");
+        swRun.Stop();
     }
 
     private static string GetFinalAssemblyDiff(string assemblyName, string diffText)
@@ -407,7 +433,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 var realAttributeNode = attributeNode.WithArgumentList(attributeNode.ArgumentList);
                 if (!dictionary.TryAdd(realAttributeNode.ToFullString(), realAttributeNode))
                 {
-                    _log.LogWarning(string.Format(Resources.AttributeAlreadyExists, realAttributeNode.ToFullString(), memberNode.ToFullString()));
+                    _log.LogWarning(string.Format(Resources.AttributeAlreadyExists, realAttributeNode.ToFullString(), GetDocId(memberNode, model)));
                 }
             }
         }
