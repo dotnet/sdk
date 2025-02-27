@@ -459,6 +459,8 @@ namespace Microsoft.DotNet.Tools.Run
         /// </param>
         private static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[] args)
         {
+            Debug.Assert(globalProperties.Comparer == StringComparer.OrdinalIgnoreCase);
+
             var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
             var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
             var propertyParseResult = propertyParsingConfiguration.Parse(args);
@@ -656,8 +658,7 @@ namespace Microsoft.DotNet.Tools.Run
 
             static string? TryFindEntryPointFilePath(ref string[] args)
             {
-                if (args is not [var arg, ..] ||
-                    string.IsNullOrWhiteSpace(arg) ||
+                if (args is not [{ } arg, ..] ||
                     !arg.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
                     !File.Exists(arg))
                 {

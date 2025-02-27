@@ -36,11 +36,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         }
         """;
 
-    private static readonly string s_consoleProject = """
+    private static readonly string s_consoleProject = $"""
         <Project Sdk="Microsoft.NET.Sdk">
           <PropertyGroup>
             <OutputType>Exe</OutputType>
-            <TargetFramework>net10.0</TargetFramework>
+            <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
             <ImplicitUsings>enable</ImplicitUsings>
           </PropertyGroup>
         </Project>

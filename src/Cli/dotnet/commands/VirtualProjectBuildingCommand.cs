@@ -121,7 +121,7 @@ internal sealed class VirtualProjectBuildingCommand
 
     private ProjectInstance CreateProjectInstance(
         ProjectCollection projectCollection,
-        Action<IDictionary<string, string>>? addGlobalProperties = null)
+        Action<IDictionary<string, string>>? addGlobalProperties)
     {
         var projectRoot = CreateProjectRootElement(projectCollection);
 
