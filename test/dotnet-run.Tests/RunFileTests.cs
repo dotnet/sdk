@@ -46,6 +46,25 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         </Project>
         """;
 
+    private static readonly string s_launchSettings = """
+        {
+            "profiles": {
+                "TestProfile1": {
+                    "commandName": "Project",
+                    "environmentVariables": {
+                        "Message": "TestProfileMessage1"
+                    }
+                },
+                "TestProfile2": {
+                    "commandName": "Project",
+                    "environmentVariables": {
+                        "Message": "TestProfileMessage2"
+                    }
+                }
+            }
+        }
+        """;
+
     private static readonly string s_runCommandExceptionNoProjects =
         "Couldn't find a project to run.";
 
@@ -497,30 +516,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Some arguments of <c>dotnet run</c> are not supported without a project.
-    /// </summary>
-    [Theory, CombinatorialData]
-    public void Arguments_Unsupported(
-        bool beforeFile,
-        [CombinatorialValues("--launch-profile;test")]
-        string input)
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-
-        string[] innerArgs = input.Split(';');
-        string[] args = beforeFile
-            ? ["run", .. innerArgs, "Program.cs"]
-            : ["run", "Program.cs", .. innerArgs];
-
-        new DotnetCommand(Log, args)
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining($"The option '{innerArgs[0]}' is not supported when running a file without a project:");
-    }
-
-    /// <summary>
     /// <c>dotnet run --bl file.cs</c> produces a binary log.
     /// </summary>
     [Theory, CombinatorialData]
@@ -630,6 +625,44 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Changed");
+    }
 
+    [Fact]
+    public void LaunchProfile()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + """
+
+            Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
+            """);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "Properties"));
+        File.WriteAllText(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), s_launchSettings);
+
+        new DotnetCommand(Log, "run", "--no-launch-profile", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from Program
+                Message: ''
+                """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Hello from Program
+                Message: 'TestProfileMessage1'
+                """);
+
+        new DotnetCommand(Log, "run", "-lp", "TestProfile2", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Hello from Program
+                Message: 'TestProfileMessage2'
+                """);
     }
 }

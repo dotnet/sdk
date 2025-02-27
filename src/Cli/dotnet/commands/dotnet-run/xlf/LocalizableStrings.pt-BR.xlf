@@ -156,11 +156,6 @@ O {1} atual é '{2}'.</target>
         <target state="translated">'{0}' não é um arquivo de projeto válido.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RunFileUnsupportedSwitch">
-        <source>The option '{0}' is not supported when running a file without a project: '{1}'</source>
-        <target state="new">The option '{0}' is not supported when running a file without a project: '{1}'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
         <source>Using launch settings from {0}...</source>
         <target state="translated">Usando as configurações de inicialização de {0}...</target>

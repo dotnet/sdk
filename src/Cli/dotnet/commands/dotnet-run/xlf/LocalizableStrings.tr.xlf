@@ -156,11 +156,6 @@ Geçerli {1}: '{2}'.</target>
         <target state="translated">'{0}' geçerli bir proje dosyası değil.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RunFileUnsupportedSwitch">
-        <source>The option '{0}' is not supported when running a file without a project: '{1}'</source>
-        <target state="new">The option '{0}' is not supported when running a file without a project: '{1}'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
         <source>Using launch settings from {0}...</source>
         <target state="translated">{0} içindeki başlatma ayarları kullanılıyor...</target>

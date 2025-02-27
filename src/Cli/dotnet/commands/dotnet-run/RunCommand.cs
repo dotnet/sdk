@@ -175,18 +175,7 @@ namespace Microsoft.DotNet.Tools.Run
                 return true;
             }
 
-            if (ProjectFileFullPath is null)
-            {
-                if (!string.IsNullOrEmpty(LaunchProfile))
-                {
-                    Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunFileUnsupportedSwitch, RunCommandParser.LaunchProfileOption.Name, EntryPointFileFullPath).Bold().Red());
-                    return false;
-                }
-
-                return true;
-            }
-
-            var launchSettingsPath = TryFindLaunchSettings(ProjectFileFullPath);
+            var launchSettingsPath = TryFindLaunchSettings(ProjectFileFullPath ?? EntryPointFileFullPath!);
             if (!File.Exists(launchSettingsPath))
             {
                 if (!string.IsNullOrEmpty(LaunchProfile))
@@ -225,9 +214,9 @@ namespace Microsoft.DotNet.Tools.Run
 
             return true;
 
-            static string? TryFindLaunchSettings(string projectFilePath)
+            static string? TryFindLaunchSettings(string projectOrEntryPointFilePath)
             {
-                var buildPathContainer = File.Exists(projectFilePath) ? Path.GetDirectoryName(projectFilePath) : projectFilePath;
+                var buildPathContainer = File.Exists(projectOrEntryPointFilePath) ? Path.GetDirectoryName(projectOrEntryPointFilePath) : projectOrEntryPointFilePath;
                 if (buildPathContainer is null)
                 {
                     return null;
@@ -238,7 +227,7 @@ namespace Microsoft.DotNet.Tools.Run
                 // VB.NET projects store the launch settings file in the
                 // "My Project" directory instead of a "Properties" directory.
                 // TODO: use the `AppDesignerFolder` MSBuild property instead, which captures this logic already
-                if (string.Equals(Path.GetExtension(projectFilePath), ".vbproj", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(Path.GetExtension(projectOrEntryPointFilePath), ".vbproj", StringComparison.OrdinalIgnoreCase))
                 {
                     propsDirectory = "My Project";
                 }
