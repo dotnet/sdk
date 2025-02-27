@@ -21,7 +21,7 @@ jobs:
             const { data: runs } = await github.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: context.workflow,
+              workflow_id: "pr-analysis.yml",
               branch: process.env.BRANCH,
             });
             for (const run of runs.workflow_runs) {
