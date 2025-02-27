@@ -20,10 +20,12 @@ public class DotnetCliSnapshotTests : SdkTest
         var settings = new VerifySettings();
         if (Environment.GetEnvironmentVariable("CI") is string ci && ci.Equals("true", StringComparison.OrdinalIgnoreCase))
         {
+            Log.WriteLine($"CI environment detected, using snapshots directory in the current working directory {Environment.CurrentDirectory}");
             settings.UseDirectory(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
         }
         else
         {
+            Log.WriteLine($"Using snapshots from local repository");
             settings.UseDirectory(Path.Combine("snapshots", provider.ArgumentName));
         }
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings);

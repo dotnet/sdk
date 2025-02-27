@@ -6,15 +6,15 @@ namespace System.CommandLine.StaticCompletions.Tests;
 using System.CommandLine.Help;
 using System.CommandLine.StaticCompletions.Shells;
 using Xunit;
+using Xunit.Abstractions;
 
-public class ZshShellProviderTests
+public class ZshShellProviderTests(ITestOutputHelper log)
 {
     private IShellProvider _provider = new ZshShellProvider();
 
     [Fact]
     public async Task GenericCompletions()
     {
-        var provider = new ZshShellProvider();
         CliCommand command = new CliCommand("my-app") {
             new CliOption<bool>("-c") {
                 Arity = ArgumentArity.Zero,
@@ -34,7 +34,7 @@ public class ZshShellProviderTests
                 new CliCommand("test")
             }
         };
-        await VerifyExtensions.Verify(command, _provider);
+        await _provider.Verify(command, log);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class ZshShellProviderTests
             staticOption,
             dynamicArg
         };
-        await VerifyExtensions.Verify(command, _provider);
+        await _provider.Verify(command, log);
     }
 
     [Fact]
@@ -78,6 +78,6 @@ public class ZshShellProviderTests
             staticOption,
             dynamicArg
         };
-        await VerifyExtensions.Verify(command, _provider);
+        await _provider.Verify(command, log);
     }
 }
