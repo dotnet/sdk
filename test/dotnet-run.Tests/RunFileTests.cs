@@ -671,7 +671,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining("The system cannot find the file specified");
+            .And.HaveStdErrContaining("An error occurred trying to start process");
 
         // Now build it.
         new DotnetCommand(Log, "run", "Program.cs")
