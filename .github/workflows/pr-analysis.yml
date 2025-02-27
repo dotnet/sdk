@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, synchronize, labeled, unlabeled]
 permissions:
-  contents: read
+  contents: write
   pull-requests: read
   actions: write
   checks: write
