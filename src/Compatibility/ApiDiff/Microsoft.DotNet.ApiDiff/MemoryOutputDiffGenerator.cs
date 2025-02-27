@@ -170,7 +170,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                     // At this point, the current API (which is a type) is considered unmodified in its signature.
                     // Before visiting its children, we need to check if the attributes have changed.
                     // The children visitation should take care of including the 'unmodified' parts of the parent type.
-                    string? attributes = VisitAttributes(beforeMemberNode, afterMemberNode);
+                    string? attributes = VisitAttributes(beforeMemberNode, afterMemberNode, beforeModel, afterModel);
                     if (attributes != null)
                     {
                         sb.Append(attributes);
@@ -180,7 +180,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 else
                 {
                     // This returns the current member (as changed) topped with its added/deleted/changed attributes.
-                    sb.Append(VisitLeafNode(memberName, beforeMemberNode, afterMemberNode, ChangeType.Modified));
+                    sb.Append(VisitLeafNode(memberName, beforeMemberNode, afterMemberNode, beforeModel, afterModel, ChangeType.Modified));
                 }
                 // Remove the found ones. The remaining ones will be processed at the end because they're new.
                 afterChildrenNodes.Remove(memberName);
@@ -188,7 +188,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             else
             {
                 // This returns the current member (as deleted) topped with its attributes as deleted.
-                sb.Append(VisitLeafNode(memberName, beforeMemberNode, afterNode: null, ChangeType.Deleted));
+                sb.Append(VisitLeafNode(memberName, beforeMemberNode, afterNode: null, beforeModel, afterModel, ChangeType.Deleted));
             }
         }
 
@@ -196,7 +196,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         foreach ((string memberName, MemberDeclarationSyntax newMemberNode) in afterChildrenNodes)
         {
             // This returns the current member (as added) topped with its attributes as added.
-            sb.Append(VisitLeafNode(memberName, beforeNode: null, newMemberNode, ChangeType.Inserted));
+            sb.Append(VisitLeafNode(memberName, beforeNode: null, newMemberNode, beforeModel, afterModel, ChangeType.Inserted));
         }
 
         if (sb.Length > 0 || wereParentAttributesChanged)
@@ -245,14 +245,14 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     }
 
     // Returns the specified leaf node as changed (type, member or namespace) topped with its added/deleted/changed attributes and the correct leading trivia.
-    private string? VisitLeafNode(string nodeName, MemberDeclarationSyntax? beforeNode, MemberDeclarationSyntax? afterNode, ChangeType changeType)
+    private string? VisitLeafNode(string nodeName, MemberDeclarationSyntax? beforeNode, MemberDeclarationSyntax? afterNode, SemanticModel beforeModel, SemanticModel afterModel, ChangeType changeType)
     {
         Debug.Assert(beforeNode != null || afterNode != null);
 
         StringBuilder sb = new();
 
         // If the leaf node was added or deleted, the visited attributes will also show as added or deleted.
-        string? attributes = VisitAttributes(beforeNode, afterNode);
+        string? attributes = VisitAttributes(beforeNode, afterNode, beforeModel, afterModel);
         if (attributes != null)
         {
             sb.Append(attributes);
@@ -318,10 +318,10 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     }
 
     // Returns a non-null string if any attribute was changed (added, deleted or modified). Returns null if all attributes were the same before and after.
-    private string? VisitAttributes(MemberDeclarationSyntax? beforeNode, MemberDeclarationSyntax? afterNode)
+    private string? VisitAttributes(MemberDeclarationSyntax? beforeNode, MemberDeclarationSyntax? afterNode, SemanticModel beforeModel, SemanticModel afterModel)
     {
-        Dictionary<string, AttributeSyntax>? beforeAttributeNodes = beforeNode != null ? CollectAttributeNodes(beforeNode) : null;
-        Dictionary<string, AttributeSyntax>? afterAttributeNodes = afterNode != null ? CollectAttributeNodes(afterNode) : null;
+        Dictionary<string, AttributeSyntax>? beforeAttributeNodes = beforeNode != null ? CollectAttributeNodes(beforeNode, beforeModel) : null;
+        Dictionary<string, AttributeSyntax>? afterAttributeNodes = afterNode != null ? CollectAttributeNodes(afterNode, afterModel) : null;
 
         StringBuilder sb = new();
         if (beforeAttributeNodes != null)
@@ -390,7 +390,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     }
 
     // For types, members and namespaces.
-    private Dictionary<string, AttributeSyntax> CollectAttributeNodes(MemberDeclarationSyntax memberNode)
+    private Dictionary<string, AttributeSyntax> CollectAttributeNodes(MemberDeclarationSyntax memberNode, SemanticModel model)
     {
         Dictionary<string, AttributeSyntax> dictionary = new();
 
@@ -398,9 +398,16 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         {
             foreach (AttributeSyntax attributeNode in attributeListNode.Attributes)
             {
-                if (!dictionary.TryAdd(attributeNode.ToFullString(), attributeNode))
+                if(model.GetSymbolInfo(attributeNode).Symbol is ISymbol attributeSymbol &&
+                   !_attributeSymbolFilter.Include(attributeSymbol.ContainingType))
                 {
-                    _log.LogWarning(string.Format(Resources.AttributeAlreadyExists, attributeNode.ToFullString(), memberNode.ToFullString()));
+                    // The attributes decorating an API are actually calls to their constructor method, but the attribute filter needs type docIDs
+                    continue;
+                }
+                var realAttributeNode = attributeNode.WithArgumentList(attributeNode.ArgumentList);
+                if (!dictionary.TryAdd(realAttributeNode.ToFullString(), realAttributeNode))
+                {
+                    _log.LogWarning(string.Format(Resources.AttributeAlreadyExists, realAttributeNode.ToFullString(), memberNode.ToFullString()));
                 }
             }
         }
