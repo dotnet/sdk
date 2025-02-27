@@ -5,34 +5,20 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  actions: write
 jobs:
   allowed-labels:
     runs-on: ubuntu-latest
     steps:
-      - name: Get last worflow runs on this branch
-        id: get_workflow_runs
-        uses: actions/github-script@v3
-        with:
-          script: |
-            const { data } = await github.actions.listWorkflowRuns({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: context.payload.pull_request.head.ref,
-              event: 'pull_request',
-              status: 'completed',
-              per_page: 1
-            });
-            return data.workflow_runs;
+      - name: Remove previous runs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Delete previous workflow runs
+          BRANCH: ${{ github.head_ref }}
+          WORKFLOW_NAME: PR Analysis
         run: |
-          for run in $(echo "${{ steps.get_workflow_runs.outputs }}" | jq -r '.[].id'); do
-            echo "Deleting workflow run $run"
-            curl -X POST -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/$run/cancel
+          for rid in $(gh run list --json status=completed --json jq '.workflow_runs[] | select(.headBranch == env.BRANCH && .workflowName == env.WORKFLOW_NAME) | .id'); do
+            gh run delete $rid --json
           done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Return error if branch is in lockdown or 'do not merge' label is present
         run: echo "Labels on this PR prevent it from being merged. Please contact the repo owners for more information." && exit 1
         if: ${{ contains(github.event.pull_request.labels.*.name, 'Branch Lockdown') || contains(github.event.pull_request.labels.*.name, 'DO NOT MERGE') }}
