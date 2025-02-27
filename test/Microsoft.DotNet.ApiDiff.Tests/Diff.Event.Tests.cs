@@ -24,7 +24,7 @@ public class DiffEventsTests : DiffBaseTests
             public class MyClass
             {
                 public delegate void MyEventHandler(object sender, EventArgs e);
-                public event MyEventHandler? MyEvent { add { } remove { } }
+                public event MyEventHandler? MyEvent;
             }
         }
         """,
@@ -38,4 +38,71 @@ public class DiffEventsTests : DiffBaseTests
           }
         """);
 
+    [Fact]
+    public Task TestEventChange() => RunTestAsync(
+        beforeCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public class MyClass
+            {
+                public delegate void MyEventHandler(object sender, EventArgs e);
+                public event MyEventHandler? MyEvent1;
+            }
+        }
+        """,
+        afterCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public class MyClass
+            {
+                public delegate void MyEventHandler(object sender, EventArgs e);
+                public event MyEventHandler? MyEvent2;
+            }
+        }
+        """,
+        expectedCode: """
+          namespace MyNamespace
+          {
+              public class MyClass
+              {
+        -         public event MyEventHandler? MyEvent1 { add { } remove { } }
+        +         public event MyEventHandler? MyEvent2 { add { } remove { } }
+              }
+          }
+        """);
+
+    [Fact]
+    public Task TestEventRemove() => RunTestAsync(
+        beforeCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public class MyClass
+            {
+                public delegate void MyEventHandler(object sender, EventArgs e);
+                public event MyEventHandler? MyEvent;
+            }
+        }
+        """,
+        afterCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public class MyClass
+            {
+                public delegate void MyEventHandler(object sender, EventArgs e);
+            }
+        }
+        """,
+        expectedCode: """
+          namespace MyNamespace
+          {
+              public class MyClass
+              {
+        -         public event MyEventHandler? MyEvent { add { } remove { } }
+              }
+          }
+        """);
 }
