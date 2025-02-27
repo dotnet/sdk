@@ -67,13 +67,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             if (error.DiagnosticId.StartsWith("cp", StringComparison.InvariantCultureIgnoreCase))
             {
                 // - DiagnosticId, Target, IsBaselineSuppression
-                Suppression globalTargetSuppression = new(error.DiagnosticId, error.Target, isBaselineSuppression: error.IsBaselineSuppression);
+                Suppression globalTargetSuppression = new(error.DiagnosticId, error.Message, error.Target, isBaselineSuppression: error.IsBaselineSuppression);
 
                 // - Left, Right, IsBaselineSuppression
-                Suppression globalLeftRightSuppression = new(string.Empty, left: error.Left, right: error.Right, isBaselineSuppression: error.IsBaselineSuppression);
+                Suppression globalLeftRightSuppression = new(string.Empty, string.Empty, left: error.Left, right: error.Right, isBaselineSuppression: error.IsBaselineSuppression);
 
                 // - DiagnosticId, Left, Right, IsBaselineSuppression
-                Suppression globalDiagnosticIdLeftRightSuppression = new(error.DiagnosticId, left: error.Left, right: error.Right, isBaselineSuppression: error.IsBaselineSuppression);
+                Suppression globalDiagnosticIdLeftRightSuppression = new(error.DiagnosticId, error.Message, left: error.Left, right: error.Right, isBaselineSuppression: error.IsBaselineSuppression);
 
                 if (_suppressions.Contains(globalTargetSuppression) ||
                     _suppressions.Contains(globalLeftRightSuppression) ||

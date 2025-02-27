@@ -14,6 +14,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         public string DiagnosticId { get; set; }
 
         /// <summary>
+        /// The diagnostic message describing the suppression.
+        /// </summary>
+        public string Message { get; set; }
+
+        /// <summary>
         /// The target of where to suppress the <see cref="DiagnosticId"/>
         /// </summary>
         public string? Target { get; set; }
@@ -37,15 +42,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         private Suppression()
         {
             DiagnosticId = string.Empty;
+            Message = string.Empty;
         }
 
         public Suppression(string diagnosticId,
+            string message,
             string? target = null,
             string? left = null,
             string? right = null,
             bool isBaselineSuppression = false)
         {
             DiagnosticId = diagnosticId;
+            Message = message;
             Target = target;
             Left = left;
             Right = right;
@@ -74,6 +82,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <inheritdoc/>
         public bool Equals(Suppression? other)
         {
+            // Message is intentionally not considered part of the unique object ID as it could contain language specific text.
             return other != null &&
                    AreEqual(DiagnosticId, other.DiagnosticId) &&
                    AreEqual(Target, other.Target) &&
@@ -106,6 +115,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             }
 
             stringBuilder.Append(DiagnosticId);
+            stringBuilder.Append(": " + Message);
             stringBuilder.Append(" (");
 
             bool requiresDelimiter = false;
