@@ -105,4 +105,38 @@ public class DiffEventsTests : DiffBaseTests
               }
           }
         """);
+
+
+    [Fact]
+    public Task TestAbstractEvent() => RunTestAsync(
+        beforeCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public abstract class MyClass
+            {
+                public delegate void MyEventHandler(object sender, EventArgs e);
+            }
+        }
+        """,
+        afterCode: """
+        using System;
+        namespace MyNamespace
+        {
+            public abstract class MyClass
+            {
+                public delegate void MyEventHandler(object sender, EventArgs e);
+                public abstract event MyEventHandler MyEvent;
+            }
+        }
+        """,
+        expectedCode: """
+          namespace MyNamespace
+          {
+              public abstract class MyClass
+              {
+        +         public abstract event MyEventHandler MyEvent;
+              }
+          }
+        """);
 }
