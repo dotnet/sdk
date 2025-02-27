@@ -9,11 +9,30 @@ jobs:
   allowed-labels:
     runs-on: ubuntu-latest
     steps:
-      # Remove previous runs of this job
-      - name: Delete previous runs of this job on this branch
+      - name: Get last worflow runs on this branch
+        id: get_workflow_runs
+        uses: actions/github-script@v3
+        with:
+          script: |
+            const { data } = await github.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: context.payload.pull_request.head.ref,
+              event: 'pull_request',
+              status: 'completed',
+              per_page: 1
+            });
+            return data.workflow_runs;
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete previous workflow runs
         run: |
-          curl -X DELETE -u ${{ secrets.GITHUB_TOKEN }} "https://api.github.com/repos/${{ github.repository }}/actions/runs?branch=${{ github.head_ref }}&event=pull_request&status=completed"
-
+          for run in $(echo "${{ steps.get_workflow_runs.outputs }}" | jq -r '.[].id'); do
+            echo "Deleting workflow run $run"
+            curl -X POST -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/$run/cancel
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Return error if branch is in lockdown or 'do not merge' label is present
         run: echo "Labels on this PR prevent it from being merged. Please contact the repo owners for more information." && exit 1
         if: ${{ contains(github.event.pull_request.labels.*.name, 'Branch Lockdown') || contains(github.event.pull_request.labels.*.name, 'DO NOT MERGE') }}
