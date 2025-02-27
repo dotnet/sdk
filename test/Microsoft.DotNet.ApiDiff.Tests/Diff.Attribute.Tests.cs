@@ -253,12 +253,263 @@ public class DiffAttributeTests : DiffBaseTests
 
     #region Member attributes
 
+    [Fact]
+    public Task TestMemberAttributeAdd() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public void MyMethod() { }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    public class MyClass
+                    {
+                        [MyAttribute]
+                        public void MyMethod() { }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                +         [MyAttribute]
+                          public void MyMethod() { }
+                      }
+                  }
+                """, hideImplicitDefaultConstructors: true);
+
+    [Fact]
+    public Task TestMemberAttributeDeleteAndAdd() =>
+        // Added APIs always show up at the end.
+        RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttribute1Attribute : System.Attribute
+                    {
+                        public MyAttribute1Attribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                        [MyAttribute1]
+                        public void MyMethod() { }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttribute2Attribute : System.Attribute
+                    {
+                        public MyAttribute2Attribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                        [MyAttribute2]
+                        public void MyMethod() { }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                -     [System.AttributeUsage(System.AttributeTargets.All)]
+                -     public class MyAttribute1Attribute : System.Attribute
+                -     {
+                -     }
+                      public class MyClass
+                      {
+                -         [MyAttribute1]
+                +         [MyAttribute2]
+                          public void MyMethod() { }
+                      }
+                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     public class MyAttribute2Attribute : System.Attribute
+                +     {
+                +     }
+                  }
+                """,
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
+
+    [Fact]
+    public Task TestMemberAttributeSwitch() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttribute1Attribute : System.Attribute
+                    {
+                        public MyAttribute1Attribute() { }
+                    }
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttribute2Attribute : System.Attribute
+                    {
+                        public MyAttribute2Attribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                        [MyAttribute1]
+                        public void MyMethod() { }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttribute1Attribute : System.Attribute
+                    {
+                        public MyAttribute1Attribute() { }
+                    }
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttribute2Attribute : System.Attribute
+                    {
+                        public MyAttribute2Attribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                        [MyAttribute2]
+                        public void MyMethod() { }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                -         [MyAttribute1]
+                +         [MyAttribute2]
+                          public void MyMethod() { }
+                      }
+                  }
+                """,
+                hideImplicitDefaultConstructors: true);
+
+    [Fact]
+    public Task TestMemberChangeAndAttributeAdd() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                        public void MyMethod1() { }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                        [MyAttribute]
+                        public void MyMethod2() { }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                -         public void MyMethod1() { }
+                +         [MyAttribute]
+                +         public void MyMethod2() { }
+                      }
+                  }
+                """,
+                hideImplicitDefaultConstructors: true);
+
+    [Fact]
+    public Task TestMemberChangeButAttributeStays() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                        [MyAttribute]
+                        public void MyMethod1() { }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public MyAttributeAttribute() { }
+                    }
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                        [MyAttribute]
+                        public void MyMethod2() { }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                -         [MyAttribute]
+                -         public void MyMethod1() { }
+                +         [MyAttribute]
+                +         public void MyMethod2() { }
+                      }
+                  }
+                """,
+                hideImplicitDefaultConstructors: true);
+
     #endregion
 
     #region Parameter attributes
 
     //[Fact]
-    [ActiveIssue("Parameter attributes are not showing up in the syntax tree.")]
+    [Fact(Skip = "Parameter attributes are not showing up in the syntax tree.")]
     internal void TestParameterAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -411,7 +662,7 @@ public class DiffAttributeTests : DiffBaseTests
                 """, hideImplicitDefaultConstructors: true);
 
     //[Fact]
-    [ActiveIssue("Parameter attributes are not showing up in the syntax tree.")]
+    [Fact(Skip = "Parameter attributes are not showing up in the syntax tree.")]
     internal void TestParameterAttributeListNoExpansion() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
@@ -638,4 +889,70 @@ public class DiffAttributeTests : DiffBaseTests
                 apisToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Excludes the type definition of the attribute itself
 
     #endregion
+
+    #region Attributes with arguments
+
+    [Fact]
+    public Task TestAttributeWithArguments() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    [System.AttributeUsage(System.AttributeTargets.All)]
+                    public class MyAttributeAttribute : System.Attribute
+                    {
+                        public string First { get; }
+                        public string Second { get; }
+                        public MyAttributeAttribute(string first, string second)
+                        {
+                            First = first;
+                            Second = second;
+                        }
+                    }
+                    [MyAttribute(first: "First", second: "Second")]
+                    public class MyClass
+                    {
+                        public MyClass() { }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                +     [MyAttribute("First", "Second")]
+                      public class MyClass
+                      {
+                      }
+                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     public class MyAttributeAttribute : System.Attribute
+                +     {
+                +         public MyAttributeAttribute(string first, string second) { }
+                +         public string First { get { throw null; } }
+                +         public string Second { get { throw null; } }
+                +     }
+                  }
+                """, attributesToExclude: []);
+
+
+    #endregion
+}
+
+[System.AttributeUsage(System.AttributeTargets.All)]
+public class MyAttribute(string first, string second) : System.Attribute
+{
+    public string First { get; } = first;
+    public string Second { get; } = second;
+}
+
+[MyAttribute(first: "First", second: "Second")]
+public class MyClass
+{
 }

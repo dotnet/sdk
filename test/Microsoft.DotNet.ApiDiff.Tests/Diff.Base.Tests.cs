@@ -5,12 +5,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI.Tests;
+using Moq;
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
 public abstract class DiffBaseTests
 {
-    private readonly ConsoleLog _log = new(MessageImportance.Normal);
+    private readonly Mock<ILog> _log = new();
     protected const string AssemblyName = "MyAssembly";
 
     protected Task RunTestAsync(
@@ -42,15 +43,15 @@ public abstract class DiffBaseTests
         // CreateFromTexts will assert on any loader diagnostics via SyntaxFactory.
 
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols)
-            = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: before, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
+            = TestAssemblyLoaderFactory.CreateFromTexts(_log.Object, assemblyTexts: before, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
 
         (IAssemblySymbolLoader afterLoader, Dictionary<string, IAssemblySymbol> afterAssemblySymbols)
-            = TestAssemblyLoaderFactory.CreateFromTexts(_log, assemblyTexts: after, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
+            = TestAssemblyLoaderFactory.CreateFromTexts(_log.Object, assemblyTexts: after, diagnosticOptions: DiffGeneratorFactory.DefaultDiagnosticOptions);
 
         using MemoryStream outputStream = new();
 
         IDiffGenerator generator = DiffGeneratorFactory.Create(
-            _log,
+            _log.Object,
             beforeLoader,
             afterLoader,
             beforeAssemblySymbols,
@@ -73,7 +74,6 @@ public abstract class DiffBaseTests
             {
                 Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
                 string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
-                Assert.Equal(fullExpectedCode, actualCode, ignoreLineEndingDifferences: true);
                 Assert.True(fullExpectedCode.Equals(actualCode), $"\nExpected:\n[{fullExpectedCode}]\nActual:\n[{actualCode}]");
             }
         }
