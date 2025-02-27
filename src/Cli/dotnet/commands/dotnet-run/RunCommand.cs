@@ -406,11 +406,15 @@ namespace Microsoft.DotNet.Tools.Run
 
             static FacadeLogger? DetermineBinlogger(string[] restoreArgs)
             {
-
                 List<BinaryLogger> binaryLoggers = new();
 
-                foreach (var blArg in restoreArgs.Where(arg => arg.StartsWith("-bl", StringComparison.OrdinalIgnoreCase)))
+                foreach (var blArg in restoreArgs)
                 {
+                    if (!IsBinLogArgument(blArg))
+                    {
+                        continue;
+                    }
+
                     if (blArg.Contains(':'))
                     {
                         // split and forward args

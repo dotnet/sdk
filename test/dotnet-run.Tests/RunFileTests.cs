@@ -540,6 +540,75 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().BeEquivalentTo(["msbuild.binlog", "msbuild-dotnet-run.binlog"]);
     }
 
+    [Theory]
+    [InlineData("-bl")]
+    [InlineData("-BL")]
+    [InlineData("-bl:msbuild.binlog")]
+    [InlineData("/bl")]
+    [InlineData("/bl:msbuild.binlog")]
+    [InlineData("--binaryLogger")]
+    [InlineData("--binaryLogger:msbuild.binlog")]
+    [InlineData("-bl:another.binlog")]
+    public void BinaryLog_ArgumentForms(string arg)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", arg)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        var fileName = arg.Split(':', 2) is [_, { Length: > 0 } value] ? Path.GetFileNameWithoutExtension(value) : "msbuild";
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly)
+            .Select(f => f.Name)
+            .Should().BeEquivalentTo([$"{fileName}.binlog", $"{fileName}-dotnet-run.binlog"]);
+    }
+
+    [Fact]
+    public void BinaryLog_Multiple()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl:one.binlog", "two.binlog", "/bl:three.binlog")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:two.binlog
+                Hello from Program
+                """);
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly)
+            .Select(f => f.Name)
+            .Should().BeEquivalentTo(["one.binlog", "one-dotnet-run.binlog", "three.binlog", "three-dotnet-run.binlog"]);
+    }
+
+    [Fact]
+    public void BinaryLog_WrongExtension()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl:test.test")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining("""
+                Invalid binary logger parameter(s): "test.test"
+                """);
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly)
+            .Select(f => f.Name)
+            .Should().BeEmpty();
+    }
+
     /// <summary>
     /// <c>dotnet run file.cs</c> should not produce a binary log.
     /// </summary>

@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Run
 
         internal static bool IsBinLogArgument(string arg)
         {
-            const StringComparison comp = StringComparison.Ordinal;
+            const StringComparison comp = StringComparison.OrdinalIgnoreCase;
             return arg.StartsWith("/bl:", comp) || arg.Equals("/bl", comp)
                 || arg.StartsWith("--binaryLogger:", comp) || arg.Equals("--binaryLogger", comp)
                 || arg.StartsWith("-bl:", comp) || arg.Equals("-bl", comp);
