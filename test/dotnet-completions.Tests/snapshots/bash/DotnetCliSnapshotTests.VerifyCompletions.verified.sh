@@ -5,7 +5,7 @@ _testhost() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="add build build-server clean format fsi list msbuild new nuget pack package publish remove restore run solution store test tool vstest help sdk workload completions --help --diagnostics --version --info --list-sdks --list-runtimes" 
+    opts="build build-server clean format fsi msbuild new nuget pack package publish reference restore run solution store test tool vstest help sdk workload completions --help --diagnostics --version --info --list-sdks --list-runtimes" 
     
     if [[ $COMP_CWORD == "1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -13,11 +13,6 @@ _testhost() {
     fi
     
     case ${COMP_WORDS[1]} in
-        (add)
-            _testhost_add 2
-            return
-            ;;
-            
         (build)
             _testhost_build 2
             return
@@ -40,11 +35,6 @@ _testhost() {
             
         (fsi)
             _testhost_fsi 2
-            return
-            ;;
-            
-        (list)
-            _testhost_list 2
             return
             ;;
             
@@ -78,8 +68,8 @@ _testhost() {
             return
             ;;
             
-        (remove)
-            _testhost_remove 2
+        (reference)
+            _testhost_reference 2
             return
             ;;
             
@@ -142,84 +132,6 @@ _testhost() {
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
-
-_testhost_add() {
-
-    cur="${COMP_WORDS[COMP_CWORD]}" 
-    prev="${COMP_WORDS[COMP_CWORD-1]}" 
-    COMPREPLY=()
-    
-    opts="package reference --help" 
-    
-    if [[ $COMP_CWORD == "$1" ]]; then
-        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-        return
-    fi
-    
-    case ${COMP_WORDS[$1]} in
-        (package)
-            _testhost_add_package $(($1+1))
-            return
-            ;;
-            
-        (reference)
-            _testhost_add_reference $(($1+1))
-            return
-            ;;
-            
-    esac
-    
-    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-}
-
-_testhost_add_package() {
-
-    cur="${COMP_WORDS[COMP_CWORD]}" 
-    prev="${COMP_WORDS[COMP_CWORD-1]}" 
-    COMPREPLY=()
-    
-    opts="--version --framework --no-restore --source --package-directory --interactive --prerelease --help" 
-    opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
-    
-    if [[ $COMP_CWORD == "$1" ]]; then
-        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-        return
-    fi
-    
-    case $prev in
-        --version|-v)
-            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
-            return
-        ;;
-    esac
-    
-    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-}
-
-
-_testhost_add_reference() {
-
-    cur="${COMP_WORDS[COMP_CWORD]}" 
-    prev="${COMP_WORDS[COMP_CWORD-1]}" 
-    COMPREPLY=()
-    
-    opts="--framework --interactive --help" 
-    
-    if [[ $COMP_CWORD == "$1" ]]; then
-        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-        return
-    fi
-    
-    case $prev in
-        --framework|-f)
-            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
-            return
-        ;;
-    esac
-    
-    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-}
-
 
 _testhost_build() {
 
@@ -356,80 +268,6 @@ _testhost_format() {
 
 
 _testhost_fsi() {
-
-    cur="${COMP_WORDS[COMP_CWORD]}" 
-    prev="${COMP_WORDS[COMP_CWORD-1]}" 
-    COMPREPLY=()
-    
-    opts="--help" 
-    
-    if [[ $COMP_CWORD == "$1" ]]; then
-        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-        return
-    fi
-    
-    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-}
-
-
-_testhost_list() {
-
-    cur="${COMP_WORDS[COMP_CWORD]}" 
-    prev="${COMP_WORDS[COMP_CWORD-1]}" 
-    COMPREPLY=()
-    
-    opts="package reference --help" 
-    
-    if [[ $COMP_CWORD == "$1" ]]; then
-        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-        return
-    fi
-    
-    case ${COMP_WORDS[$1]} in
-        (package)
-            _testhost_list_package $(($1+1))
-            return
-            ;;
-            
-        (reference)
-            _testhost_list_reference $(($1+1))
-            return
-            ;;
-            
-    esac
-    
-    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-}
-
-_testhost_list_package() {
-
-    cur="${COMP_WORDS[COMP_CWORD]}" 
-    prev="${COMP_WORDS[COMP_CWORD-1]}" 
-    COMPREPLY=()
-    
-    opts="--verbosity --outdated --deprecated --vulnerable --framework --include-transitive --include-prerelease --highest-patch --highest-minor --config --source --interactive --format --output-version --help" 
-    
-    if [[ $COMP_CWORD == "$1" ]]; then
-        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-        return
-    fi
-    
-    case $prev in
-        --verbosity|-v)
-            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
-            return
-        ;;
-        --format)
-            COMPREPLY=( $(compgen -W "console json" -- "$cur") )
-            return
-        ;;
-    esac
-    
-    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-}
-
-
-_testhost_list_reference() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
@@ -811,7 +649,7 @@ _testhost_nuget_push() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--force-english-output --source --symbol-source --timeout --api-key --symbol-api-key --disable-buffering --no-symbols --no-service-endpoint --interactive --skip-duplicate --help" 
+    opts="--force-english-output --source --symbol-source --timeout --api-key --symbol-api-key --disable-buffering --no-symbols --no-service-endpoint --interactive --skip-duplicate --configfile --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1161,7 +999,7 @@ _testhost_package() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="search --help" 
+    opts="search add list remove --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1171,6 +1009,21 @@ _testhost_package() {
     case ${COMP_WORDS[$1]} in
         (search)
             _testhost_package_search $(($1+1))
+            return
+            ;;
+            
+        (add)
+            _testhost_package_add $(($1+1))
+            return
+            ;;
+            
+        (list)
+            _testhost_package_list $(($1+1))
+            return
+            ;;
+            
+        (remove)
+            _testhost_package_remove $(($1+1))
             return
             ;;
             
@@ -1186,6 +1039,76 @@ _testhost_package_search() {
     COMPREPLY=()
     
     opts="--source --take --skip --exact-match --interactive --prerelease --configfile --format --verbosity --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_package_add() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--version --framework --no-restore --source --package-directory --interactive --prerelease --project --help" 
+    opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    case $prev in
+        --version|-v)
+            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
+    esac
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_package_list() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--verbosity --outdated --deprecated --vulnerable --framework --include-transitive --include-prerelease --highest-patch --highest-minor --config --source --interactive --format --output-version --project --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    case $prev in
+        --verbosity|-v)
+            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+        --format)
+            COMPREPLY=( $(compgen -W "console json" -- "$cur") )
+            return
+        ;;
+    esac
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_package_remove() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--interactive --project --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1236,13 +1159,13 @@ _testhost_publish() {
 }
 
 
-_testhost_remove() {
+_testhost_reference() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="package reference --help" 
+    opts="add list remove --project --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1250,13 +1173,18 @@ _testhost_remove() {
     fi
     
     case ${COMP_WORDS[$1]} in
-        (package)
-            _testhost_remove_package $(($1+1))
+        (add)
+            _testhost_reference_add $(($1+1))
             return
             ;;
             
-        (reference)
-            _testhost_remove_reference $(($1+1))
+        (list)
+            _testhost_reference_list $(($1+1))
+            return
+            ;;
+            
+        (remove)
+            _testhost_reference_remove $(($1+1))
             return
             ;;
             
@@ -1265,13 +1193,37 @@ _testhost_remove() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_testhost_remove_package() {
+_testhost_reference_add() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--interactive --help" 
+    opts="--framework --interactive --project --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    case $prev in
+        --framework|-f)
+            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
+    esac
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_reference_list() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--project --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1282,13 +1234,13 @@ _testhost_remove_package() {
 }
 
 
-_testhost_remove_reference() {
+_testhost_reference_remove() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--framework --help" 
+    opts="--framework --project --help" 
     opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
@@ -1334,7 +1286,7 @@ _testhost_run() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--configuration --framework --runtime --project --launch-profile --no-launch-profile --no-build --interactive --no-restore --self-contained --no-self-contained --verbosity --arch --os --disable-build-servers --artifacts-path --help" 
+    opts="--configuration --framework --runtime --project --launch-profile --no-launch-profile --no-build --interactive --no-restore --self-contained --no-self-contained --verbosity --arch --os --disable-build-servers --artifacts-path --environment --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
