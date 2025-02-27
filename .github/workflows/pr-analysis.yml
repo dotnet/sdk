@@ -9,6 +9,11 @@ jobs:
   allowed-labels:
     runs-on: ubuntu-latest
     steps:
+      # Remove previous runs of this job
+      - name: Delete previous runs of this job on this branch
+        run: |
+          curl -X DELETE -u ${{ secrets.GITHUB_TOKEN }} "https://api.github.com/repos/${{ github.repository }}/actions/runs?branch=${{ github.head_ref }}&event=pull_request&status=completed"
+
       - name: Return error if branch is in lockdown or 'do not merge' label is present
         run: echo "Labels on this PR prevent it from being merged. Please contact the repo owners for more information." && exit 1
         if: ${{ contains(github.event.pull_request.labels.*.name, 'Branch Lockdown') || contains(github.event.pull_request.labels.*.name, 'DO NOT MERGE') }}
