@@ -2,10 +2,9 @@
 
   <Target Name="GenerateVersionBadge" BeforeTargets="AfterBuild">
     <PropertyGroup>
-      <VersionBadgeMoniker>$(OSName)_$(Architecture)</VersionBadgeMoniker>
-      <VersionBadgeMoniker Condition="'$(Rid)' == 'linux-musl-x64'">linux_musl_x64</VersionBadgeMoniker>
-      <VersionBadgeMoniker Condition="'$(IslinuxPortable)' == 'true'">linux_$(Architecture)</VersionBadgeMoniker>
-      <VersionBadgeMoniker Condition="'$(IsBuildingAndPublishingAllLinuxDistrosNativeInstallers)' == 'true'">all_linux_distros_native_installer</VersionBadgeMoniker>
+      <!-- Replace '-' with '_' for os names like 'linux-musl' -->
+      <VersionBadgeMoniker>$(OSName.Replace('-', '_'))_$(Architecture)</VersionBadgeMoniker>
+      <VersionBadgeMoniker Condition="'$(IsLinuxPortable)' == 'true'">linux_$(Architecture)</VersionBadgeMoniker>
 
       <VersionBadge>$(ArtifactsShippingPackagesDir)$(VersionBadgeMoniker)_$(Configuration)_version_badge.svg</VersionBadge>
       <VersionSvgTemplate>$(MSBuildThisFileDirectory)..\version_badge.svg</VersionSvgTemplate>
