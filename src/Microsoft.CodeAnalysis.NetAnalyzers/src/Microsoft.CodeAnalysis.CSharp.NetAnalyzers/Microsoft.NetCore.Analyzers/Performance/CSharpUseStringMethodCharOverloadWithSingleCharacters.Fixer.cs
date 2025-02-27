@@ -62,23 +62,21 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             return new CSharpReplaceStringLiteralWithCharLiteralCodeAction(document, argumentListNode, sourceCharLiteral);
         }
 
-        private sealed class CSharpReplaceStringLiteralWithCharLiteralCodeAction : ReplaceStringLiteralWithCharLiteralCodeAction
+        private sealed class CSharpReplaceStringLiteralWithCharLiteralCodeAction(
+            Document document, SyntaxNode argumentListNode, char sourceCharLiteral)
+            : ReplaceStringLiteralWithCharLiteralCodeAction(document, argumentListNode, sourceCharLiteral)
         {
-            public CSharpReplaceStringLiteralWithCharLiteralCodeAction(Document document, SyntaxNode argumentListNode, char sourceCharLiteral) : base(document, argumentListNode, sourceCharLiteral)
-            {
-            }
-
             protected override void ApplyFix(
                 DocumentEditor editor,
                 SemanticModel model,
                 SyntaxNode oldArgumentListNode,
                 char c)
             {
-                var argumentNode = editor.Generator.Argument(editor.Generator.LiteralExpression(c));
+                var argumentNode = (ArgumentSyntax)editor.Generator.Argument(editor.Generator.LiteralExpression(c));
                 var arguments = new[] { argumentNode }.Concat(((ArgumentListSyntax)oldArgumentListNode).Arguments
-                        .Select(arg => model.GetOperation(arg) as IArgumentOperation)
-                        .Where(PreserveArgument)
-                        .Select(arg => arg!.Syntax));
+                        .Select(arg => (arg, operation: model.GetOperation(arg) as IArgumentOperation))
+                        .Where(t => PreserveArgument(t.operation))
+                        .Select(t => t.arg));
                 var argumentListNode = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments));
 
                 editor.ReplaceNode(oldArgumentListNode, argumentListNode.WithTriviaFrom(oldArgumentListNode));

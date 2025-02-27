@@ -11,7 +11,6 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Imports Microsoft.NetCore.Analyzers.Performance
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
-
     <ExportCodeFixProvider(LanguageNames.VisualBasic), [Shared]>
     Public NotInheritable Class BasicUseStringMethodCharOverloadWithSingleCharactersFixer
         Inherits UseStringMethodCharOverloadWithSingleCharactersFixer
@@ -65,15 +64,16 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             End Sub
 
             Protected Overrides Sub ApplyFix(editor As DocumentEditor, model As SemanticModel, oldArgumentListNode As SyntaxNode, c As Char)
-                Dim argumentNode = editor.Generator.Argument(editor.Generator.LiteralExpression(c))
+                Dim argumentNode = DirectCast(editor.Generator.Argument(editor.Generator.LiteralExpression(c)), ArgumentSyntax)
                 Dim arguments = {argumentNode}.Concat(
                     CType(oldArgumentListNode, ArgumentListSyntax).Arguments.
-                        [Select](Function(arg) TryCast(model.GetOperation(arg), IArgumentOperation)).Where(Function(arg) PreserveArgument(arg)).[Select](Function(arg) arg.Syntax))
+                        Select(Function(arg) (arg, operation:=TryCast(model.GetOperation(arg), IArgumentOperation))).
+                        Where(Function(t) PreserveArgument(t.operation)).
+                        Select(Function(t) t.arg))
                 Dim argumentListNode = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments))
 
                 editor.ReplaceNode(oldArgumentListNode, argumentListNode.WithTriviaFrom(oldArgumentListNode))
             End Sub
         End Class
     End Class
-
 End Namespace
