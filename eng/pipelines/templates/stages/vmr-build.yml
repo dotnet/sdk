@@ -364,7 +364,7 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: ${{ format('{0}_Ubuntu', variables.ubuntuName) }}
+        buildName: ${{ format('{0}_Ubuntu_BuildTests', variables.ubuntuName) }}
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         pool: ${{ parameters.pool_Linux }}
@@ -373,16 +373,18 @@ stages:
           image: ${{ variables.ubuntuContainerImage }}
         targetOS: linux
         targetArchitecture: x64
-
-    - template: ../jobs/vmr-build.yml
-      parameters:
-        buildName: Windows_BuildTests
-        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-        vmrBranch: ${{ variables.VmrBranch }}
-        pool: ${{ parameters.pool_Windows }}
-        targetOS: windows
-        targetArchitecture: x64
         extraProperties: /p:DotNetBuildTests=true
+
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      - template: ../jobs/vmr-build.yml
+        parameters:
+          buildName: Windows_BuildTests
+          isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+          vmrBranch: ${{ variables.VmrBranch }}
+          pool: ${{ parameters.pool_Windows }}
+          targetOS: windows
+          targetArchitecture: x64
+          extraProperties: /p:DotNetBuildTests=true
 
 #### VERTICAL BUILD (Official) ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
