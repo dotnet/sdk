@@ -6,39 +6,42 @@ namespace System.CommandLine.StaticCompletions.Tests;
 using System.CommandLine.StaticCompletions.Shells;
 using EmptyFiles;
 using Xunit;
+using Xunit.Abstractions;
 
-public class PowershellProviderTests
+public class PowershellProviderTests(ITestOutputHelper log)
 {
+    private IShellProvider provider = new PowershellShellProvider();
+
     [Fact]
     public async Task GenericCompletions()
     {
-        await VerifyExtensions.Verify(new("mycommand"), new PowershellShellProvider());
+        await provider.Verify(new("mycommand"), log);
     }
 
     [Fact]
     public async Task SimpleOptionCompletion()
     {
-        await VerifyExtensions.Verify(new("mycommand") {
+        await provider.Verify(new("mycommand") {
             new CliOption<string>("--name")
-        }, new PowershellShellProvider());
+        }, log);
     }
 
     [Fact]
     public async Task SubcommandAndOptionInTopLevelList()
     {
-        await VerifyExtensions.Verify(new("mycommand") {
+        await provider.Verify(new("mycommand") {
                 new CliOption<string>("--name"),
                 new CliCommand("subcommand")
-            }, new PowershellShellProvider());
+            }, log);
     }
 
     [Fact]
     public async Task NestedSubcommandCompletion()
     {
-        await VerifyExtensions.Verify(new("mycommand") {
+        await provider.Verify(new("mycommand") {
             new CliCommand("subcommand") {
                 new CliCommand("nested")
             }
-        }, new PowershellShellProvider());
+        }, log);
     }
 }

@@ -5,39 +5,41 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.StaticCompletions.Shells;
 using Xunit;
+using Xunit.Abstractions;
 
-public class BashShellProviderTests
+public class BashShellProviderTests(ITestOutputHelper log)
 {
+    private IShellProvider provider = new BashShellProvider();
     [Fact]
     public async Task GenericCompletions()
     {
-        await VerifyExtensions.Verify(new("mycommand"), new BashShellProvider());
+        await provider.Verify(new("mycommand"), log);
     }
 
     [Fact]
     public async Task SimpleOptionCompletion()
     {
-        await VerifyExtensions.Verify(new("mycommand") {
+        await provider.Verify(new("mycommand") {
             new CliOption<string>("--name")
-        }, new BashShellProvider());
+        }, log);
     }
 
     [Fact]
     public async Task SubcommandAndOptionInTopLevelList()
     {
-        await VerifyExtensions.Verify(new("mycommand") {
+        await provider.Verify(new("mycommand") {
                 new CliOption<string>("--name"),
                 new CliCommand("subcommand")
-            }, new BashShellProvider());
+            }, log);
     }
 
     [Fact]
     public async Task NestedSubcommandCompletion()
     {
-        await VerifyExtensions.Verify(new("mycommand") {
+        await provider.Verify(new("mycommand") {
             new CliCommand("subcommand") {
                 new CliCommand("nested")
             }
-        }, new BashShellProvider());
+        }, log);
     }
 }
