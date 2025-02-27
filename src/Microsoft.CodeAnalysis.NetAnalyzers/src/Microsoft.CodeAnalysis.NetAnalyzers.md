@@ -1872,6 +1872,30 @@ In many situations, logging is disabled or set to a log level that results in an
 |CodeFix|False|
 ---
 
+## [CA1874](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1874): Use 'Regex.IsMatch'
+
+'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1875](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1875): Use 'Regex.Count'
+
+'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

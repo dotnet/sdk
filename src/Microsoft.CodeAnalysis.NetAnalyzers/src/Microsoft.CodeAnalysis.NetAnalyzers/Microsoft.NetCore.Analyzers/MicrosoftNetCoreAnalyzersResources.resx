@@ -1376,6 +1376,30 @@
   <data name="UseEnvironmentCurrentManagedThreadIdFix" xml:space="preserve">
     <value>Use 'Environment.CurrentManagedThreadId'</value>
   </data>
+  <data name="UseRegexCountDescription" xml:space="preserve">
+    <value>'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</value>
+  </data>
+  <data name="UseRegexCountMessage" xml:space="preserve">
+    <value>Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</value>
+  </data>
+  <data name="UseRegexCountTitle" xml:space="preserve">
+    <value>Use 'Regex.Count'</value>
+  </data>
+  <data name="UseRegexCountFix" xml:space="preserve">
+    <value>Use 'Regex.Count'</value>
+  </data>
+  <data name="UseRegexIsMatchDescription" xml:space="preserve">
+    <value>'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</value>
+  </data>
+  <data name="UseRegexIsMatchMessage" xml:space="preserve">
+    <value>Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</value>
+  </data>
+  <data name="UseRegexIsMatchTitle" xml:space="preserve">
+    <value>Use 'Regex.IsMatch'</value>
+  </data>
+  <data name="UseRegexIsMatchFix" xml:space="preserve">
+    <value>Use 'Regex.IsMatch'</value>
+  </data>
   <data name="ThreadStaticOnNonStaticFieldDescription" xml:space="preserve">
     <value>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</value>
   </data>

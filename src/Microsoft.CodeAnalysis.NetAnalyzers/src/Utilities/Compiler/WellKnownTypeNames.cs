@@ -423,6 +423,8 @@ namespace Analyzer.Utilities
         public const string SystemTextEncoding = "System.Text.Encoding";
         public const string SystemTextJsonJsonSerializerOptions = "System.Text.Json.JsonSerializerOptions";
         public const string SystemTextJsonJsonSerializer = "System.Text.Json.JsonSerializer";
+        public const string SystemTextRegularExpressionsGroup = "System.Text.RegularExpressions.Group";
+        public const string SystemTextRegularExpressionsMatchCollection = "System.Text.RegularExpressions.MatchCollection";
         public const string SystemTextRegularExpressionsRegex = "System.Text.RegularExpressions.Regex";
         public const string SystemTextStringBuilder = "System.Text.StringBuilder";
         public const string SystemThreadStaticAttribute = "System.ThreadStaticAttribute";

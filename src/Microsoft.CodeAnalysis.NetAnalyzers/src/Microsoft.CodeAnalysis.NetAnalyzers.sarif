@@ -3448,6 +3448,46 @@
             ]
           }
         },
+        "CA1874": {
+          "id": "CA1874",
+          "shortDescription": "Use 'Regex.IsMatch'",
+          "fullDescription": "'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1874",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseRegexMembers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1875": {
+          "id": "CA1875",
+          "shortDescription": "Use 'Regex.Count'",
+          "fullDescription": "'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1875",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "UseRegexMembers",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",

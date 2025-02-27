@@ -3163,6 +3163,46 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
         <target state="translated">O tamanho de chave do algoritmo de criptografia assimétrica {0} é menor que 2048. Alterne para um RSA com um tamanho de chave de pelo menos 2048 ou para um algoritmo ECDH ou ECDSA.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseRegexCountDescription">
+        <source>'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</source>
+        <target state="new">'Regex.Count' is simpler and faster than 'Regex.Matches(...).Count'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRegexCountFix">
+        <source>Use 'Regex.Count'</source>
+        <target state="new">Use 'Regex.Count'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRegexCountMessage">
+        <source>Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</source>
+        <target state="new">Use 'Regex.Count' instead of 'Regex.Matches(...).Count'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRegexCountTitle">
+        <source>Use 'Regex.Count'</source>
+        <target state="new">Use 'Regex.Count'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRegexIsMatchDescription">
+        <source>'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</source>
+        <target state="new">'Regex.IsMatch' is simpler and faster than 'Regex.Match(...).Success'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRegexIsMatchFix">
+        <source>Use 'Regex.IsMatch'</source>
+        <target state="new">Use 'Regex.IsMatch'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRegexIsMatchMessage">
+        <source>Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</source>
+        <target state="new">Use 'Regex.IsMatch' instead of 'Regex.Match(...).Success'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseRegexIsMatchTitle">
+        <source>Use 'Regex.IsMatch'</source>
+        <target state="new">Use 'Regex.IsMatch'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
         <source>Use 'SearchValues'</source>
         <target state="translated">Usar 'SearchValues'</target>
