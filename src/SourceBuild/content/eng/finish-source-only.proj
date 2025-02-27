@@ -131,8 +131,12 @@
       <!-- Exclude the Private.SourceBuilt.Artifacts archive from poison usage scan. -->
       <PoisonFileToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
       <PoisonFileToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
+
       <!-- Include shipping nuget packages. -->
-      <PoisonFileToCheck Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
+      <ShippingPackageToCheck Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
+      <Error Condition="'@(ShippingPackageToCheck)' == ''" Text="No shipping packages will be poison checked - this is unexpected!" />
+
+      <PoisonFileToCheck Include="@(ShippingPackageToCheck)" />
       <!-- Add and mark SBRP packages to validate that they have the correct poison attribute. -->
       <PoisonFileToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
     </ItemGroup>
