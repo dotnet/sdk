@@ -133,7 +133,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         tableOfContents.AppendLine("Lines preceded by a '+' are additions and a '-' indicates removal.");
         tableOfContents.AppendLine();
 
-        foreach ((string assemblyName, string text) in generator.Results)
+        foreach ((string assemblyName, string text) in generator.Results.OrderBy(r => r.Key))
         {
             string fileName = $"{_tableOfContentsTitle}_{assemblyName}.md";
             tableOfContents.AppendLine($"* [{assemblyName}]({fileName})");
