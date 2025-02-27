@@ -110,7 +110,10 @@ namespace Microsoft.DotNet.Tools.Run
             }
             else if (EntryPointFileFullPath is not null)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.RunFileUnsupportedSwitch, RunCommandParser.NoBuildOption.Name, EntryPointFileFullPath));
+                projectFactory = new VirtualProjectBuildingCommand
+                {
+                    EntryPointFileFullPath = EntryPointFileFullPath,
+                }.CreateProjectInstance;
             }
 
             try

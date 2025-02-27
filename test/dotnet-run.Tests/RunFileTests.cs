@@ -502,7 +502,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Theory, CombinatorialData]
     public void Arguments_Unsupported(
         bool beforeFile,
-        [CombinatorialValues("--launch-profile;test", "--no-build")]
+        [CombinatorialValues("--launch-profile;test")]
         string input)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -593,5 +593,43 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("""
                 [MyString, TestValue]
                 """);
+    }
+
+    [Fact]
+    public void NoBuild()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        // It is an error when never built before.
+        new DotnetCommand(Log, "run", "--no-build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining("The system cannot find the file specified");
+
+        // Now build it.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        // Changing the program has no effect when it is not built.
+        File.WriteAllText(programFile, """Console.WriteLine("Changed");""");
+        new DotnetCommand(Log, "run", "--no-build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        // The change has an effect when built again.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Changed");
+
     }
 }
