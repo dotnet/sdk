@@ -343,7 +343,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         Directory.Delete(targetFolder, recursive: true);
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempBackupDir, targetFolder));
                     }
-                    else if (!directoryExists)
+                    else if (!directoryExists && Directory.Exists(targetFolder))
                     {
                         Directory.Delete(targetFolder, recursive: true);
                     }
