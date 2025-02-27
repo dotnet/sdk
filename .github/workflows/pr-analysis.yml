@@ -10,15 +10,28 @@ jobs:
   allowed-labels:
     runs-on: ubuntu-latest
     steps:
-      - name: Remove previous runs
+      - name: Remove previous runs using github cli
+        uses: actions/github-script@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: ${{ github.head_ref }}
           WORKFLOW_NAME: PR Analysis
-        run: |
-          for rid in $(gh run list --json status=completed --json jq '.workflow_runs[] | select(.headBranch == env.BRANCH && .workflowName == env.WORKFLOW_NAME) | .id'); do
-            gh run delete $rid --json
-          done
+        with:
+          script: |
+            const { data: runs } = await github.actions.listRepoWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: context.workflow,
+              branch: process.env.BRANCH,
+            });
+            for (const run of runs.workflow_runs) {
+              await github.actions.deleteWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id
+              });
+            }
+          
       - name: Return error if branch is in lockdown or 'do not merge' label is present
         run: echo "Labels on this PR prevent it from being merged. Please contact the repo owners for more information." && exit 1
         if: ${{ contains(github.event.pull_request.labels.*.name, 'Branch Lockdown') || contains(github.event.pull_request.labels.*.name, 'DO NOT MERGE') }}
