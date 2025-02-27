@@ -100,6 +100,164 @@ public class DiffDiskTests
         VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedTableOfContents, DefaultExpectedAssemblyMarkdowns);
     }
 
+    // Each assembly should have its own file. Confirm that namespaces spread throughout multiple assemblies does not accidentally overwrite any existing files.
+    [Fact]
+    public async Task Test_DiskRead_DiskWrite_AssembliesWithRepeatedNamespaces()
+    {
+        string beforeAssembly1Code1 = """
+        namespace MyNamespace
+        {
+            public class MyClass1
+            {
+                public MyClass1() { }
+            }
+        }
+        """;
+        string beforeAssembly1Code2 = """
+        namespace MyNamespace
+        {
+            public class MyClass2
+            {
+                public MyClass2() { }
+            }
+        }
+        """;
+        string beforeAssembly2Code1 = """
+        namespace MyNamespace
+        {
+            public class MyClass3
+            {
+                public MyClass3() { }
+            }
+        }
+        """;
+        string beforeAssembly2Code2 = """
+        namespace MyNamespace
+        {
+            public class MyClass4
+            {
+                public MyClass4() { }
+            }
+        }
+        """;
+
+        string afterAssembly1Code1 = """
+        namespace MyNamespace
+        {
+            public class MyClass1
+            {
+                public MyClass1() { }
+                public void MyMethod() { }
+            }
+        }
+        """;
+        string afterAssembly1Code2 = """
+        namespace MyNamespace
+        {
+            public class MyClass2
+            {
+                public MyClass2() { }
+                public void MyMethod() { }
+            }
+        }
+        """;
+        string afterAssembly2Code1 = """
+        namespace MyNamespace
+        {
+            public class MyClass3
+            {
+                public MyClass3() { }
+                public void MyMethod() { }
+            }
+        }
+        """;
+        string afterAssembly2Code2 = """
+        namespace MyNamespace
+        {
+            public class MyClass4
+            {
+                public MyClass4() { }
+                public void MyMethod() { }
+            }
+        }
+        """;
+
+        Dictionary<string, string[]> beforeAssemblyAndCodeFiles = new()
+        {
+            { "Assembly1", [beforeAssembly1Code1, beforeAssembly1Code2] },
+            { "Assembly2", [beforeAssembly2Code1, beforeAssembly2Code2] }
+        };
+
+        Dictionary<string, string[]> afterAssemblyAndCodeFiles = new()
+        {
+            { "Assembly1", [afterAssembly1Code1, afterAssembly1Code2] },
+            { "Assembly2", [afterAssembly2Code1, afterAssembly2Code2] }
+        };
+
+        Dictionary<string, string> expectedAssemblyMarkdowns = new()
+        {
+            { "Assembly1", $@"# Assembly1
+
+```diff
+  namespace MyNamespace
+  {{
+      public class MyClass1
+      {{
++         public void MyMethod() {{ }}
+      }}
+      public class MyClass2
+      {{
++         public void MyMethod() {{ }}
+      }}
+  }}
+```
+" },
+            { "Assembly2", $@"# Assembly2
+
+```diff
+  namespace MyNamespace
+  {{
+      public class MyClass3
+      {{
++         public void MyMethod() {{ }}
+      }}
+      public class MyClass4
+      {{
++         public void MyMethod() {{ }}
+      }}
+  }}
+```
+" }
+
+        };
+
+        string expectedTableOfContents = $@"# API difference between {BeforeFolderName} and {AfterFolderName}
+
+API listing follows standard diff formatting.
+Lines preceded by a '+' are additions and a '-' indicates removal.
+
+* [Assembly1]({DefaultTableOfContentsTitle}_Assembly1.md)
+* [Assembly2]({DefaultTableOfContentsTitle}_Assembly2.md)
+
+";
+
+        using TempDirectory inputFolderPath = new();
+        using TempDirectory outputFolderPath = new();
+
+        IDiffGenerator generator = TestDiskShared(
+            inputFolderPath.DirPath,
+            DefaultTableOfContentsTitle,
+            beforeAssemblyAndCodeFiles,
+            afterAssemblyAndCodeFiles,
+            assembliesToExclude: [],
+            outputFolderPath.DirPath,
+            writeToDisk: true);
+
+        await generator.RunAsync();
+
+        VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, expectedTableOfContents, expectedAssemblyMarkdowns);
+    }
+
     /// <summary>
     /// This test reads two DLLs, where the assembly is explicitly excluded.
     /// The output is disk is simply the table of contents markdown file with no assembly list. No other files.

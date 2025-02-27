@@ -1,16 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
@@ -26,8 +24,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private readonly ILog _log;
     private readonly IAssemblySymbolLoader _beforeLoader;
     private readonly IAssemblySymbolLoader _afterLoader;
-    private readonly Dictionary<string, IAssemblySymbol> _beforeAssemblySymbols;
-    private readonly Dictionary<string, IAssemblySymbol> _afterAssemblySymbols;
+    private readonly ConcurrentDictionary<string, IAssemblySymbol> _beforeAssemblySymbols;
+    private readonly ConcurrentDictionary<string, IAssemblySymbol> _afterAssemblySymbols;
     private readonly bool _addPartialModifier;
     private readonly bool _hideImplicitDefaultConstructors;
     private readonly ISymbolFilter _attributeSymbolFilter;
@@ -65,8 +63,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _log = log;
         _beforeLoader = beforeLoader;
         _afterLoader = afterLoader;
-        _beforeAssemblySymbols = beforeAssemblySymbols;
-        _afterAssemblySymbols = afterAssemblySymbols;
+        _beforeAssemblySymbols = new ConcurrentDictionary<string, IAssemblySymbol>(beforeAssemblySymbols);
+        _afterAssemblySymbols = new ConcurrentDictionary<string, IAssemblySymbol>(afterAssemblySymbols);
         _addPartialModifier = addPartialModifier;
         _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
         _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
@@ -115,7 +113,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                     swAssembly.Stop();
 
                     // Remove the found ones. The remaining ones will be processed at the end because they're new.
-                    _afterAssemblySymbols.Remove(assemblyName);
+                    _afterAssemblySymbols.Remove(assemblyName, out _);
                 }
                 else
                 {
@@ -130,6 +128,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             }));
         }
 
+        // This needs to block, because the tasks remove items from _afterAssemblySymbols, processed in the forloop below
         await Task.WhenAll(mainForLoopTasks).ConfigureAwait(false);
 
         List<Task> rightSideForLoopTasks = new();
