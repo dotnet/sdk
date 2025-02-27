@@ -19,7 +19,7 @@ Usage:
 
 Arguments:
   <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
-  <PROJECT_PATH>    The paths to the projects to remove from the solution.
+  <PROJECT_PATH>    The project paths or names to remove from the solution.
 
 Options:
   -?, -h, --help    Show command line help.";
