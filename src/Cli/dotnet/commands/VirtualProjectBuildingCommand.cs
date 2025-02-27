@@ -51,7 +51,8 @@ internal sealed class VirtualProjectBuildingCommand
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
-            // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838.
+            // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
+            // and https://github.com/dotnet/msbuild/issues/11519.
             var restoreRequest = new BuildRequestData(
                 CreateProjectInstance(projectCollection, addGlobalProperties: static (globalProperties) =>
                 {
@@ -154,7 +155,10 @@ internal sealed class VirtualProjectBuildingCommand
 
                 <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-                <!-- Override targets which don't work with project files that are not present on disk. -->
+                <!--
+                    Override targets which don't work with project files that are not present on disk.
+                    See https://github.com/NuGet/Home/issues/14148.
+                -->
 
                 <Target Name="_FilterRestoreGraphProjectInputItems"
                         DependsOnTargets="_LoadRestoreGraphEntryPoints"
