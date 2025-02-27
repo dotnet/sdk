@@ -25,6 +25,8 @@ public static class DiffGeneratorFactory
     public static readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>> DefaultDiagnosticOptions = [
         new ("CS8019", ReportDiagnostic.Suppress), // CS8019: Unnecessary using directive.
         new ("CS8597", ReportDiagnostic.Suppress), // CS8597: Thrown value may be null.
+        new ("CS0067", ReportDiagnostic.Suppress), // CS0067: The API is never used.
+        new ("CS9113", ReportDiagnostic.Suppress), // CS9113: Parameter is unread.
     ];
 
     /// <summary>
