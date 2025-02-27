@@ -545,6 +545,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         {
             FieldDeclarationSyntax fieldDeclaration => model.GetDeclaredSymbol(fieldDeclaration.Declaration.Variables.First()),
             EventDeclarationSyntax eventDeclaration => model.GetDeclaredSymbol(eventDeclaration),
+            EventFieldDeclarationSyntax eventFieldDeclaration => model.GetDeclaredSymbol(eventFieldDeclaration.Declaration.Variables.First()),
             PropertyDeclarationSyntax propertyDeclaration => model.GetDeclaredSymbol(propertyDeclaration),
             _ => model.GetDeclaredSymbol(node)
         };
