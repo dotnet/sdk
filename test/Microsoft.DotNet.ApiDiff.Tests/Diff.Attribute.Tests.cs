@@ -44,7 +44,9 @@ public class DiffAttributeTests : DiffBaseTests
                       {
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """,
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     [Fact]
     public Task TestTypeAttributeDeleteAndAdd() =>
@@ -153,7 +155,8 @@ public class DiffAttributeTests : DiffBaseTests
                       {
                       }
                   }
-                """);
+                """,
+                attributesToExclude: []);
 
     [Fact]
     public Task TestTypeChangeAndAttributeAdd() => RunTestAsync(
@@ -199,7 +202,8 @@ public class DiffAttributeTests : DiffBaseTests
                 +         public MyClass2() { }
                 +     }
                   }
-                """);
+                """,
+                attributesToExclude: []);
 
     [Fact]
     public Task TestTypeChangeButAttributeStays() => RunTestAsync(
@@ -247,7 +251,8 @@ public class DiffAttributeTests : DiffBaseTests
                 +         public MyClass2() { }
                 +     }
                   }
-                """);
+                """,
+                attributesToExclude: []);
 
     #endregion
 
@@ -293,7 +298,9 @@ public class DiffAttributeTests : DiffBaseTests
                           public void MyMethod() { }
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """,
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     [Fact]
     public Task TestMemberAttributeDeleteAndAdd() =>
@@ -408,7 +415,8 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true);
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     [Fact]
     public Task TestMemberChangeAndAttributeAdd() => RunTestAsync(
@@ -454,7 +462,8 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true);
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     [Fact]
     public Task TestMemberChangeButAttributeStays() => RunTestAsync(
@@ -502,7 +511,8 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true);
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     #endregion
 
@@ -552,7 +562,9 @@ public class DiffAttributeTests : DiffBaseTests
                 +         public void MyMethod([MyAttribute] int y) { }
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """,
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     #endregion
 
@@ -606,7 +618,9 @@ public class DiffAttributeTests : DiffBaseTests
                       {
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """,
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     [Fact]
     public Task TestMethodAttributeListExpansion() => RunTestAsync(
@@ -659,7 +673,9 @@ public class DiffAttributeTests : DiffBaseTests
                           public MyClass(int x) { }
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """,
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     //[Fact]
     [Fact(Skip = "Parameter attributes are not showing up in the syntax tree.")]
@@ -715,7 +731,9 @@ public class DiffAttributeTests : DiffBaseTests
                 +         public void MyMethod([MyAttribute1, MyAttribute2] int y) { }
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """,
+                hideImplicitDefaultConstructors: true,
+                attributesToExclude: []);
 
     #endregion
 
@@ -812,7 +830,7 @@ public class DiffAttributeTests : DiffBaseTests
                 +     }
                   }
                 """,
-                attributesToExclude: []); // empty list is respected as is
+                attributesToExclude: []);
 
     [Fact]
     public Task TestSuppressOnlyCustom() => RunTestAsync(
@@ -939,20 +957,9 @@ public class DiffAttributeTests : DiffBaseTests
                 +         public string Second { get { throw null; } }
                 +     }
                   }
-                """, attributesToExclude: []);
+                """,
+                attributesToExclude: []); // Make sure to show AttributeUsage, which by default is suppressed
 
 
     #endregion
-}
-
-[System.AttributeUsage(System.AttributeTargets.All)]
-public class MyAttribute(string first, string second) : System.Attribute
-{
-    public string First { get; } = first;
-    public string Second { get; } = second;
-}
-
-[MyAttribute(first: "First", second: "Second")]
-public class MyClass
-{
 }
