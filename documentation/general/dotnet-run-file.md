@@ -68,7 +68,12 @@ The file-based build and run kicks in only when:
 > would need to search for a file-based program in the current directory instead of failing.
 >
 > We can also consider adding some universal option that would work with both project-based and file-based programs,
-> like `dotnet run --path ./dir/`.
+> like `dotnet run --directory ./dir/`. For inspiration, `dotnet test` also has a `--directory` option.
+> Although users might expect there to be a `--file` option, as well. Both could be unified as `--path`.
+>
+> If we want to also support [multi-entry-point scenarios](#multiple-entry-points),
+> we might need an option like `dotnet run --entry ./dir/name`
+> which would work for both `./dir/name.cs` and `./dir/name/name.csproj`.
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
@@ -77,8 +82,12 @@ For example, the remaining command-line arguments after the first argument (the 
 ## Entry points
 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
+We want to report an error for non-entry-point files to avoid the confusion of being able to `dotnet run util.cs`.
+
 Currently, entry-point files must contain top-level statements,
 but other entry-point forms like classic `Main` method can be recognized in the future.
+We could modify Roslyn to accept the entry-point path and then it would be the compiler's responsibility
+to check whether the file contains an entry point (of any kind) and report an error otherwise.
 
 Because of the [implicit project file](#implicit-project-file),
 other files in the target directory or its subdirectories are included in the compilation.
