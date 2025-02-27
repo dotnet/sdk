@@ -390,7 +390,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     }
 
     // For types, members and namespaces.
-    private static Dictionary<string, AttributeSyntax> CollectAttributeNodes(MemberDeclarationSyntax memberNode)
+    private Dictionary<string, AttributeSyntax> CollectAttributeNodes(MemberDeclarationSyntax memberNode)
     {
         Dictionary<string, AttributeSyntax> dictionary = new();
 
