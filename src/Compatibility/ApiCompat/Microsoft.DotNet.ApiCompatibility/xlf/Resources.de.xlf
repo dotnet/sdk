@@ -122,9 +122,9 @@
         <target state="translated">Die Einschränkung „{0}“ für den Typparameter „{1}“ von „{2}“ kann nicht entfernt werden.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualFromMember">
-        <source>Cannot remove virtual keyword from member '{0}'.</source>
-        <target state="translated">Das virtuelle Schlüsselwort kann nicht aus dem Member „{0}“ entfernt werden.</target>
+      <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
+        <source>Cannot remove '{0}' keyword from member '{1}'.</source>
+        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
@@ -145,11 +145,6 @@
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">Der {0} Index sollte zwischen null und einschließlich {1} liegen.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">Die übereinstimmende Assembly "{0}" wurde in keinem der Suchverzeichnisse gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">

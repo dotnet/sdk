@@ -1,4 +1,5 @@
 <Project>
+
   <Target Name="GetDotnetWatchRedistOutputDirectory">
     <PropertyGroup>
       <DotnetWatchRedistOutputDirectory>$(ArtifactsDir)bin\redist\$(Configuration)\dotnet\sdk\$(Version)\DotnetTools\dotnet-watch\</DotnetWatchRedistOutputDirectory>
@@ -6,7 +7,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_PublishDotnetWatchToRedist_Inputs">
+  <Target Name="PublishDotnetWatchToRedist" DependsOnTargets="GetDotnetWatchRedistOutputDirectory">
     <ItemGroup>
       <_DotnetWatchBuildOutput Include="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\**"/>
 
@@ -26,15 +27,12 @@
                                          '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp.resources') or
                                         $([MSBuild]::ValueOrDefault('%(FullPath)', '').Contains('BuildHost'))" />
     </ItemGroup>
+
+    <Copy SourceFiles="@(_DotnetWatchInputFile)"
+          DestinationFiles="@(_DotnetWatchInputFile->'$(DotnetWatchRedistOutputDirectory)$(DotnetWatchRedistOutputSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
   </Target>
 
-  <Target Name="PublishDotnetWatchToRedist"
-          DependsOnTargets="GetDotnetWatchRedistOutputDirectory;_PublishDotnetWatchToRedist_Inputs">
-
-    <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="@(_DotnetWatchInputFile->'$(DotnetWatchRedistOutputDirectory)$(DotnetWatchRedistOutputSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-
-    <ItemGroup>
-      <FileWrites Include="@(_DotnetWatchInputFile->'$(DotnetWatchRedistOutputDirectory)$(DotnetWatchRedistOutputSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
-    </ItemGroup>
-  </Target>
 </Project>

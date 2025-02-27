@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -11,6 +12,7 @@ namespace Microsoft.DotNet.Workloads.Workload
     internal class InstallStateContents
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public bool? UseWorkloadSets { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -40,6 +42,8 @@ namespace Microsoft.DotNet.Workloads.Workload
         {
             return JsonSerializer.Serialize<InstallStateContents>(this, s_options);
         }
+
+        public bool ShouldUseWorkloadSets() => UseWorkloadSets ?? true;
     }
 }
 

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
@@ -54,7 +56,14 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             DownloadCallResult.Add(path);
             if (_downloadPath != string.Empty)
             {
-                File.WriteAllText(path, string.Empty);
+                try
+                {
+                    File.WriteAllText(path, string.Empty);
+                }
+                catch (IOException)
+                {
+                    // Do not write this file twice in parallel
+                }
             }
             _lastPackageVersion = packageVersion ?? new NuGetVersion("1.0.42");
             return Task.FromResult(path);

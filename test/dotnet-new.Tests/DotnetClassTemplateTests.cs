@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     "*project.*.*"
                 },
                 SettingsDirectory = _fixture.HomeDirectory,
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
                 DoNotAppendTemplateArgsToScenarioName = true,
                 DoNotPrependTemplateNameToScenarioName = true,
                 ScenarioName = folderName,
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     "*project.*.*"
                 },
                 SettingsDirectory = _fixture.HomeDirectory,
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
                 DoNotAppendTemplateArgsToScenarioName = true,
                 DoNotPrependTemplateNameToScenarioName = true,
                 ScenarioName = folderName,

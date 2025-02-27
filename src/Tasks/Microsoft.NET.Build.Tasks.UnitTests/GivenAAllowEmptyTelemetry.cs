@@ -7,8 +7,6 @@ using Microsoft.Build.Tasks;
 using Microsoft.Build.Utilities;
 using Xunit;
 
-#nullable enable
-
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAAllowEmptyTelemetry

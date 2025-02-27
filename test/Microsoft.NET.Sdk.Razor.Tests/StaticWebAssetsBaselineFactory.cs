@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
@@ -26,20 +27,19 @@ public partial class StaticWebAssetsBaselineFactory
     [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.lib\.module\.js)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex JSInitializerRegex();
 
-
-    private static IList<(Regex expression, string replacement)> WellKnownFileNamePatternsAndReplacements = new List<(Regex expression, string replacement)>
-    {
+    private static readonly IList<(Regex expression, string replacement)> WellKnownFileNamePatternsAndReplacements =
+    [
         (ScopedProjectBundleRegex(),"$1__fingerprint__$3$4"),
         (ScopedAppBundleRegex(),"$1__fingerprint__$3$4"),
         (JSInitializerRegex(), "$1__fingerprint__$3$4"),
         (EmbeddedFingerprintExpression(), "#[.{fingerprint=__fingerprint__}]$1"),
         (FingerprintedSiteCssRegex(), "fingerprint-site$1__fingerprint__$3$4"),
-    };
+    ];
 
     public static StaticWebAssetsBaselineFactory Instance { get; } = new();
 
-    public IList<string> KnownExtensions { get; } = new List<string>()
-    {
+    public IList<string> KnownExtensions { get; } =
+    [
         // Keep this list of most specific to less specific
         ".dll.gz",
         ".dll.br",
@@ -52,14 +52,16 @@ public partial class StaticWebAssetsBaselineFactory
         ".js",
         ".html",
         ".pdb",
-    };
+    ];
 
-    public IList<string> KnownFilePrefixesWithHashOrVersion { get; } = new List<string>()
-    {
+    public IList<string> KnownFilePrefixesWithHashOrVersion { get; } =
+    [
+        "blazor.web.",
+        "blazor.server",
         "dotnet.runtime",
         "dotnet.native",
         "dotnet"
-    };
+    ];
 
     public void ToTemplate(
         StaticWebAssetsManifest manifest,
@@ -278,7 +280,7 @@ public partial class StaticWebAssetsBaselineFactory
     {
         var updated = file switch
         {
-            var processed when file.StartsWith("$") => processed,
+            var processed when file.StartsWith('$') => processed,
             var fromBuildOrPublishPath when buildOrPublishFolder is not null && file.StartsWith(buildOrPublishFolder, StringComparison.OrdinalIgnoreCase) =>
                 TemplatizeBuildOrPublishPath(buildOrPublishFolder, fromBuildOrPublishPath),
             var fromIntermediateOutputPath when intermediateOutputPath is not null && file.StartsWith(intermediateOutputPath, StringComparison.OrdinalIgnoreCase) =>
@@ -299,7 +301,7 @@ public partial class StaticWebAssetsBaselineFactory
         return ReplaceFileName(updated).Replace('/', '\\');
     }
 
-    private string ReplaceFileName(string path)
+    private static string ReplaceFileName(string path)
     {
         var directory = Path.GetDirectoryName(path);
         var fileName = Path.GetFileName(path);
@@ -389,7 +391,7 @@ public partial class StaticWebAssetsBaselineFactory
 
         return file;
 
-        bool IsFramework(string segment)
+        static bool IsFramework(string segment)
         {
             try
             {
@@ -425,6 +427,10 @@ public partial class StaticWebAssetsBaselineFactory
     private string RemovePossibleHash(string fileNameAndExtension)
     {
         var filename = KnownFilePrefixesWithHashOrVersion.FirstOrDefault(p => fileNameAndExtension.StartsWith(p));
+        if (filename != null && filename.EndsWith("."))
+        {
+            filename = filename[..^1];
+        }
         var extension = KnownExtensions.FirstOrDefault(f => fileNameAndExtension.EndsWith(f, StringComparison.OrdinalIgnoreCase));
         if (filename != null && extension != null)
         {

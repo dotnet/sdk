@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .HaveStdOutContaining("You want me to say 'GreatScott'");
         }
 
-        [Theory(Skip = "New parser feature needed")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/46822")]
         [InlineData("build")]
         [InlineData("clean")]
         [InlineData("pack")]

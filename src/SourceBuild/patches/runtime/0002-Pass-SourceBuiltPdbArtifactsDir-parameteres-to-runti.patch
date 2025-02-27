@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Matt Mitchell (.NET)" <mmitche@microsoft.com>
+Date: Fri, 21 Feb 2025 08:44:15 -0800
+Subject: [PATCH] Pass SourceBuiltPdbArtifactsDir parameteres to runtime build
+
+Backport PR: https://github.com/dotnet/runtime/pull/112788
+
+---
+ eng/DotNetBuild.props | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 346c7719ef6..87a013e43b1 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -92,6 +92,7 @@
+       <InnerBuildArgs Condition="'$(SourceBuiltShippingPackagesDir)' != ''">$(InnerBuildArgs) /p:SourceBuiltShippingPackagesDir=$(SourceBuiltShippingPackagesDir)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(SourceBuiltNonShippingPackagesDir)' != ''">$(InnerBuildArgs) /p:SourceBuiltNonShippingPackagesDir=$(SourceBuiltNonShippingPackagesDir)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(SourceBuiltAssetManifestsDir)' != ''">$(InnerBuildArgs) /p:SourceBuiltAssetManifestsDir=$(SourceBuiltAssetManifestsDir)</InnerBuildArgs>
++      <InnerBuildArgs Condition="'$(SourceBuiltPdbArtifactsDir)' != ''">$(InnerBuildArgs) /p:SourceBuiltPdbArtifactsDir=$(SourceBuiltPdbArtifactsDir)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(SourceBuiltSymbolsDir)' != ''">$(InnerBuildArgs) /p:SourceBuiltSymbolsDir=$(SourceBuiltSymbolsDir)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(GitHubRepositoryName)' != ''">$(InnerBuildArgs) /p:GitHubRepositoryName=$(GitHubRepositoryName)</InnerBuildArgs>
+ 
