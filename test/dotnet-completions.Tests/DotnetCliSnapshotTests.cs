@@ -15,6 +15,7 @@ public class DotnetCliSnapshotTests : SdkTest
     [Theory]
     public async Task VerifyCompletions(string shellName)
     {
+        DumpEnv(Log);
         var provider = System.CommandLine.StaticCompletions.CompletionsCommand.DefaultShells.Single(x => x.ArgumentName == shellName);
         var completions = provider.GenerateCompletions(Microsoft.DotNet.Cli.Parser.RootCommand);
         var settings = new VerifySettings();
@@ -29,6 +30,16 @@ public class DotnetCliSnapshotTests : SdkTest
             settings.UseDirectory(Path.Combine("snapshots", provider.ArgumentName));
         }
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings);
+    }
+
+
+    private static void DumpEnv(ITestOutputHelper log)
+    {
+        log.WriteLine("Environment Variables:");
+        foreach (System.Collections.DictionaryEntry de in Environment.GetEnvironmentVariables())
+        {
+            log.WriteLine($"  {de.Key} = {de.Value}");
+        }
     }
 
     public static IEnumerable<object[]> ShellNames = System.CommandLine.StaticCompletions.CompletionsCommand.DefaultShells.Select<IShellProvider, object[]>(x => [x.ArgumentName]);
