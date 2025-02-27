@@ -311,6 +311,36 @@ public class DiffMethodTests : DiffBaseTests
                   }
                 """);
 
+    [Fact]
+    public Task TestPrimaryConstructorAdd() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass(string x)
+                    {
+                        public string X { get; } = x;
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                +         public MyClass(string x) { }
+                +         public string X { get { throw null; } }
+                      }
+                  }
+                """, hideImplicitDefaultConstructors: true);
+
     #endregion
 
     #region Exclusions

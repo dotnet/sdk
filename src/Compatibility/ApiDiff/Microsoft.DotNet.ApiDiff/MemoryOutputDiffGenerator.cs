@@ -238,10 +238,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         }
         else
         {
-            foreach (MemberDeclarationSyntax childNode in parentNode.ChildNodes().Where(n => n is MemberDeclarationSyntax m && IsPublicOrProtected(m)))
-            {
-                dictionary.Add(GetDocId(childNode, model), childNode);
-            }
+            throw new InvalidOperationException(Resources.UnexpectedNodeType);
         }
 
         return dictionary;
@@ -321,7 +318,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     }
 
     // Returns a non-null string if any attribute was changed (added, deleted or modified). Returns null if all attributes were the same before and after.
-    private static string? VisitAttributes(MemberDeclarationSyntax? beforeNode, MemberDeclarationSyntax? afterNode)
+    private string? VisitAttributes(MemberDeclarationSyntax? beforeNode, MemberDeclarationSyntax? afterNode)
     {
         Dictionary<string, AttributeSyntax>? beforeAttributeNodes = beforeNode != null ? CollectAttributeNodes(beforeNode) : null;
         Dictionary<string, AttributeSyntax>? afterAttributeNodes = afterNode != null ? CollectAttributeNodes(afterNode) : null;
@@ -331,12 +328,15 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         {
             foreach ((string attributeName, AttributeSyntax beforeAttributeNode) in beforeAttributeNodes)
             {
+                var realBeforeAttributeNode = beforeAttributeNode.WithArgumentList(beforeAttributeNode.ArgumentList);
                 // We found a before attribute.
                 if (afterAttributeNodes != null &&
                     afterAttributeNodes.TryGetValue(attributeName, out AttributeSyntax? afterAttributeNode))
                 {
-                    AttributeListSyntax beforeAttributeList = GetAttributeAsAttributeList(beforeAttributeNode, beforeNode!);
-                    AttributeListSyntax afterAttributeList = GetAttributeAsAttributeList(afterAttributeNode, afterNode!);
+                    var realAfterAttributeNode = afterAttributeNode.WithArgumentList(afterAttributeNode.ArgumentList);
+
+                    AttributeListSyntax beforeAttributeList = GetAttributeAsAttributeList(realBeforeAttributeNode, beforeNode!);
+                    AttributeListSyntax afterAttributeList = GetAttributeAsAttributeList(realAfterAttributeNode, afterNode!);
 
                     // We found the same after attribute. Retrieve the comparison string.
                     sb.Append(GenerateChangedDiff(beforeAttributeList, afterAttributeList));
@@ -398,7 +398,10 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         {
             foreach (AttributeSyntax attributeNode in attributeListNode.Attributes)
             {
-                dictionary.Add(attributeNode.ToFullString(), attributeNode);
+                if (!dictionary.TryAdd(attributeNode.ToFullString(), attributeNode))
+                {
+                    _log.LogWarning(string.Format(Resources.AttributeAlreadyExists, attributeNode.ToFullString(), memberNode.ToFullString()));
+                }
             }
         }
 
@@ -505,24 +508,17 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
     private static string GetDocId(SyntaxNode node, SemanticModel model)
     {
-        if (node is FieldDeclarationSyntax fieldDeclaration)
+        ISymbol? symbol = node switch
         {
-            foreach (var variable in fieldDeclaration.Declaration.Variables)
-            {
-                var fieldSymbol = model.GetDeclaredSymbol(variable) as IFieldSymbol;
-                if (fieldSymbol?.GetDocumentationCommentId() is string fieldDocId)
-                {
-                    return fieldDocId;
-                }
-            }
-        }
-        else
+            FieldDeclarationSyntax fieldDeclaration => model.GetDeclaredSymbol(fieldDeclaration.Declaration.Variables.First()),
+            EventDeclarationSyntax eventDeclaration => model.GetDeclaredSymbol(eventDeclaration),
+            PropertyDeclarationSyntax propertyDeclaration => model.GetDeclaredSymbol(propertyDeclaration),
+            _ => model.GetDeclaredSymbol(node)
+        };
+
+        if (symbol?.GetDocumentationCommentId() is string docId)
         {
-            var symbol = model.GetDeclaredSymbol(node);
-            if (symbol?.GetDocumentationCommentId() is string docId)
-            {
-                return docId;
-            }
+            return docId;
         }
 
         throw new NullReferenceException(string.Format(Resources.CouldNotGetDocIdForNode, node));
