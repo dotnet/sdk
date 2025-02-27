@@ -7,6 +7,11 @@
         <target state="new">Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AttributeAlreadyExists">
+        <source>Attribute already exists in dictionary. Attribute: '{0}', Member: '{1}'</source>
+        <target state="new">Attribute already exists in dictionary. Attribute: '{0}', Member: '{1}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CouldNotGetDocIdForNode">
         <source>Could not get the DocID for node: {0}</source>
         <target state="new">Could not get the DocID for node: {0}</target>

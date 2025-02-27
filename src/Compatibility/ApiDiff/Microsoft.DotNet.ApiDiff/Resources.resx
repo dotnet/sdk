@@ -120,6 +120,9 @@
   <data name="AddMemberThrowsException" xml:space="preserve">
     <value>Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</value>
   </data>
+  <data name="AttributeAlreadyExists" xml:space="preserve">
+    <value>Attribute already exists in dictionary. Attribute: '{0}', Member: '{1}'</value>
+  </data>
   <data name="CouldNotGetDocIdForNode" xml:space="preserve">
     <value>Could not get the DocID for node: {0}</value>
   </data>
