@@ -345,6 +345,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
                     else if (!directoryExists && Directory.Exists(targetFolder))
                     {
+                        // If files are copied to the targetFolder, then another operation in this transaction fails, we want to
+                        // ensure that we roll back to the prior state. In this case, the directory did not exist (or at least
+                        // didn't have files in it), so roll back to that state. A folder without files should not exist for
+                        // our purposes, so we can ignore the possibility of there having been an empty folder before.
                         Directory.Delete(targetFolder, recursive: true);
                     }
                 },
