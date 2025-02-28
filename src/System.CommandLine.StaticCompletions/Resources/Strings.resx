@@ -138,7 +138,7 @@
     <comment>{Locked="Bourne Again SHell (bash)"}</comment>
   </data>
   <data name="PowershellShellProvider.HelpDescription" xml:space="preserve">
-    <value>Generates a completion script for PowerShell Core. These scripts will not work on Windows Powershell.</value>
+    <value>Generates a completion script for PowerShell Core. These scripts will not work on Windows PowerShell.</value>
     <comment>{Locked="PowerShell Core"}</comment>
   </data>
   <data name="FishShellProvider.HelpDescription" xml:space="preserve">
