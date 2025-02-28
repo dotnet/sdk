@@ -116,6 +116,7 @@
       <!-- Exclude the Private.SourceBuilt.Artifacts archive from poison usage scan. -->
       <PoisonFileToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
       <PoisonFileToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
+      <Error Condition="'@(PoisonFileToCheck)' == ''" Text="No assets will be poison checked - this is unexpected!" />
 
       <!-- Include shipping nuget packages. -->
       <ShippingPackageToCheck Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
