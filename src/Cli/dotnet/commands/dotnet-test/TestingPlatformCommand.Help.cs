@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Cli
             _output.WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
         }
 
-        private void WriteUsageSection(HelpContext context)
+        private static void WriteUsageSection(HelpContext context)
         {
             context.Output.WriteLine(LocalizableStrings.CmdHelpUsageTitle);
             context.Output.WriteLine(Indent + string.Join(" ", GetCustomUsageParts(context.Command)));
