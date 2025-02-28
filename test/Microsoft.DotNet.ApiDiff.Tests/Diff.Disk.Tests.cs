@@ -12,13 +12,13 @@ namespace Microsoft.DotNet.ApiDiff.Tests;
 
 public class DiffDiskTests
 {
-    private const string BeforeFolderName = "Before";
-    private const string AfterFolderName = "After";
+    private const string DefaultBeforeFriendlyName = "Before";
+    private const string DefaultAfterFriendlyName = "After";
     private const string DefaultTableOfContentsTitle = "MyTitle";
     private const string DefaultAssemblyName = "MyAssembly";
 
     private const string ExpectedTableOfContents = $"""
-        # API difference between {BeforeFolderName} and {AfterFolderName}
+        # API difference between {DefaultBeforeFriendlyName} and {DefaultAfterFriendlyName}
 
         API listing follows standard diff formatting.
         Lines preceded by a '+' are additions and a '-' indicates removal.
@@ -29,7 +29,7 @@ public class DiffDiskTests
         """;
 
     private const string ExpectedEmptyTableOfContents = $"""
-        # API difference between {BeforeFolderName} and {AfterFolderName}
+        # API difference between {DefaultBeforeFriendlyName} and {DefaultAfterFriendlyName}
 
         API listing follows standard diff formatting.
         Lines preceded by a '+' are additions and a '-' indicates removal.
@@ -88,6 +88,8 @@ public class DiffDiskTests
 
         IDiffGenerator generator = TestDiskShared(
             inputFolderPath.DirPath,
+            DefaultBeforeFriendlyName,
+            DefaultAfterFriendlyName,
             DefaultTableOfContentsTitle,
             DefaultBeforeAssemblyAndCodeFiles,
             DefaultAfterAssemblyAndCodeFiles,
@@ -231,7 +233,7 @@ public class DiffDiskTests
 
         };
 
-        string expectedTableOfContents = $@"# API difference between {BeforeFolderName} and {AfterFolderName}
+        string expectedTableOfContents = $@"# API difference between {DefaultBeforeFriendlyName} and {DefaultAfterFriendlyName}
 
 API listing follows standard diff formatting.
 Lines preceded by a '+' are additions and a '-' indicates removal.
@@ -246,6 +248,8 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 
         IDiffGenerator generator = TestDiskShared(
             inputFolderPath.DirPath,
+            DefaultBeforeFriendlyName,
+            DefaultAfterFriendlyName,
             DefaultTableOfContentsTitle,
             beforeAssemblyAndCodeFiles,
             afterAssemblyAndCodeFiles,
@@ -270,6 +274,8 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 
         IDiffGenerator generator = TestDiskShared(
             inputFolderPath.DirPath,
+            DefaultBeforeFriendlyName,
+            DefaultAfterFriendlyName,
             DefaultTableOfContentsTitle,
             DefaultBeforeAssemblyAndCodeFiles,
             DefaultAfterAssemblyAndCodeFiles,
@@ -359,6 +365,8 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 
         IDiffGenerator generator = TestDiskShared(
             inputFolderPath.DirPath,
+            DefaultBeforeFriendlyName,
+            DefaultAfterFriendlyName,
             DefaultTableOfContentsTitle,
             beforeAssemblyAndCodeFiles,
             afterAssemblyAndCodeFiles,
@@ -383,6 +391,8 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 
         IDiffGenerator generator = TestDiskShared(
             inputFolderPath.DirPath,
+            DefaultBeforeFriendlyName,
+            DefaultAfterFriendlyName,
             DefaultTableOfContentsTitle,
             DefaultBeforeAssemblyAndCodeFiles,
             DefaultAfterAssemblyAndCodeFiles,
@@ -415,6 +425,8 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 
         IDiffGenerator generator = TestDiskShared(
             inputFolderPath.DirPath,
+            DefaultBeforeFriendlyName,
+            DefaultAfterFriendlyName,
             DefaultTableOfContentsTitle,
             DefaultBeforeAssemblyAndCodeFiles,
             DefaultAfterAssemblyAndCodeFiles,
@@ -435,6 +447,8 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
 
     private IDiffGenerator TestDiskShared(
         string inputFolderPath,
+        string beforeFriendlyName,
+        string afterFriendlyName,
         string tableOfContentsTitle,
         Dictionary<string, string[]> beforeAssemblyAndCodeFiles,
         Dictionary<string, string[]> afterAssemblyAndCodeFiles,
@@ -442,8 +456,8 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
         string outputFolderPath,
         bool writeToDisk)
     {
-        string beforeAssembliesFolderPath = Path.Join(inputFolderPath, BeforeFolderName);
-        string afterAssembliesFolderPath = Path.Join(inputFolderPath, AfterFolderName);
+        string beforeAssembliesFolderPath = Path.Join(inputFolderPath, DefaultBeforeFriendlyName);
+        string afterAssembliesFolderPath = Path.Join(inputFolderPath, DefaultAfterFriendlyName);
 
         Directory.CreateDirectory(beforeAssembliesFolderPath);
         Directory.CreateDirectory(afterAssembliesFolderPath);
@@ -459,6 +473,8 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             afterAssembliesFolderPath,
             afterAssemblyReferencesFolderPath: null,
             outputFolderPath,
+            beforeFriendlyName,
+            afterFriendlyName,
             tableOfContentsTitle,
             assembliesToExclude: assembliesToExclude,
             attributesToExclude: null,

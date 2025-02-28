@@ -12,6 +12,8 @@ public record DiffConfiguration(
     string BeforeAssembliesFolderPath,
     string? BeforeAssemblyReferencesFolderPath,
     string OutputFolderPath,
+    string BeforeFriendlyName,
+    string AfterFriendlyName,
     string TableOfContentsTitle,
     string[]? AssembliesToExclude,
     string[]? AttributesToExclude,

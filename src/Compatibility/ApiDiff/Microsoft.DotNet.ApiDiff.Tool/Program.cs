@@ -52,9 +52,23 @@ public static class Program
             IsRequired = true
         };
 
+        Option<string> optionBeforeFriendlyName = new(["--beforeFriendlyName", "-bfn"])
+        {
+            Description = "The friendly name to describe the 'before' assembly.",
+            Arity = ArgumentArity.ExactlyOne,
+            IsRequired = true
+        };
+
+        Option<string> optionAfterFriendlyName = new(["--afterFriendlyName", "-afn"])
+        {
+            Description = "The friendly name to describe the 'after' assembly.",
+            Arity = ArgumentArity.ExactlyOne,
+            IsRequired = true
+        };
+
         Option<string> optionTableOfContentsTitle = new(["--tableOfContentsTitle", "-tc"])
         {
-            Description = "The title of the markdown file that is placed in the output folder with a table of contents.",
+            Description = "The title of the markdown table of contents file that is placed in the output folder.",
             Arity = ArgumentArity.ExactlyOne,
             IsRequired = true
         };
@@ -101,6 +115,8 @@ public static class Program
         rootCommand.Add(optionAfterAssembliesFolderPath);
         rootCommand.Add(optionAfterRefAssembliesFolderPath);
         rootCommand.Add(optionOutputFolderPath);
+        rootCommand.Add(optionBeforeFriendlyName);
+        rootCommand.Add(optionAfterFriendlyName);
         rootCommand.Add(optionTableOfContentsTitle);
         rootCommand.Add(optionAssembliesToExclude);
         rootCommand.Add(optionAttributesToExclude);
@@ -114,6 +130,8 @@ public static class Program
                                               optionAfterAssembliesFolderPath,
                                               optionAfterRefAssembliesFolderPath,
                                               optionOutputFolderPath,
+                                              optionBeforeFriendlyName,
+                                              optionAfterFriendlyName,
                                               optionTableOfContentsTitle,
                                               optionAssembliesToExclude,
                                               optionAttributesToExclude,
@@ -144,6 +162,8 @@ public static class Program
         log.LogMessage($" - Assemblies to exclude:              {assembliesToExclude}");
         log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
         log.LogMessage($" - APIs to exclude:                    {apisToExclude}");
+        log.LogMessage($" - 'Before' friendly name:             {diffConfig.BeforeFriendlyName}");
+        log.LogMessage($" - 'After' friendly name:              {diffConfig.AfterFriendlyName}");
         log.LogMessage($" - Table of contents title:            {diffConfig.TableOfContentsTitle}");
         log.LogMessage($" - Add partial modifier to types:      {diffConfig.AddPartialModifier}");
         log.LogMessage($" - Hide implicit default constructors: {diffConfig.HideImplicitDefaultConstructors}");
@@ -161,6 +181,8 @@ public static class Program
                                                                    diffConfig.AfterAssembliesFolderPath,
                                                                    diffConfig.AfterAssemblyReferencesFolderPath,
                                                                    diffConfig.OutputFolderPath,
+                                                                   diffConfig.BeforeFriendlyName,
+                                                                   diffConfig.AfterFriendlyName,
                                                                    diffConfig.TableOfContentsTitle,
                                                                    diffConfig.AssembliesToExclude,
                                                                    diffConfig.AttributesToExclude,

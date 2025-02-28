@@ -19,6 +19,8 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     private readonly string[] _afterAssembliesFolderPaths;
     private readonly string[] _afterAssemblyReferencesFolderPaths;
     private readonly string _outputFolderPath;
+    private readonly string _beforeFriendlyName;
+    private readonly string _afterFriendlyName;
     private readonly string _tableOfContentsTitle;
     private readonly string[] _assembliesToExclude;
     private readonly string[] _attributesToExclude;
@@ -38,6 +40,8 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     /// <param name="afterAssembliesFolderPath"></param>
     /// <param name="afterAssemblyReferencesFolderPath"></param>
     /// <param name="outputFolderPath"></param>
+    /// <param name="beforeFriendlyName"></param>
+    /// <param name="afterFriendlyName"></param>
     /// <param name="tableOfContentsTitle"></param>
     /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff.</param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
@@ -52,6 +56,8 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                                     string afterAssembliesFolderPath,
                                     string? afterAssemblyReferencesFolderPath,
                                     string outputFolderPath,
+                                    string beforeFriendlyName,
+                                    string afterFriendlyName,
                                     string tableOfContentsTitle,
                                     string[]? assembliesToExclude,
                                     string[]? attributesToExclude,
@@ -68,6 +74,8 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         _afterAssembliesFolderPaths = [afterAssembliesFolderPath];
         _afterAssemblyReferencesFolderPaths = afterAssemblyReferencesFolderPath != null ? [afterAssemblyReferencesFolderPath] : [];
         _outputFolderPath = outputFolderPath;
+        _beforeFriendlyName = beforeFriendlyName;
+        _afterFriendlyName = afterFriendlyName;
         _tableOfContentsTitle = tableOfContentsTitle;
         _assembliesToExclude = assembliesToExclude ?? [];
         _attributesToExclude = attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude;
@@ -123,11 +131,8 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
             Directory.CreateDirectory(_outputFolderPath);
         }
 
-        string beforeFileName = Path.GetFileName(_beforeAssembliesFolderPaths[0]);
-        string afterFileName = Path.GetFileName(_afterAssembliesFolderPaths[0]);
-
         StringBuilder tableOfContents = new();
-        tableOfContents.AppendLine($"# API difference between {beforeFileName} and {afterFileName}");
+        tableOfContents.AppendLine($"# API difference between {_beforeFriendlyName} and {_afterFriendlyName}");
         tableOfContents.AppendLine();
         tableOfContents.AppendLine("API listing follows standard diff formatting.");
         tableOfContents.AppendLine("Lines preceded by a '+' are additions and a '-' indicates removal.");
