@@ -38,15 +38,14 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
 
             try
             {
-                var relativeProjectPaths = _projects.Select(p =>
-                {
-                    var fullPath = Path.GetFullPath(p);
-                    return Path.GetRelativePath(
+                var relativeProjectPaths = _projects
+                    .Select(p => Path.GetFullPath(p))
+                    .Select(p => Path.GetRelativePath(
                         Path.GetDirectoryName(solutionFileFullPath),
-                        Directory.Exists(fullPath)
-                            ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
-                            : fullPath);
-                });
+                        Directory.Exists(p)
+                            ? MsbuildProject.GetProjectFileFromDirectory(p).FullName
+                            : p));
+
                 RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
                 return 0;
             }
@@ -77,14 +76,22 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
             foreach (var projectPath in projectPaths)
             {
                 var project = solution.FindProject(projectPath);
-                if (project != null)
+                // If the project is not found, try to find it by name without extension
+                if (project is null && !Path.HasExtension(projectPath))
+                {
+                    var projectsMatchByName = solution.SolutionProjects.Where(p => Path.GetFileNameWithoutExtension(p.DisplayName).Equals(projectPath));
+                    project = projectsMatchByName.Count() == 1 ? projectsMatchByName.First() : null;
+                }
+                // If project is still not found, print error
+                if (project is null)
+                {
+                    Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectNotFoundInTheSolution, projectPath);
+                }
+                // If project is found, remove it
+                else
                 {
                     solution.RemoveProject(project);
                     Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectPath);
-                }
-                else
-                {
-                    Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectNotFoundInTheSolution, projectPath);
                 }
             }
 
