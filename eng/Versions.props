@@ -26,6 +26,7 @@
          compiler API targeted by analyzer assemblies. This is mostly an issue on source-build as
          in that build mode analyzer assemblies always target the live compiler API. -->
     <UsingToolMicrosoftNetCompilers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</UsingToolMicrosoftNetCompilers>
+    <UsingToolVSSDK>true</UsingToolVSSDK>
     <MicrosoftIORedistPackageVersion>6.0.1</MicrosoftIORedistPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
