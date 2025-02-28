@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.ZeroOrOne
         };
 
-        public static readonly CliOption Sources =  new ForwardedOption<IEnumerable<string>>("--source")
+        public static readonly CliOption Sources = new ForwardedOption<IEnumerable<string>>("--source")
         {
             Description = LocalizableStrings.SourceDescription,
             HelpName = LocalizableStrings.SourceArgumentName
@@ -39,10 +39,7 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.ExactMatchDescription
         }.ForwardAs("--exact-match");
 
-        public static readonly CliOption<bool> Interactive = new ForwardedOption<bool>("--interactive")
-        {
-            Description = LocalizableStrings.InteractiveDescription
-        }.ForwardAs("--interactive");
+        public static readonly CliOption<bool> Interactive = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
         public static readonly CliOption<bool> Prerelease = new ForwardedOption<bool>("--prerelease")
         {
@@ -89,7 +86,8 @@ namespace Microsoft.DotNet.Cli
             searchCommand.Options.Add(Format);
             searchCommand.Options.Add(Verbosity);
 
-            searchCommand.SetAction((parseResult) => {
+            searchCommand.SetAction((parseResult) =>
+            {
                 var command = new PackageSearchCommand(parseResult);
                 int exitCode = command.Execute();
 

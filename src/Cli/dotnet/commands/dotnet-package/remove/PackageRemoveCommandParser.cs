@@ -15,10 +15,7 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.OneOrMore,
         };
 
-        public static readonly CliOption<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
-        {
-            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
-        }.ForwardAs("--interactive");
+        public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
         private static readonly CliCommand Command = ConstructCommand();
 

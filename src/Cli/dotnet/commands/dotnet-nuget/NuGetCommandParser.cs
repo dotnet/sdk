@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli
             deleteCommand.Options.Add(new CliOption<bool>("--non-interactive"));
             deleteCommand.Options.Add(new CliOption<string>("--api-key", "-k"));
             deleteCommand.Options.Add(new CliOption<bool>("--no-service-endpoint"));
-            deleteCommand.Options.Add(new CliOption<bool>("--interactive"));
+            deleteCommand.Options.Add(CommonOptions.InteractiveOption());
 
             deleteCommand.SetAction(NuGetCommand.Run);
 
@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Cli
             pushCommand.Options.Add(new CliOption<bool>("--disable-buffering", "-d"));
             pushCommand.Options.Add(new CliOption<bool>("--no-symbols", "-n"));
             pushCommand.Options.Add(new CliOption<bool>("--no-service-endpoint"));
-            pushCommand.Options.Add(new CliOption<bool>("--interactive"));
+            pushCommand.Options.Add(CommonOptions.InteractiveOption());
             pushCommand.Options.Add(new CliOption<bool>("--skip-duplicate"));
             pushCommand.Options.Add(new CliOption<string>("--configfile"));
 
@@ -183,7 +183,8 @@ namespace Microsoft.DotNet.Cli
                     allowUntrustedRoot,
                     algorithm
                 };
-            };
+            }
+            ;
 
             CliCommand RemoveCommand() => new("remove") {
                 new CliArgument<string>("NAME"),
