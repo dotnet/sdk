@@ -48,6 +48,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly bool _allowRollForward;
         private readonly bool _allowPackageDowngrade;
         private readonly bool _updateAll;
+        private readonly bool _updateSkipPreRelease;
         private readonly string _currentWorkingDirectory;
         private readonly bool? _verifySignatures;
 
@@ -102,6 +103,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _createToolPackageStoreDownloaderUninstaller = createToolPackageStoreDownloaderUninstaller ??
                                                   ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
             _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
+            _updateSkipPreRelease = parseResult.GetValue(ToolUpdateCommandParser.UpdateSkipPreReleaseOption);
 
             _reporter = (reporter ?? Reporter.Output);
         }
@@ -162,8 +164,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (oldPackageNullable != null)
             {
+                if (oldPackageNullable.Version.IsPrerelease && _updateSkipPreRelease)
+                {
+                    _reporter.WriteLine("TODO: Skip pre-release version update");
+                    return 0;
+                }
                 NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
-
                 if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
                 {
                     _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, oldPackageNullable.Id, oldPackageNullable.Version.ToNormalizedString()).Green());
