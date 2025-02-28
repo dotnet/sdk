@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -9,4 +9,5 @@
   <ItemGroup>
     <PackageReference Include="NuGet.CommandLine.XPlat" />
   </ItemGroup>
+
 </Project>

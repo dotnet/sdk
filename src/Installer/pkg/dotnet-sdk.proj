@@ -4,7 +4,7 @@
     <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
     <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(BuildSdkRpm)' != 'true'">true</SkipBuild>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+    <RuntimeIdentifier>$(RID)</RuntimeIdentifier>
     <GenerateInstallers>true</GenerateInstallers>
     <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(BuildSdkRpm)' == 'true'">true</BuildRpmPackage>
@@ -29,7 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\redist-installer\redist-installer.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\redist-installer\redist-installer.proj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -103,7 +103,7 @@
       DependsOnTargets="CalculateLinuxNativeInstallerDependencyVersions">
 
     <PropertyGroup>
-      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)../redist-installer/packaging/deb/postinst</DebianPostinstTemplateFile>
+      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)deb/postinst</DebianPostinstTemplateFile>
       <DebianPostinstFile>$(BaseIntermediateOutputPath)debian/postinst</DebianPostinstFile>
     </PropertyGroup>
 
