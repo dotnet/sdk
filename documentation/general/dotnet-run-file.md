@@ -148,6 +148,9 @@ App/Program2/Program2.csproj
 
 The generated folders might need to be named differently to avoid clashes with existing folders.
 
+The entry-point projects (`Program1` and `Program2` in our example)
+have a `ProjectReference` to the non-entry-point `Shared` project.
+
 Unless the [artifacts output layout][artifacts-output] is used (which is recommended),
 those implicit projects mean that build artifacts are placed under those implicit directories
 even though they don't exist on disk prior to build:
