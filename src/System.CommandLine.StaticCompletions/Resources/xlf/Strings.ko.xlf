@@ -33,8 +33,8 @@
         <note>{Locked="Zsh"}</note>
       </trans-unit>
       <trans-unit id="PowershellShellProvider.HelpDescription">
-        <source>Generates a completion script for PowerShell Core. These scripts will not work on Windows Powershell.</source>
-        <target state="new">Generates a completion script for PowerShell Core. These scripts will not work on Windows Powershell.</target>
+        <source>Generates a completion script for PowerShell Core. These scripts will not work on Windows PowerShell.</source>
+        <target state="new">Generates a completion script for PowerShell Core. These scripts will not work on Windows PowerShell.</target>
         <note>{Locked="PowerShell Core"}</note>
       </trans-unit>
       <trans-unit id="ShellDiscovery.ShellEnvironmentNotSet">
