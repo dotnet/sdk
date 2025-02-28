@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli
             context.Output.WriteLine(Indent + string.Join(" ", GetCustomUsageParts(context.Command)));
         }
 
-        private IEnumerable<string> GetCustomUsageParts(CliCommand command, bool showOptions = true, bool showPlatformOptions = true, bool showExtensionOptions = true)
+        private static IEnumerable<string> GetCustomUsageParts(CliCommand command, bool showOptions = true, bool showPlatformOptions = true, bool showExtensionOptions = true)
         {
             var parentCommands = new List<CliCommand>();
             var nextCommand = command;
