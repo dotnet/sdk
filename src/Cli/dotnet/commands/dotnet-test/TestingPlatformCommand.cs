@@ -6,6 +6,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Testing.Platform.Helpers;
+using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
@@ -36,7 +37,7 @@ namespace Microsoft.DotNet.Cli
 
                 InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
-                BuildOptions buildOptions = GetBuildOptions(parseResult, degreeOfParallelism);
+                BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
                 _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
                 TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue);
 
@@ -46,20 +47,20 @@ namespace Microsoft.DotNet.Cli
                 {
                     if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
                     {
-                        return ExitCodes.GenericFailure;
+                        return ExitCode.GenericFailure;
                     }
                 }
                 else
                 {
                     if (!_msBuildHandler.RunMSBuild(buildOptions))
                     {
-                        return ExitCodes.GenericFailure;
+                        return ExitCode.GenericFailure;
                     }
 
                     if (!_msBuildHandler.EnqueueTestApplications())
                     {
-                        _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
-                        return ExitCodes.GenericFailure;
+                        _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription, new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
+                        return ExitCode.GenericFailure;
                     }
                 }
 
@@ -72,7 +73,7 @@ namespace Microsoft.DotNet.Cli
                 CleanUp();
             }
 
-            return hasFailed ? ExitCodes.GenericFailure : ExitCodes.Success;
+            return hasFailed ? ExitCode.GenericFailure : ExitCode.Success;
         }
 
         private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
@@ -82,11 +83,11 @@ namespace Microsoft.DotNet.Cli
             degreeOfParallelism = GetDegreeOfParallelism(parseResult);
 
             bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
-            bool isHelp = ContainsHelpOption(parseResult.GetArguments());
 
-            testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp);
+            var arguments = parseResult.GetArguments();
+            testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp: ContainsHelpOption(arguments));
 
-            _isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
+            _isDiscovery = ContainsListTestsOption(arguments);
         }
 
         private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, bool isHelp)
@@ -166,45 +167,20 @@ namespace Microsoft.DotNet.Cli
         }
 
         private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
-            new(parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                parseResult.GetValue(TestingPlatformOptions.ArchitectureOption),
+            new(parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+                parseResult.GetValue(CommonOptions.ArchitectureOption),
                 hasFilterMode,
                 isHelp);
 
-        private static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
+        private static bool ContainsHelpOption(IEnumerable<string> args)
         {
-            IEnumerable<string> propertyTokens = MSBuildUtility.GetPropertyTokens(parseResult.UnmatchedTokens);
-            IEnumerable<string> binaryLoggerTokens = MSBuildUtility.GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
-
-            var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
-                .Concat(propertyTokens)
-                .Concat(binaryLoggerTokens).ToList();
-
-            List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-            unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
-            unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
-
-            PathOptions pathOptions = new(parseResult.GetValue(TestingPlatformOptions.ProjectOption),
-                parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-                parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
-
-            string runtimeIdentifier = parseResult.HasOption(TestingPlatformOptions.ArchitectureOption) ?
-                    CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(string.Empty, parseResult.GetValue(TestingPlatformOptions.ArchitectureOption)) :
-                    string.Empty;
-
-            return new BuildOptions(
-                pathOptions,
-                parseResult.GetValue(CommonOptions.NoRestoreOption),
-                parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-                runtimeIdentifier,
-                degreeOfParallelism,
-                unmatchedTokens,
-                msbuildArgs);
+            return args.Contains(TestingPlatformOptions.HelpOption.Name) || TestingPlatformOptions.HelpOption.Aliases.Any(alias => args.Contains(alias));
         }
 
-        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.ShortHelpOptionKey);
+        private static bool ContainsListTestsOption(IEnumerable<string> args)
+        {
+            return args.Contains(TestingPlatformOptions.ListTestsOption.Name);
+        }
 
         private void CompleteRun()
         {

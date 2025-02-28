@@ -231,6 +231,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(PublishAot)' == 'true' and
                             '$(_IsPublishing)' != 'true' and
                             '$(PublishAotUsingRuntimePack)' == 'true' and
+                            '$(NativeCompilationDuringPublish)' != 'false' and
                             '$(_TargetFrameworkVersionWithoutV)' >= '10.0'"
                  ResourceName="NativeCompilationRequiresPublishing" />
 

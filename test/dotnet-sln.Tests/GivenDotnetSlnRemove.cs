@@ -19,7 +19,7 @@ Usage:
 
 Arguments:
   <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
-  <PROJECT_PATH>    The paths to the projects to remove from the solution.
+  <PROJECT_PATH>    The project paths or names to remove from the solution.
 
 Options:
   -?, -h, --help    Show command line help.";
@@ -241,6 +241,37 @@ Options:
                 .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
+
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenPassedAReferenceWithoutExtensionItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
+
+            var projectToRemove = "Lib";
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, Path.Combine(projectToRemove, "Lib.csproj")));
 
             solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(1);

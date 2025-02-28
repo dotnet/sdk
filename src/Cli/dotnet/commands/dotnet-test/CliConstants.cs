@@ -6,8 +6,7 @@ namespace Microsoft.DotNet.Cli
     internal static class CliConstants
     {
         public const string DotnetRunCommand = "dotnet run";
-        public const string HelpOptionKey = "--help";
-        public const string ShortHelpOptionKey = "-h";
+
         public const string ServerOptionKey = "--server";
         public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
         public const string FrameworkOptionKey = "--framework";
@@ -21,14 +20,16 @@ namespace Microsoft.DotNet.Cli
         public const string SemiColon = ";";
 
         public const string VSTest = "VSTest";
-        public const string MicrosoftTestingPlatform = "MicrosoftTestingPlatform";
+        public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
 
         public const string TestSectionKey = "test";
 
         public const string RestoreCommand = "Restore";
         public const string BuildCommand = "Build";
+
         public const string Configuration = "Configuration";
         public const string RuntimeIdentifier = "RuntimeIdentifier";
+        public const string TargetFramework = "TargetFramework";
 
         public static readonly string[] ProjectExtensions = { ".proj", ".csproj", ".vbproj", ".fsproj" };
         public static readonly string[] SolutionExtensions = { ".sln", ".slnx", ".slnf" };
@@ -44,6 +45,8 @@ namespace Microsoft.DotNet.Cli
         public const string DLLExtension = ".dll";
 
         public const string MTPTarget = "_MTPBuild";
+
+        public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
     }
 
     internal static class TestStates

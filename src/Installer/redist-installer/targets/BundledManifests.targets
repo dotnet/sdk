@@ -86,8 +86,7 @@
       Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
   </Target>
 
-  <Target Name="LayoutManifests"
-          DependsOnTargets="SetupBundledComponents">
+  <Target Name="LayoutManifests">
     <ItemGroup>
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data')"

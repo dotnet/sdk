@@ -217,19 +217,22 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand GetTestingPlatformCliCommand()
         {
-            var command = new TestingPlatformCommand("test");
+            var command = new TestingPlatformCommand("test", LocalizableStrings.DotnetTestCommand);
             command.SetAction(parseResult => command.Run(parseResult));
-            command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
-            command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
-            command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
-            command.Options.Add(TestingPlatformOptions.NoBuildOption);
-            command.Options.Add(CommonOptions.NoRestoreOption);
-            command.Options.Add(TestingPlatformOptions.ArchitectureOption);
-            command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.ProjectOption);
-            command.Options.Add(TestingPlatformOptions.ListTestsOption);
             command.Options.Add(TestingPlatformOptions.SolutionOption);
             command.Options.Add(TestingPlatformOptions.DirectoryOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
+            command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
+            command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(TestingPlatformOptions.ConfigurationOption);
+            command.Options.Add(TestingPlatformOptions.FrameworkOption);
+            command.Options.Add(CommonOptions.OperatingSystemOption);
+            command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(CommonOptions.NoRestoreOption);
+            command.Options.Add(TestingPlatformOptions.NoBuildOption);
             command.Options.Add(TestingPlatformOptions.NoAnsiOption);
             command.Options.Add(TestingPlatformOptions.NoProgressOption);
             command.Options.Add(TestingPlatformOptions.OutputOption);

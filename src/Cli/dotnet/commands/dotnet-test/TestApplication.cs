@@ -309,7 +309,7 @@ namespace Microsoft.DotNet.Cli
 
             if (!string.IsNullOrEmpty(testOptions.Architecture))
             {
-                builder.Append($" {TestingPlatformOptions.ArchitectureOption.Name} {testOptions.Architecture}");
+                builder.Append($" {CommonOptions.ArchitectureOption.Name} {testOptions.Architecture}");
             }
 
             if (!string.IsNullOrEmpty(testOptions.Configuration))
@@ -331,14 +331,9 @@ namespace Microsoft.DotNet.Cli
 
         private void AppendCommonArgs(StringBuilder builder, TestOptions testOptions)
         {
-            if (testOptions.HasListTests)
-            {
-                builder.Append($" {TestingPlatformOptions.ListTestsOption.Name}");
-            }
-
             if (testOptions.IsHelp)
             {
-                builder.Append($" {CliConstants.HelpOptionKey} ");
+                builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
             }
 
             builder.Append(_args.Count != 0

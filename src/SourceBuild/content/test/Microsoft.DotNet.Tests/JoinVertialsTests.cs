@@ -36,39 +36,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [Fact]
-        public void JoinVerticalsExampleTest()
-        {
-            // prepare
-            HashSet<string> verticalNames = [
-                "Windows_x64", "Windows_x86", "Windows_x64_BuildPass2",
-                "AzureLinux_x64_Cross_x64", "AzureLinux_x64_Cross_Alpine_x64",
-                "OSX_x64", "OSX_arm64", ];
-            var manifests = verticalNames.Select(LoadVerticalManifest);
-
-            JoinVerticalsConfig joinVerticalsConfig = new JoinVerticalsConfig
-            {
-                PriorityVerticals = [
-                    "Windows_x64_BuildPass2",
-                    "Windows_x64",
-                    "AzureLinux_x64_Cross_x64",
-                    "OSX_arm64",
-                ]
-            };
-            JoinVerticalsAssetSelector joinVerticalsAssetSelector = new JoinVerticalsAssetSelector(joinVerticalsConfig);
-
-            // act
-            var selectedVerticals = joinVerticalsAssetSelector.SelectAssetMatchingVertical(manifests).ToList();
-
-            // assert
-            PrintTestSelectionResult(selectedVerticals, verticalNames);
-            Assert.NotNull(selectedVerticals);
-            Assert.Equal(verticalNames.Count(), selectedVerticals.GroupBy(o => o.VerticalName).Count());
-            Assert.Contains(selectedVerticals, o => o.MatchType == AssetVerticalMatchType.ExactMatch);
-            Assert.Contains(selectedVerticals, o => o.MatchType == AssetVerticalMatchType.PriorityVerticals);
-            Assert.DoesNotContain(selectedVerticals, o => o.MatchType == AssetVerticalMatchType.NotSpecified);
-        }
-
-        [Fact]
         public void JoinVerticalsCheckAllAmbiguitiesTest()
         {
             // prepare
