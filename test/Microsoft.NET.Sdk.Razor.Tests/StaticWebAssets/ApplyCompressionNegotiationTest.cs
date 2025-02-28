@@ -1129,6 +1129,60 @@ public class ApplyCompressionNegotiationTest
     }
 
     [Fact]
+    public void AppliesContentNegotiationRules_Issue59291()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ApplyCompressionNegotiation
+        {
+            BuildEngine = buildEngine.Object,
+            CandidateAssets = [
+                CreateCandidate(
+                    @"D:\work\investigations\aspnet-59291-repro\WebWorkers.Issue4\obj\Release\net9.0\compressed\4t6f7o5fzg-j538s5lvtp.gz",
+                    "SpawnDev.BlazorJS.WebWorkers",
+                    "Package",
+                    "spawndev.blazorjs.webworkers.empty.js.gz",
+                    "All",
+                    "All",
+                    "pjmz1tbrkh",
+                    "5QGGFe52U8tL8jO+4zNzscmjjpZSY1o1BGIJkV/RmI4=",
+                    @"D:\Nuget\spawndev.blazorjs.webworkers\2.5.30\staticwebassets\spawndev.blazorjs.webworkers.empty.js",
+                    "Content-Encoding",
+                    "gzip"
+            )],
+            CandidateEndpoints = [.. new StaticWebAssetEndpoint[]
+            {
+                new() {
+                    Route = "spawndev.blazorjs.webworkers.empty.js.gz",
+                    AssetFile = @"D:\work\investigations\aspnet-59291-repro\RazorClassLibrary1\obj\Release\net9.0\compressed\4t6f7o5fzg-j538s5lvtp.gz",
+                    ResponseHeaders = [
+                        new StaticWebAssetEndpointResponseHeader { Name = "Accept-Ranges", Value = "bytes" },
+                        new StaticWebAssetEndpointResponseHeader { Name = "Cache-Control", Value = "no-cache" },
+                        new StaticWebAssetEndpointResponseHeader { Name = "Content-Encoding", Value = "gzip" },
+                        new StaticWebAssetEndpointResponseHeader { Name = "Content-Length", Value = "471" },
+                        new StaticWebAssetEndpointResponseHeader { Name = "Content-Type", Value = "text/javascript" },
+                        new StaticWebAssetEndpointResponseHeader { Name = "ETag", Value = "\u00225QGGFe52U8tL8jO\u002B4zNzscmjjpZSY1o1BGIJkV/RmI4=\u0022" },
+                        new StaticWebAssetEndpointResponseHeader { Name = "Last-Modified", Value = "Fri, 09 Feb 2024 02:37:40 GMT" },
+                        new StaticWebAssetEndpointResponseHeader { Name = "Vary", Value = "Content-Encoding" }
+                    ],
+                    EndpointProperties = [
+                        new StaticWebAssetEndpointProperty { Name = "integrity", Value = "sha256-5QGGFe52U8tL8jO\u002B4zNzscmjjpZSY1o1BGIJkV/RmI4=" }
+                    ],
+                    Selectors = []
+                } }.Select(e => e.ToTaskItem())],
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+    }
+
+    [Fact]
     public void AppliesContentNegotiationRules_ProcessesNewCompressedFormatsWhenAvailable()
     {
         var errorMessages = new List<string>();
