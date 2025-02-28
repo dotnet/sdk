@@ -14,6 +14,8 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
     private readonly Option<string> _optionAfterAssembliesFolderPath;
     private readonly Option<string> _optionAfterAssemblyReferencesFolderPath;
     private readonly Option<string> _optionOutputFolderPath;
+    private readonly Option<string> _optionBeforeFriendlyName;
+    private readonly Option<string> _optionAfterFriendlyName;
     private readonly Option<string> _optionTableOfContentsTitle;
     private readonly Option<string[]?> _optionAssembliesToExclude;
     private readonly Option<string[]?> _optionAttributesToExclude;
@@ -27,6 +29,8 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
                                            Option<string> optionAfterAssembliesFolderPath,
                                            Option<string> optionAfterAssemblyReferencesFolderPath,
                                            Option<string> optionOutputFolderPath,
+                                           Option<string> optionBeforeFriendlyName,
+                                           Option<string> optionAfterFriendlyName,
                                            Option<string> optionTableOfContentsTitle,
                                            Option<string[]?> optionAssembliesToExclude,
                                            Option<string[]?> optionAttributesToExclude,
@@ -40,6 +44,8 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
         _optionAfterAssembliesFolderPath = optionAfterAssembliesFolderPath;
         _optionAfterAssemblyReferencesFolderPath = optionAfterAssemblyReferencesFolderPath;
         _optionOutputFolderPath = optionOutputFolderPath;
+        _optionBeforeFriendlyName = optionBeforeFriendlyName;
+        _optionAfterFriendlyName = optionAfterFriendlyName;
         _optionTableOfContentsTitle = optionTableOfContentsTitle;
         _optionAssembliesToExclude = optionAssembliesToExclude;
         _optionAttributesToExclude = optionAttributesToExclude;
@@ -56,6 +62,8 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
             AfterAssembliesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssembliesFolderPath) ?? throw new NullReferenceException("Null after assemblies directory"),
             AfterAssemblyReferencesFolderPath: bindingContext.ParseResult.GetValueForOption(_optionAfterAssemblyReferencesFolderPath),
             OutputFolderPath: bindingContext.ParseResult.GetValueForOption(_optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory"),
+            BeforeFriendlyName: bindingContext.ParseResult.GetValueForOption(_optionBeforeFriendlyName) ?? throw new NullReferenceException("Null before friendly name"),
+            AfterFriendlyName: bindingContext.ParseResult.GetValueForOption(_optionAfterFriendlyName) ?? throw new NullReferenceException("Null after friendly name"),
             TableOfContentsTitle: bindingContext.ParseResult.GetValueForOption(_optionTableOfContentsTitle) ?? throw new NullReferenceException("Null table of contents title"),
             AssembliesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAssembliesToExclude),
             AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
