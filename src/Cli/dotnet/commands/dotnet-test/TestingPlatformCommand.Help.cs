@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Cli
             }
         }
 
-        private string FormatHelpOption(string option)
+        private static string FormatHelpOption(string option)
         {
             return $"[{option.Trim(':').ToLower()}]";
         }
