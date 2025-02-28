@@ -34,13 +34,13 @@ internal static class HttpClientExtensions
     /// <param name="encoding">encoding</param>
     /// <param name="messageBody">message payload</param>
     /// <returns>HTTP response</returns>
-    public static async Task<IHttpResponse> PostRequestAsync(
+    public static async Task<IHttpResponse?> PostRequestAsync(
         this IHttpClient client,
         Uri uri,
-        string username,
-        string password,
+        string? username,
+        string? password,
         string contentType,
-        string userAgent,
+        string? userAgent,
         Encoding encoding,
         Stream messageBody)
     {
@@ -89,14 +89,14 @@ internal static class HttpClientExtensions
     /// <param name="encoding">encoding</param>
     /// <param name="messageBody">message payload</param>
     /// <returns>HTTP response</returns>
-    public static async Task<IHttpResponse> PutRequestAsync(
+    public static async Task<IHttpResponse?> PutRequestAsync(
         this IHttpClient client,
         Uri uri,
-        string username,
-        string password,
+        string? username,
+        string? password,
         string contentType,
-        string userAgent,
-        string fileName,
+        string? userAgent,
+        string? fileName,
         Encoding encoding,
         Stream messageBody,
         CancellationToken cancellationToken)
@@ -145,11 +145,11 @@ internal static class HttpClientExtensions
     /// <param name="userAgent">'User-Agent' header value</param>
     /// <param name="cancellationToken"></param>
     /// <returns>HTTP response</returns>
-    public static async Task<IHttpResponse> GetRequestAsync(
+    public static async Task<IHttpResponse?> GetRequestAsync(
         this IHttpClient client,
         Uri uri,
-        string username,
-        string password,
+        string? username,
+        string? password,
         string userAgent,
         CancellationToken cancellationToken)
     {
@@ -185,30 +185,30 @@ internal static class HttpClientExtensions
     /// <param name="delay">time to wait between attempts; usually in seconds</param>
     /// <param name="cancellationToken">cancellation token</param>
     /// <returns>response of given type; default value if response status code is not of success</returns>
-    public static async Task<T> RetryGetRequestAsync<T>(
+    public static async Task<T?> RetryGetRequestAsync<T>(
         this IHttpClient client,
-        string url,
-        string username,
-        string password,
+        string? url,
+        string? username,
+        string? password,
         string userAgent,
         int retries,
         TimeSpan delay,
         CancellationToken cancellationToken)
     {
-        if (client is null)
+        if (client is null || url is null)
         {
             return default;
         }
 
         // retry GET request
-        IHttpResponse response = null;
+        IHttpResponse? response = null;
         await RetryTaskAsync(async (ct) =>
         {
             response = await client.GetRequestAsync(new Uri(url, UriKind.RelativeOrAbsolute), username, password, userAgent, ct);
         }, retries, delay, cancellationToken);
 
         // response is not valid; return default value
-        if (!response.IsResponseSuccessful())
+        if (!(response?.IsResponseSuccessful() ?? false))
         {
             return default;
         }
@@ -259,7 +259,7 @@ internal static class HttpClientExtensions
     /// <typeparam name="T">type to serialize to</typeparam>
     /// <param name="cancellation">cancellation token</param>
     /// <returns><typeparamref name="T"/> object</returns>
-    public static async Task<T> GetJsonResponseAsync<T>(this IHttpResponse response, CancellationToken cancellation)
+    public static async Task<T?> GetJsonResponseAsync<T>(this IHttpResponse response, CancellationToken cancellation)
     {
         if (response is null || cancellation.IsCancellationRequested)
         {
@@ -267,12 +267,16 @@ internal static class HttpClientExtensions
         }
 
         using var stream = await response.GetResponseBodyAsync();
+        if (stream is null)
+        {
+            return default;
+        }
         var reader = new StreamReader(stream, Encoding.UTF8);
 
         return JsonSerializer.Deserialize<T>(reader.ReadToEnd(), s_defaultSerializerOptions);
     }
 
-    private static void AddAuthenticationHeader(string username, string password, IHttpClient client)
+    private static void AddAuthenticationHeader(string? username, string? password, IHttpClient client)
     {
         client.DefaultRequestHeaders.Remove("Connection");
 

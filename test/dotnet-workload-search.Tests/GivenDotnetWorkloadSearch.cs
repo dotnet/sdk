@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload.Search;
@@ -101,7 +104,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
                 getManifest: id => id.Equals(new WorkloadId("android")) ? WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Android") :
                                    id.Equals(new WorkloadId("macos")) ? WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.macOS") :
                                    WorkloadManifest.CreateForTests("Microsoft.NET.Sdk.Maui"));
-            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver);
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
             _reporter.Clear();
             command.Execute();
             _reporter.Lines.Count.Should().Be(1);
