@@ -23,12 +23,7 @@
 
   <ItemGroup>
     <Compile Remove="snapshots/**/*" />
-    <!--
-      Adding the snapshots to the build output triggers the diff-comparison logic on them,
-      instead of the ones in the project dir. This is required for CI scenarios, but
-      hinders the local developer experience. So we just don't add them for local builds.
-    -->
-    <Content Condition="'$(CI)' != ''" Include="snapshots/**/*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="snapshots/**/*" CopyToOutputDirectory="PreserveNewest" Pack="false" />
   </ItemGroup>
 
 </Project>
