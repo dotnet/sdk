@@ -38,6 +38,8 @@ public static class DiffGeneratorFactory
     /// <param name="afterAssembliesFolderPath"></param>
     /// <param name="afterAssemblyReferencesFolderPath"></param>
     /// <param name="outputFolderPath"></param>
+    /// <param name="beforeFriendlyName"></param>
+    /// <param name="afterFriendlyName"></param>
     /// <param name="tableOfContentsTitle"></param>
     /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff. If <see langword="null"/>.</param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
@@ -53,6 +55,8 @@ public static class DiffGeneratorFactory
                                         string afterAssembliesFolderPath,
                                         string? afterAssemblyReferencesFolderPath,
                                         string outputFolderPath,
+                                        string beforeFriendlyName,
+                                        string afterFriendlyName,
                                         string tableOfContentsTitle,
                                         string[]? assembliesToExclude,
                                         string[]? attributesToExclude,
@@ -68,6 +72,8 @@ public static class DiffGeneratorFactory
                                            afterAssembliesFolderPath,
                                            afterAssemblyReferencesFolderPath,
                                            outputFolderPath,
+                                           beforeFriendlyName,
+                                           afterFriendlyName,
                                            tableOfContentsTitle,
                                            assembliesToExclude,
                                            attributesToExclude,
