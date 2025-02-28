@@ -211,6 +211,12 @@ namespace Microsoft.TemplateEngine.Cli
                 string[] split = installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries).SelectMany(arg => arg.Split('@', StringSplitOptions.RemoveEmptyEntries)).ToArray();
                 string identifier = split[0];
                 string? version = split.Length > 1 ? split[1] : null;
+
+                if (installArg.Contains("::"))
+                {
+                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.Colon_Separator_Deprecated, split[0], split.Length > 1 ? split[1] : string.Empty).Yellow());
+                }
+
                 foreach (string expandedIdentifier in InstallRequestPathResolution.ExpandMaskedPath(identifier, _engineEnvironmentSettings))
                 {
                     installRequests.Add(new InstallRequest(expandedIdentifier, version, details: details, force: args.Force));
@@ -747,9 +753,6 @@ namespace Microsoft.TemplateEngine.Cli
                                     .WithSubcommand<UninstallCommand>()
                                     .WithArgument(BaseUninstallCommand.NameArgument, managedPackages.First().Identifier));
                         }
-
-                        //TODO:
-                        //Reporter.Error.WriteLine($"To list the templates installed in a package, use dotnet new3 <new option> <package name>.");
                     }
                     else
                     {

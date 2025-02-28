@@ -103,8 +103,8 @@
         <note />
       </trans-unit>
       <trans-unit id="RemoveProjectPathArgumentDescription">
-        <source>The paths to the projects to remove from the solution.</source>
-        <target state="translated">要从解决方案中移除的项目的路径。</target>
+        <source>The project paths or names to remove from the solution.</source>
+        <target state="needs-review-translation">要从解决方案中移除的项目的路径。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectsHeader">

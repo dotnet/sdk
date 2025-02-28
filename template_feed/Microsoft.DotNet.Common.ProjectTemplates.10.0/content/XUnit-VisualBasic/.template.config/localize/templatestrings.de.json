@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "xUnit-Testprojekt",
+  "description": "Ein Projekt, das xUnit.net-Tests enthält, die auf .NET unter Windows, Linux und macOS ausgeführt werden können.",
+  "symbols/TargetFrameworkOverride/description": "Überschreibt das Zielframework",
+  "symbols/TargetFrameworkOverride/displayName": "Zielframeworküberschreibung",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/displayName": "Framework",
+  "symbols/Framework/choices/net10.0/description": "Ziel-Net10.0",
+  "symbols/EnablePack/description": "Gibt an, ob die Paketerstellung (über \"dotnet pack\") für das Projekt aktiviert werden soll.",
+  "symbols/EnablePack/displayName": "Paket aktivieren",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "symbols/skipRestore/displayName": "Wiederherstellung überspringen",
+  "postActions/restoreNugetPackages/description": "Stellt die NuGet-Pakete wieder her, die für dieses Projekt erforderlich sind.",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "\"dotnet restore\" ausführen",
+  "postActions/openInEditor/description": "Öffnet Class1.cs“ im Editor"
+}

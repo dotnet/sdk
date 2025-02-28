@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -89,13 +91,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new DirectoryPath(Path.Combine(_temporaryDirectory, "cache")),
                     1);
         }
-
         [Fact]
         public void WhenPassingRestoreActionConfigOptions()
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
-            var command = new ToolInstallLocalCommand(parseResult);
-            command._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            var toolInstallCommand = new ToolInstallLocalCommand(parseResult);
+            toolInstallCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]
@@ -103,8 +104,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
             var parseResult = Parser.Instance.Parse($"dotnet tool install {_packageIdA.ToString()} --ignore-failed-sources");
-            var installLocalCommand = new ToolInstallLocalCommand(
-                parseResult,
+            var toolInstallCommand = new ToolInstallLocalCommand(parseResult,
                 _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            toolInstallCommand.Execute().Should().Be(0);
 
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }

@@ -57,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
 
             testAsset.Restore(Log, "1");
 
-            string[] targetFrameworks = { "netcoreapp2.1", "net472" };
+            string[] targetFrameworks = { ToolsetInfo.CurrentTargetFramework, "net472" };
 
             var (buildResult, outputDirectories) = Build(testAsset, targetFrameworks, msbuildArguments);
 
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Build.Tests
                 "1.pdb",
                 "1.deps.json",
                 "1.runtimeconfig.json",
-                "1.runtimeconfig.dev.json"
+                 $"1{EnvironmentInfo.ExecutableExtension}"
             };
 
             var netFrameworkExeFiles = new[]
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
 
             foreach (var targetFramework in targetFrameworks)
             {
-                var runtimeFiles = targetFramework.StartsWith("netcoreapp")
+                var runtimeFiles = targetFramework.StartsWith(ToolsetInfo.CurrentTargetFramework)
                     ? coreExeFiles
                     : netFrameworkExeFiles;
 
@@ -146,11 +146,11 @@ namespace Microsoft.NET.Build.Tests
 
             testAsset.Restore(Log, "1");
 
-            var (buildResult, outputDirectories) = Build(testAsset, new[] { "netcoreapp2.1" }, new[] { "/p:DisableTransitiveProjectReferences=true" });
+            var (buildResult, outputDirectories) = Build(testAsset, new[] { ToolsetInfo.CurrentTargetFramework }, new[] { "/p:DisableTransitiveProjectReferences=true" });
 
             buildResult.Should().Pass();
 
-            outputDirectories.Should().ContainSingle().Which.Key.Should().Be("netcoreapp2.1");
+            outputDirectories.Should().ContainSingle().Which.Key.Should().Be(ToolsetInfo.CurrentTargetFramework);
 
             var outputDirectory = outputDirectories.First().Value;
 
@@ -159,9 +159,9 @@ namespace Microsoft.NET.Build.Tests
                 "1.pdb",
                 "1.deps.json",
                 "1.runtimeconfig.json",
-                "1.runtimeconfig.dev.json",
                 "2.dll",
-                "2.pdb"
+                "2.pdb",
+                $"1{EnvironmentInfo.ExecutableExtension}",
             });
 
             new DotnetCommand(Log, Path.Combine(outputDirectory.FullName, "1.dll"))
@@ -245,7 +245,7 @@ namespace _{0}
             {
                 Name = "1",
                 IsExe = true,
-                TargetFrameworks = "netcoreapp2.1",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 ReferencedProjects = { project2 },
                 SourceFiles =
                 {
@@ -305,7 +305,7 @@ namespace _{0}
             {
                 Name = "1",
                 IsExe = true,
-                TargetFrameworks = "netcoreapp2.1;net472",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net472",
                 ReferencedProjects = { project2, project3 },
                 SourceFiles =
                 {

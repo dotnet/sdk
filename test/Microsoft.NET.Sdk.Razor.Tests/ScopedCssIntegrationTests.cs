@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -71,7 +73,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     var itemGroup = new XElement(ns + "ItemGroup");
                     var element = new XElement("ScopedCssInput", new XAttribute("Include", @"Styles\Pages\Counter.css"));
                     element.Add(new XElement("RazorComponent", @"Components\Pages\Counter.razor"));
-                    element.Add(new XElement("CssScope", "b-overriden"));
+                    element.Add(new XElement("CssScope", "b-overridden"));
                     itemGroup.Add(element);
                     project.Root.Add(itemGroup);
                 });
@@ -88,10 +90,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var scoped = Path.Combine(intermediateOutputPath, "scopedcss", "Styles", "Pages", "Counter.rz.scp.css");
             new FileInfo(scoped).Should().Exist();
-            new FileInfo(scoped).Should().Contain("b-overriden");
+            new FileInfo(scoped).Should().Contain("b-overridden");
             var generated = Path.Combine(intermediateOutputPath, "generated", "Microsoft.CodeAnalysis.Razor.Compiler", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
             new FileInfo(generated).Should().Exist();
-            new FileInfo(generated).Should().Contain("b-overriden");
+            new FileInfo(generated).Should().Contain("b-overridden");
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
         }
 
