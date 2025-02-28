@@ -116,12 +116,24 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.Zero
         }.ForwardAs("-restore:false");
 
-        public static CliOption<bool> InteractiveMsBuildForwardOption =
-            new ForwardedOption<bool>("--interactive")
-            {
-                Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
-                Arity = ArgumentArity.Zero
-            }.ForwardAs("-property:NuGetInteractive=true");
+        private static bool IsCIEnvironmentOrRedirected() =>
+            new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
+
+        /// <summary>
+        /// A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
+        /// Despite being a 'forwarded option' there is no default forwarding configured, so if you want forwarding you can add it on a per-command basis.
+        /// </summary>
+        /// <remarks>If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.</remarks>
+        public static ForwardedOption<bool> InteractiveOption() =>
+             new("--interactive")
+             {
+                 Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
+                 Arity = ArgumentArity.Zero,
+                 // this default is called when no tokens/options are passed on the CLI args
+                 DefaultValueFactory = (ar) => IsCIEnvironmentOrRedirected()
+             };
+
+        public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption().ForwardAsSingle(interactive => $"-property:NuGetInteractive={interactive}");
 
         public static CliOption<bool> DisableBuildServersOption =
             new ForwardedOption<bool>("--disable-build-servers")
