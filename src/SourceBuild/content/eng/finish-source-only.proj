@@ -129,17 +129,22 @@
           Outputs="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" >
     <ItemGroup>
       <!-- Exclude the Private.SourceBuilt.Artifacts archive from poison usage scan. -->
-      <PoisonFileToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
-      <PoisonFileToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
-      <Error Condition="'@(PoisonFileToCheck)' == ''" Text="No assets will be poison checked - this is unexpected!" />
-
+      <AssetToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
+      <AssetToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
       <!-- Include shipping nuget packages. -->
       <ShippingPackageToCheck Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
-      <Error Condition="'@(ShippingPackageToCheck)' == ''" Text="No shipping packages will be poison checked - this is unexpected!" />
-
-      <PoisonFileToCheck Include="@(ShippingPackageToCheck)" />
       <!-- Add and mark SBRP packages to validate that they have the correct poison attribute. -->
-      <PoisonFileToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
+      <SbrpPackageToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
+    </ItemGroup>
+
+    <Error Condition="'@(AssetToCheck)' == ''" Text="No assets will be poison checked - this is unexpected!" />
+    <Error Condition="'@(ShippingPackageToCheck)' == ''" Text="No shipping packages will be poison checked - this is unexpected!" />
+    <Error Condition="'@(SbrpPackageToCheck)' == ''" Text="No SBRP packages will be poison checked - this is unexpected!" />
+
+    <ItemGroup>
+      <PoisonFileToCheck Include="@(AssetToCheck)" />
+      <PoisonFileToCheck Include="@(ShippingPackageToCheck)" />
+      <PoisonFileToCheck Include="@(SbrpPackageToCheck)" />
     </ItemGroup>
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(PoisonFileToCheck) for poisoned files." />
