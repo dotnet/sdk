@@ -1,4 +1,4 @@
-<!--#if (UseMSTestSdk)-->
+﻿<!--#if (UseMSTestSdk)-->
 <Project Sdk="MSTest.Sdk/3.6.4">
 
   <PropertyGroup>
@@ -63,7 +63,7 @@
 <!--#endif-->
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.4.3" />
 <!--#endif-->
-    <PackageReference Include="MSTest" Version="3.6.4" />
+    <PackageReference Include="MSTest" Version="3.8.2" />
   </ItemGroup>
 
   <ItemGroup>
