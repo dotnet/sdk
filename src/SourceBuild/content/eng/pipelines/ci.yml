@@ -74,7 +74,8 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     featureFlags:
-     EnableDefenderForLinux: true
+      EnableDefenderForLinux: true
+      incrementalSDLBinaryAnalysis: true
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)

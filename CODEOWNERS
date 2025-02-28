@@ -57,7 +57,6 @@
 
 # Area-Templates
 /src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers
-/src/Cli/dotnet-new3 @dotnet/templating-engine-maintainers
 /src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
 /test/dotnet-new.Tests @dotnet/templating-engine-maintainers
 /test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
