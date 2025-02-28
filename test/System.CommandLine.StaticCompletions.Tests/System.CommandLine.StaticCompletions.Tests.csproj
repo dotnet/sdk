@@ -6,6 +6,8 @@
     <IsTestProject>true</IsTestProject>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IsPackable>false</IsPackable>
+    <CanRunTestAsTool>false</CanRunTestAsTool>
   </PropertyGroup>
 
   <ItemGroup>
