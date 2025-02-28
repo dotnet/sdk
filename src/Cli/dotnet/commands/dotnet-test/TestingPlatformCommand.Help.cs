@@ -90,18 +90,23 @@ namespace Microsoft.DotNet.Cli
 
             if (showOptions)
             {
-                yield return "[options]";
+                yield return FormatHelpOption(LocalizableStrings.HelpOptions);
             }
 
             if (showPlatformOptions)
             {
-                yield return "[<platform options>...]";
+                yield return FormatHelpOption(LocalizableStrings.HelpPlatformOptions);
             }
 
             if (showExtensionOptions)
             {
-                yield return "[<extension options>...]";
+                yield return FormatHelpOption(LocalizableStrings.HelpExtensionOptions);
             }
+        }
+
+        private string FormatHelpOption(string option)
+        {
+            return $"[{option.Trim(':').ToLower()}]";
         }
 
         private void WriteOtherOptionsSection(HelpContext context, string title, List<CommandLineOption> options)
