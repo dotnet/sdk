@@ -875,7 +875,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '*::PROJECT_PATH -- The paths to the projects to remove from the solution.: ' \
+                                            '*::PROJECT_PATH -- The project paths or names to remove from the solution.: ' \
                                             && ret=0
                                         ;;
                                     (migrate)
