@@ -1,0 +1,44 @@
+From f8d00be1a4eb0f7c4b70ec9dfbe625fd906e41ef Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 28 Feb 2025 14:03:59 +0100
+Subject: [PATCH 3/4] Exclude netstandard1.x TFMs from
+ PackageSourceGenerator.proj and update tests
+
+---
+ src/packageSourceGenerator/PackageSourceGenerator.proj | 2 +-
+ tests/SbrpTests/GenerateScriptTests.cs                 | 5 ++---
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/src/packageSourceGenerator/PackageSourceGenerator.proj b/src/packageSourceGenerator/PackageSourceGenerator.proj
+index 88f36f8c..4031809c 100644
+--- a/src/packageSourceGenerator/PackageSourceGenerator.proj
++++ b/src/packageSourceGenerator/PackageSourceGenerator.proj
+@@ -12,7 +12,7 @@
+     <ExcludeTargetFrameworks>monoandroid*;monotouch*;net20;net35;net4*;netcore50;netcoreapp2.*;portable*;uap*;win8;win81;wp8;wpa81;xamarin*</ExcludeTargetFrameworks>
+     <!-- The following target frameworks should be excluded even though they are supported by the current SDK because there is no need to have them.
+          Only exclude them when target frameworks to include aren't provided. -->
+-    <ExcludeTargetFrameworks Condition="'$(IncludeTargetFrameworks)' == ''">$(ExcludeTargetFrameworks);netcoreapp3.1</ExcludeTargetFrameworks>
++    <ExcludeTargetFrameworks Condition="'$(IncludeTargetFrameworks)' == ''">$(ExcludeTargetFrameworks);netcoreapp3.1;netstandard1*</ExcludeTargetFrameworks>
+   </PropertyGroup>
+ 
+   <PropertyGroup Condition="'$(PackageName)' != '' and '$(PackageVersion)' != ''">
+diff --git a/tests/SbrpTests/GenerateScriptTests.cs b/tests/SbrpTests/GenerateScriptTests.cs
+index a85eaf9f..71b18385 100755
+--- a/tests/SbrpTests/GenerateScriptTests.cs
++++ b/tests/SbrpTests/GenerateScriptTests.cs
+@@ -21,10 +21,9 @@ public class GenerateScriptTests
+ 
+     public static IEnumerable<object[]> Data => new List<object[]>
+     {
+-        new object[] { "System.Xml.ReaderWriter", "4.3.0", PackageType.Reference },
+         new object[] { "Microsoft.Extensions.Logging.Abstractions", "6.0.4", PackageType.Reference },
+-        new object[] { "Microsoft.CodeAnalysis.CSharp", "3.11.0", PackageType.Reference },
+-        new object[] { "System.Security.Cryptography.Encoding", "4.3.0", PackageType.Reference },
++        new object[] { "Microsoft.CodeAnalysis.Common", "4.1.0", PackageType.Reference },
++        new object[] { "System.Security.Cryptography.ProtectedData", "8.0.0", PackageType.Reference },
+         new object[] { "Microsoft.Build.NoTargets", "3.7.0", PackageType.Text },
+     };
+     
+-- 
+2.48.1.windows.1
+

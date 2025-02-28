@@ -1,0 +1,30 @@
+From 47165f0778dd863d916e3b2083dec3e18068c79b Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 28 Feb 2025 14:31:05 +0100
+Subject: [PATCH 4/4] Update test packages
+
+---
+ tests/SbrpTests/GenerateScriptTests.cs | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/tests/SbrpTests/GenerateScriptTests.cs b/tests/SbrpTests/GenerateScriptTests.cs
+index 71b18385..e436720b 100755
+--- a/tests/SbrpTests/GenerateScriptTests.cs
++++ b/tests/SbrpTests/GenerateScriptTests.cs
+@@ -21,10 +21,11 @@ public class GenerateScriptTests
+ 
+     public static IEnumerable<object[]> Data => new List<object[]>
+     {
++        new object[] { "Microsoft.Build.NoTargets", "3.7.0", PackageType.Text },
+         new object[] { "Microsoft.Extensions.Logging.Abstractions", "6.0.4", PackageType.Reference },
+-        new object[] { "Microsoft.CodeAnalysis.Common", "4.1.0", PackageType.Reference },
++        new object[] { "NuGet.Protocol", "6.12.1", PackageType.Reference },
++        new object[] { "System.Buffers", "4.6.0", PackageType.Reference },
+         new object[] { "System.Security.Cryptography.ProtectedData", "8.0.0", PackageType.Reference },
+-        new object[] { "Microsoft.Build.NoTargets", "3.7.0", PackageType.Text },
+     };
+     
+     public string SandboxDirectory { get; set; }
+-- 
+2.48.1.windows.1
+
