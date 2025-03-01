@@ -27,7 +27,7 @@
           Condition="'$(ReportSbrpUsage)' == 'true'">
     <ItemGroup>
       <ProjectAssetsJsonFile Include="$(ArtifactsDir)**/project.assets.json" />
-      <ProjectAssetsJsonFile Include="$(SrcDir)**/project.assets.json" />
+      <ProjectAssetsJsonFile Include="$(SrcDir)**/artifacts/**/project.assets.json" />
     </ItemGroup>
 
     <WriteSbrpUsageReport SbrpRepoSrcPath="$(SbrpRepoSrcDir)"

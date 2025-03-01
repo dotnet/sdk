@@ -10,22 +10,13 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
 {
     public class JoinVerticalsConfig
     {
-        public IReadOnlyList<string> PriorityVerticals { get; set; } = [];
+        public required string PriorityVertical { get; init; }
 
         public static JoinVerticalsConfig GetDefaultConfig()
         {
             JoinVerticalsConfig joinVerticalsConfig = new JoinVerticalsConfig
             {
-                PriorityVerticals = [
-                    "Windows_x64_BuildPass2",
-                    "Windows_x64",
-                    "OSX_arm64",
-                    "AzureLinux_x64_Cross_x64",
-                    "AzureLinux_x64_Cross_arm64",
-                    "Android_Shortstack_x64",
-                    "Browser_Shortstack_wasm",
-                    "iOS_Shortstack_arm64"
-                ]
+                PriorityVertical = "Windows_x64"
             };
             return joinVerticalsConfig;
         }

@@ -106,13 +106,9 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             }
 
             // Apply general priority ordered list of primary verticals
-            foreach (string primaryVerticalName in _config.PriorityVerticals)
+            if (verticalNames.Contains(_config.PriorityVertical, StringComparer.OrdinalIgnoreCase))
             {
-                string? verticalName = verticalNames.FirstOrDefault(verticalName => VerticalNameMatches(verticalName, primaryVerticalName));
-                if (verticalName != null)
-                {
-                    return (AssetVerticalMatchType.PriorityVerticals, verticalName);
-                }
+                return (AssetVerticalMatchType.PriorityVerticals, _config.PriorityVertical);
             }
 
             // Select first vertical from the list and report it as ambiguous match

@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Cli
         }
 
         /// <summary>
-        /// Handles template list display (dotnet new3 --list).
+        /// Handles template list display (dotnet new --list).
         /// </summary>
         /// <param name="args">user command input.</param>
         /// <param name="cancellationToken">cancellation token.</param>
