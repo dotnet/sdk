@@ -11,7 +11,7 @@
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
     <_IsPublishing>true</_IsPublishing>
-    <PublishDir>$(ArtifactsDir)bin\finalizer\$(Configuration)\$(SdkTargetFramework)-win-$(Architecture)\publish</PublishDir>
+    <PublishDir>$(ArtifactsBinDir)finalizer\win-$(Architecture)\$(Configuration)\bin</PublishDir>
   </PropertyGroup>
 
   <ItemGroup>
