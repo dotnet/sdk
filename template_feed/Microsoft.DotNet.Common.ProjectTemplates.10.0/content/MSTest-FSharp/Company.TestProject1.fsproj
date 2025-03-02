@@ -43,7 +43,7 @@
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-<!--#if (TestRunner == "MSTest")-->
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
@@ -60,7 +60,7 @@
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
 <!--#endif-->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-<!--#if (TestRunner == "MSTest")-->
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
 <!--#if (CoverageTool == "Microsoft.CodeCoverage")-->
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.12.6" />
 <!--#endif-->
