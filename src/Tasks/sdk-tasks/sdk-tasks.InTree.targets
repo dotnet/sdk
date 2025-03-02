@@ -18,6 +18,7 @@
   <UsingTask TaskName="ExtractArchiveToDirectory" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GenerateDefaultRuntimeFrameworkVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GenerateMSBuildExtensionsSWR" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="GenerateRuntimeAnalyzersSWR" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GenerateMsiVersionFromFullVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GenerateSdkRuntimeIdentifierChain" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="GetCurrentRuntimeInformation" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" />

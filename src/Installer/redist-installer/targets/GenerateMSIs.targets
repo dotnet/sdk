@@ -27,6 +27,10 @@
       <SdkPlaceholderInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
       <SdkPlaceholderInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(FullNugetVersion).nupkg</SdkPlaceholderInstallerNupkgFile>
 
+      <SdkRuntimeAnalyzersNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.nuspec</SdkRuntimeAnalyzersNuspecFile>
+      <SdkRuntimeAnalyzersNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.$(FullNugetVersion).nupkg</SdkRuntimeAnalyzersNupkgFile>
+      <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
+
       <!-- Temp directory for light command layouts -->
       <LightCommandObjDir>$(ArtifactsObjDir)/LightCommandPackages</LightCommandObjDir>
       <!-- Directory for the zipped up light command package -->
@@ -405,6 +409,27 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="GenerateRuntimeAnalyzersNupkg"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
+          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' And '$(DotNetBuild)' != 'true' "
+          Inputs="$(RuntimeAnalyzersLayoutDirectory)/**/*;
+                    $(SdkRuntimeAnalyzersNuspecFile);
+                    $(GenerateNupkgPowershellScript)"
+          Outputs="$(SdkRuntimeAnalyzersNupkgFile);$(SdkRuntimeAnalyzersSwrFile)">
+    <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(RuntimeAnalyzersLayoutDirectory)"
+                                 OutputFile="$(SdkRuntimeAnalyzersSwrFile)" />
+
+    <!-- Include the swr file in the nuget package for VS authoring -->
+    <Copy SourceFiles="$(SdkRuntimeAnalyzersSwrFile)" DestinationFolder="$(RuntimeAnalyzersLayoutDirectory)" />
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                    '$(ArtifactsDir)' ^
+                    '$(RuntimeAnalyzersLayoutDirectory.TrimEnd('\'))' ^
+                    '$(FullNugetVersion)' ^
+                    '$(SdkRuntimeAnalyzersNuspecFile)' ^
+                    '$(SdkRuntimeAnalyzersNupkgFile)'" />
+  </Target>
+
   <Target Name="GenerateMsis"
           BeforeTargets="Pack"
           DependsOnTargets="GenerateLayout;
@@ -416,6 +441,7 @@
                             GenerateSdkPlaceholderMsi;
                             GenerateToolsetNupkg;
                             GenerateTemplatesNupkgs;
-                            GenerateSdkPlaceholderNupkg" />
+                            GenerateSdkPlaceholderNupkg;
+                            GenerateRuntimeAnalyzersNupkg" />
 
 </Project>
