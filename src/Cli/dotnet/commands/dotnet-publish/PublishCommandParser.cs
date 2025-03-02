@@ -33,12 +33,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
         {
-            Description = LocalizableStrings.NoBuildOptionDescription
+            Description = LocalizableStrings.NoBuildOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:NoBuild=true");
 
         public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
         {
-            Description = LocalizableStrings.CmdNoLogo
+            Description = LocalizableStrings.CmdNoLogo,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-nologo");
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
