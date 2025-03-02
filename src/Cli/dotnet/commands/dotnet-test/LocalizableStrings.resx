@@ -123,6 +123,9 @@
   <data name="AppDescription" xml:space="preserve">
     <value>Test Driver for the .NET Platform</value>
   </data>
+  <data name="DotnetTestCommand" xml:space="preserve">
+    <value>.NET Test Command</value>
+  </data>
   <data name="CmdSettingsFile" xml:space="preserve">
     <value>SETTINGS_FILE</value>
   </data>
@@ -314,7 +317,8 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
     <comment>{0} - test message state</comment>
   </data>
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
-    <value>Test application(s) that support VSTest are not supported.</value>
+    <value>Test projects that use both VSTest and Microsoft.Testing.Platform in the same solution are not supported. 
+See https://aka.ms/dotnet-test/mtp for more information.</value>
   </data>
   <data name="Aborted" xml:space="preserve">
     <value>Aborted</value>
@@ -469,10 +473,21 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   </data>
   <data name="HelpModuleIsMissingTheOptionsBelow" xml:space="preserve">
     <value>{0} is missing the options below</value>
+    <comment>0 is name of the module, this string is followed by lined that list the options</comment>
+  </data>
+  <data name="HelpModulesAreMissingTheOptionBelow" xml:space="preserve">
+    <value>{0} are missing the option below</value>
     <comment>0 is name of the module, this string is followed by lined that list the option</comment>
+  </data>
+  <data name="HelpModulesAreMissingTheOptionsBelow" xml:space="preserve">
+    <value>{0} are missing the options below</value>
+    <comment>0 is name of the module, this string is followed by lined that list the options</comment>
   </data>
   <data name="HelpOptions" xml:space="preserve">
     <value>Options:</value>
+  </data>
+  <data name="HelpPlatformOptions" xml:space="preserve">
+    <value>Platform Options:</value>
   </data>
   <data name="HelpUnavailableExtensionOptions" xml:space="preserve">
     <value>Unavailable extension options:</value>
@@ -482,5 +497,26 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   </data>
   <data name="HelpWaitingForOptionsAndExtensions" xml:space="preserve">
     <value>Waiting for options and extensions...</value>
+  </data>
+  <data name="CmdHelpUsageTitle" xml:space="preserve">
+    <value>Usage:</value>
+  </data>
+  <data name="CmdProjectPathName" xml:space="preserve">
+    <value>PROJECT_PATH</value>
+  </data>
+  <data name="CmdSolutionPathName" xml:space="preserve">
+    <value>SOLUTION_PATH</value>
+  </data>
+  <data name="CmdDirectoryPathName" xml:space="preserve">
+    <value>DIRECTORY_PATH</value>
+  </data>
+  <data name="CmdExpressionName" xml:space="preserve">
+    <value>EXPRESSION</value>
+  </data>
+  <data name="CmdRootPathName" xml:space="preserve">
+    <value>ROOT_PATH</value>
+  </data>
+  <data name="CmdNumberName" xml:space="preserve">
+    <value>NUMBER</value>
   </data>
 </root>
