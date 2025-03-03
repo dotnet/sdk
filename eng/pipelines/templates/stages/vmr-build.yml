@@ -921,9 +921,9 @@ stages:
           artifact: AssetManifests
           displayName: Publish Merged Manifest
           sbomEnabled: false
-        - output: pipelineArtifact
-          path: $(Build.ArtifactStagingDirectory)/artifacts/assets
-          artifact: BlobArtifacts
+        - output: buildArtifacts
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/assets
+          ArtifactName: BlobArtifacts
           displayName: Publish Blob Artifacts
           sbomEnabled: false
         - output: pipelineArtifact
@@ -965,7 +965,7 @@ stages:
           artifactName: PackageArtifacts
           continueOnError: true
           OS: Windows_NT
-    
+
     - job: ValidateSigning_Mac
       displayName: Validate Signing - Mac
       pool: ${{ parameters.pool_Mac }}
