@@ -26,8 +26,7 @@ After the minor release locks down, it transitions into servicing / "QB" (Quarte
 ### Servicing releases
 The .NET SDK has monthly servicing releases (e.g.`7.0.100` VS `7.0.101`) aligning with the .NET Runtime servicing releases. These are for top fixes and security updates only to limit risk.
 Any servicing release is open for check-ins from the day the [branding PRs](https://github.com/dotnet/sdk/pulls?q=is%3Apr+branding) are merged (~1st Tuesday of each month) and when code complete is (typically two weeks later).
-The servicing branches are locked from the time of code complete to the next branding in case we need to respin any monthly release. We use the `Branch Lockdown` label to mark PRs that should go into the next servicing release but the branch is currently not open. Final signoffs are typically in the last week of each month. We have a workflow that will automatically mark any PR targeting a servicing branch outside of the first to third tuesday window: https://github.com/dotnet/sdk/blob/main/.github/workflows/add-lockdown-label.yml
-
+The servicing branches are locked from the time of code complete to the next branding in case we need to respin any monthly release. We use the `Branch Lockdown` label to mark PRs that should go into the next servicing release but the branch is currently not open. Final signoffs are typically in the last week of each month. We have a workflow that will automatically mark any PR targeting a servicing branch outside of the first to third Tuesday window: https://github.com/dotnet/sdk/blob/main/.github/workflows/add-lockdown-label.yml
 ### Schedule
 | Release Type | Frequency    | Lockdown Release  | Branch Open | Lockdown Date (estimate) |
 | -------------|--------------|-------------------|-------------|--------------------------|
