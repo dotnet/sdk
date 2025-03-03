@@ -1294,7 +1294,7 @@ index 03c4308e13aebf..e581348a11eb80 100644
            - windows_x64
            jobParameters:
              templatePath: 'templates-official'
--            buildArgs: -s tools+libs -pack -c $(_BuildConfig) /p:TestAssemblies=false /p:TestPackages=true
+-            buildArgs: -s tools.illink+libs -pack -c $(_BuildConfig) /p:TestAssemblies=false /p:TestPackages=true
 +            buildArgs: -s tools+libs -restore -build -pack -sign -publish -c $(_BuildConfig) /p:TestAssemblies=false /p:TestPackages=true /p:EnableDefaultArtifacts=true
              nameSuffix: Libraries_WithPackages
              isOfficialBuild: ${{ variables.isOfficialBuild }}
