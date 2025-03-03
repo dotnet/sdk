@@ -18,7 +18,8 @@ public class DotnetCliSnapshotTests : SdkTest
         var provider = System.CommandLine.StaticCompletions.CompletionsCommand.DefaultShells.Single(x => x.ArgumentName == shellName);
         var completions = provider.GenerateCompletions(Microsoft.DotNet.Cli.Parser.RootCommand);
         var settings = new VerifySettings();
-        if (Environment.GetEnvironmentVariable("USER") is string user && user.Equals("helix-runner", StringComparison.OrdinalIgnoreCase))
+        if (Environment.GetEnvironmentVariable("USER") is string user && user.Equals("helix-runner", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("USER")))
         {
             Log.WriteLine($"CI environment detected, using snapshots directory in the current working directory {Environment.CurrentDirectory}");
             settings.UseDirectory(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));

@@ -14,7 +14,8 @@ public static class VerifyExtensions
         // Can't use sourceFile directly because in CI the file may be rooted at a different location than the compile-time location
         // We do have the source code available, just at a different root, so we can use that compute
         var settings = new VerifySettings();
-        if (Environment.GetEnvironmentVariable("USER") is string user && user.Equals("helix-runner", StringComparison.OrdinalIgnoreCase))
+        if (Environment.GetEnvironmentVariable("USER") is string user && user.Equals("helix-runner", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("USER")))
         {
             var runtimeSnapshotDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
             var closestExistingDirectory = GetClosestExistingDirectory(runtimeSnapshotDir);
