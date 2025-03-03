@@ -1326,7 +1326,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::shell -- The shell for which to generate or register completions:((bash\:"Generates a completion script for the Bourne Again SHell (bash)." fish\:"Generates a completion script for the Fish shell." nushell\:"Generates a completion script for the NuShell shell." pwsh\:"Generates a completion script for PowerShell Core. These scripts will not work on Windows Powershell." zsh\:"Generates a completion script for the Zsh shell." ))' \
+                                            '::shell -- The shell for which to generate or register completions:((bash\:"Generates a completion script for the Bourne Again SHell (bash)." fish\:"Generates a completion script for the Fish shell." nushell\:"Generates a completion script for the NuShell shell." pwsh\:"Generates a completion script for PowerShell Core. These scripts will not work on Windows PowerShell." zsh\:"Generates a completion script for the Zsh shell." ))' \
                                             && ret=0
                                         ;;
                                 esac

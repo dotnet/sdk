@@ -1277,7 +1277,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('bash', 'bash', [CompletionResultType]::ParameterValue, "Generates a completion script for the Bourne Again SHell (bash).")
                 [CompletionResult]::new('fish', 'fish', [CompletionResultType]::ParameterValue, "Generates a completion script for the Fish shell.")
                 [CompletionResult]::new('nushell', 'nushell', [CompletionResultType]::ParameterValue, "Generates a completion script for the NuShell shell.")
-                [CompletionResult]::new('pwsh', 'pwsh', [CompletionResultType]::ParameterValue, "Generates a completion script for PowerShell Core. These scripts will not work on Windows Powershell.")
+                [CompletionResult]::new('pwsh', 'pwsh', [CompletionResultType]::ParameterValue, "Generates a completion script for PowerShell Core. These scripts will not work on Windows PowerShell.")
                 [CompletionResult]::new('zsh', 'zsh', [CompletionResultType]::ParameterValue, "Generates a completion script for the Zsh shell.")
             )
             $completions += $staticCompletions
