@@ -27,7 +27,7 @@ public static class VerifyExtensions
         }
         else
         {
-            log.WriteLine($"Using snapshots from local repository");
+            log.WriteLine($"Using snapshots from local repository because $USER {Environment.GetEnvironmentVariable("USER")} is not 'helix-runner'");
             settings.UseDirectory(Path.Combine("snapshots", provider.ArgumentName));
         }
         var completions = provider.GenerateCompletions(command);
