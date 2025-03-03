@@ -284,6 +284,7 @@
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
       <Output TaskParameter="GeneratedContainerMediaType" PropertyName="GeneratedContainerMediaType" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
+      <Output TaskParameter="GeneratedDigestLabel" ItemName="ContainerLabel" />
     </CreateNewImage>
 
     <ItemGroup>
