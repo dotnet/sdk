@@ -144,8 +144,7 @@
   <Target Name="GenerateSdkPkg"
           Inputs="@(GenerateSdkPkgInputs)"
           Outputs="$(SdkPKGInstallerFile)"
-          DependsOnTargets="GenerateLayout;SetupPkgInputsOutputs"
-          Condition=" '$(OSName)' == 'osx' and '$(DotNetBuildSourceOnly)' != 'true' ">
+          DependsOnTargets="GenerateLayout;SetupPkgInputsOutputs">
     <ItemGroup>
       <TemplateFiles Include="$(RedistLayoutPath)templates/**/*" />
     </ItemGroup>
@@ -195,8 +194,7 @@
   <Target Name="GenerateSdkProductArchive"
           Inputs="@(GenerateSdkProductArchiveInputs)"
           Outputs="$(CombinedFrameworkSdkHostPKGInstallerFile)"
-          DependsOnTargets="GenerateSdkPkg"
-          Condition=" '$(OSName)' == 'osx' and '$(DotNetBuildSourceOnly)' != 'true' ">
+          DependsOnTargets="GenerateSdkPkg">
     <ItemGroup>
       <PkgComponentsSourceFiles Include="$(SdkPKGInstallerFile);
                               $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName);
@@ -234,7 +232,7 @@
   </Target>
 
   <Target Name="GeneratePkgs"
-          DependsOnTargets="GenerateSdkPkg;
-                            GenerateSdkProductArchive" />
+          BeforeTargets="Pack"
+          DependsOnTargets="GenerateSdkPkg;GenerateSdkProductArchive" />
 
 </Project>

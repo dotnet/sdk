@@ -331,14 +331,9 @@ namespace Microsoft.DotNet.Cli
 
         private void AppendCommonArgs(StringBuilder builder, TestOptions testOptions)
         {
-            if (testOptions.HasListTests)
-            {
-                builder.Append($" {TestingPlatformOptions.ListTestsOption.Name}");
-            }
-
             if (testOptions.IsHelp)
             {
-                builder.Append($" {CliConstants.HelpOptionKey} ");
+                builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
             }
 
             builder.Append(_args.Count != 0
