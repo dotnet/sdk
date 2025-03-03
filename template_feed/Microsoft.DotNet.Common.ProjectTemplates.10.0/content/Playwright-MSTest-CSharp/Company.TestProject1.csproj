@@ -39,7 +39,7 @@
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-<!--#if (TestRunner == "MSTest")-->
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
@@ -57,7 +57,7 @@
 <!--#endif-->
     <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.49.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-<!--#if (TestRunner == "MSTest")-->
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
 <!--#if (CoverageTool == "Microsoft.CodeCoverage")-->
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.12.6" />
 <!--#endif-->
