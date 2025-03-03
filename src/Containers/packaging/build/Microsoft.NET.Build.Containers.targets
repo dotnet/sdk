@@ -240,7 +240,7 @@
   </Target>
 
   <Target Name="_PublishSingleContainer"
-          Returns="@(GeneratedContainers)">
+          Returns="@(GeneratedContainer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -287,23 +287,23 @@
     </CreateNewImage>
 
     <ItemGroup>
-      <GeneratedContainers Include="GeneratedContainer">
+      <GeneratedContainer Include="GeneratedContainer">
         <Manifest>$(GeneratedContainerManifest)</Manifest>
         <Configuration>$(GeneratedContainerConfiguration)</Configuration>
         <ManifestDigest>$(GeneratedContainerDigest)</ManifestDigest>
         <ManifestMediaType>$(GeneratedContainerMediaType)</ManifestMediaType>
-      </GeneratedContainers>
+      </GeneratedContainer>
     </ItemGroup>
   </Target>
 
-  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
+  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" Returns="@(GeneratedContainer)" >
     <PropertyGroup>
       <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
       <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
       <!--We don't want to skip publishing individual images in case of local daemon podman because podman loads multi-arch tarball differently - only individual image for the current platform.-->
       <_SkipContainerPublishing>false</_SkipContainerPublishing>
       <_SkipContainerPublishing Condition="$(ContainerArchiveOutputPath) != '' or ( $(ContainerRegistry) == '' and ( $(LocalRegistry) == '' or $(LocalRegistry) == 'Docker' ) )">true</_SkipContainerPublishing>
-    
+
       <!--We want to skip CreateImageIndex task in case of local daemon podman because it is not supported.-->
       <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
       <_SkipCreateImageIndex Condition="$(ContainerArchiveOutputPath) == '' and $(ContainerRegistry) == '' and $(LocalRegistry) == 'Podman'">true</_SkipCreateImageIndex>
@@ -346,11 +346,11 @@
         Projects="@(_InnerBuild)"
         Targets="Publish;_ParseItemsForPublishingSingleContainer;_PublishSingleContainer"
         BuildInParallel="true">
-        <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainers" />
+        <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
 
     <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
-                      GeneratedContainers="@(GeneratedContainers)"
+                      GeneratedContainers="@(GeneratedContainer)"
                       LocalRegistry="$(LocalRegistry)"
                       OutputRegistry="$(ContainerRegistry)"
                       ArchiveOutputPath="$(ContainerArchiveOutputPath)"
@@ -403,7 +403,9 @@
 
   <Target Name="PublishContainer"
   DependsOnTargets="$(PublishContainerDependsOn)"
-  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
+  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'"
+  Returns="@(GeneratedContainer)"
+  >
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
       <!-- we are multi-RID if:
@@ -418,8 +420,12 @@
     </PropertyGroup>
 
     <!-- Call _PublishMultiArchContainers if we are in a multi-rid build, and call _PublishSingleContainer if we are in a single-RID build -->
-    <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_PublishMultiArchContainers" />
-    <CallTarget Condition="'$(_IsSingleRIDBuild)' == 'true' " Targets="_PublishSingleContainer" />
+    <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_PublishMultiArchContainers">
+      <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
+    </CallTarget>
+    <CallTarget Condition="'$(_IsSingleRIDBuild)' == 'true' " Targets="_PublishSingleContainer">
+      <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
+    </CallTarget>
 
     <Error Condition="'$(_IsMultiTFMBuild)' == 'true'" Code="CONTAINERS0666" Text="Containers cannot be published for multiple TargetFrameworks at this time. Please specify a TargetFramework." />
   </Target>
