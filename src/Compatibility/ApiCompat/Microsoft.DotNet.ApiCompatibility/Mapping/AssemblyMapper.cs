@@ -21,13 +21,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
         IAssemblySetMapper? containingAssemblySet = null) : ElementMapper<ElementContainer<IAssemblySymbol>>(ruleRunner, settings, rightSetSize), IAssemblyMapper
     {
         private Dictionary<INamespaceSymbol, INamespaceMapper>? _namespaces;
-        private readonly List<CompatDifference> _assemblyLoadErrors = [];
 
         /// <inheritdoc />
         public IAssemblySetMapper? ContainingAssemblySet { get; } = containingAssemblySet;
-
-        /// <inheritdoc />
-        public IEnumerable<CompatDifference> AssemblyLoadErrors => _assemblyLoadErrors;
 
         /// <inheritdoc />
         public IEnumerable<INamespaceMapper> GetNamespaces()
@@ -120,20 +116,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
                             }
 
                             types.Add(symbol);
-                        }
-                        else
-                        {
-                            // If we should warn on missing references and we are unable to resolve the type forward, then we should log a diagnostic
-                            if (Settings.WithReferences)
-                            {
-                                _assemblyLoadErrors.Add(new CompatDifference(
-                                    side == ElementSide.Left ? assembly.MetadataInformation : MetadataInformation.DefaultLeft,
-                                    side == ElementSide.Right ? assembly.MetadataInformation : MetadataInformation.DefaultRight,
-                                    DiagnosticIds.AssemblyReferenceNotFound,
-                                    string.Format(Resources.MatchingAssemblyNotFound, $"{symbol.ContainingAssembly.Name}.dll"),
-                                    DifferenceType.Changed,
-                                    symbol.ContainingAssembly.Identity.GetDisplayName()));
-                            }
                         }
                     }
 

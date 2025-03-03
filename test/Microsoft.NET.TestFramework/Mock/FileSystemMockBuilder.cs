@@ -11,9 +11,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
     public class FileSystemMockBuilder
     {
         private readonly List<Action> _actions = new();
-        private MockFileSystemModel _mockFileSystemModel;
-        public string TemporaryFolder { get; set; }
-        public string WorkingDirectory { get; set; }
+        private MockFileSystemModel? _mockFileSystemModel;
+        public string? TemporaryFolder { get; set; }
+        public string? WorkingDirectory { get; set; }
 
         internal static IFileSystem Empty { get; } = Create().Build();
 
@@ -24,18 +24,18 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         public FileSystemMockBuilder AddFile(string name, string content = "")
         {
-            _actions.Add(() => _mockFileSystemModel.CreateDirectory(Path.GetDirectoryName(name)));
-            _actions.Add(() => _mockFileSystemModel.CreateFile(name, content));
+            _actions.Add(() => _mockFileSystemModel?.CreateDirectory(Path.GetDirectoryName(name) ?? string.Empty));
+            _actions.Add(() => _mockFileSystemModel?.CreateFile(name, content));
             return this;
         }
 
         public FileSystemMockBuilder AddFiles(string basePath, params string[] files)
         {
-            _actions.Add(() => _mockFileSystemModel.CreateDirectory(basePath));
+            _actions.Add(() => _mockFileSystemModel?.CreateDirectory(basePath));
 
             foreach (string file in files)
             {
-                _actions.Add(() => _mockFileSystemModel.CreateFile(Path.Combine(basePath, file), ""));
+                _actions.Add(() => _mockFileSystemModel?.CreateFile(Path.Combine(basePath, file), ""));
             }
 
             return this;
@@ -67,9 +67,9 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
         private class MockFileSystemModel
         {
-            public MockFileSystemModel(string temporaryFolder,
-                FileSystemRoot files = null,
-                string fileSystemMockWorkingDirectory = null)
+            public MockFileSystemModel(string? temporaryFolder,
+                FileSystemRoot? files = null,
+                string? fileSystemMockWorkingDirectory = null)
             {
                 if (fileSystemMockWorkingDirectory == null)
                 {
@@ -125,7 +125,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 PathModel pathModel = CreateFullPathModel(path);
 
-                if (!Files.Volume.TryGetValue(pathModel.Volume, out DirectoryNode current))
+                if (!Files.Volume.TryGetValue(pathModel.Volume, out DirectoryNode? current))
                 {
                     current = new DirectoryNode();
                     current = Files.Volume.GetOrAdd(pathModel.Volume, current);
@@ -209,18 +209,18 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                 throw new FileNotFoundException($"Could not find file '{path}'");
             }
 
-            public IEnumerable<string> EnumerateDirectory(
+            public IEnumerable<string>? EnumerateDirectory(
                 string path,
                 Func<ConcurrentDictionary<string, IFileSystemTreeNode>, IEnumerable<string>> predicate)
             {
                 DirectoryNode current = GetParentOfDirectoryNode(path);
 
                 PathModel pathModel = new(path);
-                DirectoryNode directoryNode = current.Subs[pathModel.FileOrDirectoryName()] as DirectoryNode;
+                DirectoryNode? directoryNode = current.Subs[pathModel.FileOrDirectoryName()] as DirectoryNode;
 
                 Debug.Assert(directoryNode != null, nameof(directoryNode) + " != null");
 
-                return predicate(directoryNode.Subs);
+                return predicate(directoryNode?.Subs ?? new());
             }
 
             public DirectoryNode GetParentOfDirectoryNode(string path)
@@ -503,7 +503,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
         // facade
         private class DirectoryMock : IDirectory
         {
-            private readonly MockFileSystemModel _files;
+            private readonly MockFileSystemModel? _files;
 
             public DirectoryMock(MockFileSystemModel files)
             {
@@ -517,7 +517,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
-                if (_files.TryGetNodeParent(path, out DirectoryNode current))
+                if (_files is not null && _files.TryGetNodeParent(path, out DirectoryNode current))
                 {
                     PathModel pathModel = new(path);
 
@@ -530,7 +530,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
 
             public ITemporaryDirectory CreateTemporaryDirectory()
             {
-                TemporaryDirectoryMock temporaryDirectoryMock = new(_files.TemporaryFolder);
+                TemporaryDirectoryMock temporaryDirectoryMock = new(_files?.TemporaryFolder ?? string.Empty);
                 CreateDirectory(temporaryDirectoryMock.DirectoryPath);
                 return temporaryDirectoryMock;
             }
@@ -539,38 +539,38 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
-                return _files.EnumerateDirectory(path,
+                return _files?.EnumerateDirectory(path,
                     subs => subs.Where(s => s.Value is DirectoryNode)
-                        .Select(s => Path.Combine(path, s.Key)));
+                        .Select(s => Path.Combine(path, s.Key))) ?? Enumerable.Empty<string>();
             }
 
             public IEnumerable<string> EnumerateFiles(string path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
-                return _files.EnumerateDirectory(path,
+                return _files?.EnumerateDirectory(path,
                     subs => subs.Where(s => s.Value is FileNode)
-                        .Select(s => Path.Combine(path, s.Key)));
+                        .Select(s => Path.Combine(path, s.Key))) ?? Enumerable.Empty<string>();
             }
 
             public IEnumerable<string> EnumerateFileSystemEntries(string path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
-                return _files.EnumerateDirectory(path,
-                    subs => subs.Select(s => Path.Combine(path, s.Key)));
+                return _files?.EnumerateDirectory(path,
+                    subs => subs.Select(s => Path.Combine(path, s.Key))) ?? Enumerable.Empty<string>();
             }
 
             public string GetCurrentDirectory()
             {
-                return _files.WorkingDirectory;
+                return _files?.WorkingDirectory ?? string.Empty;
             }
 
-            public void CreateDirectory(string path)
+            public void CreateDirectory(string? path)
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
-                _files.CreateDirectory(path);
+                _files?.CreateDirectory(path);
             }
 
             public string CreateTemporarySubdirectory()
@@ -582,20 +582,20 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             {
                 if (path == null) throw new ArgumentNullException(nameof(path));
 
-                DirectoryNode parentOfPath = _files.GetParentOfDirectoryNode(path);
+                DirectoryNode? parentOfPath = _files?.GetParentOfDirectoryNode(path);
                 PathModel pathModel = new(path);
                 if (recursive)
                 {
-                    parentOfPath.Subs.TryRemove(pathModel.FileOrDirectoryName(), out _);
+                    parentOfPath?.Subs.TryRemove(pathModel.FileOrDirectoryName(), out _);
                 }
                 else
                 {
-                    if (EnumerateFiles(path).Any())
+                    if (EnumerateFiles(path)?.Any() ?? false)
                     {
                         throw new IOException("Directory not empty");
                     }
 
-                    parentOfPath.Subs.TryRemove(pathModel.FileOrDirectoryName(), out _);
+                    parentOfPath?.Subs.TryRemove(pathModel.FileOrDirectoryName(), out _);
                 }
             }
 
@@ -611,14 +611,14 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                     throw new ArgumentNullException(nameof(destination));
                 }
 
-                DirectoryNode sourceParent
-                    = _files.GetParentOfDirectoryNode(source);
+                DirectoryNode? sourceParent
+                    = _files?.GetParentOfDirectoryNode(source);
 
                 PathModel parentPathModel = new(source);
 
-                IFileSystemTreeNode sourceNode = sourceParent.Subs[parentPathModel.FileOrDirectoryName()];
+                IFileSystemTreeNode? sourceNode = sourceParent?.Subs[parentPathModel.FileOrDirectoryName()];
 
-                if (_files.TryGetNodeParent(destination, out DirectoryNode current) && current != null)
+                if (_files is not null && _files.TryGetNodeParent(destination, out DirectoryNode current) && current != null)
                 {
                     PathModel destinationPathModel = new(destination);
 
@@ -632,9 +632,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         throw new IOException($"Cannot create {destination} because a file or" +
                                               " directory with the same name already exists");
                     }
-
-                    sourceNode = current.Subs.GetOrAdd(destinationPathModel.FileOrDirectoryName(), sourceNode);
-                    sourceParent.Subs.TryRemove(parentPathModel.FileOrDirectoryName(), out _);
+                    if(sourceNode is not null)
+                    {
+                        sourceNode = current.Subs.GetOrAdd(destinationPathModel.FileOrDirectoryName(), sourceNode);
+                    }
+                    sourceParent?.Subs.TryRemove(parentPathModel.FileOrDirectoryName(), out _);
                 }
                 else
                 {

@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Cli
         }
 
         /// <summary>
-        /// Handles template list display (dotnet new3 --list).
+        /// Handles template list display (dotnet new --list).
         /// </summary>
         /// <param name="args">user command input.</param>
         /// <param name="cancellationToken">cancellation token.</param>
@@ -253,7 +253,8 @@ namespace Microsoft.TemplateEngine.Cli
                 "Microsoft.Common.Console", //console
                 "Microsoft.Common.WPF", //wpf
                 "Microsoft.Common.WinForms", //winforms
-                "Microsoft.Web.Blazor" //blazor
+                "Microsoft.Web.Blazor", //blazor
+                "Microsoft.Test.MSTest" //mstest
             };
 
             IReadOnlyList<ITemplateInfo> templates = await _templatePackageManager.GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
