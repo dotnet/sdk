@@ -53,9 +53,6 @@
     <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
     <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
 
-    <!-- Used to detect if ASP.NET Core is built against the same version of Microsoft.NETCore.App. -->
-    <AspNetCoreSharedFxBaseRuntimeVersionFileName>aspnetcore_base_runtime.version</AspNetCoreSharedFxBaseRuntimeVersionFileName>
-
     <!-- URLs -->
     <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
     <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
@@ -70,9 +67,6 @@
     <NetStandardTargetingPackRootUrl>$(OfficialBaseURL)Runtime/$(NETStandardTargetingPackBlobVersion)</NetStandardTargetingPackRootUrl>
     <AspNetCoreSharedFxRootUrl>$(PublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
     <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
-    <ToolsetArchiveRootUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</ToolsetArchiveRootUrl>
-
-    <CombinedSharedHostAndFrameworkArchive>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
 
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(Architecture)' == 'arm'">false</IncludeWpfAndWinForms>
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT'">true</IncludeWpfAndWinForms>
@@ -81,54 +75,63 @@
 
   <!-- BEGIN: Bundled layout packages -->
   <ItemGroup>
-    <BundledLayoutPackage Include="MicrosoftNetCoreAppTargetingPackNupkg">
-      <PackageName>Microsoft.NETCore.App.Ref</PackageName>
-      <PackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Ref"
+      PackageName="Microsoft.NETCore.App.Ref"
+      PackageVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftNetStandardTargetingPackNupkg">
-      <PackageName>NETStandard.Library.Ref</PackageName>
-      <PackageVersion>$(NETStandardLibraryRefPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="NETStandard.Library.Ref"
+      PackageName="NETStandard.Library.Ref"
+      PackageVersion="$(NETStandardLibraryRefPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftAspNetCoreAppTargetingPackNupkg">
-      <PackageName>Microsoft.AspNetCore.App.Ref</PackageName>
-      <PackageVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.AspNetCore.App.Ref"
+      PackageName="Microsoft.AspNetCore.App.Ref"
+      PackageVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg">
-      <PackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</PackageName>
-      <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Host.$(SharedFrameworkRid)"
+      PackageName="Microsoft.NETCore.App.Host.$(SharedFrameworkRid)"
+      PackageVersion="$(MicrosoftNETCoreAppHostPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
-      <PackageName>Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
-      <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)"
+      PackageName="Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)"
+      Condition="'$(BundleRuntimePacks)' == 'true'"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftAspNetCoreAppRuntimePackNupkg" Condition="'$(BundleRuntimePacks)' == 'true'">
-      <PackageName>Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)</PackageName>
-      <PackageVersion>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)"
+      PackageName="Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)"
+      Condition="'$(BundleRuntimePacks)' == 'true'"
+      PackageVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftDotNetILCompilerPackNupkg" Condition="'$(BundleNativeAotCompiler)' == 'true'">
-      <PackageName>runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler</PackageName>
-      <PackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="Microsoft.WindowsDesktop.App.Ref"
+      PackageName="Microsoft.WindowsDesktop.App.Ref"
+      Condition="'$(IncludeWpfAndWinForms)' != 'false'"
+      PackageVersion="$(MicrosoftWindowsDesktopAppRefPackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
-    <BundledLayoutPackage Include="MicrosoftWindowsDesktopAppTargetingPackNupkg"
-                          Condition="'$(IncludeWpfAndWinForms)' != 'false'">
-      <PackageName>Microsoft.WindowsDesktop.App.Ref</PackageName>
-      <PackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</PackageVersion>
-      <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
-    </BundledLayoutPackage>
+    <BundledLayoutPackage Include="runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="runtime.$(SharedFrameworkRid).Microsoft.DotNet.ILCompiler"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
+
+    <BundledLayoutPackage Include="Microsoft.DotNet.ILCompiler"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="Microsoft.DotNet.ILCompiler"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="library-packs"
+      SkipExtractPackage="true" />
+
+    <BundledLayoutPackage Include="Microsoft.NET.ILLink.Tasks"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="Microsoft.NET.ILLink.Tasks"
+      PackageVersion="$(MicrosoftNETILLinkTasksPackageVersion)"
+      RelativeLayoutPath="library-packs"
+      SkipExtractPackage="true" />
   </ItemGroup>
   <!-- END: Bundled layout packages -->
 
@@ -171,96 +174,95 @@
   <!-- END: Bundled layout components -->
 
   <!-- BEGIN: Bundled installer components -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(SkipBuildingInstallers)' != 'true'">
     <BundledInstallerComponent Include="DownloadedSharedFrameworkInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedSharedFrameworkInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedSharedHostInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedSharedHostInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedHostFxrInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedHostFxrInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedNetCoreAppTargetingPackInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <!-- TODO: Should we somehow obtain a .NET Standard ARM64 package? -->
     <BundledInstallerComponent Include="DownloadedNetStandardTargetingPackInstallerFile"
-                          Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'osx-arm64')">
+                          Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'osx-arm64')">
       <BaseUrl>$(NetStandardTargetingPackRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedNetCoreAppHostPackInstallerFile"
-                    Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                    Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedNetCoreAppHostPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
-    <!-- These are apphosts form a different vertical which require a join. Disable for now.
-          https://github.com/dotnet/source-build/issues/4114. -->
+    <!-- These are apphosts from a different vertical which require a join. They are part of
+         the windows bundle which makes it also require a join. Disable for now in the VMR.
+         https://github.com/dotnet/source-build/issues/4777. -->
     <BundledInstallerComponent Include="DownloadedAlternateNetCoreAppHostPackInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' and '$(InstallerExtension)' == '.msi' and !$(Architecture.StartsWith('arm')) and '$(DotNetBuild)' != 'true'">
+                                Condition="'$(InstallerExtension)' == '.msi' and !$(Architecture.StartsWith('arm')) and '$(DotNetBuild)' != 'true'">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
-    <!-- These are apphosts form a different vertical which require a join. Disable for now.
-          https://github.com/dotnet/source-build/issues/4114. -->
+    <!-- These are apphosts from a different vertical which require a join. They are part of
+         the windows bundle which makes it also require a join. Disable for now in the VMR.
+         https://github.com/dotnet/source-build/issues/4777. -->
     <BundledInstallerComponent Include="DownloadedArm64NetCoreAppHostPackInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))  and '$(DotNetBuild)' != 'true'">
+                                Condition="'$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))  and '$(DotNetBuild)' != 'true'">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedArm64NetCoreAppHostPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedWindowsDesktopTargetingPackInstallerFile"
-                                Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true'">
+                                Condition="'$(InstallerExtension)' == '.msi'">
       <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedWindowsDesktopTargetingPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
+  <ItemGroup Condition="'$(SkipBuildingInstallers)' != 'true' and '$(IncludeAspNetCoreRuntime)' != 'false'">
     <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
-                                Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
+                                Condition="'$(InstallerExtension)' != '.pkg' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
       <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
-                                Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
+                                Condition="'$(InstallerExtension)' != '.pkg' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
       <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
+    <!-- This artifact is from a different vertical which requires a join. It is part of
+         the windows bundle which makes it also require a join. Disable for now in the VMR.
+         https://github.com/dotnet/source-build/issues/4777. -->
     <BundledInstallerComponent Include="DownloadedAspNetCoreV2ModuleInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
+                                Condition="'$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm')) and '$(DotNetBuild)' != 'true'">
       <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedAspNetCoreV2ModuleInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
-
-    <BundledInstallerComponent Include="AspNetCoreSharedFxBaseRuntimeVersionFile"
-                                Condition="!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64'">
-      <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
-      <DownloadFileName>$(AspNetCoreSharedFxBaseRuntimeVersionFileName)</DownloadFileName>
-    </BundledInstallerComponent>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IncludeWpfAndWinForms)' != 'false'">
+  <ItemGroup Condition="'$(SkipBuildingInstallers)' != 'true' and '$(IncludeWpfAndWinForms)' != 'false'">
     <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
       <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
@@ -337,42 +339,39 @@
         <LoweredPackageName>$([MSBuild]::ValueOrDefault('%(BundledLayoutPackage.PackageName)', '').ToLowerInvariant())</LoweredPackageName>
       </BundledLayoutPackage>
 
-      <BundledLayoutPackageDownloadFiles Include="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\**\*.*">
+      <!-- Remove files from the root of the package, as these are either files NuGet writes, or not necessary -->
+      <BundledLayoutPackageDownloadFiles Include="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\**\*.*"
+                                         Exclude="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\*.*"
+                                         Condition="%(BundledLayoutPackage.SkipExtractPackage) != 'true'">
         <RelativeLayoutPath>%(BundledLayoutPackage.RelativeLayoutPath)</RelativeLayoutPath>
         <LayoutPackageDescription>%(BundledLayoutPackage.Identity)</LayoutPackageDescription>
       </BundledLayoutPackageDownloadFiles>
-
-      <!-- Remove files from the root of the package, as these are either files NuGet writes, or not necessary -->
-      <BundledLayoutPackageDownloadFiles Remove="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\*.*" />
 
       <!-- Set destination path in layout -->
       <BundledLayoutPackageDownloadFiles>
         <DestinationPath>%(BundledLayoutPackageDownloadFiles.RecursiveDir)%(BundledLayoutPackageDownloadFiles.Filename)%(BundledLayoutPackageDownloadFiles.Extension)</DestinationPath>
       </BundledLayoutPackageDownloadFiles>
       <BundledLayoutPackageDownloadFiles>
-        <DestinationPath>$(RedistLayoutPath)/%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
+        <DestinationPath>$(RedistLayoutPath)%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
       </BundledLayoutPackageDownloadFiles>
       <BundledLayoutPackageDownloadFiles>
         <DestinationPath>$([MSBuild]::NormalizePath(%(BundledLayoutPackageDownloadFiles.DestinationPath)))</DestinationPath>
       </BundledLayoutPackageDownloadFiles>
 
-      <!-- Creating a new item here isn't strictly necessary, but makes it easier to see what's going on in the .binlog,
-           since the metadata updates don't show up there -->
       <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledLayoutPackageDownloadFiles)" />
+    </ItemGroup>
+
+    <!-- BundledLayoutPackage with SkipExtractPackage=true metadata -->
+    <ItemGroup Condition="'@(BundledLayoutPackage->AnyHaveMetadataValue('SkipExtractPackage', 'true'))' == 'true'">
+      <BundledUncompressedLayoutPackage Include="@(BundledLayoutPackage->WithMetadataValue('SkipExtractPackage', 'true'))" />
+      <BundledUncompressedLayoutPackageFile Include="$(NuGetPackageRoot)\%(BundledUncompressedLayoutPackage.LoweredPackageName)\%(BundledUncompressedLayoutPackage.PackageVersion)\%(BundledUncompressedLayoutPackage.LoweredPackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg"
+                                            DestinationPath="$(RedistLayoutPath)%(BundledUncompressedLayoutPackage.RelativeLayoutPath)\%(BundledUncompressedLayoutPackage.PackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg" />
+      
+      <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledUncompressedLayoutPackageFile)" />
     </ItemGroup>
 
     <Copy SourceFiles="@(BundledLayoutPackageDownloadFilesWithDestination)"
           DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
-          SkipUnchangedFiles="true" />
-
-    <ItemGroup>
-      <BundledLayoutLibraryPackage Include="$(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.DotNet.ILCompiler.$(MicrosoftNETCoreAppRuntimePackageVersion).nupkg;
-                                            $(SourceBuiltShippingPackagesDir)/../runtime/Microsoft.NET.ILLink.Tasks.$(MicrosoftNETILLinkTasksPackageVersion).nupkg"
-                                  Condition="'$(BundleNativeAotCompiler)' == 'true'" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(BundledLayoutLibraryPackage)"
-          DestinationFolder="$(RedistLayoutPath)/library-packs"
           SkipUnchangedFiles="true" />
 
     <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->

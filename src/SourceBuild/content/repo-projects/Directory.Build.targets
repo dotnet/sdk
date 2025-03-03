@@ -768,10 +768,10 @@
     BuildRepoReferences;
     SetBuildProperties;
     RepoBuild;
+    MoveDotNetBuildLogs;
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
-    MoveDotNetBuildLogs;
     CleanupRepo" />
 
   <Target Name="RepoTest"
