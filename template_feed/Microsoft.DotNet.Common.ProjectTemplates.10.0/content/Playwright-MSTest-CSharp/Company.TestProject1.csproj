@@ -56,7 +56,7 @@
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
 <!--#endif-->
     <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.49.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
 <!--#if (TestRunner == "MSTest")-->
 <!--#if (CoverageTool == "Microsoft.CodeCoverage")-->
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.12.6" />
