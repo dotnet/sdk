@@ -114,7 +114,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorJsFile>
         <RelativePath>_framework/%(Filename)%(Extension)</RelativePath>
       </_BlazorJsFile>
-      <_BlazorJSFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" Condition="'$(BlazorFingerprintBlazorJs)' == 'true'" />
+      <_BlazorJSFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
 
       <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
       <Error
@@ -125,7 +125,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorJSFile)"
-      FingerprintCandidates="true"
+      FingerprintCandidates="$(BlazorFingerprintBlazorJs)"
       FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
