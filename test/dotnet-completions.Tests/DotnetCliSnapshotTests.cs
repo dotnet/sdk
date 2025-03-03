@@ -18,7 +18,7 @@ public class DotnetCliSnapshotTests : SdkTest
         var provider = System.CommandLine.StaticCompletions.CompletionsCommand.DefaultShells.Single(x => x.ArgumentName == shellName);
         var completions = provider.GenerateCompletions(Microsoft.DotNet.Cli.Parser.RootCommand);
         var settings = new VerifySettings();
-        if (Environment.GetEnvironmentVariable("USER") is string user && user.Equals("helix-runner", StringComparison.OrdinalIgnoreCase)
+        if (Environment.GetEnvironmentVariable("USER") is string user && user.Contains("helix", StringComparison.OrdinalIgnoreCase)
             || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("USER")))
         {
             Log.WriteLine($"CI environment detected, using snapshots directory in the current working directory {Environment.CurrentDirectory}");
@@ -26,7 +26,7 @@ public class DotnetCliSnapshotTests : SdkTest
         }
         else
         {
-            Log.WriteLine($"Using snapshots from local repository");
+            Log.WriteLine($"Using snapshots from local repository because $USER {Environment.GetEnvironmentVariable("USER")} is not helix-related");
             settings.UseDirectory(Path.Combine("snapshots", provider.ArgumentName));
         }
         await Verifier.Verify(target: completions, extension: provider.Extension, settings: settings);

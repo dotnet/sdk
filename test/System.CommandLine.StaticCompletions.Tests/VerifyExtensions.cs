@@ -14,7 +14,7 @@ public static class VerifyExtensions
         // Can't use sourceFile directly because in CI the file may be rooted at a different location than the compile-time location
         // We do have the source code available, just at a different root, so we can use that compute
         var settings = new VerifySettings();
-        if (Environment.GetEnvironmentVariable("USER") is string user && user.Equals("helix-runner", StringComparison.OrdinalIgnoreCase)
+        if (Environment.GetEnvironmentVariable("USER") is string user && user.Contains("helix", StringComparison.OrdinalIgnoreCase)
             || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("USER")))
         {
             var runtimeSnapshotDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "snapshots", provider.ArgumentName));
@@ -28,7 +28,7 @@ public static class VerifyExtensions
         }
         else
         {
-            log.WriteLine($"Using snapshots from local repository because $USER {Environment.GetEnvironmentVariable("USER")} is not 'helix-runner'");
+            log.WriteLine($"Using snapshots from local repository because $USER {Environment.GetEnvironmentVariable("USER")} is not helix-related");
             settings.UseDirectory(Path.Combine("snapshots", provider.ArgumentName));
         }
         var completions = provider.GenerateCompletions(command);
