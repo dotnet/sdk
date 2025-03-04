@@ -27,6 +27,7 @@ public static class DiffGeneratorFactory
         new ("CS8597", ReportDiagnostic.Suppress), // CS8597: Thrown value may be null.
         new ("CS0067", ReportDiagnostic.Suppress), // CS0067: The API is never used.
         new ("CS9113", ReportDiagnostic.Suppress), // CS9113: Parameter is unread.
+        new ("CS0501", ReportDiagnostic.Suppress), // CS0501: Method must declare a body because it is not marked abstract.
     ];
 
     /// <summary>

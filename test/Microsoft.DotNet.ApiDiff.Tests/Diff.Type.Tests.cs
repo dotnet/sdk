@@ -33,7 +33,7 @@ public class DiffTypeTests : DiffBaseTests
                   {
                 +     public class MyAddedClass
                 +     {
-                +         public MyAddedClass() { }
+                +         public MyAddedClass();
                 +     }
                   }
                 """);
@@ -67,11 +67,11 @@ public class DiffTypeTests : DiffBaseTests
                   {
                 -     public class MyBeforeClass
                 -     {
-                -         public MyBeforeClass() { }
+                -         public MyBeforeClass();
                 -     }
                 +     public class MyAfterClass
                 +     {
-                +         public MyAfterClass() { }
+                +         public MyAfterClass();
                 +     }
                   }
                 """);
@@ -102,7 +102,7 @@ public class DiffTypeTests : DiffBaseTests
                   {
                 -     public class MyAddedClass
                 -     {
-                -         public MyAddedClass() { }
+                -         public MyAddedClass();
                 -     }
                   }
                 """);
@@ -461,183 +461,6 @@ public class DiffTypeTests : DiffBaseTests
 
     #endregion
 
-    #region Classes - Hide Default constructors
-
-    [Fact]
-    public Task TestTypeAddHideImplicitDefaultConstructors() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public delegate void MyDelegate();
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public delegate void MyDelegate();
-                    public class MyClass1
-                    {
-                        public MyClass1() { }
-                    }
-                    public class MyClass2
-                    {
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                +     public class MyClass1
-                +     {
-                +     }
-                +     public class MyClass2
-                +     {
-                +     }
-                  }
-                """,
-                hideImplicitDefaultConstructors: true);
-
-    [Fact]
-    public Task TestTypeChangeHideImplicitDefaultConstructors() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyBeforeClass1
-                    {
-                        public MyBeforeClass1() { }
-                    }
-                    public class MyBeforeClass2
-                    {
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyAfterClass1
-                    {
-                        public MyAfterClass1() { }
-                    }
-                    public class MyAfterClass2
-                    {
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                -     public class MyBeforeClass1
-                -     {
-                -     }
-                -     public class MyBeforeClass2
-                -     {
-                -     }
-                +     public class MyAfterClass1
-                +     {
-                +     }
-                +     public class MyAfterClass2
-                +     {
-                +     }
-                  }
-                """,
-                hideImplicitDefaultConstructors: true);
-
-    [Fact]
-    public Task TestNestedTypeAddHideImplicitDefaultConstructors() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public delegate void MyDelegate();
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public delegate void MyDelegate();
-                    public class MyClass1
-                    {
-                        public class MyNestedClass1
-                        {
-                            public MyNestedClass1() { }
-                        }
-                        public class MyNestedClass2
-                        {
-                        }
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                +     public class MyClass1
-                +     {
-                +         public class MyNestedClass1
-                +         {
-                +         }
-                +         public class MyNestedClass2
-                +         {
-                +         }
-                +     }
-                  }
-                """,
-                hideImplicitDefaultConstructors: true);
-
-    [Fact]
-    public Task TestNestedTypeChangeHideImplicitDefaultConstructors() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass1
-                    {
-                        public class MyBeforeNestedClass1
-                        {
-                            public MyBeforeNestedClass1() { }
-                        }
-                        public class MyBeforeNestedClass2
-                        {
-                        }
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass1
-                    {
-                        public class MyAfterNestedClass1
-                        {
-                            public MyAfterNestedClass1() { }
-                        }
-                        public class MyAfterNestedClass2
-                        {
-                        }
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass1
-                      {
-                -         public class MyBeforeNestedClass1
-                -         {
-                -         }
-                -         public class MyBeforeNestedClass2
-                -         {
-                -         }
-                +         public class MyAfterNestedClass1
-                +         {
-                +         }
-                +         public class MyAfterNestedClass2
-                +         {
-                +         }
-                      }
-                  }
-                """,
-                hideImplicitDefaultConstructors: true);
-
-    #endregion
-
     #region Nested types
 
     [Fact]
@@ -668,7 +491,7 @@ public class DiffTypeTests : DiffBaseTests
                       {
                 +         public class MyNestedType
                 +         {
-                +             public MyNestedType() { }
+                +             public MyNestedType();
                 +         }
                       }
                   }
@@ -705,11 +528,11 @@ public class DiffTypeTests : DiffBaseTests
                       {
                 -         public class MyBeforeNestedType
                 -         {
-                -             public MyBeforeNestedType() { }
+                -             public MyBeforeNestedType();
                 -         }
                 +         public class MyAfterNestedType
                 +         {
-                +             public MyAfterNestedType() { }
+                +             public MyAfterNestedType();
                 +         }
                       }
                   }
@@ -743,7 +566,7 @@ public class DiffTypeTests : DiffBaseTests
                       {
                 -         public class MyNestedType
                 -         {
-                -             public MyNestedType() { }
+                -             public MyNestedType();
                 -         }
                       }
                   }
@@ -781,7 +604,7 @@ public class DiffTypeTests : DiffBaseTests
                       {
                           public class MyNestedType
                           {
-                +             public void MyMethod() { }
+                +             public void MyMethod();
                           }
                       }
                   }
@@ -820,8 +643,8 @@ public class DiffTypeTests : DiffBaseTests
                       {
                           public class MyNestedType
                           {
-                -             public void MyBeforeMethod() { }
-                +             public void MyAfterMethod() { }
+                -             public void MyBeforeMethod();
+                +             public void MyAfterMethod();
                           }
                       }
                   }
@@ -859,7 +682,7 @@ public class DiffTypeTests : DiffBaseTests
                       {
                           public class MyNestedType
                           {
-                -             public void MyMethod() { }
+                -             public void MyMethod();
                           }
                       }
                   }
@@ -973,7 +796,7 @@ public class DiffTypeTests : DiffBaseTests
                 -     }
                 +     public class MyType
                 +     {
-                +         public MyType() { }
+                +         public MyType();
                 +     }
                   }
                 """);
@@ -1000,10 +823,10 @@ public class DiffTypeTests : DiffBaseTests
                 + {
                 +     public partial class MyClass
                 +     {
-                +         public MyClass() { }
+                +         public MyClass();
                 +         public partial class MySubClass
                 +         {
-                +             public MySubClass() { }
+                +             public MySubClass();
                 +         }
                 +     }
                 +     public partial struct MyStruct
