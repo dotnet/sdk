@@ -49,6 +49,8 @@ If it is a file, it is called *the target file*.
 We can consider adding an option like `dotnet run --from-stdin` which would read the C# file from the standard input.
 In this case, the current working directory would not be used to search for project or other C# files,
 the compilation would consist solely of the single file read from the standard input.
+Similarly, it could be possible to specify the whole C# source text in a command-like argument
+like `dotnet run --code 'Console.WriteLine("Hi")'`.
 
 ## Integration into the existing `dotnet run` command
 
@@ -220,6 +222,15 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 ## Other commands
 
 We can consider supporting other commands like `dotnet build`, `dotnet pack`, `dotnet watch`.
+
+These commands need to have a way to receive the target path similarly to `dotnet run`,
+e.g., via options like `--directory`/`--entry` as described [above](#integration-into-the-existing-dotnet-run-command),
+or as the first argument if it makes sense for them.
+
+### `dotnet package add`
+
+Adding package references via `dotnet package add` could be supported for file-based programs as well,
+i.e., the command would add a `#r` directive to the top of a `.cs` file.
 
 ## Implementation
 
