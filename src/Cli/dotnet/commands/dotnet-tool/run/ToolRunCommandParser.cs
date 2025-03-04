@@ -23,9 +23,10 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
         {
-            Description = Tools.Tool.Install.LocalizableStrings.RollForwardOptionDescription
+            Description = Tools.Tool.Install.LocalizableStrings.RollForwardOptionDescription,
+            Arity = ArgumentArity.Zero
         };
-       
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
