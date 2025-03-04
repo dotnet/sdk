@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Pack.Tests
 
             new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
+                .Execute("-c", "Debug")
                 .Should().Pass();
 
             var outputPackage = new FileInfo(Path.Combine(testInstance.Path,
