@@ -129,13 +129,13 @@
   <data name="ResolveTypeForwardFailed" xml:space="preserve">
     <value>Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</value>
   </data>
-  <data name="UnexpectedChangeTypeForNode" xml:space="preserve">
-    <value>Unexpected change type for node {0}: {1}</value>
+  <data name="UnexpectedChangeType" xml:space="preserve">
+    <value>Unexpected change type '{0}'.</value>
   </data>
   <data name="UnsupportedNodeForRemovingAttributes" xml:space="preserve">
     <value>Unsupported node for removing attributes.</value>
   </data>
   <data name="UnexpectedNodeType" xml:space="preserve">
-    <value>Unexpected node type.</value>
+    <value>Unexpected node type '{0}'.</value>
   </data>
 </root>

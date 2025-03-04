@@ -22,14 +22,14 @@
         <target state="new">Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UnexpectedChangeTypeForNode">
-        <source>Unexpected change type for node {0}: {1}</source>
-        <target state="new">Unexpected change type for node {0}: {1}</target>
+      <trans-unit id="UnexpectedChangeType">
+        <source>Unexpected change type '{0}'.</source>
+        <target state="new">Unexpected change type '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedNodeType">
-        <source>Unexpected node type.</source>
-        <target state="new">Unexpected node type.</target>
+        <source>Unexpected node type '{0}'.</source>
+        <target state="new">Unexpected node type '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedNodeForRemovingAttributes">

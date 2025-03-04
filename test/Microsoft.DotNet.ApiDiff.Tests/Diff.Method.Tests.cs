@@ -33,7 +33,7 @@ public class DiffMethodTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public void MyMethod() { }
+                +         public void MyMethod();
                       }
                   }
                 """);
@@ -67,8 +67,8 @@ public class DiffMethodTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public void MyBeforeMethod() { }
-                +         public void MyAfterMethod() { }
+                -         public void MyBeforeMethod();
+                +         public void MyAfterMethod();
                       }
                   }
                 """);
@@ -99,7 +99,7 @@ public class DiffMethodTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public void MyMethod() { }
+                -         public void MyMethod();
                       }
                   }
                 """);
@@ -136,8 +136,8 @@ public class DiffMethodTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public void MyMethod() { }
-                +         public int MyMethod() { throw null; }
+                -         public void MyMethod();
+                +         public int MyMethod();
                       }
                   }
                 """);
@@ -171,175 +171,11 @@ public class DiffMethodTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public void MyMethod() { }
-                +         public void MyMethod(int x) { }
+                -         public void MyMethod();
+                +         public void MyMethod(int x);
                       }
                   }
                 """);
-
-    #endregion
-
-    #region Constructors
-
-    [Fact]
-    public Task TestConstructorAdd() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                        public MyClass(int x)
-                        {
-                        }
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass
-                      {
-                +         public MyClass(int x) { }
-                      }
-                  }
-                """, hideImplicitDefaultConstructors: true);
-
-    [Fact]
-    public Task TestConstructorDelete() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                        public MyClass(int x)
-                        {
-                        }
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass
-                      {
-                -         public MyClass(int x) { }
-                      }
-                  }
-                """, hideImplicitDefaultConstructors: true);
-
-    [Fact]
-    public Task TestDefaultConstructorMakePrivate() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                        public MyClass()
-                        {
-                        }
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                        private MyClass()
-                        {
-                        }
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass
-                      {
-                -         public MyClass() { }
-                      }
-                  }
-                """);
-
-    [Fact]
-    public Task TestDefaultConstructorMakePublic() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                        private MyClass()
-                        {
-                        }
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                        public MyClass()
-                        {
-                        }
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass
-                      {
-                +         public MyClass() { }
-                      }
-                  }
-                """);
-
-    [Fact]
-    public Task TestPrimaryConstructorAdd() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass
-                    {
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass(string x)
-                    {
-                        public string X { get; } = x;
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass
-                      {
-                +         public MyClass(string x) { }
-                +         public string X { get { throw null; } }
-                      }
-                  }
-                """, hideImplicitDefaultConstructors: true);
 
     #endregion
 

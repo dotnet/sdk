@@ -36,10 +36,10 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public override bool Equals(object? o) { throw null; }
-                +         public override int GetHashCode() { throw null; }
-                +         public static MyClass operator ==(MyClass a, MyClass b) { throw null; }
-                +         public static MyClass operator !=(MyClass a, MyClass b) { throw null; }
+                +         public override bool Equals(object? o);
+                +         public override int GetHashCode();
+                +         public static MyClass operator ==(MyClass a, MyClass b);
+                +         public static MyClass operator !=(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -68,7 +68,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator +(MyClass a, MyClass b) { throw null; }
+                +         public static MyClass operator +(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -97,7 +97,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator -(MyClass a, MyClass b) { throw null; }
+                +         public static MyClass operator -(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -126,7 +126,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator *(MyClass a, MyClass b) { throw null; }
+                +         public static MyClass operator *(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -156,7 +156,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator /(MyClass a, MyClass b) { throw null; }
+                +         public static MyClass operator /(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -185,7 +185,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator %(MyClass a, MyClass b) { throw null; }
+                +         public static MyClass operator %(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -217,8 +217,8 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static bool operator >(MyClass a, MyClass b) { throw null; }
-                +         public static bool operator <(MyClass a, MyClass b) { throw null; }
+                +         public static bool operator >(MyClass a, MyClass b);
+                +         public static bool operator <(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -250,8 +250,8 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static bool operator >=(MyClass a, MyClass b) { throw null; }
-                +         public static bool operator <=(MyClass a, MyClass b) { throw null; }
+                +         public static bool operator >=(MyClass a, MyClass b);
+                +         public static bool operator <=(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -280,7 +280,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator ++(MyClass a) { throw null; }
+                +         public static MyClass operator ++(MyClass a);
                       }
                   }
                 """);
@@ -309,7 +309,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator --(MyClass a) { throw null; }
+                +         public static MyClass operator --(MyClass a);
                       }
                   }
                 """);
@@ -338,7 +338,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator !(MyClass a) { throw null; }
+                +         public static MyClass operator !(MyClass a);
                       }
                   }
                 """);
@@ -367,7 +367,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator ~(MyClass a) { throw null; }
+                +         public static MyClass operator ~(MyClass a);
                       }
                   }
                 """);
@@ -396,7 +396,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator &(MyClass a, MyClass b) { throw null; }
+                +         public static MyClass operator &(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -426,7 +426,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator |(MyClass a, MyClass b) { throw null; }
+                +         public static MyClass operator |(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -455,7 +455,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator ^(MyClass a, MyClass b) { throw null; }
+                +         public static MyClass operator ^(MyClass a, MyClass b);
                       }
                   }
                 """);
@@ -484,7 +484,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator <<(MyClass a, int shift) { throw null; }
+                +         public static MyClass operator <<(MyClass a, int shift);
                       }
                   }
                 """);
@@ -513,7 +513,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator >>(MyClass a, int shift) { throw null; }
+                +         public static MyClass operator >>(MyClass a, int shift);
                       }
                   }
                 """);
@@ -542,7 +542,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static implicit operator MyClass(int value) { throw null; }
+                +         public static implicit operator MyClass(int value);
                       }
                   }
                 """);
@@ -571,7 +571,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static explicit operator int(MyClass value) { throw null; }
+                +         public static explicit operator int(MyClass value);
                       }
                   }
                 """);
@@ -601,8 +601,8 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static explicit operator checked byte(MyClass value) { throw null; }
-                +         public static explicit operator byte(MyClass value) { throw null; }
+                +         public static explicit operator checked byte(MyClass value);
+                +         public static explicit operator byte(MyClass value);
                       }
                   }
                 """);

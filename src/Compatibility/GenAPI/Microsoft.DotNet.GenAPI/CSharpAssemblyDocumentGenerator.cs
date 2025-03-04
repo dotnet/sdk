@@ -37,7 +37,7 @@ public sealed class CSharpAssemblyDocumentGenerator
     private readonly bool _hideImplicitDefaultConstructors;
     private readonly CSharpCompilationOptions _compilationOptions;
 
-    private static readonly SingleLineStatementCSharpSyntaxRewriter s_SingleLineRewriter = new();
+    private static readonly SingleLineStatementCSharpSyntaxRewriter s_singleLineRewriter = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CSharpAssemblyDocumentGenerator"/> class.
@@ -134,7 +134,7 @@ public sealed class CSharpAssemblyDocumentGenerator
     public async Task<SyntaxNode> GetFormattedRootNodeForDocument(Document document)
     {
         SyntaxNode? root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
-        return root.Rewrite(s_SingleLineRewriter);
+        return root.Rewrite(s_singleLineRewriter);
     }
 
     private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)
@@ -284,11 +284,10 @@ public sealed class CSharpAssemblyDocumentGenerator
         ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_attributeDataSymbolFilter);
 
         // Emit assembly attributes from the IAssemblySymbol
-        List<SyntaxNode> attributeSyntaxNodes = attributes
+        List<SyntaxNode> attributeSyntaxNodes = [.. attributes
             .Where(attribute => !attribute.IsReserved())
             .Select(attribute => _syntaxGenerator.Attribute(attribute)
-            .WithTrailingTrivia(SyntaxFactory.LineFeed))
-            .ToList();
+            .WithTrailingTrivia(SyntaxFactory.LineFeed))];
 
         // [assembly: System.Reflection.AssemblyVersion("x.x.x.x")]
         if (attributes.All(attribute => attribute.AttributeClass?.ToDisplayString() != typeof(AssemblyVersionAttribute).FullName))
