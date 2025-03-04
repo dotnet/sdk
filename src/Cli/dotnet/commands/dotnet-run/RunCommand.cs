@@ -256,16 +256,7 @@ namespace Microsoft.DotNet.Tools.Run
                 projectFactory = command.CreateProjectInstance;
                 buildResult = command.Execute(
                     binaryLoggerArgs: RestoreArgs,
-                    verbosity: Verbosity switch
-                    {
-                        null => Interactive ? LoggerVerbosity.Minimal : LoggerVerbosity.Quiet,
-                        VerbosityOptions.quiet | VerbosityOptions.q => LoggerVerbosity.Quiet,
-                        VerbosityOptions.minimal | VerbosityOptions.m => LoggerVerbosity.Minimal,
-                        VerbosityOptions.normal | VerbosityOptions.n => LoggerVerbosity.Normal,
-                        VerbosityOptions.detailed | VerbosityOptions.d => LoggerVerbosity.Detailed,
-                        VerbosityOptions.diagnostic | VerbosityOptions.diag => LoggerVerbosity.Diagnostic,
-                        _ => throw new Exception($"Unexpected verbosity '{Verbosity}'"),
-                    });
+                    consoleLogger: MakeTerminalLogger(Verbosity ?? GetDefaultVerbosity()));
             }
             else
             {
@@ -293,17 +284,21 @@ namespace Microsoft.DotNet.Tools.Run
                 "-nologo"
             };
 
-            // --interactive need to output guide for auth. It cannot be
-            // completely "quiet"
             if (Verbosity is null)
             {
-                var defaultVerbosity = Interactive ? "minimal" : "quiet";
-                args.Add($"-verbosity:{defaultVerbosity}");
+                args.Add($"-verbosity:{GetDefaultVerbosity()}");
             }
 
             args.AddRange(cliRestoreArgs);
 
             return args.ToArray();
+        }
+
+        private VerbosityOptions GetDefaultVerbosity()
+        {
+            // --interactive need to output guide for auth. It cannot be
+            // completely "quiet"
+            return Interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
         }
 
         private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
