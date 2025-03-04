@@ -194,10 +194,11 @@ namespace Microsoft.DotNet.Cli
                         nologo: nologo,
                         skipWorkloadIntegrityCheck: skipWorkloadIntegrityCheck);
 
+                    string[] getStarOperators = ["getProperty", "getItem", "getTargetResult"];
+                    char[] switchIndicators = ['-', '/'];
                     var getStarOptionPassed = parseResult.CommandResult.Tokens.Any(t =>
-                        t.Value.Contains("getProperty", StringComparison.OrdinalIgnoreCase) ||
-                        t.Value.Contains("getItem", StringComparison.OrdinalIgnoreCase) ||
-                        t.Value.Contains("getTargetResult", StringComparison.OrdinalIgnoreCase));
+                        getStarOperators.Any(o =>
+                        switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
 
                     ConfigureDotNetForFirstTimeUse(
                         firstTimeUseNoticeSentinel,
