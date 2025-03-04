@@ -29,7 +29,7 @@
     <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
     <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
     <UseNativeHttpHandler>true</UseNativeHttpHandler>
-    <_UseManagedNtlm>true</_UseManagedNtlm>
+    <UseManagedNtlm>true</UseManagedNtlm>
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <NullabilityInfoContextSupport>false</NullabilityInfoContextSupport>
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
