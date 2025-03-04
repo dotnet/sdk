@@ -47,7 +47,6 @@
     <RepositoryReference Include="aspnetcore" />
     <RepositoryReference Include="command-line-api" />
     <RepositoryReference Include="deployment-tools" />
-    <RepositoryReference Include="emsdk" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="nuget-client" />
