@@ -1,0 +1,4 @@
+<SdkResolver>
+<Path>..\..\Microsoft.DotNet.MSBuildSdkResolver.dll</Path>
+<ResolvableSdkPattern>Microsoft\..*|Samsung\..*|GtkSharp\..*|FSharp\.NET\.Sdk|NuGet\.Build\.Tasks\.Pack</ResolvableSdkPattern>
+</SdkResolver>

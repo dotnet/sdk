@@ -56,6 +56,7 @@
       <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\arm64\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/arm64/" />
       <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.Deployment.DotNet.Releases*.dll" DeploymentSubpath="MSBuildSdkResolver/" />
       <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.DotNet.MSBuildSdkResolver*.dll" DeploymentSubpath="MSBuildSdkResolver/" />
+      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\SdkResolvers\**\Microsoft.DotNet.MSBuildSdkResolver.xml" DeploymentSubpath="MSBuildSdkResolver/" />
 
       <VSMSBuildExtensionsContent Update="@(VSMSBuildExtensionsContent)">
         <DestinationPath>$(OutputPath)/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)</DestinationPath>
