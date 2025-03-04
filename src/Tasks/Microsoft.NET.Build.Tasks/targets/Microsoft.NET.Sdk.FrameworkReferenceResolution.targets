@@ -57,13 +57,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
+      <PrunePackageTargetingPackRoots Condition="'$(PrunePackageTargetingPackRoots)' == ''">$(NetCoreTargetingPackRoot)</PrunePackageTargetingPackRoots>
     </PropertyGroup>
     
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                         TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                         FrameworkReferences="@(FrameworkReference)"
                         TargetingPacks="@(TargetingPack)"
-                        TargetingPackRoot="$(NetCoreTargetingPackRoot)"
+                        TargetingPackRoots="$(PrunePackageTargetingPackRoots)"
                         PrunePackageDataRoot="$(PrunePackageDataRoot)">
       <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
     </GetPackagesToPrune>

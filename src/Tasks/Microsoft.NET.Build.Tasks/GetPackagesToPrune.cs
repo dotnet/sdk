@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] TargetingPacks { get; set; }
 
         [Required]
-        public string TargetingPackRoot { get; set; }
+        public string[] TargetingPackRoots { get; set; }
 
         [Required]
         public string PrunePackageDataRoot { get; set; }
@@ -110,12 +110,12 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            PackagesToPrune = LoadPackagesToPrune(key, TargetingPackRoot, PrunePackageDataRoot, Log);
+            PackagesToPrune = LoadPackagesToPrune(key, TargetingPackRoots, PrunePackageDataRoot, Log);
 
             BuildEngine4.RegisterTaskObject(key, PackagesToPrune, RegisteredTaskObjectLifetime.Build, true);
         }
 
-        static TaskItem[] LoadPackagesToPrune(CacheKey key, string targetingPackRoot, string prunePackageDataRoot, Logger log)
+        static TaskItem[] LoadPackagesToPrune(CacheKey key, string[] targetingPackRoots, string prunePackageDataRoot, Logger log)
         {
             Dictionary<string, NuGetVersion> packagesToPrune = new();
 
@@ -137,7 +137,7 @@ namespace Microsoft.NET.Build.Tasks
                 Dictionary<string, NuGetVersion> packagesForFrameworkReference;
                 if (useFrameworkPackageData)
                 {
-                    packagesForFrameworkReference = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoot);
+                    packagesForFrameworkReference = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference);
                 }
                 else
                 {
@@ -147,7 +147,15 @@ namespace Microsoft.NET.Build.Tasks
                     //  we can load it from the targeting packs that are packaged with the SDK.
                     if (packagesForFrameworkReference == null)
                     {
-                        packagesForFrameworkReference = LoadPackagesToPruneFromTargetingPack(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoot);
+                        packagesForFrameworkReference = LoadPackagesToPruneFromTargetingPack(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoots);
+                    }
+
+                    //  Fall back to framework packages data for older framework for WindowsDesktop if necessary
+                    //  https://github.com/dotnet/windowsdesktop/issues/4904
+                    if (packagesForFrameworkReference == null && frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
+                    {
+                        packagesForFrameworkReference = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference,
+                            acceptNearestMatch: true);
                     }
                 }
 
@@ -178,7 +186,7 @@ namespace Microsoft.NET.Build.Tasks
             }).ToArray();
         }
 
-        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromFrameworkPackages(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string targetingPackRoot)
+        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromFrameworkPackages(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, bool acceptNearestMatch = false)
         {
             var nugetFramework = new NuGetFramework(targetFrameworkIdentifier, Version.Parse(targetFrameworkVersion));
 
@@ -188,7 +196,7 @@ namespace Microsoft.NET.Build.Tasks
                 nugetFramework = NuGetFramework.Parse("net461");
             }
 
-            var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, [frameworkReference], targetingPackRoot)
+            var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, [frameworkReference], acceptNearestMatch)
                 .SelectMany(packages => packages)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
@@ -211,14 +219,22 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
-        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromTargetingPack(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string targetingPackRoot)
+        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromTargetingPack(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string [] targetingPackRoots)
         {
             var nugetFramework = new NuGetFramework(targetFrameworkIdentifier, Version.Parse(targetFrameworkVersion));
 
-            var frameworkPackages = FrameworkPackages.LoadFrameworkPackagesFromPack(nugetFramework, frameworkReference, targetingPackRoot)
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            foreach (var targetingPackRoot in targetingPackRoots)
+            {
+                var frameworkPackages = FrameworkPackages.LoadFrameworkPackagesFromPack(nugetFramework, frameworkReference, targetingPackRoot)
+                    ?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            return frameworkPackages;
+                if (frameworkPackages != null)
+                {
+                    //  We found the framework packages in the targeting pack, so return them
+                    return frameworkPackages;
+                }
+            }
+            return null;
         }
 
         static void AddPackagesToPrune(Dictionary<string, NuGetVersion> packagesToPrune, IEnumerable<(string id, NuGetVersion version)> packagesToAdd, Logger log)

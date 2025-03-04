@@ -74,7 +74,7 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         }
     }
 
-    public static FrameworkPackages[] GetFrameworkPackages(NuGetFramework framework, string[] frameworkReferences, string targetingPackRoot)
+    public static FrameworkPackages[] GetFrameworkPackages(NuGetFramework framework, string[] frameworkReferences, bool acceptNearestMatch = false)
     {
         var frameworkPackages = new List<FrameworkPackages>();
 
@@ -86,20 +86,24 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         foreach (var frameworkReference in frameworkReferences)
         {
             var frameworkKey = GetFrameworkKey(frameworkReference);
-            if (FrameworkPackagesByFramework.TryGetValue(framework, out var frameworkPackagesForVersion) &&
-                frameworkPackagesForVersion.TryGetValue(frameworkKey, out var frameworkPackage))
+
+            NuGetFramework nearestFramework;
+
+            if (acceptNearestMatch)
             {
-                frameworkPackages.Add(frameworkPackage);
+                var reducer = new FrameworkReducer();
+                var candidateFrameworks = FrameworkPackagesByFramework.Where(pair => pair.Value.ContainsKey(frameworkKey)).Select(pair => pair.Key);
+                nearestFramework = reducer.GetNearest(framework, candidateFrameworks);
             }
             else
             {
-                // if we didn't predefine the package overrides, load them from the targeting pack
-                // we might just leave this out since in future frameworks we'll have this functionality built into NuGet.Frameworks
-                var frameworkPackagesFromPack = LoadFrameworkPackagesFromPack(framework, frameworkReference, targetingPackRoot) ?? new FrameworkPackages(framework, frameworkReference);
+                nearestFramework = framework;
+            }
 
-                Register(frameworkPackagesFromPack);
-
-                frameworkPackages.Add(frameworkPackagesFromPack);
+            if (FrameworkPackagesByFramework.TryGetValue(nearestFramework, out var frameworkPackagesForVersion) &&
+                frameworkPackagesForVersion.TryGetValue(frameworkKey, out var frameworkPackage))
+            {
+                frameworkPackages.Add(frameworkPackage);
             }
         }
 
@@ -112,15 +116,6 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
         {
             return null;
         }
-
-        var reducer = new FrameworkReducer();
-        var frameworkKey = GetFrameworkKey(frameworkName);
-        var candidateFrameworks = FrameworkPackagesByFramework.Where(pair => pair.Value.ContainsKey(frameworkKey)).Select(pair => pair.Key);
-        var nearestFramework = reducer.GetNearest(framework, candidateFrameworks);
-
-        var frameworkPackages = nearestFramework is null ?
-            new FrameworkPackages(framework, frameworkName) :
-            new FrameworkPackages(framework, frameworkName, FrameworkPackagesByFramework[nearestFramework][frameworkKey]);
 
         if (!string.IsNullOrEmpty(targetingPackRoot))
         {
@@ -140,15 +135,18 @@ internal sealed partial class FrameworkPackages : IEnumerable<KeyValuePair<strin
                     // Adapted from https://github.com/dotnet/sdk/blob/c3a8f72c3a5491c693ff8e49e7406136a12c3040/src/Tasks/Common/ConflictResolution/PackageOverride.cs#L52-L68
                     var packageOverrideLines = File.ReadAllLines(packageOverridesFile);
 
+                    var frameworkPackages = new FrameworkPackages(framework, frameworkName);
                     foreach (var packageOverride in PackageOverride.CreateOverriddenPackages(packageOverrideLines))
                     {
                         frameworkPackages.Packages[packageOverride.Item1] = packageOverride.Item2;
                     }
+
+                    return frameworkPackages;
                 }
             }
         }
 
-        return frameworkPackages;
+        return null;
 
         static NuGetVersion ParseVersion(string versionString) => NuGetVersion.TryParse(versionString, out var version) ? version : null;
     }
