@@ -121,17 +121,14 @@ namespace Microsoft.NET.Build.Tasks
 
             var targetFrameworkVersion = Version.Parse(key.TargetFrameworkVersion);
 
-            if (key.FrameworkReferences.Count == 0)
+            if (key.FrameworkReferences.Count == 0 && key.TargetFrameworkIdentifier.Equals(".NETCoreApp") && targetFrameworkVersion.Major >= 3)
             {
-                if (key.TargetFrameworkIdentifier.Equals(".NETCoreApp") && targetFrameworkVersion.Major >= 3)
-                {
-                    //  For .NET Core projects (3.0 and higher), don't prune any packages if there are no framework references
-                    return Array.Empty<TaskItem>();
-                }
+                //  For .NET Core projects (3.0 and higher), don't prune any packages if there are no framework references
+                return Array.Empty<TaskItem>();
             }
 
-            // When true, use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
-            // When false, use bundled "prune package data" for .NET 10 and higher.  During the redist build, this comes from targeting packs and is laid out in the PrunePackageData folder.
+            // Use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
+            // Use bundled "prune package data" for .NET 10 and higher.  During the redist build, this comes from targeting packs and is laid out in the PrunePackageData folder.
             bool useFrameworkPackageData = !key.TargetFrameworkIdentifier.Equals(".NETCoreApp") || targetFrameworkVersion.Major < 10;
 
             //  Call DefaultIfEmpty() so that target frameworks without framework references will load data
