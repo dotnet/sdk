@@ -88,7 +88,7 @@ public class DiffAttributeTests : DiffBaseTests
                 -     [System.AttributeUsage(System.AttributeTargets.All)]
                 -     public class MyAttribute1Attribute : System.Attribute
                 -     {
-                -         public MyAttribute1Attribute() { }
+                -         public MyAttribute1Attribute();
                 -     }
                 -     [MyAttribute1]
                 +     [MyAttribute2]
@@ -98,7 +98,7 @@ public class DiffAttributeTests : DiffBaseTests
                 +     [System.AttributeUsage(System.AttributeTargets.All)]
                 +     public class MyAttribute2Attribute : System.Attribute
                 +     {
-                +         public MyAttribute2Attribute() { }
+                +         public MyAttribute2Attribute();
                 +     }
                   }
                 """,
@@ -194,12 +194,12 @@ public class DiffAttributeTests : DiffBaseTests
                   {
                 -     public class MyClass1
                 -     {
-                -         public MyClass1() { }
+                -         public MyClass1();
                 -     }
                 +     [MyAttribute]
                 +     public class MyClass2
                 +     {
-                +         public MyClass2() { }
+                +         public MyClass2();
                 +     }
                   }
                 """,
@@ -243,12 +243,12 @@ public class DiffAttributeTests : DiffBaseTests
                 -     [MyAttribute]
                 -     public class MyClass1
                 -     {
-                -         public MyClass1() { }
+                -         public MyClass1();
                 -     }
                 +     [MyAttribute]
                 +     public class MyClass2
                 +     {
-                +         public MyClass2() { }
+                +         public MyClass2();
                 +     }
                   }
                 """,
@@ -295,7 +295,7 @@ public class DiffAttributeTests : DiffBaseTests
                       public class MyClass
                       {
                 +         [MyAttribute]
-                          public void MyMethod() { }
+                          public void MyMethod();
                       }
                   }
                 """,
@@ -349,7 +349,7 @@ public class DiffAttributeTests : DiffBaseTests
                       {
                 -         [MyAttribute1]
                 +         [MyAttribute2]
-                          public void MyMethod() { }
+                          public void MyMethod();
                       }
                 +     [System.AttributeUsage(System.AttributeTargets.All)]
                 +     public class MyAttribute2Attribute : System.Attribute
@@ -411,7 +411,7 @@ public class DiffAttributeTests : DiffBaseTests
                       {
                 -         [MyAttribute1]
                 +         [MyAttribute2]
-                          public void MyMethod() { }
+                          public void MyMethod();
                       }
                   }
                 """,
@@ -456,9 +456,9 @@ public class DiffAttributeTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public void MyMethod1() { }
+                -         public void MyMethod1();
                 +         [MyAttribute]
-                +         public void MyMethod2() { }
+                +         public void MyMethod2();
                       }
                   }
                 """,
@@ -505,9 +505,9 @@ public class DiffAttributeTests : DiffBaseTests
                       public class MyClass
                       {
                 -         [MyAttribute]
-                -         public void MyMethod1() { }
+                -         public void MyMethod1();
                 +         [MyAttribute]
-                +         public void MyMethod2() { }
+                +         public void MyMethod2();
                       }
                   }
                 """,
@@ -556,10 +556,10 @@ public class DiffAttributeTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public MyClass(int x) { }
-                +         public MyClass([MyAttribute] int x) { }
-                -         public void MyMethod(int y) { }
-                +         public void MyMethod([MyAttribute] int y) { }
+                -         public MyClass(int x);
+                +         public MyClass([MyAttribute] int x);
+                -         public void MyMethod(int y);
+                +         public void MyMethod([MyAttribute] int y);
                       }
                   }
                 """,
@@ -670,7 +670,7 @@ public class DiffAttributeTests : DiffBaseTests
                       {
                 +         [MyAttribute1]
                 +         [MyAttribute2]
-                          public MyClass(int x) { }
+                          public MyClass(int x);
                       }
                   }
                 """,
@@ -725,10 +725,10 @@ public class DiffAttributeTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public MyClass(int x) { }
-                +         public MyClass([MyAttribute1, MyAttribute2] int x) { }
-                -         public void MyMethod(int y) { }
-                +         public void MyMethod([MyAttribute1, MyAttribute2] int y) { }
+                -         public MyClass(int x);
+                +         public MyClass([MyAttribute1, MyAttribute2] int x);
+                -         public void MyMethod(int y);
+                +         public void MyMethod([MyAttribute1, MyAttribute2] int y);
                       }
                   }
                 """,
@@ -779,7 +779,7 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                 +     public class MyAttributeAttribute : System.Attribute
                 +     {
-                +         public MyAttributeAttribute() { }
+                +         public MyAttributeAttribute();
                 +     }
                   }
                 """,
@@ -826,7 +826,7 @@ public class DiffAttributeTests : DiffBaseTests
                 +     [System.AttributeUsage(System.AttributeTargets.All)]
                 +     public class MyAttributeAttribute : System.Attribute
                 +     {
-                +         public MyAttributeAttribute() { }
+                +         public MyAttributeAttribute();
                 +     }
                   }
                 """,
@@ -872,7 +872,7 @@ public class DiffAttributeTests : DiffBaseTests
                 +     [System.AttributeUsage(System.AttributeTargets.All)]
                 +     public class MyAttributeAttribute : System.Attribute
                 +     {
-                +         public MyAttributeAttribute() { }
+                +         public MyAttributeAttribute();
                 +     }
                   }
                 """,
@@ -952,9 +952,9 @@ public class DiffAttributeTests : DiffBaseTests
                 +     [System.AttributeUsage(System.AttributeTargets.All)]
                 +     public class MyAttributeAttribute : System.Attribute
                 +     {
-                +         public MyAttributeAttribute(string first, string second) { }
-                +         public string First { get { throw null; } }
-                +         public string Second { get { throw null; } }
+                +         public MyAttributeAttribute(string first, string second);
+                +         public string First { get; }
+                +         public string Second { get; }
                 +     }
                   }
                 """,

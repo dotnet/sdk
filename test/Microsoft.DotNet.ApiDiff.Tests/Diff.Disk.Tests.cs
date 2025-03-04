@@ -66,7 +66,7 @@ public class DiffDiskTests
   {{
       public class MyClass
       {{
-+         public void MyMethod() {{ }}
++         public void MyMethod();
       }}
   }}
 ```
@@ -205,11 +205,11 @@ public class DiffDiskTests
   {{
       public class MyClass1
       {{
-+         public void MyMethod() {{ }}
++         public void MyMethod();
       }}
       public class MyClass2
       {{
-+         public void MyMethod() {{ }}
++         public void MyMethod();
       }}
   }}
 ```
@@ -221,11 +221,11 @@ public class DiffDiskTests
   {{
       public class MyClass3
       {{
-+         public void MyMethod() {{ }}
++         public void MyMethod();
       }}
       public class MyClass4
       {{
-+         public void MyMethod() {{ }}
++         public void MyMethod();
       }}
   }}
 ```
@@ -346,14 +346,14 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
   {{
       public class MyClass
       {{
-+         public void MyMethod() {{ }}
++         public void MyMethod();
       }}
   }}
   namespace MyNamespace.MySubNamespace
   {{
       public class MySubClass
       {{
-+         public void MySubMethod() {{ }}
++         public void MySubMethod();
       }}
   }}
 ```

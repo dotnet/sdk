@@ -20,7 +20,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyProperty { get; set; }
+                        public int MyProperty { get { throw null; } set { } }
                     }
                 }
                 """,
@@ -29,7 +29,7 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public int MyProperty { get { throw null; } set { } }
+                +         public int MyProperty { get; set; }
                       }
                   }
                 """);
@@ -41,7 +41,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyBeforeProperty { get; set; }
+                        public int MyBeforeProperty { get { throw null; } set { } }
                     }
                 }
                 """,
@@ -50,7 +50,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyAfterProperty { get; set; }
+                        public int MyAfterProperty { get { throw null; } set { } }
                     }
                 }
                 """,
@@ -59,8 +59,8 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int MyBeforeProperty { get { throw null; } set { } }
-                +         public int MyAfterProperty { get { throw null; } set { } }
+                -         public int MyBeforeProperty { get; set; }
+                +         public int MyAfterProperty { get; set; }
                       }
                   }
                 """);
@@ -72,7 +72,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyProperty { get; set; }
+                        public int MyProperty { get { throw null; } set { } }
                     }
                 }
                 """,
@@ -89,7 +89,7 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int MyProperty { get { throw null; } set { } }
+                -         public int MyProperty { get; set; }
                       }
                   }
                 """);
@@ -101,7 +101,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyProperty { get; }
+                        public int MyProperty { get { throw null; } }
                     }
                 }
                 """,
@@ -110,7 +110,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyProperty { get; set; }
+                        public int MyProperty { get { throw null; } set { } }
                     }
                 }
                 """,
@@ -119,8 +119,8 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int MyProperty { get { throw null; } }
-                +         public int MyProperty { get { throw null; } set { } }
+                -         public int MyProperty { get; }
+                +         public int MyProperty { get; set; }
                       }
                   }
                 """);
@@ -150,8 +150,8 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int MyProperty { get { throw null; } set { } }
-                +         public int MyProperty { get { throw null; } }
+                -         public int MyProperty { get; set; }
+                +         public int MyProperty { get; }
                       }
                   }
                 """);
@@ -163,7 +163,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyProperty { get; set; }
+                        public int MyProperty { get { throw null; } set { } }
                     }
                 }
                 """,
@@ -172,7 +172,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyProperty { get; protected set; }
+                        public int MyProperty { get { throw null; } protected set { } }
                     }
                 }
                 """,
@@ -181,8 +181,8 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int MyProperty { get { throw null; } set { } }
-                +         public int MyProperty { get { throw null; } protected set { } }
+                -         public int MyProperty { get; set; }
+                +         public int MyProperty { get; protected set; }
                       }
                   }
                 """);
@@ -212,8 +212,8 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int MyProperty { get { throw null; } set { } }
-                +         public int MyProperty { get { throw null; } }
+                -         public int MyProperty { get; set; }
+                +         public int MyProperty { get; }
                       }
                   }
                 """);
@@ -243,8 +243,8 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int MyProperty { get { throw null; } set { } }
-                +         public float MyProperty { get { throw null; } set { } }
+                -         public int MyProperty { get; set; }
+                +         public float MyProperty { get; set; }
                       }
                   }
                 """);
@@ -274,8 +274,8 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int MyProperty { get { throw null; } set { } }
-                +         public int? MyProperty { get { throw null; } set { } }
+                -         public int MyProperty { get; set; }
+                +         public int? MyProperty { get; set; }
                       }
                   }
                 """);
@@ -305,8 +305,8 @@ public class DiffPropertyTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         public int? MyProperty { get { throw null; } set { } }
-                +         public int MyProperty { get { throw null; } set { } }
+                -         public int? MyProperty { get; set; }
+                +         public int MyProperty { get; set; }
                       }
                   }
                 """);
@@ -367,7 +367,7 @@ public class DiffPropertyTests : DiffBaseTests
                 {
                     public class MyClass
                     {
-                        public int MyProperty { get; set; }
+                        public int MyProperty { get { throw null; } set { } }
                     }
                 }
                 """,

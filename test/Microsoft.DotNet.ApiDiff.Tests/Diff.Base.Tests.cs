@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI.Tests;
 using Moq;
+using VerifyTests;
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
@@ -13,6 +15,7 @@ public abstract class DiffBaseTests
 {
     private readonly Mock<ILog> _log = new();
     protected const string AssemblyName = "MyAssembly";
+    private readonly string[] _separator = [Environment.NewLine];
 
     protected Task RunTestAsync(
                            string beforeCode,
@@ -74,17 +77,23 @@ public abstract class DiffBaseTests
             {
                 Assert.True(generator.Results.TryGetValue(expectedAssemblyName, out string? actualCode), $"Assembly should've been present among the results: {expectedAssemblyName}");
                 string fullExpectedCode = GetExpected(expectedCode, expectedAssemblyName);
-                Assert.True(fullExpectedCode.Equals(actualCode), $"\nExpected:\n[{fullExpectedCode}]\nActual:\n[{actualCode}]");
+                if (!fullExpectedCode.Equals(actualCode))
+                {
+                    Assert.Fail($"Expected:\n[{ReplacedNewLines(fullExpectedCode)}]\nActual:\n[{ReplacedNewLines(actualCode)}]");
+                }
             }
         }
     }
 
-    private static string GetExpected(string expectedCode, string expectedAssemblyName) => $"""
-                # {Path.GetFileNameWithoutExtension(expectedAssemblyName)}
+    private static string ReplacedNewLines(string orig) => orig.Replace("\n", "\\n\n").Replace("\r", "\\r");
 
-                ```diff
-                {expectedCode}
-                ```
+    private static string GetExpected(string expectedCode, string expectedAssemblyName) =>
+        $"""
+        # {Path.GetFileNameWithoutExtension(expectedAssemblyName)}
 
-                """;
+        ```diff
+        {expectedCode}
+        ```
+
+        """;
 }
