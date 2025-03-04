@@ -91,6 +91,10 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 _parseResult,
                 LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
 
+            ToolAppliedOption.EnsureUpdateSkipPreReleaseOptionSetWithUpdateAllOption(
+                _parseResult,
+                "TODO: Update message");
+
             EnsureEitherUpdateAllOrUpdateOption(
                 _parseResult,
                 LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId);
