@@ -22,6 +22,7 @@
   <Import Project="targets\BundledTools.targets" />
   <Import Project="targets\PublishDotnetWatch.targets" />
   <Import Project="targets\GenerateLayout.targets" />
+  <Import Project="targets\GeneratePackagePruneData.targets" />
   <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
 
   <ItemGroup>
