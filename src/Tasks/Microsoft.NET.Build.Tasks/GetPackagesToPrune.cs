@@ -130,18 +130,9 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            bool useFrameworkPackageData;
-            if (!key.TargetFrameworkIdentifier.Equals(".NETCoreApp") || targetFrameworkVersion.Major < 10)
-            {
-                //  Use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
-                useFrameworkPackageData = true;
-            }
-            else
-            {
-                //  Use bundled "prune package data" for .NET 10 and higher.  During the redist build, this comes from targeting packs and
-                //  is laid out in the PrunePackageData folder.
-                useFrameworkPackageData = false;
-            }
+            // When true, use hard-coded / generated "framework package data" for .NET 9 and lower, .NET Framework, and .NET Standard
+            // When false, use bundled "prune package data" for .NET 10 and higher.  During the redist build, this comes from targeting packs and is laid out in the PrunePackageData folder.
+            bool useFrameworkPackageData = !key.TargetFrameworkIdentifier.Equals(".NETCoreApp") || targetFrameworkVersion.Major < 10;
 
             //  Call DefaultIfEmpty() so that target frameworks without framework references will load data
             foreach (var frameworkReference in key.FrameworkReferences.DefaultIfEmpty(""))
@@ -237,19 +228,12 @@ namespace Microsoft.NET.Build.Tasks
         {
             foreach (var package in packagesToAdd)
             {
-                if (packagesToPrune.TryGetValue(package.id, out NuGetVersion existingVersion))
-                {
-                    if (package.version > existingVersion)
-                    {
-                        //  There are some "inconsistent" versions in the FrameworkPackages data.  This happens because, for example, the ASP.NET Core shared framework for .NET 9 inherits
-                        //  from the ASP.NET Core shared framework for .NET 8, but not from the base Microsoft.NETCore.App framework for .NET 9.  So for something like System.IO.Pipelines,
-                        //  which was in ASP.NET in .NET 8 but moved to the base shared framework in .NET 9, we will see an 8.0 version from the ASP.NET shared framework and a 9.0 version
-                        //  from the base shared framework.  As long as the base shared framework is always referenced together with the ASP.NET shared framework, this shouldn't be a
-                        //  problem, and we can just pick the latest version of the package that we see.
-                        packagesToPrune[package.id] = package.version;
-                    }
-                }
-                else
+                // There are some "inconsistent" versions in the FrameworkPackages data.  This happens because, for example, the ASP.NET Core shared framework for .NET 9 inherits
+                // from the ASP.NET Core shared framework for .NET 8, but not from the base Microsoft.NETCore.App framework for .NET 9.  So for something like System.IO.Pipelines,
+                // which was in ASP.NET in .NET 8 but moved to the base shared framework in .NET 9, we will see an 8.0 version from the ASP.NET shared framework and a 9.0 version
+                // from the base shared framework.  As long as the base shared framework is always referenced together with the ASP.NET shared framework, this shouldn't be a
+                // problem, and we can just pick the latest version of the package that we see.
+                if (!packagesToPrune.TryGetValue(package.id, out NuGetVersion existingVersion) || package.version > existingVersion)
                 {
                     packagesToPrune[package.id] = package.version;
                 }
