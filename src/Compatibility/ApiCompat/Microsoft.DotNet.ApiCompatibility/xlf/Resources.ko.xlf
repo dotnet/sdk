@@ -122,9 +122,9 @@
         <target state="translated">형식 매개 변수 '{2}'의 '{1}'에서 제약 조건 '{0}'을(를) 제거할 수 없습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualFromMember">
-        <source>Cannot remove virtual keyword from member '{0}'.</source>
-        <target state="translated">구성원 '{0}'에서 가상 키워드를 제거할 수 없습니다.</target>
+      <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
+        <source>Cannot remove '{0}' keyword from member '{1}'.</source>
+        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
@@ -145,11 +145,6 @@
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">{0} 인덱스는 0 이상 {1} 이하의 범위 안에 있어야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">검색 디렉터리에서 일치하는 어셈블리 '{0}'(을)를 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">

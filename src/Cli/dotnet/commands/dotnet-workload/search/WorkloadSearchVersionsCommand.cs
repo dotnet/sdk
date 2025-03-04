@@ -32,7 +32,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             IWorkloadResolverFactory workloadResolverFactory = null,
             IInstaller installer = null,
             INuGetPackageDownloader nugetPackageDownloader = null,
-            IWorkloadResolver resolver = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter, nugetPackageDownloader: nugetPackageDownloader)
+            IWorkloadResolver resolver = null,
+            ReleaseVersion sdkVersion = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter, nugetPackageDownloader: nugetPackageDownloader)
         {
             workloadResolverFactory ??= new WorkloadResolverFactory();
 
@@ -43,7 +44,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
             var creationResult = workloadResolverFactory.Create();
 
-            _sdkVersion = creationResult.SdkVersion;
+            _sdkVersion = sdkVersion ?? creationResult.SdkVersion;
             _resolver = resolver ?? creationResult.WorkloadResolver;
 
             _numberOfWorkloadSetsToTake = result.GetValue(WorkloadSearchVersionsCommandParser.TakeOption);
