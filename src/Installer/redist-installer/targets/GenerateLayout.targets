@@ -49,7 +49,6 @@
     <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-runtime-$(VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
     <DownloadedAspNetTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
     <DownloadedAspNetTargetingPackInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefInternalPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
-    <DownloadedAspNetCoreV2ModuleInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcoremodule_$(Architecture)_en_v2_$(MicrosoftAspNetCoreAppRuntimePackageVersion)$(InstallerExtension)</DownloadedAspNetCoreV2ModuleInstallerFileName>
     <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
     <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
 
@@ -248,15 +247,6 @@
                                 Condition="'$(InstallerExtension)' != '.pkg' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
       <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
-    </BundledInstallerComponent>
-
-    <!-- This artifact is from a different vertical which requires a join. It is part of
-         the windows bundle which makes it also require a join. Disable for now in the VMR.
-         https://github.com/dotnet/source-build/issues/4777. -->
-    <BundledInstallerComponent Include="DownloadedAspNetCoreV2ModuleInstallerFile"
-                                Condition="'$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm')) and '$(DotNetBuild)' != 'true'">
-      <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
-      <DownloadFileName>$(DownloadedAspNetCoreV2ModuleInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
   </ItemGroup>
 
