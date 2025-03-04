@@ -68,10 +68,7 @@ namespace Microsoft.DotNet.Cli
             HelpName = LocalizableStrings.CmdPackageDirectory
         }.ForwardAsSingle(o => $"--package-directory {o}");
 
-        public static readonly CliOption<bool> InteractiveOption = new ForwardedOption<bool>("--interactive")
-        {
-            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
-        }.ForwardAs("--interactive");
+        public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
         public static readonly CliOption<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
         {

@@ -31,9 +31,6 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription
         }.ForwardAs("--ignore-failed-sources");
 
-        public static CliOption<bool> InteractiveRestoreOption = new ForwardedOption<bool>("--interactive")
-        {
-            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
-        }.ForwardAs(Constants.RestoreInteractiveOption);
+        public static CliOption<bool> InteractiveRestoreOption = CommonOptions.InteractiveOption().ForwardIfEnabled(Constants.RestoreInteractiveOption);
     }
 }

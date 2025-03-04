@@ -15,7 +15,8 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore,
-            CustomParser = arguments => {
+            CustomParser = arguments =>
+            {
                 var result = arguments.Tokens.TakeWhile(t => !t.Value.StartsWith("-"));
                 arguments.OnlyTake(result.Count());
                 return result.Select(t => t.Value);
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Cli
 
         }.AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
-        public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption;
+        public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption();
 
         private static readonly CliCommand Command = ConstructCommand();
 
