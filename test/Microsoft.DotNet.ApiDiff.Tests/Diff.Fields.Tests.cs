@@ -102,4 +102,159 @@ public class DiffFieldTests : DiffBaseTests
                 """);
 
     #endregion
+
+    #region Field lists
+
+    [Fact]
+    public Task TestFieldListAdd() => RunTestAsync(
+            beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+            afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int _myField1, _myField2;
+                    }
+                }
+                """,
+            expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                +         public int _myField1;
+                +         public int _myField2;
+                      }
+                  }
+                """);
+
+    [Fact]
+    public Task TestFieldListDataTypeChange() => RunTestAsync(
+            beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int _myField1, _myField2;
+                    }
+                }
+                """,
+            afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public double _myField1, _myField2;
+                    }
+                }
+                """,
+            expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                -         public int _myField1;
+                +         public double _myField1;
+                -         public int _myField2;
+                +         public double _myField2;
+                      }
+                  }
+                """);
+
+    [Fact]
+    public Task TestFieldListOrderChange() => RunTestAsync(
+            beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int _myField1, _myField2;
+                    }
+                }
+                """,
+            afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int _myField2, _myField1;
+                    }
+                }
+                """,
+            expectedCode: ""); // No change expected
+
+    [Fact]
+    public Task TestFieldListNameChange() => RunTestAsync(
+            beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int _myField1, _myField2;
+                    }
+                }
+                """,
+            afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int _myField3, _myField4;
+                    }
+                }
+                """,
+            expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                -         public int _myField1;
+                -         public int _myField2;
+                +         public int _myField3;
+                +         public int _myField4;
+                      }
+                  }
+                """);
+
+    [Fact]
+    public Task TestFieldVisibilityChange() => RunTestAsync(
+            beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        public int _myField1, _myField2;
+                    }
+                }
+                """,
+            afterCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                        protected int _myField1, _myField2;
+                    }
+                }
+                """,
+            expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                -         public int _myField1;
+                +         protected int _myField1;
+                -         public int _myField2;
+                +         protected int _myField2;
+                      }
+                  }
+                """);
+
+    #endregion
 }
