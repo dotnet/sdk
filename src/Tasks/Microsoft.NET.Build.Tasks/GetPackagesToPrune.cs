@@ -135,7 +135,8 @@ namespace Microsoft.NET.Build.Tasks
             foreach (var frameworkReference in key.FrameworkReferences.DefaultIfEmpty(""))
             {
                 //  Filter out framework references we don't expect to have prune data for, such as Microsoft.Windows.SDK.NET.Ref
-                if (!frameworkReference.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase) &&
+                if (!frameworkReference.Equals(string.Empty, StringComparison.OrdinalIgnoreCase) &&
+                    !frameworkReference.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase) &&
                     !frameworkReference.Equals("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase) &&
                     !frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
                 {
