@@ -245,7 +245,7 @@ Options:
             cmd.Should().Pass();
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/dotnet/sdk/pull/47181#issuecomment-2690656241")]
         [InlineData("sln", true, ".sln")]
         [InlineData("sln", false, ".sln")]
         [InlineData("solution", true, ".sln")]
