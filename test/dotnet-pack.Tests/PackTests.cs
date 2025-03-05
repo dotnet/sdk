@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Pack.Tests
                      .And.Contain(e => e.FullName == "anotherpath/pack2.txt");
         }
 
-        [Fact(Skip = "Test project doesn't override assembly name")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/47246")]
         public void PackAddsCorrectFilesForProjectsWithOutputNameSpecified()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")
