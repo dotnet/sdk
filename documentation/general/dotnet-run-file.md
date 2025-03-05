@@ -119,8 +119,7 @@ and usually the build fails because there are multiple entry points or other cla
 Similarly, we could report an error if there are many nested directories and files,
 so for example if someone puts a C# file into `C:/`
 and executes `dotnet run C:/file.cs` or opens that in the IDE, we do not walk the whole drive.
-Again, this problem exists with project-based programs as well, albeit it's likely uncommon there
-since creating projects with `dotnet new` or an IDE creates them in a directory.
+Again, this problem exists with project-based programs as well.
 
 ### Multiple entry points
 
@@ -141,7 +140,6 @@ In this case, there are multiple implicit projects
 and the original C# files are moved to the corresponding project subdirectories):
 ```
 App/Shared/Util.cs
-App/Shared/Shared.csproj
 App/Program1/Program1.cs
 App/Program1/Program1.csproj
 App/Program2/Program2.cs
@@ -151,14 +149,15 @@ App/Program2/Program2.csproj
 The generated folders might need to be named differently to avoid clashes with existing folders.
 
 The entry-point projects (`Program1` and `Program2` in our example)
-have a `ProjectReference` to the non-entry-point `Shared` project.
+have the shared `.cs` files source-included via `<Content Include="../Shared/**/*.cs" />`.
+We could consider having the projects directly in the top-level folder instead
+but that might result in clashes of build outputs that are not project-scoped, like `project.assets.json`.
+If we did that though, it would be enough to exclude the other entry points rather than including all the shared `.cs` files.
 
 Unless the [artifacts output layout][artifacts-output] is used (which is recommended),
 those implicit projects mean that build artifacts are placed under those implicit directories
 even though they don't exist on disk prior to build:
 ```
-App/Shared/bin/
-App/Shared/obj/
 App/Program1/bin/
 App/Program1/obj/
 App/Program2/bin/
@@ -167,10 +166,10 @@ App/Program2/obj/
 
 ## Package references
 
-It is possible to specify NuGet package references via the `#r` directive.
+It is possible to specify NuGet package references via the `#package` directive.
 
 ```cs
-#r "nuget: Newtonsoft.Json, 13.0.1"
+#package Newtonsoft.Json 13.0.1
 ```
 
 The C# language needs to be updated to ignore these directives (instead of failing the compilation).
@@ -181,19 +180,34 @@ the dotnet CLI could be more efficient in searching for them.
 
 It should be also possible to look for these directives from the dotnet CLI via a regex instead of parsing the whole C# file via Roslyn.
 
-We can also consider reporting an error or warning if `#r` directives are spread among multiple files,
-to encourage users to keep them in a single place for clarity.
-Furthermore, if the directives are limited to just one file per virtual project,
-it is more efficient to search for them by the dotnet CLI
-(after the initial search, we can only look at a couple of files on re-runs).
-For example, users could put their `#r`s into `Program1.cs`, `Program2.cs`, and `Util.cs`, but not `Util2.cs`.
+We do not limit `#package` directives to appear only in entry point files.
+Indeed, it might be beneficial to let a non-entry-point file like `Util.cs` be self-contained and have all the `#package`s it needs specified in it,
+which also makes it possible to share it independently or symlink it to multiple script folders.
+This is also similar to `global using`s which users usually put into a single file but don't have to.
 
-During [grow up](#grow-up), `#r` directives are removed from the `.cs` files and turned into `<PackageReference>` elements in the corresponding `.csproj` files.
-For project-based programs, `#r` directives are an error.
+We could consider deduplicating `#package` directives (if they have the same version)
+so separate "self-contained" utilities can reference overlapping sets of packages
+even if they end up in the same compilation.
+
+During [grow up](#grow-up), `#package` directives are removed from the `.cs` files and turned into `<PackageReference>` elements in the corresponding `.csproj` files.
+For project-based programs, `#package` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
+
+## SDK directive
+
+We could also recognize `#sdk` directive to allow web file-based programs for example.
+
+```cs
+#sdk Microsoft.NET.Sdk.Web
+```
+
+It should have similar restrictions as the `#package` directive.
+It should also be an error to specify multiple different `#sdk` directives
+but it could be allowed to specify the same SDK multiple times similarly to `#package` directives
+(again so that self-contained utility files can declare their required SDK).
 
 ## Shebang
 
-Along with `#r`, the language can also ignore `#!` which could be then used for [shebang][shebang] support.
+Along with `#package`, the language can also ignore `#!` which could be then used for [shebang][shebang] support.
 
 ```cs
 #!/usr/bin/dotnet run
@@ -201,7 +215,7 @@ Console.WriteLine("Hello");
 ```
 
 It might be beneficial to also ship `dotnet-run` binary
-(or `dotnet-run-file` that would only work with file-based programs, not project-based ones)
+(or `dotnet-run-file` that would only work with file-based programs, not project-based ones, perhaps simply named `cs`)
 because some shells do not support multiple command-line arguments in the shebang
 which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executable
 (although `-S` argument can be sometimes used to enable multiple argument support):
@@ -219,6 +233,8 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 // ^ Workaround in some shells.
 ```
 
+We could also consider making `dotnet file.cs` work because `dotnet file.dll` also works today.
+
 ## Other commands
 
 We can consider supporting other commands like `dotnet build`, `dotnet pack`, `dotnet watch`.
@@ -230,7 +246,7 @@ or as the first argument if it makes sense for them.
 ### `dotnet package add`
 
 Adding package references via `dotnet package add` could be supported for file-based programs as well,
-i.e., the command would add a `#r` directive to the top of a `.cs` file.
+i.e., the command would add a `#package` directive to the top of a `.cs` file.
 
 ## Implementation
 
@@ -240,8 +256,8 @@ The build is performed using MSBuild APIs on in-memory project files.
 
 MSBuild invocation can be skipped in subsequent `dotnet run file.cs` invocations if an up-to-date check detects that inputs didn't change.
 We always need to re-run MSBuild if implicit build files like `Directory.Build.props` change but
-from `.cs` files, the only relevant MSBuild inputs are the `#r` directives,
-hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#r` directives.
+from `.cs` files, the only relevant MSBuild inputs are the `#package` directives,
+hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#package` directives.
 If only `.cs` files change, it is enough to invoke `csc.exe` (directly or via a build server)
 re-using command-line arguments that the last MSBuild invocation passed to the compiler.
 If no inputs change, it is enough to start the target executable without invoking the build at all.
@@ -255,7 +271,7 @@ The plan is to implement the feature in stages (the order might be different):
 - Multiple entry points.
 - Grow up command.
 - Folder support: `dotnet run ./dir/`.
-- Package references via `#r`.
+- Package references via `#package`.
 
 <!--
 ## Links
