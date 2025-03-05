@@ -134,6 +134,14 @@ namespace Microsoft.NET.Build.Tasks
             //  Call DefaultIfEmpty() so that target frameworks without framework references will load data
             foreach (var frameworkReference in key.FrameworkReferences.DefaultIfEmpty(""))
             {
+                //  Filter out framework references we don't expect to have prune data for, such as Microsoft.Windows.SDK.NET.Ref
+                if (!frameworkReference.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase) &&
+                    !frameworkReference.Equals("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase) &&
+                    !frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 Dictionary<string, NuGetVersion> packagesForFrameworkReference;
                 if (useFrameworkPackageData)
                 {

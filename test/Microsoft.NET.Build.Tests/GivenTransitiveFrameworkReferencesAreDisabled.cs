@@ -61,6 +61,10 @@ namespace Microsoft.NET.Build.Tests
             //  Set packs folder to nonexistent folder so the project won't use installed targeting or runtime packs
             testProject.AdditionalProperties["NetCoreTargetingPackRoot"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
+            //  Package pruning needs to be able to load data from the targeting packs directory.  Since we're disabling the targeting pack
+            //  root, we need to disable package pruning as well.
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testName, identifier: referenceAspNet.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
@@ -127,6 +131,10 @@ namespace Microsoft.NET.Build.Tests
 
             //  Set packs folder to nonexistent folder so the project won't use installed targeting or runtime packs
             testProject.AdditionalProperties["NetCoreTargetingPackRoot"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            //  Package pruning needs to be able to load data from the targeting packs directory.  Since we're disabling the targeting pack
+            //  root, we need to disable package pruning as well.
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
 
             testProject.ReferencedProjects.Add(referencedProject);
 

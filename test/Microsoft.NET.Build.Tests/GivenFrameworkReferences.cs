@@ -307,6 +307,10 @@ namespace FrameworkReferenceTest
             //  Set targeting pack folder to nonexistent folder so the project won't use installed targeting packs
             testProject.AdditionalProperties["NetCoreTargetingPackRoot"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
+            //  Package pruning needs to be able to load data from the targeting packs directory.  Since we're disabling the targeting pack
+            //  root, we need to disable package pruning as well.
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             string nugetPackagesFolder = Path.Combine(testAsset.TestRoot, "packages");
