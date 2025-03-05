@@ -335,7 +335,7 @@ jobs:
           inputs:
             artifactName: ${{ reuseBuildArtifacts }}_Artifacts
             targetPath: $(sourcesPath)/artifacts/
-            displayName: Download Previous Build (${{ reuseBuildArtifacts }})
+          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
 
   - ${{ if eq(parameters.withPreviousSDK, 'true') }}:
     - script: |
