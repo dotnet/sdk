@@ -20,65 +20,58 @@ using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 namespace Microsoft.DotNet.GenAPI;
 
 /// <summary>
+/// Options for generating C# assembly documents with <see cref="CSharpAssemblyDocumentGenerator" />, allowing customization of various aspects of the generation process.
+/// </summary>
+/// <param name="loader">Facilitates loading assembly symbols during the document generation.</param>
+/// <param name="symbolFilter">Filters symbols based on specified criteria for the document generation.</param>
+/// <param name="attributeDataSymbolFilter">Filters attribute data symbols according to defined rules for the document generation.</param>
+/// <param name="exceptionMessage">Provides a message to be used in case of exceptions during the generation process.</param>
+/// <param name="addPartialModifier">Indicates whether to include a partial modifier in the generated syntax.</param>
+public class CSharpAssemblyDocumentGeneratorOptions(IAssemblySymbolLoader loader, ISymbolFilter symbolFilter, ISymbolFilter attributeDataSymbolFilter, string? exceptionMessage = null, bool addPartialModifier = true)
+{
+    private static readonly SingleLineStatementCSharpSyntaxRewriter s_singleLineRewriter = new();
+
+    public bool HideImplicitDefaultConstructors { get; set; } = true;
+    public bool IncludeAssemblyAttributes { get; set; }
+    public bool ShouldFormat { get; set; } = true;
+    public bool ShouldReduce { get; set; } = true;
+    public IAssemblySymbolLoader Loader { get; set; } = loader;
+    public ISymbolFilter SymbolFilter { get; set; } = symbolFilter;
+    public ISymbolFilter AttributeDataSymbolFilter { get; set; } = attributeDataSymbolFilter;
+    public IEnumerable<KeyValuePair<string, ReportDiagnostic>>? DiagnosticOptions { get; set; }
+    public IEnumerable<MetadataReference>? MetadataReferences { get; set; }
+    public List<CSharpSyntaxRewriter> SyntaxRewriters { get; set; } = [new BodyBlockCSharpSyntaxRewriter(exceptionMessage), new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier), s_singleLineRewriter];
+    public List<SyntaxAnnotation> AdditionalAnnotations { get; set; } = [Formatter.Annotation, Simplifier.Annotation];
+}
+
+/// <summary>
 /// A class that generates the C# document and syntax trees of a specified collection of assemblies.
 /// </summary>
 public sealed class CSharpAssemblyDocumentGenerator
 {
     private readonly ILog _log;
-    private readonly IAssemblySymbolLoader _loader;
-    private readonly ISymbolFilter _symbolFilter;
-    private readonly ISymbolFilter _attributeDataSymbolFilter;
-    private readonly string? _exceptionMessage;
-    private readonly bool _includeAssemblyAttributes;
+    private readonly CSharpAssemblyDocumentGeneratorOptions _options;
     private readonly AdhocWorkspace _adhocWorkspace;
     private readonly SyntaxGenerator _syntaxGenerator;
-    private readonly IEnumerable<MetadataReference>? _metadataReferences;
-    private readonly bool _addPartialModifier;
-    private readonly bool _hideImplicitDefaultConstructors;
     private readonly CSharpCompilationOptions _compilationOptions;
-
-    private static readonly SingleLineStatementCSharpSyntaxRewriter s_singleLineRewriter = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CSharpAssemblyDocumentGenerator"/> class.
     /// </summary>
     /// <param name="log">The logger to use.</param>
-    /// <param name="loader">The assembly symbol loader to use.</param>
-    /// <param name="symbolFilter">The symbol filter to use.</param>
-    /// <param name="attributeDataSymbolFilter">The attribute data symbol filter to use.</param>
-    /// <param name="exceptionMessage">The optional exception message to use.</param>
-    /// <param name="includeAssemblyAttributes">Whether to include assembly attributes or not.</param>
-    /// <param name="metadataReferences">The metadata references to use. The default value is <see langword="null"/>.</param>
-    /// <param name="diagnosticOptions">The optional diagnostic options to use. The default value is <see langword="null"/>.</param>
-    /// <param name="addPartialModifier">Whether to add the partial modifier or not. The default value is <see langword="true"/>.</param>
-    /// <param name="hideImplicitDefaultConstructors">Whether to hide implicit default constructors or not. The default value is <see langword="true"/>.</param>
-    public CSharpAssemblyDocumentGenerator(ILog log,
-                                 IAssemblySymbolLoader loader,
-                                 ISymbolFilter symbolFilter,
-                                 ISymbolFilter attributeDataSymbolFilter,
-                                 string? exceptionMessage,
-                                 bool includeAssemblyAttributes,
-                                 IEnumerable<MetadataReference>? metadataReferences = null,
-                                 IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null,
-                                 bool addPartialModifier = true,
-                                 bool hideImplicitDefaultConstructors = true)
+    /// <param name="options">The options to configure the generator.</param>
+    public CSharpAssemblyDocumentGenerator(ILog log, CSharpAssemblyDocumentGeneratorOptions options)
     {
         _log = log;
-        _loader = loader;
-        _symbolFilter = symbolFilter;
-        _attributeDataSymbolFilter = attributeDataSymbolFilter;
-        _exceptionMessage = exceptionMessage;
-        _includeAssemblyAttributes = includeAssemblyAttributes;
+        _options = options;
+
         _adhocWorkspace = new AdhocWorkspace();
         _syntaxGenerator = SyntaxGenerator.GetGenerator(_adhocWorkspace, LanguageNames.CSharp);
-        _metadataReferences = metadataReferences;
-        _addPartialModifier = addPartialModifier;
-        _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
 
         _compilationOptions = new CSharpCompilationOptions(
             OutputKind.DynamicallyLinkedLibrary,
             nullableContextOptions: NullableContextOptions.Enable,
-            specificDiagnosticOptions: diagnosticOptions);
+            specificDiagnosticOptions: _options.DiagnosticOptions);
     }
 
     /// <summary>
@@ -91,11 +84,11 @@ public sealed class CSharpAssemblyDocumentGenerator
         Project project = _adhocWorkspace.AddProject(ProjectInfo.Create(
             ProjectId.CreateNewId(), VersionStamp.Create(), assemblySymbol.Name, assemblySymbol.Name, LanguageNames.CSharp,
             compilationOptions: _compilationOptions));
-        project = project.AddMetadataReferences(_metadataReferences ?? _loader.MetadataReferences);
+        project = project.AddMetadataReferences(_options.MetadataReferences ?? _options.Loader.MetadataReferences);
 
-        IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_symbolFilter.Include);
+        IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_options.SymbolFilter.Include);
+
         List<SyntaxNode> namespaceSyntaxNodes = [];
-
         foreach (INamespaceSymbol namespaceSymbol in namespaceSymbols.Order())
         {
             SyntaxNode? syntaxNode = Visit(namespaceSymbol);
@@ -107,11 +100,14 @@ public sealed class CSharpAssemblyDocumentGenerator
         }
 
         SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes)
-            .WithAdditionalAnnotations(Formatter.Annotation, Simplifier.Annotation)
-            .Rewrite(new TypeDeclarationCSharpSyntaxRewriter(_addPartialModifier))
-            .Rewrite(new BodyBlockCSharpSyntaxRewriter(_exceptionMessage));
+                                                     .WithAdditionalAnnotations(_options.AdditionalAnnotations);
 
-        if (_includeAssemblyAttributes)
+        foreach (CSharpSyntaxRewriter rewriter in _options.SyntaxRewriters)
+        {
+            compilationUnit = compilationUnit.Rewrite(rewriter);
+        }
+
+        if (_options.IncludeAssemblyAttributes)
         {
             compilationUnit = GenerateAssemblyAttributes(assemblySymbol, compilationUnit);
         }
@@ -120,28 +116,24 @@ public sealed class CSharpAssemblyDocumentGenerator
         compilationUnit = compilationUnit.NormalizeWhitespace(eol: Environment.NewLine);
 
         Document document = project.AddDocument(assemblySymbol.Name, compilationUnit);
-        document = await Simplifier.ReduceAsync(document).ConfigureAwait(false);
-        document = await Formatter.FormatAsync(document, DefineFormattingOptions()).ConfigureAwait(false);
+
+        if (_options.ShouldReduce)
+        {
+            document = await Simplifier.ReduceAsync(document).ConfigureAwait(false);
+        }
+        if (_options.ShouldFormat)
+        {
+            document = await Formatter.FormatAsync(document, DefineFormattingOptions()).ConfigureAwait(false);
+        }
 
         return document;
-    }
-
-    /// <summary>
-    /// Returns the formatted root syntax node for the specified document.
-    /// </summary>
-    /// <param name="document">A source code document instance.</param>
-    /// <returns>The root syntax node of the specified document.</returns>
-    public async Task<SyntaxNode> GetFormattedRootNodeForDocument(Document document)
-    {
-        SyntaxNode? root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
-        return root.Rewrite(s_singleLineRewriter);
     }
 
     private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)
     {
         SyntaxNode namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
 
-        IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_symbolFilter.Include);
+        IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_options.SymbolFilter.Include);
         if (!typeMembers.Any())
         {
             return null;
@@ -150,8 +142,8 @@ public sealed class CSharpAssemblyDocumentGenerator
         foreach (INamedTypeSymbol typeMember in typeMembers.Order())
         {
             SyntaxNode typeDeclaration = _syntaxGenerator
-                .DeclarationExt(typeMember, _symbolFilter)
-                .AddMemberAttributes(_syntaxGenerator, typeMember, _attributeDataSymbolFilter);
+                .DeclarationExt(typeMember, _options.SymbolFilter)
+                .AddMemberAttributes(_syntaxGenerator, typeMember, _options.AttributeDataSymbolFilter);
 
             typeDeclaration = Visit(typeDeclaration, typeMember);
 
@@ -186,7 +178,7 @@ public sealed class CSharpAssemblyDocumentGenerator
 
             // If they're methods, compare their names and signatures.
             return baseType.GetMembers(member.Name)
-                .Any(baseMember => _symbolFilter.Include(baseMember) &&
+                .Any(baseMember => _options.SymbolFilter.Include(baseMember) &&
                      (baseMember.Kind != SymbolKind.Method ||
                       method.SignatureEquals((IMethodSymbol)baseMember)));
         }
@@ -195,7 +187,7 @@ public sealed class CSharpAssemblyDocumentGenerator
             // If they're indexers, compare their signatures.
             return baseType.GetMembers(member.Name)
                 .Any(baseMember => baseMember is IPropertySymbol baseProperty &&
-                     _symbolFilter.Include(baseMember) &&
+                     _options.SymbolFilter.Include(baseMember) &&
                      (prop.GetMethod.SignatureEquals(baseProperty.GetMethod) ||
                       prop.SetMethod.SignatureEquals(baseProperty.SetMethod)));
         }
@@ -203,21 +195,21 @@ public sealed class CSharpAssemblyDocumentGenerator
         {
             // For all other kinds of members, compare their names.
             return baseType.GetMembers(member.Name)
-                .Any(_symbolFilter.Include);
+                .Any(_options.SymbolFilter.Include);
         }
     }
 
     private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
     {
-        IEnumerable<ISymbol> members = namedType.GetMembers().Where(_symbolFilter.Include);
+        IEnumerable<ISymbol> members = namedType.GetMembers().Where(_options.SymbolFilter.Include);
 
         // If it's a value type
         if (namedType.TypeKind == TypeKind.Struct)
         {
-            namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.SynthesizeDummyFields(_symbolFilter, _attributeDataSymbolFilter));
+            namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.SynthesizeDummyFields(_options.SymbolFilter, _options.AttributeDataSymbolFilter));
         }
 
-        namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.TryGetInternalDefaultConstructor(_symbolFilter));
+        namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.TryGetInternalDefaultConstructor(_options.SymbolFilter));
 
         foreach (ISymbol member in members.Order())
         {
@@ -225,15 +217,15 @@ public sealed class CSharpAssemblyDocumentGenerator
             {
                 // If the method is ExplicitInterfaceImplementation and is derived from an interface that was filtered out, we must filter it out as well.
                 if (method.MethodKind == MethodKind.ExplicitInterfaceImplementation &&
-                    method.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol) ||
+                    method.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol) ||
                     // if explicit interface implementation method has inaccessible type argument
-                    m.ContainingType.HasInaccessibleTypeArgument(_symbolFilter)))
+                    m.ContainingType.HasInaccessibleTypeArgument(_options.SymbolFilter)))
                 {
                     continue;
                 }
 
                 // Filter out default constructors since these will be added automatically
-                if (_hideImplicitDefaultConstructors && method.IsImplicitDefaultConstructor(_symbolFilter))
+                if (_options.HideImplicitDefaultConstructors && method.IsImplicitDefaultConstructor(_options.SymbolFilter))
                 {
                     continue;
                 }
@@ -241,14 +233,14 @@ public sealed class CSharpAssemblyDocumentGenerator
 
             // If the property is derived from an interface that was filtered out, we must not filter it out either.
             if (member is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty &&
-                property.ExplicitInterfaceImplementations.Any(m => !_symbolFilter.Include(m.ContainingSymbol)))
+                property.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol)))
             {
                 continue;
             }
 
             SyntaxNode memberDeclaration = _syntaxGenerator
-                .DeclarationExt(member, _symbolFilter)
-                .AddMemberAttributes(_syntaxGenerator, member, _attributeDataSymbolFilter);
+                .DeclarationExt(member, _options.SymbolFilter)
+                .AddMemberAttributes(_syntaxGenerator, member, _options.AttributeDataSymbolFilter);
 
             if (member is INamedTypeSymbol nestedTypeSymbol)
             {
@@ -281,7 +273,7 @@ public sealed class CSharpAssemblyDocumentGenerator
     private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
     {
         // When assembly references aren't available, assembly attributes with foreign types won't be resolved.
-        ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_attributeDataSymbolFilter);
+        ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_options.AttributeDataSymbolFilter);
 
         // Emit assembly attributes from the IAssemblySymbol
         List<SyntaxNode> attributeSyntaxNodes = [.. attributes
@@ -317,7 +309,7 @@ public sealed class CSharpAssemblyDocumentGenerator
 
     private SyntaxNode GenerateForwardedTypeAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
     {
-        foreach (INamedTypeSymbol symbol in assembly.GetForwardedTypes().Where(_symbolFilter.Include))
+        foreach (INamedTypeSymbol symbol in assembly.GetForwardedTypes().Where(_options.SymbolFilter.Include))
         {
             if (symbol.TypeKind != TypeKind.Error)
             {
