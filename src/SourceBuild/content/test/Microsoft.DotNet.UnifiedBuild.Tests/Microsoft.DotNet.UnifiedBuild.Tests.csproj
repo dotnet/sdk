@@ -12,7 +12,6 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="NuGet.Protocol" />
     <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" ReferenceOutputAssembly="false" Condition="'$(SkipPrepareSdkArchive)' != 'true'" />
-    <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" ReferenceOutputAssembly="false" Condition="'$(SkipPrepareSdkArchive)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
