@@ -4,7 +4,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using Microsoft.CodeAnalysis;
@@ -290,18 +289,18 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
         if (parentNode is BaseNamespaceDeclarationSyntax)
         {
-            foreach (BaseTypeDeclarationSyntax typeNode in parentNode.ChildNodes().Where(n => n is BaseTypeDeclarationSyntax t && IsPublicOrProtected(t)).Cast<BaseTypeDeclarationSyntax>())
+            foreach (BaseTypeDeclarationSyntax typeNode in parentNode.ChildNodes().Where(n => n is BaseTypeDeclarationSyntax t && IsPublicOrProtectedOrDestructor(t)).Cast<BaseTypeDeclarationSyntax>())
             {
                 dictionary.TryAdd(GetDocId(typeNode, model), typeNode);
             }
-            foreach (DelegateDeclarationSyntax delegateNode in parentNode.ChildNodes().Where(n => n is DelegateDeclarationSyntax d && IsPublicOrProtected(d)).Cast<DelegateDeclarationSyntax>())
+            foreach (DelegateDeclarationSyntax delegateNode in parentNode.ChildNodes().Where(n => n is DelegateDeclarationSyntax d && IsPublicOrProtectedOrDestructor(d)).Cast<DelegateDeclarationSyntax>())
             {
                 dictionary.TryAdd(GetDocId(delegateNode, model), delegateNode);
             }
         }
         else if (parentNode is BaseTypeDeclarationSyntax)
         {
-            foreach (MemberDeclarationSyntax memberNode in parentNode.ChildNodes().Where(n => n is MemberDeclarationSyntax m && IsPublicOrProtected(m)).Cast<MemberDeclarationSyntax>())
+            foreach (MemberDeclarationSyntax memberNode in parentNode.ChildNodes().Where(n => n is MemberDeclarationSyntax m && IsPublicOrProtectedOrDestructor(m)).Cast<MemberDeclarationSyntax>())
             {
                 dictionary.TryAdd(GetDocId(memberNode, model), memberNode);
             }
@@ -456,18 +455,30 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
     private static AccessorListSyntax? GetEmptiedAccessors(AccessorListSyntax? accessorList)
     {
-        SyntaxList<AccessorDeclarationSyntax>? accessors = accessorList?.Accessors;
-        if (accessors == null)
+        if (accessorList == null)
         {
             return null;
         }
 
-        IEnumerable<AccessorDeclarationSyntax> newAccessors = accessors.Value.Select(
-            static accessorDeclaration => accessorDeclaration.WithBody(null) // remove the default empty body wrapped by brackets
-                .WithoutTrailingTrivia() // Remove the single space that follows this new declaration
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)) // Append a semicolon at the end
-                .WithTrailingTrivia(SyntaxFactory.Space) // Add a space after the semicolon
-        );
+        List<AccessorDeclarationSyntax> newAccessors = new();
+
+
+        for (int i = 0; i < accessorList.Accessors.Count; i++)
+        {
+            AccessorDeclarationSyntax accessorDeclaration = accessorList.Accessors[i]
+                               .WithBody(null) // remove the default empty body wrapped by brackets
+                               .WithoutTrivia() // Important
+                               .WithLeadingTrivia(SyntaxFactory.Space) // Add a space before the accessor
+                               .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)); // Append a semicolon at the end
+
+            if (i == accessorList.Accessors.Count - 1) // Second to last
+            {
+                // Add a space after the semicolon only on the last accessor
+                accessorDeclaration = accessorDeclaration.WithTrailingTrivia(SyntaxFactory.Space);
+            }
+
+            newAccessors.Add(accessorDeclaration);
+        }
 
         return SyntaxFactory.AccessorList(SyntaxFactory.List(newAccessors));
     }
@@ -539,25 +550,21 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
     private async Task<(SyntaxNode rootNode, SemanticModel model)> GetAssemblyRootNodeAndModelAsync(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
     {
-        CSharpAssemblyDocumentGenerator docGenerator = new(_log,
-                                                           loader,
-                                                           _symbolFilter,
-                                                           _attributeSymbolFilter,
-                                                           exceptionMessage: null,
-                                                           includeAssemblyAttributes: false,
-                                                           loader.MetadataReferences,
-                                                           diagnosticOptions: _diagnosticOptions,
-                                                           addPartialModifier: _addPartialModifier,
-                                                           hideImplicitDefaultConstructors: _hideImplicitDefaultConstructors);
+        CSharpAssemblyDocumentGeneratorOptions options = new(loader, _symbolFilter, _attributeSymbolFilter, exceptionMessage: null, _addPartialModifier)
+        {
+            IncludeAssemblyAttributes = false,
+            HideImplicitDefaultConstructors = _hideImplicitDefaultConstructors,
+            MetadataReferences = loader.MetadataReferences,
+            DiagnosticOptions = _diagnosticOptions,
+        };
 
-        // This is a workaround to get the root node and semantic model for a rewritten assembly root node.
-        Document oldDocument = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
-        SyntaxNode oldRootNode = await docGenerator.GetFormattedRootNodeForDocument(oldDocument).ConfigureAwait(false); // This method rewrites the node and detaches it from the original document.
-        Document newDocument = oldDocument.WithSyntaxRoot(oldRootNode); // This links the rewritten node to the document and returns that document, but...
-        SyntaxNode? newRootNode = await newDocument.GetSyntaxRootAsync().ConfigureAwait(false); // ... we need to retrieve the root node with the one linked to the document (it's a two way linking).
-        SemanticModel? model = await newDocument.GetSemanticModelAsync().ConfigureAwait(false);
+        CSharpAssemblyDocumentGenerator docGenerator = new(_log, options);
 
-        return (newRootNode!, model!);
+        Document document = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
+        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.RootNodeNotFound, assemblySymbol.Name));
+        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.SemanticModelNotFound, assemblySymbol.Name));
+
+        return (root, model);
     }
 
     // For types, members and namespaces.
@@ -680,8 +687,9 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                          .ToFullString();
     }
 
-    private static bool IsPublicOrProtected(MemberDeclarationSyntax m) =>
-        m.Modifiers.Any(SyntaxKind.PublicKeyword) || m.Modifiers.Any(SyntaxKind.ProtectedKeyword);
+    private static bool IsPublicOrProtectedOrDestructor(MemberDeclarationSyntax m) =>
+        // Destructors don't have visibility modifiers so they're special-cased
+        m.Modifiers.Any(SyntaxKind.PublicKeyword) || m.Modifiers.Any(SyntaxKind.ProtectedKeyword) || m.IsKind(SyntaxKind.DestructorDeclaration);
 
     private static string GetDocId(SyntaxNode node, SemanticModel model)
     {
@@ -691,6 +699,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             EventDeclarationSyntax eventDeclaration           => model.GetDeclaredSymbol(eventDeclaration),
             EventFieldDeclarationSyntax eventFieldDeclaration => model.GetDeclaredSymbol(eventFieldDeclaration.Declaration.Variables.First()),
             PropertyDeclarationSyntax propertyDeclaration     => model.GetDeclaredSymbol(propertyDeclaration),
+            DestructorDeclarationSyntax destructorDeclaration => model.GetDeclaredSymbol(destructorDeclaration),
             _ => model.GetDeclaredSymbol(node)
         };
 

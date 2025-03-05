@@ -129,6 +129,12 @@
   <data name="ResolveTypeForwardFailed" xml:space="preserve">
     <value>Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</value>
   </data>
+  <data name="RootNodeNotFound" xml:space="preserve">
+    <value>Root node could not be found for document of assembly '{0}'.</value>
+  </data>
+  <data name="SemanticModelNotFound" xml:space="preserve">
+    <value>Semantic model could not be found for document of assembly '{0}'.</value>
+  </data>
   <data name="UnexpectedChangeType" xml:space="preserve">
     <value>Unexpected change type '{0}'.</value>
   </data>
