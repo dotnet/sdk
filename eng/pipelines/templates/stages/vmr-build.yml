@@ -928,7 +928,7 @@ stages:
           sbomEnabled: false
         - output: buildArtifacts
           PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/packages
-          ArtifactName: BlobArtifacts
+          ArtifactName: PackageArtifacts
           displayName: Publish Package Artifacts
           sbomEnabled: false
       steps:
