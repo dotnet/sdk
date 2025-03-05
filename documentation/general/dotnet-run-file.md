@@ -233,7 +233,8 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 // ^ Workaround in some shells.
 ```
 
-We could also consider making `dotnet file.cs` work because `dotnet file.dll` also works today.
+We could also consider making `dotnet file.cs` work because `dotnet file.dll` also works today
+but that would require changes to the native dotnet host.
 
 ## Other commands
 
