@@ -59,6 +59,9 @@
 
     <ArtifactsLogRepoDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', '$(RepositoryName)'))</ArtifactsLogRepoDir>
     <PackageReportRepoDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', '$(RepositoryName)'))</PackageReportRepoDir>
+
+    <!-- By default, a repo uses the repo-specific output paths. -->
+    <UseRepoArtifactsOutputPaths>true</UseRepoArtifactsOutputPaths>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildOS)' == 'windows'">
@@ -109,14 +112,10 @@
     <CommonArgs Condition="'$(OfficialBuildId)' != ''">$(CommonArgs) /p:OfficialBuildId=$(OfficialBuildId)</CommonArgs>
     <CommonArgs Condition="'$(ForceDryRunSigning)' != ''">$(CommonArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</CommonArgs>
 
-    <!-- Pass locations for assets -->
-    <CommonArgs>$(CommonArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</CommonArgs>
-    <CommonArgs>$(CommonArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</CommonArgs>
-
     <!-- PGO assets by default are "Vertical" visibilty. Each repo will enable the specific artifacts it must publish externally -->
     <CommonArgs Condition="'$(PgoInstrument)' == 'true'">$(CommonArgs) /p:DefaultArtifactVisibility=Vertical</CommonArgs>
-    <!-- ShortStack builds only publish new assets from the root repository. All other assets are duplicates. -->
-    <CommonArgs Condition="'$(ShortStack)' == 'true' and '$(MSBuildProjectName)' != '$(RootRepo)'">$(CommonArgs) /p:DefaultArtifactVisibility=Vertical</CommonArgs>
+    <!-- ShortStack builds only publish new assets from the runtime repository. All other assets are duplicates. -->
+    <CommonArgs Condition="'$(ShortStack)' == 'true' and '$(MSBuildProjectName)' != 'runtime'">$(CommonArgs) /p:DefaultArtifactVisibility=Vertical</CommonArgs>
   </PropertyGroup>
 
   <!-- Build specific args -->

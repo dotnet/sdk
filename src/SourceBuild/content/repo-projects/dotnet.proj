@@ -1,8 +1,11 @@
 <Project Sdk="Microsoft.Build.NoTargets">
-
   <PropertyGroup>
-    <!-- This is a wrapper project that doesn't build anything. -->
-    <IsUtilityProject>true</IsUtilityProject>
+    <!-- The dotnet "repo" project just uses Arcade to drive the build. -->
+    <BuildScript>$(ProjectDirectory)eng\common\build$(ShellExtension)</BuildScript>
+    <UseRepoArtifactsOutputPaths>false</UseRepoArtifactsOutputPaths>
+
+    <BuildArgs Condition="'$(ArtifactsStagingDir)' != ''">$(BuildArgs) /p:ArtifactsStagingDir="$(ArtifactsStagingDir)"</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:VerticalArtifactsDir="$(ArtifactsDir.TrimEnd('/\'))"</BuildArgs>
   </PropertyGroup>
 
   <!-- This project file serves a couple of purpose.
@@ -11,7 +14,8 @@
        - If we have a repo that is not in sdk's dependency tree, we can still build it by including it here.  -->
 
   <ItemGroup>
-    <RepositoryReference Include="sdk" />
+    <RepositoryReference Condition="'$(ShortStack)' != 'true'" Include="sdk" />
+    <RepositoryReference Condition="'$(ShortStack)' == 'true'" Include="runtime" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
@@ -25,5 +29,4 @@
     <RepositoryReference Remove="@(RepositoryReference)" />
     <RepositoryReference Include="runtime" DotNetBuildPass="2" />
   </ItemGroup>
-
 </Project>
