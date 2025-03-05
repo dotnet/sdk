@@ -586,7 +586,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DirectoryInfo(testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly)
             .Select(f => f.Name)
-            .Should().BeEquivalentTo(["one.binlog", "one-dotnet-run.binlog", "three.binlog", "three-dotnet-run.binlog"]);
+            .Should().BeEquivalentTo(["three.binlog", "three-dotnet-run.binlog"]);
     }
 
     [Fact]

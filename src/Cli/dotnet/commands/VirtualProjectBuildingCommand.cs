@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Collections.Immutable;
 using System.Xml;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
@@ -26,7 +25,7 @@ internal sealed class VirtualProjectBuildingCommand
 
     public int Execute(string[] binaryLoggerArgs, LoggerVerbosity verbosity)
     {
-        var binaryLoggers = GetBinaryLoggers(binaryLoggerArgs);
+        var binaryLogger = GetBinaryLogger(binaryLoggerArgs);
         var consoleLogger = new ConsoleLogger(verbosity);
         Dictionary<string, string?> savedEnvironmentVariables = new();
         try
@@ -38,7 +37,8 @@ internal sealed class VirtualProjectBuildingCommand
                 Environment.SetEnvironmentVariable(key, value);
             }
 
-            // Setup MSBuild.
+            // Set up MSBuild.
+            ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger];
             var projectCollection = new ProjectCollection(
                 GlobalProperties,
                 [.. binaryLoggers, consoleLogger],
@@ -93,25 +93,28 @@ internal sealed class VirtualProjectBuildingCommand
                 Environment.SetEnvironmentVariable(key, value);
             }
 
-            foreach (var binaryLogger in binaryLoggers)
-            {
-                binaryLogger.Shutdown();
-            }
-
+            binaryLogger?.Shutdown();
             consoleLogger.Shutdown();
         }
 
-        static ImmutableArray<ILogger> GetBinaryLoggers(string[] args)
+        static ILogger? GetBinaryLogger(string[] args)
         {
-            return args
-                .Where(RunCommand.IsBinLogArgument)
-                .Select(static ILogger (arg) => new BinaryLogger
+            // Like in MSBuild, only the last binary logger is used.
+            for (int i = args.Length - 1; i >= 0; i--)
+            {
+                var arg = args[i];
+                if (RunCommand.IsBinLogArgument(arg))
                 {
-                    Parameters = arg.IndexOf(':') is >= 0 and var index
+                    return new BinaryLogger
+                    {
+                        Parameters = arg.IndexOf(':') is >= 0 and var index
                             ? arg[(index + 1)..]
                             : "msbuild.binlog",
-                })
-                .ToImmutableArray();
+                    };
+                }
+            }
+
+            return null;
         }
     }
 
