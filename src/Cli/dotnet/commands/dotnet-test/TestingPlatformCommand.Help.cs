@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Cli
         {
             yield return (context) =>
             {
+                WriteHelpOptions(context);
                 Console.WriteLine(LocalizableStrings.HelpWaitingForOptionsAndExtensions);
 
                 Run(context.ParseResult);
@@ -27,23 +28,11 @@ namespace Microsoft.DotNet.Cli
                     return;
                 }
 
-                WriteCustomHelp(context);
+                WritePlatformAndExtensionOptions(context);
             };
         }
 
-        private void WriteCustomHelp(HelpContext context)
-        {
-            var allOptions = GetAllOptions();
-            var builtInOptions = GetOptionNames(allOptions, isBuiltIn: true);
-            var nonBuiltInOptions = GetOptionNames(allOptions, isBuiltIn: false);
-            var moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions, nonBuiltInOptions);
-
-            WriteHelpSections(context, allOptions, moduleToMissingOptions);
-        }
-
-        private static IEnumerable<string> GetOptionNames(Dictionary<bool, List<CommandLineOption>> allOptions, bool isBuiltIn) => allOptions.TryGetValue(isBuiltIn, out var options) ? options.Select(option => option.Name) : [];
-
-        private void WriteHelpSections(HelpContext context, Dictionary<bool, List<CommandLineOption>> allOptions, Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
+        private void WriteHelpOptions(HelpContext context)
         {
             HelpBuilder.Default.SynopsisSection()(context);
             context.Output.WriteLine();
@@ -51,19 +40,6 @@ namespace Microsoft.DotNet.Cli
             context.Output.WriteLine();
             HelpBuilder.Default.OptionsSection()(context);
             context.Output.WriteLine();
-
-            if (allOptions.TryGetValue(true, out var builtInOptions) && builtInOptions.Count > 0)
-            {
-                WriteOtherOptionsSection(context, LocalizableStrings.HelpPlatformOptions, builtInOptions);
-                context.Output.WriteLine();
-            }
-
-            if (allOptions.TryGetValue(false, out var extensionOptions) && extensionOptions.Count > 0)
-            {
-                WriteOtherOptionsSection(context, LocalizableStrings.HelpExtensionOptions, extensionOptions);
-                context.Output.WriteLine();
-            }
-            _output.WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
         }
 
         private static void WriteUsageSection(HelpContext context)
@@ -109,23 +85,27 @@ namespace Microsoft.DotNet.Cli
             return $"[{option.Trim(':').ToLower()}]";
         }
 
-        private void WriteOtherOptionsSection(HelpContext context, string title, List<CommandLineOption> options)
+        private void WritePlatformAndExtensionOptions(HelpContext context)
         {
-            List<TwoColumnHelpRow> optionRows = [];
+            var allOptions = GetAllOptions();
 
-            foreach (var option in options)
+            allOptions.TryGetValue(true, out List<CommandLineOption> builtInOptions);
+            allOptions.TryGetValue(false, out List<CommandLineOption> nonBuiltInOptions);
+
+            var moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name), nonBuiltInOptions.Select(option => option.Name));
+
+            if (builtInOptions.Any())
             {
-                if ((bool)!option.IsHidden)
-                {
-                    optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description));
-                }
+                _output.WriteOtherOptionsSection(context, LocalizableStrings.HelpPlatformOptions, builtInOptions);
+                context.Output.WriteLine();
             }
 
-            if (optionRows.Count > 0)
+            if (nonBuiltInOptions.Any())
             {
-                _output.WriteHeading(title, null);
-                context.HelpBuilder.WriteColumns(optionRows, context);
+                _output.WriteOtherOptionsSection(context, LocalizableStrings.HelpExtensionOptions, nonBuiltInOptions);
+                context.Output.WriteLine();
             }
+            _output.WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
         }
 
         private void OnHelpRequested(object sender, HelpEventArgs args)

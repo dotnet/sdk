@@ -1,9 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.CommandLine.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli;
 using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
@@ -1037,7 +1039,27 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
-    public void WriteHeading(string? heading, string? description)
+    public void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOption> options)
+    {
+        List<TwoColumnHelpRow> optionRows = [];
+
+        foreach (var option in options)
+        {
+            if ((bool)!option.IsHidden)
+            {
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description));
+            }
+        }
+
+        if (optionRows.Count > 0)
+        {
+            WriteHeading(title, null);
+            context.HelpBuilder.WriteColumns(optionRows, context);
+        }
+    }
+
+
+    private void WriteHeading(string? heading, string? description)
     {
         if (!string.IsNullOrWhiteSpace(heading))
         {
