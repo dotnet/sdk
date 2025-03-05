@@ -85,4 +85,25 @@ public class DiffAssemblyTests : DiffBaseTests
                     - }
                     """ }
                 });
+
+    [Fact]
+    public Task TestAssemblyUnchanged() => RunTestAsync(
+                before: [("MyAssembly.dll", """
+                namespace MyNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """)],
+                after: [("MyAssembly.dll", """
+                namespace MyNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """)],
+                expected: []); // No changes
+
 }
