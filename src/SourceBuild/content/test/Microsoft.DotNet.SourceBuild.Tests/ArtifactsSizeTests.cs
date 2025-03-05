@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Formats.Tar;
 using System.Text;
 using System.Threading.Tasks;
+using ExclusionsLibrary;
 using TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,7 +24,7 @@ public class ArtifactsSizeTests : SdkTests
     private readonly StringBuilder _differences = new();
     private readonly List<string> _newExclusions = new List<string>();
     private readonly Dictionary<string, int> _filePathCountMap = new();
-    private readonly ExclusionsHelper _exclusionsHelper = new ExclusionsHelper("ZeroSizeExclusions.txt", nameof(ArtifactsSizeTests));
+    private readonly ExclusionsHelper _exclusionsHelper = new ExclusionsHelper(BaselineHelper.GetBaselineFilePath("ZeroSizeExclusions.txt", nameof(ArtifactsSizeTests)));
     public static bool IncludeArtifactsSizeTests => !string.IsNullOrWhiteSpace(Config.SdkTarballPath);
 
     public ArtifactsSizeTests(ITestOutputHelper outputHelper) : base(outputHelper) {}
@@ -33,7 +34,7 @@ public class ArtifactsSizeTests : SdkTests
     {
         ProcessTarball(Config.SdkTarballPath!, SdkType);
 
-        _exclusionsHelper.GenerateNewBaselineFile(updatedFileTag: null, _newExclusions);
+        _exclusionsHelper.GenerateNewBaselineFile(additionalLines: _newExclusions, targetDirectory: Config.LogsDirectory);
 
         // Wait to report differences until after the baseline file is updated. 
         // Else a failure will cause the baseline file to not be updated.
