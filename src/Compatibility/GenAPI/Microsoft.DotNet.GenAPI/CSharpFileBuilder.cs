@@ -45,7 +45,14 @@ namespace Microsoft.DotNet.GenAPI
         {
             _textWriter = textWriter;
             _header = header;
-            _docGenerator = new CSharpAssemblyDocumentGenerator(log, loader, symbolFilter, attributeDataSymbolFilter, exceptionMessage, includeAssemblyAttributes, metadataReferences, addPartialModifier: addPartialModifier);
+
+            CSharpAssemblyDocumentGeneratorOptions options = new(loader, symbolFilter, attributeDataSymbolFilter, exceptionMessage, addPartialModifier)
+            {
+                IncludeAssemblyAttributes = includeAssemblyAttributes,
+                MetadataReferences = metadataReferences
+            };
+
+            _docGenerator = new CSharpAssemblyDocumentGenerator(log, options);
         }
 
         /// <inheritdoc />
@@ -53,7 +60,8 @@ namespace Microsoft.DotNet.GenAPI
         {
             _textWriter.Write(GetFormattedHeader(_header));
             Document document = _docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).Result;
-            _docGenerator.GetFormattedRootNodeForDocument(document).Result.WriteTo(_textWriter);
+            SyntaxNode root = document.GetSyntaxRootAsync().Result ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
+            root.WriteTo(_textWriter);
         }
 
         private static string GetFormattedHeader(string? customHeader)
