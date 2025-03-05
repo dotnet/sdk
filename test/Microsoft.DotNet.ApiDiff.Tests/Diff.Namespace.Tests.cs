@@ -138,6 +138,26 @@ public class DiffNamespaceTests : DiffBaseTests
                 + }
                 """);
 
+    [Fact]
+    public Task TestBlockScopedNamespaceUnchanged() => RunTestAsync(
+                beforeCode: """
+                namespace MyAddedNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyAddedNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """,
+                expectedCode: ""); // No changes
+
     #endregion
 
     #region File-scoped namespaces
@@ -213,6 +233,23 @@ public class DiffNamespaceTests : DiffBaseTests
                 - }
                 """);
 
+    [Fact]
+    public Task TestFileScopedNamespaceUnchanged() =>
+        RunTestAsync(
+                beforeCode: """
+                namespace MyAddedNamespace;
+                public struct MyStruct
+                {
+                }
+                """,
+                afterCode: """
+                namespace MyAddedNamespace;
+                public struct MyStruct
+                {
+                }
+                """,
+                expectedCode: ""); // No changes
+
     #endregion
 
     #region Exclusions
@@ -254,6 +291,76 @@ public class DiffNamespaceTests : DiffBaseTests
                 expectedCode: "",
                 apisToExclude: ["N:MyNamespace.MyNamespace"]);
 
-
     #endregion
+
+    #region Full names
+
+    [Fact(Skip = "Still working on this")]
+    public Task TestNamespaceUsingDependencyKeepFullName() =>
+        // If the same assembly contains two APIs in two different namespaces, but the two namespaces
+        // share a prefix of their name, and a reference to the API from the other namespace is
+        // excluding part of the namespace, make sure the final result contains the full name.
+        RunTestAsync(
+        beforeCode: "",
+        afterCode: """
+                using System.Reflection;
+                namespace System.MyNamespace
+                {
+                    public class MyAClass
+                    {
+                        public void MyMethod(Reflection.AssemblyName assemblyName) { }
+                    }
+                }
+                """,
+        expectedCode: """
+                + namespace System.MyNamespace
+                + {
+                +     public class MyAClass
+                +     {
+                +         public void MyMethod(System.Reflection.AssemblyName assemblyName);
+                +     }
+                + }
+                """,
+        hideImplicitDefaultConstructors: true);
+
+    [Fact(Skip = "Still working on this")]
+    public Task TestNamespacesSameAssemblyDependencyKeepFullName() =>
+        // If the same assembly contains two APIs in two different namespaces, but the two namespaces
+        // share a prefix of their name, and a reference to the API from the other namespace is
+        // excluding part of the namespace, make sure the final result contains the full name.
+        RunTestAsync(
+        beforeCode: "",
+        afterCode: """
+                namespace System.MyNamespaceA
+                {
+                    public class MyAClass
+                    {
+                    }
+                }
+                namespace System.MyNamespaceB
+                {
+                    public class MyBClass
+                    {
+                        public void MyMethod(MyNamespaceA.MyAClass myAClass) { }
+                    }
+                }
+                """,
+        expectedCode: """
+                + namespace System.MyNamespaceA
+                + {
+                +     public class MyAClass
+                +     {
+                +     }
+                + }
+                + namespace System.MyNamespaceB
+                + {
+                +     public class MyBClass
+                +     {
+                +         public void MyMethod(System.MyNamespaceA.MyAClass myAClass);
+                +     }
+                + }
+                """,
+        hideImplicitDefaultConstructors: true);
+
+    #endregion 
 }
