@@ -236,6 +236,7 @@ function Build {
       $project \
       $targets \
       $bl \
+      /check \
       /p:Configuration=$configuration \
       "${properties[@]}"
 
