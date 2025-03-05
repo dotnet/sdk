@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
                 .And.HaveStdOutContaining("{}");
         }
 
-        [Fact(Skip = "test")]
+        [Fact]
         public void AppFailsDueToMissingCache()
         {
             var testAppName = "NuGetConfigDependentProject";
