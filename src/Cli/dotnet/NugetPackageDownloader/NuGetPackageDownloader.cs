@@ -133,8 +133,16 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     string.Format("Downloading {0} version {1} failed", packageId,
                         packageVersion.ToNormalizedString()));
             }
-
-            await VerifySigning(nupkgPath, repository);
+            // Delete file if verification fails
+            try
+            {
+                await VerifySigning(nupkgPath, repository);
+            }
+            catch (NuGetPackageInstallerException)
+            {
+                File.Delete(nupkgPath);
+                throw;
+            }
             return nupkgPath;
         }
 
