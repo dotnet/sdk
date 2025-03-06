@@ -1070,7 +1070,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         foreach (var option in options)
         {
-            if ((bool)!option.IsHidden)
+            if (option.IsHidden != true)
             {
                 optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description));
             }
