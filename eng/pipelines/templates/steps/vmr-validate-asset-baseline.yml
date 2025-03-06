@@ -2,7 +2,7 @@ steps:
 - task: DownloadBuildArtifacts@1
   inputs:
     artifactName: 'AssetManifests'
-    downloadPath: $(Build.ArtifactStagingDirectory)
+    downloadPath: '$(Build.ArtifactStagingDirectory)\AssetManifests'
     checkDownloadedFiles: true
   displayName: Download Asset Manifest
 
