@@ -104,8 +104,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["test", "--filter SomeFilter"]);
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["test", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["test", "--no-restore", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["test", "--interactive", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["test", "--no-restore", "--interactive", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
