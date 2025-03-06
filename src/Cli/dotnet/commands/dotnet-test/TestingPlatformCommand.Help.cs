@@ -28,7 +28,13 @@ namespace Microsoft.DotNet.Cli
                     return;
                 }
 
-                WritePlatformAndExtensionOptions(context);
+                Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions();
+                allOptions.TryGetValue(true, out List<CommandLineOption> builtInOptions);
+                allOptions.TryGetValue(false, out List<CommandLineOption> nonBuiltInOptions);
+
+                Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name), nonBuiltInOptions.Select(option => option.Name));
+
+                _output.WritePlatformAndExtensionOptions(context, builtInOptions, nonBuiltInOptions, moduleToMissingOptions);
             };
         }
 
@@ -83,29 +89,6 @@ namespace Microsoft.DotNet.Cli
         private static string FormatHelpOption(string option)
         {
             return $"[{option.Trim(':').ToLower()}]";
-        }
-
-        private void WritePlatformAndExtensionOptions(HelpContext context)
-        {
-            var allOptions = GetAllOptions();
-
-            allOptions.TryGetValue(true, out List<CommandLineOption> builtInOptions);
-            allOptions.TryGetValue(false, out List<CommandLineOption> nonBuiltInOptions);
-
-            var moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name), nonBuiltInOptions.Select(option => option.Name));
-
-            if (builtInOptions.Any())
-            {
-                _output.WriteOtherOptionsSection(context, LocalizableStrings.HelpPlatformOptions, builtInOptions);
-                context.Output.WriteLine();
-            }
-
-            if (nonBuiltInOptions.Any())
-            {
-                _output.WriteOtherOptionsSection(context, LocalizableStrings.HelpExtensionOptions, nonBuiltInOptions);
-                context.Output.WriteLine();
-            }
-            _output.WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
         }
 
         private void OnHelpRequested(object sender, HelpEventArgs args)

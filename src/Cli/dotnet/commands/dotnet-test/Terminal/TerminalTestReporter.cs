@@ -1,5 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
 using System.CommandLine.Help;
@@ -1039,7 +1039,32 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
-    public void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOption> options)
+    public void WritePlatformAndExtensionOptions(HelpContext context,
+        IEnumerable<CommandLineOption> builtInOptions,
+        IEnumerable<CommandLineOption> nonBuiltInOptions,
+        Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
+    {
+        if (_wasCancelled)
+        {
+            WriteMessage(LocalizableStrings.Aborted);
+            return;
+        }
+
+        if (builtInOptions.Any())
+        {
+            WriteOtherOptionsSection(context, LocalizableStrings.HelpPlatformOptions, builtInOptions);
+            context.Output.WriteLine();
+        }
+
+        if (nonBuiltInOptions.Any())
+        {
+            WriteOtherOptionsSection(context, LocalizableStrings.HelpExtensionOptions, nonBuiltInOptions);
+            context.Output.WriteLine();
+        }
+        WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
+    }
+
+    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOption> options)
     {
         List<TwoColumnHelpRow> optionRows = [];
 
