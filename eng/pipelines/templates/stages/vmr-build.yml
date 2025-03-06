@@ -881,8 +881,8 @@ stages:
             - Windows_x64
             - Windows_x86
             - Windows_arm64
-            - Browser_ShortStack_wasm
-            - Browser_Multithreaded_ShortStack_wasm
+            - Browser_Shortstack_wasm
+            - Browser_Multithreaded_Shortstack_wasm
             - Wasi_Shortstack_wasm
             - Android_Shortstack_arm64
             - Android_Shortstack_arm
