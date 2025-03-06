@@ -614,13 +614,6 @@ _testhost_nuget_delete() {
         return
     fi
     
-    case $prev in
-        --interactive)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-    esac
-    
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
@@ -655,13 +648,6 @@ _testhost_nuget_push() {
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return
     fi
-    
-    case $prev in
-        --interactive)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-    esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
@@ -1873,10 +1859,6 @@ _testhost_workload_install() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --interactive)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
@@ -1906,10 +1888,6 @@ _testhost_workload_update() {
             return
         ;;
         --from-previous-sdk)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-        --interactive)
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
@@ -2030,10 +2008,6 @@ _testhost_workload_repair() {
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
-        --interactive)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
     esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -2055,10 +2029,6 @@ _testhost_workload_restore() {
     
     case $prev in
         --include-previews)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-        --interactive)
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;

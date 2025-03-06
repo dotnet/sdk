@@ -326,7 +326,7 @@ _testhost() {
                                             '--api-key=[]: : ' \
                                             '-k=[]: : ' \
                                             '--no-service-endpoint[]' \
-                                            '--interactive=[]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::package-paths: ' \
@@ -362,7 +362,7 @@ _testhost() {
                                             '--no-symbols[]' \
                                             '-n[]' \
                                             '--no-service-endpoint[]' \
-                                            '--interactive=[]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--skip-duplicate[]' \
                                             '--configfile=[]: : ' \
                                             '--help[Show command line help.]' \
@@ -570,7 +570,7 @@ _testhost() {
                                             '--take=[Number of results to return. Default 20.]:Take: ' \
                                             '--skip=[Number of results to skip, to allow pagination. Default 0.]:Skip: ' \
                                             '--exact-match[Require that the search term exactly match the name of the package. Causes \`--take\` and \`--skip\` options to be ignored.]' \
-                                            '--interactive[Stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--prerelease[Include prerelease packages.]' \
                                             '--configfile=[The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https\://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior]:ConfigFile: ' \
                                             '--format=[Format the output accordingly. Either \`table\`, or \`json\`. The default value is \`table\`.]:Format: ' \
@@ -1176,7 +1176,7 @@ _testhost() {
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
@@ -1198,7 +1198,7 @@ _testhost() {
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--from-history=[Update workloads to a previous version specified by the argument. Use the '\''dotnet workload history'\'' to see available workload history records.]: : ' \
@@ -1260,7 +1260,7 @@ _testhost() {
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0
@@ -1276,7 +1276,7 @@ _testhost() {
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
