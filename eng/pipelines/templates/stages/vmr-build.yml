@@ -952,6 +952,10 @@ stages:
     displayName: VMR Validation
     dependsOn: VMR_Final_Join
     variables:
+      - template: ../variables/vmr-build.yml
+        parameters:
+          vmrBranch: ${{ parameters.vmrBranch }}
+          desiredSigning: ${{ parameters.desiredSigning }}
       - group: Release-Pipeline
       - group: DotNetBot-GitHub-AllBranches
     jobs:
