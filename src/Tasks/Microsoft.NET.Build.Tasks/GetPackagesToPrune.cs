@@ -142,27 +142,39 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     continue;
                 }
+                log.LogMessage(MessageImportance.Low, $"Loading packages to prune for {key.TargetFrameworkIdentifier} {key.TargetFrameworkVersion} {frameworkReference}");
 
                 Dictionary<string, NuGetVersion> packagesForFrameworkReference;
                 if (useFrameworkPackageData)
                 {
                     packagesForFrameworkReference = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference);
+                    if (packagesForFrameworkReference != null)
+                    {
+                        log.LogMessage("Loaded prune package data from framework packages");
+                    }
+                    else
+                    {
+                        log.LogMessage("Failed to load prune package data from framework packages");
+                    }
                 }
                 else
                 {
+                    log.LogMessage("Loading prune package data from PrunePackageData folder");
                     packagesForFrameworkReference = LoadPackagesToPruneFromPrunePackageData(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, prunePackageDataRoot);
 
                     //  For the version of the runtime that matches the current SDK version, we don't include the prune package data in the PrunePackageData folder.  Rather,
                     //  we can load it from the targeting packs that are packaged with the SDK.
                     if (packagesForFrameworkReference == null)
                     {
-                        packagesForFrameworkReference = LoadPackagesToPruneFromTargetingPack(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoots);
+                        log.LogMessage("Failed to load prune package data from PrunePackageData folder, loading from targeting packs instead");
+                        packagesForFrameworkReference = LoadPackagesToPruneFromTargetingPack(log, key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference, targetingPackRoots);
                     }
 
                     //  Fall back to framework packages data for older framework for WindowsDesktop if necessary
                     //  https://github.com/dotnet/windowsdesktop/issues/4904
                     if (packagesForFrameworkReference == null && frameworkReference.Equals("Microsoft.WindowsDesktop.App", StringComparison.OrdinalIgnoreCase))
                     {
+                        log.LogMessage("Failed to load prune package data for WindowsDesktop from targeting packs, loading from framework packages instead");
                         packagesForFrameworkReference = LoadPackagesToPruneFromFrameworkPackages(key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference,
                             acceptNearestMatch: true);
                     }
@@ -228,13 +240,13 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
-        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromTargetingPack(string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string [] targetingPackRoots)
+        static Dictionary<string, NuGetVersion> LoadPackagesToPruneFromTargetingPack(Logger log, string targetFrameworkIdentifier, string targetFrameworkVersion, string frameworkReference, string [] targetingPackRoots)
         {
             var nugetFramework = new NuGetFramework(targetFrameworkIdentifier, Version.Parse(targetFrameworkVersion));
 
             foreach (var targetingPackRoot in targetingPackRoots)
             {
-                var frameworkPackages = FrameworkPackages.LoadFrameworkPackagesFromPack(nugetFramework, frameworkReference, targetingPackRoot)
+                var frameworkPackages = FrameworkPackages.LoadFrameworkPackagesFromPack(log, nugetFramework, frameworkReference, targetingPackRoot)
                     ?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
                 if (frameworkPackages != null)
