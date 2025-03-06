@@ -28,6 +28,10 @@
 #   https://dev.azure.com/dnceng/internal/_build?definitionId=1330
 #   - PR: lite build
 #   - CI: release/*, internal/release/* and main only, every batched commit, full build
+#
+# - dotnet-unified-build-lite (internal)
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=1330
+#   - Runs lite build and additional legs for building tests
 
 parameters:
 - name: desiredSigning
@@ -46,6 +50,9 @@ variables:
 
 - name: isSourceOnlyBuildLite
   value: ${{ contains(variables['Build.DefinitionName'], '-source-build-lite') }}
+
+- name: isUnifiedBuildLite
+  value: ${{ contains(variables['Build.DefinitionName'], '-unified-build-lite') }}
 
 - name: isScheduleTrigger
   value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
@@ -158,7 +165,7 @@ extends:
           scope: lite
         ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
           scope: ultralite
-        ${{ elseif and(eq(variables.isPRTrigger, 'true'), ne(variables.isSourceOnlyBuild, 'true')) }}:
+        ${{ elseif and(or(eq(variables.isPRTrigger, 'true'), eq(variables.isUnifiedBuildLite, 'true')), ne(variables.isSourceOnlyBuild, 'true')) }}:
           scope: lite
         ${{ else }}:
           scope: full
