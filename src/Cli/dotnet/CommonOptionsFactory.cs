@@ -11,12 +11,13 @@ namespace Microsoft.DotNet.Cli
     internal static class CommonOptionsFactory
     {
         /// <summary>
-        /// Creates common diagnositcs option (-d|--diagnostics).
+        /// Creates common diagnostics option (-d|--diagnostics).
         /// </summary>
         public static CliOption<bool> CreateDiagnosticsOption(bool recursive) => new("--diagnostics", "-d")
         {
             Description = Tools.Help.LocalizableStrings.SDKDiagnosticsCommandDefinition,
-            Recursive = recursive
+            Recursive = recursive,
+            Arity = ArgumentArity.Zero
         };
     }
 }

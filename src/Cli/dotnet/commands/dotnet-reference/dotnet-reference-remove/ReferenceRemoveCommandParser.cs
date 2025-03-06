@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ReferenceRemoveCommandParser
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new CliArgument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
+        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new DynamicArgument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
         {
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore,
