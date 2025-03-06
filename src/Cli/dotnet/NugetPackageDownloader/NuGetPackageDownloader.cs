@@ -38,6 +38,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly Dictionary<PackageSource, SourceRepository> _sourceRepositories;
         private readonly bool _shouldUsePackageSourceMapping;
 
+        /// <summary>
+        /// If true, the package downloader will verify the signatures of the packages it downloads.
+        /// Temporarily disabled for macOS and Linux. 
+        /// </summary>
         private readonly bool _verifySignatures;
         private readonly VerbosityOptions _verbosityOptions;
         private readonly string _currentWorkingDirectory;
@@ -65,7 +69,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
             _retryTimer = timer;
             _sourceRepositories = new();
-            _verifySignatures = OperatingSystem.IsWindows() && verifySignatures; // TODO: Check
+            _verifySignatures = OperatingSystem.IsWindows() && verifySignatures; // This is temporarily disabled for macOS and Linux.
 
             _cacheSettings = new SourceCacheContext
             {
