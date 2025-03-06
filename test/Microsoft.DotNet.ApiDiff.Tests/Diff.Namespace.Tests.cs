@@ -295,7 +295,7 @@ public class DiffNamespaceTests : DiffBaseTests
 
     #region Full names
 
-    [Fact(Skip = "Still working on this")]
+    [Fact/*(Skip = "Still working on this")*/]
     public Task TestNamespaceUsingDependencyKeepFullName() =>
         // If the same assembly contains two APIs in two different namespaces, but the two namespaces
         // share a prefix of their name, and a reference to the API from the other namespace is
@@ -323,7 +323,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 """,
         hideImplicitDefaultConstructors: true);
 
-    [Fact(Skip = "Still working on this")]
+    [Fact/*(Skip = "Still working on this")*/]
     public Task TestNamespacesSameAssemblyDependencyKeepFullName() =>
         // If the same assembly contains two APIs in two different namespaces, but the two namespaces
         // share a prefix of their name, and a reference to the API from the other namespace is

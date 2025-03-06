@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -46,10 +47,18 @@ namespace Microsoft.DotNet.GenAPI
             _textWriter = textWriter;
             _header = header;
 
-            CSharpAssemblyDocumentGeneratorOptions options = new(loader, symbolFilter, attributeDataSymbolFilter, exceptionMessage, addPartialModifier)
+            CSharpAssemblyDocumentGeneratorOptions options = new(loader, symbolFilter, attributeDataSymbolFilter)
             {
+                HideImplicitDefaultConstructors = true,
+                ShouldFormat = true,
+                ShouldReduce = true,
                 IncludeAssemblyAttributes = includeAssemblyAttributes,
-                MetadataReferences = metadataReferences
+                MetadataReferences = metadataReferences,
+                SyntaxRewriters = [
+                    new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier),
+                    new BodyBlockCSharpSyntaxRewriter(exceptionMessage),
+                    SingleLineStatementCSharpSyntaxRewriter.Singleton
+                ]
             };
 
             _docGenerator = new CSharpAssemblyDocumentGenerator(log, options);

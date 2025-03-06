@@ -9,10 +9,13 @@ using DiffPlex.DiffBuilder.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.DotNet.ApiDiff.SyntaxRewriter;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 using Microsoft.DotNet.GenAPI;
+using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.ApiDiff;
 
@@ -145,7 +148,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             {
                 StringBuilder sb = new();
                 _log.LogMessage($"Visiting *new* assembly {afterAssemblySymbol.Name}...");
-                
+
                 var swNew = Stopwatch.StartNew();
                 (SyntaxNode afterAssemblyNode, SemanticModel afterModel) = await GetAssemblyRootNodeAndModelAsync(_afterLoader, afterAssemblySymbol).ConfigureAwait(false);
                 string finalMessage = $"Finished visiting *new* {afterAssemblySymbol.Name} in {swNew.Elapsed.TotalMilliseconds / 1000.0:F2}s{Environment.NewLine}";
@@ -169,6 +172,35 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
         _log.LogMessage($"FINAL TOTAL: {swRun.Elapsed.TotalMilliseconds / 1000.0 / 60.0:F2} mins.");
         swRun.Stop();
+    }
+
+    private async Task<(SyntaxNode rootNode, SemanticModel model)> GetAssemblyRootNodeAndModelAsync(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
+    {
+        CSharpAssemblyDocumentGeneratorOptions options = new(loader, _symbolFilter, _attributeSymbolFilter)
+        {
+            HideImplicitDefaultConstructors = _hideImplicitDefaultConstructors,
+            ShouldFormat = false,
+            ShouldReduce = false,
+            MetadataReferences = loader.MetadataReferences,
+            DiagnosticOptions = _diagnosticOptions,
+            SyntaxRewriters = [
+                new TypeDeclarationCSharpSyntaxRewriter(_addPartialModifier), // This must be visited BEFORE GlobalPrefixRemover as it depends on the 'global::' prefix to be found
+                GlobalPrefixRemover.Singleton, // And then call this ASAP afterwards so there are fewer identifiers to visit
+                PrimitiveSimplificationRewriter.Singleton,
+                RemoveBodyCSharpSyntaxRewriter.Singleton,
+                AttributeNameSuffixRemover.Singleton,
+                SingleLineStatementCSharpSyntaxRewriter.Singleton,
+            ],
+            AdditionalAnnotations = [Formatter.Annotation] // Formatter is needed to fix some spacing
+        };
+
+        CSharpAssemblyDocumentGenerator docGenerator = new(_log, options);
+
+        Document document = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
+        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.RootNodeNotFound, assemblySymbol.Name));
+        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.SemanticModelNotFound, assemblySymbol.Name));
+
+        return (root, model);
     }
 
     private static string GetFinalAssemblyDiff(string assemblyName, string diffText)
@@ -342,11 +374,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         MemberDeclarationSyntax? deconstructedBeforeNode = GetNodeWithoutAttributes(beforeNode);
         MemberDeclarationSyntax? deconstructedAfterNode = GetNodeWithoutAttributes(afterNode);
 
-        // Special case: types can be leaves if they are completely getting deleted or completely getting added
-        // For actual children of types, we need to remove their body.
-        deconstructedBeforeNode = RemoveLeafNodeBody(deconstructedBeforeNode, changeType);
-        deconstructedAfterNode = RemoveLeafNodeBody(deconstructedAfterNode, changeType);
-
         Debug.Assert(deconstructedBeforeNode != null || deconstructedAfterNode != null);
 
         switch (changeType)
@@ -380,107 +407,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         }
 
         return sb.Length > 0 ? sb.ToString() : null;
-    }
-
-    private MemberDeclarationSyntax? RemoveLeafNodeBody(MemberDeclarationSyntax? node, ChangeType changeType)
-    {
-        if (node == null || node is BaseTypeDeclarationSyntax)
-        {
-            return node;
-        }
-
-        // These syntax kinds should not get the leading trivia appended like the rest of the cases below.
-        // For some reason, the two spaces trivia gets duplicated, unsure why.
-        if (node is PropertyDeclarationSyntax propertyNode)
-        {
-            return propertyNode.WithAccessorList(GetEmptiedAccessors(propertyNode.AccessorList));
-        }
-        else if (node is EventDeclarationSyntax eventNode)
-        {
-            return eventNode.WithAccessorList(GetEmptiedAccessors(eventNode.AccessorList));
-        }
-        else if (node is FieldDeclarationSyntax fieldNode)
-        {
-            return fieldNode;
-        }
-
-        SyntaxTriviaList leadingTrivia = (changeType == ChangeType.Unchanged) ? _twoSpacesTrivia.AddRange(node.GetLeadingTrivia()) : node.GetLeadingTrivia();
-
-        MemberDeclarationSyntax changedNode;
-        // Everything below has the shape of a method but they don't share a common ancestor, time to cry
-        if (node is MethodDeclarationSyntax methodNode)
-        {
-            changedNode = methodNode.WithBody(null) // remove the default empty body wrapped by brackets
-                .WithoutLeadingTrivia()
-                .WithoutTrailingTrivia() // Remove the single space that follows this new declaration
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)); // Append a semicolon at the end
-        }
-        else if (node is ConstructorDeclarationSyntax constructorNode)
-        {
-            changedNode = constructorNode.WithBody(null) // remove the default empty body wrapped by brackets
-                .WithoutLeadingTrivia()
-                .WithoutTrailingTrivia() // Remove the single space that follows this new declaration
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)); // Append a semicolon at the end
-        }
-        else if (node is OperatorDeclarationSyntax operatorNode)
-        {
-            changedNode = operatorNode.WithBody(null) // remove the default empty body wrapped by brackets
-                .WithoutLeadingTrivia()
-                .WithoutTrailingTrivia() // Remove the single space that follows this new declaration
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)); // Append a semicolon at the end
-        }
-        else if (node is ConversionOperatorDeclarationSyntax conversionOperatorNode)
-        {
-            // These bad boys look like: 'public static explicit operator int(MyClass value)'
-            changedNode = conversionOperatorNode.WithBody(null) // remove the default empty body wrapped by brackets
-                .WithoutLeadingTrivia()
-                .WithoutTrailingTrivia() // Remove the single space that follows this new declaration
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)); // Append a semicolon at the end
-        }
-        else if (node is DestructorDeclarationSyntax destructorNode)
-        {
-            changedNode = destructorNode.WithBody(null) // remove the default empty body wrapped by brackets
-                .WithoutLeadingTrivia()
-                .WithoutTrailingTrivia() // Remove the single space that follows this new declaration
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)); // Append a semicolon at the end
-        }
-        // Other kinds remain untouched
-        else
-        {
-            changedNode = node;
-        }
-
-        return changedNode.WithLeadingTrivia(leadingTrivia).WithTrailingTrivia(_endOfLineTrivia);
-    }
-
-    private static AccessorListSyntax? GetEmptiedAccessors(AccessorListSyntax? accessorList)
-    {
-        if (accessorList == null)
-        {
-            return null;
-        }
-
-        List<AccessorDeclarationSyntax> newAccessors = new();
-
-
-        for (int i = 0; i < accessorList.Accessors.Count; i++)
-        {
-            AccessorDeclarationSyntax accessorDeclaration = accessorList.Accessors[i]
-                               .WithBody(null) // remove the default empty body wrapped by brackets
-                               .WithoutTrivia() // Important
-                               .WithLeadingTrivia(SyntaxFactory.Space) // Add a space before the accessor
-                               .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)); // Append a semicolon at the end
-
-            if (i == accessorList.Accessors.Count - 1) // Second to last
-            {
-                // Add a space after the semicolon only on the last accessor
-                accessorDeclaration = accessorDeclaration.WithTrailingTrivia(SyntaxFactory.Space);
-            }
-
-            newAccessors.Add(accessorDeclaration);
-        }
-
-        return SyntaxFactory.AccessorList(SyntaxFactory.List(newAccessors));
     }
 
     [return: NotNullIfNotNull(nameof(node))]
@@ -546,25 +472,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         }
 
         return sb.Length > 0 ? sb.ToString() : null;
-    }
-
-    private async Task<(SyntaxNode rootNode, SemanticModel model)> GetAssemblyRootNodeAndModelAsync(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
-    {
-        CSharpAssemblyDocumentGeneratorOptions options = new(loader, _symbolFilter, _attributeSymbolFilter, exceptionMessage: null, _addPartialModifier)
-        {
-            IncludeAssemblyAttributes = false,
-            HideImplicitDefaultConstructors = _hideImplicitDefaultConstructors,
-            MetadataReferences = loader.MetadataReferences,
-            DiagnosticOptions = _diagnosticOptions,
-        };
-
-        CSharpAssemblyDocumentGenerator docGenerator = new(_log, options);
-
-        Document document = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
-        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.RootNodeNotFound, assemblySymbol.Name));
-        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.SemanticModelNotFound, assemblySymbol.Name));
-
-        return (root, model);
     }
 
     // For types, members and namespaces.

@@ -33,7 +33,7 @@ public class DiffEventsTests : DiffBaseTests
           {
               public class MyClass
               {
-        +         public event MyEventHandler? MyEvent { add; remove; }
+        +         public event MyNamespace.MyClass.MyEventHandler? MyEvent { add; remove; }
               }
           }
         """);
@@ -67,8 +67,8 @@ public class DiffEventsTests : DiffBaseTests
           {
               public class MyClass
               {
-        -         public event MyEventHandler? MyEvent1 { add; remove; }
-        +         public event MyEventHandler? MyEvent2 { add; remove; }
+        -         public event MyNamespace.MyClass.MyEventHandler? MyEvent1 { add; remove; }
+        +         public event MyNamespace.MyClass.MyEventHandler? MyEvent2 { add; remove; }
               }
           }
         """);
@@ -101,7 +101,7 @@ public class DiffEventsTests : DiffBaseTests
           {
               public class MyClass
               {
-        -         public event MyEventHandler? MyEvent { add; remove; }
+        -         public event MyClass.MyEventHandler? MyEvent { add; remove; }
               }
           }
         """);
@@ -135,7 +135,7 @@ public class DiffEventsTests : DiffBaseTests
           {
               public abstract class MyClass
               {
-        +         public abstract event MyEventHandler MyEvent;
+        +         public abstract event MyNamespace.MyClass.MyEventHandler MyEvent;
               }
           }
         """);
