@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Cli
                  DefaultValueFactory = (ar) => IsCIEnvironmentOrRedirected()
              };
 
-        public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption().ForwardAsSingle(interactive => $"-property:NuGetInteractive={interactive}");
+        public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption().ForwardIfEnabled("-property:NuGetInteractive=true");
 
         public static CliOption<bool> DisableBuildServersOption =
             new ForwardedOption<bool>("--disable-build-servers")
