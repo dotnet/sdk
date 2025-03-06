@@ -1,5 +1,5 @@
 <!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/3.6.4">
+<Project Sdk="MSTest.Sdk/3.8.2">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net10.0</TargetFramework>
@@ -43,7 +43,7 @@
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-<!--#if (TestRunner == "MSTest")-->
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
@@ -59,14 +59,14 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
 <!--#endif-->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-<!--#if (TestRunner == "MSTest")-->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
 <!--#if (CoverageTool == "Microsoft.CodeCoverage")-->
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.12.6" />
 <!--#endif-->
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.4.3" />
 <!--#endif-->
-    <PackageReference Include="MSTest" Version="3.6.4" />
+    <PackageReference Include="MSTest" Version="3.8.2" />
   </ItemGroup>
 
   <ItemGroup>

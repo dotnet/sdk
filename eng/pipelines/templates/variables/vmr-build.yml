@@ -42,10 +42,10 @@ variables:
 - ${{ if eq(parameters.desiredSigning, 'Signed') }}:
   - name: signEnabled
     value: true
-- ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
+- ${{ elseif eq(parameters.desiredSigning, 'Unsigned') }}:
   - name: signEnabled
     value: false
-- ${{ if or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
+- ${{ elseif or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
   # Always sign on the public project (will be dry-run signing)
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
     - name: signEnabled

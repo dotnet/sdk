@@ -421,10 +421,12 @@
         linux-x64;
         linux-arm;
         linux-arm64;
+        linux-loongarch64;
         linux-bionic-arm;
         linux-musl-x64;
         linux-musl-arm;
         linux-musl-arm64;
+        linux-musl-loongarch64;
         win-x64;
         win-x86;
         win-arm64;
@@ -432,7 +434,11 @@
         wasi-wasm;
         " />
 
-      <NativeAOTRuntimePackRids Include="@(Net90NativeAOTRuntimePackRids)" />
+      <NativeAOTRuntimePackRids Include="
+        @(Net90NativeAOTRuntimePackRids);
+        linux-riscv64;
+        linux-musl-riscv64;
+        "/>
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />

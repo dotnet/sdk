@@ -31,7 +31,7 @@
   "symbols/UseMSTestSdk/displayName": "Použít MSTest.Sdk",
   "symbols/TestRunner/description": "Vyberte spouštěč nebo platformu. Další informace najdete na https://aka.ms/mstest/sdk/extensions-profile",
   "symbols/TestRunner/displayName": "Test Runner",
-  "symbols/TestRunner/choices/MSTest/description": "Použít MSTest Runner (Microsoft.Testing.Platform)",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
   "symbols/TestRunner/choices/VSTest/description": "Použití platformy VSTest",
   "symbols/CoverageTool/description": "Nástroj pokrytí, který se má použít pro projekt.",
   "symbols/CoverageTool/displayName": "Nástroj pokrytí",
