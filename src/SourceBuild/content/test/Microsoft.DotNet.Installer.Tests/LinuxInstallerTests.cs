@@ -55,7 +55,7 @@ public class LinuxInstallerTests : IDisposable
         _contextDir = Path.Combine(_tmpDir, Path.GetRandomFileName());
         Directory.CreateDirectory(_contextDir);
 
-        _excludeLinuxArch = Config.Architecture == "x64" ? "arm64" : "x64";
+        _excludeLinuxArch = Config.Architecture == Architecture.X64 ? "arm64" : "x64";
     }
 
     public void Dispose()
@@ -96,7 +96,7 @@ public class LinuxInstallerTests : IDisposable
     private void InitializeContext(PackageType packageType)
     {
         string packageArchitecture =
-            Config.Architecture == "x64" ?
+            Config.Architecture == Architecture.X64 ?
                 "x64" :
                 packageType == PackageType.Rpm ?
                     "aarch64" :
@@ -117,7 +117,7 @@ public class LinuxInstallerTests : IDisposable
                 File.Copy(rpmPackage, Path.Combine(_contextDir, Path.GetFileName(rpmPackage)));
             }
 
-            if (Config.Architecture == "x64")
+            if (Config.Architecture == Architecture.X64)
             {
                 DownloadFileAsync(NetStandard21RpmPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21RpmPackage))).Wait();
             }
@@ -131,7 +131,7 @@ public class LinuxInstallerTests : IDisposable
                 File.Copy(debPackage, Path.Combine(_contextDir, Path.GetFileName(debPackage)));
             }
 
-            if (Config.Architecture == "x64")
+            if (Config.Architecture == Architecture.X64)
             {
                 DownloadFileAsync(NetStandard21DebPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21DebPackage))).Wait();
             }
@@ -286,7 +286,7 @@ public class LinuxInstallerTests : IDisposable
         AddPackage(packageList, "aspnetcore-runtime-", packageType);
         AddPackage(packageList, "aspnetcore-targeting-pack-", packageType);
         AddPackage(packageList, "dotnet-apphost-pack-", packageType);
-        if (Config.Architecture == "x64")
+        if (Config.Architecture == Architecture.X64)
         {
             // netstandard package exists for x64 only
             AddPackage(packageList, "netstandard-targeting-pack-", packageType);

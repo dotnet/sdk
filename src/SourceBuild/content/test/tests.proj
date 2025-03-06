@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TestInstallerPackages)' == 'true'">
-    <ProjectReference Condition="'$(TestRpmPackages)' == 'true' or '$(TestDebPackages)' == 'true'" Include="Microsoft.DotNet.Installer.Tests\Microsoft.DotNet.Installer.Tests.csproj" BuildInParallel="false" />
+    <ProjectReference Include="Microsoft.DotNet.Installer.Tests\Microsoft.DotNet.Installer.Tests.csproj" BuildInParallel="false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestInstallerPackages)' != 'true'">
