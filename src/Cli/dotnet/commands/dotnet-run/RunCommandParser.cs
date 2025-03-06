@@ -31,7 +31,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoLaunchProfileOption = new("--no-launch-profile")
         {
-            Description = LocalizableStrings.CommandOptionNoLaunchProfileDescription
+            Description = LocalizableStrings.CommandOptionNoLaunchProfileDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
@@ -41,7 +42,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoBuildOption = new("--no-build")
         {
-            Description = LocalizableStrings.CommandOptionNoBuildDescription
+            Description = LocalizableStrings.CommandOptionNoBuildDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
