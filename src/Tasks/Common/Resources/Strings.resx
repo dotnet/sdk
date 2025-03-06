@@ -985,5 +985,6 @@ You may need to build the project on another operating system or architecture, o
   <!-- The latest message added is PrunePackageDataNotFound. Please update this value with each PR to catch parallel PRs both adding a new message -->
   <data name="PrunePackageDataNotFound" xml:space="preserve">
     <value>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</value>
+    <comment>{StrBegins="NETSDK1226: "}</comment>
   </data>
 </root>
