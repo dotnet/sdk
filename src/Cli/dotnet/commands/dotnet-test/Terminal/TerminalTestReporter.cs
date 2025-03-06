@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine.Help;
-using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli;
@@ -125,7 +124,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// </summary>
     public TerminalTestReporter(IConsole console, TerminalTestReporterOptions options)
     {
-        Debugger.Launch();
         _options = options;
 
         Func<bool?> showProgress = _options.ShowProgress;
