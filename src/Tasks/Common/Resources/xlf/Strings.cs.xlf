@@ -791,6 +791,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1093: Nástroje projektu (DotnetCliTool) podporují jen cílení na .NET Core 2.2 a nižší.</target>
         <note>{StrBegins="NETSDK1093: "}</note>
       </trans-unit>
+      <trans-unit id="PrunePackageDataNotFound">
+        <source>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</source>
+        <target state="new">NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PublishProfileNotPresent">
         <source>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</source>
         <target state="needs-review-translation">NETSDK1198: Profil publikování s názvem {0} se v projektu nenašel. Nastavte vlastnost PublishProfile na platný název souboru.</target>

@@ -32,6 +32,9 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string PrunePackageDataRoot { get; set; }
 
+        [Required]
+        public bool AllowMissingPrunePackageData { get; set; }
+
         [Output]
         public ITaskItem[] PackagesToPrune { get; set; }
 
@@ -110,12 +113,12 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            PackagesToPrune = LoadPackagesToPrune(key, TargetingPackRoots, PrunePackageDataRoot, Log);
+            PackagesToPrune = LoadPackagesToPrune(key, TargetingPackRoots, PrunePackageDataRoot, Log, AllowMissingPrunePackageData);
 
             BuildEngine4.RegisterTaskObject(key, PackagesToPrune, RegisteredTaskObjectLifetime.Build, true);
         }
 
-        static TaskItem[] LoadPackagesToPrune(CacheKey key, string[] targetingPackRoots, string prunePackageDataRoot, Logger log)
+        static TaskItem[] LoadPackagesToPrune(CacheKey key, string[] targetingPackRoots, string prunePackageDataRoot, Logger log, bool allowMissingPrunePackageData)
         {
             Dictionary<string, NuGetVersion> packagesToPrune = new();
 
@@ -185,10 +188,20 @@ namespace Microsoft.NET.Build.Tasks
                     //  We didn't find the data for packages to prune.  This indicates that there's a bug in the SDK construction, so fail hard here so that we fix that
                     //  (rather than a warning that might be missed).
                     //  Since this indicates an error in the SDK build, the message probably doesn't need to be localized.
-                    throw new Exception($"Prune package data not found for {key.TargetFrameworkIdentifier} {key.TargetFrameworkVersion} {frameworkReference}");
-                }
 
-                AddPackagesToPrune(packagesToPrune, packagesForFrameworkReference.Select(kvp => (kvp.Key, kvp.Value)), log);
+                    if (allowMissingPrunePackageData)
+                    {
+                        log.LogMessage($"Prune package data not found for {key.TargetFrameworkIdentifier} {key.TargetFrameworkVersion} {frameworkReference}");
+                    }
+                    else
+                    {
+                        log.LogError(Strings.PrunePackageDataNotFound, key.TargetFrameworkIdentifier, key.TargetFrameworkVersion, frameworkReference);
+                    }
+                }
+                else
+                {
+                    AddPackagesToPrune(packagesToPrune, packagesForFrameworkReference.Select(kvp => (kvp.Key, kvp.Value)), log);
+                }
             }
 
             return packagesToPrune.Select(p =>

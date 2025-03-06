@@ -58,6 +58,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
       <PrunePackageTargetingPackRoots Condition="'$(PrunePackageTargetingPackRoots)' == ''">$(NetCoreTargetingPackRoot)</PrunePackageTargetingPackRoots>
+      <AllowMissingPrunePackageData Condition="'$(AllowMissingPrunePackageData)' == ''">false</AllowMissingPrunePackageData>
     </PropertyGroup>
     
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
@@ -65,7 +66,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                         FrameworkReferences="@(FrameworkReference)"
                         TargetingPacks="@(TargetingPack)"
                         TargetingPackRoots="$(PrunePackageTargetingPackRoots)"
-                        PrunePackageDataRoot="$(PrunePackageDataRoot)">
+                        PrunePackageDataRoot="$(PrunePackageDataRoot)"
+                        AllowMissingPrunePackageData="$(AllowMissingPrunePackageData)">
       <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
     </GetPackagesToPrune>
     
