@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
             _retryTimer = timer;
             _sourceRepositories = new();
-            _verifySignatures = verifySignatures;
+            _verifySignatures = OperatingSystem.IsWindows() && verifySignatures; // TODO: Check
 
             _cacheSettings = new SourceCacheContext
             {
@@ -131,7 +131,6 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             await VerifySigning(nupkgPath, repository);
-            
             return nupkgPath;
         }
 
