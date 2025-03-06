@@ -35,6 +35,6 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.Zero
         }.ForwardAs("--ignore-failed-sources");
 
-        public static CliOption<bool> InteractiveRestoreOption = CommonOptions.InteractiveOption().ForwardIfEnabled(Constants.RestoreInteractiveOption);
+        public static CliOption<bool> InteractiveRestoreOption = CommonOptions.InteractiveOption();
     }
 }

@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool update -g console.test.app --no-http-cache");
 
-            result.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()).Should().ContainSingle("--no-http-cache");
+            result.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()).Should().BeEquivalentTo("--no-http-cache");
         }
 
         [Fact]

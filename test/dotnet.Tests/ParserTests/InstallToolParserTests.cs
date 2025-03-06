@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --no-cache");
 
-            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().ContainSingle("--no-cache");
+            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().BeEquivalentTo("--no-cache");
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --no-http-cache");
 
-            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().ContainSingle("--no-http-cache");
+            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().BeEquivalentTo("--no-http-cache");
         }
 
         [Fact]
