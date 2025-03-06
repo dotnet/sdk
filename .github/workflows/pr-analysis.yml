@@ -1,10 +1,12 @@
 name: PR Analysis
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, labeled, unlabeled]
 permissions:
-  contents: read
+  contents: write
   pull-requests: read
+  actions: write
+  checks: write
 jobs:
   allowed-labels:
     runs-on: ubuntu-latest
