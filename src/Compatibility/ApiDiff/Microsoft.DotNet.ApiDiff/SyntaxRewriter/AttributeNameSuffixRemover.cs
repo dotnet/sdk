@@ -11,14 +11,14 @@ internal class AttributeNameSuffixRemover : CSharpSyntaxRewriter
 {
     public static readonly AttributeNameSuffixRemover Singleton = new();
 
-    private const string _attributeSuffix = "Attribute";
+    private const string AttributeSuffix = "Attribute";
 
     public override SyntaxNode? VisitAttribute(AttributeSyntax node)
     {
         if (node.Name is IdentifierNameSyntax identifierName &&
-            identifierName.Identifier.Text.EndsWith(_attributeSuffix))
+            identifierName.Identifier.Text.EndsWith(AttributeSuffix))
         {
-            string newName = identifierName.Identifier.Text.Substring(0, identifierName.Identifier.Text.Length - _attributeSuffix.Length);
+            string newName = identifierName.Identifier.Text.Substring(0, identifierName.Identifier.Text.Length - AttributeSuffix.Length);
             IdentifierNameSyntax newIdentifier = SyntaxFactory.IdentifierName(newName).WithTriviaFrom(identifierName);
             return node.WithName(newIdentifier);
         }
