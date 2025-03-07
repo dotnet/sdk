@@ -84,6 +84,7 @@ stages:
           desiredSigning: ${{ parameters.desiredSigning }}
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           scope: ${{ parameters.scope }}
+          isSourceOnlyBuild: ${{ parameters.isSourceOnlyBuild }}
     finalJoinCondition: ${{ and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}
     postJoinStages:
     - stage: Publish_Build_Assets
