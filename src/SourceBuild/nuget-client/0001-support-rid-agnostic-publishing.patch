@@ -1,0 +1,27 @@
+From 31a4ea0785c8e98a2808ebf55928f67bf8f43079 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jkoritzinsky@gmail.com>
+Date: Fri, 7 Mar 2025 11:22:09 -0800
+Subject: [PATCH] Don't publish RID-agnostic nuget packages when we only want
+ RID-specific artifacts
+
+This is necessary to enable us to deduplicate assets in the VMR.
+
+Backport: https://github.com/NuGet/NuGet.Client/pull/6306
+---
+ eng/Publishing.props | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/eng/Publishing.props b/eng/Publishing.props
+index 5fe1ceb1a79..664c36c89c4 100644
+--- a/eng/Publishing.props
++++ b/eng/Publishing.props
+@@ -2,7 +2,8 @@
+ 
+   <ItemGroup>
+     <Artifact Include="$(ArtifactsDir)nupkgs/*.nupkg"
+-              PublishFlatContainer="false" />
++              PublishFlatContainer="false"
++              Condition="'$(EnableDefaultRidSpecificArtifacts)' != 'true'" />
+   </ItemGroup>
+ 
+ </Project>
