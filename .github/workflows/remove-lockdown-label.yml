@@ -21,8 +21,10 @@ jobs:
                 has_changes_without_version_feature=$(echo "$changes_without_version_feature" | wc -l)
                 if [ "$has_changes_without_version_feature" -eq 0 ]; then
                     echo "only_version_feature_changed=true" >> $GITHUB_ENV
+                    echo "✅ Only change in eng/Versions.props is <VersionFeature>"
                 else
                     echo "only_version_feature_changed=false" >> $GITHUB_ENV
+                    echo "❌ Changes in eng/Versions.props other than <VersionFeature> found"
 
         -   name: Remove Branch Lockdown label from other PRs targeting this branch
             if: steps.PR_has_Branding_label.outputs.has_branding_label == 'true' && steps.PR_only_change_is_VersionFeature_in_eng_Versions_props.outputs.only_version_feature_changed == 'true'
