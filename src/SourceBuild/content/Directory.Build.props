@@ -33,8 +33,6 @@
     <ShortStack Condition="'$(TargetOS)' == 'linux-bionic'">true</ShortStack>
     <!-- Mono LLVM builds are short -->
     <ShortStack Condition="'$(DotNetBuildMonoEnableLLVM)' == 'true' or '$(DotNetBuildMonoAOTEnableLLVM)' == 'true'">true</ShortStack>
-    <!-- Short stack builds stop at runtime, not the whole SDK -->
-    <RootRepo Condition="'$(ShortStack)' == 'true'">runtime</RootRepo>
   </PropertyGroup>
 
   <!-- See https://github.com/dotnet/arcade/blob/main/Documentation/UnifiedBuild/Unified-Build-Controls.md#output-controls for
