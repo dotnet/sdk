@@ -13,6 +13,8 @@ jobs:
         if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'Branding')
         runs-on: ubuntu-latest
         steps:
+        -   name: Checkout repository
+            uses: actions/checkout@v2
         -   name: PR's only change is <VersionFeature> in eng/Versions.props
             run: |
                 git fetch --depth=2
