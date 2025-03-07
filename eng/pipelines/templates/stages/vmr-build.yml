@@ -99,6 +99,10 @@ stages:
     - stage: VMR_Validation
       displayName: VMR Validation
       variables:
+      - template: ../variables/vmr-build.yml
+        parameters:
+          vmrBranch: ${{ parameters.vmrBranch }}
+          desiredSigning: ${{ parameters.desiredSigning }}
       - group: Release-Pipeline
       - group: DotNetBot-GitHub-AllBranches
       jobs:
