@@ -29,7 +29,7 @@ variables:
 ## Note: The use of if expressons underneath the variable is necessary to get the updated isOfficialBuild value
 - name: ibcEnabled
   ${{ if eq(variables['isOfficialBuild'], true) }}:
-    value: true
+    value: false
   ${{ else }}:
     value: false
 

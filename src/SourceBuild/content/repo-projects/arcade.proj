@@ -3,6 +3,13 @@
   <PropertyGroup>
     <!-- Use a prebuilt Arcade to build Arcade -->
     <UseBootstrapArcade>true</UseBootstrapArcade>
+    <!--
+      To ensure that every BuildPass2 vertical has a full Arcade to use without referencing the "rid-agnostic" vertical,
+      set all of Arcade's packages to be internal visibility when we would do RID-specific publishing
+      and disable RID-specific publishing.
+    -->
+    <BuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">$(BuildArgs) /p:DefaultArtifactVisibility=Internal</BuildArgs>
+    <EnableDefaultRidSpecificArtifacts>false</EnableDefaultRidSpecificArtifacts>
   </PropertyGroup>
 
   <ItemGroup>

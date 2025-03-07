@@ -15,11 +15,14 @@
   <PropertyGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
+    <FSharpArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Vertical</FSharpArtifactVisibility>
+    <FSharpArtifactVisibility Condition="'$(FSharpArtifactVisibility)' == ''">External</FSharpArtifactVisibility>
   </PropertyGroup>
   <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <Artifact Include="$(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
                        $(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
-              PublishFlatContainer="false" />
+              Kind="Package"
+              Visibility="$(FSharpArtifactVisibility)" />
   </ItemGroup>
 
   <!-- The PGO sdk should always have External visibility, even if someone changes the default artifact visibility -->

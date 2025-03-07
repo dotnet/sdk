@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Tue, 21 Jan 2025 15:22:19 -0800
+Subject: Deduplicate artifacts in VMR builds
+
+Backport: https://github.com/dotnet/windowsdesktop/pull/4960
+---
+diff --git a/eng/Publishing.props b/eng/Publishing.props
+index 8f1e1fb81c..a64b2808c4 100644
+--- a/eng/Publishing.props
++++ b/eng/Publishing.props
+@@ -8,6 +8,21 @@
+     <PlatformName Condition="'$(TargetArchitecture)' != ''">$(TargetArchitecture)</PlatformName>
+   </PropertyGroup>
+ 
++  <!--
++    Only generate the productVersion.txt and windowsdesktop-productVersion.txt files when we're building
++    either the full VMR repo or not building in the VMR infrastructure.
++    This ensures that we don't produce these files in the "Repo source build" builds,
++    but we do produce them in both the VMR and the runtime official build.
++  -->
++  <PropertyGroup Condition="'$(DotNetBuildOrchestrator)' == 'true'">
++    <ShouldGenerateProductVersionFiles Condition="'$(EnableDefaultRidSpecificArtifacts)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">true</ShouldGenerateProductVersionFiles>
++    <ShouldGenerateProductVersionFiles Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</ShouldGenerateProductVersionFiles>
++  </PropertyGroup>
++
++  <PropertyGroup Condition="'$(DotNetBuildOrchestrator)' != 'true'">
++    <ShouldGenerateProductVersionFiles Condition="'$(EnableDefaultArtifacts)' == 'true'">true</ShouldGenerateProductVersionFiles>
++  </PropertyGroup>
++
+   <Target Name="GetNonStableProductVersion">
+     <!-- Retrieve the non-stable runtime pack product version.
+          Don't stabilize the package version in order to retrieve the VersionSuffix. -->
+@@ -22,7 +37,7 @@
+   <Target Name="GenerateProductVersionFiles"
+           DependsOnTargets="GetNonStableProductVersion"
+           BeforeTargets="PublishToAzureDevOpsArtifacts"
+-          Condition="'$(EnableDefaultArtifacts)' == 'true'">
++          Condition="'$(ShouldGenerateProductVersionFiles)' == 'true'">
+     <!-- Retrieve the runtime pack version -->
+     <MSBuild Projects="$(RepoRoot)src/windowsdesktop/src/sfx/Microsoft.WindowsDesktop.App.Runtime.sfxproj"
+              Targets="ReturnProductVersion">
