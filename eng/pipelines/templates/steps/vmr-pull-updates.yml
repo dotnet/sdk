@@ -66,7 +66,7 @@ steps:
 - script: |
     git config --global diff.astextplain.textconv echo
     git config --system core.longpaths true
-  displayName: Disable astextplain in git diff (Windows)
+  displayName: Configure Windows git (longpaths, astextplain)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
 - powershell: |
