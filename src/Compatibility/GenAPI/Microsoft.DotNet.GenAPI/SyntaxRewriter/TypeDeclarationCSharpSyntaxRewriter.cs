@@ -17,8 +17,6 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// </summary>
     public class TypeDeclarationCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
-        private const string GlobalSystemObjectBaseTypeName = "global::System.Object";
-
         private readonly bool _addPartialModifier;
 
         /// <summary>
@@ -64,43 +62,32 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
 
         private static T? RemoveBaseType<T>(T? node, Func<BaseTypeSyntax, bool> selector) where T : TypeDeclarationSyntax
         {
-            if (node?.BaseList == null)
+            if (node == null)
             {
                 return null;
             }
 
-            BaseTypeSyntax? baseType = node.BaseList.Types.FirstOrDefault(selector);
+            BaseTypeSyntax? baseType = node.BaseList?.Types.FirstOrDefault(selector);
             if (baseType == null)
             {
                 // Base type not found
                 return node;
             }
-            SyntaxTriviaList baseTypeTrailingTrivia = baseType.GetTrailingTrivia();
-            SeparatedSyntaxList<BaseTypeSyntax> baseTypes = node.BaseList.Types.Remove(baseType);
+
+            SeparatedSyntaxList<BaseTypeSyntax> baseTypes = node.BaseList!.Types.Remove(baseType);
             if (baseTypes.Count == 0)
             {
-                // After the baseType is removed, there is a remaining space that also needs removing
-                SyntaxTriviaList identifierTrailingTrivia = node.Identifier.TrailingTrivia;
-                if (identifierTrailingTrivia.Any() && identifierTrailingTrivia.Last().IsKind(SyntaxKind.WhitespaceTrivia))
-                {
-                    identifierTrailingTrivia = identifierTrailingTrivia.RemoveAt(identifierTrailingTrivia.Count - 1);
-                    identifierTrailingTrivia = identifierTrailingTrivia.AddRange(baseTypeTrailingTrivia); // Join what was after the removed baseType
-                    node = (T)node.WithIdentifier(SyntaxFactory.Identifier(node.Identifier.LeadingTrivia, node.Identifier.Text, identifierTrailingTrivia));
-                }
-
                 // No more base implementations, remove the base list entirely
                 // Make sure we update the identifier though to include the baselist trailing trivia (typically '\r\n')
                 // so the trailing opening brace gets put onto a new line.
                 return (T)node
                     .WithBaseList(null)
-                    .WithTrailingTrivia(node.GetTrailingTrivia());
+                    .WithTrailingTrivia(node.BaseList.GetTrailingTrivia());
             }
             else
             {
                 // Remove the type but retain all remaining types and trivia
-                return (T)node
-                    .WithBaseList(node.BaseList.WithTypes(baseTypes))
-                    .WithTrailingTrivia(node.GetTrailingTrivia());
+                return (T)node.WithBaseList(node.BaseList!.WithTypes(baseTypes));
             }
         }
 
@@ -111,7 +98,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
                 return null;
             }
 
-            node = RemoveBaseType(node, GlobalSystemObjectBaseTypeName);
+            node = RemoveBaseType(node, "global::System.Object");
             return _addPartialModifier ? AddPartialModifier(node) : node;
         }
 
