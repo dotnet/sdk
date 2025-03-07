@@ -69,7 +69,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
             _retryTimer = timer;
             _sourceRepositories = new();
-            _verifySignatures = OperatingSystem.IsWindows() && verifySignatures; // This is temporarily disabled for macOS and Linux.
+            // If windows or env variable is set, verify signatures
+            _verifySignatures = verifySignatures
+                && (OperatingSystem.IsWindows() || string.Equals(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), bool.TrueString, StringComparison.OrdinalIgnoreCase));
 
             _cacheSettings = new SourceCacheContext
             {
