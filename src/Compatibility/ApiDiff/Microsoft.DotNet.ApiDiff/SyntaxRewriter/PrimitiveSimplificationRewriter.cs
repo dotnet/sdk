@@ -44,13 +44,13 @@ internal class PrimitiveSimplificationRewriter : CSharpSyntaxRewriter
         { "System.UInt64", SyntaxKind.ULongKeyword },
     };
 
-    public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
+    public override SyntaxNode? VisitQualifiedName(QualifiedNameSyntax node)
     {
-        if ( s_primitives.TryGetValue(node.Identifier.Text, out SyntaxKind keyword))
+        if (s_primitives.TryGetValue(node.Right.Identifier.Text, out SyntaxKind keyword))
         {
             return SyntaxFactory.PredefinedType(SyntaxFactory.Token(keyword)).WithTriviaFrom(node);
         }
 
-        return base.VisitIdentifierName(node);
+        return base.VisitQualifiedName(node);
     }
 }
