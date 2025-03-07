@@ -11,6 +11,8 @@
 
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
+    <RepoHasRidSpecificArtifacts>true</RepoHasRidSpecificArtifacts>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(OfficialBuildId)' != ''">

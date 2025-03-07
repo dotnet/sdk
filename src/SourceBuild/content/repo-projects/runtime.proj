@@ -40,6 +40,7 @@
 
     <!-- Explicitly disable RID-specific artifacts when it's not enabled. Runtime's build defaults to using RID-specific artifacts, so we must explicitly opt-out. -->
     <EnableDefaultRidSpecificArtifacts Condition="'$(EnableDefaultRidSpecificArtifacts)' != 'true'">false</EnableDefaultRidSpecificArtifacts>
+    <RepoHasRidSpecificArtifacts>true</RepoHasRidSpecificArtifacts>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">

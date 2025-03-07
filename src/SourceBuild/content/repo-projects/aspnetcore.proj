@@ -33,6 +33,8 @@
 
     <!-- Tests are failing to build: https://github.com/dotnet/aspnetcore/issues/60095 -->
     <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
+
+    <RepoHasRidSpecificArtifacts>true</RepoHasRidSpecificArtifacts>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
