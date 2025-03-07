@@ -123,17 +123,21 @@ namespace Microsoft.DotNet.Cli
         /// A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
         /// Despite being a 'forwarded option' there is no default forwarding configured, so if you want forwarding you can add it on a per-command basis.
         /// </summary>
-        /// <remarks>If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.</remarks>
-        public static ForwardedOption<bool> InteractiveOption() =>
+        /// <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
+        /// <remarks>
+        // If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
+        // If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
+        // </remarks>
+        public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false) =>
              new("--interactive")
              {
                  Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
-                 Arity = ArgumentArity.Zero,
+                 Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
                  // this default is called when no tokens/options are passed on the CLI args
                  DefaultValueFactory = (ar) => IsCIEnvironmentOrRedirected()
              };
 
-        public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption().ForwardIfEnabled("-property:NuGetInteractive=true");
+        public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");
 
         public static CliOption<bool> DisableBuildServersOption =
             new ForwardedOption<bool>("--disable-build-servers")
