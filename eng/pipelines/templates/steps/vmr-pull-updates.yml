@@ -63,7 +63,9 @@ steps:
   condition: ne(variables['Agent.OS'], 'Windows_NT')
   workingDirectory: $(Agent.BuildDirectory)/sdk
 
-- script: git config --global diff.astextplain.textconv echo
+- script: |
+    git config --global diff.astextplain.textconv echo
+    git config --system core.longpaths true
   displayName: Disable astextplain in git diff (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
