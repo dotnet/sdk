@@ -101,7 +101,7 @@ public class DiffEventsTests : DiffBaseTests
           {
               public class MyClass
               {
-        -         public event MyClass.MyEventHandler? MyEvent { add; remove; }
+        -         public event MyNamespace.MyClass.MyEventHandler? MyEvent { add; remove; }
               }
           }
         """);

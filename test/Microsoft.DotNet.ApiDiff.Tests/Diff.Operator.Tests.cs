@@ -4,7 +4,7 @@
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
 // Since operators are also methods, this class tests more basic things than the methods class.
-public class DiffOperatorsTests : DiffBaseTests
+public class DiffOperatorTests : DiffBaseTests
 {
     [Fact]
     public Task TestEqualityOperators() =>
@@ -38,8 +38,8 @@ public class DiffOperatorsTests : DiffBaseTests
                       {
                 +         public override bool Equals(object? o);
                 +         public override int GetHashCode();
-                +         public static MyClass operator ==(MyClass a, MyClass b);
-                +         public static MyClass operator !=(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator ==(MyNamespace.MyClass a, MyNamespace.MyClass b);
+                +         public static MyNamespace.MyClass operator !=(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -68,7 +68,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator +(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator +(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -97,7 +97,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator -(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator -(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -126,7 +126,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator *(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator *(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -156,7 +156,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator /(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator /(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -185,7 +185,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator %(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator %(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -217,8 +217,8 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static bool operator >(MyClass a, MyClass b);
-                +         public static bool operator <(MyClass a, MyClass b);
+                +         public static bool operator >(MyNamespace.MyClass a, MyNamespace.MyClass b);
+                +         public static bool operator <(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -250,8 +250,8 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static bool operator >=(MyClass a, MyClass b);
-                +         public static bool operator <=(MyClass a, MyClass b);
+                +         public static bool operator >=(MyNamespace.MyClass a, MyNamespace.MyClass b);
+                +         public static bool operator <=(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -280,7 +280,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator ++(MyClass a);
+                +         public static MyNamespace.MyClass operator ++(MyNamespace.MyClass a);
                       }
                   }
                 """);
@@ -309,7 +309,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator --(MyClass a);
+                +         public static MyNamespace.MyClass operator --(MyNamespace.MyClass a);
                       }
                   }
                 """);
@@ -338,7 +338,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator !(MyClass a);
+                +         public static MyNamespace.MyClass operator !(MyNamespace.MyClass a);
                       }
                   }
                 """);
@@ -367,7 +367,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator ~(MyClass a);
+                +         public static MyNamespace.MyClass operator ~(MyNamespace.MyClass a);
                       }
                   }
                 """);
@@ -396,7 +396,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator &(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator &(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -426,7 +426,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator |(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator |(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -455,7 +455,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator ^(MyClass a, MyClass b);
+                +         public static MyNamespace.MyClass operator ^(MyNamespace.MyClass a, MyNamespace.MyClass b);
                       }
                   }
                 """);
@@ -484,7 +484,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator <<(MyClass a, int shift);
+                +         public static MyNamespace.MyClass operator <<(MyNamespace.MyClass a, int shift);
                       }
                   }
                 """);
@@ -513,7 +513,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static MyClass operator >>(MyClass a, int shift);
+                +         public static MyNamespace.MyClass operator >>(MyNamespace.MyClass a, int shift);
                       }
                   }
                 """);
@@ -542,7 +542,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static implicit operator MyClass(int value);
+                +         public static implicit operator MyNamespace.MyClass(int value);
                       }
                   }
                 """);
@@ -571,7 +571,7 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static explicit operator int(MyClass value);
+                +         public static explicit operator int(MyNamespace.MyClass value);
                       }
                   }
                 """);
@@ -601,8 +601,8 @@ public class DiffOperatorsTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         public static explicit operator checked byte(MyClass value);
-                +         public static explicit operator byte(MyClass value);
+                +         public static explicit operator checked byte(MyNamespace.MyClass value);
+                +         public static explicit operator byte(MyNamespace.MyClass value);
                       }
                   }
                 """);
