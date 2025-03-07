@@ -39,7 +39,7 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                +     [MyAttribute]
+                +     [MyNamespace.MyAttributeAttribute]
                       public class MyClass
                       {
                       }
@@ -85,17 +85,17 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                -     [System.AttributeUsage(System.AttributeTargets.All)]
+                -     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 -     public class MyAttribute1Attribute : System.Attribute
                 -     {
                 -         public MyAttribute1Attribute();
                 -     }
-                -     [MyAttribute1]
-                +     [MyAttribute2]
+                -     [MyNamespace.MyAttribute1Attribute]
+                +     [MyNamespace.MyAttribute2Attribute]
                       public class MyClass
                       {
                       }
-                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 +     public class MyAttribute2Attribute : System.Attribute
                 +     {
                 +         public MyAttribute2Attribute();
@@ -149,8 +149,8 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                -     [MyAttribute1]
-                +     [MyAttribute2]
+                -     [MyNamespace.MyAttribute1Attribute]
+                +     [MyNamespace.MyAttribute2Attribute]
                       public class MyClass
                       {
                       }
@@ -196,7 +196,7 @@ public class DiffAttributeTests : DiffBaseTests
                 -     {
                 -         public MyClass1();
                 -     }
-                +     [MyAttribute]
+                +     [MyNamespace.MyAttributeAttribute]
                 +     public class MyClass2
                 +     {
                 +         public MyClass2();
@@ -240,12 +240,12 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                -     [MyAttribute]
+                -     [MyNamespace.MyAttributeAttribute]
                 -     public class MyClass1
                 -     {
                 -         public MyClass1();
                 -     }
-                +     [MyAttribute]
+                +     [MyNamespace.MyAttributeAttribute]
                 +     public class MyClass2
                 +     {
                 +         public MyClass2();
@@ -294,7 +294,7 @@ public class DiffAttributeTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         [MyAttribute]
+                +         [MyNamespace.MyAttributeAttribute]
                           public void MyMethod();
                       }
                   }
@@ -341,17 +341,17 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                -     [System.AttributeUsage(System.AttributeTargets.All)]
+                -     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 -     public class MyAttribute1Attribute : System.Attribute
                 -     {
                 -     }
                       public class MyClass
                       {
-                -         [MyAttribute1]
-                +         [MyAttribute2]
+                -         [MyNamespace.MyAttribute1Attribute]
+                +         [MyNamespace.MyAttribute2Attribute]
                           public void MyMethod();
                       }
-                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 +     public class MyAttribute2Attribute : System.Attribute
                 +     {
                 +     }
@@ -409,8 +409,8 @@ public class DiffAttributeTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         [MyAttribute1]
-                +         [MyAttribute2]
+                -         [MyNamespace.MyAttribute1Attribute]
+                +         [MyNamespace.MyAttribute2Attribute]
                           public void MyMethod();
                       }
                   }
@@ -457,7 +457,7 @@ public class DiffAttributeTests : DiffBaseTests
                       public class MyClass
                       {
                 -         public void MyMethod1();
-                +         [MyAttribute]
+                +         [MyNamespace.MyAttributeAttribute]
                 +         public void MyMethod2();
                       }
                   }
@@ -504,9 +504,9 @@ public class DiffAttributeTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                -         [MyAttribute]
+                -         [MyNamespace.MyAttributeAttribute]
                 -         public void MyMethod1();
-                +         [MyAttribute]
+                +         [MyNamespace.MyAttributeAttribute]
                 +         public void MyMethod2();
                       }
                   }
@@ -557,9 +557,9 @@ public class DiffAttributeTests : DiffBaseTests
                       public class MyClass
                       {
                 -         public MyClass(int x);
-                +         public MyClass([MyAttribute] int x);
+                +         public MyClass([MyNamespace.MyAttributeAttribute] int x);
                 -         public void MyMethod(int y);
-                +         public void MyMethod([MyAttribute] int y);
+                +         public void MyMethod([MyNamespace.MyAttributeAttribute] int y);
                       }
                   }
                 """,
@@ -612,8 +612,8 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                +     [MyAttribute1]
-                +     [MyAttribute2]
+                +     [MyNamespace.MyAttribute1Attribute]
+                +     [MyNamespace.MyAttribute2Attribute]
                       public class MyClass
                       {
                       }
@@ -668,8 +668,8 @@ public class DiffAttributeTests : DiffBaseTests
                   {
                       public class MyClass
                       {
-                +         [MyAttribute1]
-                +         [MyAttribute2]
+                +         [MyNamespace.MyAttribute1Attribute]
+                +         [MyNamespace.MyAttribute2Attribute]
                           public MyClass(int x);
                       }
                   }
@@ -726,9 +726,9 @@ public class DiffAttributeTests : DiffBaseTests
                       public class MyClass
                       {
                 -         public MyClass(int x);
-                +         public MyClass([MyAttribute1, MyAttribute2] int x);
+                +         public MyClass([MyNamespace.MyAttribute1Attribute, MyNamespace.MyAttribute2Attribute] int x);
                 -         public void MyMethod(int y);
-                +         public void MyMethod([MyAttribute1, MyAttribute2] int y);
+                +         public void MyMethod([MyNamespace.MyAttribute1Attribute, MyNamespace.MyAttribute2Attribute] int y);
                       }
                   }
                 """,
@@ -773,7 +773,7 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                +     [MyAttribute]
+                +     [MyNamespace.MyAttributeAttribute]
                       public class MyClass
                       {
                       }
@@ -816,14 +816,14 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                +     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-                +     [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Text")]
-                +     [MyAttribute]
-                +     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Text")]
+                +     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+                +     [System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute("Text")]
+                +     [MyNamespace.MyAttributeAttribute]
+                +     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Text")]
                       public class MyClass
                       {
                       }
-                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 +     public class MyAttributeAttribute : System.Attribute
                 +     {
                 +         public MyAttributeAttribute();
@@ -863,13 +863,13 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                +     [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-                +     [System.Diagnostics.CodeAnalysis.RequiresDynamicCode("Text")]
-                +     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Text")]
+                +     [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+                +     [System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute("Text")]
+                +     [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute("Text")]
                       public class MyClass
                       {
                       }
-                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 +     public class MyAttributeAttribute : System.Attribute
                 +     {
                 +         public MyAttributeAttribute();
@@ -945,11 +945,11 @@ public class DiffAttributeTests : DiffBaseTests
                 expectedCode: """
                   namespace MyNamespace
                   {
-                +     [MyAttribute("First", "Second")]
+                +     [MyNamespace.MyAttributeAttribute("First", "Second")]
                       public class MyClass
                       {
                       }
-                +     [System.AttributeUsage(System.AttributeTargets.All)]
+                +     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 +     public class MyAttributeAttribute : System.Attribute
                 +     {
                 +         public MyAttributeAttribute(string first, string second);

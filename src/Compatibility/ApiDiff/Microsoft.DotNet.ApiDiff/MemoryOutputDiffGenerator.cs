@@ -96,7 +96,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 GlobalPrefixRemover.Singleton, // And then call this ASAP afterwards so there are fewer identifiers to visit
                 PrimitiveSimplificationRewriter.Singleton,
                 RemoveBodyCSharpSyntaxRewriter.Singleton,
-                AttributeNameSuffixRemover.Singleton,
                 SingleLineStatementCSharpSyntaxRewriter.Singleton,
             ],
             AdditionalAnnotations = [Formatter.Annotation] // Formatter is needed to fix some spacing
@@ -571,20 +570,38 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private string GetDeclarationAndOpeningBraceCode(SyntaxNode childlessNode, SyntaxTriviaList leadingTrivia)
     {
         SyntaxToken openBrace = SyntaxFactory.Token(SyntaxKind.OpenBraceToken)
-                                             .WithLeadingTrivia(leadingTrivia)
                                              .WithTrailingTrivia(_endOfLineTrivia);
 
-        SyntaxNode unclosedNode = childlessNode switch
+        SyntaxNode unclosedNode;
+
+        if (childlessNode is RecordDeclarationSyntax recordDecl)
         {
-            RecordDeclarationSyntax recordDecl => recordDecl.OpenBraceToken.IsMissing ? recordDecl : recordDecl.WithCloseBraceToken(_missingCloseBrace),
-            BaseTypeDeclarationSyntax typeDecl => typeDecl.WithOpenBraceToken(openBrace)
-                                                          .WithCloseBraceToken(_missingCloseBrace),
+            if (recordDecl.OpenBraceToken.IsKind(SyntaxKind.None))
+            {
+                unclosedNode = recordDecl;
+            }
+            else
+            {
+                // Add the missing newline after the declaration
+                SyntaxTriviaList endLineAndLeadingTrivia = SyntaxFactory.TriviaList(_endOfLineTrivia).AddRange(leadingTrivia);
+                openBrace = openBrace.WithLeadingTrivia(endLineAndLeadingTrivia);
+                unclosedNode = recordDecl.WithOpenBraceToken(openBrace).WithCloseBraceToken(_missingCloseBrace);
+            }
+        }
+        else
+        {
+            openBrace = openBrace.WithLeadingTrivia(leadingTrivia);
+            unclosedNode = childlessNode switch
+            {
+                BaseTypeDeclarationSyntax typeDecl => typeDecl.WithOpenBraceToken(openBrace)
+                                                              .WithCloseBraceToken(_missingCloseBrace),
 
-            NamespaceDeclarationSyntax nsDecl  => nsDecl.WithOpenBraceToken(openBrace)
-                                                        .WithCloseBraceToken(_missingCloseBrace),
+                NamespaceDeclarationSyntax nsDecl => nsDecl.WithOpenBraceToken(openBrace)
+                                                            .WithCloseBraceToken(_missingCloseBrace),
 
-            _ => childlessNode
-        };
+                _ => childlessNode
+            };
+        }
 
         return unclosedNode.WithLeadingTrivia(leadingTrivia).ToFullString();
     }
@@ -612,16 +629,22 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     {
         ISymbol? symbol = node switch
         {
+            DestructorDeclarationSyntax destructorDeclaration => model.GetDeclaredSymbol(destructorDeclaration),
             FieldDeclarationSyntax fieldDeclaration           => model.GetDeclaredSymbol(fieldDeclaration.Declaration.Variables.First()),
             EventDeclarationSyntax eventDeclaration           => model.GetDeclaredSymbol(eventDeclaration),
             EventFieldDeclarationSyntax eventFieldDeclaration => model.GetDeclaredSymbol(eventFieldDeclaration.Declaration.Variables.First()),
             PropertyDeclarationSyntax propertyDeclaration     => model.GetDeclaredSymbol(propertyDeclaration),
-            DestructorDeclarationSyntax destructorDeclaration => model.GetDeclaredSymbol(destructorDeclaration),
             _ => model.GetDeclaredSymbol(node)
         };
 
         if (symbol?.GetDocumentationCommentId() is string docId)
         {
+            if (node is RecordDeclarationSyntax record && record.ParameterList !=  null && record.ParameterList.Parameters.Any())
+            {
+                // Special case for when a record has a parameter list, we need to be able to differentiate the signature's parameters too,
+                // but the regular DocId does not differentiate that.
+                return $"{docId}({record.ParameterList.Parameters.ToFullString()})";
+            }
             return docId;
         }
 
