@@ -133,6 +133,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     string.Format("Downloading {0} version {1} failed", packageId,
                         packageVersion.ToNormalizedString()));
             }
+
             // Delete file if verification fails
             try
             {
@@ -143,6 +144,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 File.Delete(nupkgPath);
                 throw;
             }
+
             return nupkgPath;
         }
 
