@@ -82,6 +82,35 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _endOfLineTrivia = Environment.NewLine == "\r\n" ? SyntaxFactory.CarriageReturnLineFeed : SyntaxFactory.LineFeed;
     }
 
+    private async Task<(SyntaxNode rootNode, SemanticModel model)> GetAssemblyRootNodeAndModelAsync(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
+    {
+        CSharpAssemblyDocumentGeneratorOptions options = new(loader, _symbolFilter, _attributeSymbolFilter)
+        {
+            HideImplicitDefaultConstructors = _hideImplicitDefaultConstructors,
+            ShouldFormat = true,
+            ShouldReduce = false,
+            MetadataReferences = loader.MetadataReferences,
+            DiagnosticOptions = _diagnosticOptions,
+            SyntaxRewriters = [
+                new TypeDeclarationCSharpSyntaxRewriter(_addPartialModifier), // This must be visited BEFORE GlobalPrefixRemover as it depends on the 'global::' prefix to be found
+                GlobalPrefixRemover.Singleton, // And then call this ASAP afterwards so there are fewer identifiers to visit
+                PrimitiveSimplificationRewriter.Singleton,
+                RemoveBodyCSharpSyntaxRewriter.Singleton,
+                AttributeNameSuffixRemover.Singleton,
+                SingleLineStatementCSharpSyntaxRewriter.Singleton,
+            ],
+            AdditionalAnnotations = [Formatter.Annotation] // Formatter is needed to fix some spacing
+        };
+
+        CSharpAssemblyDocumentGenerator docGenerator = new(_log, options);
+
+        Document document = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
+        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.RootNodeNotFound, assemblySymbol.Name));
+        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.SemanticModelNotFound, assemblySymbol.Name));
+
+        return (root, model);
+    }
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Results => _results.AsReadOnly();
 
@@ -172,35 +201,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
         _log.LogMessage($"FINAL TOTAL: {swRun.Elapsed.TotalMilliseconds / 1000.0 / 60.0:F2} mins.");
         swRun.Stop();
-    }
-
-    private async Task<(SyntaxNode rootNode, SemanticModel model)> GetAssemblyRootNodeAndModelAsync(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
-    {
-        CSharpAssemblyDocumentGeneratorOptions options = new(loader, _symbolFilter, _attributeSymbolFilter)
-        {
-            HideImplicitDefaultConstructors = _hideImplicitDefaultConstructors,
-            ShouldFormat = false,
-            ShouldReduce = false,
-            MetadataReferences = loader.MetadataReferences,
-            DiagnosticOptions = _diagnosticOptions,
-            SyntaxRewriters = [
-                new TypeDeclarationCSharpSyntaxRewriter(_addPartialModifier), // This must be visited BEFORE GlobalPrefixRemover as it depends on the 'global::' prefix to be found
-                GlobalPrefixRemover.Singleton, // And then call this ASAP afterwards so there are fewer identifiers to visit
-                PrimitiveSimplificationRewriter.Singleton,
-                RemoveBodyCSharpSyntaxRewriter.Singleton,
-                AttributeNameSuffixRemover.Singleton,
-                SingleLineStatementCSharpSyntaxRewriter.Singleton,
-            ],
-            AdditionalAnnotations = [Formatter.Annotation] // Formatter is needed to fix some spacing
-        };
-
-        CSharpAssemblyDocumentGenerator docGenerator = new(_log, options);
-
-        Document document = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
-        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.RootNodeNotFound, assemblySymbol.Name));
-        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.SemanticModelNotFound, assemblySymbol.Name));
-
-        return (root, model);
     }
 
     private static string GetFinalAssemblyDiff(string assemblyName, string diffText)
@@ -319,7 +319,15 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
         ConcurrentDictionary<string, MemberDeclarationSyntax> dictionary = [];
 
-        if (parentNode is BaseNamespaceDeclarationSyntax)
+        if (parentNode is RecordDeclarationSyntax record && record.Members.Any())
+        {
+           foreach (MemberDeclarationSyntax memberNode in record.ChildNodes().Where(n => n is MemberDeclarationSyntax m && IsPublicOrProtectedOrDestructor(m)).Cast<MemberDeclarationSyntax>())
+            {
+                // Note that these could also be nested types
+                dictionary.TryAdd(GetDocId(memberNode, model), memberNode);
+            }
+        }
+        else if (parentNode is BaseNamespaceDeclarationSyntax)
         {
             foreach (BaseTypeDeclarationSyntax typeNode in parentNode.ChildNodes().Where(n => n is BaseTypeDeclarationSyntax t && IsPublicOrProtectedOrDestructor(t)).Cast<BaseTypeDeclarationSyntax>())
             {
@@ -555,7 +563,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private static SyntaxNode GetChildlessNode(MemberDeclarationSyntax node)
     {
         SyntaxNode childlessNode = node.RemoveNodes(node.ChildNodes().Where(
-            c => c is MemberDeclarationSyntax or BaseTypeDeclarationSyntax or DelegateDeclarationSyntax), SyntaxRemoveOptions.KeepNoTrivia)!;
+                c => c is MemberDeclarationSyntax or BaseTypeDeclarationSyntax or DelegateDeclarationSyntax), SyntaxRemoveOptions.KeepNoTrivia)!;
 
         return childlessNode.WithLeadingTrivia(node.GetLeadingTrivia());
     }
@@ -568,6 +576,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
         SyntaxNode unclosedNode = childlessNode switch
         {
+            RecordDeclarationSyntax recordDecl => recordDecl.OpenBraceToken.IsMissing ? recordDecl : recordDecl.WithCloseBraceToken(_missingCloseBrace),
             BaseTypeDeclarationSyntax typeDecl => typeDecl.WithOpenBraceToken(openBrace)
                                                           .WithCloseBraceToken(_missingCloseBrace),
 
@@ -584,6 +593,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     {
         SyntaxToken closeBrace = childlessNode switch
         {
+            RecordDeclarationSyntax recordDecl => recordDecl.CloseBraceToken.IsMissing ? _missingCloseBrace : recordDecl.CloseBraceToken,
             BaseTypeDeclarationSyntax typeDecl => typeDecl.CloseBraceToken,
             NamespaceDeclarationSyntax nsDecl => nsDecl.CloseBraceToken,
             _ => throw new InvalidOperationException(string.Format(Resources.UnexpectedNodeType, childlessNode.Kind()))
