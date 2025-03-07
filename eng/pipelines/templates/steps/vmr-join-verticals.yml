@@ -3,10 +3,6 @@ parameters:
   type: string
   default: final
 
-- name: verticals
-  type: object
-  default: []
-
 - name: outputFolder
   type: string
   default: $(Build.ArtifactStagingDirectory)/artifacts

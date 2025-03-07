@@ -38,9 +38,12 @@
     <CommonArgs>$(CommonArgs) /p:PortableBuild=$(PortableBuild)</CommonArgs>
     <CommonArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(CommonArgs) /p:RuntimeOS=$(RuntimeOS)</CommonArgs>
     <CommonArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(CommonArgs) /p:BaseOS=$(BaseOS)</CommonArgs>
+    <CommonArgs Condition="'$(DefaultArtifactVisibility)' != ''">$(CommonArgs) /p:DefaultArtifactVisibility=$(DefaultArtifactVisibility)</CommonArgs>
 
     <!-- Only pass these properites through when necessary to reduce command line noise. -->
     <CommonArgs Condition="'$(DotNetBuildTests)' == 'true' and '$(DotNetBuildTestsOptOut)' != 'true'">$(CommonArgs) /p:DotNetBuildTests=true</CommonArgs>
+
+    <BuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' != ''">$(BuildArgs) /p:EnableDefaultRidSpecificArtifacts=$(EnableDefaultRidSpecificArtifacts)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -469,8 +472,6 @@
            live runtime. Exclude from source-only builds which don't use the portable RID format which causes the
            ProcessFrameworkReferences not be able to restore for the given RID.  -->
       <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true' and '@(TransitiveRepositoryReference->AnyHaveMetadataValue('Identity', 'runtime'))' == 'true'">$(BuildArgs) /p:DotNetBuildTargetRidOnly=true</BuildArgs>
-
-      <BuildArgs>$(BuildArgs) /p:EnableDefaultRidSpecificArtifacts=$(EnableDefaultRidSpecificArtifacts)</BuildArgs>
 
       <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(CommonArgs) $(BuildArgs)</BuildCommand>
     </PropertyGroup>

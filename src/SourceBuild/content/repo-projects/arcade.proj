@@ -8,8 +8,9 @@
       set all of Arcade's packages to be internal visibility when we would do RID-specific publishing
       and disable RID-specific publishing.
     -->
-    <BuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">$(BuildArgs) /p:DefaultArtifactVisibility=Internal</BuildArgs>
-    <EnableDefaultRidSpecificArtifacts>false</EnableDefaultRidSpecificArtifacts>
+    <DefaultArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Internal</DefaultArtifactVisibility>
+    <!-- Never use RID-specific artifacts for Arcade. Join jobs will need an Arcade build and they may not depend on the "primary" vertical. -->
+    <EnableDefaultRidSpecificArtifacts></EnableDefaultRidSpecificArtifacts>
   </PropertyGroup>
 
   <ItemGroup>

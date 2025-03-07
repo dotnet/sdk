@@ -67,7 +67,6 @@
       - This is not the Rid-agnostic vertical
       - This is a BuildPass1 build
     -->
-    <EnableDefaultRidSpecificArtifacts>false</EnableDefaultRidSpecificArtifacts>
     <EnableDefaultRidSpecificArtifacts
       Condition="('$(VerticalName)' != '' and '$(VerticalName)' != '$(RidAgnosticVerticalName)')
                   and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')
@@ -127,9 +126,9 @@
     <CommonArgs>$(CommonArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</CommonArgs>
 
     <!-- PGO assets by default are "Vertical" visibilty. Each repo will enable the specific artifacts it must publish externally -->
-    <CommonArgs Condition="'$(PgoInstrument)' == 'true'">$(CommonArgs) /p:DefaultArtifactVisibility=Vertical</CommonArgs>
+    <DefaultArtifactVisibility Condition="'$(PgoInstrument)' == 'true'">Vertical</DefaultArtifactVisibility>
     <!-- ShortStack builds only publish new assets from the root repository. All other assets are duplicates. -->
-    <CommonArgs Condition="'$(ShortStack)' == 'true' and '$(MSBuildProjectName)' != '$(RootRepo)'">$(CommonArgs) /p:DefaultArtifactVisibility=Vertical</CommonArgs>
+    <DefaultArtifactVisibility Condition="'$(ShortStack)' == 'true' and '$(MSBuildProjectName)' != '$(RootRepo)'">Vertical</DefaultArtifactVisibility>
   </PropertyGroup>
 
   <!-- Build specific args -->

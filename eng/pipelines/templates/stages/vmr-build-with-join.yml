@@ -1,9 +1,12 @@
 parameters:
+# Stages that build individual verticals
 - name: verticalsStages
   type: stageList
+# Stages that need to run after the final artifacts are determined after joining all verticals.
 - name: postJoinStages
   type: stageList
   default: []
+# When we should run the final join stage and the stages that depend on it.
 - name: finalJoinCondition
   type: boolean
 # These are not expected to be passed it but rather just object variables reused below
@@ -49,9 +52,12 @@ parameters:
     os: linux
 
 stages:
+# Insert all stages that build verticals
+# and publish artifacts for each vertical
 - ${{ each vertical in parameters.verticalsStages }}:
   - ${{ insert }}: ${{ vertical }}
 - ${{ if parameters.finalJoinCondition }}:
+  # This stage should contain all jobs that take inputs from all verticals and determine the exact final outputs.
   - stage: VMR_Final_Join
     displayName: 'VMR Final Join'
     dependsOn: ${{ parameters.verticalsStages.*.stage }}
@@ -63,6 +69,7 @@ stages:
         templateContext:
           outputParentDirectory: $(Build.ArtifactStagingDirectory)/artifacts
           inputs:
+            # Download the artifacts from every job in every vertical stage under VerticalArtifacts
             - ${{ each vertical in parameters.verticalsStages.*.jobs.*.job }}:
               - input: pipelineArtifact
                 path: $(Build.ArtifactStagingDirectory)/VerticalArtifacts/${{ vertical }}
@@ -97,14 +104,14 @@ stages:
           parameters:
             dotNetBuildPass: final
             outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
-  # Insert all of the validation stages,
-  # adding a dependency on the final join stage
+  # Insert all of the post-join stages.
   - ${{ each postJoinStage in parameters.postJoinStages }}:
     - stage: ${{ postJoinStage.stage }}
       ${{ each pair in postJoinStage }}:
         ${{ if notIn(pair.key, 'dependsOn', 'stage') }}:
           ${{ pair.key }}: ${{ pair.value }}
       dependsOn:
+        # Inject a dependency on the final join stage
         - VMR_Final_Join
         # add any dependencies provided via root yaml
         - ${{ if ne(postJoinStage.dependsOn, '') }}:
