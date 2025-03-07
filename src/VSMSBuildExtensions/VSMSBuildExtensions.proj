@@ -60,26 +60,20 @@
       <VSMSBuildExtensionsContent Update="@(VSMSBuildExtensionsContent)">
         <DestinationPath>$(OutputPath)/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)</DestinationPath>
       </VSMSBuildExtensionsContent>
+      <!-- The generated MSBuildSdkResolver XML file is emitted to the SdkResolvers directory, but needs to be installed colocated to the dll. This is hard to do using the
+           templating and packing mechanisms on the above lines, so for this file specifically I've hard-coded the expected layouts. -->
       <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.xml"
-        DestinationPath="$(OutputPath)/MSBuildSdkResolver/Microsoft.DotNet.MSBuildSdkResolver.xml" />
+        DestinationPath="$(OutputPath)/MSBuildSdkResolver/Microsoft.DotNet.MSBuildSdkResolver.xml"
+        PackagePath="/MSBuildSdkResolver/" />
     </ItemGroup>
 
-    <ItemGroup>
-      <_VSMSBuildExtensionsContentDestinations Include="@(VSMSBuildExtensionsContent->'%(DestinationPath)')" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(VSMSBuildExtensionsContent)" DestinationFiles="@(_VSMSBuildExtensionsContentDestinations)" />
+    <Copy SourceFiles="@(VSMSBuildExtensionsContent)" DestinationFiles="@(VSMSBuildExtensionsContent->'%(DestinationPath)')" />
 
     <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(OutputPath)"
                                   OutputFile="$(SdkMSBuildExtensionsSwrFile)" />
     <ItemGroup>
       <!-- Include the swr file in the nuget package for VS authoring -->
       <Content Include="$(SdkMSBuildExtensionsSwrFile)" PackagePath="/" />
-      <Content Include="@(VSMSBuildExtensionsContent)"  PackagePath="/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)" />
-      <Content Condition="%(Identity) == '$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.xml'">
-        <PackagePath>/MSBuildSdkResolver/</PackagePath>
-      </Content>
+      <Content Include="@(VSMSBuildExtensionsContent)"  PackagePath="$([MSBuild]::ValueOrDefault(%(VSMSBuildExtensionsContent.PackagePath), '/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)'))" />
     </ItemGroup>
-  </Target>
-
 </Project>
