@@ -133,7 +133,7 @@ namespace Microsoft.NET.Build.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testIdentifier);
 
-            NuGetConfigWriter.Write(testAsset.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
+            NuGetConfigWriter.Write(testAsset.TestRoot);
 
             var buildCommand = new BuildCommand(testAsset);
 
