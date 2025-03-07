@@ -115,8 +115,14 @@
     <PropertyGroup>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(VersionPrefix)-baseline$(_BuildNumberLabels)</WorkloadSetVersion>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' != 'release'">$(Version)</WorkloadSetVersion>
-      <WorkloadSetFeatureBand>$(VersionPrefix.Substring(0, $([MSBuild]::Subtract($(VersionPrefix.Length), 2))))00$([System.Text.RegularExpressions.Regex]::Match($(WorkloadSetVersion), `-[A-z]*[\.]*\d*`))</WorkloadSetFeatureBand>
-      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
+    </PropertyGroup>
+
+    <GetWorkloadSetFeatureBand WorkloadSetVersion="$(WorkloadSetVersion)">
+      <Output TaskParameter="WorkloadSetFeatureBand" PropertyName="WorkloadSetFeatureBand" />
+    </GetWorkloadSetFeatureBand>
+
+    <PropertyGroup>
+      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>      
     </PropertyGroup>
 
     <ItemGroup>
