@@ -52,3 +52,15 @@ steps:
     displayName: Validate installer packages
     workingDirectory: $(Build.SourcesDirectory)
     continueOnError: ${{ parameters.continueOnError }}
+
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    condition: succeededOrFailed()
+    continueOnError: true
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: 'artifacts/TestResults/Release/*.trx'
+      searchFolder: $(sourcesPath)
+      mergeTestResults: true
+      publishRunAttachments: true
+      testRunTitle: Tests_$(Agent.JobName)
