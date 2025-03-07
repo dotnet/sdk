@@ -18,7 +18,7 @@ internal class GlobalPrefixRemover : CSharpSyntaxRewriter
         if (node.Left is AliasQualifiedNameSyntax alias &&
             alias.Alias.Identifier.Text == GlobalPrefix)
         {
-            return node.Right;
+            node = SyntaxFactory.QualifiedName(alias.Name, node.Right).WithTriviaFrom(node);
         }
         return base.VisitQualifiedName(node);
     }
