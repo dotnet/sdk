@@ -12,11 +12,17 @@ public class DiffRecordTests : DiffBaseTests
             beforeCode: """
                 namespace MyNamespace
                 {
+                    public class MyClass
+                    {
+                    }
                 }
                 """,
             afterCode: """
                 namespace MyNamespace
                 {
+                    public class MyClass
+                    {
+                    }
                     public record MyRecord1(int x);
                     public record MyRecord2
                     {
@@ -48,6 +54,9 @@ public class DiffRecordTests : DiffBaseTests
                 beforeCode: """
                 namespace MyNamespace
                 {
+                    public class MyClass
+                    {
+                    }
                     public record MyBeforeRecord1(int a);
                     public record MyRecord2
                     {
@@ -55,13 +64,16 @@ public class DiffRecordTests : DiffBaseTests
                     }
                     public record MyRecord3(int a)
                     {
-                        public int Y { get; set }
+                        public int Y { get; set; }
                     }
                 }
                 """,
                 afterCode: """
                 namespace MyNamespace
                 {
+                    public class MyClass
+                    {
+                    }
                     public record MyAfterRecord1(int a);
                     public record MyRecord2
                     {
@@ -69,7 +81,7 @@ public class DiffRecordTests : DiffBaseTests
                     }
                     public record MyRecord3(double a)
                     {
-                        public double Y { get; set }
+                        public double Y { get; set; }
                     }
                 }
                 """,
@@ -77,28 +89,31 @@ public class DiffRecordTests : DiffBaseTests
                   namespace MyNamespace
                   {
                 -     public record MyBeforeRecord1(int a);
-                +     public record MyAfterRecord1(int a);
                       public record MyRecord2
                       {
                 -         public double Y { get; set; }
                 +         public int X { get; set; }
                       }
-                -     public record MyRecord3(double a)
+                -     public record MyRecord3(int a)
                 -     {
-                -         public double Y { get; set }
+                -         public int Y { get; set; }
                 -     }
-                +     public record MyRecord3(int a)
+                +     public record MyAfterRecord1(int a);
+                +     public record MyRecord3(double a)
                 +     {
-                +         public int Y { get; set }
+                +         public double Y { get; set; }
                 +     }
                   }
-                """);
+                """); // Note they get sorted
 
     [Fact]
     public Task TestRecordDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
+                    public class MyClass
+                    {
+                    }
                     public record MyRecord1(int a);
                     public record MyRecord2
                     {
@@ -113,6 +128,9 @@ public class DiffRecordTests : DiffBaseTests
                 afterCode: """
                 namespace MyNamespace
                 {
+                    public class MyClass
+                    {
+                    }
                 }
                 """,
                 expectedCode: """
