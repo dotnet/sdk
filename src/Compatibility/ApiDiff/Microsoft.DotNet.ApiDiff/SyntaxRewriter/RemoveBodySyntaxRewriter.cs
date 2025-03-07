@@ -15,6 +15,8 @@ internal class RemoveBodyCSharpSyntaxRewriter : CSharpSyntaxRewriter
     public static readonly RemoveBodyCSharpSyntaxRewriter Singleton = new();
 
     private readonly SyntaxToken _semiColonToken = SyntaxFactory.Token(SyntaxKind.SemicolonToken);
+    private readonly SyntaxToken _noneToken = SyntaxFactory.Token(SyntaxKind.None);
+    private readonly SyntaxTriviaList _endLineTrivia = SyntaxFactory.TriviaList((Environment.NewLine == "\r\n") ? SyntaxFactory.CarriageReturnLineFeed : SyntaxFactory.LineFeed);
 
     public override SyntaxNode? VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
     {
@@ -55,7 +57,9 @@ internal class RemoveBodyCSharpSyntaxRewriter : CSharpSyntaxRewriter
 
     public override SyntaxNode? VisitEventDeclaration(EventDeclarationSyntax node)
     {
-        var result = node.WithAccessorList(GetEmptiedAccessors(node.AccessorList));
+        var result = node
+            .WithIdentifier(node.Identifier.WithoutTrivia())
+            .WithAccessorList(GetEmptiedAccessors(node.AccessorList));
         return base.VisitEventDeclaration(result);
     }
 
@@ -73,6 +77,11 @@ internal class RemoveBodyCSharpSyntaxRewriter : CSharpSyntaxRewriter
 
     public override SyntaxNode? VisitOperatorDeclaration(OperatorDeclarationSyntax node)
     {
+        if (node.OperatorToken.IsKind(SyntaxKind.GreaterThanToken))
+        {
+            // Takes care of the missing space before the greater than
+            node = node.WithOperatorToken(SyntaxFactory.Token(SyntaxFactory.TriviaList(SyntaxFactory.Space), node.OperatorToken.Kind(), SyntaxTriviaList.Empty));
+        }
         var result = node
                 .WithBody(null) // remove the default empty body wrapped by brackets
                 .WithoutLeadingTrivia()
@@ -87,6 +96,36 @@ internal class RemoveBodyCSharpSyntaxRewriter : CSharpSyntaxRewriter
     {
         var result = node.WithAccessorList(GetEmptiedAccessors(node.AccessorList));
         return base.VisitPropertyDeclaration(result);
+    }
+
+    public override SyntaxNode? VisitRecordDeclaration(RecordDeclarationSyntax node)
+    {
+        if (node.Members.Any())
+        {
+            // Fix the spaces and lack of newline
+            var replacedOpenBrace = SyntaxFactory.Token(_endLineTrivia.AddRange(node.GetLeadingTrivia()), SyntaxKind.OpenBraceToken, node.OpenBraceToken.TrailingTrivia);
+            node = node.WithOpenBraceToken(replacedOpenBrace);
+        }
+        else
+        {
+            // Replace braces with semicolon
+            node = node.WithOpenBraceToken(_noneToken)
+                       .WithCloseBraceToken(_noneToken)
+                       .WithSemicolonToken(_semiColonToken);
+        }
+
+        if (node.ParameterList != null && node.ParameterList.Parameters.Any())
+        {
+            // Fix the extra space
+            node = node.WithParameterList(node.ParameterList.WithoutTrailingTrivia());
+        }
+        else
+        {
+            // Remove the parentheses if there are no arguments
+            node = node.WithParameterList(null);
+        }
+
+        return base.VisitRecordDeclaration(node);
     }
 
     private AccessorListSyntax? GetEmptiedAccessors(AccessorListSyntax? accessorList)
@@ -116,7 +155,7 @@ internal class RemoveBodyCSharpSyntaxRewriter : CSharpSyntaxRewriter
             newAccessors.Add(accessorDeclaration);
         }
 
-        return SyntaxFactory.AccessorList(SyntaxFactory.List(newAccessors));
+        return SyntaxFactory.AccessorList(SyntaxFactory.List(newAccessors)).WithLeadingTrivia(SyntaxFactory.Space);
     }
 
 }
