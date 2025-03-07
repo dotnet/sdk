@@ -1,0 +1,50 @@
+name: Remove Lockdown Label from PRs
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+    actions: write
+    issues: write
+
+jobs:
+    remove-labels:
+        if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'Branding')
+        runs-on: ubuntu-latest
+        steps:
+        -   name: PR's only change is <VersionFeature> in eng/Versions.props
+            run: |
+                git fetch --depth=2
+                changes=$(git diff HEAD^ HEAD -- eng/Versions.props | grep '^[-+]')
+                changes_without_version_feature=$(echo "$changes" | grep -v '<VersionFeature>')
+                has_changes_without_version_feature=$(echo "$changes_without_version_feature" | wc -l)
+                if [ "$has_changes_without_version_feature" -eq 0 ]; then
+                    echo "only_version_feature_changed=true" >> $GITHUB_ENV
+                else
+                    echo "only_version_feature_changed=false" >> $GITHUB_ENV
+
+        -   name: Remove Branch Lockdown label from other PRs targeting this branch
+            if: steps.PR_has_Branding_label.outputs.has_branding_label == 'true' && steps.PR_only_change_is_VersionFeature_in_eng_Versions_props.outputs.only_version_feature_changed == 'true'
+            uses: actions/github-script@v4
+            with:
+                script: |
+                    const prs = await github.pulls.list({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        state: 'open',
+                        base: github.event.pull_request.base.ref,
+                        per_page: 300
+                    });
+                    const filtered_prs = prs.data
+                        .filter(pr => pr.number !== github.context.payload.pull_request.number)
+                        .filter(pr => pr.labels.map(label => label.name).includes('Branch Lockdown'));
+                    for (const pr of filtered_prs) {
+                        await github.issues.removeLabel({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            issue_number: pr.number,
+                            name: 'Branch Lockdown'
+                        });
+                        console.log(`Removed Branch Lockdown label from PR #${pr.number}`);
+                    }
