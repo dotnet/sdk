@@ -56,21 +56,27 @@
       <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\arm64\hostfxr.dll" DeploymentSubpath="MSBuildSdkResolver/arm64/" />
       <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.Deployment.DotNet.Releases*.dll" DeploymentSubpath="MSBuildSdkResolver/" />
       <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.DotNet.MSBuildSdkResolver*.dll" DeploymentSubpath="MSBuildSdkResolver/" />
-      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\SdkResolvers\**\Microsoft.DotNet.MSBuildSdkResolver.xml" DeploymentSubpath="MSBuildSdkResolver/" />
 
       <VSMSBuildExtensionsContent Update="@(VSMSBuildExtensionsContent)">
         <DestinationPath>$(OutputPath)/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)</DestinationPath>
       </VSMSBuildExtensionsContent>
+      <VSMSBuildExtensionsContent Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.xml"
+        DestinationPath="$(OutputPath)/SdkResolvers/Microsoft.DotNet.MSBuildSdkResolver/Microsoft.DotNet.MSBuildSdkResolver.xml" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(VSMSBuildExtensionsContent)" DestinationFiles="%(VSMSBuildExtensionsContent.DestinationPath)" />
+    <ItemGroup>
+      <_VSMSBuildExtensionsContentDestinations Include="@(VSMSBuildExtensionsContent->'%(DestinationPath)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(VSMSBuildExtensionsContent)" DestinationFiles="@(_VSMSBuildExtensionsContentDestinations)" />
 
     <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(OutputPath)"
                                   OutputFile="$(SdkMSBuildExtensionsSwrFile)" />
     <ItemGroup>
       <!-- Include the swr file in the nuget package for VS authoring -->
       <Content Include="$(SdkMSBuildExtensionsSwrFile)" PackagePath="/" />
-      <Content Include="@(VSMSBuildExtensionsContent)" PackagePath="/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)" />
+      <Content Include="@(VSMSBuildExtensionsContent)"  PackagePath="/%(VSMSBuildExtensionsContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)" />
+      <Content Update="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.xml" PackagePath="/MSBuildSdkResolver/" />
     </ItemGroup>
   </Target>
 
