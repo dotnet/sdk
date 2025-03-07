@@ -28,10 +28,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Paths to tools, tasks, and extensions are calculated relative to the StaticWebAssetsSdkDirectoryRoot. This can be modified to test a local build. -->
     <StaticWebAssetsSdkDirectoryRoot Condition="'$(StaticWebAssetsSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</StaticWebAssetsSdkDirectoryRoot>
     <StaticWebAssetsSdkBuildTasksDirectoryRoot Condition="'$(StaticWebAssetsSdkBuildTasksDirectoryRoot)'==''">$(StaticWebAssetsSdkDirectoryRoot)tasks\</StaticWebAssetsSdkBuildTasksDirectoryRoot>
-    <_StaticWebAssetsSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</_StaticWebAssetsSdkTasksTFM>
+    <_StaticWebAssetsSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net10.0</_StaticWebAssetsSdkTasksTFM>
     <_StaticWebAssetsSdkTasksTFM Condition=" '$(_StaticWebAssetsSdkTasksTFM)' == ''">net472</_StaticWebAssetsSdkTasksTFM>
     <StaticWebAssetsSdkBuildTasksAssembly>$(StaticWebAssetsSdkBuildTasksDirectoryRoot)$(_StaticWebAssetsSdkTasksTFM)\Microsoft.NET.Sdk.StaticWebAssets.Tasks.dll</StaticWebAssetsSdkBuildTasksAssembly>
-    <_StaticWebAssetsSdkToolAssembly>$(StaticWebAssetsSdkDirectoryRoot)tools\net9.0\Microsoft.NET.Sdk.StaticWebAssets.Tool.dll</_StaticWebAssetsSdkToolAssembly>
+    <_StaticWebAssetsSdkToolAssembly>$(StaticWebAssetsSdkDirectoryRoot)tools\net10.0\Microsoft.NET.Sdk.StaticWebAssets.Tool.dll</_StaticWebAssetsSdkToolAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">

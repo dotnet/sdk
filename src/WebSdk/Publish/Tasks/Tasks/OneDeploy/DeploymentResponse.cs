@@ -17,31 +17,31 @@ internal class DeploymentResponse
     };
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonPropertyName("end_time")]
-    public string EndTime { get; set; }
+    public string? EndTime { get; set; }
 
     [JsonPropertyName("log_url")]
-    public string LogUrl { get; set; }
+    public string? LogUrl { get; set; }
 
     [JsonPropertyName("message")]
-    public string Message { get; set; }
+    public string? Message { get; set; }
 
     [JsonPropertyName("status")]
     public DeploymentStatus? Status { get; set; } = DeploymentStatus.Unknown;
 
     [JsonPropertyName("site_name")]
-    public string SiteName { get; set; }
+    public string? SiteName { get; set; }
 
     [JsonPropertyName("status_text")]
-    public string StatusText { get; set; }
+    public string? StatusText { get; set; }
 
     [JsonPropertyName("start_time")]
-    public string StartTime { get; set; }
+    public string? StartTime { get; set; }
 
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string? Url { get; set; }
 
     /// <inheritdoc/>
     public override string ToString()
@@ -50,7 +50,6 @@ internal class DeploymentResponse
             ? string.Format(Resources.DeploymentStatus, Status)
             : string.Format(Resources.DeploymentStatusWithText, Status, StatusText);
     }
-
 }
 
 /// <summary>
@@ -72,7 +71,7 @@ internal static class DeploymentResponseExtensions
             || response.Status.Value.IsFailedStatus();
     }
 
-    public static string GetLogUrlWithId(this DeploymentResponse deploymentResponse)
+    public static string? GetLogUrlWithId(this DeploymentResponse deploymentResponse)
     {
         if (deploymentResponse is null
             || string.IsNullOrEmpty(deploymentResponse.LogUrl)
@@ -90,7 +89,7 @@ internal static class DeploymentResponseExtensions
             if (!string.IsNullOrEmpty(pathAndQuery))
             {
                 string[] pathAndQueryParts = pathAndQuery.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                string[] pathWithIdParts = new string[pathAndQueryParts.Length];
+                string?[] pathWithIdParts = new string[pathAndQueryParts.Length];
 
                 for (int i = pathAndQueryParts.Length - 1; i >= 0; i--)
                 {

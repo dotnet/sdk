@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.Extensions.Configuration;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -10,16 +11,6 @@ namespace Microsoft.DotNet.Cli
     internal static class TestCommandParser
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-test";
-
-        public static readonly CliOption<string> MaxParallelTestModules = new ForwardedOption<string>("--max-parallel-test-modules", "-mptm")
-        {
-            Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
-        };
-
-        public static readonly CliOption<string> AdditionalMSBuildParameters = new ForwardedOption<string>("--additional-msbuild-parameters")
-        {
-            Description = LocalizableStrings.CmdAdditionalMSBuildParametersDescription,
-        };
 
         public static readonly CliOption<string> SettingsOption = new ForwardedOption<string>("--settings", "-s")
         {
@@ -29,7 +20,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> ListTestsOption = new ForwardedOption<bool>("--list-tests", "-t")
         {
-            Description = LocalizableStrings.CmdListTestsDescription
+            Description = LocalizableStrings.CmdListTestsDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestListTests=true");
 
         public static readonly CliOption<string> FilterOption = new ForwardedOption<string>("--filter")
@@ -73,7 +65,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
         {
-            Description = LocalizableStrings.CmdNoBuildDescription
+            Description = LocalizableStrings.CmdNoBuildDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestNoBuild=true");
 
         public static readonly CliOption<string> ResultsOption = new ForwardedOption<string>("--results-directory")
@@ -91,12 +84,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> BlameOption = new ForwardedOption<bool>("--blame")
         {
-            Description = LocalizableStrings.CmdBlameDescription
+            Description = LocalizableStrings.CmdBlameDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestBlame=true");
 
         public static readonly CliOption<bool> BlameCrashOption = new ForwardedOption<bool>("--blame-crash")
         {
-            Description = LocalizableStrings.CmdBlameCrashDescription
+            Description = LocalizableStrings.CmdBlameCrashDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestBlameCrash=true");
 
         public static readonly CliOption<string> BlameCrashDumpOption = CreateBlameCrashDumpOption();
@@ -115,12 +110,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> BlameCrashAlwaysOption = new ForwardedOption<bool>("--blame-crash-collect-always")
         {
-            Description = LocalizableStrings.CmdBlameCrashCollectAlwaysDescription
+            Description = LocalizableStrings.CmdBlameCrashCollectAlwaysDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true" });
 
         public static readonly CliOption<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang")
         {
-            Description = LocalizableStrings.CmdBlameHangDescription
+            Description = LocalizableStrings.CmdBlameHangDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestBlameHang=true");
 
         public static readonly CliOption<string> BlameHangDumpOption = CreateBlameHangDumpOption();
@@ -145,7 +142,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
         {
-            Description = LocalizableStrings.CmdNoLogo
+            Description = LocalizableStrings.CmdNoLogo,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestNoLogo=true");
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
@@ -156,47 +154,95 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly CliCommand Command = ConstructCommand();
 
-
-
         public static CliCommand GetCommand()
         {
             return Command;
         }
 
-        private static bool IsTestingPlatformEnabled()
+        public static string GetTestRunnerName()
         {
-            var testingPlatformEnabledEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_CLI_TESTINGPLATFORM_ENABLE");
-            var isTestingPlatformEnabled = testingPlatformEnabledEnvironmentVariable == "1" || string.Equals(testingPlatformEnabledEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
-            return isTestingPlatformEnabled;
+            var builder = new ConfigurationBuilder();
+
+            string dotnetConfigPath = GetDotnetConfigPath(Environment.CurrentDirectory);
+
+            if (!File.Exists(dotnetConfigPath))
+            {
+                return CliConstants.VSTest;
+            }
+
+            builder.AddIniFile(dotnetConfigPath);
+
+            IConfigurationRoot config = builder.Build();
+            var testSection = config.GetSection("dotnet.test");
+
+            if (!testSection.Exists())
+            {
+                return CliConstants.VSTest;
+            }
+
+            string runnerNameSection = testSection["runner:name"];
+
+            if (string.IsNullOrEmpty(runnerNameSection))
+            {
+                return CliConstants.VSTest;
+            }
+
+            return runnerNameSection;
+        }
+
+        private static string? GetDotnetConfigPath(string? startDir)
+        {
+            string? directory = startDir;
+            while (directory != null)
+            {
+                string dotnetConfigPath = Path.Combine(directory, "dotnet.config");
+                if (File.Exists(dotnetConfigPath))
+                {
+                    return dotnetConfigPath;
+                }
+
+                directory = Path.GetDirectoryName(directory);
+            }
+            return null;
         }
 
         private static CliCommand ConstructCommand()
         {
-#if RELEASE
-            return GetVSTestCliCommand();
-#else
-            bool isTestingPlatformEnabled = IsTestingPlatformEnabled();
-            string testingSdkName = isTestingPlatformEnabled ? "testingplatform" : "vstest";
+            string testRunnerName = GetTestRunnerName();
 
-            if (isTestingPlatformEnabled)
-            {
-                return GetTestingPlatformCliCommand();
-            }
-            else
+            if (testRunnerName.Equals(CliConstants.VSTest, StringComparison.OrdinalIgnoreCase))
             {
                 return GetVSTestCliCommand();
             }
+            else if (testRunnerName.Equals(CliConstants.MicrosoftTestingPlatform, StringComparison.OrdinalIgnoreCase))
+            {
+                return GetTestingPlatformCliCommand();
+            }
 
-            throw new InvalidOperationException($"Testing sdk not supported: {testingSdkName}");
-#endif
+            throw new InvalidOperationException(string.Format(LocalizableStrings.CmdUnsupportedTestRunnerDescription, testRunnerName));
         }
 
         private static CliCommand GetTestingPlatformCliCommand()
         {
-            var command = new TestingPlatformCommand("test");
-            command.SetAction((parseResult) => command.Run(parseResult));
-            command.Options.Add(MaxParallelTestModules);
-            command.Options.Add(AdditionalMSBuildParameters);
+            var command = new TestingPlatformCommand("test", LocalizableStrings.DotnetTestCommand);
+            command.SetAction(parseResult => command.Run(parseResult));
+            command.Options.Add(TestingPlatformOptions.ProjectOption);
+            command.Options.Add(TestingPlatformOptions.SolutionOption);
+            command.Options.Add(TestingPlatformOptions.DirectoryOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
+            command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
+            command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
+            command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(TestingPlatformOptions.ConfigurationOption);
+            command.Options.Add(TestingPlatformOptions.FrameworkOption);
+            command.Options.Add(CommonOptions.OperatingSystemOption);
+            command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+            command.Options.Add(CommonOptions.VerbosityOption);
+            command.Options.Add(CommonOptions.NoRestoreOption);
+            command.Options.Add(TestingPlatformOptions.NoBuildOption);
+            command.Options.Add(TestingPlatformOptions.NoAnsiOption);
+            command.Options.Add(TestingPlatformOptions.NoProgressOption);
+            command.Options.Add(TestingPlatformOptions.OutputOption);
 
             return command;
         }

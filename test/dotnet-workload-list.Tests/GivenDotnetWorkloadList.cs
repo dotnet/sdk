@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using ManifestReaderTests;
 using Microsoft.DotNet.Workloads.Workload;
@@ -35,7 +37,8 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             command.Execute();
 
             // Expected number of lines for table headers
-            _reporter.Lines.Count.Should().Be(6);
+            // Expecting a workload set adds two lines
+            _reporter.Lines.Count.Should().Be(8);
         }
 
         [WindowsOnlyFact]
