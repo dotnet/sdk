@@ -73,14 +73,7 @@ namespace Microsoft.DotNet.Cli
                 .OfType<IForwardedOption>()?
                 .FirstOrDefault()?
                 .GetForwardingFunction();
-            if (func is not null)
-            {
-                return func(parseResult) ?? [];
-            }
-            else
-            {
-                return [];
-            }
+            return func?.Invoke(parseResult) ?? [];
         }
 
         public static CliOption<T> AllowSingleArgPerToken<T>(this CliOption<T> option)
