@@ -126,6 +126,7 @@
     <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
+    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
   <!-- Global usings -->
