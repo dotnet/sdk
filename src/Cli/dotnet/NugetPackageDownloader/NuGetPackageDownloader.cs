@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _sourceRepositories = new();
             // If windows or env variable is set, verify signatures
             _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
-                : string.Equals(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), bool.TrueString, StringComparison.OrdinalIgnoreCase) ?? OperatingSystem.IsLinux());
+                : string.Equals(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), bool.FalseString, StringComparison.OrdinalIgnoreCase) ?  false : OperatingSystem.IsLinux());
 
             _cacheSettings = new SourceCacheContext
             {
