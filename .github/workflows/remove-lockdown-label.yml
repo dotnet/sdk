@@ -28,7 +28,7 @@ jobs:
                         pull_number: prNumber
                     });
                     // If files other than eng/Versions.props are changed, output message and exit
-                    if (files.any(file => file.filename !== "eng/Versions.props")) {
+                    if (files.some(file => file.filename !== "eng/Versions.props")) {
                         console.log("❌ Changes in eng/Versions.props other than <VersionFeature> found");
                         core.exportVariable("only_version_feature_changed", "false");
                         return;
