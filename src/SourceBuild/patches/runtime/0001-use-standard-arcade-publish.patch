@@ -1453,3 +1453,144 @@ index 03c4308e13aebf..e581348a11eb80 100644
 +            name: $(DncEngInternalBuildPool)
 +            demands: ImageOverride -equals 1es-windows-2022
 +          symbolPublishingAdditionalParameters: '/p:PublishSpecialClrFiles=true'
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 4b64cec303..1631f76ce9 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -38,6 +38,19 @@
+     <ShortStack Condition="'$(DotNetBuildMonoEnableLLVM)' == 'true' or '$(DotNetBuildMonoAOTEnableLLVM)' == 'true'">true</ShortStack>
+   </PropertyGroup>
+ 
++  <!--
++    Allow the VMR orchestrator to control whether or not to build rid-specific artifacts,
++    but provide defaults until the VMR orchestrator provides controls in all scenarios.
++  -->
++  <PropertyGroup Condition="'$(EnableDefaultRidSpecificArtifacts)' == ''">
++    <!-- Source-build always needs all artifacts to be published. -->
++    <EnableDefaultRidSpecificArtifacts Condition="'$(DotNetBuildSourceOnly)' != ''">false</EnableDefaultRidSpecificArtifacts>
++    <!-- Short-stack builds should always only publish RID-specific artifacts. -->
++    <EnableDefaultRidSpecificArtifacts Condition="'$(ShortStack)' == 'true'">true</EnableDefaultRidSpecificArtifacts>
++    <!-- If no override is specified, don't use RID-specific publishing. Instead, publish everything. -->
++    <EnableDefaultRidSpecificArtifacts Condition="'$(EnableDefaultRidSpecificArtifacts)' == ''">false</EnableDefaultRidSpecificArtifacts>
++  </PropertyGroup>
++
+   <Target Name="GetRuntimeSourceBuildCommandConfiguration"
+           BeforeTargets="GetSourceBuildCommandConfiguration">
+     <PropertyGroup>
+@@ -108,13 +121,7 @@
+       <!-- Needed until https://github.com/dotnet/runtime/issues/109329 is fixed. -->
+       <InnerBuildArgs Condition="'$(NetCoreAppToolCurrentVersion)' != ''">$(InnerBuildArgs) /p:NetCoreAppToolCurrentVersion=$(NetCoreAppToolCurrentVersion)</InnerBuildArgs>
+ 
+-      <!--
+-        If we're in a full-stack VMR build or Source-Build, publish all packages.
+-        ShortStack jobs should only publish their specific packages.
+-        In the future, some full-stack VMR jobs may not publish all packages.
+-        SourceBuild will always need to publish everything.
+-      -->
+-      <InnerBuildArgs Condition="'$(ShortStack)' == 'true'">$(InnerBuildArgs) /p:EnableDefaultArtifacts=false</InnerBuildArgs>
++      <InnerBuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' != ''">$(InnerBuildArgs) /p:EnableDefaultRidSpecificArtifacts=$(EnableDefaultRidSpecificArtifacts)</InnerBuildArgs>
+     </PropertyGroup>
+   </Target>
+ 
+diff --git a/eng/Publishing.props b/eng/Publishing.props
+index a68e020582..816eac1b87 100644
+--- a/eng/Publishing.props
++++ b/eng/Publishing.props
+@@ -10,7 +10,7 @@
+       We can't use NETCoreSdkRuntimeIdentifier here as the Arcade SDK projects don't import the .NET SDK.
+       Instead, just make sure we include the assets targeting "not the output rid", which will catch the host assets.
+     -->
+-    <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true' and '$(DotNetBuildOrchestrator)' == 'true'">
++    <ItemGroup Condition="'$(EnableDefaultRidSpecificArtifacts)' != 'true' and '$(DotNetBuildOrchestrator)' == 'true'">
+       <_HostArtifact Include="$(ArtifactsPackagesDir)**\runtime.*.Microsoft.NETCore.ILAsm.*.nupkg"
+                       Exclude="$(ArtifactsPackagesDir)**\runtime.$(OutputRID).Microsoft.NETCore.ILAsm.*.nupkg" />
+ 
+diff --git a/eng/Signing.props b/eng/Signing.props
+index a5b0869b43..b9ee32e152 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -4,22 +4,29 @@
+ 
+   <PropertyGroup>
+     <!--
+-      By default, we don't use the default artifacts settings for signing or publishing.
++      By default, we will use RID-specific package publishing.
+       Every job will publish their RID-specific packages.
+-      For non-RID-specific packages, we have various rules:
++      Some RIDs also have OS or arch-specific packages that are published by that RID.
+ 
+-      - A job can specify EnableDefaultArtifacts=true as a global property to publish all packages it produces.
++      For jobs that don't meet the above rules, we have various controls:
++
++      - A job can specify EnableDefaultRidSpecificArtifacts=false as a global property to publish all packages it produces.
+         We have specific jobs that produce RID-agnostic packages or packages for multiple RIDs set this property.
+-      - For some target RIDs, we also include specific RID-agnostic packages.
++      - Mono AOT LLVM builds only publish LLVM-specific packages always.
+ 
+-      VMR jobs control whether or not a vertical has EnableDefaultArtifacts set to true or false in DotNetBuild.props.
++      VMR jobs can control whether or not a vertical has EnableDefaultRidSpecificArtifacts set to true or false in DotNetBuild.props.
+ 
+       Packages that do not meet the above rules are added with Vertical visibility in the VMR and excluded in non-VMR builds.
+     -->
+-    <EnableDefaultArtifacts Condition="'$(DotNetBuildOrchestrator)' != 'true'">false</EnableDefaultArtifacts>
++    <EnableDefaultArtifacts Condition="'$(MonoAOTEnableLLVM)' == 'true'">false</EnableDefaultArtifacts>
+     <EnableBlobArtifacts>true</EnableBlobArtifacts>
+     <EnableBlobArtifacts Condition="'$(MonoAOTEnableLLVM)' == 'true'">false</EnableBlobArtifacts>
+ 
++    <!-- Set the TargetRid property to our PackageRID, which is the right RID to use for selecting packages from our repo. -->
++    <TargetRid>$(PackageRID)</TargetRid>
++
++    <EnableDefaultRidSpecificArtifacts Condition="'$(EnableDefaultRidSpecificArtifacts)' == ''">true</EnableDefaultRidSpecificArtifacts>
++
+     <UseDotNetCertificate>true</UseDotNetCertificate>
+   </PropertyGroup>
+ 
+@@ -70,7 +77,6 @@
+     <FileSignInfo Include="@(AzureLinuxPrereqsRPM->'%(Filename)%(Extension)')" CertificateName="LinuxSignMariner" />
+   </ItemGroup>
+ 
+-  <!-- In build signing and publishing without a join point -->
+   <ItemGroup Condition="'$(EnableBlobArtifacts)' == 'true'">
+     <Artifact Include="$(ArtifactsPackagesDir)**\*.tar.gz;
+                        $(ArtifactsPackagesDir)**\*.zip;
+@@ -111,11 +117,7 @@
+                   Kind="Package" />
+       </ItemGroup>
+     </When>
+-    <When Condition="'$(EnableDefaultArtifacts)' != 'true'">
+-      <ItemGroup>
+-        <PackageArtifacts Include="$(ArtifactsPackagesDir)**\*.$(PackageRID).*.nupkg" />
+-      </ItemGroup>
+-
++    <When Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">
+       <ItemGroup Condition="'$(PackageRID)' == 'ios-arm64'">
+         <PackageArtifacts
+           Include="$(ArtifactsPackagesDir)**\Microsoft.NET.Runtime.iOS.Sample.Mono.*.nupkg;
+@@ -141,26 +143,14 @@
+                   $(ArtifactsPackagesDir)**\Microsoft.NET.Sdk.WebAssembly.Pack.*.nupkg;
+                   $(ArtifactsPackagesDir)**\Microsoft.NET.Workload.Mono.ToolChain.*.nupkg" />
+       </ItemGroup>
+-      <ItemGroup Condition="$(PackageRID.StartsWith('win-'))">
+-        <PackageArtifacts
+-          Include="$(ArtifactsPackagesDir)**\VS.Redist.Common.NetCore.*.nupkg" />
+-      </ItemGroup>
+ 
+       <ItemGroup>
+-        <VerticalOnlyPackageArtifacts Include="$(ArtifactsPackagesDir)**\*.nupkg" Exclude="@(PackageArtifacts)" />
+         <!--
+-          In non-VMR builds, we can skip publishing RID-agnostic packages entirely when we're not the lane that is supposed to publish them.
+-          In VMR builds, we need to publish them for upstack jobs to consume.
++          Include the non-RID-specific packages for this RID.
+         -->
+         <Artifact Include="@(PackageArtifacts)"
+                   IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
+                   Kind="Package" />
+-
+-        <Artifact Include="@(VerticalOnlyPackageArtifacts)"
+-                  IsShipping="false"
+-                  Visibility="Vertical"
+-                  Kind="Package"
+-                  Condition="'$(DotNetBuildOrchestrator)' == 'true'" />
+       </ItemGroup>
+     </When>
+     <Otherwise>
