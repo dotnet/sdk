@@ -15,19 +15,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public bool HasLoggedErrors => errors.Count != 0;
         public bool HasLoggedErrorSuppressions { get; private set; }
 
-        public bool LogError(Suppression suppression, string code, string message)
+        public bool LogError(Suppression suppression)
         {
             HasLoggedErrorSuppressions = true;
-            errors.Add($"{code} {message}");
+            errors.Add($"{suppression.DiagnosticId} {suppression.Message}");
 
             return true;
         }
         public void LogError(string message) => errors.Add(message);
         public void LogError(string code, string message) => errors.Add($"{code} {message}");
 
-        public bool LogWarning(Suppression suppression, string code, string message)
+        public bool LogWarning(Suppression suppression)
         {
-            warnings.Add($"{code} {message}");
+            warnings.Add($"{suppression.DiagnosticId} {suppression.Message}");
 
             return true;
         }
