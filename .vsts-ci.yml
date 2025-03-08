@@ -113,13 +113,13 @@ extends:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
             displayName: Create artifacts/bin directory
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-            timeoutInMinutes: 90
+            timeoutInMinutes: 180
             windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
+              officialBuildProperties: $(_officialBuildProperties) /p:BuildWorkloads=true
               enableDefaultArtifacts: true
               runTests: false
               publishRetryConfig: true
