@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --no-cache");
 
-            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().ContainSingle("--no-cache");
+            result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption).Should().BeTrue();
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --no-http-cache");
 
-            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().ContainSingle("--no-http-cache");
+            result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption).Should().BeTrue();
         }
 
         [Fact]
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --ignore-failed-sources");
 
-            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().ContainSingle("--ignore-failed-sources");
+            result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption).Should().BeTrue();
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --disable-parallel");
 
-            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().ContainSingle("--disable-parallel");
+            result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption).Should().BeTrue();
         }
 
         [Fact]
@@ -155,7 +155,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool install -g console.test.app --interactive");
 
-            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().ContainSingle("--interactive");
+            result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption).Should().BeTrue();
         }
     }
 }

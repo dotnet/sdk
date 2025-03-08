@@ -12,14 +12,14 @@ namespace Microsoft.DotNet.Cli.Remove.Package.Tests
   Remove a NuGet package reference from the project.
 
 Usage:
-  dotnet remove <PROJECT> package <PACKAGE_NAME> [options]
+  dotnet remove [<PROJECT>] package <PACKAGE_NAME>... [options]
 
 Arguments:
   <PROJECT>         The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
   <PACKAGE_NAME>    The package reference to remove.
 
 Options:
-  --interactive     Allows the command to stop and wait for user input or action (for example to complete authentication).
+  --interactive     Allows the command to stop and wait for user input or action (for example to complete authentication). [default: True]
   -?, -h, --help    Show command line help.";
 
         private Func<string, string> RemoveCommandHelpText = (defaultVal) => $@"Description:
