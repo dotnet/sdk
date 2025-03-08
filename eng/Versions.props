@@ -96,8 +96,8 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0-preview.3.25155.15</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-preview.3.25155.15</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>10.0.0-preview.3.25155.15</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-preview.3.25157.12</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>10.0.0-preview.3.25157.12</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>10.0.0-preview.3.25155.15</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETHostModelVersion>10.0.0-preview.3.25155.15</MicrosoftNETHostModelVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>10.0.0-preview.3.25155.15</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
@@ -109,8 +109,8 @@
     <SystemServiceProcessServiceControllerVersion>10.0.0-preview.3.25155.15</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>10.0.0-preview.3.25155.15</MicrosoftNETCorePlatformsPackageVersion>
-    <VSRedistCommonNetCoreTargetingPackx64100PackageVersion>10.0.0-preview.3.25155.15</VSRedistCommonNetCoreTargetingPackx64100PackageVersion>
-    <MicrosoftNETCoreAppHostwinx64PackageVersion>10.0.0-preview.3.25155.15</MicrosoftNETCoreAppHostwinx64PackageVersion>
+    <VSRedistCommonNetCoreTargetingPackx64100PackageVersion>10.0.0-preview.3.25157.12</VSRedistCommonNetCoreTargetingPackx64100PackageVersion>
+    <MicrosoftNETCoreAppHostwinx64PackageVersion>10.0.0-preview.3.25157.12</MicrosoftNETCoreAppHostwinx64PackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-preview.3.25155.15</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>10.0.0-preview.3.25155.15</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>10.0.0-preview.3.25155.15</MicrosoftWin32SystemEventsPackageVersion>
