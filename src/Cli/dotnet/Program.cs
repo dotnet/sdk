@@ -14,6 +14,7 @@ using CommandResult = System.CommandLine.Parsing.CommandResult;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli
 {

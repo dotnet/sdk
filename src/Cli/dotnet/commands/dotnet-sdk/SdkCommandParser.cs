@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Sdk.Check;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sdk.LocalizableStrings;
 

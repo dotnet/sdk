@@ -8,6 +8,7 @@ using System.CommandLine.Parsing;
 using System.Data;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Run;
 using NuGet.Common;
 

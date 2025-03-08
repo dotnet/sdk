@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
