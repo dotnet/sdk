@@ -16,11 +16,12 @@ jobs:
         -   name: Checkout repository
             uses: actions/checkout@v2
 
-        # flagged user-visible change: replaced shell script with JS to check <VersionFeature>user-visible change: replaced shell script with JS to check <VersionFeature>
-        -   name: PR's only change is <VersionFeature> in eng/Versions.propsly change is <VersionFeature> in eng/Versions.props
+        -   name: PR's only change is <VersionFeature> in eng/Versions.props
             uses: actions/github-script@v4
             with:
                 script: |
+                    const otherChangesMessage = "❌ Changes in eng/Versions.props other than <VersionFeature> found";
+                    const onlyVersionFeatureMessage = "✅ PR's only change is <VersionFeature> in eng/Versions.props";
                     const prNumber = context.payload.pull_request.number;
                     const { data: files } = await github.pulls.listFiles({
                         owner: context.repo.owner,
@@ -29,7 +30,7 @@ jobs:
                     });
                     // If files other than eng/Versions.props are changed, output message and exit
                     if (files.some(file => file.filename !== "eng/Versions.props")) {
-                        console.log("❌ Changes in eng/Versions.props other than <VersionFeature> found");
+                        console.log(otherChangesMessage);
                         core.exportVariable("only_version_feature_changed", "false");
                         return;
                     }
@@ -38,16 +39,16 @@ jobs:
                     const patchLines = versionsPropsFile.patch.split("\n").filter(l => l.startsWith("+") || l.startsWith("-"));
                     for (const line of patchLines) {
                         if (!line.includes("<VersionFeature>")) {
-                            console.log("❌ Changes in eng/Versions.props other than <VersionFeature> found");
+                            console.log(otherChangesMessage);
                             core.exportVariable("only_version_feature_changed", "false");
                             return;
                         }
                     }
-                    console.log("✅ PR's only change is <VersionFeature> in eng/Versions.props");
+                    console.log(onlyVersionFeatureMessage);
                     core.exportVariable("only_version_feature_changed", "true");
 
         -   name: Remove Branch Lockdown label from other PRs targeting this branch
-            if: steps.PR_has_Branding_label.outputs.has_branding_label == 'true' && steps.PR_only_change_is_VersionFeature_in_eng_Versions_props.outputs.only_version_feature_changed == 'true'
+            if: steps.PR_only_change_is_VersionFeature_in_eng_Versions_props.outputs.only_version_feature_changed == 'true'
             uses: actions/github-script@v4
             with:
                 script: |
