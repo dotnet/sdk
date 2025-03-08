@@ -17,6 +17,7 @@ jobs:
             uses: actions/checkout@v2
 
         -   name: PR's only change is <VersionFeature> in eng/Versions.props
+            id: only_version_feature_changed
             uses: actions/github-script@v4
             with:
                 script: |
@@ -25,7 +26,7 @@ jobs:
                     const prNumber = context.payload.pull_request.number;
                     const { data: files } = await github.pulls.listFiles({
                         owner: context.repo.owner,
-                        repo: context.repo.repo,    repo: context.repo.repo,
+                        repo: context.repo.repo,
                         pull_number: prNumber
                     });
                     // If files other than eng/Versions.props are changed, output message and exit
@@ -48,7 +49,7 @@ jobs:
                     core.exportVariable("only_version_feature_changed", "true");
 
         -   name: Remove Branch Lockdown label from other PRs targeting this branch
-            if: steps.PR_only_change_is_VersionFeature_in_eng_Versions_props.outputs.only_version_feature_changed == 'true'
+            if: steps.only_version_feature_changed.outputs.only_version_feature_changed == 'true'
             uses: actions/github-script@v4
             with:
                 script: |
