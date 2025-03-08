@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 using NuGetDocumentedCommand = NuGet.CommandLine.XPlat.Commands.DocumentedCommand;

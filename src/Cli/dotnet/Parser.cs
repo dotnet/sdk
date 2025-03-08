@@ -6,6 +6,7 @@ using System.CommandLine.Completions;
 using System.CommandLine.Help;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Format;
 using Microsoft.DotNet.Tools.Help;
