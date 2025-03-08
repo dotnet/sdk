@@ -23,6 +23,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 using Microsoft.DotNet.Cli.ToolPackage;
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {

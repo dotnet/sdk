@@ -4,7 +4,7 @@
 using Microsoft.Build.Construction;
 using Microsoft.DotNet.Tools.Common;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.Utils.Extensions
 {
     internal static class MSBuildProjectExtensions
     {
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public static ProjectItemGroupElement FindUniformOrCreateItemGroupWithCondition(this ProjectRootElement root, string projectItemElementType, string framework)
         {
-            var lastMatchingItemGroup = FindExistingUniformItemGroupWithCondition(root, projectItemElementType, framework);
+            var lastMatchingItemGroup = root.FindExistingUniformItemGroupWithCondition(projectItemElementType, framework);
 
             if (lastMatchingItemGroup != null)
             {

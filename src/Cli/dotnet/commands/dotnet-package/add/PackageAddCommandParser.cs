@@ -8,6 +8,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 using Microsoft.DotNet.Tools.Package.Add;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli
 {

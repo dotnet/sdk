@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.BuildServer;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Tools.BuildServer.Shutdown
 {

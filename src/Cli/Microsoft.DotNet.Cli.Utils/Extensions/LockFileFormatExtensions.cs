@@ -4,7 +4,7 @@
 using NuGet.Common;
 using NuGet.ProjectModel;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.Utils.Extensions
 {
     public static class LockFileFormatExtensions
     {

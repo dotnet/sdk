@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Package.List;
 using Microsoft.DotNet.Tools;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli
 {

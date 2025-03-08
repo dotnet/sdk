@@ -17,6 +17,8 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using Microsoft.DotNet.Tools.Tool.List;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {

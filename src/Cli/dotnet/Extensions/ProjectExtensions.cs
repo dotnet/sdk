@@ -4,7 +4,7 @@
 using Microsoft.Build.Evaluation;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Tools.ProjectExtensions
+namespace Microsoft.DotNet.Cli.Extensions
 {
     internal static class ProjectExtensions
     {
