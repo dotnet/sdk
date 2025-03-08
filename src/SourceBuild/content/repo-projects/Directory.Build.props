@@ -75,6 +75,7 @@
        still use the OfficialBuildId from repositories, not the pipeline. -->
   <PropertyGroup Condition="'$(OfficialBuildId)' != '' and '$(DotNetBuildSourceOnly)' != 'true'">
     <OfficialBuildId>$(OfficialBuildId.Split('.')[0]).$([MSBuild]::Add($(OfficialBuildId.Split('.')[1]), 100))</OfficialBuildId>
+    <DotNetRepositoryUrl>https://github.com/dotnet/dotnet</DotNetRepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -125,6 +126,8 @@
     <!-- Don't flow these control properties during testing to avoid the outer/inner complexity. -->
     <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
+    <!-- Pass the repository URL in globally so that we redirect sourcelink package information to the VMR repo. -->
+    <BuildArgs>$(BuildArgs) /p:RepositoryUrl=$(DotNetRepositoryUrl)</BuildArgs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <BuildArgs>$(BuildArgs) /p:SourceBuiltSymbolsDir=$(IntermediateSymbolsRepoDir)</BuildArgs>
