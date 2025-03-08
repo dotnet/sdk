@@ -39,6 +39,7 @@ usage()
   echo "  --build-repo-tests              Build repository tests"
 
   echo "Advanced settings:"
+  echo "  --projects <value>              Project or solution file to build"
   echo "  --ci                            Set when running on CI server"
   echo "  --clean-while-building          Cleans each repo after building (reduces disk space usage, short: -cwb)"
   echo "  --excludeCIBinarylog            Don't output binary log (short: -nobl)"
@@ -82,6 +83,7 @@ packagesArchiveDir="${packagesDir}archive/"
 packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 
 # Advanced settings
+projects=''
 ci=false
 exclude_ci_binary_log=false
 prepare_machine=false
@@ -176,6 +178,10 @@ while [[ $# > 0 ]]; do
     -build-repo-tests)
       properties+=( "/p:DotNetBuildTests=true" )
       ;;
+    -projects)
+      projects=$2
+      shift
+      ;;
     -ci)
       ci=true
       ;;
@@ -220,6 +226,11 @@ if [[ "$test" == true ]]; then
   export MSBUILDENSURESTDOUTFORTASKPROCESSES=1
   # Ensure all test projects share stdout (https://github.com/dotnet/source-build/issues/4635#issuecomment-2397464519)
   export MSBUILDDISABLENODEREUSE=1
+fi
+
+# Override project if specified on cmd-line
+if [[ ! -z "$projects" ]]; then
+  project="$projects"
 fi
 
 function Build {
