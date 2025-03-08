@@ -234,11 +234,9 @@ namespace Microsoft.DotNet.Tools.Run
                 "-nologo"
             };
 
-            // --interactive need to output guide for auth. It cannot be
-            // completely "quiet"
             if (Verbosity is null)
             {
-                var defaultVerbosity = Interactive ? "minimal" : "quiet";
+                var defaultVerbosity = "quiet";
                 args.Add($"-verbosity:{defaultVerbosity}");
             }
 
