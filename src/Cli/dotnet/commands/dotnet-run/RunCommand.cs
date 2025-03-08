@@ -356,7 +356,7 @@ namespace Microsoft.DotNet.Tools.Run
             {
                 // if the restoreArgs contain a `-bl` then let's probe it
                 List<ILogger> loggersForBuild = [
-                    MakeTerminalLogger(verbosity)
+                    MakeTerminalLogger(verbosity, restoreArgs)
                 ];
                 if (binaryLogger is not null)
                 {
@@ -498,13 +498,11 @@ namespace Microsoft.DotNet.Tools.Run
             }
         }
 
-        static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+        static ILogger MakeTerminalLogger(VerbosityOptions? verbosity, string[] buildArgs)
         {
             var msbuildVerbosity = ToLoggerVerbosity(verbosity);
-
-            // Temporary fix for 9.0.1xx. 9.0.2xx will use the TerminalLogger in the safe way.
-            var thing = new ConsoleLogger(msbuildVerbosity);
-            return thing!;
+            var thing = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{msbuildVerbosity}", .. buildArgs]);
+            return thing;
         }
 
         static string ComputeRunArgumentsTarget = "ComputeRunArguments";
