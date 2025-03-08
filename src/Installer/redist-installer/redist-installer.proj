@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Layout\redist\redist.csproj" />
+    <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
+  </ItemGroup>
+
+</Project>

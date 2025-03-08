@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.ApiCompat.IntegrationTests;
 using Microsoft.DotNet.ApiCompatibility;
 using Microsoft.DotNet.ApiCompatibility.Logging;
@@ -27,7 +29,7 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
                 new ApiCompatRunner(log,
                     new SuppressionEngine(),
                     new ApiComparerFactory(new RuleFactory(log)),
-                    new AssemblySymbolLoaderFactory()));
+                    new AssemblySymbolLoaderFactory(log)));
 
             return (log, validator);
         }
@@ -141,12 +143,12 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Equal(0, result.ExitCode);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void ValidatePackageWithReferences()
         {
             string testDependencySource = @"namespace PackageValidationTests { public class ItermediateBaseClass
 #if NETSTANDARD2_0
-: IBaseInterface 
+: IBaseInterface
 #endif
 { } }";
 
@@ -184,12 +186,12 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             Assert.Contains($"CP0008 Type 'PackageValidationTests.First' does not implement interface 'PackageValidationTests.IBaseInterface' on lib/{ToolsetInfo.CurrentTargetFramework}/{asset.TestProject.Name}.dll but it does on lib/netstandard2.0/{asset.TestProject.Name}.dll", log.errors);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(false, true, false)]
-        [InlineData(false, false, false)]
-        [InlineData(true, false, false)]
-        [InlineData(true, true, true)]
-        public void ValidateOnlyErrorWhenAReferenceIsRequired(bool createDependencyToDummy, bool useReferences, bool shouldLogError)
+        [RequiresMSBuildVersionTheory("17.12")]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public void ValidateOnlyErrorWhenAReferenceIsRequired(bool createDependencyToDummy, bool useReferences)
         {
             string testDependencyCode = createDependencyToDummy ?
                                         @"namespace PackageValidationTests{public class SomeBaseClass : IDummyInterface { }public class SomeDummyClass : IDummyInterface { }}" :
@@ -218,17 +220,13 @@ namespace Microsoft.DotNet.ApiCompat.Task.IntegrationTests
             // removed an interface due to it's base class removing that implementation. We validate that APICompat doesn't
             // log errors when not using references.
             validator.Validate(new PackageValidatorOption(package));
-            if (shouldLogError)
-                Assert.Contains($"CP1002 Could not find matching assembly: '{testDummyDependency.Name}.dll' in any of the search directories.", log.errors);
-            else
-                Assert.DoesNotContain($"CP1002 Could not find matching assembly: '{testDummyDependency.Name}.dll' in any of the search directories.", log.errors);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(false, true, false, false)]
-        [InlineData(true, false, false, false)]
-        [InlineData(true, true, true, true)]
-        public void ValidateErrorWhenTypeForwardingReferences(bool useReferences, bool expectCP0001, bool deleteFile, bool expectCP1002)
+        [RequiresMSBuildVersionTheory("17.12")]
+        [InlineData(false, true, false)]
+        [InlineData(true, false, false)]
+        [InlineData(true, true, true)]
+        public void ValidateErrorWhenTypeForwardingReferences(bool useReferences, bool expectCP0001, bool deleteFile)
         {
             string dependencySourceCode = @"namespace PackageValidationTests { public interface ISomeInterface { }
 #if !NETSTANDARD2_0
@@ -265,52 +263,9 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
 
             if (expectCP0001)
                 Assert.Contains($"CP0001 Type 'PackageValidationTests.MyForwardedType' exists on lib/netstandard2.0/{testProject.Name}.dll but not on lib/{ToolsetInfo.CurrentTargetFramework}/{testProject.Name}.dll", log.errors);
-
-            if (expectCP1002)
-                Assert.Contains($"CP1002 Could not find matching assembly: '{dependency.Name}.dll' in any of the search directories.", log.errors);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
-        public void EnsureOnlyOneAssemblyLoadErrorIsLoggedPerMissingAssembly()
-        {
-            string dependencySourceCode = @"namespace PackageValidationTests { public interface ISomeInterface { }
-#if !NETSTANDARD2_0
-public class MyForwardedType : ISomeInterface { }
-public class MySecondForwardedType : ISomeInterface { }
-#endif
-}";
-            string testSourceCode = @"
-#if NETSTANDARD2_0
-namespace PackageValidationTests { public class MyForwardedType : ISomeInterface { } public class MySecondForwardedType : ISomeInterface { } }
-#else
-[assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(PackageValidationTests.MyForwardedType))]
-[assembly: System.Runtime.CompilerServices.TypeForwardedTo(typeof(PackageValidationTests.MySecondForwardedType))]
-#endif";
-
-            TestProject dependency = CreateTestProject(dependencySourceCode, $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}");
-            TestProject testProject = CreateTestProject(testSourceCode, $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}", new[] { dependency });
-
-            TestAsset asset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
-            PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
-            var result = packCommand.Execute();
-            Assert.Equal(string.Empty, result.StdErr);
-
-            Dictionary<NuGetFramework, IEnumerable<string>> references = new()
-            {
-                { NuGetFramework.ParseFolder("netstandard2.0"), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } },
-                { NuGetFramework.ParseFolder(ToolsetInfo.CurrentTargetFramework), new string[] { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework) } }
-            };
-            Package package = Package.Create(packCommand.GetNuGetPackage(), references);
-
-            File.Delete(Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, $"{dependency.Name}.dll"));
-            (SuppressibleTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
-
-            validator.Validate(new PackageValidatorOption(package));
-
-            Assert.Single(log.errors.Where(e => e.Contains("CP1002")));
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.12")]
         [InlineData(true)]
         [InlineData(false)]
         public void ValidateMissingReferencesIsOnlyLoggedWhenRunningWithReferences(bool useReferences)

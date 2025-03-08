@@ -10,7 +10,7 @@
 
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.MarkAndCatalogPackages" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="PoisonPrebuiltPackages"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)PoisonPrebuiltPackages.complete">
     <PropertyGroup>

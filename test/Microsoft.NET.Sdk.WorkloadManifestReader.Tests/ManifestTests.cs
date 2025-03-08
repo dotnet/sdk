@@ -110,7 +110,7 @@ namespace ManifestReaderTests
             }
 
             var manifestProvider = new FakeManifestProvider(ManifestPath);
-            var resolver = WorkloadResolver.CreateForTests(manifestProvider, new[] { (additionalRoot, false), (dotnetRoot, true), ("other", true) });
+            var resolver = WorkloadResolver.CreateForTests(manifestProvider, [ new(additionalRoot, false), new(dotnetRoot, true), new("other", true) ]);
 
             var pack = resolver.TryGetPackInfo(new WorkloadPackId("Xamarin.Android.Sdk"));
             pack.Should().NotBeNull();
@@ -132,7 +132,7 @@ namespace ManifestReaderTests
             Directory.CreateDirectory(defaultPackPath);
 
             var manifestProvider = new FakeManifestProvider(ManifestPath);
-            var resolver = WorkloadResolver.CreateForTests(manifestProvider, new[] { (additionalRoot, false), (dotnetRoot, true) });
+            var resolver = WorkloadResolver.CreateForTests(manifestProvider, [ new(additionalRoot, false), new(dotnetRoot, true) ]);
 
             var pack = resolver.TryGetPackInfo(new WorkloadPackId("Xamarin.Android.Sdk"));
             pack.Should().NotBeNull();

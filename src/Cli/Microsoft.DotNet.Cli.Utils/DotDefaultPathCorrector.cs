@@ -15,20 +15,17 @@ namespace Microsoft.DotNet.Cli.Utils
         public static void Correct()
         {
             var pathEditor = new WindowsRegistryEnvironmentPathEditor();
-            var dotDefaultPath =
-                pathEditor.Get(
-                    SdkEnvironmentVariableTarget.DotDefault);
+            var dotDefaultPath = pathEditor.Get(SdkEnvironmentVariableTarget.DotDefault);
             if (NeedCorrection(dotDefaultPath, out var correctedPath))
             {
-                pathEditor.Set(correctedPath,
-                    SdkEnvironmentVariableTarget.DotDefault);
+                pathEditor.Set(correctedPath, SdkEnvironmentVariableTarget.DotDefault);
             }
         }
 
-        internal static bool NeedCorrection(string existingPath, out string correctedPath)
+        internal static bool NeedCorrection(string? existingPath, out string correctedPath)
         {
             correctedPath = string.Empty;
-            if (string.IsNullOrWhiteSpace(existingPath))
+            if (existingPath is null || string.IsNullOrWhiteSpace(existingPath))
             {
                 return false;
             }

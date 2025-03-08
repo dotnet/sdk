@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.WebAssembly">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <ItemGroup>
+    <StaticWebAssetFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
+  </ItemGroup>
 </Project>

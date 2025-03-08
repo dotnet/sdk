@@ -8,8 +8,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
     /// <summary>
     /// Class to define common logging abstraction for MSBuild tasks across the APICompat and GenAPI codebases.
     /// </summary>
-    internal class MSBuildLog(Logger log) : ILog
+    internal class MSBuildLog(Logger log, string? noWarn = null) : ILog
     {
+        // Remove passing in NoWarn when MSBuild respects it correctly in outer-builds: https://github.com/dotnet/msbuild/issues/10873
+        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new(noWarn!.Split(';'), StringComparer.OrdinalIgnoreCase);
+
         /// <inheritdoc />
         public bool HasLoggedErrors => log.HasLoggedErrors;
 
@@ -27,7 +30,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
 
         /// <inheritdoc />
         public virtual void LogWarning(string code, string message) =>
-            LogCore(MessageLevel.Warning, code, message);
+            // Mimic MSBuild which logs suppressed warnings as low importance messages.
+            LogCore(_noWarn.Contains(code) ? MessageLevel.LowImportance : MessageLevel.Warning, code, message);
 
         /// <inheritdoc />
         public virtual void LogMessage(string message) =>

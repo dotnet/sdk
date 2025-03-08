@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -32,16 +33,19 @@ namespace Microsoft.DotNet.Cli
             if (!OperatingSystem.IsWindows() && IsRunningUnderSudo() && IsRunningWorkloadCommand(parseResult))
             {
                 string sudoHome = PathUtilities.CreateTempSubdirectory();
-                var homeBeforeOverride = Path.Combine(Environment.GetEnvironmentVariable("HOME"));
-                Environment.SetEnvironmentVariable("HOME", sudoHome);
+                var homeBeforeOverride = Environment.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName);
+                Environment.SetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, sudoHome);
 
-                CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride);
+                if (homeBeforeOverride is not null)
+                {
+                    CopyUserNuGetConfigToOverriddenHome(homeBeforeOverride);
+                }
             }
         }
 
         /// <summary>
         /// To make NuGet honor the user's NuGet config file.
-        /// Copying instead of using the file directoy to avoid existing file being set higher permission
+        /// Copying instead of using the file directly to avoid existing file being set higher permission
         /// Try to delete the existing NuGet config file in "/tmp/dotnet_sudo_home/"
         /// to avoid different user's NuGet config getting mixed.
         /// </summary>
@@ -55,15 +59,15 @@ namespace Microsoft.DotNet.Cli
                 .Select(fileName => Path.Combine(userSettingsDir, fileName))
                 .FirstOrDefault(f => File.Exists(f));
 
-            var overridenSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-            var overridenNugetConfig = Path.Combine(overridenSettingsDir, Settings.DefaultSettingsFileName);
+            var overriddenSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+            var overriddenNugetConfig = Path.Combine(overriddenSettingsDir, Settings.DefaultSettingsFileName);
 
-            if (File.Exists(overridenNugetConfig))
+            if (File.Exists(overriddenNugetConfig))
             {
                 try
                 {
                     FileAccessRetrier.RetryOnIOException(
-                        () => File.Delete(overridenNugetConfig));
+                        () => File.Delete(overriddenNugetConfig));
                 }
                 catch
                 {
@@ -76,7 +80,7 @@ namespace Microsoft.DotNet.Cli
                 try
                 {
                     FileAccessRetrier.RetryOnIOException(
-                        () => File.Copy(userNuGetConfig, overridenNugetConfig, overwrite: true));
+                        () => File.Copy(userNuGetConfig, overriddenNugetConfig, overwrite: true));
                 }
                 catch
                 {

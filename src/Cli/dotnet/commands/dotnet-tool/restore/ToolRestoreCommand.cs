@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -24,6 +25,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
         private readonly string[] _sources;
         private readonly IToolPackageDownloader _toolPackageDownloader;
         private readonly VerbosityOptions _verbosity;
+        private readonly RestoreActionConfig _restoreActionConfig;
 
         public ToolRestoreCommand(
             ParseResult result,
@@ -61,6 +63,15 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
             _configFilePath = result.GetValue(ToolRestoreCommandParser.ConfigOption);
             _sources = result.GetValue(ToolRestoreCommandParser.AddSourceOption);
             _verbosity = result.GetValue(ToolRestoreCommandParser.VerbosityOption);
+            if (!result.HasOption(ToolRestoreCommandParser.VerbosityOption) && result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption))
+            {
+                _verbosity = VerbosityOptions.minimal;
+            }
+
+            _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+                NoCache: result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
+                IgnoreFailedSources: result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
+                Interactive: result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
         }
 
         public override int Execute()
@@ -130,27 +141,31 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
                             nugetConfig: configFile,
                             additionalFeeds: _sources,
                             rootConfigDirectory: package.FirstEffectDirectory),
-                        package.PackageId, verbosity: _verbosity, ToVersionRangeWithOnlyOneVersion(package.Version), targetFramework
+                        package.PackageId,
+                        verbosity: _verbosity,
+                        ToVersionRangeWithOnlyOneVersion(package.Version),
+                        targetFramework,
+                        restoreActionConfig: _restoreActionConfig
                         );
 
-                if (!ManifestCommandMatchesActualInPackage(package.CommandNames, toolPackage.Commands))
+                if (!ManifestCommandMatchesActualInPackage(package.CommandNames, [toolPackage.Command]))
                 {
                     return ToolRestoreResult.Failure(
                         string.Format(LocalizableStrings.CommandsMismatch,
                             JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString())),
                             package.PackageId,
-                            JoinBySpaceWithQuote(toolPackage.Commands.Select(c => c.Name.ToString()))));
+                            toolPackage.Command.Name));
                 }
 
                 return ToolRestoreResult.Success(
-                    saveToCache: toolPackage.Commands.Select(command => (
-                        new RestoredCommandIdentifier(
+                    saveToCache: 
+                        [(new RestoredCommandIdentifier(
                             toolPackage.Id,
                             toolPackage.Version,
                             NuGetFramework.Parse(targetFramework),
                             Constants.AnyRid,
-                            command.Name),
-                        command)).ToArray(),
+                            toolPackage.Command.Name),
+                        toolPackage.Command)],
                     message: string.Format(
                         LocalizableStrings.RestoreSuccessful,
                         package.PackageId,
