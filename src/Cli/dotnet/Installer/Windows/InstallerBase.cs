@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Win32.Msi;
 

@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.Utils.Extensions
 {
     /// <summary>
     /// Extensions methods for <see cref="Process"/> components.
