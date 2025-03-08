@@ -70,8 +70,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _retryTimer = timer;
             _sourceRepositories = new();
             // If windows or env variable is set, verify signatures
-            _verifySignatures = verifySignatures
-                && (OperatingSystem.IsWindows() || string.Equals(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), bool.TrueString, StringComparison.OrdinalIgnoreCase));
+            _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
+                : string.Equals(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), bool.TrueString, StringComparison.OrdinalIgnoreCase) ?? OperatingSystem.IsLinux());
 
             _cacheSettings = new SourceCacheContext
             {
