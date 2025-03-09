@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
 
 	<PropertyGroup>
@@ -6,6 +6,7 @@
 		<TargetFramework>$(CurrentTargetFramework)</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<IsTestProject>true</IsTestProject>
 		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>
 	</PropertyGroup>
 
