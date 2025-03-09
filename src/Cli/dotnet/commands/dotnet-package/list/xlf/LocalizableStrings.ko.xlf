@@ -27,6 +27,11 @@
         <target state="translated">프레임워크를 선택하여 패키지를 표시합니다. 여러 프레임워크의 경우 옵션을 여러 번 사용합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not restore before running the command.</source>
+        <target state="new">Do not restore before running the command.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
         <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
         <target state="translated">최신 버전이 포함된 패키지를 나열합니다. '--deprecated' 또는 '--vulnerable' 옵션과 함께 사용할 수 없습니다.</target>
@@ -46,6 +51,11 @@
         <source>Lists packages that have known vulnerabilities. Cannot be combined with '--deprecated' or '--outdated' options.</source>
         <target state="translated">알려진 취약성이 있는 패키지를 나열합니다. '--deprecated' 또는 '--outdated' 옵션과 함께 사용할 수 없습니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Error_restore">
+        <source>Restore failed. Please try running `dotnet restore`.</source>
+        <target state="new">Restore failed. Please try running `dotnet restore`.</target>
+        <note>do not translate `dotnet restore`</note>
       </trans-unit>
       <trans-unit id="NoProjectsOrSolutions">
         <source>A project or solution file could not be found in {0}. Specify a project or solution file to use.</source>

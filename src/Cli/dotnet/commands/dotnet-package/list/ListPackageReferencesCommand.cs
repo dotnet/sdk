@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Globalization;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.NuGet;
 
 namespace Microsoft.DotNet.Tools.Package.List
@@ -30,7 +32,41 @@ namespace Microsoft.DotNet.Tools.Package.List
 
         public override int Execute()
         {
-            return NuGetCommand.Run(TransformArgs());
+            string projectFile = _parseResult.GetValue(PackageCommandParser.ProjectOption);
+            bool noRestore = _parseResult.HasOption(PackageListCommandParser.NoRestore);
+            int restoreExitCode = 0;
+
+            if (!noRestore)
+            {
+                restoreExitCode = RunRestore(projectFile);
+            }
+
+            return restoreExitCode == 0
+                ? NuGetCommand.Run(TransformArgs())
+                : restoreExitCode;
+        }
+
+        private int RunRestore(string projectOrSolution)
+        {
+            MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: ["-target:restore", projectOrSolution, "-noConsoleLogger"]);
+
+            int exitCode = 0;
+
+            try
+            {
+                exitCode = restoringCommand.Execute();
+            }
+            catch (Exception)
+            {
+                exitCode = 1;
+            }
+
+            if (exitCode != 0)
+            {
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore));
+            }
+
+            return exitCode;
         }
 
         internal static void EnforceOptionRules(ParseResult parseResult)

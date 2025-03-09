@@ -27,6 +27,11 @@
         <target state="translated">Zvolí architekturu, pro kterou se mají zobrazit balíčky. Pokud chcete určit více architektur, zadejte tento přepínač vícekrát.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not restore before running the command.</source>
+        <target state="new">Do not restore before running the command.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
         <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
         <target state="translated">Vypíše balíčky, které mají novější verze. Nedá se kombinovat s možností --deprecated ani --vulnerable.</target>
@@ -46,6 +51,11 @@
         <source>Lists packages that have known vulnerabilities. Cannot be combined with '--deprecated' or '--outdated' options.</source>
         <target state="translated">Vypíše balíčky, které mají známá ohrožení zabezpečení. Nedá se kombinovat s možností --deprecated ani --outdated.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Error_restore">
+        <source>Restore failed. Please try running `dotnet restore`.</source>
+        <target state="new">Restore failed. Please try running `dotnet restore`.</target>
+        <note>do not translate `dotnet restore`</note>
       </trans-unit>
       <trans-unit id="NoProjectsOrSolutions">
         <source>A project or solution file could not be found in {0}. Specify a project or solution file to use.</source>

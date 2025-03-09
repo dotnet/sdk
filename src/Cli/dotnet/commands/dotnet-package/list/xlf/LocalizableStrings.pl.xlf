@@ -27,6 +27,11 @@
         <target state="translated">Wybiera strukturę, aby wyświetlić jej pakiety. W przypadku wielu struktur użyj tej opcji wielokrotnie.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not restore before running the command.</source>
+        <target state="new">Do not restore before running the command.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
         <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
         <target state="translated">Wyświetla pakiety, które mają nowszą wersję. Nie można łączyć z opcją „--deprecated” ani „--vulnerable”.</target>
@@ -46,6 +51,11 @@
         <source>Lists packages that have known vulnerabilities. Cannot be combined with '--deprecated' or '--outdated' options.</source>
         <target state="translated">Wyświetla pakiety ze znanymi lukami w zabezpieczeniach. Nie można łączyć z opcją „--deprecated” ani „--outdated”.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Error_restore">
+        <source>Restore failed. Please try running `dotnet restore`.</source>
+        <target state="new">Restore failed. Please try running `dotnet restore`.</target>
+        <note>do not translate `dotnet restore`</note>
       </trans-unit>
       <trans-unit id="NoProjectsOrSolutions">
         <source>A project or solution file could not be found in {0}. Specify a project or solution file to use.</source>
