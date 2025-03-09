@@ -363,9 +363,9 @@ Si no existe, se creará el directorio especificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>Test projects that use both VSTest and Microsoft.Testing.Platform in the same solution are not supported. 
+        <source>Test project '{0}' is using VSTest. When opting-in via dotnet.config, all the test projects are expected to be using Microsoft.Testing.Platform. 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">Test projects that use both VSTest and Microsoft.Testing.Platform in the same solution are not supported. 
+        <target state="new">Test project '{0}' is using VSTest. When opting-in via dotnet.config, all the test projects are expected to be using Microsoft.Testing.Platform. 
 See https://aka.ms/dotnet-test/mtp for more information.</target>
         <note />
       </trans-unit>
