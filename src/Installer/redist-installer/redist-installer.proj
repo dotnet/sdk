@@ -6,9 +6,13 @@
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Layout\redist\redist.csproj" />
+  <ItemGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
+    <ProjectReference Include="$(RepoRoot)src\Layout\redist\redist.csproj" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Installer\finalizer\finalizer-build.csproj" />
   </ItemGroup>
 
   <ItemGroup>

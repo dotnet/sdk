@@ -32,17 +32,22 @@
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
   <!-- Layout -->
-  <Import Project="targets\BundledTemplates.targets" />
-  <Import Project="targets\BundledManifests.targets" />
-  <Import Project="targets\BundledDotnetTools.targets" />
-  <Import Project="targets\GenerateBundledVersions.targets" />
-  <Import Project="targets\Crossgen.targets" />
-  <Import Project="targets\GenerateLayout.targets" />
-  <Import Project="targets\Badge.targets" Condition="'$(PgoInstrument)' != 'true'" />
-  <Import Project="targets\GenerateArchives.targets" />
+  <Import Project="targets\RestoreLayout.targets" />
+
+  <ImportGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
+    <Import Project="targets\BundledTemplates.targets" />
+    <Import Project="targets\BundledManifests.targets" />
+    <Import Project="targets\BundledDotnetTools.targets" />
+    <Import Project="targets\GenerateBundledVersions.targets" />
+    <Import Project="targets\Crossgen.targets" />
+    <Import Project="targets\GenerateLayout.targets" />
+    <Import Project="targets\Badge.targets" Condition="'$(PgoInstrument)' != 'true'" />
+    <Import Project="targets\GenerateArchives.targets" />
+  </ImportGroup>
+
 
   <!-- Installers -->
   <Import Project="targets\GenerateMSIs.targets" Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingInstallers)' != 'true'" />
-  <Import Project="targets\GeneratePKG.targets" Condition="'$(OSName)' == 'osx' and '$(SkipBuildingInstallers)' != 'true'" />
+  <Import Project="targets\GeneratePKG.targets" Condition="'$(OSName)' == 'osx' and '$(SkipBuildingInstallers)' != 'true' and '$(GenerateSdkBundleOnly)' != 'true'" />
 
 </Project>

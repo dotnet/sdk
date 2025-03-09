@@ -892,12 +892,30 @@ stages:
             targetArchitecture: x86
             buildPass: 2
             reuseBuildArtifactsFrom:
+            - Windows_x64
+            - Windows_x86
+            - Windows_arm64
             - AzureLinux_x64_Cross_x64
             - AzureLinux_x64_Cross_Alpine_x64
             - AzureLinux_x64_Cross_arm64
             - AzureLinux_x64_Cross_Alpine_arm64
             - AzureLinux_x64_Cross_arm
             - AzureLinux_x64_Cross_Alpine_arm
+          
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: arm64
+            buildPass: 2
+            reuseBuildArtifactsFrom:
+            - Windows_x64
+            - Windows_x86
+            - Windows_arm64
 
 ### FINAL JOIN ###
 - ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
