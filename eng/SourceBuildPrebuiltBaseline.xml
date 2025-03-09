@@ -31,7 +31,7 @@
     <UsagePattern IdentityGlob="System.Composition.Hosting/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.Runtime/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.TypedParts/*7.0.0*" />
-    <UsagePattern IdentityGlob="System.Diagnostics.DiagnosticSource/*8.0.1*" />
+    <UsagePattern IdentityGlob="System.Diagnostics.DiagnosticSource/*9.0.0*" />
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/*9.0.0*" />
     <UsagePattern IdentityGlob="System.Formats.Asn1/*8.0.1*" />
     <UsagePattern IdentityGlob="System.Reflection.MetadataLoadContext/*7.0.0*" />

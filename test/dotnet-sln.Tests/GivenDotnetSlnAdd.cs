@@ -244,7 +244,6 @@ Options:
         }
 
         [Theory]
-        // needs https://github.com/microsoft/vs-solutionpersistence/pull/101
         //[InlineData("sln", true, ".sln")]
         //[InlineData("sln", false, ".sln")]
         //[InlineData("solution", true, ".sln")]
