@@ -39,6 +39,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly ConcurrentDictionary<PackageSource, SourceRepository> _sourceRepositories;
         private readonly bool _shouldUsePackageSourceMapping;
 
+        /// <summary>
+        /// If true, the package downloader will verify the signatures of the packages it downloads.
+        /// Temporarily disabled for macOS and Linux. 
+        /// </summary>
         private readonly bool _verifySignatures;
         private readonly VerbosityOptions _verbosityOptions;
         private readonly string _currentWorkingDirectory;
@@ -66,7 +70,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
             _retryTimer = timer;
             _sourceRepositories = new();
-            _verifySignatures = verifySignatures;
+            // If windows or env variable is set, verify signatures
+            _verifySignatures = verifySignatures && (OperatingSystem.IsWindows() ? true 
+                : bool.TryParse(Environment.GetEnvironmentVariable(NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification), out var shouldVerifySignature) ? shouldVerifySignature : OperatingSystem.IsLinux());
 
             _cacheSettings = new SourceCacheContext
             {
@@ -127,8 +133,17 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            await VerifySigning(nupkgPath, repository);
-            
+            // Delete file if verification fails
+            try
+            {
+                await VerifySigning(nupkgPath, repository);
+            }
+            catch (NuGetPackageInstallerException)
+            {
+                File.Delete(nupkgPath);
+                throw;
+            }
+
             return nupkgPath;
         }
 
