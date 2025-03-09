@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tools.Package.List
             _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
                 parseResult.HasOption(PackageCommandParser.ProjectOption) ?
                 parseResult.GetValue(PackageCommandParser.ProjectOption) :
-                parseResult.GetValue(ListCommandParser.SlnOrProjectArgument));
+                parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ?? "");
         }
 
         private static string GetAbsolutePath(string currentDirectory, string relativePath)
@@ -32,17 +32,17 @@ namespace Microsoft.DotNet.Tools.Package.List
 
         public override int Execute()
         {
-            string projectFile = _parseResult.GetValue(PackageCommandParser.ProjectOption);
+            string projectFile = GetProjectOrSolution();
             bool noRestore = _parseResult.HasOption(PackageListCommandParser.NoRestore);
             int restoreExitCode = 0;
 
-            if (!noRestore)
+            if (!noRestore )
             {
                 restoreExitCode = RunRestore(projectFile);
             }
 
             return restoreExitCode == 0
-                ? NuGetCommand.Run(TransformArgs())
+                ? NuGetCommand.Run(TransformArgs(projectFile))
                 : restoreExitCode;
         }
 
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Tools.Package.List
             }
         }
 
-        private string[] TransformArgs()
+        private string[] TransformArgs(string projectOrSolution)
         {
             var args = new List<string>
             {
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Tools.Package.List
                 "list",
             };
 
-            args.Add(GetProjectOrSolution());
+            args.Add(projectOrSolution);
 
             args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
 

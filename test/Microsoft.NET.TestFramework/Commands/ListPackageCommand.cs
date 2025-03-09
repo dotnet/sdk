@@ -16,12 +16,13 @@ namespace Microsoft.NET.TestFramework.Commands
         public override CommandResult Execute(IEnumerable<string> args)
         {
             List<string> newArgs = new();
+            newArgs.Add("package");
             newArgs.Add("list");
             if (!string.IsNullOrEmpty(_projectName))
             {
+                newArgs.Add("--project");
                 newArgs.Add(_projectName);
             }
-            newArgs.Add("package");
             newArgs.AddRange(args);
 
             return base.Execute(newArgs);
