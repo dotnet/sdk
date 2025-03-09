@@ -7,6 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class NoRestoreTests
     {
+        private const string InteractiveFlag = "--interactive";
         private static DotNetWatchContext CreateContext(string[] args = null, EnvironmentOptions environmentOptions = null)
             => new()
             {
@@ -22,7 +23,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext();
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
         }
 
         [Fact]
@@ -31,11 +32,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext();
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
 
             evaluator.RequiresRevaluation = true;
 
-            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
@@ -44,8 +45,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext([], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
@@ -54,8 +55,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["--no-restore"], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
@@ -64,8 +65,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["--", "--no-restore"]);
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["run", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["run", "--no-restore", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", InteractiveFlag, "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag, "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
@@ -74,8 +75,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["--", "--", "--no-restore"]);
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["run", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["run", "--no-restore", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", InteractiveFlag, "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag, "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
@@ -84,8 +85,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext();
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
@@ -94,8 +95,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["run", "-f", ToolsetInfo.CurrentTargetFramework]);
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["run", "-f", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["run", "-f", ToolsetInfo.CurrentTargetFramework, InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework, InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
@@ -104,8 +105,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["test", "--filter SomeFilter"]);
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["test", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["test", "--no-restore", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["test", InteractiveFlag, "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["test", "--no-restore", InteractiveFlag, "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
         }
 
         [Fact]
@@ -114,8 +115,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext(["pack"]);
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            AssertEx.SequenceEqual(["pack"], evaluator.GetProcessArguments(iteration: 0));
-            AssertEx.SequenceEqual(["pack"], evaluator.GetProcessArguments(iteration: 1));
+            AssertEx.SequenceEqual(["pack", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
+            AssertEx.SequenceEqual(["pack", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
         }
     }
 }

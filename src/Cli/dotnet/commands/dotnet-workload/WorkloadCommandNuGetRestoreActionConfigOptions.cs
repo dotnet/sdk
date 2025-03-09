@@ -35,10 +35,7 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.Zero
         };
 
-        public static CliOption<bool> InteractiveRestoreOption = new ForwardedOption<bool>("--interactive")
-        {
-            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
-        };
+        public static CliOption<bool> InteractiveRestoreOption = CommonOptions.InteractiveOption();
 
         public static CliOption<bool> HiddenDisableParallelOption = new ForwardedOption<bool>("--disable-parallel")
         {

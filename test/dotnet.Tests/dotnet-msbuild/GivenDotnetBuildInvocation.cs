@@ -8,85 +8,100 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m -tlp:default=auto -nologo";
+        string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
+
+        const string NugetInteractiveProperty = "-property:NuGetInteractive=true";
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
 
         [Theory]
-        [InlineData(new string[] { }, "")]
-        [InlineData(new string[] { "-o", "foo" }, "-property:OutputPath=<cwd>foo -property:_CommandLineDefinedOutputPath=true")]
-        [InlineData(new string[] { "-property:Verbosity=diag" }, "--property:Verbosity=diag")]
-        [InlineData(new string[] { "--output", "foo" }, "-property:OutputPath=<cwd>foo -property:_CommandLineDefinedOutputPath=true")]
-        [InlineData(new string[] { "--artifacts-path", "foo" }, "-property:ArtifactsPath=<cwd>foo")]
-        [InlineData(new string[] { "-o", "foo1 foo2" }, "\"-property:OutputPath=<cwd>foo1 foo2\" -property:_CommandLineDefinedOutputPath=true")]
-        [InlineData(new string[] { "--no-incremental" }, "-target:Rebuild")]
-        [InlineData(new string[] { "-r", "rid" }, "-property:RuntimeIdentifier=rid -property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "-r", "linux-amd64" }, "-property:RuntimeIdentifier=linux-x64 -property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "--runtime", "rid" }, "-property:RuntimeIdentifier=rid -property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "--use-current-runtime" }, "-property:UseCurrentRuntimeIdentifier=True")]
-        [InlineData(new string[] { "--ucr" }, "-property:UseCurrentRuntimeIdentifier=True")]
-        [InlineData(new string[] { "-c", "config" }, "-property:Configuration=config")]
-        [InlineData(new string[] { "--configuration", "config" }, "-property:Configuration=config")]
-        [InlineData(new string[] { "--version-suffix", "mysuffix" }, "-property:VersionSuffix=mysuffix")]
-        [InlineData(new string[] { "--no-dependencies" }, "-property:BuildProjectReferences=false")]
-        [InlineData(new string[] { "-v", "diag" }, "-verbosity:diag")]
-        [InlineData(new string[] { "--verbosity", "diag" }, "-verbosity:diag")]
+        [InlineData(new string[] { }, new string[] { })]
+        [InlineData(new string[] { "-o", "foo" }, new string[] { "-property:OutputPath=<cwd>foo", "-property:_CommandLineDefinedOutputPath=true" })]
+        [InlineData(new string[] { "-property:Verbosity=diag" }, new string[] { "--property:Verbosity=diag" })]
+        [InlineData(new string[] { "--output", "foo" }, new string[] { "-property:OutputPath=<cwd>foo", "-property:_CommandLineDefinedOutputPath=true" })]
+        [InlineData(new string[] { "--artifacts-path", "foo" }, new string[] { "-property:ArtifactsPath=<cwd>foo" })]
+        [InlineData(new string[] { "-o", "foo1 foo2" }, new string[] { "-property:OutputPath=<cwd>foo1 foo2", "-property:_CommandLineDefinedOutputPath=true" })]
+        [InlineData(new string[] { "--no-incremental" }, new string[] { "-target:Rebuild" })]
+        [InlineData(new string[] { "-r", "rid" }, new string[] { "-property:RuntimeIdentifier=rid", "-property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [InlineData(new string[] { "-r", "linux-amd64" }, new string[] { "-property:RuntimeIdentifier=linux-x64", "-property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [InlineData(new string[] { "--runtime", "rid" }, new string[] { "-property:RuntimeIdentifier=rid", "-property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [InlineData(new string[] { "--use-current-runtime" }, new string[] { "-property:UseCurrentRuntimeIdentifier=True" })]
+        [InlineData(new string[] { "--ucr" }, new string[] { "-property:UseCurrentRuntimeIdentifier=True" })]
+        [InlineData(new string[] { "-c", "config" }, new string[] { "-property:Configuration=config" })]
+        [InlineData(new string[] { "--configuration", "config" }, new string[] { "-property:Configuration=config" })]
+        [InlineData(new string[] { "--version-suffix", "mysuffix" }, new string[] { "-property:VersionSuffix=mysuffix" })]
+        [InlineData(new string[] { "--no-dependencies" }, new string[] { "-property:BuildProjectReferences=false" })]
+        [InlineData(new string[] { "-v", "diag" }, new string[] { "-verbosity:diag" })]
+        [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "-verbosity:diag" })]
         [InlineData(new string[] { "--no-incremental", "-o", "myoutput", "-r", "myruntime", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
-                                  "-target:Rebuild -property:RuntimeIdentifier=myruntime -property:_CommandLineDefinedRuntimeIdentifier=true -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild")]
-        [InlineData(new string[] { "/t:CustomTarget" }, "/t:CustomTarget")]
-        [InlineData(new string[] { "--disable-build-servers" }, "--property:UseRazorBuildServer=false --property:UseSharedCompilation=false /nodeReuse:false")]
-        public void MsbuildInvocationIsCorrect(string[] args, string expectedAdditionalArgs)
+                   new string[] { "-target:Rebuild", "-property:RuntimeIdentifier=myruntime", "-property:_CommandLineDefinedRuntimeIdentifier=true", "-verbosity:diag", "-property:OutputPath=<cwd>myoutput", "-property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
+        [InlineData(new string[] { "/t:CustomTarget" }, new string[] { "/t:CustomTarget" })]
+        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
+        public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                expectedAdditionalArgs =
-                    (string.IsNullOrEmpty(expectedAdditionalArgs) ? "" : $" {expectedAdditionalArgs}")
-                    .Replace("<cwd>", WorkingDirectory);
+                expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory)).ToArray();
 
                 var msbuildPath = "<msbuildpath>";
                 var command = BuildCommand.FromArgs(args, msbuildPath);
 
                 command.SeparateRestoreCommand.Should().BeNull();
-
-                command.GetArgumentsToMSBuild()
-                    .Should()
-                    .Be($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary{expectedAdditionalArgs}");
+                var commandArgs = command.GetArgumentTokensToMSBuild();
+                commandArgs[0..6].Should().BeEquivalentTo([.. ExpectedPrefix, "-restore", "-consoleloggerparameters:Summary"]);
+                commandArgs[6..].Should()
+                    .BeEquivalentTo([NugetInteractiveProperty, .. expectedAdditionalArgs]);
             });
         }
 
         [Theory]
-        [InlineData(new string[] { "-f", "tfm" }, "-target:Restore -tlp:verbosity=quiet", "-property:TargetFramework=tfm")]
-        [InlineData(new string[] { "-p:TargetFramework=tfm" }, "-target:Restore -tlp:verbosity=quiet", "--property:TargetFramework=tfm")]
-        [InlineData(new string[] { "/p:TargetFramework=tfm" }, "-target:Restore -tlp:verbosity=quiet", "--property:TargetFramework=tfm")]
-        [InlineData(new string[] { "-t:Run", "-f", "tfm" }, "-target:Restore -tlp:verbosity=quiet", "-property:TargetFramework=tfm -t:Run")]
-        [InlineData(new string[] { "/t:Run", "-f", "tfm" }, "-target:Restore -tlp:verbosity=quiet", "-property:TargetFramework=tfm /t:Run")]
+        [InlineData(new string[] { "-f", "tfm" },
+            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "-property:TargetFramework=tfm" })]
+        [InlineData(new string[] { "-p:TargetFramework=tfm" },
+            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "--property:TargetFramework=tfm" })]
+        [InlineData(new string[] { "/p:TargetFramework=tfm" },
+            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "--property:TargetFramework=tfm" })]
+        [InlineData(new string[] { "-t:Run", "-f", "tfm" },
+            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "-property:TargetFramework=tfm", "-t:Run" })]
+        [InlineData(new string[] { "/t:Run", "-f", "tfm" },
+            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "-property:TargetFramework=tfm", "/t:Run" })]
         [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
-                                  "-target:Restore -tlp:verbosity=quiet -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild",
-                                  "-property:TargetFramework=tfm -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild")]
-        [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" }, "-target:Restore -tlp:verbosity=quiet -nologo -verbosity:quiet", "-property:TargetFramework=tfm -getItem:Compile -getProperty:TargetFramework -getTargetResult:Build")]
+            new string[] { "-target:Restore", "-tlp:verbosity=quiet", "-verbosity:diag", "-property:OutputPath=<cwd>myoutput", "-property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" },
+            new string[] { "-property:TargetFramework=tfm", "-verbosity:diag", "-property:OutputPath=<cwd>myoutput", "-property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
+        [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" },
+            new string[] { "-target:Restore", "-tlp:verbosity=quiet", "-nologo", "-verbosity:quiet" },
+            new string[] { "-property:TargetFramework=tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" })]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
             string[] args,
-            string expectedAdditionalArgsForRestore,
-            string expectedAdditionalArgs)
+            string[] expectedAdditionalArgsForRestore,
+            string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                expectedAdditionalArgsForRestore = expectedAdditionalArgsForRestore.Replace("<cwd>", WorkingDirectory);
+                expectedAdditionalArgsForRestore = expectedAdditionalArgsForRestore
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .ToArray();
 
-                expectedAdditionalArgs = (string.IsNullOrEmpty(expectedAdditionalArgs) ? "" : $" {expectedAdditionalArgs}");
-                expectedAdditionalArgs = expectedAdditionalArgs.Replace("<cwd>", WorkingDirectory);
+                expectedAdditionalArgs = expectedAdditionalArgs
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
                 var command = BuildCommand.FromArgs(args, msbuildPath);
 
-                command.SeparateRestoreCommand.GetArgumentsToMSBuild()
+                command.SeparateRestoreCommand.GetArgumentTokensToMSBuild()
                     .Should()
-                    .Be($"{ExpectedPrefix} {expectedAdditionalArgsForRestore}");
+                    .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgsForRestore, NugetInteractiveProperty]);
 
-                command.GetArgumentsToMSBuild()
+                command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .Be($"{ExpectedPrefix} -nologo -consoleloggerparameters:Summary{expectedAdditionalArgs}");
+                    .BeEquivalentTo([.. ExpectedPrefix, "-nologo", "-consoleloggerparameters:Summary", NugetInteractiveProperty, .. expectedAdditionalArgs]);
             });
         }
     }

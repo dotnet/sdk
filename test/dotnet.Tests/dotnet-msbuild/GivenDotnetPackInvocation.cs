@@ -8,45 +8,46 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetPackInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m -tlp:default=auto -nologo -restore -target:pack";
-        const string ExpectedNoBuildPrefix = "-maxcpucount -verbosity:m -tlp:default=auto -nologo -target:pack";
-        const string ExpectedProperties = "--property:_IsPacking=true";
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-restore", "-target:pack"];
+        private static readonly string[] ExpectedNoBuildPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-target:pack"];
+        private readonly string[] ExpectedProperties = ["--property:_IsPacking=true", "-property:NuGetInteractive=true"];
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPackInvocation));
 
         [Theory]
-        [InlineData(new string[] { }, "")]
-        [InlineData(new string[] { "-o", "<packageoutputpath>" }, "-property:PackageOutputPath=<cwd><packageoutputpath>")]
-        [InlineData(new string[] { "--output", "<packageoutputpath>" }, "-property:PackageOutputPath=<cwd><packageoutputpath>")]
-        [InlineData(new string[] { "--artifacts-path", "foo" }, "-property:ArtifactsPath=<cwd>foo")]
-        [InlineData(new string[] { "--no-build" }, "-property:NoBuild=true")]
-        [InlineData(new string[] { "--include-symbols" }, "-property:IncludeSymbols=true")]
-        [InlineData(new string[] { "--include-source" }, "-property:IncludeSource=true")]
-        [InlineData(new string[] { "-c", "<config>" }, "-property:Configuration=<config> -property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true")]
-        [InlineData(new string[] { "--configuration", "<config>" }, "-property:Configuration=<config> -property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true")]
-        [InlineData(new string[] { "--version-suffix", "<versionsuffix>" }, "-property:VersionSuffix=<versionsuffix>")]
-        [InlineData(new string[] { "-s" }, "-property:Serviceable=true")]
-        [InlineData(new string[] { "--serviceable" }, "-property:Serviceable=true")]
-        [InlineData(new string[] { "-v", "diag" }, "-verbosity:diag")]
-        [InlineData(new string[] { "--verbosity", "diag" }, "-verbosity:diag")]
-        [InlineData(new string[] { "<project>" }, "<project>")]
-        [InlineData(new string[] { "--disable-build-servers" }, "--property:UseRazorBuildServer=false --property:UseSharedCompilation=false /nodeReuse:false")]
-
-        public void MsbuildInvocationIsCorrect(string[] args, string expectedAdditionalArgs)
+        [InlineData(new string[] { }, new string[] { })]
+        [InlineData(new string[] { "-o", "<packageoutputpath>" }, new string[] { "-property:PackageOutputPath=<cwd><packageoutputpath>" })]
+        [InlineData(new string[] { "--output", "<packageoutputpath>" }, new string[] { "-property:PackageOutputPath=<cwd><packageoutputpath>" })]
+        [InlineData(new string[] { "--artifacts-path", "foo" }, new string[] { "-property:ArtifactsPath=<cwd>foo" })]
+        [InlineData(new string[] { "--no-build" }, new string[] { "-property:NoBuild=true" })]
+        [InlineData(new string[] { "--include-symbols" }, new string[] { "-property:IncludeSymbols=true" })]
+        [InlineData(new string[] { "--include-source" }, new string[] { "-property:IncludeSource=true" })]
+        [InlineData(new string[] { "-c", "<config>" }, new string[] { "-property:Configuration=<config>", "-property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true" })]
+        [InlineData(new string[] { "--configuration", "<config>" }, new string[] { "-property:Configuration=<config>", "-property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true" })]
+        [InlineData(new string[] { "--version-suffix", "<versionsuffix>" }, new string[] { "-property:VersionSuffix=<versionsuffix>" })]
+        [InlineData(new string[] { "-s" }, new string[] { "-property:Serviceable=true" })]
+        [InlineData(new string[] { "--serviceable" }, new string[] { "-property:Serviceable=true" })]
+        [InlineData(new string[] { "-v", "diag" }, new string[] { "-verbosity:diag" })]
+        [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "-verbosity:diag" })]
+        [InlineData(new string[] { "<project>" }, new string[] { "<project>" })]
+        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
+        public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                expectedAdditionalArgs =
-                    (string.IsNullOrEmpty(expectedAdditionalArgs) ? "" : $" {expectedAdditionalArgs}")
-                    .Replace("<cwd>", WorkingDirectory);
+                expectedAdditionalArgs = expectedAdditionalArgs
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
                 var command = PackCommand.FromArgs(args, msbuildPath);
                 var expectedPrefix = args.FirstOrDefault() == "--no-build" ? ExpectedNoBuildPrefix : ExpectedPrefix;
 
                 command.SeparateRestoreCommand.Should().BeNull();
-                command.GetArgumentsToMSBuild().Should().Be($"{expectedPrefix} {ExpectedProperties}{expectedAdditionalArgs}");
+                command.GetArgumentTokensToMSBuild()
+                    .Should()
+                    .BeEquivalentTo([.. expectedPrefix, .. ExpectedProperties, .. expectedAdditionalArgs]);
             });
         }
     }

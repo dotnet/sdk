@@ -40,11 +40,7 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.Zero
         }.ForwardAs("--exact-match");
 
-        public static readonly CliOption<bool> Interactive = new ForwardedOption<bool>("--interactive")
-        {
-            Description = LocalizableStrings.InteractiveDescription,
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("--interactive");
+        public static readonly CliOption<bool> Interactive = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
         public static readonly CliOption<bool> Prerelease = new ForwardedOption<bool>("--prerelease")
         {
