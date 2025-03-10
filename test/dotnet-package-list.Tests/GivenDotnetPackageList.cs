@@ -6,11 +6,11 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Package.List;
 
-namespace Microsoft.DotNet.Cli.List.Package.Tests
+namespace Microsoft.DotNet.Cli.Package.List.Tests
 {
-    public class GivenDotnetListPackage : SdkTest
+    public class GivenDotnetPackageList : SdkTest
     {
-        public GivenDotnetListPackage(ITestOutputHelper output) : base(output)
+        public GivenDotnetPackageList(ITestOutputHelper output) : base(output)
         {
         }
 
@@ -29,9 +29,9 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("--verbosity", "quiet")
+                .Execute("--verbosity", "quiet", "--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -61,9 +61,9 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -86,9 +86,9 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -118,10 +118,10 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithProject("App.sln")
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -137,9 +137,9 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .WithSource()
                 .Path;
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Fail()
                 .And.HaveStdErr();
@@ -192,17 +192,17 @@ class Program
                 .Pass()
                 .And.NotHaveStdErr();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
                 .And.NotHaveStdOutContaining("System.IO.FileSystem");
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(args: "--include-transitive")
+                .Execute(args: ["--include-transitive", "--no-restore"])
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -236,7 +236,7 @@ class Program
 
             if (shouldntInclude == null)
             {
-                new ListPackageCommand(Log)
+                new PackageListCommand(Log)
                     .WithWorkingDirectory(projectDirectory)
                     .Execute(args.Split(' ', options: StringSplitOptions.RemoveEmptyEntries))
                     .Should()
@@ -246,7 +246,7 @@ class Program
             }
             else
             {
-                new ListPackageCommand(Log)
+                new PackageListCommand(Log)
                     .WithWorkingDirectory(projectDirectory)
                     .Execute(args.Split(' ', options: StringSplitOptions.RemoveEmptyEntries))
                     .Should()
@@ -272,7 +272,7 @@ class Program
                 .Should()
                 .Pass();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute("--framework", "invalid")
                 .Should()
@@ -294,7 +294,7 @@ class Program
                 .Pass()
                 .And.NotHaveStdErr();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
                 .Should()
@@ -303,7 +303,13 @@ class Program
         }
 
         [Theory]
+        [InlineData(false, "--no-restore")]
         [InlineData(false, "--vulnerable")]
+        [InlineData(false, "--no-restore", "--include-transitive")]
+        [InlineData(false, "--no-restore", "--include-prerelease")]
+        [InlineData(false, "--no-restore", "--deprecated")]
+        [InlineData(false, "--no-restore", "--outdated")]
+        [InlineData(false, "--no-restore", "--vulnerable")]
         [InlineData(false, "--vulnerable", "--include-transitive")]
         [InlineData(false, "--vulnerable", "--include-prerelease")]
         [InlineData(false, "--deprecated", "--highest-minor")]
@@ -324,7 +330,7 @@ class Program
         [InlineData(true, "--deprecated", "--outdated")]
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
-            var parseResult = Parser.Instance.Parse($"dotnet list package {string.Join(' ', options)}");
+            var parseResult = Parser.Instance.Parse($"dotnet package list {string.Join(' ', options)}");
             Action checkRules = () => ListPackageReferencesCommand.EnforceOptionRules(parseResult);
 
             if (throws)
@@ -352,7 +358,7 @@ class Program
                 .Should()
                 .Pass();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
                 .Should()
@@ -374,7 +380,7 @@ class Program
                 .Should()
                 .Pass();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithProject("TestAppSimple.csproj")
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
@@ -397,7 +403,7 @@ class Program
                 .Should()
                 .Pass();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithProject("App.sln")
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
@@ -424,7 +430,7 @@ class Program
                 .Should()
                 .Pass();
 
-            new ListPackageCommand(Log)
+            new PackageListCommand(Log)
                 .WithProject("../App.sln")
                 .WithWorkingDirectory(subFolderPath)
                 .Execute()

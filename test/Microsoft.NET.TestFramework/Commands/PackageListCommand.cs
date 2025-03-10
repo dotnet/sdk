@@ -5,30 +5,28 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
-    public class ListPackageCommand : DotnetCommand
+    public class PackageListCommand : DotnetCommand
     {
         private string? _projectName = null;
 
-        public ListPackageCommand(ITestOutputHelper log, params string[] args) : base(log, args)
+        public PackageListCommand(ITestOutputHelper log, params string[] args) : base(log, args)
         {
         }
 
         public override CommandResult Execute(IEnumerable<string> args)
         {
-            List<string> newArgs = new();
-            newArgs.Add("list");
+            List<string> newArgs = ["package", "list"];
             if (!string.IsNullOrEmpty(_projectName))
             {
+                newArgs.Add("--project");
                 newArgs.Add(_projectName);
             }
-            newArgs.Add("package");
             newArgs.AddRange(args);
 
             return base.Execute(newArgs);
         }
 
-
-        public ListPackageCommand WithProject(string projectName)
+        public PackageListCommand WithProject(string projectName)
         {
             _projectName = projectName;
             return this;
