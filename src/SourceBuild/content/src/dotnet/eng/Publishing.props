@@ -1,0 +1,74 @@
+<Project InitialTargets="DiscoverArtifacts">
+  <PropertyGroup>
+    <EnableDefaultArtifacts>false</EnableDefaultArtifacts>
+    <PushToLocalStorage>true</PushToLocalStorage>
+    <PreserveRepoOrigin>true</PreserveRepoOrigin>
+    <ArtifactsStagingDir Condition="'$(ArtifactsStagingDir)' == ''">$(VerticalArtifactsDir)/staging/</ArtifactsStagingDir>
+    <SourceBuiltAssetsDir>$(ArtifactsStagingDir)/assets/$(Configuration)</SourceBuiltAssetsDir>
+    <SourceBuiltAssetManifestsDir>$(ArtifactsStagingDir)/manifests/$(Configuration)</SourceBuiltAssetManifestsDir>
+    <SourceBuiltPdbArtifactsDir>$(ArtifactsStagingDir)/PDB/$(Configuration)</SourceBuiltPdbArtifactsDir>
+    <PublishingUseHardlinksIfPossible>true</PublishingUseHardlinksIfPossible>
+    <AssetManifestName Condition="'$(VerticalName)' != ''">$(VerticalName).xml</AssetManifestName>
+    <AssetManifestName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(AssetManifestName)' == ''">VerticalManifest.xml</AssetManifestName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <SourceBuiltShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
+    <SourceBuiltNonShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/NonShipping</SourceBuiltNonShippingPackagesDir>
+  </PropertyGroup>
+  <!--
+    When building from source, the Private.SourceBuilt.Artifacts archive will contain the nuget packages, so don't push them where we'll upload from.
+  -->
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <SourceBuiltShippingPackagesDir>$(VerticalArtifactsDir)/tmp/staging/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
+    <SourceBuiltNonShippingPackagesDir>$(VerticalArtifactsDir)/tmp/staging/packages/$(Configuration)/NonShipping</SourceBuiltNonShippingPackagesDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(VerticalArtifactsDir)', 'obj', 'manifests', '$(Configuration)'))</AssetManifestsIntermediateDir>
+    <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(VerticalArtifactsDir)', 'obj', 'Symbols'))</IntermediateSymbolsRootDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <ArtifactVisibilityToPublish Remove="@(ArtifactVisibilityToPublish)" />
+    <ArtifactVisibilityToPublish Include="Internal;External" />
+  </ItemGroup>
+
+  <!-- Build task assembly paths -->
+  <PropertyGroup>
+    <MicrosoftDotNetUnifiedBuildTasksAssembly>$([MSBuild]::NormalizePath('$(VerticalArtifactsDir)', 'bin', 'Microsoft.DotNet.UnifiedBuild.Tasks', '$(Configuration)', 'Microsoft.DotNet.UnifiedBuild.Tasks.dll'))</MicrosoftDotNetUnifiedBuildTasksAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+
+  <Target Name="DiscoverArtifacts">
+    <ItemGroup>
+      <!-- Repo manifests from individual repos -->
+      <RepoManifests Include="$(AssetManifestsIntermediateDir)/**/*.xml" />
+    </ItemGroup>
+    <!-- Get produced packages and assets from the manifests -->
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoManifests)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
+    </GetKnownArtifactsFromAssetManifests>
+    <ItemGroup>
+      <ProducedPackage>
+        <IsShipping Condition="'%(ProducedPackage.NonShipping)' != 'true'">true</IsShipping>
+        <IsShipping Condition="'%(ProducedPackage.NonShipping)' == 'true'">false</IsShipping>
+        <Kind>Package</Kind>
+      </ProducedPackage>
+      <ProducedPackage>
+        <ShippingFolder Condition="'%(ProducedPackage.NonShipping)' != 'true'">Shipping</ShippingFolder>
+        <ShippingFolder Condition="'%(ProducedPackage.NonShipping)' == 'true'">NonShipping</ShippingFolder>
+      </ProducedPackage>
+
+      <ReferencePackage Include="@(ProducedPackage->'$(ReferencePackageNupkgCacheDir)%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' == 'source-build-reference-packages'" />
+    </ItemGroup>
+
+    <!-- Create Artifact items for produced packages and assets -->
+    <ItemGroup>
+      <Artifact Include="@(ProducedPackage->'$(VerticalArtifactsDir)/packages/%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' != 'source-build-reference-packages'" />
+      <Artifact Include="@(ReferencePackage)" RepoOrigin="SourceBuildReferencePackages" />
+      <Artifact Include="@(ProducedAsset->'$(VerticalArtifactsDir)/assets/$(Configuration)/%(Identity)')">
+        <Kind>Asset</Kind>
+      </Artifact>
+    </ItemGroup>
+  </Target>
+</Project>
