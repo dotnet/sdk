@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLineValidation;
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests

@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Tools.Reference.Add

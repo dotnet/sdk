@@ -7,7 +7,6 @@ using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Cli
 {
