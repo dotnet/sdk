@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.IO;
+using System.Diagnostics;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.OutputDevice;
@@ -91,21 +90,28 @@ namespace Microsoft.DotNet.Cli
 
         private void InitializeTestApplications(IEnumerable<TestModule> modules)
         {
+            // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
+            IEnumerable<TestModule> vsTestTestProjects = modules.Where(module => !module.IsTestingPlatformApplication);
+
+            if (vsTestTestProjects.Any())
+            {
+                _areTestingPlatformApplications = false;
+
+                _output.WriteMessage(
+                    string.Format(
+                        LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
+                        string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
+                    new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
+
+                return;
+            }
+
             foreach (TestModule module in modules)
             {
                 if (!module.IsTestProject && !module.IsTestingPlatformApplication)
                 {
-                    // This should never happen. We should only ever create Module if it's a test project.
-                    throw new InvalidOperationException();
-                }
-
-                if (!module.IsTestingPlatformApplication)
-                {
-                    // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
-                    // Note that we still continue the loop here so that we print all projects that are VSTest and not MTP.
-                    _areTestingPlatformApplications = false;
-                    _output.WriteMessage(string.Format(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription, Path.GetFileName(module.ProjectFullPath)), new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
-                    continue;
+                    // This should never happen. We should only ever create TestModule if it's a test project.
+                    throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
                 }
 
                 var testApp = new TestApplication(module, _args);
