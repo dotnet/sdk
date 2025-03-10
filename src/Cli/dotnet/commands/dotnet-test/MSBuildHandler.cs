@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.OutputDevice;
@@ -109,8 +110,8 @@ namespace Microsoft.DotNet.Cli
             {
                 if (!module.IsTestProject && !module.IsTestingPlatformApplication)
                 {
-                    // This should never happen. We should only ever create Module if it's a test project.
-                    throw new InvalidOperationException();
+                    // This should never happen. We should only ever create TestModule if it's a test project.
+                    throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
                 }
 
                 var testApp = new TestApplication(module, _args);
