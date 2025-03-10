@@ -11,7 +11,7 @@
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <ProjectReference Include="$(RepoRoot)src\Installer\finalizer\finalizer-build.csproj" />
   </ItemGroup>
 
