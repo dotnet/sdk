@@ -64,8 +64,7 @@ That is why we have removed all servicing builds from the installer main page as
 Internal codeflow is merged into public GitHub repos on patch Tuesday each month to ensure we are updated.
 
 ## Inter-branch codeflow
-In the SDK repo, we have automated codeflow set up for each non-preview release branch flowing from the oldest branch all the way to main. You can see the configuration for that in [github-merge-flow.jsonc](https://github.com/dotnet/sdk/blob/main/github-merge-flow.jsonc). The workflow configuration is in (inter-branch-merge-flow.yml)[https://github.com/dotnet/sdk/blob/main/.github/workflows/inter-branch-merge-flow.yml]
-
+In the SDK repo, we have automated codeflow set up for each non-preview release branch flowing from the oldest branch all the way to main. You can see the configuration for that in [github-merge-flow.jsonc](https://github.com/dotnet/sdk/blob/main/github-merge-flow.jsonc). The workflow configuration is in [inter-branch-merge-flow.yml](https://github.com/dotnet/sdk/blob/main/.github/workflows/inter-branch-merge-flow.yml)
 You can see the existing open branch codeflows [here](https://github.com/dotnet/sdk/issues?q=is%3Apr%20is%3Aopen%20author%3Aapp%2Fgithub-actions%20%20Merge%20branch)
 
 ### Further updates
