@@ -10,6 +10,8 @@
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
 
     <!-- VSIX -->
+    <!-- We duplicate some logic like VsixVersion from arcade targets because they are imported only when using .NET Framework MSBuild,
+    but we want to build the VSIX in SDK's CI which is using Core MSBuild. See https://github.com/dotnet/arcade/issues/15617. -->
     <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
