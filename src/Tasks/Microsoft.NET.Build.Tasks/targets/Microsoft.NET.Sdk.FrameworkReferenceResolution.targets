@@ -52,12 +52,22 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
  
   <Target Name="AddPrunePackageReferences" BeforeTargets="CollectPrunePackageReferences"
+          DependsOnTargets="ProcessFrameworkReferences"
           Condition="'$(RestoreEnablePackagePruning)' == 'true'">
 
+    <PropertyGroup>
+      <PrunePackageDataRoot Condition="'$(PrunePackageDataRoot)' == ''">$(NetCoreRoot)\sdk\$(NETCoreSdkVersion)\PrunePackageData\</PrunePackageDataRoot>
+      <PrunePackageTargetingPackRoots Condition="'$(PrunePackageTargetingPackRoots)' == ''">$(NetCoreTargetingPackRoot)</PrunePackageTargetingPackRoots>
+      <AllowMissingPrunePackageData Condition="'$(AllowMissingPrunePackageData)' == ''">false</AllowMissingPrunePackageData>
+    </PropertyGroup>
+    
     <GetPackagesToPrune TargetFrameworkIdentifier="$(TargetFrameworkIdentifier)"
                         TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
                         FrameworkReferences="@(FrameworkReference)"
-                        TargetingPackRoot="$(NetCoreTargetingPackRoot)">
+                        TargetingPacks="@(TargetingPack)"
+                        TargetingPackRoots="$(PrunePackageTargetingPackRoots)"
+                        PrunePackageDataRoot="$(PrunePackageDataRoot)"
+                        AllowMissingPrunePackageData="$(AllowMissingPrunePackageData)">
       <Output TaskParameter="PackagesToPrune" ItemName="PrunePackageReference" />
     </GetPackagesToPrune>
     

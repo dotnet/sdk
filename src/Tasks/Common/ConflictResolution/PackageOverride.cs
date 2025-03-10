@@ -25,14 +25,14 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         public string PackageName { get; }
         public Dictionary<string, OverrideVersion> OverriddenPackages { get; }
 
-        private PackageOverride(string packageName, IEnumerable<Tuple<string, OverrideVersion>> overriddenPackages)
+        private PackageOverride(string packageName, IEnumerable<(string id, OverrideVersion version)> overriddenPackages)
         {
             PackageName = packageName;
 
             OverriddenPackages = new Dictionary<string, OverrideVersion>(StringComparer.OrdinalIgnoreCase);
-            foreach (Tuple<string, OverrideVersion> package in overriddenPackages)
+            foreach (var package in overriddenPackages)
             {
-                OverriddenPackages[package.Item1] = package.Item2;
+                OverriddenPackages[package.id] = package.version;
             }
         }
 
@@ -44,27 +44,34 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             return new PackageOverride(packageName, CreateOverriddenPackages(overriddenPackagesString));
         }
 
-        private static IEnumerable<Tuple<string, OverrideVersion>> CreateOverriddenPackages(string overriddenPackagesString)
+        private static IEnumerable<(string id, OverrideVersion version)> CreateOverriddenPackages(string overriddenPackagesString)
         {
             if (!string.IsNullOrEmpty(overriddenPackagesString))
             {
                 overriddenPackagesString = overriddenPackagesString.Trim();
                 string[] overriddenPackagesAndVersions = overriddenPackagesString.Split(new char[] { ';', '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string overriddenPackagesAndVersion in overriddenPackagesAndVersions)
+                return CreateOverriddenPackages(overriddenPackagesAndVersions);
+            }
+            return Enumerable.Empty<(string id, OverrideVersion version)>();
+        }
+
+        public static IEnumerable<(string id, OverrideVersion version)> CreateOverriddenPackages(IEnumerable<string> packageOverrideFileLines)
+        {
+            foreach (string overriddenPackagesAndVersion in packageOverrideFileLines)
+            {
+                string trimmedOverriddenPackagesAndVersion = overriddenPackagesAndVersion.Trim();
+                int separatorIndex = trimmedOverriddenPackagesAndVersion.IndexOf('|');
+                if (separatorIndex != -1)
                 {
-                    string trimmedOverriddenPackagesAndVersion = overriddenPackagesAndVersion.Trim();
-                    int separatorIndex = trimmedOverriddenPackagesAndVersion.IndexOf('|');
-                    if (separatorIndex != -1)
+                    string versionString = trimmedOverriddenPackagesAndVersion.Substring(separatorIndex + 1);
+                    string overriddenPackage = trimmedOverriddenPackagesAndVersion.Substring(0, separatorIndex);
+                    if (OverrideVersion.TryParse(versionString, out OverrideVersion? version))
                     {
-                        string versionString = trimmedOverriddenPackagesAndVersion.Substring(separatorIndex + 1);
-                        string overriddenPackage = trimmedOverriddenPackagesAndVersion.Substring(0, separatorIndex);
-                        if (OverrideVersion.TryParse(versionString, out OverrideVersion? version))
-                        {
-                            yield return Tuple.Create(overriddenPackage, version);
-                        }
+                        yield return (overriddenPackage, version);
                     }
                 }
             }
+
         }
     }
 }
