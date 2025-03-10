@@ -51,6 +51,11 @@ Make the profile names distinct.</source>
         <target state="translated">'{0} ' という名前の起動プロファイルは存在しません。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
+        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">-p オプションを使用して一度に指定できるプロジェクトは 1 つだけです。</target>
