@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 

@@ -4,7 +4,7 @@
 using Microsoft.Build.Construction;
 using Microsoft.DotNet.Tools.Common;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.Utils.Extensions
 {
     internal static class MSBuildProjectExtensions
     {

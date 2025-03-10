@@ -5,9 +5,9 @@ using Microsoft.DotNet.Tools.Common;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.Utils.Extensions
 {
-    static class LockFileExtensions
+    internal static class LockFileExtensions
     {
         public static string GetPackageDirectory(this LockFile lockFile, LockFileTargetLibrary library)
         {

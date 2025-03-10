@@ -4,6 +4,7 @@
 #if NET
 
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
