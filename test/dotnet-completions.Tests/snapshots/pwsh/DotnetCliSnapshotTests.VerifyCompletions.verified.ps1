@@ -635,6 +635,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "Specifies the output format type for the list packages command.")
                 [CompletionResult]::new('--output-version', '--output-version', [CompletionResultType]::ParameterName, "Specifies the version of machine-readable output. Requires the `'--format json`' option.")
+                [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Do not restore before running the command.")
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")

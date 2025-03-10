@@ -174,4 +174,11 @@
   <data name="CmdOutputVersionDescription" xml:space="preserve">
     <value>Specifies the version of machine-readable output. Requires the '--format json' option.</value>
   </data>
+  <data name="CmdNoRestoreDescription" xml:space="preserve">
+    <value>Do not restore before running the command.</value>
+  </data>
+  <data name="Error_restore" xml:space="preserve">
+    <value>Restore failed. Please try running `dotnet restore`.</value>
+    <comment>do not translate `dotnet restore`</comment>
+  </data>
 </root>

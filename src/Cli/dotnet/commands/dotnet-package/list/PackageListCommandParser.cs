@@ -74,6 +74,12 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
+        public static readonly CliOption NoRestore = new CliOption<bool>("--no-restore")
+        {
+            Description = LocalizableStrings.CmdNoRestoreDescription,
+            Arity = ArgumentArity.Zero
+        };
+
         public static readonly CliOption VerbosityOption = new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CommonLocalizableStrings.VerbosityOptionDescription,
@@ -115,6 +121,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(InteractiveOption);
             command.Options.Add(FormatOption);
             command.Options.Add(OutputVersionOption);
+            command.Options.Add(NoRestore);
             command.Options.Add(PackageCommandParser.ProjectOption);
 
             command.SetAction((parseResult) => new ListPackageReferencesCommand(parseResult).Execute());
