@@ -145,6 +145,25 @@ namespace Microsoft.DotNet.Cli.Package.List.Tests
                 .And.HaveStdErr();
         }
 
+
+        [Fact]
+        public void RestoresAndLists()
+        {
+            var testAsset = "NewtonSoftDependentProject";
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset(testAsset)
+                .WithSource()
+                .Path;
+
+            new PackageListCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.HaveStdOut()
+                .And.HaveStdOutContaining("NewtonSoft.Json");
+        }
+
         [Fact]
         public void ItListsTransitivePackage()
         {

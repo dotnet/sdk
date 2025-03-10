@@ -139,10 +139,28 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Fail()
                 .And.HaveStdErr();
+        }
+
+        [Fact]
+        public void RestoresAndLists()
+        {
+            var testAsset = "NewtonSoftDependentProject";
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset(testAsset)
+                .WithSource()
+                .Path;
+
+            new PackageListCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.HaveStdOut()
+                .And.HaveStdOutContaining("NewtonSoft.Json");
         }
 
         [Fact]
