@@ -1,0 +1,22 @@
+﻿These templates matched your input: 
+Template
+API
+ASP.NET
+Blazor
+Class
+Console
+dotnet
+Dotnet
+EditorConfig
+global.json
+MSBuild
+MSTest
+MVC
+NuGet
+NUnit
+Protocol
+Razor
+Solution
+Web
+Worker
+xUnit
