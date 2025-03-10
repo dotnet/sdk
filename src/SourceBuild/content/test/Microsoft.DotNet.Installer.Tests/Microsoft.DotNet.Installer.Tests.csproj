@@ -6,6 +6,11 @@
     <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotnetTool)</VSTestCLIRunSettings>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <BlobArtifactsDir Condition="'$(BlobArtifactsDir)' == ''">$(ArtifactsAssetsDir)</BlobArtifactsDir>
+    <PackageArtifactsDir Condition="'$(PackageArtifactsDir)' == ''">$(ArtifactsPackagesDir)</PackageArtifactsDir>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
@@ -15,10 +20,10 @@
     <ItemGroup>
       <!-- General configs -->
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).AssetsDirectory">
-        <Value>$(ArtifactsAssetsDir)</Value>
+        <Value>$(BlobArtifactsDir)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PackagesDirectory">
-        <Value>$(ArtifactsPackagesDir)</Value>
+        <Value>$(PackageArtifactsDir)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).ScenarioTestsNuGetConfigPath">
         <Value>$(RepoRoot)src\scenario-tests\NuGet.config</Value>
