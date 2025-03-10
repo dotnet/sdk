@@ -63,3 +63,17 @@ All monthly servicing releases are done of our internal branches in case there a
 That is why we have removed all servicing builds from the installer main page as those builds do not include any changes from any repo other than the installer repo so are very limited.
 Internal codeflow is merged into public GitHub repos on patch Tuesday each month to ensure we are updated.
 
+## Inter-branch codeflow
+In the SDK repo, we have automated codeflow set up for each non-preview release branch flowing from the oldest branch all the way to main. You can see the configuration for that in [github-merge-flow.jsonc](https://github.com/dotnet/sdk/blob/main/github-merge-flow.jsonc). The workflow configuration is in (inter-branch-merge-flow.yml)[https://github.com/dotnet/sdk/blob/main/.github/workflows/inter-branch-merge-flow.yml]
+
+You can see the existing open branch codeflows [here](https://github.com/dotnet/sdk/issues?q=is%3Apr%20is%3Aopen%20author%3Aapp%2Fgithub-actions%20%20Merge%20branch)
+
+### Further updates
+These PRs will not get updated as new changes come in. This allows time to run PR checks, review, and merge. Once the existing PR is merged and all changes since that PR was created will be generated in a new PR. This leads to [failed](https://github.com/dotnet/sdk/actions/workflows/inter-branch-merge-flow.yml) workflow automation but that's expected. The workflow will report this message: _hint: Updates were rejected because the tip of your current branch is behind_.
+
+### Reviewing and merging inter-branch codeflow
+Generally we will check the commit list and scan the changes for anything out of the ordenary. We take a special look for any conflict merges that were done in getting the PR building.
+
+[!Important] Make sure to create a merge commit. Do not squash. If you squash, the next inter-branch PR will list all of the same commits.
+
+**NOTE** Some inter-branch flow will have 0 changes once the merge conflicts are resolved. This is likely when the only changes were to version numbers in the eng/*. These can be closed to save time and resources or merged to catch the commit history up (the next codeflow will have fewer commits). There is no preference either way.
