@@ -1,5 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// The .NET Foundation licenses this solutionFilePath to you under the MIT license.
 
 using System.CommandLine;
 using Microsoft.Build.Construction;
@@ -136,10 +136,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
                     .Select(Path.GetFullPath).ToList();
             }
 
-            foreach (string file in slnFiles)
+            foreach (string solutionFilePath in slnFiles)
             {
-                var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(file);
-                projectFiles.AddRange(solutionFile.SolutionProjects.Select(p => p.FilePath));
+                var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath);
+                projectFiles.AddRange(solutionFile.SolutionProjects.Select(
+                    p => Path.GetFullPath(p.FilePath, Path.GetDirectoryName(solutionFilePath))));
             }
 
             if (projectFiles.Count == 0)
