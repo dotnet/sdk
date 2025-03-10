@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
+using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
@@ -70,7 +72,7 @@ namespace Microsoft.DotNet.Cli
                 return ExitCode.GenericFailure;
             }
 
-            (IEnumerable<Module> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
+            (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
 
             InitializeTestApplications(projects);
 
@@ -79,28 +81,37 @@ namespace Microsoft.DotNet.Cli
 
         private int RunBuild(string filePath, bool isSolution, BuildOptions buildOptions)
         {
-            (IEnumerable<Module> projects, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
+            (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
 
             InitializeTestApplications(projects);
 
             return restored ? ExitCode.Success : ExitCode.GenericFailure;
         }
 
-        private void InitializeTestApplications(IEnumerable<Module> modules)
+        private void InitializeTestApplications(IEnumerable<TestModule> modules)
         {
-            foreach (Module module in modules)
-            {
-                if (!module.IsTestProject)
-                {
-                    // Non test projects, like the projects that include production code are skipped over, we won't run them.
-                    return;
-                }
+            // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
+            IEnumerable<TestModule> vsTestTestProjects = modules.Where(module => !module.IsTestingPlatformApplication);
 
-                if (!module.IsTestingPlatformApplication)
+            if (vsTestTestProjects.Any())
+            {
+                _areTestingPlatformApplications = false;
+
+                _output.WriteMessage(
+                    string.Format(
+                        LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
+                        string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
+                    new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
+
+                return;
+            }
+
+            foreach (TestModule module in modules)
+            {
+                if (!module.IsTestProject && !module.IsTestingPlatformApplication)
                 {
-                    // If one test app has IsTestingPlatformApplication set to false, then we will not run any of the test apps
-                    _areTestingPlatformApplications = false;
-                    return;
+                    // This should never happen. We should only ever create TestModule if it's a test project.
+                    throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
                 }
 
                 var testApp = new TestApplication(module, _args);
@@ -122,9 +133,9 @@ namespace Microsoft.DotNet.Cli
             return true;
         }
 
-        private (IEnumerable<Module> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
+        private (IEnumerable<TestModule> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
         {
-            (IEnumerable<Module> projects, bool isBuiltOrRestored) = isSolution ?
+            (IEnumerable<TestModule> projects, bool isBuiltOrRestored) = isSolution ?
                 MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, buildOptions) :
                 MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, buildOptions);
 
@@ -133,7 +144,7 @@ namespace Microsoft.DotNet.Cli
             return (projects, isBuiltOrRestored);
         }
 
-        private void LogProjectProperties(IEnumerable<Module> modules)
+        private void LogProjectProperties(IEnumerable<TestModule> modules)
         {
             if (!Logger.TraceEnabled)
             {

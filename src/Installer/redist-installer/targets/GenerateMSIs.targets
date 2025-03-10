@@ -10,7 +10,8 @@
       GenerateSdkPlaceholderMsi;
       GenerateToolsetNupkg;
       GenerateTemplatesNupkgs;
-      GenerateSdkPlaceholderNupkg
+      GenerateSdkPlaceholderNupkg;
+      GenerateRuntimeAnalyzersNupkg
     </GenerateMsisDependsOn>
     <GenerateMsisDependsOn Condition="'$(GenerateSdkBundleOnly)' == 'true'">GenerateSdkBundle</GenerateMsisDependsOn>
 
@@ -424,6 +425,27 @@
         <MajorMinorVersion>%(TemplatesMajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
     </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateRuntimeAnalyzersNupkg"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
+          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64'"
+          Inputs="$(RuntimeAnalyzersLayoutDirectory)/**/*;
+                    $(SdkRuntimeAnalyzersNuspecFile);
+                    $(GenerateNupkgPowershellScript)"
+          Outputs="$(SdkRuntimeAnalyzersNupkgFile);$(SdkRuntimeAnalyzersSwrFile)">
+    <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(RuntimeAnalyzersLayoutDirectory)"
+                                 OutputFile="$(SdkRuntimeAnalyzersSwrFile)" />
+
+    <!-- Include the swr file in the nuget package for VS authoring -->
+    <Copy SourceFiles="$(SdkRuntimeAnalyzersSwrFile)" DestinationFolder="$(RuntimeAnalyzersLayoutDirectory)" />
+
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+                    '$(ArtifactsDir)' ^
+                    '$(RuntimeAnalyzersLayoutDirectory.TrimEnd('\'))' ^
+                    '$(FullNugetVersion)' ^
+                    '$(SdkRuntimeAnalyzersNuspecFile)' ^
+                    '$(SdkRuntimeAnalyzersNupkgFile)'" />
   </Target>
 
   <Target Name="GenerateMsis"
