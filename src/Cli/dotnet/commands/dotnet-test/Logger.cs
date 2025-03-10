@@ -30,6 +30,12 @@ namespace Microsoft.DotNet.Tools.Test
 
                 lock (_lock)
                 {
+                    string directoryPath = Path.GetDirectoryName(_traceFilePath);
+                    if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+                    {
+                        Directory.CreateDirectory(directoryPath);
+                    }
+
                     using StreamWriter logFile = File.AppendText(_traceFilePath);
                     logFile.WriteLine(message);
                 }
