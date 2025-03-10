@@ -176,7 +176,7 @@ namespace Microsoft.DotNet.Cli
             Parallel.ForEach(sln.SolutionProjects.AsEnumerable(), (project, state) =>
             {
 #pragma warning disable CS8604 // Possible null reference argument.
-                string projectFullPath = Path.Combine(Path.GetDirectoryName(slnFullPath), project.FilePath);
+                string projectFullPath = Path.GetFullPath(project.FilePath, Path.GetDirectoryName(slnFullPath));
 #pragma warning restore CS8604 // Possible null reference argument.
                 if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                     return;
@@ -220,7 +220,7 @@ namespace Microsoft.DotNet.Cli
             foreach (var project in sln.SolutionProjects.AsEnumerable())
             {
 #pragma warning disable CS8604 // Possible null reference argument.
-                string projectFullPath = Path.Combine(Path.GetDirectoryName(slnPath), project.FilePath);
+                string projectFullPath = Path.GetFullPath(project.FilePath, Path.GetDirectoryName(slnPath));
 #pragma warning restore CS8604 // Possible null reference argument.
                 if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                     continue;
