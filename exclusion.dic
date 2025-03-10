@@ -1,5 +1,6 @@
 ansi
 awaiter
+commandline
 crossgen
 csharp
 cshtml
@@ -16,6 +17,7 @@ tfm
 tfms
 url
 urls
+uuid
 xamarin
 xunit
 yaml

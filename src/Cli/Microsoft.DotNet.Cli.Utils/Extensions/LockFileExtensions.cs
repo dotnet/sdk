@@ -4,28 +4,27 @@
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 
-namespace Microsoft.DotNet.Cli.Utils.Extensions
+namespace Microsoft.DotNet.Cli.Utils.Extensions;
+
+internal static class LockFileExtensions
 {
-    internal static class LockFileExtensions
+    public static string GetPackageDirectory(this LockFile lockFile, LockFileTargetLibrary library)
     {
-        public static string GetPackageDirectory(this LockFile lockFile, LockFileTargetLibrary library)
-        {
-            var packageFolders = lockFile.GetNormalizedPackageFolders();
+        var packageFolders = lockFile.GetNormalizedPackageFolders();
 
-            var packageFoldersCount = packageFolders.Count();
-            var userPackageFolder = packageFoldersCount == 1 ? string.Empty : packageFolders.First();
-            var fallbackPackageFolders = packageFoldersCount > 1 ? packageFolders.Skip(1) : packageFolders;
+        var packageFoldersCount = packageFolders.Count();
+        var userPackageFolder = packageFoldersCount == 1 ? string.Empty : packageFolders.First();
+        var fallbackPackageFolders = packageFoldersCount > 1 ? packageFolders.Skip(1) : packageFolders;
 
-            var packageDirectory = new FallbackPackagePathResolver(userPackageFolder, fallbackPackageFolders)
-                .GetPackageDirectory(library.Name, library.Version);
+        var packageDirectory = new FallbackPackagePathResolver(userPackageFolder, fallbackPackageFolders)
+            .GetPackageDirectory(library.Name, library.Version);
 
-            return packageDirectory;
-        }
+        return packageDirectory;
+    }
 
-        public static IEnumerable<string> GetNormalizedPackageFolders(this LockFile lockFile)
-        {
-            return lockFile.PackageFolders.Select(p =>
-                PathUtility.EnsureNoTrailingDirectorySeparator(p.Path));
-        }
+    public static IEnumerable<string> GetNormalizedPackageFolders(this LockFile lockFile)
+    {
+        return lockFile.PackageFolders.Select(p =>
+            PathUtility.EnsureNoTrailingDirectorySeparator(p.Path));
     }
 }

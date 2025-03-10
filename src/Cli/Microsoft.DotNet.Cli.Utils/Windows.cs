@@ -4,6 +4,7 @@
 #if NET
 using System.Runtime.Versioning;
 #endif
+
 using System.Security.Principal;
 
 namespace Microsoft.DotNet.Cli.Utils

@@ -72,8 +72,8 @@ Commands:
             var cmd = new DotnetCommand(Log, "list one two three reference".Split())
                     .Execute("proj.csproj");
             cmd.ExitCode.Should().NotBe(0);
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(LocalizableStrings.UnrecognizedCommandOrArgument, "two")}
-{string.Format(LocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(Microsoft.DotNet.Cli.CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "two")}
+{string.Format(Microsoft.DotNet.Cli.CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
         [Theory]

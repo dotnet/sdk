@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 .Errors
                 .Select(e => e.Message)
                 .Should()
-                .BeEquivalentTo(string.Format(LocalizableStrings.RequiredArgumentMissingForCommand, "'reference'."));
+                .BeEquivalentTo(string.Format(Microsoft.DotNet.Cli.CommandLineValidation.LocalizableStrings.RequiredArgumentMissingForCommand, "'reference'."));
         }
     }
 }

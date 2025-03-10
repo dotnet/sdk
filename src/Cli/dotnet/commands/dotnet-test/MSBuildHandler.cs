@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli
 
             if (msBuildExitCode != ExitCode.Success)
             {
-                _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
+                _output.WriteMessage(string.Format(Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
                 return false;
             }
 
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Cli
 
                 _output.WriteMessage(
                     string.Format(
-                        LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
+                        Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
                         string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
                     new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
 
