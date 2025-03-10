@@ -13,7 +13,7 @@
        it depends on assets from other verticals that are built in the first build pass. -->
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and
                         '$(OS)' == 'Windows_NT'">
-    <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\redist-installer.proj" DotNetBuildPass="2" AdditionalProperties="GenerateSdkBundleOnly=true" />
+    <ProjectToBuild Include="$(RepoRoot)src\Installer\redist-installer\redist-installer.proj" DotNetBuildPass="2" />
   </ItemGroup>
 
 </Project>

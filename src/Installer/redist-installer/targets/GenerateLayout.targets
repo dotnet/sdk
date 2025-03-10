@@ -71,17 +71,6 @@
       MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
-  <Target Name="GenerateVersionFile">
-    <WriteLinesToFile File="$(SdkOutputDirectory).version"
-                      Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
-                      Overwrite="true" />
-
-    <!-- This is a hack to make the full nuget version available during the publishing step -->
-    <WriteLinesToFile File="$(ArtifactsTmpDir)FullNugetVersion.version"
-                      Lines="$(FullNugetVersion)"
-                      Overwrite="true" />
-  </Target>
-
   <Target Name="CopyKnownWorkloadManifestFile">
     <ItemGroup>
       <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLowerInvariant())" />
@@ -146,7 +135,6 @@
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             LayoutBundledComponents;
-                            GenerateVersionFile;
                             CopyKnownWorkloadManifestFile;
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;

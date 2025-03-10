@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- The FullNugetVersion.version file only gets produced in the initial build pass. -->
-    <RelativeBlobPathParent Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">Sdk/$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version').Trim())</RelativeBlobPathParent>
+    <RelativeBlobPathParent>Sdk/$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version').Trim())</RelativeBlobPathParent>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
 
@@ -86,7 +86,7 @@
               PublishFlatContainer="false" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">
+  <ItemGroup>
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" IsShipping="true" />

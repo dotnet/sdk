@@ -29,6 +29,18 @@
     <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
   </PropertyGroup>
 
+  <Target Name="GenerateVersionFile"
+          BeforeTargets="Build">
+    <WriteLinesToFile File="$(SdkOutputDirectory).version"
+                      Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
+                      Overwrite="true" />
+
+    <!-- This is a hack to make the full nuget version available during the publishing step -->
+    <WriteLinesToFile File="$(ArtifactsTmpDir)FullNugetVersion.version"
+                      Lines="$(FullNugetVersion)"
+                      Overwrite="true" />
+  </Target>
+
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
   <!-- Layout -->
@@ -44,7 +56,6 @@
     <Import Project="targets\Badge.targets" Condition="'$(PgoInstrument)' != 'true'" />
     <Import Project="targets\GenerateArchives.targets" />
   </ImportGroup>
-
 
   <!-- Installers -->
   <Import Project="targets\GenerateMSIs.targets" Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingInstallers)' != 'true'" />
