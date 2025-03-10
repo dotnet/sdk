@@ -8,22 +8,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 {
     internal interface IWorkloadManifestUpdater
     {
-        Task UpdateAdvertisingManifestsAsync(bool includePreviews, DirectoryPath? offlineCache = null);
+        Task UpdateAdvertisingManifestsAsync(bool includePreviews, bool useWorkloadSets = false, DirectoryPath? offlineCache = null);
 
         Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
 
-        IEnumerable<(
-            ManifestVersionUpdate manifestUpdate,
-            Dictionary<WorkloadId, WorkloadDefinition> Workloads
-            )> CalculateManifestUpdates();
+        IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
 
-        IEnumerable<ManifestVersionUpdate>
-            CalculateManifestRollbacks(string rollbackDefinitionFilePath);
+        IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath);
+        IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files);
 
         Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
 
         IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads);
 
         void DeleteUpdatableWorkloadsFile();
+
+        void DownloadWorkloadSet(string version, DirectoryPath? offlineCache);
     }
+
+    internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);
 }

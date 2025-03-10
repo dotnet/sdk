@@ -42,6 +42,11 @@ namespace Microsoft.DotNet.Cli
 
             bool perfLogEnabled = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_PERF_LOG", false);
 
+            if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD")))
+            {
+                Environment.SetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD", "1");
+            }
+
             // Avoid create temp directory with root permission and later prevent access in non sudo
             if (SudoEnvironmentDirectoryOverride.IsRunningUnderSudo())
             {
@@ -142,9 +147,14 @@ namespace Microsoft.DotNet.Cli
                             ToolPathSentinelFileName)));
                 if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
                 {
-                    Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
-                    CommandLoggingContext.SetVerbose(true);
-                    Reporter.Reset();
+                    // We found --diagnostic or -d, but we still need to determine whether the option should
+                    // be attached to the dotnet command or the subcommand.
+                    if (args.DiagOptionPrecedesSubcommand(parseResult.RootSubCommandResult()))
+                    {
+                        Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
+                        CommandLoggingContext.SetVerbose(true);
+                        Reporter.Reset();
+                    }
                 }
                 if (parseResult.HasOption(Parser.VersionOption) && parseResult.IsTopLevelDotnetCommand())
                 {
@@ -237,17 +247,26 @@ namespace Microsoft.DotNet.Cli
             else
             {
                 PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
-                var resolvedCommand = CommandFactoryUsingResolver.Create(
-                        "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
-                        args.GetSubArguments(),
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15);
-                PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
+                try
+                {
+                    var resolvedCommand = CommandFactoryUsingResolver.Create(
+                            "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
+                            args.GetSubArguments(),
+                            FrameworkConstants.CommonFrameworks.NetStandardApp15);
+                    PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
 
-                PerformanceLogEventSource.Log.ExtensibleCommandStart();
-                var result = resolvedCommand.Execute();
-                PerformanceLogEventSource.Log.ExtensibleCommandStop();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStart();
+                    var result = resolvedCommand.Execute();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStop();
 
-                exitCode = result.ExitCode;
+                    exitCode = result.ExitCode;
+                }
+                catch (CommandUnknownException e)
+                {
+                    Reporter.Error.WriteLine(e.Message.Red());
+                    Reporter.Output.WriteLine(e.InstructionMessage);
+                    exitCode = 1;
+                }
             }
 
             PerformanceLogEventSource.Log.TelemetryClientFlushStart();
