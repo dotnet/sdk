@@ -6,15 +6,14 @@ using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.NET.Build.Containers;
 
 internal interface IManifestPicker
 {
     public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier);
+    public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier);
 }
 
 internal sealed class RidGraphManifestPicker : IManifestPicker
@@ -26,6 +25,16 @@ internal sealed class RidGraphManifestPicker : IManifestPicker
         _runtimeGraph = GetRuntimeGraphForDotNet(runtimeIdentifierGraphPath);
     }
     public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> ridManifestDict, string runtimeIdentifier)
+    {
+        var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
+        if (bestManifestRid is null)
+        {
+            return null;
+        }
+        return ridManifestDict[bestManifestRid];
+    }
+
+    public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> ridManifestDict, string runtimeIdentifier)
     {
         var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
         if (bestManifestRid is null)
@@ -77,13 +86,14 @@ internal sealed class Registry
     /// </summary>
     public string RegistryName { get; }
 
-    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) : this(
-        ContainerHelpers.TryExpandRegistryToUri(registryName), logger, new RegistryApiFactory(mode), settings)
+    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null) :
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
 
-    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null) : this(
-        ContainerHelpers.TryExpandRegistryToUri(registryName), logger, new RegistryApiFactory(registryAPI), settings)
+    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
+        this(new Uri($"https://{registryName}"), logger, new RegistryApiFactory(mode), settings)
     { }
+
 
     internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null) :
         this(baseUri, logger, new RegistryApiFactory(registryAPI), settings)
@@ -105,8 +115,8 @@ internal sealed class Registry
         BaseUri = baseUri;
 
         _logger = logger;
-        _settings = settings ?? new RegistrySettings();
-        _registryAPI = factory.Create(RegistryName, BaseUri, logger);
+        _settings = settings ?? new RegistrySettings(RegistryName);
+        _registryAPI = factory.Create(RegistryName, BaseUri, logger, _settings.IsInsecure);
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -114,7 +124,7 @@ internal sealed class Registry
         var port = baseUri.Port == -1 ? string.Empty : $":{baseUri.Port}";
         if (baseUri.OriginalString.EndsWith(port, ignoreCase: true, culture: null))
         {
-            // the port was part of the original assignment, so it's ok to consider it part of the 'name
+            // the port was part of the original assignment, so it's ok to consider it part of the 'name'
             return baseUri.GetComponents(UriComponents.HostAndPort, UriFormat.Unescaped);
         }
         else
@@ -139,7 +149,12 @@ internal sealed class Registry
     /// <summary>
     /// Check to see if the registry is GitHub Packages, which always uses ghcr.io.
     /// </summary>
-    public bool IsGithubPackageRegistry => RegistryName.StartsWith("ghcr.io", StringComparison.Ordinal);
+    public bool IsGithubPackageRegistry => RegistryName.StartsWith(RegistryConstants.GitHubPackageRegistryDomain, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Is this registry the public Microsoft Container Registry.
+    /// </summary>
+    public bool IsMcr => RegistryName.Equals(RegistryConstants.MicrosoftContainerRegistryDomain, StringComparison.Ordinal);
 
     /// <summary>
     /// Check to see if the registry is Docker Hub, which uses two well-known domains.
@@ -159,6 +174,8 @@ internal sealed class Registry
         get => RegistryName.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
     }
 
+    public bool IsAzureContainerRegistry => RegistryName.EndsWith(".azurecr.io", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>
     /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
     /// parallel uploads be more conservative and upload one layer at a time.
@@ -175,11 +192,20 @@ internal sealed class Registry
             SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await ReadSingleImageAsync(
                 repositoryName,
                 await ReadManifest().ConfigureAwait(false),
+                initialManifestResponse.Content.Headers.ContentType.MediaType,
                 cancellationToken).ConfigureAwait(false),
             SchemaTypes.DockerManifestListV2 => await PickBestImageFromManifestListAsync(
                 repositoryName,
                 reference,
                 await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                runtimeIdentifier,
+                manifestPicker,
+                cancellationToken).ConfigureAwait(false),
+            SchemaTypes.OciImageIndexV1 =>
+                await PickBestImageFromImageIndexAsync(
+                repositoryName,
+                reference,
+                await initialManifestResponse.Content.ReadFromJsonAsync<ImageIndexV1>(cancellationToken: cancellationToken).ConfigureAwait(false),
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
@@ -215,7 +241,7 @@ internal sealed class Registry
         };
     }
 
-    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, CancellationToken cancellationToken)
+    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, string manifestMediaType, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ManifestConfig config = manifest.Config;
@@ -224,14 +250,29 @@ internal sealed class Registry
         JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, configSha, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
-        return new ImageBuilder(manifest, new ImageConfig(configDoc), _logger);
+        // ManifestV2.MediaType can be null, so we also provide manifest mediaType from http response
+        return new ImageBuilder(manifest, manifest.MediaType ?? manifestMediaType, new ImageConfig(configDoc), _logger);
     }
 
 
-    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(ManifestListV2 manifestList)
+    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(PlatformSpecificManifest[] manifestList)
     {
         var ridDict = new Dictionary<string, PlatformSpecificManifest>();
-        foreach (var manifest in manifestList.manifests)
+        foreach (var manifest in manifestList)
+        {
+            if (CreateRidForPlatform(manifest.platform) is { } rid)
+            {
+                ridDict.TryAdd(rid, manifest);
+            }
+        }
+
+        return ridDict;
+    }
+
+    private static IReadOnlyDictionary<string, PlatformSpecificOciManifest> GetManifestsByRid(PlatformSpecificOciManifest[] manifestList)
+    {
+        var ridDict = new Dictionary<string, PlatformSpecificOciManifest>();
+        foreach (var manifest in manifestList)
         {
             if (CreateRidForPlatform(manifest.platform) is { } rid)
             {
@@ -283,24 +324,71 @@ internal sealed class Registry
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var ridManifestDict = GetManifestsByRid(manifestList);
+        var ridManifestDict = GetManifestsByRid(manifestList.manifests);
         if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificManifest matchingManifest)
         {
-            using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
-
-            cancellationToken.ThrowIfCancellationRequested();
-            var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
-            manifest.KnownDigest = matchingManifest.digest;
-            return await ReadSingleImageAsync(
+            return await ReadImageFromManifest(
                 repositoryName,
-                manifest,
-                cancellationToken).ConfigureAwait(false);
+                reference,
+                matchingManifest.digest,
+                matchingManifest.mediaType,
+                runtimeIdentifier,
+                ridManifestDict.Keys,
+                cancellationToken);
         }
         else
         {
             throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
         }
+    }
+
+    private async Task<ImageBuilder> PickBestImageFromImageIndexAsync(
+        string repositoryName,
+        string reference,
+        ImageIndexV1 index,
+        string runtimeIdentifier,
+        IManifestPicker manifestPicker,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var ridManifestDict = GetManifestsByRid(index.manifests);
+        if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificOciManifest matchingManifest)
+        {
+            return await ReadImageFromManifest(
+                repositoryName,
+                reference,
+                matchingManifest.digest,
+                matchingManifest.mediaType,
+                runtimeIdentifier,
+                ridManifestDict.Keys,
+                cancellationToken);
+        }
+        else
+        {
+            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
+        }
+    }
+
+    private async Task<ImageBuilder> ReadImageFromManifest(
+        string repositoryName,
+        string reference,
+        string manifestDigest,
+        string mediaType,
+        string runtimeIdentifier,
+        IEnumerable<string> rids,
+        CancellationToken cancellationToken)
+    {
+        using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, manifestDigest, cancellationToken).ConfigureAwait(false);
+
+        cancellationToken.ThrowIfCancellationRequested();
+        var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
+        manifest.KnownDigest = manifestDigest;
+        return await ReadSingleImageAsync(
+            repositoryName,
+            manifest,
+            mediaType,
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -437,6 +525,21 @@ internal sealed class Registry
 
     }
 
+    public async Task PushManifestListAsync(
+        MultiArchImage multiArchImage,
+        SourceImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        foreach (var tag in destinationImageReference.Tags)
+        {
+            _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
+            await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, multiArchImage.ImageIndexMediaType, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
+        }          
+    }
+
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
         => PushAsync(builtImage, source, destination, pushTags: true, cancellationToken);
 
@@ -492,7 +595,7 @@ internal sealed class Registry
         cancellationToken.ThrowIfCancellationRequested();
         using (MemoryStream stringStream = new MemoryStream(Encoding.UTF8.GetBytes(builtImage.Config)))
         {
-            var configDigest = builtImage.ImageDigest;
+            var configDigest = builtImage.ImageDigest!;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
             await UploadBlobAsync(destination.Repository, configDigest, stringStream, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ConfigUploaded);
@@ -507,15 +610,14 @@ internal sealed class Registry
             foreach (string tag in destination.Tags)
             {
                 _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
             }
         }
         else
         {
-            string manifestDigest = builtImage.Manifest.GetDigest();
-            _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
-            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, builtImage.ManifestDigest);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, builtImage.ManifestDigest, builtImage.Manifest, builtImage.ManifestMediaType, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }
@@ -534,9 +636,9 @@ internal sealed class Registry
             _mode = mode;
         }
 
-        public IRegistryAPI Create(string registryName, Uri baseUri, ILogger logger)
+        public IRegistryAPI Create(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry)
         {
-            return _registryApi ?? new DefaultRegistryAPI(registryName, baseUri, logger, _mode!.Value);
+            return _registryApi ?? new DefaultRegistryAPI(registryName, baseUri, isInsecureRegistry, logger, _mode!.Value);
         }
     }
 }
