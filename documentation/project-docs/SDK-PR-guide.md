@@ -71,8 +71,7 @@ You can see the existing open branch codeflows [here](https://github.com/dotnet/
 These PRs will not get updated as new changes come in. This allows time to run PR checks, review, and merge. Once the existing PR is merged and all changes since that PR was created will be generated in a new PR. This leads to [failed](https://github.com/dotnet/sdk/actions/workflows/inter-branch-merge-flow.yml) workflow automation but that's expected. The workflow will report this message: _hint: Updates were rejected because the tip of your current branch is behind_.
 
 ### Reviewing and merging inter-branch codeflow
-Generally we will check the commit list and scan the changes for anything out of the ordenary. We take a special look for any conflict merges that were done in getting the PR building.
-
+Generally we will check the commit list and scan the changes for anything out of the ordinary. We take a special look for any conflict merges that were done in getting the PR building.
 > [!Important]
 > Make sure to create a merge commit. Do not squash. If you squash, the next inter-branch PR will list all of the same commits.
 
