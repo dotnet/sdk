@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Cli.Extensions
 {
     public static class OptionForwardingExtensions
     {
-        public static ForwardedOption<T> Forward<T>(this ForwardedOption<T> option) => option.SetForwardingFunction((o) => new string[] { option.Name });
+        public static ForwardedOption<T> Forward<T>(this ForwardedOption<T> option) => option.SetForwardingFunction((T o) => new string[] { option.Name });
 
-        public static ForwardedOption<T> ForwardAs<T>(this ForwardedOption<T> option, string value) => option.SetForwardingFunction((o) => new string[] { value });
+        public static ForwardedOption<T> ForwardAs<T>(this ForwardedOption<T> option, string value) => option.SetForwardingFunction((T o) => new string[] { value });
 
         public static ForwardedOption<T> ForwardAsSingle<T>(this ForwardedOption<T> option, Func<T, string> format) => option.SetForwardingFunction(format);
 
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Extensions
         /// <returns>The option</returns>
         public static ForwardedOption<string> ForwardAsOutputPath(this ForwardedOption<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
         {
-            return option.SetForwardingFunction((o) =>
+            return option.SetForwardingFunction((string o) =>
             {
                 string argVal = CommandDirectoryContext.GetFullPath(o);
                 if (surroundWithDoubleQuotes)
@@ -136,13 +136,13 @@ namespace Microsoft.DotNet.Cli.Extensions
 
         public ForwardedOption<T> SetForwardingFunction(Func<T, ParseResult, IEnumerable<string>> func)
         {
-            ForwardingFunction = (parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue(this), parseResult) : Array.Empty<string>();
+            ForwardingFunction = (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue<T>(this), parseResult) : Array.Empty<string>();
             return this;
         }
 
         public Func<ParseResult, IEnumerable<string>> GetForwardingFunction(Func<T, IEnumerable<string>> func)
         {
-            return (parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue(this)) : Array.Empty<string>();
+            return (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue<T>(this)) : Array.Empty<string>();
         }
 
         public Func<ParseResult, IEnumerable<string>> GetForwardingFunction()

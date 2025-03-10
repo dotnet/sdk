@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Cli.Extensions
         {
             return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
                 parseResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
-                parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand));
+                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
         }
 
         public static int HandleMissingCommand(this ParseResult parseResult)

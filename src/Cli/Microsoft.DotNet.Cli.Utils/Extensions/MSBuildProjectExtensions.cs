@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Utils.Extensions
 
         public static ProjectItemGroupElement FindUniformOrCreateItemGroupWithCondition(this ProjectRootElement root, string projectItemElementType, string framework)
         {
-            var lastMatchingItemGroup = root.FindExistingUniformItemGroupWithCondition(projectItemElementType, framework);
+            var lastMatchingItemGroup = FindExistingUniformItemGroupWithCondition(root, projectItemElementType, framework);
 
             if (lastMatchingItemGroup != null)
             {
