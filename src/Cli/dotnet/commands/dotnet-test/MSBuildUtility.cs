@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class MSBuildUtility
     {
-        public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
+        public static (IEnumerable<TestModule> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
         {
             SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
 
@@ -23,18 +23,18 @@ namespace Microsoft.DotNet.Cli
                     Path.GetDirectoryName(solutionModel.Description) :
                     SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
-            ConcurrentBag<Module> projects = GetProjectsProperties(new ProjectCollection(), solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+            ConcurrentBag<TestModule> projects = GetProjectsProperties(new ProjectCollection(), solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
 
             isBuiltOrRestored |= !projects.IsEmpty;
 
             return (projects, isBuiltOrRestored);
         }
 
-        public static (IEnumerable<Module> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
+        public static (IEnumerable<TestModule> Projects, bool IsBuiltOrRestored) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
         {
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
 
-            IEnumerable<Module> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions.BuildProperties), new ProjectCollection());
+            IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions.BuildProperties), new ProjectCollection());
 
             isBuiltOrRestored |= projects.Any();
 
@@ -124,16 +124,16 @@ namespace Microsoft.DotNet.Cli
             return result == (int)BuildResultCode.Success;
         }
 
-        private static ConcurrentBag<Module> GetProjectsProperties(ProjectCollection projectCollection, IEnumerable<string> projects, BuildOptions buildOptions)
+        private static ConcurrentBag<TestModule> GetProjectsProperties(ProjectCollection projectCollection, IEnumerable<string> projects, BuildOptions buildOptions)
         {
-            var allProjects = new ConcurrentBag<Module>();
+            var allProjects = new ConcurrentBag<TestModule>();
 
             Parallel.ForEach(
                 projects,
                 new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
                 (project) =>
                 {
-                    IEnumerable<Module> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions.BuildProperties), projectCollection);
+                    IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions.BuildProperties), projectCollection);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);
