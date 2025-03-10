@@ -110,13 +110,6 @@
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
     </PropertyGroup>
 
-    <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
-      <!-- For self-contained, invoke the native executable as a single arg -->
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
-      <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
-    </ItemGroup>
-
     <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
     <PropertyGroup Label="ContainerUser Assignment" Condition="$(_ContainerIsUsingMicrosoftDefaultImages) and $(_ContainerIsTargetingNet8TFM) and '$(ContainerUser)' == ''">
       <ContainerUser Condition="$(_ContainerIsTargetingWindows)">ContainerUser</ContainerUser>
@@ -186,7 +179,7 @@
     </ItemGroup>
 
     <!-- These sourcelink-derived properties are only allowed to flow to generated artifacts if `PublishRepositoryUrl` is set as a user signal for opt-in.
-             In addition, the 'nice' property names are currently set by NuGet Pack targets and so we have to use the private/generic names here.  -->
+             In addition, the 'nice' property names are currently set by NuGet Pack targets and so we have to use the private/generic names here. -->
     <PropertyGroup Label="Source control label assignment" Condition="'$(ContainerGenerateLabels)' == 'true' and '$(PublishRepositoryUrl)' == 'true'">
       <!-- Sourcelink gives us the .git suffix, but scanning tools aren't looking for that so we trim it off here. -->
       <_TrimmedRepositoryUrl Condition="'$(RepositoryType)' == 'git' and '$(PrivateRepositoryUrl)' != '' and $(PrivateRepositoryUrl.EndsWith('.git'))">$(PrivateRepositoryUrl.Substring(0, $(PrivateRepositoryUrl.LastIndexOf('.git'))))</_TrimmedRepositoryUrl>
@@ -205,6 +198,15 @@
       _CheckContainersPackage
     </PublishContainerDependsOn>
   </PropertyGroup>
+
+  <Target Name="_ComputeContainerExecutionArgs">
+    <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
+      <!-- For self-contained, invoke the native executable as a single arg -->
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
+      <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_CheckContainersPackage" AfterTargets="Build">
     <PropertyGroup>
@@ -239,8 +241,7 @@
       Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
   </Target>
 
-  <Target Name="_PublishSingleContainer"
-          Returns="@(GeneratedContainer)">
+  <Target Name="_PublishSingleContainer" DependsOnTargets="_ComputeContainerExecutionArgs" Returns="@(GeneratedContainer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -326,12 +327,6 @@
           _ContainerImageTags=@(ContainerImageTags, ';');
           ContainerRepository=$(ContainerRepository);
           ContainerWorkingDirectory=$(ContainerWorkingDirectory);
-          _ContainerEntrypoint=@(ContainerEntrypoint, ';');
-          _ContainerEntrypointArgs=@(ContainerEntrypointArgs, ';');
-          _ContainerAppCommand=@(ContainerAppCommand, ';');
-          _ContainerAppCommandArgs=@(ContainerAppCommandArgs, ';');
-          ContainerAppCommandInstruction=$(ContainerAppCommandInstruction);
-          _ContainerDefaultArgs=@(ContainerDefaultArgs, ';');
           _ContainerLabel=@(ContainerLabel->'%(Identity):%(Value)');
           _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
@@ -370,11 +365,6 @@
     <ItemGroup>
       <OriginalImageTags Include="$(_ContainerImageTags)"/>
       <ContainerImageTags Include="@(OriginalImageTags->'%(Identity)-$(ContainerRuntimeIdentifier)')" />
-      <ContainerEntrypoint Include="$(_ContainerEntrypoint)"/>
-      <ContainerEntrypointArgs Include="$(_ContainerEntrypointArgs)"/>
-      <ContainerAppCommand Include="$(_ContainerAppCommand)"/>
-      <ContainerAppCommandArgs Include="$(_ContainerAppCommandArgs)"/>
-      <ContainerDefaultArgs Include="$(_ContainerDefaultArgs)"/>
 
       <_ParsedContainerLabel
         Condition="'$(_ContainerLabel)' != ':'"
@@ -430,5 +420,4 @@
 
     <Error Condition="'$(_IsMultiTFMBuild)' == 'true'" Code="CONTAINERS0666" Text="Containers cannot be published for multiple TargetFrameworks at this time. Please specify a TargetFramework." />
   </Target>
-
 </Project>
