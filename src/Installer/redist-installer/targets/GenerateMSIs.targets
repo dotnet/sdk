@@ -51,6 +51,11 @@
     <SdkPlaceholderInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
     <SdkPlaceholderInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(FullNugetVersion).nupkg</SdkPlaceholderInstallerNupkgFile>
 
+    <RuntimeAnalyzersLayoutDirectory>$(ArtifactsBinDir)$(Configuration)\RuntimeAnalyzers</RuntimeAnalyzersLayoutDirectory>
+    <SdkRuntimeAnalyzersNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.nuspec</SdkRuntimeAnalyzersNuspecFile>
+    <SdkRuntimeAnalyzersNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.$(FullNugetVersion).nupkg</SdkRuntimeAnalyzersNupkgFile>
+    <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
+
     <!-- Temp directory for light command layouts -->
     <LightCommandObjDir>$(ArtifactsObjDir)LightCommandPackages</LightCommandObjDir>
     <!-- Directory for the zipped up light command package -->

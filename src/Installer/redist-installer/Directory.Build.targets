@@ -43,12 +43,11 @@
 
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
-  <!-- Layout -->
   <Import Project="targets\RestoreLayout.targets" />
+  <Import Project="targets\BundledManifests.targets" />
 
   <ImportGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
     <Import Project="targets\BundledTemplates.targets" />
-    <Import Project="targets\BundledManifests.targets" />
     <Import Project="targets\BundledDotnetTools.targets" />
     <Import Project="targets\GenerateBundledVersions.targets" />
     <Import Project="targets\Crossgen.targets" />
