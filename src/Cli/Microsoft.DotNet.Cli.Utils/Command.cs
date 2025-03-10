@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
