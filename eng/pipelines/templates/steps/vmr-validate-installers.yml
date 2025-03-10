@@ -60,7 +60,7 @@ steps:
     inputs:
       testRunner: VSTest
       testResultsFiles: 'artifacts/TestResults/Release/*.trx'
-      searchFolder: $(sourcesPath)
+      searchFolder: $(Build.SourcesDirectory)
       mergeTestResults: true
       publishRunAttachments: true
       testRunTitle: Tests_$(Agent.JobName)
