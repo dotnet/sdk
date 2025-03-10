@@ -637,7 +637,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BrotliCompress
       OutputDirectory="$(_CompressedFileOutputPath)"
       FilesToCompress="@(_FileToCompress)"
-      CompressionLevel="$(_BlazorBrotliCompressionLevel)"
+      CompressionLevel="$(BrotliCompressionLevel)"
       SkipIfOutputIsNewer="$(_BlazorWebAssemblyBrotliIncremental)"
       ToolAssembly="$(_BlazorWebAssemblySdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
