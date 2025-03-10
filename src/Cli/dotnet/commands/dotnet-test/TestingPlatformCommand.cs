@@ -60,7 +60,6 @@ namespace Microsoft.DotNet.Cli
 
                     if (!_msBuildHandler.EnqueueTestApplications())
                     {
-                        _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription, new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
                         return ExitCode.GenericFailure;
                     }
                 }

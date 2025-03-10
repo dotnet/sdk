@@ -5,15 +5,19 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 
+#nullable enable
+
 namespace Microsoft.DotNet.Cli.Extensions
 {
     public static class OptionForwardingExtensions
     {
-        public static ForwardedOption<T> Forward<T>(this ForwardedOption<T> option) => option.SetForwardingFunction((T o) => new string[] { option.Name });
+        public static ForwardedOption<T> Forward<T>(this ForwardedOption<T> option) => option.SetForwardingFunction((T? o) => [option.Name]);
 
-        public static ForwardedOption<T> ForwardAs<T>(this ForwardedOption<T> option, string value) => option.SetForwardingFunction((T o) => new string[] { value });
+        public static ForwardedOption<T> ForwardAs<T>(this ForwardedOption<T> option, string value) => option.SetForwardingFunction((T? o) => [value]);
 
-        public static ForwardedOption<T> ForwardAsSingle<T>(this ForwardedOption<T> option, Func<T, string> format) => option.SetForwardingFunction(format);
+        public static ForwardedOption<T> ForwardAsSingle<T>(this ForwardedOption<T> option, Func<T?, string> format) => option.SetForwardingFunction(format);
+
+        public static ForwardedOption<bool> ForwardIfEnabled(this ForwardedOption<bool> option, string value) => option.SetForwardingFunction((bool o) => o == true ? [value] : []);
 
         /// <summary>
         /// Set up an option to be forwaded as an output path to MSBuild
@@ -24,8 +28,12 @@ namespace Microsoft.DotNet.Cli.Extensions
         /// <returns>The option</returns>
         public static ForwardedOption<string> ForwardAsOutputPath(this ForwardedOption<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
         {
-            return option.SetForwardingFunction((string o) =>
+            return option.SetForwardingFunction((string? o) =>
             {
+                if (o is null)
+                {
+                    return [];
+                }
                 string argVal = CommandDirectoryContext.GetFullPath(o);
                 if (surroundWithDoubleQuotes)
                 {
@@ -33,38 +41,40 @@ namespace Microsoft.DotNet.Cli.Extensions
                     //  preserving the behavior here after refactoring
                     argVal = TestCommandParser.SurroundWithDoubleQuotes(argVal);
                 }
-                return new string[]
-                {
+                return [
                     $"-property:{outputPropertyName}={argVal}",
                     "-property:_CommandLineDefinedOutputPath=true"
-                };
+                ];
             });
         }
 
         public static ForwardedOption<string[]> ForwardAsProperty(this ForwardedOption<string[]> option) => option
             .SetForwardingFunction((optionVals) =>
-                optionVals
+                (optionVals ?? [])
                     .SelectMany(Utils.MSBuildPropertyParser.ParseProperties)
                     .Select(keyValue => $"{option.Name}:{keyValue.key}={keyValue.value}")
                 );
 
-        public static CliOption<T> ForwardAsMany<T>(this ForwardedOption<T> option, Func<T, IEnumerable<string>> format) => option.SetForwardingFunction(format);
+        public static CliOption<T> ForwardAsMany<T>(this ForwardedOption<T> option, Func<T?, IEnumerable<string>> format) => option.SetForwardingFunction(format);
 
         public static CliOption<IEnumerable<string>> ForwardAsManyArgumentsEachPrefixedByOption(this ForwardedOption<IEnumerable<string>> option, string alias) => option.ForwardAsMany(o => ForwardedArguments(alias, o));
 
         public static IEnumerable<string> OptionValuesToBeForwarded(this ParseResult parseResult, CliCommand command) =>
             command.Options
                 .OfType<IForwardedOption>()
-                .SelectMany(o => o.GetForwardingFunction()(parseResult)) ?? Array.Empty<string>();
+                .Select(o => o.GetForwardingFunction())
+                .SelectMany(f => f is not null ? f(parseResult) : Array.Empty<string>());
 
 
-        public static IEnumerable<string> ForwardedOptionValues<T>(this ParseResult parseResult, CliCommand command, string alias) =>
-            command.Options?
+        public static IEnumerable<string> ForwardedOptionValues<T>(this ParseResult parseResult, CliCommand command, string alias)
+        {
+            var func = command.Options?
                 .Where(o => o.Name.Equals(alias) || o.Aliases.Contains(alias))?
                 .OfType<IForwardedOption>()?
                 .FirstOrDefault()?
-                .GetForwardingFunction()(parseResult)
-            ?? Array.Empty<string>();
+                .GetForwardingFunction();
+            return func?.Invoke(parseResult) ?? [];
+        }
 
         public static CliOption<T> AllowSingleArgPerToken<T>(this CliOption<T> option)
         {
@@ -94,9 +104,9 @@ namespace Microsoft.DotNet.Cli.Extensions
             return option;
         }
 
-        private static IEnumerable<string> ForwardedArguments(string alias, IEnumerable<string> arguments)
+        private static IEnumerable<string> ForwardedArguments(string alias, IEnumerable<string>? arguments)
         {
-            foreach (string arg in arguments)
+            foreach (string arg in arguments ?? [])
             {
                 yield return alias;
                 yield return arg;
@@ -113,34 +123,48 @@ namespace Microsoft.DotNet.Cli.Extensions
     {
         private Func<ParseResult, IEnumerable<string>> ForwardingFunction;
 
-        public ForwardedOption(string name, params string[] aliases) : base(name, aliases) { }
+        public ForwardedOption(string name, params string[] aliases) : base(name, aliases)
+        {
+            ForwardingFunction = _ => [];
+        }
 
-        public ForwardedOption(string name, Func<ArgumentResult, T> parseArgument, string description = null)
+        public ForwardedOption(string name, Func<ArgumentResult, T> parseArgument, string? description = null)
             : base(name)
         {
             CustomParser = parseArgument;
             Description = description;
+            ForwardingFunction = _ => [];
         }
 
-        public ForwardedOption<T> SetForwardingFunction(Func<T, IEnumerable<string>> func)
+        public ForwardedOption<T> SetForwardingFunction(Func<T?, IEnumerable<string>> func)
         {
             ForwardingFunction = GetForwardingFunction(func);
             return this;
         }
 
-        public ForwardedOption<T> SetForwardingFunction(Func<T, string> format)
+        public ForwardedOption<T> SetForwardingFunction(Func<T?, string> format)
         {
-            ForwardingFunction = GetForwardingFunction((o) => new string[] { format(o) });
+            ForwardingFunction = GetForwardingFunction((o) => [format(o)]);
             return this;
         }
 
-        public ForwardedOption<T> SetForwardingFunction(Func<T, ParseResult, IEnumerable<string>> func)
+        public ForwardedOption<T> SetForwardingFunction(Func<T?, ParseResult, IEnumerable<string>> func)
         {
-            ForwardingFunction = (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue<T>(this), parseResult) : Array.Empty<string>();
+            ForwardingFunction = (ParseResult parseResult) =>
+            {
+                if (parseResult.GetResult(this) is OptionResult argresult && argresult.GetValue<T>(this) is T validValue)
+                {
+                    return func(validValue, parseResult) ?? [];
+                }
+                else
+                {
+                    return [];
+                }
+            };
             return this;
         }
 
-        public Func<ParseResult, IEnumerable<string>> GetForwardingFunction(Func<T, IEnumerable<string>> func)
+        public Func<ParseResult, IEnumerable<string>> GetForwardingFunction(Func<T?, IEnumerable<string>> func)
         {
             return (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue<T>(this)) : Array.Empty<string>();
         }
@@ -153,7 +177,7 @@ namespace Microsoft.DotNet.Cli.Extensions
 
     public class DynamicForwardedOption<T> : ForwardedOption<T>, IDynamicOption
     {
-        public DynamicForwardedOption(string name, Func<ArgumentResult, T> parseArgument, string description = null)
+        public DynamicForwardedOption(string name, Func<ArgumentResult, T> parseArgument, string? description = null)
             : base(name, parseArgument, description)
         {
         }

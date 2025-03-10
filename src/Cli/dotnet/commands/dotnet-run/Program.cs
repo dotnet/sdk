@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tools.Run
                 noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
                 noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
                 noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
-                interactive: parseResult.HasOption(RunCommandParser.InteractiveOption),
+                interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
                 verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
                 restoreArgs: [.. restoreArgs],
                 args: [.. nonBinLogArgs],

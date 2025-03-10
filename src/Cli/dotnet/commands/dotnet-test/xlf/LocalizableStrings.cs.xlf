@@ -361,9 +361,13 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>Test projects that use both VSTest and Microsoft.Testing.Platform in the same solution are not supported. 
+        <source>When opting-in via dotnet.config, all test projects are expected to be using Microsoft.Testing.Platform.
+The following test projects are using VSTest:
+{0}
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">Test projects that use both VSTest and Microsoft.Testing.Platform in the same solution are not supported. 
+        <target state="new">When opting-in via dotnet.config, all test projects are expected to be using Microsoft.Testing.Platform.
+The following test projects are using VSTest:
+{0}
 See https://aka.ms/dotnet-test/mtp for more information.</target>
         <note />
       </trans-unit>

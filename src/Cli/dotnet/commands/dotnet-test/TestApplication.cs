@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal sealed class TestApplication : IDisposable
     {
-        private readonly Module _module;
+        private readonly TestModule _module;
         private readonly List<string> _args;
 
         private readonly List<string> _outputData = [];
@@ -33,9 +33,9 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
-        public Module Module => _module;
+        public TestModule Module => _module;
 
-        public TestApplication(Module module, List<string> args)
+        public TestApplication(TestModule module, List<string> args)
         {
             _module = module;
             _args = args;

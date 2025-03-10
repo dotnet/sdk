@@ -70,8 +70,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                     $"--add-source {expectedSourceValue1} " +
                     $"--add-source {expectedSourceValue2} console.test.app");
 
-            result.GetValue<string[]>(ToolInstallCommandParser.AddSourceOption)[0].Should().Be(expectedSourceValue1);
-            result.GetValue<string[]>(ToolInstallCommandParser.AddSourceOption)[1].Should().Be(expectedSourceValue2);
+            result.GetValue<string[]>(ToolInstallCommandParser.AddSourceOption).Should().BeEquivalentTo([expectedSourceValue1, expectedSourceValue2]);
         }
 
         [Fact]
@@ -100,7 +99,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool update -g console.test.app --no-cache");
 
-            result.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()).Should().ContainSingle("--no-cache");
+            result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption).Should().Be(true);
         }
 
         [Fact]
@@ -109,7 +108,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool update -g console.test.app --no-http-cache");
 
-            result.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()).Should().ContainSingle("--no-http-cache");
+            result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption).Should().Be(true);
         }
 
         [Fact]
@@ -118,7 +117,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool update -g console.test.app --ignore-failed-sources");
 
-            result.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()).Should().ContainSingle("--ignore-failed-sources");
+            result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption).Should().Be(true);
         }
 
         [Fact]
@@ -127,7 +126,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool update -g console.test.app --disable-parallel");
 
-            result.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()).Should().ContainSingle("--disable-parallel");
+            result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption).Should().Be(true);
         }
 
         [Fact]
@@ -135,8 +134,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result =
                 Parser.Instance.Parse(@"dotnet tool update -g console.test.app --interactive");
-
-            result.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()).Should().ContainSingle("--interactive");
+            result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption).Should().Be(true);
         }
 
         [Fact]

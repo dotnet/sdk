@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli
             {
                 Arity = ArgumentArity.Zero
             });
-            deleteCommand.Options.Add(new CliOption<bool>("--interactive"));
+            deleteCommand.Options.Add(CommonOptions.InteractiveOption());
 
             deleteCommand.SetAction(NuGetCommand.Run);
 
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Cli
             {
                 Arity = ArgumentArity.Zero
             });
-            pushCommand.Options.Add(new CliOption<bool>("--interactive"));
+            pushCommand.Options.Add(CommonOptions.InteractiveOption());
             pushCommand.Options.Add(new CliOption<bool>("--skip-duplicate")
             {
                 Arity = ArgumentArity.Zero
