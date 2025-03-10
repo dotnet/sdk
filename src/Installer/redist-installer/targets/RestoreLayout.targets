@@ -37,7 +37,7 @@
     <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(SharedFrameworkInstallerFileRid)' == 'osx-arm64'">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-osx-x64$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
 
     <SdkMSIInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
-    <SdkTemplatesInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">dotnet-$(VersionMajor)$(VersionMinor)templates-$($(FullNugetVersion))-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesInstallerFileName>
+    <SdkTemplatesInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesInstallerFileName>
 
     <CombinedFrameworkHostArchiveFileName Condition="'$(PgoInstrument)' != 'true'">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
     <CombinedFrameworkHostArchiveFileName Condition="'$(PgoInstrument)' == 'true'">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
