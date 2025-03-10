@@ -304,10 +304,16 @@
       <!--We don't want to skip publishing individual images in case of local daemon podman because podman loads multi-arch tarball differently - only individual image for the current platform.-->
       <_SkipContainerPublishing>false</_SkipContainerPublishing>
       <_SkipContainerPublishing Condition="$(ContainerArchiveOutputPath) != '' or ( $(ContainerRegistry) == '' and ( $(LocalRegistry) == '' or $(LocalRegistry) == 'Docker' ) )">true</_SkipContainerPublishing>
-    
+
       <!--We want to skip CreateImageIndex task in case of local daemon podman because it is not supported.-->
       <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
       <_SkipCreateImageIndex Condition="$(ContainerArchiveOutputPath) == '' and $(ContainerRegistry) == '' and $(LocalRegistry) == 'Podman'">true</_SkipCreateImageIndex>
+
+      <!-- Figure out what format the inner images should be coerced to -->
+      <!-- If a user had an opinion, use that -->
+      <_SingleImageContainerFormat Condition="'$(ContainerImageFormat)' != ''">$(ContainerImageFormat)</_SingleImageContainerFormat>
+      <!-- If we are publishing to local tarball or to local Docker, force OCI to prevent mismatches between inner images and the outer manifest -->
+      <_SingleImageContainerFormat Condition="$(_SkipContainerPublishing) == 'true' ">OCI</_SingleImageContainerFormat>
     </PropertyGroup>
 
     <ItemGroup>
@@ -337,7 +343,8 @@
           ContainerUser=$(ContainerUser);
           ContainerGenerateLabels=$(ContainerGenerateLabels);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
-          _SkipContainerPublishing=$(_SkipContainerPublishing)
+          _SkipContainerPublishing=$(_SkipContainerPublishing);
+          ContainerImageFormat=$(_SingleImageContainerFormat)
         "/>
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
