@@ -69,7 +69,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
-    <RepositoryReference Remove="@(RepositoryReference)" />
     <RepositoryReference Include="aspnetcore" DotNetBuildPass="2" />
   </ItemGroup>
 
