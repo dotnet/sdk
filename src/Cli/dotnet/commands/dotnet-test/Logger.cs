@@ -15,6 +15,12 @@ namespace Microsoft.DotNet.Tools.Test
         {
             _traceFilePath = Environment.GetEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar);
             TraceEnabled = !string.IsNullOrEmpty(_traceFilePath);
+
+            string directoryPath = Path.GetDirectoryName(_traceFilePath);
+            if (!string.IsNullOrEmpty(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
         }
 
         public static void LogTrace(Func<string> messageLog)
@@ -30,12 +36,6 @@ namespace Microsoft.DotNet.Tools.Test
 
                 lock (_lock)
                 {
-                    string directoryPath = Path.GetDirectoryName(_traceFilePath);
-                    if (!string.IsNullOrEmpty(directoryPath))
-                    {
-                        Directory.CreateDirectory(directoryPath);
-                    }
-
                     using StreamWriter logFile = File.AppendText(_traceFilePath);
                     logFile.WriteLine(message);
                 }
