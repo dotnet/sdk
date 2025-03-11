@@ -346,7 +346,7 @@
     <MSBuild
         Projects="@(_InnerBuild)"
         Targets="Publish;_ParseItemsForPublishingSingleContainer;_PublishSingleContainer"
-        BuildInParallel="true">
+        BuildInParallel="$([MSBuild]::ValueOrDefault('$(ContainerPublishInParallel)', 'true'))">
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
 
