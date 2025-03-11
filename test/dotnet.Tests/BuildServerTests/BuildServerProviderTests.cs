@@ -5,6 +5,7 @@
 
 using Microsoft.DotNet.BuildServer;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;

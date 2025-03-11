@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 

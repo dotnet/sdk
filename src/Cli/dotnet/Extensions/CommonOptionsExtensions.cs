@@ -4,9 +4,9 @@
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli.Extensions
 {
-    internal static class CommonOptionsExtension
+    internal static class CommonOptionsExtensions
     {
         public static LoggerVerbosity ToLoggerVerbosity(this VerbosityOptions verbosityOptions)
         {

@@ -3,7 +3,7 @@
 
 using Microsoft.Build.Construction;
 
-namespace Microsoft.DotNet.Tools.Common
+namespace Microsoft.DotNet.Cli.Extensions
 {
     public static class ProjectRootElementExtensions
     {

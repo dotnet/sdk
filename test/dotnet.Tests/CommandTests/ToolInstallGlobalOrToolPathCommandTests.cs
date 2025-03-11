@@ -8,6 +8,7 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
