@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NugetSearch;
-using Microsoft.DotNet.Tools.Common;
 using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Tools.Tool.Search

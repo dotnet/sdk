@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Extensions.FileSystemGlobbing;
 
@@ -49,7 +50,7 @@ namespace Microsoft.DotNet.Cli
 
             foreach (string testModule in testModulePaths)
             {
-                var testApp = new TestApplication(new Module(testModule, null, null, null, true, true), _args);
+                var testApp = new TestApplication(new TestModule(testModule, null, null, null, true, true), _args);
                 // Write the test application to the channel
                 _actionQueue.Enqueue(testApp);
             }

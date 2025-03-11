@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Build;
 using LocalizableStrings = Microsoft.DotNet.Tools.Build.LocalizableStrings;
@@ -24,16 +25,22 @@ namespace Microsoft.DotNet.Cli
             HelpName = LocalizableStrings.OutputOptionName
         }.ForwardAsOutputPath("OutputPath");
 
-        public static readonly CliOption<bool> NoIncrementalOption = new("--no-incremental") { Description = LocalizableStrings.NoIncrementalOptionDescription };
+        public static readonly CliOption<bool> NoIncrementalOption = new("--no-incremental")
+        {
+            Description = LocalizableStrings.NoIncrementalOptionDescription,
+            Arity = ArgumentArity.Zero
+        };
 
         public static readonly CliOption<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies")
         {
-            Description = LocalizableStrings.NoDependenciesOptionDescription
+            Description = LocalizableStrings.NoDependenciesOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:BuildProjectReferences=false");
 
         public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
         {
-            Description = LocalizableStrings.CmdNoLogo
+            Description = LocalizableStrings.CmdNoLogo,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-nologo");
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;

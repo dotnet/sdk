@@ -4,9 +4,10 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
+using System.CommandLine.StaticCompletions;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -36,13 +37,13 @@ namespace Microsoft.DotNet.Cli
             }.ForwardAsSingle(o => $"-verbosity:{o}");
 
         public static CliOption<string> FrameworkOption(string description) =>
-            new ForwardedOption<string>("--framework", "-f")
+            new DynamicForwardedOption<string>("--framework", "-f")
             {
                 Description = description,
                 HelpName = CommonLocalizableStrings.FrameworkArgumentName
-
-            }.ForwardAsSingle(o => $"-property:TargetFramework={o}")
-            .AddCompletions(Complete.TargetFrameworksFromProjectFile);
+            }
+            .AddCompletions(Complete.TargetFrameworksFromProjectFile)
+            .ForwardAsSingle(o => $"-property:TargetFramework={o}");
 
         public static CliOption<string> ArtifactsPathOption =
             new ForwardedOption<string>(
@@ -64,14 +65,14 @@ namespace Microsoft.DotNet.Cli
         }
 
         public static CliOption<string> RuntimeOption =
-            new ForwardedOption<string>("--runtime", "-r")
+            new DynamicForwardedOption<string>("--runtime", "-r")
             {
                 HelpName = RuntimeArgName
             }.ForwardAsMany(RuntimeArgFunc)
             .AddCompletions(Complete.RunTimesFromProjectFile);
 
         public static CliOption<string> LongFormRuntimeOption =
-            new ForwardedOption<string>("--runtime")
+            new DynamicForwardedOption<string>("--runtime")
             {
                 HelpName = RuntimeArgName
             }.ForwardAsMany(RuntimeArgFunc)
@@ -80,11 +81,12 @@ namespace Microsoft.DotNet.Cli
         public static CliOption<bool> CurrentRuntimeOption(string description) =>
             new ForwardedOption<bool>("--use-current-runtime", "--ucr")
             {
-                Description = description
+                Description = description,
+                Arity = ArgumentArity.Zero
             }.ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
 
         public static CliOption<string> ConfigurationOption(string description) =>
-            new ForwardedOption<string>("--configuration", "-c")
+            new DynamicForwardedOption<string>("--configuration", "-c")
             {
                 Description = description,
                 HelpName = CommonLocalizableStrings.ConfigurationArgumentName
@@ -110,25 +112,38 @@ namespace Microsoft.DotNet.Cli
 
         public static CliOption<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
         {
-            Description = CommonLocalizableStrings.NoRestoreDescription
+            Description = CommonLocalizableStrings.NoRestoreDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-restore:false");
 
-        public static CliOption<bool> InteractiveMsBuildForwardOption =
-            new ForwardedOption<bool>("--interactive")
-            {
-                Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
-            }.ForwardAs("-property:NuGetInteractive=true");
+        private static bool IsCIEnvironmentOrRedirected() =>
+            new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 
-        public static CliOption<bool> InteractiveOption =
-            new("--interactive")
-            {
-                Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
-            };
+        /// <summary>
+        /// A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
+        /// Despite being a 'forwarded option' there is no default forwarding configured, so if you want forwarding you can add it on a per-command basis.
+        /// </summary>
+        /// <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
+        /// <remarks>
+        // If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
+        // If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
+        // </remarks>
+        public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false) =>
+             new("--interactive")
+             {
+                 Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
+                 Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
+                 // this default is called when no tokens/options are passed on the CLI args
+                 DefaultValueFactory = (ar) => IsCIEnvironmentOrRedirected()
+             };
+
+        public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");
 
         public static CliOption<bool> DisableBuildServersOption =
             new ForwardedOption<bool>("--disable-build-servers")
             {
-                Description = CommonLocalizableStrings.DisableBuildServersOptionDescription
+                Description = CommonLocalizableStrings.DisableBuildServersOptionDescription,
+                Arity = ArgumentArity.Zero
             }
             .ForwardAsMany(_ => ["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
@@ -158,7 +173,10 @@ namespace Microsoft.DotNet.Cli
                 HelpName = CommonLocalizableStrings.OSArgumentName
             }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
-        public static CliOption<bool> DebugOption = new("--debug");
+        public static CliOption<bool> DebugOption = new("--debug")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
         public static CliOption<bool> SelfContainedOption =
             new ForwardedOption<bool>("--self-contained", "--sc")
@@ -170,10 +188,10 @@ namespace Microsoft.DotNet.Cli
         public static CliOption<bool> NoSelfContainedOption =
             new ForwardedOption<bool>("--no-self-contained")
             {
-                Description = CommonLocalizableStrings.FrameworkDependentOptionDescription
+                Description = CommonLocalizableStrings.FrameworkDependentOptionDescription,
+                Arity = ArgumentArity.Zero
             }
-            // Flip the argument so that if this option is specified we get selfcontained=false
-            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
+            .SetForwardingFunction((_, p) => ForwardSelfContainedOptions(false, p));
 
         public static readonly CliOption<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
         {
@@ -317,6 +335,18 @@ namespace Microsoft.DotNet.Cli
             argument.CompletionSources.Add(completionSource);
             return argument;
         }
+
+        internal static DynamicOption<T> AddCompletions<T>(this DynamicOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            option.CompletionSources.Add(completionSource);
+            return option;
+        }
+
+        internal static DynamicForwardedOption<T> AddCompletions<T>(this DynamicForwardedOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+        {
+            option.CompletionSources.Add(completionSource);
+            return option;
+        }
     }
 
     public enum VerbosityOptions
@@ -331,5 +361,15 @@ namespace Microsoft.DotNet.Cli
         d,
         diagnostic,
         diag
+    }
+
+    public class DynamicOption<T> : CliOption<T>, IDynamicOption
+    {
+        public DynamicOption(string name, params string[] aliases) : base(name, aliases) { }
+    }
+
+    public class DynamicArgument<T> : CliArgument<T>, IDynamicArgument
+    {
+        public DynamicArgument(string name) : base(name) { }
     }
 }

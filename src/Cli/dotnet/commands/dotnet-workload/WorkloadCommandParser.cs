@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.List;
@@ -20,12 +21,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> InfoOption = new("--info")
         {
-            Description = CommonStrings.WorkloadInfoDescription
+            Description = CommonStrings.WorkloadInfoDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> VersionOption = new("--version")
         {
-            Description = CommonStrings.WorkloadVersionDescription
+            Description = CommonStrings.WorkloadVersionDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static CliCommand GetCommand()

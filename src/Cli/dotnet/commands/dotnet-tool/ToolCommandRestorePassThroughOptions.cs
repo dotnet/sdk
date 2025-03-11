@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using LocalizableStrings = Microsoft.DotNet.Tools.Restore.LocalizableStrings;
@@ -12,28 +13,29 @@ namespace Microsoft.DotNet.Cli
     {
         public static CliOption<bool> DisableParallelOption = new ForwardedOption<bool>("--disable-parallel")
         {
-            Description = LocalizableStrings.CmdDisableParallelOptionDescription
+            Description = LocalizableStrings.CmdDisableParallelOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--disable-parallel");
 
         public static CliOption<bool> NoCacheOption = new ForwardedOption<bool>("--no-cache")
         {
             Description = LocalizableStrings.CmdNoCacheOptionDescription,
-            Hidden = true
+            Hidden = true,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--no-cache");
 
         public static CliOption<bool> NoHttpCacheOption = new ForwardedOption<bool>("--no-http-cache")
         {
-            Description = LocalizableStrings.CmdNoCacheOptionDescription
+            Description = LocalizableStrings.CmdNoCacheOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--no-http-cache");
 
         public static CliOption<bool> IgnoreFailedSourcesOption = new ForwardedOption<bool>("--ignore-failed-sources")
         {
-            Description = LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription
+            Description = LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--ignore-failed-sources");
 
-        public static CliOption<bool> InteractiveRestoreOption = new ForwardedOption<bool>("--interactive")
-        {
-            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
-        }.ForwardAs(Constants.RestoreInteractiveOption);
+        public static CliOption<bool> InteractiveRestoreOption = CommonOptions.InteractiveOption();
     }
 }

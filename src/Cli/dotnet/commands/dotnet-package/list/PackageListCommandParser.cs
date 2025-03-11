@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Package.List;
 using Microsoft.DotNet.Tools;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -12,17 +13,20 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly CliOption OutdatedOption = new ForwardedOption<bool>("--outdated")
         {
-            Description = LocalizableStrings.CmdOutdatedDescription
+            Description = LocalizableStrings.CmdOutdatedDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--outdated");
 
         public static readonly CliOption DeprecatedOption = new ForwardedOption<bool>("--deprecated")
         {
-            Description = LocalizableStrings.CmdDeprecatedDescription
+            Description = LocalizableStrings.CmdDeprecatedDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--deprecated");
 
         public static readonly CliOption VulnerableOption = new ForwardedOption<bool>("--vulnerable")
         {
-            Description = LocalizableStrings.CmdVulnerableDescription
+            Description = LocalizableStrings.CmdVulnerableDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--vulnerable");
 
         public static readonly CliOption FrameworkOption = new ForwardedOption<IEnumerable<string>>("--framework", "-f")
@@ -34,22 +38,26 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption TransitiveOption = new ForwardedOption<bool>("--include-transitive")
         {
-            Description = LocalizableStrings.CmdTransitiveDescription
+            Description = LocalizableStrings.CmdTransitiveDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--include-transitive");
 
         public static readonly CliOption PrereleaseOption = new ForwardedOption<bool>("--include-prerelease")
         {
-            Description = LocalizableStrings.CmdPrereleaseDescription
+            Description = LocalizableStrings.CmdPrereleaseDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--include-prerelease");
 
         public static readonly CliOption HighestPatchOption = new ForwardedOption<bool>("--highest-patch")
         {
-            Description = LocalizableStrings.CmdHighestPatchDescription
+            Description = LocalizableStrings.CmdHighestPatchDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--highest-patch");
 
         public static readonly CliOption HighestMinorOption = new ForwardedOption<bool>("--highest-minor")
         {
-            Description = LocalizableStrings.CmdHighestMinorDescription
+            Description = LocalizableStrings.CmdHighestMinorDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--highest-minor");
 
         public static readonly CliOption ConfigOption = new ForwardedOption<string>("--config", "--configfile")
@@ -65,10 +73,7 @@ namespace Microsoft.DotNet.Cli
         }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
         .AllowSingleArgPerToken();
 
-        public static readonly CliOption InteractiveOption = new ForwardedOption<bool>("--interactive")
-        {
-            Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
-        }.ForwardAs("--interactive");
+        public static readonly CliOption InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
         public static readonly CliOption VerbosityOption = new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
         {

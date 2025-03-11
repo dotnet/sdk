@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.NuGet;
 
 namespace Microsoft.DotNet.Cli
@@ -27,7 +28,10 @@ namespace Microsoft.DotNet.Cli
                 TreatUnmatchedTokensAsErrors = false
             };
 
-            command.Options.Add(new CliOption<bool>("--version"));
+            command.Options.Add(new CliOption<bool>("--version")
+            {
+                Arity = ArgumentArity.Zero
+            });
             command.Options.Add(new CliOption<string>("--verbosity", "-v"));
 
             command.Subcommands.Add(GetDeleteCommand());
@@ -47,12 +51,21 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand deleteCommand = new("delete");
             deleteCommand.Arguments.Add(new CliArgument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
-            deleteCommand.Options.Add(new CliOption<bool>("--force-english-output"));
+            deleteCommand.Options.Add(new CliOption<bool>("--force-english-output")
+            {
+                Arity = ArgumentArity.Zero
+            });
             deleteCommand.Options.Add(new CliOption<string>("--source", "-s"));
-            deleteCommand.Options.Add(new CliOption<bool>("--non-interactive"));
+            deleteCommand.Options.Add(new CliOption<bool>("--non-interactive")
+            {
+                Arity = ArgumentArity.Zero
+            });
             deleteCommand.Options.Add(new CliOption<string>("--api-key", "-k"));
-            deleteCommand.Options.Add(new CliOption<bool>("--no-service-endpoint"));
-            deleteCommand.Options.Add(new CliOption<bool>("--interactive"));
+            deleteCommand.Options.Add(new CliOption<bool>("--no-service-endpoint")
+            {
+                Arity = ArgumentArity.Zero
+            });
+            deleteCommand.Options.Add(CommonOptions.InteractiveOption());
 
             deleteCommand.SetAction(NuGetCommand.Run);
 
@@ -68,9 +81,18 @@ namespace Microsoft.DotNet.Cli
 
             localsCommand.Arguments.Add(foldersArgument);
 
-            localsCommand.Options.Add(new CliOption<bool>("--force-english-output"));
-            localsCommand.Options.Add(new CliOption<bool>("--clear", "-c"));
-            localsCommand.Options.Add(new CliOption<bool>("--list", "-l"));
+            localsCommand.Options.Add(new CliOption<bool>("--force-english-output")
+            {
+                Arity = ArgumentArity.Zero
+            });
+            localsCommand.Options.Add(new CliOption<bool>("--clear", "-c")
+            {
+                Arity = ArgumentArity.Zero
+            });
+            localsCommand.Options.Add(new CliOption<bool>("--list", "-l")
+            {
+                Arity = ArgumentArity.Zero
+            });
 
             localsCommand.SetAction(NuGetCommand.Run);
 
@@ -83,17 +105,33 @@ namespace Microsoft.DotNet.Cli
 
             pushCommand.Arguments.Add(new CliArgument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
 
-            pushCommand.Options.Add(new CliOption<bool>("--force-english-output"));
+            pushCommand.Options.Add(new CliOption<bool>("--force-english-output")
+            {
+                Arity = ArgumentArity.Zero
+            });
             pushCommand.Options.Add(new CliOption<string>("--source", "-s"));
             pushCommand.Options.Add(new CliOption<string>("--symbol-source", "-ss"));
             pushCommand.Options.Add(new CliOption<string>("--timeout", "-t"));
             pushCommand.Options.Add(new CliOption<string>("--api-key", "-k"));
             pushCommand.Options.Add(new CliOption<string>("--symbol-api-key", "-sk"));
-            pushCommand.Options.Add(new CliOption<bool>("--disable-buffering", "-d"));
-            pushCommand.Options.Add(new CliOption<bool>("--no-symbols", "-n"));
-            pushCommand.Options.Add(new CliOption<bool>("--no-service-endpoint"));
-            pushCommand.Options.Add(new CliOption<bool>("--interactive"));
-            pushCommand.Options.Add(new CliOption<bool>("--skip-duplicate"));
+            pushCommand.Options.Add(new CliOption<bool>("--disable-buffering", "-d")
+            {
+                Arity = ArgumentArity.Zero
+            });
+            pushCommand.Options.Add(new CliOption<bool>("--no-symbols", "-n")
+            {
+                Arity = ArgumentArity.Zero
+            });
+            pushCommand.Options.Add(new CliOption<bool>("--no-service-endpoint")
+            {
+                Arity = ArgumentArity.Zero
+            });
+            pushCommand.Options.Add(CommonOptions.InteractiveOption());
+            pushCommand.Options.Add(new CliOption<bool>("--skip-duplicate")
+            {
+                Arity = ArgumentArity.Zero
+            });
+            pushCommand.Options.Add(new CliOption<string>("--configfile"));
 
             pushCommand.SetAction(NuGetCommand.Run);
 
@@ -107,7 +145,10 @@ namespace Microsoft.DotNet.Cli
 
             verifyCommand.Arguments.Add(new CliArgument<IEnumerable<string>>("package-paths") { Arity = ArgumentArity.OneOrMore });
 
-            verifyCommand.Options.Add(new CliOption<bool>("--all"));
+            verifyCommand.Options.Add(new CliOption<bool>("--all")
+            {
+                Arity = ArgumentArity.Zero
+            });
             verifyCommand.Options.Add(new ForwardedOption<IEnumerable<string>>(fingerprint)
                 .ForwardAsManyArgumentsEachPrefixedByOption(fingerprint)
                 .AllowSingleArgPerToken());
@@ -122,7 +163,10 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand trustCommand = new("trust");
 
-            CliOption<bool> allowUntrustedRoot = new("--allow-untrusted-root");
+            CliOption<bool> allowUntrustedRoot = new("--allow-untrusted-root")
+            {
+                Arity = ArgumentArity.Zero
+            };
             CliOption<string> owners = new("--owners");
 
             trustCommand.Subcommands.Add(new CliCommand("list"));
@@ -182,7 +226,8 @@ namespace Microsoft.DotNet.Cli
                     allowUntrustedRoot,
                     algorithm
                 };
-            };
+            }
+            ;
 
             CliCommand RemoveCommand() => new("remove") {
                 new CliArgument<string>("NAME"),
@@ -211,7 +256,10 @@ namespace Microsoft.DotNet.Cli
             signCommand.Options.Add(new CliOption<string>("--hash-algorithm"));
             signCommand.Options.Add(new CliOption<string>("--timestamper"));
             signCommand.Options.Add(new CliOption<string>("--timestamp-hash-algorithm"));
-            signCommand.Options.Add(new CliOption<bool>("--overwrite"));
+            signCommand.Options.Add(new CliOption<bool>("--overwrite")
+            {
+                Arity = ArgumentArity.Zero
+            });
             signCommand.Options.Add(CommonOptions.VerbosityOption);
 
             signCommand.SetAction(NuGetCommand.Run);

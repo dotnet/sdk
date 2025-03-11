@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Collections.Concurrent;
+using System.CommandLine;
 using System.CommandLine.Help;
 using Microsoft.DotNet.Tools.Test;
 
@@ -12,11 +12,13 @@ namespace Microsoft.DotNet.Cli
     {
         private readonly ConcurrentDictionary<string, CommandLineOption> _commandLineOptionNameToModuleNames = [];
         private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
+        private static string Indent = "  ";
 
         public IEnumerable<Action<HelpContext>> CustomHelpLayout()
         {
             yield return (context) =>
             {
+                WriteHelpOptions(context);
                 Console.WriteLine(LocalizableStrings.HelpWaitingForOptionsAndExtensions);
 
                 Run(context.ParseResult);
@@ -27,11 +29,66 @@ namespace Microsoft.DotNet.Cli
                 }
 
                 Dictionary<bool, List<CommandLineOption>> allOptions = GetAllOptions();
+                allOptions.TryGetValue(true, out List<CommandLineOption> builtInOptions);
+                allOptions.TryGetValue(false, out List<CommandLineOption> nonBuiltInOptions);
 
-                Dictionary<bool, List<(string, string[])>> moduleToMissingOptions = GetModulesToMissingOptions(allOptions);
+                Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions = GetModulesToMissingOptions(_moduleNamesToCommandLineOptions, builtInOptions.Select(option => option.Name), nonBuiltInOptions.Select(option => option.Name));
 
-                _output.WriteHelpOptions(_commandLineOptionNameToModuleNames, allOptions, moduleToMissingOptions);
+                _output.WritePlatformAndExtensionOptions(context, builtInOptions, nonBuiltInOptions, moduleToMissingOptions);
             };
+        }
+
+        private void WriteHelpOptions(HelpContext context)
+        {
+            HelpBuilder.Default.SynopsisSection()(context);
+            context.Output.WriteLine();
+            WriteUsageSection(context);
+            context.Output.WriteLine();
+            HelpBuilder.Default.OptionsSection()(context);
+            context.Output.WriteLine();
+        }
+
+        private static void WriteUsageSection(HelpContext context)
+        {
+            context.Output.WriteLine(LocalizableStrings.CmdHelpUsageTitle);
+            context.Output.WriteLine(Indent + string.Join(" ", GetCustomUsageParts(context.Command)));
+        }
+
+        private static IEnumerable<string> GetCustomUsageParts(CliCommand command, bool showOptions = true, bool showPlatformOptions = true, bool showExtensionOptions = true)
+        {
+            var parentCommands = new List<CliCommand>();
+            var nextCommand = command;
+            while (nextCommand is not null)
+            {
+                parentCommands.Add(nextCommand);
+                nextCommand = nextCommand.Parents.FirstOrDefault(c => c is CliCommand) as CliCommand;
+            }
+            parentCommands.Reverse();
+
+            foreach (var parentCommand in parentCommands)
+            {
+                yield return parentCommand.Name;
+            }
+
+            if (showOptions)
+            {
+                yield return FormatHelpOption(LocalizableStrings.HelpOptions);
+            }
+
+            if (showPlatformOptions)
+            {
+                yield return FormatHelpOption(LocalizableStrings.HelpPlatformOptions);
+            }
+
+            if (showExtensionOptions)
+            {
+                yield return FormatHelpOption(LocalizableStrings.HelpExtensionOptions);
+            }
+        }
+
+        private static string FormatHelpOption(string option)
+        {
+            return $"[{option.Trim(':').ToLower()}]";
         }
 
         private void OnHelpRequested(object sender, HelpEventArgs args)
@@ -88,33 +145,49 @@ namespace Microsoft.DotNet.Cli
             return builtInToOptions;
         }
 
-        private Dictionary<bool, List<(string, string[])>> GetModulesToMissingOptions(Dictionary<bool, List<CommandLineOption>> options)
+        private static Dictionary<bool, List<(string[], string[])>> GetModulesToMissingOptions(
+            ConcurrentDictionary<bool, List<(string, string[])>> moduleNamesToCommandLineOptions,
+            IEnumerable<string> builtInOptions,
+            IEnumerable<string> nonBuiltInOptions)
         {
-            IEnumerable<string> builtInOptions = options.TryGetValue(true, out List<CommandLineOption> builtIn) ? builtIn.Select(option => option.Name) : [];
-            IEnumerable<string> nonBuiltInOptions = options.TryGetValue(false, out List<CommandLineOption> nonBuiltIn) ? nonBuiltIn.Select(option => option.Name) : [];
+            var modulesWithMissingOptions = new Dictionary<bool, List<(string[], string[])>>();
 
-            Dictionary<bool, List<(string, string[])>> modulesWithMissingOptions = [];
-
-            foreach (KeyValuePair<bool, List<(string, string[])>> modulesToOptions in _moduleNamesToCommandLineOptions)
+            foreach (var group in moduleNamesToCommandLineOptions)
             {
-                foreach ((string module, string[] relatedOptions) in modulesToOptions.Value)
+                bool isBuiltIn = group.Key;
+                var groupedModules = new List<(string[], string[])>();
+                var missingOptionsToModules = new Dictionary<string, List<string>>();
+
+                var allOptions = new HashSet<string>(isBuiltIn ? builtInOptions : nonBuiltInOptions);
+
+                foreach ((string module, string[] relatedOptions) in group.Value)
                 {
-                    IEnumerable<string> allOptions = modulesToOptions.Key ? builtInOptions : nonBuiltInOptions;
-                    string[] missingOptions = allOptions.Except(relatedOptions).ToArray();
+                    var missingOptions = new HashSet<string>(allOptions);
+                    missingOptions.ExceptWith(relatedOptions);
 
-                    if (missingOptions.Length == 0)
-                        continue;
+                    if (missingOptions.Count > 0)
+                    {
+                        var missingKey = string.Join(",", missingOptions.OrderBy(option => option));
 
-                    if (modulesWithMissingOptions.TryGetValue(modulesToOptions.Key, out List<(string, string[])> value))
-                    {
-                        value.Add((module, missingOptions));
-                    }
-                    else
-                    {
-                        modulesWithMissingOptions.Add(modulesToOptions.Key, [(module, missingOptions)]);
+                        if (!missingOptionsToModules.TryGetValue(missingKey, out var modules))
+                        {
+                            modules = [];
+                            missingOptionsToModules[missingKey] = modules;
+                        }
+                        modules.Add(module);
                     }
                 }
+                foreach (var kvp in missingOptionsToModules)
+                {
+                    groupedModules.Add(([.. kvp.Value], kvp.Key.Split(',')));
+                }
+
+                if (groupedModules.Count > 0)
+                {
+                    modulesWithMissingOptions.Add(isBuiltIn, groupedModules);
+                }
             }
+
             return modulesWithMissingOptions;
         }
     }

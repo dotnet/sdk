@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework.Utilities
 {
@@ -15,7 +15,7 @@ namespace Microsoft.NET.TestFramework.Utilities
                 $"{runtime}{PathUtility.GetDirectorySeparatorChar()}" :
                 string.Empty;
 
-            string exitCodePattern = exitCode == null ? string.Empty : $@".*\s+Exit code: {exitCode}";
+            string exitCodePattern = exitCode == null ? string.Empty : $@"[\s\S]*?Exit\s+code: {exitCode}";
             return $@".+{configuration}{PathUtility.GetDirectorySeparatorChar()}{version}{PathUtility.GetDirectorySeparatorChar()}{runtimeIdentifier}{projectName}\.dll\s+\({version}\|[a-zA-Z][1-9]+\)\s{result}{exitCodePattern}";
         }
 

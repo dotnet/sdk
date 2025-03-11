@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
@@ -100,9 +100,9 @@ namespace Microsoft.DotNet.Cli
             return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
         }
 
-        public static IEnumerable<Module> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
+        public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
         {
-            var projects = new List<Module>();
+            var projects = new List<TestModule>();
 
             var globalPropertiesWithoutTargetFramework = new Dictionary<string, string>(globalProperties);
             globalPropertiesWithoutTargetFramework.Remove(ProjectProperties.TargetFramework);
@@ -164,23 +164,22 @@ namespace Microsoft.DotNet.Cli
             return frameworks.Contains(targetFramework);
         }
 
-        private static Module? GetModuleFromProject(Project project)
+        private static TestModule? GetModuleFromProject(Project project)
         {
             _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
+            _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
 
-            if (!isTestProject)
+            if (!isTestProject && !isTestingPlatformApplication)
             {
                 return null;
             }
-
-            _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
 
             string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
             string targetPath = project.GetPropertyValue(ProjectProperties.TargetPath);
             string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
             string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
-            return new Module(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
+            return new TestModule(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
         }
     }
 }

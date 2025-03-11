@@ -6,8 +6,7 @@ namespace Microsoft.DotNet.Cli
     internal static class CliConstants
     {
         public const string DotnetRunCommand = "dotnet run";
-        public const string HelpOptionKey = "--help";
-        public const string ShortHelpOptionKey = "-h";
+
         public const string ServerOptionKey = "--server";
         public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
         public const string FrameworkOptionKey = "--framework";
@@ -21,7 +20,7 @@ namespace Microsoft.DotNet.Cli
         public const string SemiColon = ";";
 
         public const string VSTest = "VSTest";
-        public const string MicrosoftTestingPlatform = "MicrosoftTestingPlatform";
+        public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
 
         public const string TestSectionKey = "test";
 

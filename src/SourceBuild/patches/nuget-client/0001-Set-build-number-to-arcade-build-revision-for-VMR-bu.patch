@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Matt Mitchell (.NET)" <mmitche@microsoft.com>
+Date: Fri, 7 Mar 2025 10:35:33 -0800
+Subject: [PATCH] Set build number to arcade build revision for VMR builds
+
+Backport PR: https://github.com/NuGet/NuGet.Client/pull/6305
+
+---
+ eng/dotnet-build/dotnet-build.proj | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/eng/dotnet-build/dotnet-build.proj b/eng/dotnet-build/dotnet-build.proj
+index 651c72ba3..66182e488 100644
+--- a/eng/dotnet-build/dotnet-build.proj
++++ b/eng/dotnet-build/dotnet-build.proj
+@@ -29,6 +29,9 @@
+     <ItemGroup>
+       <_InnerBuildProperties Include="DotNetBuildPhase=InnerRepo" />
+       <_InnerBuildProperties Include="DotNetBuildInnerRepo=true" />
++      <!-- NuGet uses a pre-release string that is dependent on the build revision. This is normally set via their
++           YAML. Set based on the parsed version information. -->
++      <_InnerBuildProperties Condition="'$(VersionSuffixBuildOfTheDay)' != ''" Include="BuildNumber=$(VersionSuffixBuildOfTheDay)" />
+     </ItemGroup>
+ 
+     <!-- Pass _ImportOrUseTooling = false to avoid attempting to restore unneeded packages in Tools.proj.
