@@ -526,7 +526,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
 
-            string traceFile = $"directory{Path.DirectorySeparatorChar}logs.txt";
+            string traceFile = $"directory_{configuration}{Path.DirectorySeparatorChar}logs.txt";
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar, traceFile)
