@@ -17,7 +17,7 @@
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
     <!--
       We only want to publish the FSharp assets externally when we're publishing all artifacts, not only RID-specific ones.
-      Add these packages as "Vertical" visibility when we're only publishing RID-specific pacakages so we don't publish this one.
+      Add these packages as "Vertical" visibility when we're only publishing RID-specific packages so we don't publish this one.
     -->
     <FSharpArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Vertical</FSharpArtifactVisibility>
     <FSharpArtifactVisibility Condition="'$(FSharpArtifactVisibility)' == ''">External</FSharpArtifactVisibility>
