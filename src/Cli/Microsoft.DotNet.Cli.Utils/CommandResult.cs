@@ -3,23 +3,14 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.Utils;
+
+public readonly struct CommandResult(ProcessStartInfo startInfo, int exitCode, string? stdOut, string? stdErr)
 {
-    public struct CommandResult
-    {
-        public static readonly CommandResult Empty = new();
+    public static readonly CommandResult Empty = new();
 
-        public ProcessStartInfo StartInfo { get; }
-        public int ExitCode { get; }
-        public string? StdOut { get; }
-        public string? StdErr { get; }
-
-        public CommandResult(ProcessStartInfo startInfo, int exitCode, string? stdOut, string? stdErr)
-        {
-            StartInfo = startInfo;
-            ExitCode = exitCode;
-            StdOut = stdOut;
-            StdErr = stdErr;
-        }
-    }
+    public ProcessStartInfo StartInfo { get; } = startInfo;
+    public int ExitCode { get; } = exitCode;
+    public string? StdOut { get; } = stdOut;
+    public string? StdErr { get; } = stdErr;
 }

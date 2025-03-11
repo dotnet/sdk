@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tools.New
         {
             var templateFoldersToInstall = new List<string>();
 
-            var sdkDirectory = Path.GetDirectoryName(typeof(Microsoft.DotNet.Cli.DotnetFiles).Assembly.Location);
+            var sdkDirectory = Path.GetDirectoryName(typeof(Cli.Utils.DotnetFiles).Assembly.Location);
             var dotnetRootPath = Path.GetDirectoryName(Path.GetDirectoryName(sdkDirectory));
 
             // First grab templates from dotnet\templates\M.m folders, in ascending order, up to our version
