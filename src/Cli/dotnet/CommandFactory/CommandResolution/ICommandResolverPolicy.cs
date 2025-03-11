@@ -5,6 +5,6 @@ namespace Microsoft.DotNet.CommandFactory
 {
     public interface ICommandResolverPolicy
     {
-        CompositeCommandResolver CreateCommandResolver();
+        CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null);
     }
 }

@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
         <source>Building image index '{0}' on top of manifests {1}.</source>
-        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <target state="translated">Imageindex wird '{0}' über manifesten {1} erstellt.</target>
         <note>
       {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </note>
@@ -176,7 +176,7 @@
       </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
         <source>Pushed image index '{0}' to registry '{1}'.</source>
-        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <target state="translated">Bildindex „{0}“ wurde in die Registrierung „{1}“ gepusht.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageIndex_PodmanNotSupported">
@@ -276,7 +276,7 @@
       </trans-unit>
       <trans-unit id="InvalidTargetRuntimeIdentifiers">
         <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
-        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <target state="translated">Ungültige string[] TargetRuntimeIdentifiers. Entweder sollten alle "linux-musl" oder "none" sein.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidTokenResponse">
@@ -456,7 +456,7 @@
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">
         <source>Unable to create tarball for mediaType '{0}'.</source>
-        <target state="new">Unable to create tarball for mediaType '{0}'.</target>
+        <target state="translated">Tarball für mediaType „{0}“ kann nicht erstellt werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="_Test">

@@ -76,7 +76,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
   <ItemGroup>
     <Content Include="TestTemplates\**\*" Exclude="TestTemplates\**\bin\**;TestTemplates\**\obj\**" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
