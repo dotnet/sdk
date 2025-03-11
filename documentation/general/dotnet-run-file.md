@@ -10,6 +10,12 @@ dotnet run file.cs
 > [!NOTE]
 > This document describes the ideal final state, but the feature will be implemented in [stages](#stages).
 
+> [!CAUTION]
+> The current implementation has been limited to single file support for the initial preview
+> (as if the implicit project file had `<EnableDefaultItems>false</EnableDefaultItems>` and an explicit `<Compile Include="file.cs" />`),
+> but this proposal describes a situation where all files in the target directory are included.
+> Once a final decision is made, the proposal will be updated.
+
 ## Motivation
 
 File-based programs
@@ -94,7 +100,7 @@ to check whether the file contains an entry point (of any kind) and report an er
 Because of the [implicit project file](#implicit-project-file),
 other files in the target directory or its subdirectories are included in the compilation.
 For example, other `.cs` files but also `.resx` (embedded resources).
-Similarly, implicit build files like `Directory.Build.props` are used during the build.
+Similarly, implicit build files like `Directory.Build.props` or `Directory.Packages.props` are used during the build.
 
 > [!NOTE]
 > Performance issues might arise if there are many [nested files](#nested-files) (possibly unintentionally),
@@ -117,9 +123,11 @@ However, the same problem exists for normal builds with explicit project files
 and usually the build fails because there are multiple entry points or other clashes.
 
 Similarly, we could report an error if there are many nested directories and files,
-so for example if someone puts a C# file into `C:/`
-and executes `dotnet run C:/file.cs` or opens that in the IDE, we do not walk the whole drive.
+so for example if someone puts a C# file into `C:/sources`
+and executes `dotnet run C:/sources/file.cs` or opens that in the IDE, we do not walk all user's sources.
 Again, this problem exists with project-based programs as well.
+Note that having a project-based or file-based program in the drive root would result in
+[error MSB5029](https://learn.microsoft.com/visualstudio/msbuild/errors/msb5029).
 
 ### Multiple entry points
 
@@ -188,6 +196,12 @@ This is also similar to `global using`s which users usually put into a single fi
 We could consider deduplicating `#package` directives (if they have the same version)
 so separate "self-contained" utilities can reference overlapping sets of packages
 even if they end up in the same compilation.
+But for starters we can simply translate every `#package` directive into `<PackageReference>`
+and let the existing MSBuild/NuGet logic deal with duplicates.
+
+It is valid to have a `#package` directive without a version.
+That's useful when central package management (CPM) is used.
+NuGet will report an appropriate error if the version is missing and CPM is not enabled.
 
 During [grow up](#grow-up), `#package` directives are removed from the `.cs` files and turned into `<PackageReference>` elements in the corresponding `.csproj` files.
 For project-based programs, `#package` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
@@ -244,6 +258,9 @@ These commands need to have a way to receive the target path similarly to `dotne
 e.g., via options like `--directory`/`--entry` as described [above](#integration-into-the-existing-dotnet-run-command),
 or as the first argument if it makes sense for them.
 
+We could also add `dotnet compile` command that would be the equivalent of `dotnet build` but for file-based programs
+(because "compiling" might make more sense for file-based programs than "building").
+
 ### `dotnet package add`
 
 Adding package references via `dotnet package add` could be supported for file-based programs as well,
@@ -273,6 +290,16 @@ The plan is to implement the feature in stages (the order might be different):
 - Grow up command.
 - Folder support: `dotnet run ./dir/`.
 - Package references via `#package`.
+
+## Alternatives
+
+### Explicit importing
+
+Instead of implicitly including files from the target directory, the importing could be explicit, like via a directive:
+
+```cs
+#import ./another-file.cs
+```
 
 <!--
 ## Links
