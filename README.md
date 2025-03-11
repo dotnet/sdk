@@ -64,7 +64,7 @@ Sources for dotnet-install.sh and dotnet-install.ps1 are in the [install-scripts
 
 ## How do I engage and contribute?
 
-We welcome you to try things out, [file issues](https://github.com/dotnet/sdk/issues), make feature requests and join us in design conversations. Be sure to check out our [project documentation](documentation)
+We welcome you to try things out, [file issues](https://github.com/dotnet/sdk/issues), make feature requests and join us in design conversations. Be sure to check out our [project documentation](documentation). For information about setting up your environment and building the project, see the [developer guide](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/developer-guide.md) documentation.
 
 This project has adopted the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct) to clarify expected behavior in our community.
 
