@@ -5,11 +5,9 @@ using Microsoft.Build.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Configurer;
 using static Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.CachingWorkloadResolver;
-using Microsoft.DotNet.Cli.Utils;
-
-
 
 #if NET
+using Microsoft.DotNet.Cli.Utils;
 #else
 using Microsoft.DotNet.DotNetSdkResolver;
 #endif
