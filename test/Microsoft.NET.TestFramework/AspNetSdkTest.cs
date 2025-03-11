@@ -61,6 +61,7 @@ namespace Microsoft.NET.TestFramework
                     if (project.Root != null)
                     {
                         var itemGroup = new XElement("PropertyGroup");
+                        itemGroup.SetAttributeValue("Condition", "'$(TargetFramework)' == 'net10.0'");
                         var fingerprintAssets = new XElement("WasmBootConfigFileName", WasmBootConfigFileName);
                         itemGroup.Add(fingerprintAssets);
                         project.Root.Add(itemGroup);
