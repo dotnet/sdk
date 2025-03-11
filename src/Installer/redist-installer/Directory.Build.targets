@@ -29,13 +29,9 @@
     <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
   </PropertyGroup>
 
-  <Target Name="GenerateVersionFile"
+  <!-- This is a hack to make the full nuget version available during the publishing step -->
+  <Target Name="GenerateFullNugetVersionFile"
           BeforeTargets="Build">
-    <WriteLinesToFile File="$(SdkOutputDirectory).version"
-                      Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
-                      Overwrite="true" />
-
-    <!-- This is a hack to make the full nuget version available during the publishing step -->
     <WriteLinesToFile File="$(ArtifactsTmpDir)FullNugetVersion.version"
                       Lines="$(FullNugetVersion)"
                       Overwrite="true" />

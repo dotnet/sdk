@@ -71,6 +71,12 @@
       MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
+  <Target Name="GenerateVersionFile">
+    <WriteLinesToFile File="$(SdkOutputDirectory).version"
+                      Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
+                      Overwrite="true" />
+  </Target>
+
   <Target Name="CopyKnownWorkloadManifestFile">
     <ItemGroup>
       <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLowerInvariant())" />
@@ -135,6 +141,7 @@
   <Target Name="GenerateLayout"
           DependsOnTargets="DownloadBundledComponents;
                             LayoutBundledComponents;
+                            GenerateVersionFile;
                             CopyKnownWorkloadManifestFile;
                             GenerateBundledVersions;
                             LayoutRuntimeGraph;

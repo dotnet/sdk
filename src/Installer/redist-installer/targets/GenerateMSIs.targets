@@ -77,7 +77,7 @@
     <SdkBundleInstallerOutputGuidString>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</SdkBundleInstallerOutputGuidString>
   </PropertyGroup>
 
-  <Target Name="MsiTargetsSetupInputOutputs">
+  <Target Name="MsiTargetsSetupInputOutputs" DependsOnTargets="GetAssemblyVersion">
     <PropertyGroup>
       <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day)
            Fallback to 0 when patch number is not set. This happens only during CI. -->
