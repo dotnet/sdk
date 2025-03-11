@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tools.Test
                 lock (_lock)
                 {
                     string directoryPath = Path.GetDirectoryName(_traceFilePath);
-                    if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
+                    if (!string.IsNullOrEmpty(directoryPath))
                     {
                         Directory.CreateDirectory(directoryPath);
                     }
