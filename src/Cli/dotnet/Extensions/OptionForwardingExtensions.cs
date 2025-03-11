@@ -7,7 +7,7 @@ using System.CommandLine.StaticCompletions;
 
 #nullable enable
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli.Extensions
 {
     public static class OptionForwardingExtensions
     {
