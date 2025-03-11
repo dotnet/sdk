@@ -8,6 +8,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
+        private static readonly string[] ConstantRestoreArgs = ["-nologo", "-verbosity:minimal", "-property:NuGetInteractive=true"];
+
         public ITestOutputHelper Log { get; }
 
         public GivenDotnetRunInvocation(ITestOutputHelper log)
@@ -26,12 +28,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedArgs)
         {
-
-            string[] constantRestoreArgs = ["-nologo", "-verbosity:quiet"];
-            string[] fullExpectedArgs = constantRestoreArgs.Concat(expectedArgs).ToArray();
             var tam = new TestAssetsManager(Log);
             var oldWorkingDirectory = Directory.GetCurrentDirectory();
             var newWorkingDir = tam.CopyTestAsset("HelloWorld", identifier: $"{nameof(MsbuildInvocationIsCorrect)}_{args.GetHashCode()}_{expectedArgs.GetHashCode()}").WithSource().Path;
+
             try
             {
                 Directory.SetCurrentDirectory(newWorkingDir);
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     var command = RunCommand.FromArgs(args);
                     command.RestoreArgs
                         .Should()
-                        .BeEquivalentTo(fullExpectedArgs);
+                        .BeEquivalentTo([.. ConstantRestoreArgs, .. expectedArgs]);
                 });
             }
             finally

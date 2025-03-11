@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Run;
 using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
@@ -31,7 +32,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoLaunchProfileOption = new("--no-launch-profile")
         {
-            Description = LocalizableStrings.CommandOptionNoLaunchProfileDescription
+            Description = LocalizableStrings.CommandOptionNoLaunchProfileDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
@@ -41,7 +43,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoBuildOption = new("--no-build")
         {
-            Description = LocalizableStrings.CommandOptionNoBuildDescription
+            Description = LocalizableStrings.CommandOptionNoBuildDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;

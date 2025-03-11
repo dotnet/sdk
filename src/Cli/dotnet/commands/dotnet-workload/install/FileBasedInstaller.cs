@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
@@ -15,7 +18,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using PathUtility = Microsoft.DotNet.Tools.Common.PathUtility;
+using PathUtility = Microsoft.DotNet.Cli.Utils.PathUtility;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -300,6 +303,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string packagePath = null;
             string tempBackupDir = null;
+            bool directoryExists = Directory.Exists(targetFolder) && Directory.GetFileSystemEntries(targetFolder).Any();
 
             transactionContext.Run(
                 action: () =>
@@ -319,7 +323,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
 
                     //  If target directory already exists, back it up in case we roll back
-                    if (Directory.Exists(targetFolder) && Directory.GetFileSystemEntries(targetFolder).Any())
+                    if (directoryExists)
                     {
                         tempBackupDir = Path.Combine(_tempPackagesDir.Value, $"{packageId} - {packageVersion}-backup");
                         if (Directory.Exists(tempBackupDir))
@@ -336,7 +340,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     if (!string.IsNullOrEmpty(tempBackupDir) && Directory.Exists(tempBackupDir))
                     {
+                        // Delete the folder first to account for new files added
+                        Directory.Delete(targetFolder, recursive: true);
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempBackupDir, targetFolder));
+                    }
+                    else if (!directoryExists && Directory.Exists(targetFolder))
+                    {
+                        // If files are copied to the targetFolder, then another operation in this transaction fails, we want to
+                        // ensure that we roll back to the prior state. In this case, the directory did not exist (or at least
+                        // didn't have files in it), so roll back to that state. A folder without files should not exist for
+                        // our purposes, so we can ignore the possibility of there having been an empty folder before.
+                        Directory.Delete(targetFolder, recursive: true);
                     }
                 },
                 cleanup: () =>

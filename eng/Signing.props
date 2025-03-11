@@ -60,7 +60,6 @@
     <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="CommandLine.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
@@ -72,6 +71,10 @@
     <FileSignInfo Include="xunit.performance.execution.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="MicrosoftSHA2" />
   </ItemGroup>
 
   <!-- Filter out any test packages from ItemsToSign -->
@@ -101,13 +104,11 @@
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.swr" IsShipping="false" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.msi" IsShipping="false" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
-
-    <!-- dotnet-toolset zips are added above for specific builds only. -->
-    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
-    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" Exclude="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.pkg" IsShipping="false" />
 
     <Artifact Include="@(SdkArtifact)"

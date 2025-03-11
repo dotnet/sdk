@@ -197,6 +197,8 @@
   "${OutputPath}\\wwwroot\\_framework\\System.Net.Requests.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.Net.Security.wasm",
   "${OutputPath}\\wwwroot\\_framework\\System.Net.Security.wasm.gz",
+  "${OutputPath}\\wwwroot\\_framework\\System.Net.ServerSentEvents.wasm",
+  "${OutputPath}\\wwwroot\\_framework\\System.Net.ServerSentEvents.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.Net.ServicePoint.wasm",
   "${OutputPath}\\wwwroot\\_framework\\System.Net.ServicePoint.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\System.Net.Sockets.wasm",

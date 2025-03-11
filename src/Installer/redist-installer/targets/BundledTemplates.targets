@@ -1,24 +1,5 @@
 <Project>
 
-  <Target Name="CalculateTemplatesVersions" DependsOnTargets="SetupWixProperties">
-    <CalculateTemplateVersions
-      BundledTemplates="@(BundledTemplates)"
-      FullNugetVersion="$(FullNugetVersion)"
-      ProductMonikerRid="$(ProductMonikerRid)"
-      InstallerExtension="$(InstallerExtension)"
-      CombinedBuildNumberAndRevision="$(CombinedBuildNumberAndRevision)"
-      >
-      <Output TaskParameter="BundledTemplatesWithInstallPaths" ItemName="BundledTemplatesWithInstallPaths" />
-      <Output TaskParameter="TemplatesComponents" ItemName="TemplatesComponents" />
-    </CalculateTemplateVersions>
-
-    <ItemGroup>
-      <TemplatesComponents>
-        <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</MSIInstallerFile>
-      </TemplatesComponents>
-    </ItemGroup>
-  </Target>
-
   <ItemGroup Label=".NET 10.0 templates">
     <Bundled100Templates Include="Microsoft.DotNet.Web.ItemTemplates.10.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates100PackageVersion)" />
     <Bundled100Templates Include="Microsoft.DotNet.Web.ProjectTemplates.10.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates100PackageVersion)" UseVersionForTemplateInstallPath="true" />
@@ -28,52 +9,40 @@
 
   <ItemGroup>
     <CurrentVersionBundledTemplates Include="@(Bundled100Templates)" TemplateFrameworkVersion="10.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <BundledTemplates Include="@(CurrentVersionBundledTemplates)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <BundledTemplates Update="@(BundledTemplates)">
       <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
-      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLowerInvariant())</RestoredNupkgPath>
     </BundledTemplates>
   </ItemGroup>
 
-  <Target Name="DownloadBundledTemplateNupkgs">
-    <CollatePackageDownloads Packages="@(BundledTemplates)">
-      <Output TaskParameter="PackageDownloads" ItemName="BundledTemplatePackageDownload" />
-    </CollatePackageDownloads>
-    <!-- Create a separate project to for template PackageDownloads, as we want to use a task in sdk-tasks to collate them, but we
-       can't use those tasks before normal NuGet restore -->
-    <PropertyGroup>
-      <TemplatePackageDownloadProjectContent>
-        <![CDATA[
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>$(TargetFramework)</TargetFramework>
-  </PropertyGroup>
+  <!-- Restore bundled templates -->
   <ItemGroup>
-    @(BundledTemplatePackageDownload->'<PackageDownload Include="%(Identity)" Version="%(Version)" />', '
-    ')
+    <PackageDownload Include="@(BundledTemplates)" Version="[%(PackageVersion)]" />
   </ItemGroup>
-</Project>
-]]>
-      </TemplatePackageDownloadProjectContent>
-      <!-- Escape semicolons as %3B in order to avoid being interpreted as line splits in WriteLinesToFile -->
-      <TemplatePackageDownloadProjectContent>$(TemplatePackageDownloadProjectContent.Replace(';', '%3B'))</TemplatePackageDownloadProjectContent>
-      <TemplatePackageDownloadProjectDirectory>$(IntermediateOutputPath)TemplatePackageDownloader\</TemplatePackageDownloadProjectDirectory>
-      <TemplatePackageDownloadProjectPath>$(TemplatePackageDownloadProjectDirectory)TemplatePackageDownloader.csproj</TemplatePackageDownloadProjectPath>
+
+  <Target Name="CalculateTemplatesVersions" DependsOnTargets="GetAssemblyVersion">
+    <PropertyGroup>
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day)
+           Fallback to 0 when patch number is not set. This happens only during CI. -->
+      <_ArcadePatchNumber>$([MSBuild]::ValueOrDefault('$(_PatchNumber)', '000000'))</_ArcadePatchNumber>
     </PropertyGroup>
 
-    <MakeDir Directories="$(TemplatePackageDownloadProjectDirectory)" />
-    <WriteLinesToFile Lines="$(TemplatePackageDownloadProjectContent)"
-                      File="$(TemplatePackageDownloadProjectPath)"
-                      Overwrite="True" WriteOnlyWhenDifferent="True" />
+    <CalculateTemplateVersions
+      BundledTemplates="@(BundledTemplates)"
+      FullNugetVersion="$(FullNugetVersion)"
+      ProductMonikerRid="$(ProductMonikerRid)"
+      InstallerExtension="$(InstallerExtension)"
+      CombinedBuildNumberAndRevision="$(_ArcadePatchNumber)">
+      <Output TaskParameter="BundledTemplatesWithInstallPaths" ItemName="BundledTemplatesWithInstallPaths" />
+      <Output TaskParameter="TemplatesComponents" ItemName="TemplatesComponents" />
+    </CalculateTemplateVersions>
 
-    <MSBuild Projects="$(TemplatePackageDownloadProjectPath)"
-             Targets="Restore" />
+    <ItemGroup>
+      <TemplatesComponents>
+        <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</MSIInstallerFile>
+      </TemplatesComponents>
+    </ItemGroup>
   </Target>
 
   <Target Name="LayoutTemplates"
@@ -86,7 +55,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="LayoutTemplatesForSDK" DependsOnTargets="CalculateTemplatesVersions;DownloadBundledTemplateNupkgs;GetRepoTemplates">
+  <Target Name="LayoutTemplatesForSDK" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates">
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
       <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
       <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />

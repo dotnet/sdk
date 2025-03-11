@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Tools.Test;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
@@ -100,9 +102,9 @@ namespace Microsoft.DotNet.Cli
             return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
         }
 
-        public static IEnumerable<Module> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
+        public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
         {
-            var projects = new List<Module>();
+            var projects = new List<TestModule>();
 
             var globalPropertiesWithoutTargetFramework = new Dictionary<string, string>(globalProperties);
             globalPropertiesWithoutTargetFramework.Remove(ProjectProperties.TargetFramework);
@@ -112,14 +114,25 @@ namespace Microsoft.DotNet.Cli
             // Check if TargetFramework is specified in global properties
             if (globalProperties.TryGetValue(ProjectProperties.TargetFramework, out string targetFramework))
             {
+                Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with global property TargetFramework '{targetFramework}'.");
+
                 if (IsValidTargetFramework(project, targetFramework))
                 {
+                    Logger.LogTrace(() => $"Project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}': before re-evaluation '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+
                     project.SetProperty(ProjectProperties.TargetFramework, targetFramework);
                     project.ReevaluateIfNecessary();
-                    if (GetModuleFromProject(project) is {} module)
+                    Logger.LogTrace(() => $"Project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}': after re-evaluation '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+
+                    if (GetModuleFromProject(project) is { } module)
                     {
                         projects.Add(module);
                     }
+                }
+                else
+                {
+                    // TODO: When can this happen? Should we explicitly error?
+                    Logger.LogTrace(() => $"Project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}' was considered invalid.");
                 }
             }
             else
@@ -128,6 +141,8 @@ namespace Microsoft.DotNet.Cli
 
                 if (string.IsNullOrEmpty(targetFrameworks))
                 {
+                    Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+
                     if (GetModuleFromProject(project) is {} module)
                     {
                         projects.Add(module);
@@ -135,11 +150,15 @@ namespace Microsoft.DotNet.Cli
                 }
                 else
                 {
+                    Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFMs: '{targetFrameworks}').");
+
                     var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var framework in frameworks)
                     {
                         project.SetProperty(ProjectProperties.TargetFramework, framework);
                         project.ReevaluateIfNecessary();
+                        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+
                         if (GetModuleFromProject(project) is {} module)
                         {
                             projects.Add(module);
@@ -164,23 +183,22 @@ namespace Microsoft.DotNet.Cli
             return frameworks.Contains(targetFramework);
         }
 
-        private static Module? GetModuleFromProject(Project project)
+        private static TestModule? GetModuleFromProject(Project project)
         {
             _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
+            _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
 
-            if (!isTestProject)
+            if (!isTestProject && !isTestingPlatformApplication)
             {
                 return null;
             }
-
-            _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
 
             string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
             string targetPath = project.GetPropertyValue(ProjectProperties.TargetPath);
             string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
             string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
-            return new Module(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
+            return new TestModule(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
         }
     }
 }

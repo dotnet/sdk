@@ -3,9 +3,11 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Testing.Platform.Helpers;
+using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
@@ -58,7 +60,6 @@ namespace Microsoft.DotNet.Cli
 
                     if (!_msBuildHandler.EnqueueTestApplications())
                     {
-                        _output.WriteMessage(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
                         return ExitCode.GenericFailure;
                     }
                 }
@@ -82,11 +83,11 @@ namespace Microsoft.DotNet.Cli
             degreeOfParallelism = GetDegreeOfParallelism(parseResult);
 
             bool filterModeEnabled = parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption);
-            bool isHelp = ContainsHelpOption(parseResult.GetArguments());
 
-            testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp);
+            var arguments = parseResult.GetArguments();
+            testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp: ContainsHelpOption(arguments));
 
-            _isDiscovery = parseResult.HasOption(TestingPlatformOptions.ListTestsOption);
+            _isDiscovery = ContainsListTestsOption(arguments);
         }
 
         private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, bool isHelp)
@@ -166,13 +167,20 @@ namespace Microsoft.DotNet.Cli
         }
 
         private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
-            new(parseResult.HasOption(TestingPlatformOptions.ListTestsOption),
-                parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
+            new(parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
                 parseResult.GetValue(CommonOptions.ArchitectureOption),
                 hasFilterMode,
                 isHelp);
 
-        private static bool ContainsHelpOption(IEnumerable<string> args) => args.Contains(CliConstants.HelpOptionKey) || args.Contains(CliConstants.ShortHelpOptionKey);
+        private static bool ContainsHelpOption(IEnumerable<string> args)
+        {
+            return args.Contains(TestingPlatformOptions.HelpOption.Name) || TestingPlatformOptions.HelpOption.Aliases.Any(alias => args.Contains(alias));
+        }
+
+        private static bool ContainsListTestsOption(IEnumerable<string> args)
+        {
+            return args.Contains(TestingPlatformOptions.ListTestsOption.Name);
+        }
 
         private void CompleteRun()
         {

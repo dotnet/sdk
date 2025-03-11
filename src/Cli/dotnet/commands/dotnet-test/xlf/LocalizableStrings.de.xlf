@@ -118,6 +118,21 @@ für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
         <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDirectoryPathName">
+        <source>DIRECTORY_PATH</source>
+        <target state="new">DIRECTORY_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdExpressionName">
+        <source>EXPRESSION</source>
+        <target state="new">EXPRESSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdHelpUsageTitle">
+        <source>Usage:</source>
+        <target state="new">Usage:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
         <source>The provided project file has an invalid extension: {0}.</source>
         <target state="new">The provided project file has an invalid extension: {0}.</target>
@@ -188,9 +203,24 @@ für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
         <target state="new">The provided file path does not exist: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNumberName">
+        <source>NUMBER</source>
+        <target state="new">NUMBER</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdProjectDescription">
         <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
         <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectPathName">
+        <source>PROJECT_PATH</source>
+        <target state="new">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdRootPathName">
+        <source>ROOT_PATH</source>
+        <target state="new">ROOT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSettingsFile">
@@ -211,6 +241,11 @@ für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
         <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionPathName">
+        <source>SOLUTION_PATH</source>
+        <target state="new">SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestCaseFilterExpression">
@@ -326,8 +361,14 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>Test application(s) that support VSTest are not supported.</source>
-        <target state="new">Test application(s) that support VSTest are not supported.</target>
+        <source>When opting-in via dotnet.config, all test projects are expected to be using Microsoft.Testing.Platform.
+The following test projects are using VSTest:
+{0}
+See https://aka.ms/dotnet-test/mtp for more information.</source>
+        <target state="new">When opting-in via dotnet.config, all test projects are expected to be using Microsoft.Testing.Platform.
+The following test projects are using VSTest:
+{0}
+See https://aka.ms/dotnet-test/mtp for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConsoleIsAlreadyInBatchingMode">
@@ -348,6 +389,11 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
       <trans-unit id="DiscoveringTestsFrom">
         <source>Discovering tests from</source>
         <target state="new">Discovering tests from</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestCommand">
+        <source>.NET Test Command</source>
+        <target state="new">.NET Test Command</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCode">
@@ -418,11 +464,26 @@ Das angegebene Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
       <trans-unit id="HelpModuleIsMissingTheOptionsBelow">
         <source>{0} is missing the options below</source>
         <target state="new">{0} is missing the options below</target>
+        <note>0 is name of the module, this string is followed by lined that list the options</note>
+      </trans-unit>
+      <trans-unit id="HelpModulesAreMissingTheOptionBelow">
+        <source>{0} are missing the option below</source>
+        <target state="new">{0} are missing the option below</target>
         <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpModulesAreMissingTheOptionsBelow">
+        <source>{0} are missing the options below</source>
+        <target state="new">{0} are missing the options below</target>
+        <note>0 is name of the module, this string is followed by lined that list the options</note>
       </trans-unit>
       <trans-unit id="HelpOptions">
         <source>Options:</source>
         <target state="new">Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpPlatformOptions">
+        <source>Platform Options:</source>
+        <target state="new">Platform Options:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpUnavailableExtensionOptions">

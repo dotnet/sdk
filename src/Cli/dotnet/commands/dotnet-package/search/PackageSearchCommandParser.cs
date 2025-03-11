@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -15,7 +16,7 @@ namespace Microsoft.DotNet.Cli
             Arity = ArgumentArity.ZeroOrOne
         };
 
-        public static readonly CliOption Sources =  new ForwardedOption<IEnumerable<string>>("--source")
+        public static readonly CliOption Sources = new ForwardedOption<IEnumerable<string>>("--source")
         {
             Description = LocalizableStrings.SourceDescription,
             HelpName = LocalizableStrings.SourceArgumentName
@@ -36,17 +37,16 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> ExactMatch = new ForwardedOption<bool>("--exact-match")
         {
-            Description = LocalizableStrings.ExactMatchDescription
+            Description = LocalizableStrings.ExactMatchDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--exact-match");
 
-        public static readonly CliOption<bool> Interactive = new ForwardedOption<bool>("--interactive")
-        {
-            Description = LocalizableStrings.InteractiveDescription
-        }.ForwardAs("--interactive");
+        public static readonly CliOption<bool> Interactive = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
         public static readonly CliOption<bool> Prerelease = new ForwardedOption<bool>("--prerelease")
         {
-            Description = LocalizableStrings.PrereleaseDescription
+            Description = LocalizableStrings.PrereleaseDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("--prerelease");
 
         public static readonly CliOption<string> ConfigFile = new ForwardedOption<string>("--configfile")
@@ -89,7 +89,8 @@ namespace Microsoft.DotNet.Cli
             searchCommand.Options.Add(Format);
             searchCommand.Options.Add(Verbosity);
 
-            searchCommand.SetAction((parseResult) => {
+            searchCommand.SetAction((parseResult) =>
+            {
                 var command = new PackageSearchCommand(parseResult);
                 int exitCode = command.Execute();
 

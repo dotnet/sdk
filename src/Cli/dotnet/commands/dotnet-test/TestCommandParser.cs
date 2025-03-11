@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Extensions.Configuration;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
@@ -20,7 +21,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> ListTestsOption = new ForwardedOption<bool>("--list-tests", "-t")
         {
-            Description = LocalizableStrings.CmdListTestsDescription
+            Description = LocalizableStrings.CmdListTestsDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestListTests=true");
 
         public static readonly CliOption<string> FilterOption = new ForwardedOption<string>("--filter")
@@ -64,7 +66,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
         {
-            Description = LocalizableStrings.CmdNoBuildDescription
+            Description = LocalizableStrings.CmdNoBuildDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestNoBuild=true");
 
         public static readonly CliOption<string> ResultsOption = new ForwardedOption<string>("--results-directory")
@@ -82,12 +85,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> BlameOption = new ForwardedOption<bool>("--blame")
         {
-            Description = LocalizableStrings.CmdBlameDescription
+            Description = LocalizableStrings.CmdBlameDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestBlame=true");
 
         public static readonly CliOption<bool> BlameCrashOption = new ForwardedOption<bool>("--blame-crash")
         {
-            Description = LocalizableStrings.CmdBlameCrashDescription
+            Description = LocalizableStrings.CmdBlameCrashDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestBlameCrash=true");
 
         public static readonly CliOption<string> BlameCrashDumpOption = CreateBlameCrashDumpOption();
@@ -106,12 +111,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> BlameCrashAlwaysOption = new ForwardedOption<bool>("--blame-crash-collect-always")
         {
-            Description = LocalizableStrings.CmdBlameCrashCollectAlwaysDescription
+            Description = LocalizableStrings.CmdBlameCrashCollectAlwaysDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true" });
 
         public static readonly CliOption<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang")
         {
-            Description = LocalizableStrings.CmdBlameHangDescription
+            Description = LocalizableStrings.CmdBlameHangDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestBlameHang=true");
 
         public static readonly CliOption<string> BlameHangDumpOption = CreateBlameHangDumpOption();
@@ -136,7 +143,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
         {
-            Description = LocalizableStrings.CmdNoLogo
+            Description = LocalizableStrings.CmdNoLogo,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:VSTestNoLogo=true");
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
@@ -217,20 +225,19 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand GetTestingPlatformCliCommand()
         {
-            var command = new TestingPlatformCommand("test");
+            var command = new TestingPlatformCommand("test", LocalizableStrings.DotnetTestCommand);
             command.SetAction(parseResult => command.Run(parseResult));
             command.Options.Add(TestingPlatformOptions.ProjectOption);
             command.Options.Add(TestingPlatformOptions.SolutionOption);
             command.Options.Add(TestingPlatformOptions.DirectoryOption);
             command.Options.Add(TestingPlatformOptions.TestModulesFilterOption);
             command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
-            command.Options.Add(TestingPlatformOptions.ListTestsOption);
             command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.FrameworkOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
-            command.Options.Add(CommonOptions.RuntimeOption);
+            command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(CommonOptions.NoRestoreOption);
             command.Options.Add(TestingPlatformOptions.NoBuildOption);

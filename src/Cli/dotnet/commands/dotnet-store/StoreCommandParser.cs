@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Store;
 using LocalizableStrings = Microsoft.DotNet.Tools.Store.LocalizableStrings;
 
@@ -63,12 +64,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> SkipOptimizationOption = new ForwardedOption<bool>("--skip-optimization")
         {
-            Description = LocalizableStrings.SkipOptimizationOptionDescription
+            Description = LocalizableStrings.SkipOptimizationOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:SkipOptimization=true");
 
         public static readonly CliOption<bool> SkipSymbolsOption = new ForwardedOption<bool>("--skip-symbols")
         {
-            Description = LocalizableStrings.SkipSymbolsOptionDescription
+            Description = LocalizableStrings.SkipSymbolsOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:CreateProfilingSymbols=false");
 
         private static readonly CliCommand Command = ConstructCommand();

@@ -4,14 +4,14 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
 {
     internal sealed class TestApplication : IDisposable
     {
-        private readonly Module _module;
+        private readonly TestModule _module;
         private readonly List<string> _args;
 
         private readonly List<string> _outputData = [];
@@ -33,9 +33,9 @@ namespace Microsoft.DotNet.Cli
         public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
         public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
-        public Module Module => _module;
+        public TestModule Module => _module;
 
-        public TestApplication(Module module, List<string> args)
+        public TestApplication(TestModule module, List<string> args)
         {
             _module = module;
             _args = args;
@@ -196,7 +196,7 @@ namespace Microsoft.DotNet.Cli
 
                     default:
                         // If it doesn't match any of the above, throw an exception
-                        throw new NotSupportedException(string.Format(LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                        throw new NotSupportedException(string.Format(Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
                 }
             }
             catch (Exception ex)
@@ -331,14 +331,9 @@ namespace Microsoft.DotNet.Cli
 
         private void AppendCommonArgs(StringBuilder builder, TestOptions testOptions)
         {
-            if (testOptions.HasListTests)
-            {
-                builder.Append($" {TestingPlatformOptions.ListTestsOption.Name}");
-            }
-
             if (testOptions.IsHelp)
             {
-                builder.Append($" {CliConstants.HelpOptionKey} ");
+                builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
             }
 
             builder.Append(_args.Count != 0
