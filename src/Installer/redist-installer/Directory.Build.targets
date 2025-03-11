@@ -54,6 +54,6 @@
 
   <!-- Installers -->
   <Import Project="targets\GenerateMSIs.targets" Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingInstallers)' != 'true'" />
-  <Import Project="targets\GeneratePKG.targets" Condition="'$(OSName)' == 'osx' and '$(SkipBuildingInstallers)' != 'true' and '$(GenerateSdkBundleOnly)' != 'true'" />
+  <Import Project="targets\GeneratePKG.targets" Condition="'$(OSName)' == 'osx' and '$(SkipBuildingInstallers)' != 'true'" />
 
 </Project>
