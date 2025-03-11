@@ -19,13 +19,16 @@ namespace Microsoft.DotNet.Cli
 
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
+            if (!isBuiltOrRestored)
+            {
+                return (Array.Empty<TestModule>(), isBuiltOrRestored);
+            }
+
             string rootDirectory = solutionFilePath.HasExtension(".slnf") ?
                     Path.GetDirectoryName(solutionModel.Description) :
                     SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
             ConcurrentBag<TestModule> projects = GetProjectsProperties(new ProjectCollection(), solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
-
-            isBuiltOrRestored |= !projects.IsEmpty;
 
             return (projects, isBuiltOrRestored);
         }
@@ -34,9 +37,12 @@ namespace Microsoft.DotNet.Cli
         {
             bool isBuiltOrRestored = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
 
-            IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions.BuildProperties), new ProjectCollection());
+            if (!isBuiltOrRestored)
+            {
+                return (Array.Empty<TestModule>(), isBuiltOrRestored);
+            }
 
-            isBuiltOrRestored |= projects.Any();
+            IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions.BuildProperties), new ProjectCollection());
 
             return (projects, isBuiltOrRestored);
         }
