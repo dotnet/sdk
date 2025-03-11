@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
@@ -142,11 +141,11 @@ namespace Microsoft.DotNet.Cli
 
                 if (string.IsNullOrEmpty(targetFrameworks))
                 {
+                    Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+
                     if (GetModuleFromProject(project) is { } module)
                     {
-                          Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
-
-                         projects.Add(module); 
+                        projects.Add(module);
                     }
                 }
                 else
@@ -159,12 +158,12 @@ namespace Microsoft.DotNet.Cli
                         project.SetProperty(ProjectProperties.TargetFramework, framework);
                         project.ReevaluateIfNecessary();
 
-                      if (GetModuleFromProject(project) is { } module)
-                      {
                         Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                        projects.Add(module);
-                      }
+                        if (GetModuleFromProject(project) is { } module)
+                        {
+                            projects.Add(module);
+                        }
                     }
                 }
             }
