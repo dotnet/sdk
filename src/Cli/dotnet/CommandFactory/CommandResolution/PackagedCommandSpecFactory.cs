@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Common;
 using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.CommandFactory

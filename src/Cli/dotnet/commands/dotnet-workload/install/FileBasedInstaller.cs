@@ -18,7 +18,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using PathUtility = Microsoft.DotNet.Tools.Common.PathUtility;
+using PathUtility = Microsoft.DotNet.Cli.Utils.PathUtility;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
