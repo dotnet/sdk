@@ -4,7 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli
@@ -196,7 +196,7 @@ namespace Microsoft.DotNet.Cli
 
                     default:
                         // If it doesn't match any of the above, throw an exception
-                        throw new NotSupportedException(string.Format(LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                        throw new NotSupportedException(string.Format(Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
                 }
             }
             catch (Exception ex)

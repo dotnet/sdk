@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
@@ -17,7 +18,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using PathUtility = Microsoft.DotNet.Tools.Common.PathUtility;
+using PathUtility = Microsoft.DotNet.Cli.Utils.PathUtility;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
