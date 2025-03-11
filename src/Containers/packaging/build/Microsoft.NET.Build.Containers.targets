@@ -41,9 +41,6 @@
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
       <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
-
-      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
-      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
     </PropertyGroup>
 
     <ItemGroup>
@@ -99,20 +96,6 @@
       <!-- Only default a tag name if no tag names at all are provided -->
       <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
-
-      <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
-           For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
-      <_ContainerIsTargetingWindows>false</_ContainerIsTargetingWindows>
-      <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
-
-      <!-- Set the WorkingDirectory depending on the RID -->
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
-    </PropertyGroup>
-
-    <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
-    <PropertyGroup Label="ContainerUser Assignment" Condition="$(_ContainerIsUsingMicrosoftDefaultImages) and $(_ContainerIsTargetingNet8TFM) and '$(ContainerUser)' == ''">
-      <ContainerUser Condition="$(_ContainerIsTargetingWindows)">ContainerUser</ContainerUser>
     </PropertyGroup>
 
     <ParseContainerProperties FullyQualifiedBaseImageName="$(ContainerBaseImage)"
@@ -199,7 +182,28 @@
     </PublishContainerDependsOn>
   </PropertyGroup>
 
+  <!-- These args are relevant to container execution and are per-RID by nature. Therefore they're a direct dependency of the _PublishSingleContainer
+       target and not computed at the outer layer. -->
   <Target Name="_ComputeContainerExecutionArgs">
+    <PropertyGroup>
+      <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
+           For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
+      <_ContainerIsTargetingWindows>false</_ContainerIsTargetingWindows>
+      <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
+    
+      <!-- Set the WorkingDirectory depending on the RID -->
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
+      
+      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
+      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
+    </PropertyGroup>
+
+      <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
+    <PropertyGroup Label="ContainerUser Assignment" Condition="$(_ContainerIsUsingMicrosoftDefaultImages) and $(_ContainerIsTargetingNet8TFM) and '$(ContainerUser)' == ''">
+      <ContainerUser Condition="$(_ContainerIsTargetingWindows)">ContainerUser</ContainerUser>
+    </PropertyGroup>
+
     <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
       <!-- For self-contained, invoke the native executable as a single arg -->
       <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
@@ -326,11 +330,9 @@
           ContainerRegistry=$(ContainerRegistry);
           _ContainerImageTags=@(ContainerImageTags, ';');
           ContainerRepository=$(ContainerRepository);
-          ContainerWorkingDirectory=$(ContainerWorkingDirectory);
           _ContainerLabel=@(ContainerLabel->'%(Identity):%(Value)');
           _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
-          ContainerUser=$(ContainerUser);
           ContainerGenerateLabels=$(ContainerGenerateLabels);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
           _SkipContainerPublishing=$(_SkipContainerPublishing)
