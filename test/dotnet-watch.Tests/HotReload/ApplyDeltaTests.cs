@@ -441,7 +441,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
-            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'app.css'.");
+            // "wwwroot" directory is required for MAUI. Web sites work with or without it.
+            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'wwwroot/app.css'.");
             App.AssertOutputContains($"dotnet watch 🔥 Hot reload of static files succeeded.");
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();
