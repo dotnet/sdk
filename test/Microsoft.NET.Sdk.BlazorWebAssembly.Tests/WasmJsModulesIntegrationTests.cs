@@ -214,7 +214,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105393")]
+        [Fact]
         public void JsModules_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -279,7 +279,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105393")]
+        [Fact]
         public void JsModules_Hosted_CanCustomizeBlazorInitialization()
         {
             // Arrange

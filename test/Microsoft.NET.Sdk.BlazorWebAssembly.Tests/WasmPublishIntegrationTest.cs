@@ -709,7 +709,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
+        [Fact]
         public void Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
