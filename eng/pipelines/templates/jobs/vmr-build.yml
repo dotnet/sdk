@@ -505,8 +505,7 @@ jobs:
         if [[ '${{ parameters.sign }}' == 'True' ]] && [[ '${{ parameters.buildSourceOnly }}' != 'True' ]]; then
           customBuildArgs="$customBuildArgs --sign"
           if [[ '$(_SignType)' == 'real' ]] || [[ '$(_SignType)' == 'test' ]]; then
-            # Force dry run signing until https://github.com/dotnet/source-build/issues/4793 is resolved - https://github.com/dotnet/source-build/issues/4678
-            extraBuildProperties="$extraBuildProperties /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:ForceDryRunSigning=true"
+            extraBuildProperties="$extraBuildProperties /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)"
           else
             extraBuildProperties="$extraBuildProperties /p:ForceDryRunSigning=true"
           fi
