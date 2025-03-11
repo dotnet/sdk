@@ -226,7 +226,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut("""
+            .And.HaveStdOutContaining("""
                 echo args:./App.csproj
                 Hello from App
                 """);
@@ -252,9 +252,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
     }
 
-    /// <summary>
-    /// The build fails when there are multiple files with entry points.
-    /// </summary>
     [Fact]
     public void MultipleEntryPoints()
     {
@@ -265,8 +262,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(LocalizableStrings.RunCommandException);
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        new DotnetCommand(Log, "run", "Program2.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program2");
     }
 
     /// <summary>
@@ -317,7 +320,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Other files in the folder are part of the compilation.
+    /// Other files in the folder are not part of the compilation.
     /// </summary>
     [Fact]
     public void MultipleFiles_RunEntryPoint()
@@ -329,8 +332,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello, String from Util");
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS0103"); // The name 'Util' does not exist in the current context
     }
 
     /// <summary>
@@ -631,14 +634,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Default projects include and compile also non-C# files, like resources.
+    /// Default projects do not include anything apart from the entry-point file.
     /// </summary>
     [Fact]
     public void EmbeddedResource()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            using var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Program.Resources.resources")!;
+            using var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("Program.Resources.resources");
+
+            if (stream is null)
+            {
+                Console.WriteLine("Resource not found");
+                return;
+            }
+
             using var reader = new System.Resources.ResourceReader(stream);
             Console.WriteLine(reader.Cast<System.Collections.DictionaryEntry>().Single());
             """);
@@ -655,7 +665,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("""
-                [MyString, TestValue]
+                Resource not found
                 """);
     }
 
