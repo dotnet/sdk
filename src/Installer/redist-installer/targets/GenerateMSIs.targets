@@ -411,7 +411,7 @@
 
   <Target Name="GenerateRuntimeAnalyzersNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' And '$(DotNetBuild)' != 'true' "
+          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
           Inputs="$(RuntimeAnalyzersLayoutDirectory)/**/*;
                     $(SdkRuntimeAnalyzersNuspecFile);
                     $(GenerateNupkgPowershellScript)"
