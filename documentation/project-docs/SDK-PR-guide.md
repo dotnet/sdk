@@ -73,6 +73,6 @@ These PRs will not get updated as new changes come in. This allows time to run P
 ### Reviewing and merging inter-branch codeflow
 Generally we will check the commit list and scan the changes for anything out of the ordinary. We take a special look for any conflict merges that were done in getting the PR building.
 > [!Important]
-> Make sure to create a merge commit. Do not squash. If you squash, the next inter-branch PR will list all of the same commits.
+> Make sure to create a merge commit. *Do not squash*. If you squash, the next inter-branch PR will list all of the same commits.
 
 **NOTE** Some inter-branch flow will have 0 changes once the merge conflicts are resolved. This is likely when the only changes were to version numbers in the eng/*. These can be closed to save time and resources or merged to catch the commit history up (the next codeflow will have fewer commits). There is no preference either way.
