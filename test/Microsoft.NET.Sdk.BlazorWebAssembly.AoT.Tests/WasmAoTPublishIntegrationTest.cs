@@ -37,7 +37,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -126,7 +126,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
