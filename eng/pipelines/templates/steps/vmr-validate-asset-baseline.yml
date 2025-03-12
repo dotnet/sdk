@@ -37,12 +37,16 @@ steps:
     arguments: -filePath '$(Build.SourcesDirectory)\src\source-manifest.json' -outputPath '$(Build.ArtifactStagingDirectory)\base-assets\'
       -darcPath '$(Build.SourcesDirectory)\artifacts\tools\darc\darc.exe' -githubPat $(BotAccount-dotnet-bot-repo-PAT) -azdevPat $(dn-bot-all-drop-rw-code-rw-release-all)
 
-- script: $(Build.SourcesDirectory)\eng\common\build.ps1 -ci -projects $(Build.SourcesDirectory)\eng\tools\BuildComparer\BuildComparer.csproj -restore -build
-- script: $(Build.SourcesDirectory)\artifacts\bin\BuildComparer\Debug\BuildComparer.dll
+- task: PowerShell@2
+  inputs:
+    filePath: $(Build.SourcesDirectory)\eng\common\build.ps1
+    arguments: -ci -projects $(Build.SourcesDirectory)\eng\tools\BuildComparer\BuildComparer.csproj -restore -build
+
+- script: $(Build.SourcesDirectory).dotnet\dotnet.exe $(Build.SourcesDirectory)\artifacts\bin\BuildComparer\Debug\BuildComparer.dll
                  -vmrManifestPath '$(Build.ArtifactStagingDirectory)\AssetManifests\MergedManifest.xml'
-                 -vmrAssetBasePath '$(Build.ArtifactStagingDirectory)\vmr-assets'
+                 -vmrAssetBasePath '$(Build.ArtifactStagingDirectory)/vmr-assets'
                  -msftAssetBasePath '$(Build.ArtifactStagingDirectory)\base-assets\'
-                 -reportPath '$(Build.SourcesDirectory)\artifacts\AssetBaselines\'
+                 -report '$(Build.SourcesDirectory)\artifacts\AssetBaselines\BaselineComparison.xml'
   displayName: Validate Asset Baselines
 
 - task: 1ES.PublishPipelineArtifact@1

@@ -1,11 +1,11 @@
-﻿using Microsoft.DotNet.VersionTools.Automation;
-using Microsoft.DotNet.VersionTools.BuildManifest;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
+﻿using Microsoft.DotNet.VersionTools.BuildManifest;
+using NuGet.Packaging;
+using System.Collections.Immutable;
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 public enum AssetType
@@ -15,14 +15,18 @@ public enum AssetType
     Unknown
 }
 
-public class AssetReport
+public class ComparisonReport
 {
     [XmlAttribute("IssueCount")]
     public int IssueCount { get => AssetsWithIssues.Count; }
 
+    [XmlAttribute("ErrorCount")]
+    public int ErrorCount { get => AssetsWithErrors.Count; }
+
     [XmlAttribute("TotalCount")]
     public int TotalCount { get => AssetsWithIssues.Count + AssetsWithoutIssues.Count; }
     public List<AssetMapping> AssetsWithIssues { get; set; }
+    public List<AssetMapping> AssetsWithErrors { get; set; }
     public List<AssetMapping> AssetsWithoutIssues { get; set; }
 }
 public class AssetMapping
@@ -51,6 +55,8 @@ public class AssetMapping
         get; set;
     }
 
+    public List<string> EvaluationErrors { get; set; } = new List<string>();
+
     public List<Issue> Issues { get; set; } = new List<Issue>();
 }
 
@@ -59,6 +65,7 @@ public enum IssueType
     MissingShipping,
     MissingNonShipping,
     MisclassifiedAsset,
+    AssemblyVersionMismatch,
 }
 
 public class Issue
@@ -69,7 +76,7 @@ public class Issue
     public string Description { get; set; }
 }
 
-class Program
+public class Program
 {
     static int Main(string[] args)
     {
@@ -88,9 +95,15 @@ class Program
             Description = "Path to the asset base path",
             Required = true
         };
-        var outputFilePathArgument = new CliOption<string>("-reportPath")
+        var outputFileArgument = new CliOption<string>("-report")
         {
-            Description = "Path to directory containing report files.",
+            Description = "Path to output xml file.",
+            Required = true
+        };
+        var parallelismArgument = new CliOption<int>("-parallel")
+        {
+            Description = "Amount of parallelism used while analyzing the builds.",
+            DefaultValueFactory = _ => 16,
             Required = true
         };
         var rootCommand = new CliRootCommand(description: "Tool for comparing Microsoft builds with VMR builds.")
@@ -98,136 +111,267 @@ class Program
             vmrManifestPathArgument,
             vmrAssetBasePathArgument,
             msftAssetBasePathArgument,
-            outputFilePathArgument
+            outputFileArgument,
+            parallelismArgument
         };
 
         rootCommand.Description = "Compares build manifests and outputs missing or misclassified assets.";
 
-        bool compareResult = false; 
-        rootCommand.SetAction((result) =>
-        {
-            var comparer = new Program(result.GetValue(vmrManifestPathArgument),
-                                       result.GetValue(vmrAssetBasePathArgument),
-                                       result.GetValue(msftAssetBasePathArgument),
-                                       result.GetValue(outputFilePathArgument));
-            compareResult = comparer.CompareBuilds();
-        });
+        var result = rootCommand.Parse(args);
+        var comparer = new Program(result.GetValue(vmrManifestPathArgument),
+                                    result.GetValue(vmrAssetBasePathArgument),
+                                    result.GetValue(msftAssetBasePathArgument),
+                                    result.GetValue(outputFileArgument),
+                                    result.GetValue(parallelismArgument));
 
-        rootCommand.Parse(args).Invoke();
 
-        return (compareResult ? 0 : 1);
+
+        return (int)comparer.CompareBuilds().GetAwaiter().GetResult();
     }
 
     string _vmrManifestPath;
     string _vmrBuildAssetBasePath;
     string _baseBuildAssetBasePath;
     string _outputFilePath;
+    SemaphoreSlim _throttle;
+    ComparisonReport _comparisonReport = new ComparisonReport();
+    List<AssetMapping> _assetMappings = new List<AssetMapping>();
 
-    private Program(string vmrManifestPath, string vmrAssetBasePath, string baseBuildAssetBasePath, string outputFilePath)
+    private Program(string vmrManifestPath,
+                    string vmrAssetBasePath,
+                    string baseBuildAssetBasePath,
+                    string outputFilePath,
+                    int parallelTasks)
     {
         _vmrManifestPath = vmrManifestPath;
         _vmrBuildAssetBasePath = vmrAssetBasePath;
         _baseBuildAssetBasePath = baseBuildAssetBasePath;
         _outputFilePath = outputFilePath;
+        _throttle = new SemaphoreSlim(parallelTasks, parallelTasks);
     }
 
-    private bool CompareBuilds()
+    private async Task<int> CompareBuilds()
     {
         try
         {
-            // Load the XML file
-            XDocument vmrMergedManifestContent = XDocument.Load(_vmrManifestPath);
+            GenerateAssetMappings();
+            await EvaluateMappings();
+            GenerateReport();
 
-            // Get all files in the assets folder, including subfolders
-            var allFiles = Directory.GetFiles(_baseBuildAssetBasePath, "*", SearchOption.AllDirectories);
-
-            List<AssetMapping> assetMappings = new List<AssetMapping>();
-
-            // Walk the top-level directories of the asset base path, and find the MergedManifest under each
-            // one. The MergedManifest.xml contains the list of outputs produced by the repo.
-
-            foreach (var baseDirectory in Directory.GetDirectories(_baseBuildAssetBasePath, "*", SearchOption.TopDirectoryOnly))
-            {
-                // Find the merged manifest underneath this directory
-                // (e.g. <assetBasePath>/arcade/nonshipping/<version>>/MergedManifest.xml)
-
-                string repoMergedManifestPath = Directory.GetFiles(baseDirectory,
-                    "MergedManifest.xml", SearchOption.AllDirectories)
-                    .FirstOrDefault();
-
-                if (repoMergedManifestPath == null)
-                {
-                    Console.WriteLine($"Failed to find merged manifest for {baseDirectory}");
-                    continue;
-                }
-
-                var repoBuildMergeManifestContent = XDocument.Load(repoMergedManifestPath);
-                assetMappings.AddRange(MapFilesForManifest(vmrMergedManifestContent,
-                                                           baseDirectory,
-                                                           _vmrBuildAssetBasePath,
-                                                           repoMergedManifestPath,
-                                                           repoBuildMergeManifestContent));
-            }
-
-            // Now that we have the asset mappings, we can check for missing, misclassified, or incorrect assets
-            EvaluatePackages(assetMappings);
-            EvaluateBlobs(assetMappings);
-
-            WriteResults(assetMappings);
+            return 0;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");
-            return false;
+            return 1;
         }
-
-        return true;
     }
 
-    private void WriteResults(List<AssetMapping> assetMappings)
+    private async Task EvaluateMappings()
     {
-        Directory.CreateDirectory(_outputFilePath);
+        var tasks = new Task[] {
+                EvaluatePackages(_assetMappings.Where(mapping => mapping.AssetType == AssetType.Package)),
+                EvaluateBlobs(_assetMappings.Where(mapping => mapping.AssetType == AssetType.Blob)) };
+
+        await Task.WhenAll(tasks);
+    }
+
+    private void GenerateAssetMappings()
+    {
+        // Load the XML file
+        XDocument vmrMergedManifestContent = XDocument.Load(_vmrManifestPath);
+
+        // Get all files in the assets folder, including subfolders
+        var allFiles = Directory.GetFiles(_baseBuildAssetBasePath, "*", SearchOption.AllDirectories);
+
+        // Walk the top-level directories of the asset base path, and find the MergedManifest under each
+        // one. The MergedManifest.xml contains the list of outputs produced by the repo.
+
+        foreach (var baseDirectory in Directory.GetDirectories(_baseBuildAssetBasePath, "*", SearchOption.TopDirectoryOnly))
+        {
+            // Find the merged manifest underneath this directory
+            // (e.g. <assetBasePath>/arcade/nonshipping/<version>>/MergedManifest.xml)
+
+            string repoMergedManifestPath = Directory.GetFiles(baseDirectory,
+                "MergedManifest.xml", SearchOption.AllDirectories)
+                .FirstOrDefault();
+
+            if (repoMergedManifestPath == null)
+            {
+                Console.WriteLine($"Failed to find merged manifest for {baseDirectory}");
+                continue;
+            }
+
+            var repoBuildMergeManifestContent = XDocument.Load(repoMergedManifestPath);
+            _assetMappings.AddRange(MapFilesForManifest(vmrMergedManifestContent,
+                                                       baseDirectory,
+                                                       _vmrBuildAssetBasePath,
+                                                       repoMergedManifestPath,
+                                                       repoBuildMergeManifestContent));
+        }
+    }
+
+    private void GenerateReport()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_outputFilePath));
 
         // Generate the AssetReportType by grouping the asset mappings by whether they
         // have issues
-        var assetReport = new AssetReport
-        {
-            AssetsWithIssues = assetMappings.Where(a => a.Issues.Count > 0).OrderByDescending(a => a.Issues.Count).ToList(),
-            AssetsWithoutIssues = assetMappings.Where(a => a.Issues.Count == 0).ToList()
-        };
+        _comparisonReport.AssetsWithErrors = _assetMappings.Where(a => a.EvaluationErrors.Count > 0).OrderByDescending(a => a.EvaluationErrors.Count).ToList();
+        _comparisonReport.AssetsWithIssues = _assetMappings.Where(a => a.Issues.Count > 0).OrderByDescending(a => a.Issues.Count).ToList();
+        _comparisonReport.AssetsWithoutIssues = _assetMappings.Where(a => a.Issues.Count == 0).ToList();
 
         // Serialize all asset mappings to xml
-        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(AssetReport));
-        using (var stream = new FileStream(Path.Combine(_outputFilePath, "BuildComparison.xml"), FileMode.Create))
+        var serializer = new System.Xml.Serialization.XmlSerializer(typeof(ComparisonReport));
+        using (var stream = new FileStream(_outputFilePath, FileMode.Create))
         {
-            serializer.Serialize(stream, assetReport);
+            serializer.Serialize(stream, _comparisonReport);
             stream.Close();
         }
     }
 
-    private void EvaluatePackages(List<AssetMapping> assetMappings)
+
+    private async Task EvaluatePackages(IEnumerable<AssetMapping> packageMappings)
     {
-        foreach (var mapping in assetMappings.Where(a => a.AssetType == AssetType.Package))
+        var packageEvaluationTasks = packageMappings.Select(mapping => EvaluatePackage(mapping)).ToArray();
+
+        await Task.WhenAll(packageEvaluationTasks).ConfigureAwait(false);
+    }
+
+    private async Task EvaluatePackage(AssetMapping mapping)
+    {
+        try
         {
+            await _throttle.WaitAsync();
+
+            Console.WriteLine($"Evaluating '{mapping.Id}.");
+
             // Filter away mappings that we do not care about
             if (mapping.Id.Contains("Microsoft.SourceBuild.Intermediate"))
             {
-                continue;
+                return;
             }
 
             // Check if the package is missing in the VMR
-            if (!mapping.DiffElementFound)
+            else if (!mapping.DiffElementFound)
             {
                 mapping.Issues.Add(new Issue
                 {
                     IssueType = mapping.BaseBuildManifestElement.Attribute("NonShipping")?.Value == "true" ? IssueType.MissingNonShipping : IssueType.MissingShipping,
                     Description = $"Package '{mapping.Id}' is missing in the VMR."
                 });
+
+                return;
             }
-            else
+
+            EvaluateClassification(mapping);
+            await CompareAssemblyVersions(mapping);
+        }
+        catch (Exception e)
+        {
+            mapping.EvaluationErrors.Add(e.ToString());
+        }
+        finally
+        {
+            _throttle.Release();
+        }
+    }
+
+    static readonly ImmutableArray<string> IncludedFileExtensions = [".dll", ".exe"];
+
+    public async Task CompareAssemblyVersions(AssetMapping mapping)
+    {
+        var diffNugetPackagePath = mapping.DiffFilePath;
+        var baselineNugetPackagePath = mapping.BaseBuildFilePath;
+        var packageName = mapping.Id;
+
+        if (diffNugetPackagePath == null || baselineNugetPackagePath == null)
+        {
+            return;
+        }
+
+        try
+        {
+            using (PackageArchiveReader testPackageReader = new PackageArchiveReader(File.OpenRead(diffNugetPackagePath)))
             {
-                // Asset is found. Perform tests.
-                EvaluateClassification(mapping);
+                using (PackageArchiveReader baselinePackageReader = new PackageArchiveReader(baselineNugetPackagePath))
+                {
+
+                    IEnumerable<string> baselineFiles = (await baselinePackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedFileExtensions.Contains(Path.GetExtension(f)));
+                    IEnumerable<string> testFiles = (await testPackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedFileExtensions.Contains(Path.GetExtension(f)));
+                    foreach (var fileName in baselineFiles.Intersect(testFiles))
+                    {
+                        try
+                        {
+                            AssemblyName baselineAssemblyName = null;
+                            AssemblyName testAssemblyName = null;
+
+                            using (var baselineStream = await ReadEntryToStream(baselinePackageReader, fileName))
+                            using (var testStream = await ReadEntryToStream(testPackageReader, fileName))
+                            {
+                                baselineAssemblyName = GetAssemblyName(baselineStream, fileName);
+                                testAssemblyName = GetAssemblyName(testStream, fileName);
+                            }
+
+                            if ((baselineAssemblyName == null) != (testAssemblyName == null))
+                            {
+                                mapping.Issues.Add(new Issue
+                                {
+                                    IssueType = IssueType.AssemblyVersionMismatch,
+                                    Description = $"Assembly '{fileName}' in package '{packageName}' has different versions in the VMR and base build."
+                                });
+                            }
+                            else if (baselineAssemblyName == null && testAssemblyName == null)
+                            {
+                                continue;
+                            }
+
+                            if (baselineAssemblyName.ToString() != testAssemblyName.ToString())
+                            {
+                                mapping.Issues.Add(new Issue
+                                {
+                                    IssueType = IssueType.AssemblyVersionMismatch,
+                                    Description = $"Assembly '{fileName}' in package '{packageName}' has different versions in the VMR and base build. VMR version: {baselineAssemblyName}, base build version: {testAssemblyName}"
+                                });
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            mapping.EvaluationErrors.Add(e.ToString());
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            mapping.EvaluationErrors.Add(e.ToString());
+        }
+
+        static async Task<Stream> ReadEntryToStream(PackageArchiveReader packageArchiveReader, string fileName)
+        {
+            var outputStream = new MemoryStream();
+            var entryStream = packageArchiveReader.GetEntry(fileName).Open();
+            await entryStream.CopyToAsync(outputStream, CancellationToken.None);
+            await entryStream.FlushAsync(CancellationToken.None);
+            outputStream.Position = 0;
+            return outputStream;
+        }
+
+        static AssemblyName GetAssemblyName(Stream stream, string fileName)
+        {
+            using (var peReader = new PEReader(stream))
+            {
+                if (!peReader.HasMetadata)
+                {
+                    return null;
+                }
+
+                var metadataReader = peReader.GetMetadataReader();
+                var assemblyDefinition = metadataReader.GetAssemblyDefinition();
+                var assemblyName = assemblyDefinition.GetAssemblyName();
+
+                return assemblyName;
             }
         }
     }
@@ -248,20 +392,32 @@ class Program
         }
     }
 
-    private void EvaluateBlobs(List<AssetMapping> assetMappings)
+    private async Task EvaluateBlobs(IEnumerable<AssetMapping> assetMappings)
     {
-        foreach (var mapping in assetMappings.Where(a => a.AssetType == AssetType.Blob))
+        var blobs = assetMappings.Where(a => a.AssetType == AssetType.Blob);
+        var tasks = blobs.Select(mapping => EvaluateBlob(mapping)).ToArray();
+
+        await Task.WhenAll(tasks);
+        
+    }
+
+    private async Task EvaluateBlob(AssetMapping mapping)
+    {
+        try
         {
+            await _throttle.WaitAsync();
+
+            Console.WriteLine($"Evaluating '{mapping.Id}'");
+
             // Filter away mappings that we do not care about
             if (mapping.Id.Contains(".wixpack.zip"))
             {
-                continue;
+                return;
             }
             if (mapping.Id.Contains("MergedManifest.xml"))
             {
-                continue;
+                return;
             }
-
             // Check if the package is missing in the VMR
             if (!mapping.DiffElementFound)
             {
@@ -270,12 +426,19 @@ class Program
                     IssueType = mapping.BaseBuildManifestElement.Attribute("NonShipping")?.Value == "true" ? IssueType.MissingNonShipping : IssueType.MissingShipping,
                     Description = $"Blob '{mapping.Id}' is missing in the VMR."
                 });
+                return;
             }
-            else
-            {
-                // Asset is found. Perform tests.
-                EvaluateClassification(mapping);
-            }
+
+            // Asset is found. Perform tests.
+            EvaluateClassification(mapping);
+        }
+        catch (Exception e)
+        {
+            mapping.EvaluationErrors.Add(e.ToString());
+        }
+        finally
+        {
+            _throttle.Release();
         }
     }
 
@@ -353,7 +516,7 @@ class Program
             }
         }
 
-            return new AssetMapping
+        return new AssetMapping
         {
             Id = baseBlobId,
             DiffFilePath = diffFilePath,
