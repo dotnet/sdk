@@ -14,7 +14,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 public partial class WriteImportMapToHtml : Task
 {
     [Required]
+    public ITaskItem[] Assets { get; set; } = [];
+
+    [Required]
     public ITaskItem[] Endpoints { get; set; } = [];
+
+    [Required]
+    public bool IncludeOnlyHardFingerprintedModules { get; set; }
 
     [Required]
     public string OutputPath { get; set; } = string.Empty;
@@ -73,7 +79,7 @@ public partial class WriteImportMapToHtml : Task
                 outputContent = _assetsRegex.Replace(outputContent, e =>
                 {
                     string assetPath = e.Groups[1].Value + e.Groups[3].Value;
-                    string fingerprintedAssetPath = urlMappings.TryGetValue(assetPath, out var value) ? value.Url : assetPath;
+                    string fingerprintedAssetPath = GetFingerprintedAssetPath(urlMappings, assetPath);
                     Log.LogMessage("Replacing asset '{0}' with fingerprinted version '{1}'", assetPath, fingerprintedAssetPath);
                     return "\"" + fingerprintedAssetPath + "\"";
                 });
@@ -99,7 +105,17 @@ public partial class WriteImportMapToHtml : Task
         return true;
     }
 
-    internal static List<ResourceAsset> CreateResourcesFromEndpoints(IEnumerable<StaticWebAssetEndpoint> endpoints)
+    private string GetFingerprintedAssetPath(Dictionary<string, ResourceAsset> urlMappings, string assetPath)
+    {
+        if (urlMappings.TryGetValue(assetPath, out var asset) && (!IncludeOnlyHardFingerprintedModules || asset.IsHardFingerprinted))
+        {
+            return asset.Url;
+        }
+
+        return assetPath;
+    }
+
+    internal List<ResourceAsset> CreateResourcesFromEndpoints(IEnumerable<StaticWebAssetEndpoint> endpoints)
     {
         var resources = new List<ResourceAsset>();
 
@@ -107,17 +123,17 @@ public partial class WriteImportMapToHtml : Task
         // descriptors that are useful for the resources in the context of Blazor. Specifically, we pass in the `label` property
         // which contains the human-readable identifier for fingerprinted assets, and the integrity, which can be used to apply
         // subresource integrity to things like images, script tags, etc.
-        foreach (var descriptor in endpoints)
+        foreach (var endpoint in endpoints)
         {
             string? label = null;
             string? integrity = null;
 
             // If there's a selector this means that this is an alternative representation for a resource, so skip it.
-            if (descriptor.Selectors?.Length == 0)
+            if (endpoint.Selectors?.Length == 0)
             {
-                for (var i = 0; i < descriptor.EndpointProperties?.Length; i++)
+                for (var i = 0; i < endpoint.EndpointProperties?.Length; i++)
                 {
-                    var property = descriptor.EndpointProperties[i];
+                    var property = endpoint.EndpointProperties[i];
                     if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
                     {
                         label = property.Value;
@@ -128,14 +144,21 @@ public partial class WriteImportMapToHtml : Task
                     }
                 }
 
-                resources.Add(new ResourceAsset(descriptor.Route, label, integrity));
+                bool isHardFingerprinted = true;
+                var asset = Assets.FirstOrDefault(a => a.ItemSpec == endpoint.AssetFile);
+                if (asset != null)
+                {
+                    isHardFingerprinted = asset.GetMetadata("RelativePath").Contains("#[.{fingerprint}]!");
+                }
+
+                resources.Add(new ResourceAsset(endpoint.Route, label, integrity, isHardFingerprinted));
             }
         }
 
         return resources;
     }
 
-    private static ImportMap CreateImportMapFromResources(List<ResourceAsset> assets)
+    private ImportMap CreateImportMapFromResources(List<ResourceAsset> assets)
     {
         Dictionary<string, string>? imports = new();
         Dictionary<string, Dictionary<string, string>>? scopes = new(); ;
@@ -149,7 +172,8 @@ public partial class WriteImportMapToHtml : Task
                 integrity[$"./{asset.Url}"] = asset.Integrity;
             }
 
-            if (asset.Label != null)
+            // Only fingerprinted assets have label
+            if (asset.Label != null && (!IncludeOnlyHardFingerprintedModules || asset.IsHardFingerprinted))
             {
                 imports ??= [];
                 imports[$"./{asset.Label}"] = $"./{asset.Url}";
@@ -178,11 +202,12 @@ public partial class WriteImportMapToHtml : Task
     }
 }
 
-internal sealed class ResourceAsset(string url, string? label, string? integrity)
+internal sealed class ResourceAsset(string url, string? label, string? integrity, bool isHardFingerprinted)
 {
     public string Url { get; } = url;
     public string? Label { get; set; } = label;
     public string? Integrity { get; set; } = integrity;
+    public bool IsHardFingerprinted { get; set; } = isHardFingerprinted;
 }
 
 internal class ImportMap(Dictionary<string, string> imports, Dictionary<string, Dictionary<string, string>> scopes, Dictionary<string, string> integrity)
