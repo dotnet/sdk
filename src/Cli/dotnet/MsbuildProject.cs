@@ -202,11 +202,11 @@ namespace Microsoft.DotNet.Tools
             return false;
         }
 
-        private Project GetEvaluatedProject()
+        private Microsoft.Build.Evaluation.Project GetEvaluatedProject()
         {
             try
             {
-                Project project;
+                Microsoft.Build.Evaluation.Project project;
                 if (_interactive)
                 {
                     // NuGet need this environment variable to call plugin dll

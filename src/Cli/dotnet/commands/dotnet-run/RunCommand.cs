@@ -660,31 +660,18 @@ namespace Microsoft.DotNet.Tools.Run
             static string? TryFindEntryPointFilePath(ref string[] args)
             {
                 if (args is not [{ } arg, ..] ||
-                    !arg.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
-                    !File.Exists(arg))
+                    !VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
                 {
                     return null;
                 }
 
-                if (!HasTopLevelStatements(arg))
+                if (!VirtualProjectBuildingCommand.HasTopLevelStatements(arg))
                 {
                     throw new GracefulException(LocalizableStrings.NoTopLevelStatements, arg);
                 }
 
                 args = args[1..];
                 return Path.GetFullPath(arg);
-            }
-
-            static bool HasTopLevelStatements(string entryPointFilePath)
-            {
-                var tree = ParseCSharp(entryPointFilePath);
-                return tree.GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().Any();
-            }
-
-            static CSharpSyntaxTree ParseCSharp(string filePath)
-            {
-                using var stream = File.OpenRead(filePath);
-                return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(SourceText.From(stream, Encoding.UTF8), path: filePath);
             }
         }
     }
