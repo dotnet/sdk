@@ -214,7 +214,7 @@ namespace Microsoft.DotNet.ToolManifest
                 if (currentSearchDirectory.Value.Value != null)
                 {
                     if (_fileSystem.Directory.EnumerateFiles(currentSearchDirectory.Value.Value)
-                        .Any(filename => Path.GetExtension(filename).Equals(".sln", StringComparison.OrdinalIgnoreCase))
+                        .Any(filename => Path.GetExtension(filename).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(filename).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
                         || _fileSystem.File.Exists(currentSearchDirectory.Value.WithFile(".git").Value))
 
                     {
