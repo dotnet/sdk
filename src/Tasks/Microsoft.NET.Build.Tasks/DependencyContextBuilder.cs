@@ -304,7 +304,7 @@ namespace Microsoft.NET.Build.Tasks
                     path: null,
                     hashPath: null,
                     runtimeStoreManifestName: null,
-                    serviceable: false), []);
+                    serviceable: false));
 
                 runtimeLibraries.Add(runtimeLibrary);
             }
@@ -319,6 +319,46 @@ namespace Microsoft.NET.Build.Tasks
              *      libraryCandidatesForRemoval if it isn't already there
              * Repeat 3 until libraryCandidatesForRemoval is empty
              */
+            var references = runtimeLibraries.ToDictionary(lib => lib.Library.Name, lib => lib);
+            foreach (var reference in runtimeLibraries)
+            {
+                foreach (var dependency in reference.Library.Dependencies)
+                {
+                    references[dependency.Name].Dependents.Add(reference.Library.Name);
+                }
+            }
+
+            var unprocessedReferences = runtimeLibraries.ToHashSet();
+            HashSet<ModifiableRuntimeLibrary> temp = new();
+            while (unprocessedReferences.Any())
+            {
+                var lib = unprocessedReferences.First();
+                unprocessedReferences.Remove(lib);
+
+                if (lib.Library.RuntimeAssemblyGroups.Count == 0 && lib.Library.NativeLibraryGroups.Count == 0 && lib.Library.ResourceAssemblies.Count == 0)
+                {
+                    if (lib.Library.Dependencies.All(d => !references.ContainsKey(d.Name) || references[d.Name].Dependents.Count > 1))
+                    {
+                        runtimeLibraries.Remove(lib);
+                        references.Remove(lib.Library.Name);
+                        foreach (var dependency in lib.Library.Dependencies)
+                        {
+                            references[dependency.Name].Dependents.Remove(lib.Library.Name);
+                        }
+
+                        foreach (var dependent in lib.Dependents)
+                        {
+                            temp.Add(references[dependent]);
+                        }
+                    }
+                }
+
+                if (!unprocessedReferences.Any())
+                {
+                    unprocessedReferences = temp;
+                    temp = new();
+                }
+            }
 
             List<CompilationLibrary> compilationLibraries = new();
             if (IncludeCompilationLibraries)
@@ -447,7 +487,7 @@ namespace Microsoft.NET.Build.Tasks
                 path: null,
                 hashPath: null,
                 runtimeStoreManifestName: GetRuntimeStoreManifestName(_mainProjectInfo.Name, _mainProjectInfo.Version),
-                serviceable: false), dependencies.ToHashSet());
+                serviceable: false));
         }
 
         private List<Dependency> GetProjectDependencies()
@@ -519,7 +559,7 @@ namespace Microsoft.NET.Build.Tasks
                     nativeLibraryGroups: [nativeLibraryGroup],
                     resourceAssemblies: [],
                     dependencies: [],
-                    serviceable: false), []);
+                    serviceable: false));
             });
         }
 
@@ -611,7 +651,7 @@ namespace Microsoft.NET.Build.Tasks
                 path: path,
                 hashPath: hashPath,
                 runtimeStoreManifestName: GetRuntimeStoreManifestName(library.Name, library.Version.ToString()),
-                serviceable: serviceable), libraryDependencies);
+                serviceable: serviceable));
 
             return runtimeLibrary;
         }
@@ -937,12 +977,12 @@ namespace Microsoft.NET.Build.Tasks
         private class ModifiableRuntimeLibrary
         {
             public RuntimeLibrary Library { get; set; }
-            public HashSet<Dependency> Dependencies { get; set; }
+            public HashSet<string> Dependents { get; set; }
 
-            public ModifiableRuntimeLibrary(RuntimeLibrary library, HashSet<Dependency> dependencies)
+            public ModifiableRuntimeLibrary(RuntimeLibrary library)
             {
                 this.Library = library;
-                this.Dependencies = dependencies;
+                this.Dependents = new();
             }
         }
     }
