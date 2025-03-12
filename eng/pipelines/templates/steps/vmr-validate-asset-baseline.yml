@@ -42,11 +42,12 @@ steps:
     filePath: $(Build.SourcesDirectory)\eng\common\build.ps1
     arguments: -ci -projects $(Build.SourcesDirectory)\eng\tools\BuildComparer\BuildComparer.csproj -restore -build
 
-- script: $(Build.SourcesDirectory)\.dotnet\dotnet.exe $(Build.SourcesDirectory)\artifacts\bin\BuildComparer\Debug\BuildComparer.dll
-                 -vmrManifestPath '$(Build.ArtifactStagingDirectory)\AssetManifests\MergedManifest.xml'
-                 -vmrAssetBasePath '$(Build.ArtifactStagingDirectory)\vmr-assets'
-                 -msftAssetBasePath '$(Build.ArtifactStagingDirectory)\base-assets\'
-                 -report '$(Build.SourcesDirectory)\artifacts\AssetBaselines\BaselineComparison.xml'
+- script: $(Build.SourcesDirectory)\.dotnet\dotnet.exe
+    $(Build.SourcesDirectory)\artifacts\bin\BuildComparer\Debug\BuildComparer.dll
+    -vmrManifestPath "$(Build.ArtifactStagingDirectory)\AssetManifests\MergedManifest.xml"
+    -vmrAssetBasePath "$(Build.ArtifactStagingDirectory)\vmr-assets"
+    -msftAssetBasePath "$(Build.ArtifactStagingDirectory)\base-assets"
+    -report "$(Build.SourcesDirectory)\artifacts\AssetBaselines\BaselineComparison.xml"
   displayName: Validate Asset Baselines
 
 - task: 1ES.PublishPipelineArtifact@1
