@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.31903.286
@@ -491,7 +491,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Ins
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sdk", "src\Installer\pkg\dotnet-sdk.proj", "{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VS.Redist.Common.Net.Core.SDK.VSTemplateLocator", "src\VS.Redist.Common.Net.Core.SDK.VSTemplateLocator\VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.proj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VS.Redist.Common.Net.Core.SDK.VSTemplateLocator", "src\Layout\VS.Redist.Common.Net.Core.SDK.VSTemplateLocator\VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.proj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sdk-tasks.Tests", "test\sdk-tasks.Tests\sdk-tasks.Tests.csproj", "{21C21975-84C1-4A24-8E21-F7EC790A4584}"
 EndProject
