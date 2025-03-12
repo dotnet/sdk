@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
-    <ProjectReference Include="$(RepoRoot)src\Layout\redist\redist.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <ProjectReference Include="$(RepoRoot)src\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
   </ItemGroup>
 
   <!-- Shared infra to build and use the sdk-tasks -->
@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(RuntimeAnalyzersContent)"
-          DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')"
           UseHardlinksIfPossible="true" />
 
     <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(OutputPath)"
@@ -43,7 +43,7 @@
     <ItemGroup>
       <!-- Include the swr file in the nuget package for VS authoring -->
       <Content Include="$(SdkRuntimeAnalyzersSwrFile)" PackagePath="/" />
-      <Content Include="@(RuntimeAnalyzersContent)" PackagePath="/%(RuntimeAnalyzersContent.DeploymentSubpath)%(RecursiveDir)%(Filename)%(Extension)" />
+      <Content Include="@(RuntimeAnalyzersContent)" PackagePath="/%(RuntimeAnalyzersContent.DeploymentSubpath)/%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
