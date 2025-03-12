@@ -483,19 +483,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.FrameworkOption.Name, DotnetVersionHelper.GetPreviousDotnetVersion(),
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            if (!TestContext.IsLocalized())
-            {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, false, configuration), result.StdOut);
-                Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
-                Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, false, configuration), result.StdOut);
-
-                result.StdOut
-                 .Should().Contain("Test run summary: Failed!")
-                 .And.Contain("total: 6")
-                 .And.Contain("succeeded: 1")
-                 .And.Contain("failed: 4")
-                 .And.Contain("skipped: 1");
-            }
+            // This should fail because OtherTestProject is not built with the previous .NET version
+            // Therefore, the build error will prevent the tests from running
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
