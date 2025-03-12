@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <IsPackable Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64'">true</IsPackable>
+    <IsPackable Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'">true</IsPackable>
     <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
     <PackageDescription>Analyzers and generators from the runtime and SDK for VS insertion</PackageDescription>
     <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
