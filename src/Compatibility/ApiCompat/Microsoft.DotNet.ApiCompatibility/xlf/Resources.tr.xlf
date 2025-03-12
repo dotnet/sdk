@@ -122,9 +122,9 @@
         <target state="translated">'{1}'/'{2}' tür parametresindeki '{0}' kısıtlaması kaldırılamıyor.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualFromMember">
-        <source>Cannot remove virtual keyword from member '{0}'.</source>
-        <target state="translated">Sanal anahtar sözcük, '{0}' üyesinden kaldırılamıyor.</target>
+      <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
+        <source>Cannot remove '{0}' keyword from member '{1}'.</source>
+        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
@@ -145,11 +145,6 @@
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">{0} dizini sıfırdan başlayarak {1} dahil olmak üzere bu aralıkta olmalıdır.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">Arama dizinlerinin hiçbirinde eşleşen {0} bütünleştirilmiş kodu bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">

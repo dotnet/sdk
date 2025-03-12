@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.CommandFactory

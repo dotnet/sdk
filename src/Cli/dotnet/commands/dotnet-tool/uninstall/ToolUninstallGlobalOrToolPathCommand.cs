@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
@@ -95,11 +96,8 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    foreach (var command in package.Commands)
-                    {
-                        shellShimRepository.RemoveShim(command.Name);
-                    }
-
+                    shellShimRepository.RemoveShim(package.Command.Name);
+                 
                     toolPackageUninstaller.Uninstall(package.PackageDirectory);
 
                     scope.Complete();

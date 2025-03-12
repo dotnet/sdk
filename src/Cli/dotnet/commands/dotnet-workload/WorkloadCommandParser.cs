@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.List;
@@ -20,12 +21,14 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> InfoOption = new("--info")
         {
-            Description = CommonStrings.WorkloadInfoDescription
+            Description = CommonStrings.WorkloadInfoDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static readonly CliOption<bool> VersionOption = new("--version")
         {
-            Description = CommonStrings.WorkloadVersionDescription
+            Description = CommonStrings.WorkloadVersionDescription,
+            Arity = ArgumentArity.Zero
         };
 
         public static CliCommand GetCommand()
@@ -53,8 +56,8 @@ namespace Microsoft.DotNet.Cli
 
             void WriteUpdateModeAndAnyError(string indent = "")
             {
-                var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).UseWorkloadSets;
-                var workloadSetsString = useWorkloadSets == true ? "workload sets" : "loose manifests";
+                var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).ShouldUseWorkloadSets();
+                var workloadSetsString = useWorkloadSets ? "workload sets" : "loose manifests";
                 reporter.WriteLine(indent + string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
 
                 if (!versionInfo.IsInstalled)

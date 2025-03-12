@@ -5,7 +5,9 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Help;
 using System.Reflection;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Format;
 using Microsoft.DotNet.Tools.Help;
@@ -54,18 +56,31 @@ namespace Microsoft.DotNet.Cli
             HelpCommandParser.GetCommand(),
             SdkCommandParser.GetCommand(),
             InstallSuccessCommand,
-            WorkloadCommandParser.GetCommand()
+            WorkloadCommandParser.GetCommand(),
+            new System.CommandLine.StaticCompletions.CompletionsCommand()
         };
 
         public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
 
-        public static readonly CliOption<bool> VersionOption = new("--version");
+        public static readonly CliOption<bool> VersionOption = new("--version")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
-        public static readonly CliOption<bool> InfoOption = new("--info");
+        public static readonly CliOption<bool> InfoOption = new("--info")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
-        public static readonly CliOption<bool> ListSdksOption = new("--list-sdks");
+        public static readonly CliOption<bool> ListSdksOption = new("--list-sdks")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
-        public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes");
+        public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes")
+        {
+            Arity = ArgumentArity.Zero,
+        };
 
         // Argument
         public static readonly CliArgument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };

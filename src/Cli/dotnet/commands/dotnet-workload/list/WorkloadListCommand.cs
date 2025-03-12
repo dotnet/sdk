@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -78,7 +79,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 Reporter.WriteLine();
                 var shouldPrintTable = versionInfo.IsInstalled;
                 var shouldShowWorkloadSetVersion = versionInfo.GlobalJsonPath is not null ||
-                    InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.UserLocalPath), "default.json")).UseWorkloadSets == true;
+                    InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.UserLocalPath), "default.json")).ShouldUseWorkloadSets();
 
                 if (shouldShowWorkloadSetVersion)
                 {

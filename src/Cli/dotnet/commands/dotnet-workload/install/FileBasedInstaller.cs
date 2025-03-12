@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
@@ -14,7 +18,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using PathUtility = Microsoft.DotNet.Tools.Common.PathUtility;
+using PathUtility = Microsoft.DotNet.Cli.Utils.PathUtility;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -140,74 +144,82 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, bool overwriteExistingPacks, DirectoryPath? offlineCache = null)
         {
             var packInfos = GetPacksInWorkloads(workloadIds);
-
+            List<PackInfo> packsToInstall = [];
             foreach (var packInfo in packInfos)
+            {
+                if (PackIsInstalled(packInfo) && !overwriteExistingPacks)
+                {
+                    _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
+                    WritePackInstallationRecord(packInfo, sdkFeatureBand);
+                }
+                else
+                {
+                    packsToInstall.Add(packInfo);
+                }
+            }
+
+            var tempFilesToDelete = new ConcurrentBag<string>();
+            var packagePaths = packsToInstall.AsParallel().Select(packInfo =>
+            {
+                if (offlineCache == null || !offlineCache.HasValue)
+                {
+                    var packagePath = _nugetPackageDownloader
+                        .DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
+                            new NuGetVersion(packInfo.Version),
+                            _packageSourceLocation).GetAwaiter().GetResult();
+                    tempFilesToDelete.Add(packagePath);
+                    return (packagePath, packInfo);
+                }
+                else
+                {
+                    _reporter.WriteLine(string.Format(LocalizableStrings.UsingCacheForPackInstall, packInfo.ResolvedPackageId, packInfo.Version, offlineCache));
+                    var packagePath = Path.Combine(offlineCache.Value.Value, $"{packInfo.ResolvedPackageId}.{packInfo.Version}.nupkg");
+                    if (!File.Exists(packagePath))
+                    {
+                        throw new Exception(string.Format(LocalizableStrings.CacheMissingPackage, packInfo.ResolvedPackageId, packInfo.Version, offlineCache));
+                    }
+                    return (packagePath, packInfo);
+                }
+            });
+
+            foreach (var (packagePath, packInfo) in packagePaths)
             {
                 _reporter.WriteLine(string.Format(LocalizableStrings.InstallingPackVersionMessage, packInfo.ResolvedPackageId, packInfo.Version));
                 var tempDirsToDelete = new List<string>();
-                var tempFilesToDelete = new List<string>();
-                bool shouldRollBackPack = false;
 
                 transactionContext.Run(
                     action: () =>
                     {
-                        if (PackIsInstalled(packInfo) && !overwriteExistingPacks)
+                        if (!Directory.Exists(Path.GetDirectoryName(packInfo.Path)))
                         {
-                            _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
+                            Directory.CreateDirectory(Path.GetDirectoryName(packInfo.Path));
+                        }
+
+                        if (IsSingleFilePack(packInfo))
+                        {
+                            File.Copy(packagePath, packInfo.Path, overwrite: overwriteExistingPacks);
                         }
                         else
                         {
-                            shouldRollBackPack = true;
-                            string packagePath;
-                            if (offlineCache == null || !offlineCache.HasValue)
+                            var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{packInfo.ResolvedPackageId}-{packInfo.Version}-extracted");
+                            tempDirsToDelete.Add(tempExtractionDir);
+
+                            // This directory should have been deleted, but remove it just in case
+                            if (overwriteExistingPacks && Directory.Exists(tempExtractionDir))
                             {
-                                packagePath = _nugetPackageDownloader
-                                    .DownloadPackageAsync(new PackageId(packInfo.ResolvedPackageId),
-                                        new NuGetVersion(packInfo.Version),
-                                        _packageSourceLocation).GetAwaiter().GetResult();
-                                tempFilesToDelete.Add(packagePath);
-                            }
-                            else
-                            {
-                                _reporter.WriteLine(string.Format(LocalizableStrings.UsingCacheForPackInstall, packInfo.ResolvedPackageId, packInfo.Version, offlineCache));
-                                packagePath = Path.Combine(offlineCache.Value.Value, $"{packInfo.ResolvedPackageId}.{packInfo.Version}.nupkg");
-                                if (!File.Exists(packagePath))
-                                {
-                                    throw new Exception(string.Format(LocalizableStrings.CacheMissingPackage, packInfo.ResolvedPackageId, packInfo.Version, offlineCache));
-                                }
+                                Directory.Delete(tempExtractionDir, recursive: true);
                             }
 
-                            if (!Directory.Exists(Path.GetDirectoryName(packInfo.Path)))
+                            Directory.CreateDirectory(tempExtractionDir);
+                            var packFiles = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir)).GetAwaiter().GetResult();
+
+                            if (overwriteExistingPacks && Directory.Exists(packInfo.Path))
                             {
-                                Directory.CreateDirectory(Path.GetDirectoryName(packInfo.Path));
+                                Directory.Delete(packInfo.Path, recursive: true);
                             }
 
-                            if (IsSingleFilePack(packInfo))
-                            {
-                                File.Copy(packagePath, packInfo.Path, overwrite: overwriteExistingPacks);
-                            }
-                            else
-                            {
-                                var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{packInfo.ResolvedPackageId}-{packInfo.Version}-extracted");
-                                tempDirsToDelete.Add(tempExtractionDir);
-
-                                // This directory should have been deleted, but remove it just in case
-                                if (overwriteExistingPacks && Directory.Exists(tempExtractionDir))
-                                {
-                                    Directory.Delete(tempExtractionDir, recursive: true);
-                                }
-
-                                Directory.CreateDirectory(tempExtractionDir);
-                                var packFiles = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir)).GetAwaiter().GetResult();
-
-                                if (overwriteExistingPacks && Directory.Exists(packInfo.Path))
-                                {
-                                    Directory.Delete(packInfo.Path, recursive: true);
-                                }
-
-                                FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempExtractionDir, packInfo.Path));
-                            }
-                        }                        
+                            FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempExtractionDir, packInfo.Path));
+                        }
 
                         WritePackInstallationRecord(packInfo, sdkFeatureBand);
                     },
@@ -215,14 +227,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         try
                         {
-                            if (shouldRollBackPack)
+                            _reporter.WriteLine(string.Format(LocalizableStrings.RollingBackPackInstall, packInfo.ResolvedPackageId));
+                            DeletePackInstallationRecord(packInfo, sdkFeatureBand);
+                            if (!PackHasInstallRecords(packInfo))
                             {
-                                _reporter.WriteLine(string.Format(LocalizableStrings.RollingBackPackInstall, packInfo.ResolvedPackageId));
-                                DeletePackInstallationRecord(packInfo, sdkFeatureBand);
-                                if (!PackHasInstallRecords(packInfo))
-                                {
-                                    DeletePack(packInfo);
-                                }
+                                DeletePack(packInfo);
                             }
                         }
                         catch (Exception e)
@@ -294,6 +303,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string packagePath = null;
             string tempBackupDir = null;
+            bool directoryExists = Directory.Exists(targetFolder) && Directory.GetFileSystemEntries(targetFolder).Any();
 
             transactionContext.Run(
                 action: () =>
@@ -313,7 +323,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
 
                     //  If target directory already exists, back it up in case we roll back
-                    if (Directory.Exists(targetFolder) && Directory.GetFileSystemEntries(targetFolder).Any())
+                    if (directoryExists)
                     {
                         tempBackupDir = Path.Combine(_tempPackagesDir.Value, $"{packageId} - {packageVersion}-backup");
                         if (Directory.Exists(tempBackupDir))
@@ -330,7 +340,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     if (!string.IsNullOrEmpty(tempBackupDir) && Directory.Exists(tempBackupDir))
                     {
+                        // Delete the folder first to account for new files added
+                        Directory.Delete(targetFolder, recursive: true);
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempBackupDir, targetFolder));
+                    }
+                    else if (!directoryExists && Directory.Exists(targetFolder))
+                    {
+                        // If files are copied to the targetFolder, then another operation in this transaction fails, we want to
+                        // ensure that we roll back to the prior state. In this case, the directory did not exist (or at least
+                        // didn't have files in it), so roll back to that state. A folder without files should not exist for
+                        // our purposes, so we can ignore the possibility of there having been an empty folder before.
+                        Directory.Delete(targetFolder, recursive: true);
                     }
                 },
                 cleanup: () =>

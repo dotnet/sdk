@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools;
 using BuildCommand = Microsoft.DotNet.Tools.Build.BuildCommand;
 using PublishCommand = Microsoft.DotNet.Tools.Publish.PublishCommand;

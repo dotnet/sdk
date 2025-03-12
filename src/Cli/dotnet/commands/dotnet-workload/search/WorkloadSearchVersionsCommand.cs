@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -32,7 +33,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
             IWorkloadResolverFactory workloadResolverFactory = null,
             IInstaller installer = null,
             INuGetPackageDownloader nugetPackageDownloader = null,
-            IWorkloadResolver resolver = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter, nugetPackageDownloader: nugetPackageDownloader)
+            IWorkloadResolver resolver = null,
+            ReleaseVersion sdkVersion = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter, nugetPackageDownloader: nugetPackageDownloader)
         {
             workloadResolverFactory ??= new WorkloadResolverFactory();
 
@@ -43,7 +45,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Search
 
             var creationResult = workloadResolverFactory.Create();
 
-            _sdkVersion = creationResult.SdkVersion;
+            _sdkVersion = sdkVersion ?? creationResult.SdkVersion;
             _resolver = resolver ?? creationResult.WorkloadResolver;
 
             _numberOfWorkloadSetsToTake = result.GetValue(WorkloadSearchVersionsCommandParser.TakeOption);

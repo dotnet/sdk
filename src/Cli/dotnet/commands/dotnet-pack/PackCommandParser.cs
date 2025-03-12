@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Pack;
 using LocalizableStrings = Microsoft.DotNet.Tools.Pack.LocalizableStrings;
@@ -26,27 +27,32 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
         {
-            Description = LocalizableStrings.CmdNoBuildOptionDescription
+            Description = LocalizableStrings.CmdNoBuildOptionDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:NoBuild=true");
 
         public static readonly CliOption<bool> IncludeSymbolsOption = new ForwardedOption<bool>("--include-symbols")
         {
-            Description = LocalizableStrings.CmdIncludeSymbolsDescription
+            Description = LocalizableStrings.CmdIncludeSymbolsDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:IncludeSymbols=true");
 
         public static readonly CliOption<bool> IncludeSourceOption = new ForwardedOption<bool>("--include-source")
         {
-            Description = LocalizableStrings.CmdIncludeSourceDescription
+            Description = LocalizableStrings.CmdIncludeSourceDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:IncludeSource=true");
 
         public static readonly CliOption<bool> ServiceableOption = new ForwardedOption<bool>("--serviceable", "-s")
         {
-            Description = LocalizableStrings.CmdServiceableDescription
+            Description = LocalizableStrings.CmdServiceableDescription,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-property:Serviceable=true");
 
         public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
         {
-            Description = LocalizableStrings.CmdNoLogo
+            Description = LocalizableStrings.CmdNoLogo,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-nologo");
 
         public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;

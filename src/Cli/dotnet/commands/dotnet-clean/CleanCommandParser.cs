@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Clean;
 using LocalizableStrings = Microsoft.DotNet.Tools.Clean.LocalizableStrings;
@@ -26,7 +27,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
         {
-            Description = LocalizableStrings.CmdNoLogo
+            Description = LocalizableStrings.CmdNoLogo,
+            Arity = ArgumentArity.Zero
         }.ForwardAs("-nologo");
 
         public static readonly CliOption FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
