@@ -2,11 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
+using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Tools.Common
 {
     public static class PathUtility
     {
+        public static bool CheckForNuGetInNuGetConfig()
+        {
+            var otherFiles = SettingsUtility.GetEnabledSources(Settings.LoadDefaultSettings(Directory.GetCurrentDirectory()));
+            return otherFiles.Any(source => source.SourceUri.Equals("https://api.nuget.org/v3/index.json"));
+        }
+
         public static bool IsPlaceholderFile(string path)
         {
             return string.Equals(Path.GetFileName(path), "_._", StringComparison.Ordinal);
