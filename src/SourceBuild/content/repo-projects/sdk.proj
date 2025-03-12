@@ -7,7 +7,6 @@
     <DotNetBuildTestsOptOut Condition="'$(OS)' != 'Windows_NT'">true</DotNetBuildTestsOptOut>
 
     <BuildArgs Condition="'$(TargetOS)' == 'windows'">$(BuildArgs) -nativeToolsOnMachine</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PortableRid=$(PortableRid)</BuildArgs>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
