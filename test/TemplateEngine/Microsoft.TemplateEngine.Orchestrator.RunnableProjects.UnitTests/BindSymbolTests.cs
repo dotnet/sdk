@@ -687,7 +687,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
             Assert.Equal(expectedSnippet, resultContent);
 
-            (LogLevel, string Message) warningMessage = Assert.Single(loggedMessages.Where(lm => lm.Level == LogLevel.Warning));
+            (LogLevel, string Message) warningMessage = Assert.Single(loggedMessages, lm => lm.Level == LogLevel.Warning);
             Assert.Equal("Failed to evaluate bind symbol 'env2', it will be skipped.", warningMessage.Message);
             Assert.Contains(loggedMessages, lm => lm.Message == "Failed to evaluate bind symbol 'env1', the returned value is null. The default value 'envDefault' is used instead.");
         }

@@ -170,7 +170,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             Assert.Equal(3, templateToTest.ParameterDefinitions.Count);
 
-            Assert.Single(templateToTest.ParameterDefinitions.Where(p => p.DataType == "choice"));
+            Assert.Single(templateToTest.ParameterDefinitions, p => p.DataType == "choice");
             Assert.Equal(3, templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
             Assert.True(templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.ContainsKey("var1"));
 

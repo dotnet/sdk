@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(NetCurrent)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <PackAsTool>true</PackAsTool>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
