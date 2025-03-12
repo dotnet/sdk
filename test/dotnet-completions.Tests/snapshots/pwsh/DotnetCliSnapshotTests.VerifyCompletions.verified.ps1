@@ -40,6 +40,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('nuget', 'nuget', [CompletionResultType]::ParameterValue, "nuget")
                 [CompletionResult]::new('pack', 'pack', [CompletionResultType]::ParameterValue, ".NET Core NuGet Package Packer")
                 [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, "package")
+                [CompletionResult]::new('project', 'project', [CompletionResultType]::ParameterValue, "project")
                 [CompletionResult]::new('publish', 'publish', [CompletionResultType]::ParameterValue, "Publisher for the .NET Platform")
                 [CompletionResult]::new('reference', 'reference', [CompletionResultType]::ParameterValue, ".NET Remove Command")
                 [CompletionResult]::new('restore', 'restore', [CompletionResultType]::ParameterValue, ".NET dependency restorer")
@@ -646,6 +647,23 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+            )
+            $completions += $staticCompletions
+            break
+        }
+        'testhost;project' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, "Migrate a file-based program to a project-based program.")
+            )
+            $completions += $staticCompletions
+            break
+        }
+        'testhost;project;add' {
+            $staticCompletions = @(
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
