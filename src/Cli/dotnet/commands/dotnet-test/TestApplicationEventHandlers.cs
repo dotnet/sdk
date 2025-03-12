@@ -31,12 +31,7 @@ namespace Microsoft.DotNet.Cli
             _executions[testApplication] = appInfo;
             _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
 
-            if (!Logger.TraceEnabled) return;
-
-            foreach (var property in args.Handshake.Properties)
-            {
-                Logger.LogTrace(() => $"{GetHandshakePropertyName(property.Key)}: {property.Value}");
-            }
+            LogHandshake(args);
         }
 
         private static string GetHandshakePropertyName(byte propertyId) =>
@@ -168,6 +163,23 @@ namespace Microsoft.DotNet.Cli
                 TestStates.Cancelled => TestOutcome.Canceled,
                 _ => throw new ArgumentOutOfRangeException(nameof(testState), $"Invalid test state value {testState}")
             };
+        }
+
+        private static void LogHandshake(HandshakeArgs args)
+        {
+            if (!Logger.TraceEnabled)
+            {
+                return;
+            }
+
+            var logMessageBuilder = new StringBuilder();
+
+            foreach (var property in args.Handshake.Properties)
+            {
+                logMessageBuilder.AppendLine($"{GetHandshakePropertyName(property.Key)}: {property.Value}");
+            }
+
+            Logger.LogTrace(() => logMessageBuilder.ToString());
         }
 
         private static void LogDiscoveredTests(DiscoveredTestEventArgs args)
