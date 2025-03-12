@@ -1,0 +1,50 @@
+# This yml is used by these PR pipelines and triggers:
+# NOTE: the triggers are defined in the Azure DevOps UI as they are too complex
+#
+# - dotnet-source-build (public)
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=240
+#   - PR: ultralite build
+#   - CI: release/* only, every batched commit, full build
+#   - Schedule: main only, full build
+#
+# - dotnet-unified-build (public)
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=278
+#   - PR: lite build
+#   - CI: release/* only, every batched commit, full build
+#   - Schedule: main only, full build
+#
+
+variables:
+# enable source-only build for pipelines that contain the -source-build string
+- name: isSourceOnlyBuild
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build') }}
+
+- name: isSourceOnlyBuildLite
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build-lite') }}
+
+- name: isScheduleTrigger
+  value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
+
+- name: isPRTrigger
+  value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+
+- name: Codeql.Enabled  # we run CodeQL on internal builds only
+  value: false
+
+- template: /eng/common/templates/variables/pool-providers.yml@self
+
+stages:
+- template: /src/sdk/eng/pipelines/templates/stages/vmr-build.yml
+  parameters:
+    isBuiltFromVmr: true
+    isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+    ${{ if eq(variables.isScheduleTrigger, 'true') }}:
+      scope: full
+    ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
+      scope: lite
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
+      scope: ultralite
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), ne(variables.isSourceOnlyBuild, 'true')) }}:
+      scope: lite
+    ${{ else }}:
+      scope: full

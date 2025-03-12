@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "dotnet-format (--dry-run)": {
+      "commandName": "Project",
+      "commandLineArgs": "format.sln -v diag --verify-no-changes",
+      "workingDirectory": "$(SolutionDir)"
+    },
+    "dotnet-format": {
+      "commandName": "Project",
+      "commandLineArgs": "format.sln -v diag",
+      "workingDirectory": "$(SolutionDir)"
+    }
+  }
+}

@@ -17,10 +17,11 @@
     <PropertyGroup>
         <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'!='release'">Shipping</FSharpCorePath>
         <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
+        <FSharpTfm>net9.0</FSharpTfm>
     </PropertyGroup>
     <ItemGroup>
         <ResolvedFileToPublish
-          Include="$(PkgMicrosoft_FSharp_Compiler)/lib/net8.0/FSharp.Core.xml"
+          Include="$(PkgMicrosoft_FSharp_Compiler)/lib/$(FSharpTfm)/FSharp.Core.xml"
           CopyToPublishDirectory="PreserveNewest"
           DestinationSubPath="FSharp.Core.xml"
           RelativePath="FSharp.Core.xml"

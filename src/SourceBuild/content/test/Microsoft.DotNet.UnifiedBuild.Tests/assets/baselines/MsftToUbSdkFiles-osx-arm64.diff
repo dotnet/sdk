@@ -1,0 +1,36 @@
+diff --git a/msftSdkFiles.txt b/ubSdkFiles.txt
+index ------------
+--- a/msftSdkFiles.txt
++++ b/ubSdkFiles.txt
+@@ ------------ @@
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Workspaces.MSBuild.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.DiaSymReader.dll
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Extensions.Logging.Abstractions.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/middleware/
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/middleware/Microsoft.AspNetCore.Watch.BrowserRefresh.dll
+@@ ------------ @@
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
++./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.CodeDom.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.CommandLine.dll
+@@ ------------ @@
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.Runtime.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.TypedParts.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Configuration.ConfigurationManager.dll
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Reflection.MetadataLoadContext.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Resources.Extensions.dll
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.Pkcs.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.ProtectedData.dll
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.Xml.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Permissions.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Windows.Extensions.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/

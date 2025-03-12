@@ -16,9 +16,6 @@
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
     <AssemblyVersion Condition="'$(TargetFramework)'=='net472'">5.0.100.0</AssemblyVersion>
 
-    <UseSystemTextJson Condition="'$(TargetFramework)'!='netstandard2.0' And '$(TargetFramework)'!='net472'">True</UseSystemTextJson>
-    <DefineConstants Condition="'$(UseSystemTextJson)'=='True'">$(DefineConstants);USE_SYSTEM_TEXT_JSON</DefineConstants>
-
     <!--https://github.com/NuGet/Home/issues/3891#issuecomment-377319939-->
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
@@ -36,6 +33,8 @@
       </ReferencePath>
     </ItemGroup>
   </Target>
+
+  <Target Name="GetTargetPath" />
 
   <ItemGroup>
     <ProjectReference Include="..\Resolvers\Microsoft.DotNet.SdkResolver\Microsoft.DotNet.SdkResolver.csproj" PrivateAssets="All" />
@@ -59,10 +58,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Text.Json"  VersionOverride="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Condition="'$(UseSystemTextJson)'!='True'"/>
+    <PackageReference Include="System.Text.Json"  VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
   </ItemGroup>
 </Project>

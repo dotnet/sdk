@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-
 namespace Microsoft.Extensions.Tools.Internal
 {
     /// <summary>
@@ -51,7 +48,7 @@ namespace Microsoft.Extensions.Tools.Internal
 
         public static IConsole Singleton { get; } = new PhysicalConsole();
 
-        public event ConsoleCancelEventHandler CancelKeyPress;
+        public event ConsoleCancelEventHandler? CancelKeyPress;
         public TextWriter Error => Console.Error;
         public TextReader In => Console.In;
         public TextWriter Out => Console.Out;

@@ -10,10 +10,10 @@ namespace Microsoft.DotNet.Tools.Help
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-help";
 
-        public static readonly CliArgument<string> Argument = new(LocalizableStrings.CommandArgumentName)
+        public static readonly CliArgument<string[]> Argument = new(LocalizableStrings.CommandArgumentName)
         {
             Description = LocalizableStrings.CommandArgumentDescription,
-            Arity = ArgumentArity.ZeroOrOne
+            Arity = ArgumentArity.ZeroOrMore
         };
 
         private static readonly CliCommand Command = ConstructCommand();
