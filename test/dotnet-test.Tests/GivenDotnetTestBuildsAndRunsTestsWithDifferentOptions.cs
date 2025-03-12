@@ -471,30 +471,86 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunMultiTFMsProjectSolutionWithFrameworkOption_ShouldReturnExitCodeGenericFailure(string configuration)
+        public void RunMultiTFMsProjectSolutionWithPreviousFramework_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString()).WithSource();
 
             testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
 
+            // NOTE:
+            // TestProject is targeting both CurrentTargetFramework and Previous.
+            // OtherTestProject is targeting CurrentTargetFramework only.
+            // We invoke dotnet test with -f Previous.
+            // Restore then fails for OtherTestProject, and we run nothing.
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.FrameworkOption.Name, DotnetVersionHelper.GetPreviousDotnetVersion(),
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
+            // Output looks similar to the following
+            /*
+                error NETSDK1005: Assets file 'path\to\OtherTestProject\obj\project.assets.json' doesn't have a target for 'net9.0'. Ensure that restore has run and that you have included 'net9.0' in the TargetFrameworks for your project.
+                Get projects properties with MSBuild didn't execute properly with exit code: 1.
+
+                Test run summary: Zero tests ran
+                  total: 0
+                  failed: 0
+                  succeeded: 0
+                  skipped: 0
+                  duration: 33s 867ms
+            */
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, false, configuration), result.StdOut);
-                Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
-                Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, false, configuration), result.StdOut);
+                result.StdOut
+                 .Should().Contain("Test run summary: Zero tests ran")
+                 .And.Contain("total: 0")
+                 .And.Contain("succeeded: 0")
+                 .And.Contain("failed: 0")
+                 .And.Contain("skipped: 0")
+                 .And.Contain("NETSDK1005");
+            }
+
+            // This should fail because OtherTestProject is not built with the previous .NET version
+            // Therefore, the build error will prevent the tests from running
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+        }
+
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunMultiTFMsProjectSolutionWithCurrentFramework_ShouldReturnExitCodeGenericFailure(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString()).WithSource();
+
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+
+            // NOTE:
+            // TestProject is targeting both CurrentTargetFramework and Previous.
+            // OtherTestProject is targeting CurrentTargetFramework only.
+            // We invoke dotnet test with -f Current.
+            // TestProject has 1 passing test, 1 skipped test, and 4 failing.
+            // OtherTestProject has 1 passing test and 1 skipped.
+            // In total, 2 passing, 2 skipped, 4 failing
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnableTestingPlatform()
+                                    .Execute(TestingPlatformOptions.FrameworkOption.Name, ToolsetInfo.CurrentTargetFramework,
+                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            if (!TestContext.IsLocalized())
+            {
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
+                Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, false, configuration), result.StdOut);
 
                 result.StdOut
                  .Should().Contain("Test run summary: Failed!")
-                 .And.Contain("total: 6")
-                 .And.Contain("succeeded: 1")
+                 .And.Contain("total: 8")
+                 .And.Contain("succeeded: 2")
                  .And.Contain("failed: 4")
-                 .And.Contain("skipped: 1");
+                 .And.Contain("skipped: 2");
             }
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
