@@ -38,6 +38,13 @@
     <IsDebianBaseDistro Condition="$(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian'))">true</IsDebianBaseDistro>
     <IsRPMBasedDistro Condition="$(HostRid.StartsWith('rhel'))">true</IsRPMBasedDistro>
     <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
+
+    <OSName Condition="'$(OSName)' == '' AND $(Rid) != ''">$(Rid.Substring(0, $(Rid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
+    <Rid>$(OSName)-$(Architecture)</Rid>
+    <ProductMonikerRid Condition="'$(ProductMonikerRid)' == ''">$(Rid)</ProductMonikerRid>
+
+    <PgoTerm Condition="'$(PgoInstrument)' == 'true'">-pgo</PgoTerm>
   </PropertyGroup>
 
   <PropertyGroup>

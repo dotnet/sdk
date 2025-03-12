@@ -4,7 +4,6 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Test;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
@@ -122,6 +121,7 @@ namespace Microsoft.DotNet.Cli
 
                     project.SetProperty(ProjectProperties.TargetFramework, targetFramework);
                     project.ReevaluateIfNecessary();
+
                     Logger.LogTrace(() => $"Project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}': after re-evaluation '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
 
                     if (GetModuleFromProject(project) is { } module)
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
 
-                    if (GetModuleFromProject(project) is {} module)
+                    if (GetModuleFromProject(project) is { } module)
                     {
                         projects.Add(module);
                     }
@@ -157,9 +157,10 @@ namespace Microsoft.DotNet.Cli
                     {
                         project.SetProperty(ProjectProperties.TargetFramework, framework);
                         project.ReevaluateIfNecessary();
+
                         Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                        if (GetModuleFromProject(project) is {} module)
+                        if (GetModuleFromProject(project) is { } module)
                         {
                             projects.Add(module);
                         }
@@ -194,11 +195,40 @@ namespace Microsoft.DotNet.Cli
             }
 
             string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-            string targetPath = project.GetPropertyValue(ProjectProperties.TargetPath);
+
+            string executablePath = GetExecutablePath(project);
+            string targetPath = !string.IsNullOrEmpty(executablePath) ? executablePath : project.GetPropertyValue(ProjectProperties.TargetPath);
             string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
             string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
             return new TestModule(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
         }
+
+        private static string GetExecutablePath(Project project)
+        {
+            _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsExecutable), out bool isExecutable);
+            _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.UseAppHost), out bool useAppHost);
+
+            string targetFrameworkIdentifier = project.GetPropertyValue(ProjectProperties.TargetFrameworkIdentifier);
+
+            if (targetFrameworkIdentifier.Equals(CliConstants.NetCoreIdentifier, StringComparison.OrdinalIgnoreCase) &&
+               isExecutable &&
+               useAppHost)
+            {
+                string targetDir = project.GetPropertyValue(ProjectProperties.TargetDir);
+                string assemblyName = project.GetPropertyValue(ProjectProperties.AssemblyName);
+                string nativeExecutableExtension = project.GetPropertyValue(ProjectProperties.NativeExecutableExtension);
+
+                string executablePath = $"{targetDir}{assemblyName}{nativeExecutableExtension}";
+
+                if (File.Exists(executablePath))
+                {
+                    return executablePath;
+                }
+            }
+
+            return string.Empty;
+        }
+
     }
 }
