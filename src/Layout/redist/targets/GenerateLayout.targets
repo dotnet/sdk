@@ -148,13 +148,6 @@
           DestinationFiles="@(RuntimeAnalyzersContent->'$(ArtifactsBinDir)$(Configuration)\RuntimeAnalyzers\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-  <Target Name="PublishRuntimeAnalyzers"
-          DependsOnTargets="GenerateRuntimeAnalyzers"
-          AfterTargets="OverlaySdkOnLKG">
-    <Copy SourceFiles="@(RuntimeAnalyzersContent)"
-          DestinationFiles="@(RuntimeAnalyzersContent->'$(ArtifactsBinDir)$(Configuration)\RuntimeAnalyzers\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
-  </Target>
-
   <Target Name="PublishNetSdks"
           BeforeTargets="Build">
     <ItemGroup>
