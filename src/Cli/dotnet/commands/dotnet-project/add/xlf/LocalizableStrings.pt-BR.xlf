@@ -21,11 +21,6 @@
         <target state="new">The specified file must exist and have '.cs' file extension: '{0}'</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
-      <trans-unit id="NoTopLevelStatements">
-        <source>The specified file must have top-level statements: '{0}'</source>
-        <target state="new">The specified file must have top-level statements: '{0}'</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

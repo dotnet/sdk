@@ -9,9 +9,6 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -663,11 +660,6 @@ namespace Microsoft.DotNet.Tools.Run
                     !VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
                 {
                     return null;
-                }
-
-                if (!VirtualProjectBuildingCommand.HasTopLevelStatements(arg))
-                {
-                    throw new GracefulException(LocalizableStrings.NoTopLevelStatements, arg);
                 }
 
                 args = args[1..];

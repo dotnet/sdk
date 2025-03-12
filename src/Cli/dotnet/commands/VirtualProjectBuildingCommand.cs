@@ -10,9 +10,6 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Run;
 
@@ -223,17 +220,5 @@ internal sealed class VirtualProjectBuildingCommand
     public static bool IsValidEntryPointPath(string entryPointFilePath)
     {
         return entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) && File.Exists(entryPointFilePath);
-    }
-
-    public static bool HasTopLevelStatements(string entryPointFilePath)
-    {
-        var tree = ParseCSharp(entryPointFilePath);
-        return tree.GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().Any();
-
-        static CSharpSyntaxTree ParseCSharp(string filePath)
-        {
-            using var stream = File.OpenRead(filePath);
-            return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(SourceText.From(stream, Encoding.UTF8), path: filePath);
-        }
     }
 }

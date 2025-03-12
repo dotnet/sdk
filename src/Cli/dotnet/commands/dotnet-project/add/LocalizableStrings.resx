@@ -127,9 +127,6 @@
     <value>The specified file must exist and have '.cs' file extension: '{0}'</value>
     <comment>{Locked=".cs"}</comment>
   </data>
-  <data name="NoTopLevelStatements" xml:space="preserve">
-    <value>The specified file must have top-level statements: '{0}'</value>
-  </data>
   <data name="DirectoryAlreadyExists" xml:space="preserve">
     <value>The target directory already exists: '{0}'</value>
   </data>

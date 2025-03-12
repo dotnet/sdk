@@ -133,17 +133,25 @@ public sealed class DotnetProjectAddTests(ITestOutputHelper log) : SdkTest(log)
             .Should().BeEquivalentTo(["Program.csproj", "Program.CS"]);
     }
 
-    [Fact]
-    public void NoTopLevelStatements()
+    [Theory]
+    [InlineData("")]
+    [InlineData("class C;")]
+    public void FileContent(string content)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "class C;");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), content);
 
         new DotnetCommand(Log, "project", "add", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining("The specified file must have top-level statements");
+            .Should().Pass();
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.cs"))
+            .Should().Be(content);
     }
 
     [Fact]
@@ -159,7 +167,7 @@ public sealed class DotnetProjectAddTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "app", "Program"))
+        new DirectoryInfo(Path.Join(testInstance.Path, "app", "Program", "Program.cs"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
             .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
     }

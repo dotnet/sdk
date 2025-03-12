@@ -26,11 +26,6 @@ internal sealed class ProjectAddCommand : CommandBase
             throw new GracefulException(LocalizableStrings.InvalidFilePath, file);
         }
 
-        if (!VirtualProjectBuildingCommand.HasTopLevelStatements(file))
-        {
-            throw new GracefulException(LocalizableStrings.NoTopLevelStatements, file);
-        }
-
         string targetDirectory = Path.ChangeExtension(file, null);
         if (Directory.Exists(targetDirectory))
         {
