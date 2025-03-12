@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Tools.MSBuild
 {

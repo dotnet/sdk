@@ -3,7 +3,7 @@
 
 using Microsoft.Build.Execution;
 
-namespace Microsoft.DotNet.Tools.Common
+namespace Microsoft.DotNet.Cli.Extensions
 {
     public static class ProjectInstanceExtensions
     {

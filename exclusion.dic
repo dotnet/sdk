@@ -1,9 +1,12 @@
+ansi
 awaiter
+commandline
 crossgen
 csharp
 cshtml
 deserializer
 msbuild
+muxer
 nuget
 nupkg
 nuspec
@@ -14,6 +17,7 @@ tfm
 tfms
 url
 urls
+uuid
 xamarin
 xunit
 yaml

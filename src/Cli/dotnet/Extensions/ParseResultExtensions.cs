@@ -4,13 +4,13 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using static Microsoft.DotNet.Cli.Parser;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli.Extensions
 {
     public static class ParseResultExtensions
     {

@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.LocalizableStrings;
 

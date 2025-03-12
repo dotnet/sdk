@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Extensions.Configuration;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
@@ -233,6 +234,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
             command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
             command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(CommonOptions.PropertiesOption);
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.FrameworkOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
