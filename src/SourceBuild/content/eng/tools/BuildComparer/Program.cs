@@ -2,6 +2,7 @@
 using NuGet.Packaging;
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -495,7 +496,7 @@ public class Program
         IEnumerable<string> baselineFiles = (await baselinePackageReader.GetFilesAsync(CancellationToken.None));
         IEnumerable<string> testFiles = (await testPackageReader.GetFilesAsync(CancellationToken.None));
 
-        var missingFiles = baselineFiles.Except(testFiles).ToList();
+        var missingFiles = RemovePackageFilesToIgnore(baselineFiles.Except(testFiles));
 
         foreach (var missingFile in missingFiles)
         {
@@ -507,7 +508,7 @@ public class Program
         }
 
         // Compare the other way, and identify content in the VMR that is not in the baseline
-        var extraFiles = testFiles.Except(baselineFiles).ToList();
+        var extraFiles = RemovePackageFilesToIgnore(testFiles.Except(baselineFiles));
 
         foreach (var extraFile in extraFiles)
         {
@@ -516,6 +517,11 @@ public class Program
                 IssueType = IssueType.ExtraPackageContent,
                 Description = $"Package '{mapping.Id}' has extra files in the VMR: {string.Join(", ", extraFile)}"
             });
+        }
+
+        static IEnumerable<string> RemovePackageFilesToIgnore(IEnumerable<string> files)
+        {
+            return files.Where(f => !f.EndsWith(".signature.p7s", StringComparison.OrdinalIgnoreCase) && !f.EndsWith(".psmdcp", StringComparison.OrdinalIgnoreCase));
         }
     }
 
@@ -535,33 +541,10 @@ public class Program
         {
             try
             {
-                using var baselineStream = await ReadPackageEntryToStream(baselinePackageReader, fileName);
-                using var testStream = await ReadPackageEntryToStream(testPackageReader, fileName);
+                using var baselineStream = await CopyStreamToSeekableStream(baselinePackageReader.GetEntry(fileName).Open());
+                using var testStream = await CopyStreamToSeekableStream(testPackageReader.GetEntry(fileName).Open());
 
-                AssemblyName baselineAssemblyName = GetAssemblyName(baselineStream, fileName);
-                AssemblyName testAssemblyName = GetAssemblyName(testStream, fileName);
-
-                if ((baselineAssemblyName == null) != (testAssemblyName == null))
-                {
-                    mapping.Issues.Add(new Issue
-                    {
-                        IssueType = IssueType.AssemblyVersionMismatch,
-                        Description = $"Assembly '{fileName}' in package '{mapping.Id}' has different versions in the VMR and base build."
-                    });
-                }
-                else if (baselineAssemblyName == null && testAssemblyName == null)
-                {
-                    continue;
-                }
-
-                if (baselineAssemblyName.ToString() != testAssemblyName.ToString())
-                {
-                    mapping.Issues.Add(new Issue
-                    {
-                        IssueType = IssueType.AssemblyVersionMismatch,
-                        Description = $"Assembly '{fileName}' in package '{mapping.Id}' has different versions in the VMR and base build. VMR version: {baselineAssemblyName}, base build version: {testAssemblyName}"
-                    });
-                }
+                CompareAssemblyVersions(mapping, fileName, baselineStream, testStream);
             }
             catch (Exception e)
             {
@@ -570,12 +553,11 @@ public class Program
         }
     }
 
-    private static async Task<Stream> ReadPackageEntryToStream(PackageArchiveReader packageArchiveReader, string fileName)
+    private static async Task<Stream> CopyStreamToSeekableStream(Stream stream)
     {
         var outputStream = new MemoryStream();
-        var entryStream = packageArchiveReader.GetEntry(fileName).Open();
-        await entryStream.CopyToAsync(outputStream, CancellationToken.None);
-        await entryStream.FlushAsync(CancellationToken.None);
+        await stream.CopyToAsync(outputStream, CancellationToken.None);
+        await stream.FlushAsync(CancellationToken.None);
         outputStream.Position = 0;
         return outputStream;
     }
@@ -652,6 +634,7 @@ public class Program
 
             // Asset is found. Perform tests.
             EvaluateClassification(mapping);
+            await EvaluateBlobContents(mapping);
         }
         catch (Exception e)
         {
@@ -660,6 +643,137 @@ public class Program
         finally
         {
             _throttle.Release();
+        }
+    }
+
+    public async Task EvaluateBlobContents(AssetMapping mapping)
+    {
+        // Switch on the file type, and call a helper based on the type
+
+        switch (Path.GetExtension(mapping.Id))
+        {
+            case ".zip":
+                await CompareZipArchiveContents(mapping);
+                break;
+            default:
+                return;
+        }
+    }
+
+    private async Task CompareZipArchiveContents(AssetMapping mapping)
+    {
+        var diffZipPath = mapping.DiffFilePath;
+        var baselineZipPath = mapping.BaseBuildFilePath;
+        // If either of the paths don't exist, we can't run this comparison
+        if (diffZipPath == null || baselineZipPath == null)
+        {
+            return;
+        }
+        try
+        {
+            using (var diffStream = File.OpenRead(diffZipPath))
+            using (var baselineStream = File.OpenRead(baselineZipPath))
+            {
+                using (var diffArchive = new ZipArchive(diffStream, ZipArchiveMode.Read))
+                using (var baselineArchive = new ZipArchive(baselineStream, ZipArchiveMode.Read))
+                {
+                    CompareZipFileLists(mapping, diffArchive, baselineArchive);
+                    await CompareZipAssemblyVersions(mapping, diffArchive, baselineArchive);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            mapping.EvaluationErrors.Add(e.ToString());
+        }
+    }
+
+    private void CompareZipFileLists(AssetMapping mapping, ZipArchive diffArchive, ZipArchive baselineArchive)
+    {
+        IEnumerable<string> baselineFiles = baselineArchive.Entries.Select(e => e.FullName);
+        IEnumerable<string> diffFiles = diffArchive.Entries.Select(e => e.FullName);
+
+        CompareBlobArchiveFileLists(mapping, baselineFiles, diffFiles);
+    }
+
+    private async Task CompareZipAssemblyVersions(AssetMapping mapping, ZipArchive diffArchive, ZipArchive baselineArchive)
+    {
+        IEnumerable<string> baselineFiles = baselineArchive.Entries.Select(e => e.FullName).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
+        IEnumerable<string> diffFiles = diffArchive.Entries.Select(e => e.FullName).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
+        foreach (var fileName in baselineFiles.Intersect(diffFiles))
+        {
+            try
+            {
+                using var baselineStream = await CopyStreamToSeekableStream(baselineArchive.GetEntry(fileName).Open());
+                using var testStream = await CopyStreamToSeekableStream(diffArchive.GetEntry(fileName).Open());
+                
+                CompareAssemblyVersions(mapping, fileName, baselineStream, testStream);
+            }
+            catch (Exception e)
+            {
+                mapping.EvaluationErrors.Add(e.ToString());
+            }
+        }
+    }
+
+    private static void CompareAssemblyVersions(AssetMapping mapping, string fileName, Stream baselineStream, Stream testStream)
+    {
+        // Ignore resource dlls
+        if (fileName.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        AssemblyName baselineAssemblyName = GetAssemblyName(baselineStream, fileName);
+        AssemblyName testAssemblyName = GetAssemblyName(testStream, fileName);
+        if ((baselineAssemblyName == null) != (testAssemblyName == null))
+        {
+            mapping.Issues.Add(new Issue
+            {
+                IssueType = IssueType.AssemblyVersionMismatch,
+                Description = $"Assembly '{fileName}' in blob '{mapping.Id}' has different versions in the VMR and base build."
+            });
+        }
+        else if (baselineAssemblyName == null && testAssemblyName == null)
+        {
+            return;
+        }
+
+        if (baselineAssemblyName.ToString() != testAssemblyName.ToString())
+        {
+            mapping.Issues.Add(new Issue
+            {
+                IssueType = IssueType.AssemblyVersionMismatch,
+                Description = $"Assembly '{fileName}' in blob '{mapping.Id}' has different versions in the VMR and base build. VMR version: {baselineAssemblyName}, base build version: {testAssemblyName}"
+            });
+        }
+    }
+
+    private static void CompareBlobArchiveFileLists(AssetMapping mapping, IEnumerable<string> baselineFiles, IEnumerable<string> diffFiles)
+    {
+        // Because these typically contain version numbers in their paths, we need to go and remove those.
+
+        var strippedBaselineFiles = baselineFiles.Select(f => VersionIdentifier.RemoveVersions(f)).ToList();
+        var strippedDiffFiles = diffFiles.Select(f => VersionIdentifier.RemoveVersions(f)).ToList();
+
+        var missingFiles = strippedBaselineFiles.Except(strippedDiffFiles);
+        foreach (var missingFile in missingFiles)
+        {
+            mapping.Issues.Add(new Issue
+            {
+                IssueType = IssueType.MissingPackageContent,
+                Description = $"Blob '{mapping.Id}' is missing the following files in the VMR: {string.Join(", ", missingFile)}"
+            });
+        }
+        // Compare the other way, and identify content in the VMR that is not in the baseline
+        var extraFiles = strippedDiffFiles.Except(strippedBaselineFiles);
+        foreach (var extraFile in extraFiles)
+        {
+            mapping.Issues.Add(new Issue
+            {
+                IssueType = IssueType.ExtraPackageContent,
+                Description = $"Blob '{mapping.Id}' has extra files in the VMR: {string.Join(", ", extraFile)}"
+            });
         }
     }
 
