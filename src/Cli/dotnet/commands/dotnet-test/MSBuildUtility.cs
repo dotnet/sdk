@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -41,23 +43,20 @@ namespace Microsoft.DotNet.Cli
             {
                 return (Array.Empty<TestModule>(), isBuiltOrRestored);
             }
-
-            IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions.BuildProperties), new ProjectCollection());
-
+          
+            IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), new ProjectCollection());
+          
             return (projects, isBuiltOrRestored);
         }
 
         public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
         {
-            IEnumerable<string> propertyTokens = GetPropertyTokens(parseResult.UnmatchedTokens);
             IEnumerable<string> binaryLoggerTokens = GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
 
             var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
-                .Concat(propertyTokens)
                 .Concat(binaryLoggerTokens);
 
             List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-            unmatchedTokens.RemoveAll(arg => propertyTokens.Contains(arg));
             unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
 
             PathOptions pathOptions = new(parseResult.GetValue(
@@ -77,6 +76,7 @@ namespace Microsoft.DotNet.Cli
                 parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
                 parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
                 degreeOfParallelism,
+                parseResult.GetValue(CommonOptions.PropertiesOption),
                 unmatchedTokens,
                 msbuildArgs);
         }
@@ -96,16 +96,7 @@ namespace Microsoft.DotNet.Cli
             return CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(parseResult.GetValue(CommonOptions.OperatingSystemOption), parseResult.GetValue(CommonOptions.ArchitectureOption));
         }
 
-        public static IEnumerable<string> GetPropertyTokens(IEnumerable<string> unmatchedTokens)
-        {
-            return unmatchedTokens.Where(token =>
-                token.StartsWith("--property:", StringComparison.OrdinalIgnoreCase) ||
-                token.StartsWith("/property:", StringComparison.OrdinalIgnoreCase) ||
-                token.StartsWith("-p:", StringComparison.OrdinalIgnoreCase) ||
-                token.StartsWith("/p:", StringComparison.OrdinalIgnoreCase));
-        }
-
-        public static IEnumerable<string> GetBinaryLoggerTokens(IEnumerable<string> args)
+        private static IEnumerable<string> GetBinaryLoggerTokens(IEnumerable<string> args)
         {
             return args.Where(arg =>
                 arg.StartsWith("/bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("/bl", StringComparison.OrdinalIgnoreCase) ||
@@ -139,7 +130,7 @@ namespace Microsoft.DotNet.Cli
                 new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
                 (project) =>
                 {
-                    IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions.BuildProperties), projectCollection);
+                    IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions), projectCollection);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);
@@ -149,9 +140,25 @@ namespace Microsoft.DotNet.Cli
             return allProjects;
         }
 
-        private static Dictionary<string, string> GetGlobalProperties(BuildProperties buildProperties)
+        private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
         {
             var globalProperties = new Dictionary<string, string>();
+            var buildProperties = buildOptions.BuildProperties;
+
+            foreach (var property in buildOptions.UserSpecifiedProperties)
+            {
+                foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
+                {
+                    if (globalProperties.TryGetValue(key, out var existingValues))
+                    {
+                        globalProperties[key] = $"{existingValues};{value}";
+                    }
+                    else
+                    {
+                        globalProperties[key] = value;
+                    }
+                }
+            }
 
             if (!string.IsNullOrEmpty(buildProperties.Configuration))
             {

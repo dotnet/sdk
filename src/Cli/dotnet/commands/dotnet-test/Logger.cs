@@ -15,6 +15,12 @@ namespace Microsoft.DotNet.Tools.Test
         {
             _traceFilePath = Environment.GetEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar);
             TraceEnabled = !string.IsNullOrEmpty(_traceFilePath);
+
+            string directoryPath = Path.GetDirectoryName(_traceFilePath);
+            if (!string.IsNullOrEmpty(directoryPath))
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
         }
 
         public static void LogTrace(Func<string> messageLog)
