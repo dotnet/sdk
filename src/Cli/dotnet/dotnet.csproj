@@ -34,9 +34,9 @@
   <ItemGroup>
     <EmbeddedResource Include="commands\dotnet-new\*.zip" />
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
-    <EmbeddedResource Update="*.resx" Namespace="Microsoft.DotNet.Tools" />
+    <EmbeddedResource Update="*.resx" Namespace="Microsoft.DotNet.Cli" />
     <EmbeddedResource Update="BuildServer\*.resx" Namespace="Microsoft.DotNet.Cli.BuildServer" />
-    <EmbeddedResource Update="CommandFactory\*.resx" Namespace="Microsoft.DotNet.CommandFactory" />
+    <EmbeddedResource Update="CommandFactory\*.resx" Namespace="Microsoft.DotNet.Cli.CommandFactory" />
     <EmbeddedResource Update="**\dotnet-package\add\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Add" />
     <EmbeddedResource Update="**\dotnet-reference-add\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Add" />
     <EmbeddedResource Update="**\dotnet-add\*.resx" Namespace="Microsoft.DotNet.Tools.Add" />
@@ -84,9 +84,9 @@
     <EmbeddedResource Update="**\dotnet-workload\search\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Search" />
     <EmbeddedResource Update="**\dotnet-workload\uninstall\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Uninstall" />
     <EmbeddedResource Update="**\dotnet-workload\update\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Update" />
-    <EmbeddedResource Update="Installer\Windows\*.resx" Namespace="Microsoft.DotNet.Installer.Windows" />
-    <EmbeddedResource Update="ToolManifest\*.resx" Namespace="Microsoft.DotNet.ToolManifest" />
-    <EmbeddedResource Update="NugetSearch\*.resx" Namespace="Microsoft.DotNet.NugetSearch" />
+    <EmbeddedResource Update="Installer\Windows\*.resx" Namespace="Microsoft.DotNet.Cli.Installer.Windows" />
+    <EmbeddedResource Update="ToolManifest\*.resx" Namespace="Microsoft.DotNet.Cli.ToolManifest" />
+    <EmbeddedResource Update="NugetSearch\*.resx" Namespace="Microsoft.DotNet.Cli.NugetSearch" />
     <EmbeddedResource Update="NugetPackageDownloader\*.resx" Namespace="Microsoft.DotNet.Cli.NuGetPackageDownloader" />
     <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
   </ItemGroup>

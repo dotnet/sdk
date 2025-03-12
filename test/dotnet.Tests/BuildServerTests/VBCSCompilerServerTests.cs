@@ -4,8 +4,8 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.BuildServer;
+using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
 using Moq;
 using NuGet.Frameworks;
 using LocalizableStrings = Microsoft.DotNet.Cli.BuildServer.LocalizableStrings;
