@@ -22,6 +22,11 @@
         <target state="translated">根據指定的復原定義檔更新工作負載。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">此功能帶未安裝任何工作負載。若要更新與舊版本 SDK 一起安裝的工作負載，請包含 --from-previous-sdk 選項。</target>
@@ -40,6 +45,11 @@
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">因為下列原因，所以無法更新工作負載 '{0}':</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">更新至復原檔案與工作負載集不相容。安裝和更新現在將使用鬆散的資訊清單。若要更新至特定工作負載版本，請使用 --version。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">

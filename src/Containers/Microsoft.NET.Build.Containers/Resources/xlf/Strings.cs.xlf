@@ -142,6 +142,11 @@
         <target state="translated">CONTAINER1008: Načtení přihlašovacích údajů pro „{0}“ se nezdařilo: {1}</target>
         <note>{StrBegin="CONTAINER1008: "}</note>
       </trans-unit>
+      <trans-unit id="GenerateDigestLabelWithoutGenerateLabels">
+        <source>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</source>
+        <target state="translated">CONTAINER2030: GenerateLabels bylo zakázáno, ale bylo povoleno GenerateDigestLabel – nebude vytvořen žádný popisek přehledu.</target>
+        <note>{StrBegin="CONTAINER2030: "}</note>
+      </trans-unit>
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
         <target state="translated">Nebyl zjištěn žádný objekt hostitele.</target>
