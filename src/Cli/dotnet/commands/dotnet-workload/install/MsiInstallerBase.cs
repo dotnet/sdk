@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="logFile">Full path of the log file</param>
         /// <returns>Error code indicating the result of the operation</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
+        protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
             var installStateContents = InstallStateContents.FromPath(path);

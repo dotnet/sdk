@@ -72,6 +72,33 @@ public sealed class LayerEndToEndTests : IDisposable
         // }
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/40511
+    public void SingleFileInHiddenFolder()
+    {
+        using TransientTestFolder folder = new();
+
+        string childDirectory = Path.Join(folder.Path, "wwwroot");
+        string grandchildDirectory = Path.Join(childDirectory, ".well-known");
+
+        Directory.CreateDirectory(childDirectory);
+        Directory.CreateDirectory(grandchildDirectory);
+
+        string testFilePath = Path.Join(grandchildDirectory, "TestFile.txt");
+        string testString = $"Test content for {nameof(SingleFileInHiddenFolder)}";
+
+        File.WriteAllText(testFilePath, testString);
+
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2);
+
+        VerifyDescriptorInfo(l);
+
+        var allEntries = LoadAllTarEntries(l.BackingFile);
+        Assert.True(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
+        Assert.True(allEntries.TryGetValue("app/wwwroot", out var wwwrootEntry) && wwwrootEntry.EntryType == TarEntryType.Directory, "Missing app/wwwroot directory entry");
+        Assert.True(allEntries.TryGetValue("app/wwwroot/.well-known", out var wellKnownEntry) && wellKnownEntry.EntryType == TarEntryType.Directory, "Missing app/wwwroot/.well-known directory entry");
+        Assert.True(allEntries.TryGetValue("app/wwwroot/.well-known/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing app/wwwroot/.well-known/TestFile.txt file entry");
+    }
+
     private static void VerifyDescriptorInfo(Layer l)
     {
         Assert.Equal(l.Descriptor.Size, new FileInfo(l.BackingFile).Length);
