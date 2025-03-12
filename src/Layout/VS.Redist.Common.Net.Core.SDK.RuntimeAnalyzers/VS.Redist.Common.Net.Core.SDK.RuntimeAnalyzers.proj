@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
-    <ProjectReference Include="$(RepoRoot)src\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Layout\redist\redist.csproj" />
   </ItemGroup>
 
   <!-- Shared infra to build and use the sdk-tasks -->
