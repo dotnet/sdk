@@ -234,6 +234,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TestingPlatformOptions.TestModulesRootDirectoryOption);
             command.Options.Add(TestingPlatformOptions.MaxParallelTestModulesOption);
             command.Options.Add(CommonOptions.ArchitectureOption);
+            command.Options.Add(CommonOptions.PropertiesOption);
             command.Options.Add(TestingPlatformOptions.ConfigurationOption);
             command.Options.Add(TestingPlatformOptions.FrameworkOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
