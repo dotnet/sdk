@@ -42,7 +42,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             public string PipeName { get; }
 
-            public async override Task<Connection> WaitForConnectionAsync(CancellationToken cancellationToken)
+            public override async Task<Connection> WaitForConnectionAsync(CancellationToken cancellationToken)
             {
                 // Create the pipe and begin waiting for a connection. This  doesn't block, but could fail 
                 // in certain circumstances, such as the OS refusing to create the pipe for some reason 
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 Identifier = identifier;
             }
 
-            public async override Task WaitForDisconnectAsync(CancellationToken cancellationToken)
+            public override async Task WaitForDisconnectAsync(CancellationToken cancellationToken)
             {
                 if (!(Stream is PipeStream pipeStream))
                 {
@@ -107,7 +107,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     try
                     {
                         ServerLogger.Log($"Before poking pipe {Identifier}.");
+#pragma warning disable CA2022 // Avoid inexact read
                         await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
+#pragma warning restore CA2022
                         ServerLogger.Log($"After poking pipe {Identifier}.");
                     }
                     catch (OperationCanceledException)

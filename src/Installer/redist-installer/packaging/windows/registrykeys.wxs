@@ -1,0 +1,19 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?include "Variables.wxi" ?>
+  <Fragment>
+    <ComponentGroup Id="AuthoredRegistryKeys_x86node">
+      <Component Id="SetupRegistry" Directory="TARGETDIR" Win64="no">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\$(var.Platform)\sdk">
+          <RegistryValue Action="write" Name="$(var.NugetVersion)" Type="integer" Value="1" KeyPath="yes"/>
+        </RegistryKey>
+      </Component>
+      <!--- The 'WpfWinformsTemplatesFlag' registry key is meant to be a temporary solution for Visual Studio 16.0 -->
+      <!--- https://devdiv.visualstudio.com/DevDiv/_workitems/edit/676485 -->
+      <Component Id="WpfWinformsTemplatesFlag" Directory="TARGETDIR" Win64="no">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\SDKFeatures">
+          <RegistryValue Action="write" Name="WpfWinformsTemplates" Type="integer" Value="1" KeyPath="yes"/>
+        </RegistryKey>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

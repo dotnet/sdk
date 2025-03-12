@@ -160,4 +160,8 @@
   <data name="PackageIdArgumentName" xml:space="preserve">
     <value>PACKAGE_ID</value>
   </data>
+  <data name="ToolListFormatOptionDescription" xml:space="preserve">
+    <value>The output format for the list of tools.</value>
+    <comment/>
+  </data>
 </root>
