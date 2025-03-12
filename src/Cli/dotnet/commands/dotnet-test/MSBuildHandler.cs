@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli
 
             if (msBuildExitCode != ExitCode.Success)
             {
-                _output.WriteMessage(string.Format(Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
+                _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
                 return false;
             }
 
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Cli
 
                 _output.WriteMessage(
                     string.Format(
-                        Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
+                        Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
                         string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
                     new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
 
@@ -151,15 +151,20 @@ namespace Microsoft.DotNet.Cli
                 return;
             }
 
+            var logMessageBuilder = new StringBuilder();
+
             foreach (var module in modules)
             {
-                Logger.LogTrace(() => $"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
-                Logger.LogTrace(() => $"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
-                Logger.LogTrace(() => $"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
-                Logger.LogTrace(() => $"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-                Logger.LogTrace(() => $"{ProjectProperties.TargetPath}: {module.TargetPath}");
-                Logger.LogTrace(() => $"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.TargetPath}: {module.TargetPath}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
+                logMessageBuilder.AppendLine();
             }
+
+            Logger.LogTrace(() => logMessageBuilder.ToString());
         }
 
         public void Dispose()

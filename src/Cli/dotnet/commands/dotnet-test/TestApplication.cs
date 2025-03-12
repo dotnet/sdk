@@ -134,17 +134,17 @@ namespace Microsoft.DotNet.Cli
             catch (OperationCanceledException ex)
             {
                 // We are exiting
-                if (VSTestTrace.TraceEnabled)
+                if (Logger.TraceEnabled)
                 {
                     string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
-                    VSTestTrace.SafeWriteTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
+                    Logger.LogTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
                 }
             }
             catch (Exception ex)
             {
-                if (VSTestTrace.TraceEnabled)
+                if (Logger.TraceEnabled)
                 {
-                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                    Logger.LogTrace(() => ex.ToString());
                 }
 
                 Environment.FailFast(ex.ToString());
@@ -188,9 +188,9 @@ namespace Microsoft.DotNet.Cli
 
                     // If we don't recognize the message, log and skip it
                     case UnknownMessage unknownMessage:
-                        if (VSTestTrace.TraceEnabled)
+                        if (Logger.TraceEnabled)
                         {
-                            VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                            Logger.LogTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
                         }
                         return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
@@ -201,9 +201,9 @@ namespace Microsoft.DotNet.Cli
             }
             catch (Exception ex)
             {
-                if (VSTestTrace.TraceEnabled)
+                if (Logger.TraceEnabled)
                 {
-                    VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                    Logger.LogTrace(() => ex.ToString());
                 }
 
                 Environment.FailFast(ex.ToString());
@@ -237,9 +237,9 @@ namespace Microsoft.DotNet.Cli
 
         private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (Logger.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
+                Logger.LogTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
             }
 
             var process = Process.Start(processStartInfo);
@@ -400,13 +400,11 @@ namespace Microsoft.DotNet.Cli
             {
                 builder.Append($"{ProjectProperties.ProjectFullPath}: {_module.ProjectFullPath}");
             }
-            ;
 
             if (!string.IsNullOrEmpty(_module.TargetFramework))
             {
                 builder.Append($"{ProjectProperties.TargetFramework} : {_module.TargetFramework}");
             }
-            ;
 
             return builder.ToString();
         }

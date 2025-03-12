@@ -65,12 +65,9 @@ namespace Microsoft.DotNet.Cli
                         test.Uid);
             }
 
-            if (!Logger.TraceEnabled) return;
-
-            Logger.LogTrace(() => $"DiscoveredTests Execution Id: {args.ExecutionId}");
-            foreach (var discoveredTestMessage in args.DiscoveredTests)
+            if (Logger.TraceEnabled)
             {
-                Logger.LogTrace(() => $"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
+                LogDiscoveredTests(args);
             }
         }
 
@@ -108,22 +105,9 @@ namespace Microsoft.DotNet.Cli
                     errorOutput: null);
             }
 
-            if (!Logger.TraceEnabled) return;
-
-            Logger.LogTrace(() => $"TestResults Execution Id: {args.ExecutionId}");
-
-            foreach (SuccessfulTestResult successfulTestResult in args.SuccessfulTestResults)
+            if (Logger.TraceEnabled)
             {
-                Logger.LogTrace(() => $"SuccessfulTestResult: {successfulTestResult.Uid}, {successfulTestResult.DisplayName}, " +
-                $"{successfulTestResult.State}, {successfulTestResult.Duration}, {successfulTestResult.Reason}, {successfulTestResult.StandardOutput}," +
-                $"{successfulTestResult.ErrorOutput}, {successfulTestResult.SessionUid}");
-            }
-
-            foreach (FailedTestResult failedTestResult in args.FailedTestResults)
-            {
-                Logger.LogTrace(() => $"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
-                $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", failedTestResult.Exceptions?.Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
-                $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
+                LogTestResults(args);
             }
         }
 
@@ -140,15 +124,9 @@ namespace Microsoft.DotNet.Cli
                     artifact.TestDisplayName, artifact.FullPath);
             }
 
-            if (!Logger.TraceEnabled) return;
-
-            Logger.LogTrace(() => $"FileArtifactMessages Execution Id: {args.ExecutionId}");
-
-            foreach (FileArtifact fileArtifactMessage in args.FileArtifacts)
+            if (Logger.TraceEnabled)
             {
-                Logger.LogTrace(() => $"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
-                $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
-                $"{fileArtifactMessage.SessionUid}");
+                LogFileArtifacts(args);
             }
         }
 
@@ -180,21 +158,9 @@ namespace Microsoft.DotNet.Cli
                 _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
             }
 
-            if (!Logger.TraceEnabled) return;
-
-            if (args.ExitCode != ExitCode.Success)
+            if (Logger.TraceEnabled)
             {
-                Logger.LogTrace(() => $"Test Process exited with non-zero exit code: {args.ExitCode}");
-            }
-
-            if (args.OutputData.Count > 0)
-            {
-                Logger.LogTrace(() => $"Output Data: {string.Join("\n", args.OutputData)}");
-            }
-
-            if (args.ErrorData.Count > 0)
-            {
-                Logger.LogTrace(() => $"Error Data: {string.Join("\n", args.ErrorData)}");
+                LogTestProcessExit(args);
             }
         }
 
@@ -214,6 +180,80 @@ namespace Microsoft.DotNet.Cli
                 TestStates.Cancelled => TestOutcome.Canceled,
                 _ => throw new ArgumentOutOfRangeException(nameof(testState), $"Invalid test state value {testState}")
             };
+        }
+
+        private static void LogDiscoveredTests(DiscoveredTestEventArgs args)
+        {
+            var logMessageBuilder = new StringBuilder();
+
+            logMessageBuilder.AppendLine($"DiscoveredTests Execution Id: {args.ExecutionId}");
+            foreach (var discoveredTestMessage in args.DiscoveredTests)
+            {
+                logMessageBuilder.AppendLine($"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
+            }
+
+            Logger.LogTrace(() => logMessageBuilder.ToString());
+        }
+
+        private static void LogTestResults(TestResultEventArgs args)
+        {
+            var logMessageBuilder = new StringBuilder();
+
+            logMessageBuilder.AppendLine($"TestResults Execution Id: {args.ExecutionId}");
+
+            foreach (SuccessfulTestResult successfulTestResult in args.SuccessfulTestResults)
+            {
+                logMessageBuilder.AppendLine($"SuccessfulTestResult: {successfulTestResult.Uid}, {successfulTestResult.DisplayName}, " +
+                    $"{successfulTestResult.State}, {successfulTestResult.Duration}, {successfulTestResult.Reason}, {successfulTestResult.StandardOutput}," +
+                    $"{successfulTestResult.ErrorOutput}, {successfulTestResult.SessionUid}");
+            }
+
+            foreach (FailedTestResult failedTestResult in args.FailedTestResults)
+            {
+                logMessageBuilder.AppendLine($"FailedTestResult: {failedTestResult.Uid}, {failedTestResult.DisplayName}, " +
+                    $"{failedTestResult.State}, {failedTestResult.Duration}, {failedTestResult.Reason}, {string.Join(", ", failedTestResult.Exceptions?.Select(e => $"{e.ErrorMessage}, {e.ErrorType}, {e.StackTrace}"))}" +
+                    $"{failedTestResult.StandardOutput}, {failedTestResult.ErrorOutput}, {failedTestResult.SessionUid}");
+            }
+
+            Logger.LogTrace(() => logMessageBuilder.ToString());
+        }
+
+        private static void LogFileArtifacts(FileArtifactEventArgs args)
+        {
+            var logMessageBuilder = new StringBuilder();
+
+            logMessageBuilder.AppendLine($"FileArtifactMessages Execution Id: {args.ExecutionId}");
+
+            foreach (FileArtifact fileArtifactMessage in args.FileArtifacts)
+            {
+                logMessageBuilder.AppendLine($"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
+                    $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
+                    $"{fileArtifactMessage.SessionUid}");
+            }
+
+            Logger.LogTrace(() => logMessageBuilder.ToString());
+        }
+
+        private static void LogTestProcessExit(TestProcessExitEventArgs args)
+        {
+            var logMessageBuilder = new StringBuilder();
+
+            if (args.ExitCode != ExitCode.Success)
+            {
+                logMessageBuilder.AppendLine($"Test Process exited with non-zero exit code: {args.ExitCode}");
+            }
+
+            if (args.OutputData.Count > 0)
+            {
+                logMessageBuilder.AppendLine($"Output Data: {string.Join("\n", args.OutputData)}");
+            }
+
+            if (args.ErrorData.Count > 0)
+            {
+                logMessageBuilder.AppendLine($"Error Data: {string.Join("\n", args.ErrorData)}");
+            }
+
+            Logger.LogTrace(() => logMessageBuilder.ToString());
         }
     }
 }

@@ -4,10 +4,8 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Test;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.Testing.Platform.Helpers;
-using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli
@@ -40,7 +38,7 @@ namespace Microsoft.DotNet.Cli
 
                 BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
                 _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
-                TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue);
+                TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
 
                 _eventHandlers = new TestApplicationsEventHandlers(_executions, _output);
 
