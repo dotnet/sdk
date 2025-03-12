@@ -3,7 +3,6 @@
 
 using System.Text.RegularExpressions;
 using FluentAssertions;
-using FluentAssertions.Execution;
 
 namespace Microsoft.TemplateEngine.CommandUtils
 {
@@ -18,29 +17,25 @@ namespace Microsoft.TemplateEngine.CommandUtils
 
         internal AndConstraint<CommandResultAssertions> ExitWith(int expectedExitCode)
         {
-            Execute.Assertion.ForCondition(_commandResult.ExitCode == expectedExitCode)
-                .FailWith(AppendDiagnosticsTo($"Expected command to exit with {expectedExitCode} but it did not."));
+            _commandResult.ExitCode.Should().Be(expectedExitCode, AppendDiagnosticsTo($"Expected command to exit with {expectedExitCode} but it did not."));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         internal AndConstraint<CommandResultAssertions> Pass()
         {
-            Execute.Assertion.ForCondition(_commandResult.ExitCode == 0)
-                .FailWith(AppendDiagnosticsTo($"Expected command to pass but it did not."));
+            _commandResult.ExitCode.Should().Be(0, AppendDiagnosticsTo("Expected command to pass but it did not."));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         internal AndConstraint<CommandResultAssertions> Fail()
         {
-            Execute.Assertion.ForCondition(_commandResult.ExitCode != 0)
-                .FailWith(AppendDiagnosticsTo($"Expected command to fail but it did not."));
+            _commandResult.ExitCode.Should().NotBe(0, AppendDiagnosticsTo("Expected command to fail but it did not."));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
         internal AndConstraint<CommandResultAssertions> HaveStdOut()
         {
-            Execute.Assertion.ForCondition(!string.IsNullOrEmpty(_commandResult.StdOut))
-                .FailWith(AppendDiagnosticsTo("Command did not output anything to stdout"));
+            _commandResult.StdOut.Should().NotBeNullOrEmpty(AppendDiagnosticsTo("Command did not output anything to stdout"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -50,8 +45,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(_commandResult.StdOut.Equals(expectedOutput, StringComparison.Ordinal))
-                .FailWith(AppendDiagnosticsTo($"Command did not output with Expected Output. Expected: {expectedOutput}"));
+            _commandResult.StdOut.Should().Be(expectedOutput, AppendDiagnosticsTo($"Command did not output with Expected Output. Expected: {expectedOutput}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -61,8 +55,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(_commandResult.StdOut.Contains(pattern))
-                .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result: {pattern}{Environment.NewLine}"));
+            _commandResult.StdOut.Should().Contain(pattern, AppendDiagnosticsTo($"The command output did not contain expected result: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -72,8 +65,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(predicate(_commandResult.StdOut))
-                .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result: {description} {Environment.NewLine}"));
+            predicate(_commandResult.StdOut).Should().BeTrue(AppendDiagnosticsTo($"The command output did not contain expected result: {description} {Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -83,8 +75,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(!_commandResult.StdOut.Contains(pattern))
-                .FailWith(AppendDiagnosticsTo($"The command output contained a result it should not have contained: {pattern}{Environment.NewLine}"));
+            _commandResult.StdOut.Should().NotContain(pattern, AppendDiagnosticsTo($"The command output contained a result it should not have contained: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -95,11 +86,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
             string commandResultNoSpaces = _commandResult.StdOut.Replace(" ", string.Empty);
-
-            Execute.Assertion
-                .ForCondition(commandResultNoSpaces.Contains(pattern))
-                .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result: {pattern}{Environment.NewLine}"));
-
+            commandResultNoSpaces.Should().Contain(pattern, AppendDiagnosticsTo($"The command output did not contain expected result: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -109,8 +96,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(_commandResult.StdOut.Contains(pattern, StringComparison.OrdinalIgnoreCase))
-                .FailWith(AppendDiagnosticsTo($"The command output did not contain expected result (ignoring case): {pattern}{Environment.NewLine}"));
+            _commandResult.StdOut.Should().ContainEquivalentOf(pattern, AppendDiagnosticsTo($"The command output did not contain expected result (ignoring case): {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -120,8 +106,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(Regex.Match(_commandResult.StdOut, pattern, options).Success)
-                .FailWith(AppendDiagnosticsTo($"Matching the command output failed. Pattern: {pattern}{Environment.NewLine}"));
+            Regex.Match(_commandResult.StdOut, pattern, options).Success.Should().BeTrue(AppendDiagnosticsTo($"Matching the command output failed. Pattern: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -131,8 +116,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(!Regex.Match(_commandResult.StdOut, pattern, options).Success)
-                .FailWith(AppendDiagnosticsTo($"The command output matched a pattern it should not have. Pattern: {pattern}{Environment.NewLine}"));
+            Regex.Match(_commandResult.StdOut, pattern, options).Success.Should().BeFalse(AppendDiagnosticsTo($"The command output matched a pattern it should not have. Pattern: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -142,8 +126,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(!string.IsNullOrEmpty(_commandResult.StdErr))
-                .FailWith(AppendDiagnosticsTo("Command did not output anything to StdErr."));
+            _commandResult.StdErr.Should().NotBeNullOrEmpty(AppendDiagnosticsTo("Command did not output anything to StdErr."));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -153,8 +136,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Execute.Assertion.ForCondition(_commandResult.StdErr.Equals(expectedOutput, StringComparison.Ordinal))
-                .FailWith(AppendDiagnosticsTo($"Command did not output the expected output to StdErr.{Environment.NewLine}Expected: {expectedOutput}{Environment.NewLine}Actual:   {_commandResult.StdErr}"));
+            _commandResult.StdErr.Should().Be(expectedOutput, AppendDiagnosticsTo($"Command did not output the expected output to StdErr.{Environment.NewLine}Expected: {expectedOutput}{Environment.NewLine}Actual:   {_commandResult.StdErr}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -164,8 +146,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Execute.Assertion.ForCondition(_commandResult.StdErr.Contains(pattern))
-                .FailWith(AppendDiagnosticsTo($"The command error output did not contain expected result: {pattern}{Environment.NewLine}"));
+            _commandResult.StdErr.Should().Contain(pattern, AppendDiagnosticsTo($"The command error output did not contain expected result: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -175,8 +156,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Execute.Assertion.ForCondition(!_commandResult.StdErr.Contains(pattern))
-                .FailWith(AppendDiagnosticsTo($"The command error output contained a result it should not have contained: {pattern}{Environment.NewLine}"));
+            _commandResult.StdErr.Should().NotContain(pattern, AppendDiagnosticsTo($"The command error output contained a result it should not have contained: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -186,8 +166,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Execute.Assertion.ForCondition(Regex.Match(_commandResult.StdErr, pattern, options).Success)
-                .FailWith(AppendDiagnosticsTo($"Matching the command error output failed. Pattern: {pattern}{Environment.NewLine}"));
+            Regex.Match(_commandResult.StdErr, pattern, options).Success.Should().BeTrue(AppendDiagnosticsTo($"Matching the command error output failed. Pattern: {pattern}{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -197,8 +176,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Execute.Assertion.ForCondition(string.IsNullOrEmpty(_commandResult.StdOut))
-                .FailWith(AppendDiagnosticsTo($"Expected command to not output to stdout but it was not:"));
+            _commandResult.StdOut.Should().BeNullOrEmpty(AppendDiagnosticsTo($"Expected command to not output to stdout but it was not:"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
@@ -208,8 +186,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Execute.Assertion.ForCondition(string.IsNullOrEmpty(_commandResult.StdErr))
-                .FailWith(AppendDiagnosticsTo("Expected command to not output to stderr but it was not:"));
+            _commandResult.StdErr.Should().BeNullOrEmpty(AppendDiagnosticsTo("Expected command to not output to stderr but it was not:"));
             return new AndConstraint<CommandResultAssertions>(this);
         }
 
