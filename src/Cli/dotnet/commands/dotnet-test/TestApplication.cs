@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (testOptions.HasFilterMode && !ModulePathExists())
             {
-                return 1;
+                return ExitCode.GenericFailure;
             }
 
             bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
