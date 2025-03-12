@@ -3,13 +3,8 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <OSName Condition="'$(OSName)' == '' AND $(Rid) != ''">$(Rid.Substring(0, $(Rid.LastIndexOf('-'))))</OSName>
-    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
     <PortableOSName Condition=" '$(PortableOSName)' == '' ">$(OSName)</PortableOSName>
-
-    <Rid>$(OSName)-$(Architecture)</Rid>
     <PortableRid>$(PortableOSName)-$(Architecture)</PortableRid>
-    <ProductMonikerRid Condition="'$(ProductMonikerRid)' == ''">$(Rid)</ProductMonikerRid>
 
     <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(PortableRid)</PortableProductMonikerRid>
   </PropertyGroup>
