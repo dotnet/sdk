@@ -239,6 +239,11 @@ namespace Microsoft.DotNet.Cli
 
         private static void LogTestProcessExit(TestProcessExitEventArgs args)
         {
+            if (!Logger.TraceEnabled)
+            {
+                return;
+            }
+
             var logMessageBuilder = new StringBuilder();
 
             if (args.ExitCode != ExitCode.Success)
