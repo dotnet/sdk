@@ -19,6 +19,14 @@ namespace Microsoft.DotNet.Tools.Run
             return FromParseResult(parseResult);
         }
 
+        internal static bool IsBinLogArgument(string arg)
+        {
+            const StringComparison comp = StringComparison.OrdinalIgnoreCase;
+            return arg.StartsWith("/bl:", comp) || arg.Equals("/bl", comp)
+                || arg.StartsWith("--binaryLogger:", comp) || arg.Equals("--binaryLogger", comp)
+                || arg.StartsWith("-bl:", comp) || arg.Equals("-bl", comp);
+        }
+
         public static RunCommand FromParseResult(ParseResult parseResult)
         {
             if (parseResult.UsingRunCommandShorthandProjectOption())
@@ -37,10 +45,7 @@ namespace Microsoft.DotNet.Tools.Run
             var nonBinLogArgs = new List<string>();
             foreach (var arg in applicationArguments)
             {
-
-                if (arg.StartsWith("/bl:") || arg.Equals("/bl")
-                    || arg.StartsWith("--binaryLogger:") || arg.Equals("--binaryLogger")
-                    || arg.StartsWith("-bl:") || arg.Equals("-bl"))
+                if (IsBinLogArgument(arg))
                 {
                     binlogArgs.Add(arg);
                 }
