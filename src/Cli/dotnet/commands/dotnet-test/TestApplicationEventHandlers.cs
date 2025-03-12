@@ -65,10 +65,7 @@ namespace Microsoft.DotNet.Cli
                         test.Uid);
             }
 
-            if (Logger.TraceEnabled)
-            {
-                LogDiscoveredTests(args);
-            }
+            LogDiscoveredTests(args);
         }
 
         public void OnTestResultsReceived(object sender, TestResultEventArgs args)
@@ -105,10 +102,7 @@ namespace Microsoft.DotNet.Cli
                     errorOutput: null);
             }
 
-            if (Logger.TraceEnabled)
-            {
-                LogTestResults(args);
-            }
+            LogTestResults(args);
         }
 
         public void OnFileArtifactsReceived(object sender, FileArtifactEventArgs args)
@@ -124,10 +118,7 @@ namespace Microsoft.DotNet.Cli
                     artifact.TestDisplayName, artifact.FullPath);
             }
 
-            if (Logger.TraceEnabled)
-            {
-                LogFileArtifacts(args);
-            }
+            LogFileArtifacts(args);
         }
 
         public void OnSessionEventReceived(object sender, SessionEventArgs args)
@@ -158,10 +149,7 @@ namespace Microsoft.DotNet.Cli
                 _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
             }
 
-            if (Logger.TraceEnabled)
-            {
-                LogTestProcessExit(args);
-            }
+            LogTestProcessExit(args);
         }
 
         public void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
@@ -184,6 +172,11 @@ namespace Microsoft.DotNet.Cli
 
         private static void LogDiscoveredTests(DiscoveredTestEventArgs args)
         {
+            if (!Logger.TraceEnabled)
+            {
+                return;
+            }
+
             var logMessageBuilder = new StringBuilder();
 
             logMessageBuilder.AppendLine($"DiscoveredTests Execution Id: {args.ExecutionId}");
@@ -197,6 +190,11 @@ namespace Microsoft.DotNet.Cli
 
         private static void LogTestResults(TestResultEventArgs args)
         {
+            if (!Logger.TraceEnabled)
+            {
+                return;
+            }
+
             var logMessageBuilder = new StringBuilder();
 
             logMessageBuilder.AppendLine($"TestResults Execution Id: {args.ExecutionId}");
@@ -220,6 +218,11 @@ namespace Microsoft.DotNet.Cli
 
         private static void LogFileArtifacts(FileArtifactEventArgs args)
         {
+            if (!Logger.TraceEnabled)
+            {
+                return;
+            }
+
             var logMessageBuilder = new StringBuilder();
 
             logMessageBuilder.AppendLine($"FileArtifactMessages Execution Id: {args.ExecutionId}");
@@ -245,12 +248,12 @@ namespace Microsoft.DotNet.Cli
 
             if (args.OutputData.Count > 0)
             {
-                logMessageBuilder.AppendLine($"Output Data: {string.Join("\n", args.OutputData)}");
+                logMessageBuilder.AppendLine($"Output Data: {string.Join(Environment.NewLine, args.OutputData)}");
             }
 
             if (args.ErrorData.Count > 0)
             {
-                logMessageBuilder.AppendLine($"Error Data: {string.Join("\n", args.ErrorData)}");
+                logMessageBuilder.AppendLine($"Error Data: {string.Join(Environment.NewLine, args.ErrorData)}");
             }
 
             Logger.LogTrace(() => logMessageBuilder.ToString());
