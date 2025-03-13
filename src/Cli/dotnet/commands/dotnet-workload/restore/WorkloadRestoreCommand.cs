@@ -134,10 +134,11 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
                 .Select(Path.GetFullPath).ToList();
         }
 
-        foreach (string file in slnFiles)
+        foreach (string solutionFilePath in slnFiles)
         {
-            var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(file);
-            projectFiles.AddRange(solutionFile.SolutionProjects.Select(p => p.FilePath));
+            var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath);
+            projectFiles.AddRange(solutionFile.SolutionProjects.Select(
+                p => Path.GetFullPath(p.FilePath, Path.GetDirectoryName(solutionFilePath))));
         }
 
         if (projectFiles.Count == 0)

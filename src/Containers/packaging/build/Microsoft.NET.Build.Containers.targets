@@ -258,8 +258,8 @@
                     BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
-                    ImageFormat="$(ContainerImageFormat)"
                     BaseImageDigest="$(ContainerBaseDigest)"
+                    ImageFormat="$(ContainerImageFormat)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
@@ -343,7 +343,7 @@
     <MSBuild
         Projects="@(_InnerBuild)"
         Targets="Publish;_ParseItemsForPublishingSingleContainer;_PublishSingleContainer"
-        BuildInParallel="true">
+        BuildInParallel="$([MSBuild]::ValueOrDefault('$(ContainerPublishInParallel)', 'true'))">
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
 

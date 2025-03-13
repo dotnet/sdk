@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli;
 /// Because of this, it is 'impossible' for the project file to correctly influence the value of Configuration.
 /// This class allows evaluation of Configuration properties set in the project file before build time by giving back a global Configuration property to inject while building.
 /// </summary>
-class ReleasePropertyProjectLocator
+internal class ReleasePropertyProjectLocator
 {
     public struct DependentCommandOptions
     {
@@ -27,7 +27,6 @@ class ReleasePropertyProjectLocator
         public DependentCommandOptions(IEnumerable<string> slnOrProjectArgs, string? configOption = null, string? frameworkOption = null)
         => (SlnOrProjectArgs, ConfigurationOption, FrameworkOption) = (slnOrProjectArgs, configOption, frameworkOption);
     }
-
 
     private ParseResult _parseResult;
     private string _propertyToCheck;
@@ -100,7 +99,6 @@ class ReleasePropertyProjectLocator
         return nothing;
     }
 
-
     /// <summary>
     /// Mirror the MSBuild logic for discovering a project or a solution and find that item.
     /// </summary>
@@ -171,7 +169,7 @@ class ReleasePropertyProjectLocator
         Parallel.ForEach(sln.SolutionProjects.AsEnumerable(), (project, state) =>
         {
 #pragma warning disable CS8604 // Possible null reference argument.
-            string projectFullPath = Path.Combine(Path.GetDirectoryName(slnFullPath), project.FilePath);
+            string projectFullPath = Path.GetFullPath(project.FilePath, Path.GetDirectoryName(slnFullPath));
 #pragma warning restore CS8604 // Possible null reference argument.
             if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                 return;
@@ -215,7 +213,7 @@ class ReleasePropertyProjectLocator
         foreach (var project in sln.SolutionProjects.AsEnumerable())
         {
 #pragma warning disable CS8604 // Possible null reference argument.
-            string projectFullPath = Path.Combine(Path.GetDirectoryName(slnPath), project.FilePath);
+            string projectFullPath = Path.GetFullPath(project.FilePath, Path.GetDirectoryName(slnPath));
 #pragma warning restore CS8604 // Possible null reference argument.
             if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                 continue;

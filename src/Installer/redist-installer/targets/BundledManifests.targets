@@ -52,7 +52,8 @@
   </ItemGroup>
 
   <Target Name="ValidateBundledManifestSigning"
-          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' ">
+          Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm'"
+          BeforeTargets="GenerateWorkloadManifestsWxs">
     <PropertyGroup>
       <SignCheckExe>$(PkgMicrosoft_DotNet_SignCheck)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckExe>
       <SignCheckLog Condition="'$(SignCheckLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.log</SignCheckLog>
