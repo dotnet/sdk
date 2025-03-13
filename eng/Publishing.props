@@ -29,7 +29,7 @@
 
   <Target Name="GetNonStableProductVersion">
     <!-- Retrieve the non-stable product version. -->
-    <MSBuild Projects="$(RepoRoot)src/Installer/redist-installer/redist-installer.csproj"
+    <MSBuild Projects="$(RepoRoot)src/Installer/redist-installer/redist-installer.proj"
              Targets="ReturnProductVersion">
       <Output TaskParameter="TargetOutputs" PropertyName="NonStableProductVersion" />
     </MSBuild>
