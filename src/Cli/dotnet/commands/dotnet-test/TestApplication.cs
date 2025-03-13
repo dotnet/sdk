@@ -50,7 +50,7 @@ internal sealed class TestApplication : IDisposable
     {
         if (testOptions.HasFilterMode && !ModulePathExists())
         {
-            return 1;
+            return ExitCode.GenericFailure;
         }
 
         bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
@@ -134,17 +134,17 @@ internal sealed class TestApplication : IDisposable
         catch (OperationCanceledException ex)
         {
             // We are exiting
-            if (VSTestTrace.TraceEnabled)
+            if (Logger.TraceEnabled)
             {
                 string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
-                VSTestTrace.SafeWriteTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
+                Logger.LogTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
             }
         }
         catch (Exception ex)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (Logger.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                Logger.LogTrace(() => ex.ToString());
             }
 
             Environment.FailFast(ex.ToString());
@@ -188,9 +188,9 @@ internal sealed class TestApplication : IDisposable
 
                 // If we don't recognize the message, log and skip it
                 case UnknownMessage unknownMessage:
-                    if (VSTestTrace.TraceEnabled)
+                    if (Logger.TraceEnabled)
                     {
-                        VSTestTrace.SafeWriteTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                        Logger.LogTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
                     }
                     return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
@@ -201,9 +201,9 @@ internal sealed class TestApplication : IDisposable
         }
         catch (Exception ex)
         {
-            if (VSTestTrace.TraceEnabled)
+            if (Logger.TraceEnabled)
             {
-                VSTestTrace.SafeWriteTrace(() => ex.ToString());
+                Logger.LogTrace(() => ex.ToString());
             }
 
             Environment.FailFast(ex.ToString());
@@ -237,9 +237,9 @@ internal sealed class TestApplication : IDisposable
 
     private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
     {
-        if (VSTestTrace.TraceEnabled)
+        if (Logger.TraceEnabled)
         {
-            VSTestTrace.SafeWriteTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
+            Logger.LogTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
         }
 
         var process = Process.Start(processStartInfo);
@@ -400,13 +400,11 @@ internal sealed class TestApplication : IDisposable
         {
             builder.Append($"{ProjectProperties.ProjectFullPath}: {_module.ProjectFullPath}");
         }
-        ;
 
         if (!string.IsNullOrEmpty(_module.TargetFramework))
         {
             builder.Append($"{ProjectProperties.TargetFramework} : {_module.TargetFramework}");
         }
-        ;
 
         return builder.ToString();
     }

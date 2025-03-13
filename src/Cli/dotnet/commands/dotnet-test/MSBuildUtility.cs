@@ -41,9 +41,9 @@ internal static class MSBuildUtility
         {
             return (Array.Empty<TestModule>(), isBuiltOrRestored);
         }
-      
+
         IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), new ProjectCollection());
-      
+
         return (projects, isBuiltOrRestored);
     }
 
