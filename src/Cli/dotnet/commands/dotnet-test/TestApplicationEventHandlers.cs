@@ -273,4 +273,3 @@ internal sealed class TestApplicationsEventHandlers
         Logger.LogTrace(() => logMessageBuilder.ToString());
     }
 }
-}
