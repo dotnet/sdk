@@ -38,7 +38,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
 
             BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
             _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
-            TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue);
+            TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
 
             _eventHandlers = new TestApplicationsEventHandlers(_executions, _output);
 

@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Test;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
@@ -104,83 +105,37 @@ internal static class SolutionAndProjectUtility
     {
         var projects = new List<TestModule>();
 
-        var globalPropertiesWithoutTargetFramework = new Dictionary<string, string>(globalProperties);
-        globalPropertiesWithoutTargetFramework.Remove(ProjectProperties.TargetFramework);
 
-        var project = projectCollection.LoadProject(projectFilePath, globalPropertiesWithoutTargetFramework, null);
+        var project = projectCollection.LoadProject(projectFilePath, globalProperties, null);
 
-        // Check if TargetFramework is specified in global properties
-        if (globalProperties.TryGetValue(ProjectProperties.TargetFramework, out string targetFramework))
+        var targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
+        var targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
+        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{project.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+
+        if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with global property TargetFramework '{targetFramework}'.");
-
-            if (IsValidTargetFramework(project, targetFramework))
+            if (GetModuleFromProject(project) is { } module)
             {
-                Logger.LogTrace(() => $"Project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}': before re-evaluation '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
-
-                project.SetProperty(ProjectProperties.TargetFramework, targetFramework);
-                project.ReevaluateIfNecessary();
-
-                Logger.LogTrace(() => $"Project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}': after re-evaluation '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
-
-                if (GetModuleFromProject(project) is { } module)
-                {
-                    projects.Add(module);
-                }
-            }
-            else
-            {
-                // TODO: When can this happen? Should we explicitly error?
-                Logger.LogTrace(() => $"Project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}' was considered invalid.");
+                projects.Add(module);
             }
         }
         else
         {
-            string targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
-
-            if (string.IsNullOrEmpty(targetFrameworks))
+            var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var framework in frameworks)
             {
-                Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+                project.SetProperty(ProjectProperties.TargetFramework, framework);
+                project.ReevaluateIfNecessary();
+                Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                 if (GetModuleFromProject(project) is { } module)
                 {
                     projects.Add(module);
-                }
-            }
-            else
-            {
-                Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFMs: '{targetFrameworks}').");
-
-                var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var framework in frameworks)
-                {
-                    project.SetProperty(ProjectProperties.TargetFramework, framework);
-                    project.ReevaluateIfNecessary();
-
-                    Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
-
-                    if (GetModuleFromProject(project) is { } module)
-                    {
-                        projects.Add(module);
-                    }
                 }
             }
         }
 
         return projects;
-    }
-
-
-    private static bool IsValidTargetFramework(Project project, string targetFramework)
-    {
-        string targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
-        if (string.IsNullOrEmpty(targetFrameworks))
-        {
-            return project.GetPropertyValue(ProjectProperties.TargetFramework) == targetFramework;
-        }
-
-        var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
-        return frameworks.Contains(targetFramework);
     }
 
     private static TestModule? GetModuleFromProject(Project project)
@@ -211,8 +166,8 @@ internal static class SolutionAndProjectUtility
         string targetFrameworkIdentifier = project.GetPropertyValue(ProjectProperties.TargetFrameworkIdentifier);
 
         if (targetFrameworkIdentifier.Equals(CliConstants.NetCoreIdentifier, StringComparison.OrdinalIgnoreCase) &&
-           isExecutable &&
-           useAppHost)
+            isExecutable &&
+            useAppHost)
         {
             string targetDir = project.GetPropertyValue(ProjectProperties.TargetDir);
             string assemblyName = project.GetPropertyValue(ProjectProperties.AssemblyName);
