@@ -32,7 +32,7 @@
                      '$(PgoInstrument)' != 'true' and
                      ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')"
           BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
-    <MSBuild Projects="$(RepoRoot)eng\Badge.proj" Targets="GenerateVersionBadge">
+    <MSBuild Projects="$(RepositoryEngineeringDir)Badge.proj" Targets="GenerateVersionBadge">
       <Output TaskParameter="TargetOutputs" ItemName="Artifact" />
     </MSBuild>
   </Target>
