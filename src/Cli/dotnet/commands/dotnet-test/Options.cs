@@ -7,6 +7,4 @@ internal record TestOptions(string Configuration, string Architecture, bool HasF
 
 internal record PathOptions(string ProjectPath, string SolutionPath, string DirectoryPath);
 
-internal record BuildProperties(string Configuration, string RuntimeIdentifier, string TargetFramework);
-
-internal record BuildOptions(PathOptions PathOptions, BuildProperties BuildProperties, bool HasNoRestore, bool HasNoBuild, VerbosityOptions? Verbosity, int DegreeOfParallelism, string[] UserSpecifiedProperties, List<string> UnmatchedTokens, IEnumerable<string> MSBuildArgs);
+internal record BuildOptions(PathOptions PathOptions, bool HasNoRestore, bool HasNoBuild, VerbosityOptions? Verbosity, int DegreeOfParallelism, string[] UserSpecifiedProperties, List<string> UnmatchedTokens, IEnumerable<string> MSBuildArgs);
