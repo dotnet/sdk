@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 #if !DOT_NET_BUILD_FROM_SOURCE
+using Microsoft.DotNet.Cli.Installer.Windows.Security;
 #endif
+
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Workloads.Workload;
