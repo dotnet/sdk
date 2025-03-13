@@ -5,28 +5,27 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class BuildServerCommandParser
 {
-    internal static class BuildServerCommandParser
+    public static readonly string DocsLink = "https://aka.ms/dotnet-build-server";
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-build-server";
+        return Command;
+    }
 
-        private static readonly CliCommand Command = ConstructCommand();
+    private static CliCommand ConstructCommand()
+    {
+        var command = new DocumentedCommand("build-server", DocsLink, LocalizableStrings.CommandDescription);
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+        command.Subcommands.Add(ServerShutdownCommandParser.GetCommand());
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new DocumentedCommand("build-server", DocsLink, LocalizableStrings.CommandDescription);
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-            command.Subcommands.Add(ServerShutdownCommandParser.GetCommand());
-
-            command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-            return command;
-        }
+        return command;
     }
 }

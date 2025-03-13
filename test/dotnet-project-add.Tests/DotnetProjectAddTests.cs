@@ -167,7 +167,7 @@ public sealed class DotnetProjectAddTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "app", "Program", "Program.cs"))
+        new DirectoryInfo(Path.Join(testInstance.Path, "app", "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
             .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
     }

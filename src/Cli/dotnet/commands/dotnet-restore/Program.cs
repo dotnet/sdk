@@ -8,50 +8,49 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.MSBuild;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
-namespace Microsoft.DotNet.Tools.Restore
+namespace Microsoft.DotNet.Tools.Restore;
+
+public class RestoreCommand : MSBuildForwardingApp
 {
-    public class RestoreCommand : MSBuildForwardingApp
+    public RestoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
+        : base(msbuildArgs, msbuildPath)
     {
-        public RestoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
-            : base(msbuildArgs, msbuildPath)
-        {
-            NuGetSignatureVerificationEnabler.ConditionallyEnable(this);
-        }
+        NuGetSignatureVerificationEnabler.ConditionallyEnable(this);
+    }
 
-        public static RestoreCommand FromArgs(string[] args, string msbuildPath = null)
-        {
-            var parser = Parser.Instance;
-            var result = parser.ParseFrom("dotnet restore", args);
-            return FromParseResult(result, msbuildPath);
-        }
+    public static RestoreCommand FromArgs(string[] args, string msbuildPath = null)
+    {
+        var parser = Parser.Instance;
+        var result = parser.ParseFrom("dotnet restore", args);
+        return FromParseResult(result, msbuildPath);
+    }
 
-        public static RestoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
-        {
-            result.HandleDebugSwitch();
+    public static RestoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
+    {
+        result.HandleDebugSwitch();
 
-            result.ShowHelpOrErrorIfAppropriate();
+        result.ShowHelpOrErrorIfAppropriate();
 
-            List<string> msbuildArgs = ["-target:Restore"];
+        List<string> msbuildArgs = ["-target:Restore"];
 
-            msbuildArgs.AddRange(result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()));
+        msbuildArgs.AddRange(result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()));
 
-            msbuildArgs.AddRange(result.GetValue(RestoreCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
+        msbuildArgs.AddRange(result.GetValue(RestoreCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
 
-            return new RestoreCommand(msbuildArgs, msbuildPath);
-        }
+        return new RestoreCommand(msbuildArgs, msbuildPath);
+    }
 
-        public static int Run(string[] args)
-        {
-            DebugHelper.HandleDebugSwitch(ref args);
+    public static int Run(string[] args)
+    {
+        DebugHelper.HandleDebugSwitch(ref args);
 
-            return FromArgs(args).Execute();
-        }
+        return FromArgs(args).Execute();
+    }
 
-        public static int Run(ParseResult parseResult)
-        {
-            parseResult.HandleDebugSwitch();
+    public static int Run(ParseResult parseResult)
+    {
+        parseResult.HandleDebugSwitch();
 
-            return FromParseResult(parseResult).Execute();
-        }
+        return FromParseResult(parseResult).Execute();
     }
 }

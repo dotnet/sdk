@@ -10,7 +10,6 @@
                            '$(Architecture)' == 'x64' and
                            '$(PgoInstrument)' != 'true'">true</IsPackable>
     <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
-    <PackageId>VS.Redist.Common.Net.Core.SDK.MSBuildExtensions</PackageId>
     <PackageDescription>MSBuild extensions bundled with .NET Core SDK for internal Visual Studio build consumption</PackageDescription>
     <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>

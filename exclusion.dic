@@ -5,6 +5,7 @@ crossgen
 csharp
 cshtml
 deserializer
+microsoft
 msbuild
 muxer
 nuget

@@ -6,46 +6,45 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.MSBuild;
 
-namespace Microsoft.DotNet.Tools.Clean
+namespace Microsoft.DotNet.Tools.Clean;
+
+public class CleanCommand : MSBuildForwardingApp
 {
-    public class CleanCommand : MSBuildForwardingApp
+    public CleanCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
+        : base(msbuildArgs, msbuildPath)
     {
-        public CleanCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
-            : base(msbuildArgs, msbuildPath)
+    }
+
+    public static CleanCommand FromArgs(string[] args, string msbuildPath = null)
+    {
+
+        var parser = Parser.Instance;
+        var result = parser.ParseFrom("dotnet clean", args);
+        return FromParseResult(result, msbuildPath);
+    }
+
+    public static CleanCommand FromParseResult(ParseResult result, string msbuildPath = null)
+    {
+        var msbuildArgs = new List<string>
         {
-        }
+            "-verbosity:normal"
+        };
 
-        public static CleanCommand FromArgs(string[] args, string msbuildPath = null)
-        {
+        result.ShowHelpOrErrorIfAppropriate();
 
-            var parser = Parser.Instance;
-            var result = parser.ParseFrom("dotnet clean", args);
-            return FromParseResult(result, msbuildPath);
-        }
+        msbuildArgs.AddRange(result.GetValue(CleanCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
 
-        public static CleanCommand FromParseResult(ParseResult result, string msbuildPath = null)
-        {
-            var msbuildArgs = new List<string>
-            {
-                "-verbosity:normal"
-            };
+        msbuildArgs.Add("-target:Clean");
 
-            result.ShowHelpOrErrorIfAppropriate();
+        msbuildArgs.AddRange(result.OptionValuesToBeForwarded(CleanCommandParser.GetCommand()));
 
-            msbuildArgs.AddRange(result.GetValue(CleanCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
+        return new CleanCommand(msbuildArgs, msbuildPath);
+    }
 
-            msbuildArgs.Add("-target:Clean");
+    public static int Run(ParseResult parseResult)
+    {
+        parseResult.HandleDebugSwitch();
 
-            msbuildArgs.AddRange(result.OptionValuesToBeForwarded(CleanCommandParser.GetCommand()));
-
-            return new CleanCommand(msbuildArgs, msbuildPath);
-        }
-
-        public static int Run(ParseResult parseResult)
-        {
-            parseResult.HandleDebugSwitch();
-
-            return FromParseResult(parseResult).Execute();
-        }
+        return FromParseResult(parseResult).Execute();
     }
 }
