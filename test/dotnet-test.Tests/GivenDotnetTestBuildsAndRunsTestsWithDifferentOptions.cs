@@ -398,6 +398,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
+                                            TestingPlatformOptions.ConfigurationOption.Name, configuration,
                                             "--property:WarningLevel=2", $"--property:Configuration={configuration}");
 
             if (!TestContext.IsLocalized())

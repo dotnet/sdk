@@ -128,14 +128,7 @@ internal static class MSBuildUtility
         {
             foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
             {
-                if (globalProperties.TryGetValue(key, out var existingValues))
-                {
-                    globalProperties[key] = $"{existingValues};{value}";
-                }
-                else
-                {
-                    globalProperties[key] = value;
-                }
+                globalProperties[key] = value;
             }
         }
 
