@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [InlineData(TestingConstants.Debug)]
-        // [InlineData(TestingConstants.Release)]
+        [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
