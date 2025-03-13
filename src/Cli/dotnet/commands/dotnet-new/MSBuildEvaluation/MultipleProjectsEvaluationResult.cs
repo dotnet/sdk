@@ -3,22 +3,20 @@
 
 using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.TemplateEngine.MSBuildEvaluation
+namespace Microsoft.TemplateEngine.MSBuildEvaluation;
+
+internal class MultipleProjectsEvaluationResult : MSBuildEvaluationResult
 {
-    internal class MultipleProjectsEvaluationResult : MSBuildEvaluationResult
+    private MultipleProjectsEvaluationResult() : base(EvalStatus.MultipleProjectFound) { }
+
+    internal IReadOnlyList<string> ProjectPaths { get; private set; } = Array.Empty<string>();
+
+    internal static MultipleProjectsEvaluationResult Create(IReadOnlyList<string> projectPaths)
     {
-        private MultipleProjectsEvaluationResult() : base(EvalStatus.MultipleProjectFound) { }
-
-        internal IReadOnlyList<string> ProjectPaths { get; private set; } = Array.Empty<string>();
-
-        internal static MultipleProjectsEvaluationResult Create(IReadOnlyList<string> projectPaths)
+        return new MultipleProjectsEvaluationResult()
         {
-            return new MultipleProjectsEvaluationResult()
-            {
-                ProjectPaths = projectPaths,
-                ErrorMessage = string.Format(LocalizableStrings.MultipleProjectsEvaluationResult_Error, string.Join("; ", projectPaths))
-            };
-        }
+            ProjectPaths = projectPaths,
+            ErrorMessage = string.Format(LocalizableStrings.MultipleProjectsEvaluationResult_Error, string.Join("; ", projectPaths))
+        };
     }
-
 }

@@ -89,7 +89,6 @@ stages:
     postJoinStages:
     - stage: Publish_Build_Assets
       displayName: Publish Assets
-      dependsOn: VMR_Final_Join
       jobs:
       - template: /eng/common/templates-official/job/publish-build-assets.yml@self
         parameters:

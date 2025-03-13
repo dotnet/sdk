@@ -193,6 +193,11 @@ Per MSTest prima di 2.2.4, il timeout viene usato per tutti i test case.</target
         <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoTestModulesErrorDescription">
+        <source>No test modules found for the given test module pattern: {0} with root directory: {1}</source>
+        <target state="new">No test modules found for the given test module pattern: {0} with root directory: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNonExistentDirectoryErrorDescription">
         <source>The provided directory path does not exist: {0}.</source>
         <target state="new">The provided directory path does not exist: {0}.</target>
@@ -201,6 +206,11 @@ Per MSTest prima di 2.2.4, il timeout viene usato per tutti i test case.</target
       <trans-unit id="CmdNonExistentFileErrorDescription">
         <source>The provided file path does not exist: {0}.</source>
         <target state="new">The provided file path does not exist: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentRootDirectoryErrorDescription">
+        <source>The provided root directory does not exist: {0}.</source>
+        <target state="new">The provided root directory does not exist: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNumberName">
@@ -361,9 +371,13 @@ Se non esiste, la directory specificata verrà creata.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
-        <source>Test projects that use both VSTest and Microsoft.Testing.Platform in the same solution are not supported. 
+        <source>When opting-in via dotnet.config, all test projects are expected to be using Microsoft.Testing.Platform.
+The following test projects are using VSTest:
+{0}
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">Test projects that use both VSTest and Microsoft.Testing.Platform in the same solution are not supported. 
+        <target state="new">When opting-in via dotnet.config, all test projects are expected to be using Microsoft.Testing.Platform.
+The following test projects are using VSTest:
+{0}
 See https://aka.ms/dotnet-test/mtp for more information.</target>
         <note />
       </trans-unit>
