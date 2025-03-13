@@ -1575,8 +1575,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
-        public void ILLink_error_on_portable_app(string targetFramework)
+        [InlineData("net5.0")]
+        [InlineData("net9.0")]
+        public void ILLink_not_supported_error_on_portable_app(string targetFramework)
         {
             var projectName = "HelloWorld";
             var referenceProjectName = "ClassLibForILLink";
@@ -1588,6 +1589,22 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute("/p:PublishTrimmed=true")
                 .Should().Fail()
                 .And.HaveStdOutContaining(Strings.ILLinkNotSupportedError);
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [MemberData(nameof(Net10Plus), MemberType = typeof(PublishTestUtils))]
+        public void ILLink_error_on_portable_app(string targetFramework)
+        {
+            var projectName = "HelloWorld";
+            var referenceProjectName = "ClassLibForILLink";
+
+            var testProject = CreateTestProjectForILLinkTesting(_testAssetsManager, targetFramework, projectName, referenceProjectName, setSelfContained: false);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute("/p:PublishTrimmed=true")
+                .Should().Fail()
+                .And.HaveStdOutContaining(Strings.PublishSelfContainedRequiresPublishing);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
