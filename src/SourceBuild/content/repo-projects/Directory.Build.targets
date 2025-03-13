@@ -45,7 +45,7 @@
 
     <BuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' != ''">$(BuildArgs) /p:EnableDefaultRidSpecificArtifacts=$(EnableDefaultRidSpecificArtifacts)</BuildArgs>
     <!-- If a repo has no RID-specific artifacts, then we expect the repo to not have any artifacts when only publishing RID-specific artifacts. -->
-    <BuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true' and '$(RepoHasRidSpecificArtifacts)' != 'true'">$(BuildArgs) /p:AllowEmptySignList=true</BuildArgs>
+    <BuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">$(BuildArgs) /p:AllowEmptySignList=true</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>

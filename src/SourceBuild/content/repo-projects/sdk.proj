@@ -36,8 +36,6 @@
 
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
     <BuildArgs Condition="'$(EnablePoison)' == 'true'">$(BuildArgs) /p:DISABLE_CROSSGEN=true</BuildArgs>
-
-    <RepoHasRidSpecificArtifacts>true</RepoHasRidSpecificArtifacts>
   </PropertyGroup>
 
   <ItemGroup>
