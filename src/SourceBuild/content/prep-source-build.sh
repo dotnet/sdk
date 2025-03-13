@@ -13,6 +13,7 @@
 ###   --no-sdk                    Exclude the download of the .NET SDK
 ###   --artifacts-rid             The RID of the previously source-built artifacts archive to download
 ###                               Default is centos.9-x64
+###   --rid, --target-rid <value> Overrides the target rid for the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64
 ###   --runtime-source-feed       URL of a remote server or a local directory, from which SDKs and
 ###                               runtimes can be downloaded
 ###   --runtime-source-feed-key   Key for accessing the above server, if necessary
@@ -48,6 +49,7 @@ downloadPrebuilts=true
 removeBinaries=true
 installDotnet=true
 artifactsRid=$defaultArtifactsRid
+target_rid=''
 runtime_source_feed='' # IBM requested these to support s390x scenarios
 runtime_source_feed_key='' # IBM requested these to support s390x scenarios
 
@@ -80,6 +82,10 @@ while :; do
       ;;
     --artifacts-rid)
       artifactsRid=$2
+      ;;
+    --rid|--target-rid)
+      target_rid=$2
+      shift
       ;;
     --runtime-source-feed)
       runtime_source_feed=$2
@@ -179,7 +185,8 @@ function BootstrapArtifacts {
   DOTNET_SDK_PATH="$REPO_ROOT/.dotnet"
 
   # Create working directory for running bootstrap project
-  workingDir=$(mktemp -d)
+  workingDir="$REPO_ROOT/artifacts/prep-bootstrap"
+  mkdir -p "$workingDir"
   echo "  Building bootstrap previously source-built in $workingDir"
 
   # Copy bootstrap project to working dir
@@ -192,11 +199,16 @@ function BootstrapArtifacts {
   echo "  Retrieving PackageVersions.props from existing archive"
   sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
   if [ -f "$sourceBuiltArchive" ]; then
-      tar -xzf "$sourceBuiltArchive" -C "$workingDir" PackageVersions.props
+    tar -xzf "$sourceBuiltArchive" -C "$workingDir" PackageVersions.props
+  fi
+
+  properties=( "/p:ArchiveDir=$packagesArchiveDir" )
+  if [[ -n "$target_rid" ]]; then
+    properties+=( "/p:TargetRid=$target_rid" )
   fi
 
   # Run restore on project to initiate download of bootstrap packages
-  "$DOTNET_SDK_PATH/dotnet" restore "$workingDir/buildBootstrapPreviouslySB.csproj" /bl:artifacts/log/prep-bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/log/prep-bootstrap.log /p:ArchiveDir="$packagesArchiveDir" /p:BootstrapOverrideVersionsProps="$REPO_ROOT/eng/bootstrap/OverrideBootstrapVersions.props"
+  "$DOTNET_SDK_PATH/dotnet" restore "$workingDir/buildBootstrapPreviouslySB.csproj" /bl:artifacts/log/prep-bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/log/prep-bootstrap.log "${properties[@]}"
 
   # Remove working directory
   rm -rf "$workingDir"
