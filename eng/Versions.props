@@ -49,18 +49,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>8.0.14</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion>8.0.14-servicing.25111.18</VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>8.0.14</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>8.0.15</MicrosoftNETCoreAppRefPackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion>8.0.15-servicing.25162.16</VSRedistCommonNetCoreSharedFrameworkx6480PackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>8.0.15</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>8.0.2</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.14</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETHostModelVersion>8.0.14-servicing.25111.18</MicrosoftNETHostModelVersion>
+    <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.15</MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <MicrosoftNETHostModelVersion>8.0.15-servicing.25162.16</MicrosoftNETHostModelVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsLoggingVersion>8.0.1</MicrosoftExtensionsLoggingVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>8.0.3</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>8.0.1</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftNETILLinkTasksPackageVersion>8.0.14</MicrosoftNETILLinkTasksPackageVersion>
+    <MicrosoftNETILLinkTasksPackageVersion>8.0.15</MicrosoftNETILLinkTasksPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>8.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>8.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>8.0.14</MicrosoftExtensionsObjectPoolPackageVersion>
@@ -70,7 +70,7 @@
     <SystemCompositionHostingPackageVersion>8.0.0</SystemCompositionHostingPackageVersion>
     <SystemCompositionRuntimePackageVersion>8.0.0</SystemCompositionRuntimePackageVersion>
     <SystemCompositionTypedPartsPackageVersion>8.0.0</SystemCompositionTypedPartsPackageVersion>
-    <SystemDiagnosticsEventLogPackageVersion>8.0.1</SystemDiagnosticsEventLogPackageVersion>
+    <SystemDiagnosticsEventLogPackageVersion>8.0.2</SystemDiagnosticsEventLogPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>8.0.1</SystemConfigurationConfigurationManagerPackageVersion>
     <SystemDrawingCommonPackageVersion>8.0.0</SystemDrawingCommonPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>8.0.1</SystemSecurityCryptographyPkcsPackageVersion>
@@ -225,7 +225,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Workloads from dotnet/emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>8.0.14</MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>8.0.15</MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>
     <EmscriptenWorkloadManifestVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion)</EmscriptenWorkloadManifestVersion>
     <!-- emsdk workload prerelease version band must match the emsdk feature band -->
     <EmscriptenWorkloadFeatureBand>8.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-rtm|-[A-z]*\.*\d*`))</EmscriptenWorkloadFeatureBand>
