@@ -51,6 +51,11 @@ Make the profile names distinct.</source>
         <target state="translated">이름이 '{0}'인 시작 프로필이 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
+        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">-p 옵션을 사용하여 한 번에 하나의 프로젝트만 지정할 수 있습니다.</target>

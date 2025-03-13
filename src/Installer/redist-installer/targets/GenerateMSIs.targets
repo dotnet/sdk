@@ -8,10 +8,7 @@
       GenerateSdkMsi;
       GenerateSdkBundle;
       GenerateSdkPlaceholderMsi;
-      GenerateToolsetNupkg;
-      GenerateTemplatesNupkgs;
-      GenerateSdkPlaceholderNupkg;
-      GenerateRuntimeAnalyzersNupkg
+      GenerateTemplatesNupkgs
     </GenerateMsisDependsOn>
     <GenerateMsisDependsOn Condition="'$(GenerateSdkBundleOnly)' == 'true'">GenerateSdkBundle</GenerateMsisDependsOn>
 
@@ -45,16 +42,6 @@
     <GenerateNupkgPowershellScript>$(SdkPkgSourcesRootDirectory)/generatenupkg.ps1</GenerateNupkgPowershellScript>
 
     <FinalizerExe>$(ArtifactsBinDir)finalizer/$(Architecture)/$(Configuration)/bin/finalizer.exe</FinalizerExe>
-
-    <ToolsetInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.Toolset.nuspec</ToolsetInstallerNuspecFile>
-    <ToolsetInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Toolset.$(Architecture).$(FullNugetVersion).nupkg</ToolsetInstallerNupkgFile>
-    <SdkPlaceholderInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
-    <SdkPlaceholderInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(FullNugetVersion).nupkg</SdkPlaceholderInstallerNupkgFile>
-
-    <RuntimeAnalyzersLayoutDirectory>$(ArtifactsBinDir)$(Configuration)\RuntimeAnalyzers</RuntimeAnalyzersLayoutDirectory>
-    <SdkRuntimeAnalyzersNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.nuspec</SdkRuntimeAnalyzersNuspecFile>
-    <SdkRuntimeAnalyzersNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.$(FullNugetVersion).nupkg</SdkRuntimeAnalyzersNupkgFile>
-    <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
 
     <!-- Temp directory for light command layouts -->
     <LightCommandObjDir>$(ArtifactsObjDir)LightCommandPackages</LightCommandObjDir>
@@ -371,38 +358,6 @@
     </CreateLightCommandPackageDrop>
   </Target>
 
-  <Target Name="GenerateToolsetNupkg"
-          DependsOnTargets="MsiTargetsSetupInputOutputs;GenerateSdkMsi"
-          Inputs="$(SdkMSIInstallerFile);
-                  $(ToolsetInstallerNuspecFile);
-                  $(GenerateNupkgPowershellScript)"
-          Outputs="$(ToolsetInstallerNupkgFile)">
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(SdkMSIInstallerFile)' ^
-                      '$(FullNugetVersion)' ^
-                      '$(ToolsetInstallerNuspecFile)' ^
-                      '$(ToolsetInstallerNupkgFile)' ^
-                      '$(Architecture)' ^
-                      '$(MajorMinorVersion)'" />
-  </Target>
-
-  <Target Name="GenerateSdkPlaceholderNupkg"
-          DependsOnTargets="MsiTargetsSetupInputOutputs;GenerateSdkPlaceholderMsi"
-          Inputs="$(SdkPlaceholderMSIInstallerFile);
-                  $(SdkPlaceholderInstallerNuspecFile);
-                  $(GenerateNupkgPowershellScript)"
-          Outputs="$(SdkPlaceholderInstallerNupkgFile)">
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '$(SdkPlaceholderMSIInstallerFile)' ^
-                      '$(FullNugetVersion)' ^
-                      '$(SdkPlaceholderInstallerNuspecFile)' ^
-                      '$(SdkPlaceholderInstallerNupkgFile)' ^
-                      '$(Architecture)' ^
-                      '$(MajorMinorVersion)'" />
-  </Target>
-
   <Target Name="GenerateTemplatesNupkgs"
           DependsOnTargets="MsiTargetsSetupInputOutputs;GenerateTemplatesMsis;SetupTemplatesNupkgs"
           Inputs="@(TemplatesNupkgComponent->'%(MSIInstallerFile)');
@@ -432,29 +387,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateRuntimeAnalyzersNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' And '$(DotNetBuild)' != 'true'"
-          Inputs="$(RuntimeAnalyzersLayoutDirectory)/**/*;
-                    $(SdkRuntimeAnalyzersNuspecFile);
-                    $(GenerateNupkgPowershellScript)"
-          Outputs="$(SdkRuntimeAnalyzersNupkgFile);$(SdkRuntimeAnalyzersSwrFile)">
-    <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(RuntimeAnalyzersLayoutDirectory)"
-                                 OutputFile="$(SdkRuntimeAnalyzersSwrFile)" />
-
-    <!-- Include the swr file in the nuget package for VS authoring -->
-    <Copy SourceFiles="$(SdkRuntimeAnalyzersSwrFile)" DestinationFolder="$(RuntimeAnalyzersLayoutDirectory)" />
-
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                    '$(ArtifactsDir)' ^
-                    '$(RuntimeAnalyzersLayoutDirectory.TrimEnd('\'))' ^
-                    '$(FullNugetVersion)' ^
-                    '$(SdkRuntimeAnalyzersNuspecFile)' ^
-                    '$(SdkRuntimeAnalyzersNupkgFile)'" />
-  </Target>
-
   <Target Name="GenerateMsis"
-          BeforeTargets="Pack"
+          AfterTargets="Build"
           DependsOnTargets="$(GenerateMsisDependsOn)" />
 
 </Project>

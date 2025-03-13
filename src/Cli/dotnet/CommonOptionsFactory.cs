@@ -3,21 +3,20 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+/// <summary>
+/// Creates common options.
+/// </summary>
+internal static class CommonOptionsFactory
 {
     /// <summary>
-    /// Creates common options.
+    /// Creates common diagnostics option (-d|--diagnostics).
     /// </summary>
-    internal static class CommonOptionsFactory
+    public static CliOption<bool> CreateDiagnosticsOption(bool recursive) => new("--diagnostics", "-d")
     {
-        /// <summary>
-        /// Creates common diagnostics option (-d|--diagnostics).
-        /// </summary>
-        public static CliOption<bool> CreateDiagnosticsOption(bool recursive) => new("--diagnostics", "-d")
-        {
-            Description = Tools.Help.LocalizableStrings.SDKDiagnosticsCommandDefinition,
-            Recursive = recursive,
-            Arity = ArgumentArity.Zero
-        };
-    }
+        Description = Tools.Help.LocalizableStrings.SDKDiagnosticsCommandDefinition,
+        Recursive = recursive,
+        Arity = ArgumentArity.Zero
+    };
 }
