@@ -53,11 +53,11 @@ internal sealed class MSBuildHandler : IDisposable
             msBuildExitCode = RunBuild(path, buildOptions);
         }
 
-            if (msBuildExitCode != ExitCode.Success)
-            {
-                _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
-                return false;
-            }
+        if (msBuildExitCode != ExitCode.Success)
+        {
+            _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
+            return false;
+        }
 
         return true;
     }
@@ -97,11 +97,11 @@ internal sealed class MSBuildHandler : IDisposable
         {
             _areTestingPlatformApplications = false;
 
-                _output.WriteMessage(
-                    string.Format(
-                        Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
-                        string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
-                    new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
+            _output.WriteMessage(
+                string.Format(
+                    Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
+                    string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
+                new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
 
             return;
         }
@@ -151,21 +151,21 @@ internal sealed class MSBuildHandler : IDisposable
             return;
         }
 
-            var logMessageBuilder = new StringBuilder();
+        var logMessageBuilder = new StringBuilder();
 
-            foreach (var module in modules)
-            {
-                logMessageBuilder.AppendLine($"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.TargetPath}: {module.TargetPath}");
-                logMessageBuilder.AppendLine($"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
-                logMessageBuilder.AppendLine();
-            }
-
-            Logger.LogTrace(() => logMessageBuilder.ToString());
+        foreach (var module in modules)
+        {
+            logMessageBuilder.AppendLine($"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
+            logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
+            logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
+            logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
+            logMessageBuilder.AppendLine($"{ProjectProperties.TargetPath}: {module.TargetPath}");
+            logMessageBuilder.AppendLine($"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
+            logMessageBuilder.AppendLine();
         }
+
+        Logger.LogTrace(() => logMessageBuilder.ToString());
+    }
 
     public void Dispose()
     {
