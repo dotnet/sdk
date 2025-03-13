@@ -17,3 +17,6 @@ jobs:
           Backport of #%source_pr_number% to %target_branch%
 
           /cc %cc_users%
+
+          > [!Important]
+          > Make sure to create a merge commit. *Do not squash*. If you squash, the next inter-branch PR will list all of the same commits. See [SDK-PR-guide.md](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/SDK-PR-guide.md#reviewing-and-merging-inter-branch-codeflow) for more information.
