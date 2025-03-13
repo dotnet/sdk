@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Test;
 using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
@@ -108,16 +108,15 @@ internal static class SolutionAndProjectUtility
     {
         var projects = new List<TestModule>();
 
+        ProjectInstance projectInstance = projectCollection.LoadProject(projectFilePath, globalProperties, null).CreateProjectInstance();
 
-        var project = projectCollection.LoadProject(projectFilePath, globalProperties, null);
-
-        var targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        var targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
-        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{project.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+        var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+        var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{projectInstance.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(project) is { } module)
+            if (GetModuleFromProject(projectInstance) is { } module)
             {
                 projects.Add(module);
             }
@@ -127,11 +126,11 @@ internal static class SolutionAndProjectUtility
             var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
             foreach (var framework in frameworks)
             {
-                project.SetProperty(ProjectProperties.TargetFramework, framework);
-                project.ReevaluateIfNecessary();
-                Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+                projectInstance.SetProperty(ProjectProperties.TargetFramework, framework);
+                //projectInstance.ReevaluateIfNecessary();
+                Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                if (GetModuleFromProject(project) is { } module)
+                if (GetModuleFromProject(projectInstance) is { } module)
                 {
                     projects.Add(module);
                 }
@@ -141,7 +140,7 @@ internal static class SolutionAndProjectUtility
         return projects;
     }
 
-    private static TestModule? GetModuleFromProject(Project project)
+    private static TestModule? GetModuleFromProject(ProjectInstance project)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -158,7 +157,7 @@ internal static class SolutionAndProjectUtility
 
         return new TestModule(runInfo, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
 
-        static TestModuleRunInformation GetTestRunInfo(Project project)
+        static TestModuleRunInformation GetTestRunInfo(ProjectInstance project)
         {
             // Build API cannot be called in parallel, even if the projects are different.
             // Otherwise, BuildManager in MSBuild will fail:
@@ -166,7 +165,7 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
-                if (!project.Build(s_computeRunArgumentsTarget))
+                if (!project.Build(s_computeRunArgumentsTarget, loggers: []))
                 {
                     Logger.LogTrace(() => $"The target {s_computeRunArgumentsTarget} failed to build. Falling back to TargetPath.");
                     return new TestModuleRunInformation(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
