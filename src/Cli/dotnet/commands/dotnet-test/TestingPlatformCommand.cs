@@ -36,9 +36,9 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
 
             InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
-                BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
-                _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
-                TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
+            BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
+            _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
+            TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
 
             _eventHandlers = new TestApplicationsEventHandlers(_executions, _output);
 
