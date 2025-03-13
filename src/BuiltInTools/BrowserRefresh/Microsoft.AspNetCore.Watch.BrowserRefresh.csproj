@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <!-- Reference 8.0.0 targeting packs in Source Build - this was the earliest version after the API surface stabilized -->
+    <!-- Reference 8.0.0 targeting packs in Source Build -->
+    <FrameworkReference Update="Microsoft.AspNetCore.App" TargetingPackVersion="8.0.0" />
     <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="8.0.0" />
   </ItemGroup>
 
