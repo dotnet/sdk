@@ -3,78 +3,76 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.ShellShim
+namespace Microsoft.DotNet.Cli.ShellShim;
+
+internal class LinuxEnvironmentPath : IEnvironmentPath
 {
-    internal class LinuxEnvironmentPath : IEnvironmentPath
+    private readonly IFile _fileSystem;
+    private readonly IEnvironmentProvider _environmentProvider;
+    private readonly IReporter _reporter;
+    private const string PathName = "PATH";
+    private readonly BashPathUnderHomeDirectory _packageExecutablePath;
+
+    internal static readonly string DotnetCliToolsProfilePath =
+        Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_LINUX_PROFILED_PATH") ??
+        @"/etc/profile.d/dotnet-cli-tools-bin-path.sh";
+
+    internal LinuxEnvironmentPath(
+        BashPathUnderHomeDirectory packageExecutablePath,
+        IReporter reporter,
+        IEnvironmentProvider environmentProvider,
+        IFile fileSystem)
     {
-        private readonly IFile _fileSystem;
-        private readonly IEnvironmentProvider _environmentProvider;
-        private readonly IReporter _reporter;
-        private const string PathName = "PATH";
-        private readonly BashPathUnderHomeDirectory _packageExecutablePath;
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+        _environmentProvider
+            = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+        _reporter
+            = reporter ?? throw new ArgumentNullException(nameof(reporter));
+        _packageExecutablePath = packageExecutablePath;
+    }
 
-        internal static readonly string DotnetCliToolsProfilePath =
-            Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_LINUX_PROFILED_PATH") ??
-            @"/etc/profile.d/dotnet-cli-tools-bin-path.sh";
-
-        internal LinuxEnvironmentPath(
-            BashPathUnderHomeDirectory packageExecutablePath,
-            IReporter reporter,
-            IEnvironmentProvider environmentProvider,
-            IFile fileSystem)
+    public void AddPackageExecutablePathToUserPath()
+    {
+        if (PackageExecutablePathExists())
         {
-            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-            _environmentProvider
-                = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
-            _reporter
-                = reporter ?? throw new ArgumentNullException(nameof(reporter));
-            _packageExecutablePath = packageExecutablePath;
+            return;
         }
 
-        public void AddPackageExecutablePathToUserPath()
+        var script = $"export PATH=\"$PATH:{_packageExecutablePath.PathWithDollar}\"";
+        _fileSystem.WriteAllText(DotnetCliToolsProfilePath, script);
+    }
+
+    private bool PackageExecutablePathExists()
+    {
+        var value = _environmentProvider.GetEnvironmentVariable(PathName);
+        if (value == null)
         {
-            if (PackageExecutablePathExists())
+            return false;
+        }
+
+        return value
+            .Split(':')
+            .Any(p => p == _packageExecutablePath.Path || p == _packageExecutablePath.PathWithTilde);
+    }
+
+    public void PrintAddPathInstructionIfPathDoesNotExist()
+    {
+        if (!PackageExecutablePathExists())
+        {
+            if (_fileSystem.Exists(DotnetCliToolsProfilePath))
             {
-                return;
+                _reporter.WriteLine(
+                    CommonLocalizableStrings.EnvironmentPathLinuxNeedLogout);
             }
-
-            var script = $"export PATH=\"$PATH:{_packageExecutablePath.PathWithDollar}\"";
-            _fileSystem.WriteAllText(DotnetCliToolsProfilePath, script);
-        }
-
-        private bool PackageExecutablePathExists()
-        {
-            var value = _environmentProvider.GetEnvironmentVariable(PathName);
-            if (value == null)
+            else
             {
-                return false;
-            }
-
-            return value
-                .Split(':')
-                .Any(p => p == _packageExecutablePath.Path || p == _packageExecutablePath.PathWithTilde);
-        }
-
-        public void PrintAddPathInstructionIfPathDoesNotExist()
-        {
-            if (!PackageExecutablePathExists())
-            {
-                if (_fileSystem.Exists(DotnetCliToolsProfilePath))
-                {
-                    _reporter.WriteLine(
-                        CommonLocalizableStrings.EnvironmentPathLinuxNeedLogout);
-                }
-                else
-                {
-                    // similar to https://code.visualstudio.com/docs/setup/mac
-                    _reporter.WriteLine(
-                        string.Format(
-                            CommonLocalizableStrings.EnvironmentPathLinuxManualInstructions,
-                            _packageExecutablePath.Path));
-                }
+                // similar to https://code.visualstudio.com/docs/setup/mac
+                _reporter.WriteLine(
+                    string.Format(
+                        CommonLocalizableStrings.EnvironmentPathLinuxManualInstructions,
+                        _packageExecutablePath.Path));
             }
         }
     }

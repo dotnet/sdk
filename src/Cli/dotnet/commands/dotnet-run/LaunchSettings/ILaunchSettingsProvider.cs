@@ -3,11 +3,9 @@
 
 using System.Text.Json;
 
-namespace Microsoft.DotNet.Tools.Run.LaunchSettings
-{
-    internal interface ILaunchSettingsProvider
-    {
-        LaunchSettingsApplyResult TryGetLaunchSettings(string? launchProfileName, JsonElement model);
-    }
+namespace Microsoft.DotNet.Tools.Run.LaunchSettings;
 
+internal interface ILaunchSettingsProvider
+{
+    LaunchSettingsApplyResult TryGetLaunchSettings(string? launchProfileName, JsonElement model);
 }
