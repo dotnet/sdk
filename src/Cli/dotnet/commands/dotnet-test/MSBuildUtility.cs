@@ -49,7 +49,7 @@ internal static class MSBuildUtility
         // We will take the same file name but append something to it, like `-dotnet-test-evaluation`
         // Tracked by https://github.com/dotnet/sdk/issues/47494
         IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), new ProjectCollection());
-      
+
         return (projects, isBuiltOrRestored);
     }
 
