@@ -13,9 +13,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         protected static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)
         {
-            var bootManifestResolvedPath = Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json");
-            var bootManifestJson = File.ReadAllText(bootManifestResolvedPath);
-            var bootManifest = JsonSerializer.Deserialize<BootJsonData>(bootManifestJson);
+            var bootManifestResolvedPath = Path.Combine(blazorPublishDirectory, "_framework", WasmBootConfigFileName);
+            var bootManifest = BootJsonDataLoader.ParseBootData(bootManifestResolvedPath);
 
             VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.assembly);
             if (bootManifest.resources.pdb != null)

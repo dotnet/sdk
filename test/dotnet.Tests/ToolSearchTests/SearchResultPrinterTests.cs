@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Search;
 
 namespace dotnet.Tests.ToolSearchTests
