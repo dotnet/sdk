@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
-    <ProjectReference Include="$(RepoRoot)src\Layout\redist\redist.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Installer\redist-installer\redist-installer.proj" />
   </ItemGroup>
 
   <!-- Shared infra to build and use the sdk-tasks -->
@@ -21,7 +21,7 @@
   <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
       <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
-      <RuntimeAnalyzersSourceRoot>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RuntimeAnalyzersSourceRoot>
+      <RuntimeAnalyzersSourceRoot>$(ArtifactsBinDir)redist-installer\$(Configuration)\dotnet\</RuntimeAnalyzersSourceRoot>
     </PropertyGroup>
 
     <ItemGroup>
