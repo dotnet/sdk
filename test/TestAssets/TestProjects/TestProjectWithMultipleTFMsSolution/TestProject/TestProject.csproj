@@ -7,7 +7,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<GenerateProgramFile>false</GenerateProgramFile>
-		<IsTestProject>true</IsTestProject>
 		<LangVersion>latest</LangVersion>
 		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
 		<IsTestingPlatformApplication>true</IsTestingPlatformApplication>

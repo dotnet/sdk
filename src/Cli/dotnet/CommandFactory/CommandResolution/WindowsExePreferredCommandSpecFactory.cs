@@ -3,69 +3,68 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class WindowsExePreferredCommandSpecFactory : IPlatformCommandSpecFactory
 {
-    public class WindowsExePreferredCommandSpecFactory : IPlatformCommandSpecFactory
+    public CommandSpec CreateCommandSpec(
+       string commandName,
+       IEnumerable<string> args,
+       string commandPath,
+       IEnvironmentProvider environment)
     {
-        public CommandSpec CreateCommandSpec(
-           string commandName,
-           IEnumerable<string> args,
-           string commandPath,
-           IEnvironmentProvider environment)
+        var useCmdWrapper = false;
+
+        if (Path.GetExtension(commandPath).Equals(".cmd", StringComparison.OrdinalIgnoreCase))
         {
-            var useCmdWrapper = false;
+            var preferredCommandPath = environment.GetCommandPath(commandName, ".exe");
 
-            if (Path.GetExtension(commandPath).Equals(".cmd", StringComparison.OrdinalIgnoreCase))
+            if (preferredCommandPath == null)
             {
-                var preferredCommandPath = environment.GetCommandPath(commandName, ".exe");
-
-                if (preferredCommandPath == null)
-                {
-                    useCmdWrapper = true;
-                }
-                else
-                {
-                    commandPath = preferredCommandPath;
-                }
+                useCmdWrapper = true;
             }
-
-            return useCmdWrapper
-                ? CreateCommandSpecWrappedWithCmd(commandPath, args)
-                : CreateCommandSpecFromExecutable(commandPath, args);
+            else
+            {
+                commandPath = preferredCommandPath;
+            }
         }
 
-        private CommandSpec CreateCommandSpecFromExecutable(
-            string command,
-            IEnumerable<string> args)
+        return useCmdWrapper
+            ? CreateCommandSpecWrappedWithCmd(commandPath, args)
+            : CreateCommandSpecFromExecutable(commandPath, args);
+    }
+
+    private CommandSpec CreateCommandSpecFromExecutable(
+        string command,
+        IEnumerable<string> args)
+    {
+        var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
+        return new CommandSpec(command, escapedArgs);
+    }
+
+    private CommandSpec CreateCommandSpecWrappedWithCmd(
+        string command,
+        IEnumerable<string> args)
+    {
+        var comSpec = Environment.GetEnvironmentVariable("ComSpec") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe");
+
+        // Handle the case where ComSpec is already the command
+        if (command.Equals(comSpec, StringComparison.OrdinalIgnoreCase))
         {
-            var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
-            return new CommandSpec(command, escapedArgs);
+            command = args.FirstOrDefault();
+            args = args.Skip(1);
         }
 
-        private CommandSpec CreateCommandSpecWrappedWithCmd(
-            string command,
-            IEnumerable<string> args)
+        var cmdEscapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForCmdProcessStart(args);
+
+        if (!ArgumentEscaper.IsSurroundedWithQuotes(command) // Don't quote already quoted strings
+            && ArgumentEscaper.ShouldSurroundWithQuotes(command))
         {
-            var comSpec = Environment.GetEnvironmentVariable("ComSpec") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe");
-
-            // Handle the case where ComSpec is already the command
-            if (command.Equals(comSpec, StringComparison.OrdinalIgnoreCase))
-            {
-                command = args.FirstOrDefault();
-                args = args.Skip(1);
-            }
-
-            var cmdEscapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForCmdProcessStart(args);
-
-            if (!ArgumentEscaper.IsSurroundedWithQuotes(command) // Don't quote already quoted strings
-                && ArgumentEscaper.ShouldSurroundWithQuotes(command))
-            {
-                command = $"\"{command}\"";
-            }
-
-            var escapedArgString = $"/s /c \"{command} {cmdEscapedArgs}\"";
-
-            return new CommandSpec(comSpec, escapedArgString);
+            command = $"\"{command}\"";
         }
+
+        var escapedArgString = $"/s /c \"{command} {cmdEscapedArgs}\"";
+
+        return new CommandSpec(comSpec, escapedArgString);
     }
 }

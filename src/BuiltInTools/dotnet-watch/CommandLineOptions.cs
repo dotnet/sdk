@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Run;
 using NuGet.Common;
 
@@ -32,15 +32,16 @@ internal sealed class CommandLineOptions
 
     public string Command => ExplicitCommand ?? DefaultCommand;
 
+    // this option is referenced from inner logic and so needs to be reference-able
+    public static CliOption<bool> NonInteractiveOption = new CliOption<bool>("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
+
     public static CommandLineOptions? Parse(IReadOnlyList<string> args, IReporter reporter, TextWriter output, out int errorCode)
     {
         // dotnet watch specific options:
-
-        var quietOption = new CliOption<bool>("--quiet", "-q") { Description = Resources.Help_Quiet };
-        var verboseOption = new CliOption<bool>("--verbose") { Description = Resources.Help_Verbose };
-        var listOption = new CliOption<bool>("--list") { Description = Resources.Help_List };
-        var noHotReloadOption = new CliOption<bool>("--no-hot-reload") { Description = Resources.Help_NoHotReload };
-        var nonInteractiveOption = new CliOption<bool>("--non-interactive") { Description = Resources.Help_NonInteractive };
+        var quietOption = new CliOption<bool>("--quiet", "-q") { Description = Resources.Help_Quiet, Arity = ArgumentArity.Zero };
+        var verboseOption = new CliOption<bool>("--verbose") { Description = Resources.Help_Verbose, Arity = ArgumentArity.Zero };
+        var listOption = new CliOption<bool>("--list") { Description = Resources.Help_List, Arity = ArgumentArity.Zero };
+        var noHotReloadOption = new CliOption<bool>("--no-hot-reload") { Description = Resources.Help_NoHotReload, Arity = ArgumentArity.Zero };
 
         verboseOption.Validators.Add(v =>
         {
@@ -54,17 +55,16 @@ internal sealed class CommandLineOptions
         [
             quietOption,
             verboseOption,
-            noHotReloadOption,
-            nonInteractiveOption,
             listOption,
+            noHotReloadOption,
+            NonInteractiveOption
         ];
 
         // Options we need to know about that are passed through to the subcommand:
-
         var shortProjectOption = new CliOption<string>("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var longProjectOption = new CliOption<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
         var launchProfileOption = new CliOption<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var noLaunchProfileOption = new CliOption<bool>("--no-launch-profile") { Hidden = true };
+        var noLaunchProfileOption = new CliOption<bool>("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
 
         var rootCommand = new CliRootCommand(Resources.Help)
         {
@@ -159,7 +159,7 @@ internal sealed class CommandLineOptions
             {
                 Quiet = parseResult.GetValue(quietOption),
                 NoHotReload = parseResult.GetValue(noHotReloadOption),
-                NonInteractive = parseResult.GetValue(nonInteractiveOption),
+                NonInteractive = parseResult.GetValue(NonInteractiveOption),
                 Verbose = parseResult.GetValue(verboseOption),
             },
 
@@ -188,11 +188,18 @@ internal sealed class CommandLineOptions
             // skip watch options:
             if (!watchOptions.Contains(optionResult.Option))
             {
-                Debug.Assert(optionResult.IdentifierToken != null);
+                if (optionResult.Option.Name.Equals("--interactive", StringComparison.Ordinal) && parseResult.GetValue(NonInteractiveOption))
+                {
+                    // skip forwarding the interactive token (which may be computed by default) when users pass --non-interactive to watch itself
+                    continue;
+                }
 
+                // Some options _may_ be computed or have defaults, so not all may have an IdentifierToken.
+                // For those that do not, use the Option's Name instead.
+                var optionNameToForward = optionResult.IdentifierToken?.Value ?? optionResult.Option.Name;
                 if (optionResult.Tokens.Count == 0)
                 {
-                    arguments.Add(optionResult.IdentifierToken.Value);
+                    arguments.Add(optionNameToForward);
                 }
                 else if (optionResult.Option.Name == "--property")
                 {
@@ -201,14 +208,14 @@ internal sealed class CommandLineOptions
                         // While dotnet-build allows "/p Name=Value", dotnet-msbuild does not.
                         // Any command that forwards args to dotnet-msbuild will fail if we don't use colon.
                         // See https://github.com/dotnet/sdk/issues/44655.
-                        arguments.Add($"{optionResult.IdentifierToken.Value}:{token.Value}");
+                        arguments.Add($"{optionNameToForward}:{token.Value}");
                     }
                 }
                 else
                 {
                     foreach (var token in optionResult.Tokens)
                     {
-                        arguments.Add(optionResult.IdentifierToken.Value);
+                        arguments.Add(optionNameToForward);
                         arguments.Add(token.Value);
                     }
                 }

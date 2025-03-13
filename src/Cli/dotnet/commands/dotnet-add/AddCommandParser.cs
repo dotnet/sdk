@@ -2,42 +2,40 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics;
-using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Cli.Extensions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class AddCommandParser
 {
-    internal static class AddCommandParser
+    public static readonly string DocsLink = "https://aka.ms/dotnet-add";
+
+    public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CommonLocalizableStrings.ProjectArgumentName)
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-add";
+        Description = CommonLocalizableStrings.ProjectArgumentDescription
+    }.DefaultToCurrentDirectory();
 
-        public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CommonLocalizableStrings.ProjectArgumentName)
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
+    {
+        return Command;
+    }
+
+    private static CliCommand ConstructCommand()
+    {
+        var command = new DocumentedCommand("add", DocsLink, LocalizableStrings.NetAddCommand)
         {
-            Description = CommonLocalizableStrings.ProjectArgumentDescription
-        }.DefaultToCurrentDirectory();
+            Hidden = true
+        };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        command.Arguments.Add(ProjectArgument);
+        command.Subcommands.Add(AddPackageParser.GetCommand());
+        command.Subcommands.Add(AddProjectToProjectReferenceParser.GetCommand());
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new DocumentedCommand("add", DocsLink, LocalizableStrings.NetAddCommand)
-            {
-                Hidden = true
-            };
-
-            command.Arguments.Add(ProjectArgument);
-            command.Subcommands.Add(AddPackageParser.GetCommand());
-            command.Subcommands.Add(AddProjectToProjectReferenceParser.GetCommand());
-
-            command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-            return command;
-        }
+        return command;
     }
 }

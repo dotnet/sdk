@@ -3,16 +3,15 @@
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord
+namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+
+internal interface IWorkloadInstallationRecordRepository
 {
-    internal interface IWorkloadInstallationRecordRepository
-    {
-        IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand);
+    IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand);
 
-        void WriteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand);
+    void WriteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand);
 
-        void DeleteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand);
+    void DeleteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand);
 
-        IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords();
-    }
+    IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords();
 }

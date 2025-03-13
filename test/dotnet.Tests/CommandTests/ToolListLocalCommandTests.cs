@@ -5,9 +5,9 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolManifest;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;

@@ -1,21 +1,19 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+namespace Microsoft.DotNet.Cli;
 
-namespace Microsoft.DotNet.Cli
+internal class TopLevelCommandParserResult
 {
-    internal class TopLevelCommandParserResult
+    public static TopLevelCommandParserResult Empty
     {
-        public static TopLevelCommandParserResult Empty
-        {
-            get { return new TopLevelCommandParserResult(string.Empty); }
-        }
+        get { return new TopLevelCommandParserResult(string.Empty); }
+    }
 
-        public string Command { get; }
+    public string Command { get; }
 
-        public TopLevelCommandParserResult(string command)
-        {
-            Command = command;
-        }
+    public TopLevelCommandParserResult(string command)
+    {
+        Command = command;
     }
 }

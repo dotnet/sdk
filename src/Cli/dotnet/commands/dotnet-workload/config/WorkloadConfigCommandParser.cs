@@ -4,41 +4,40 @@
 using System.CommandLine;
 using Microsoft.DotNet.Workloads.Workload.Config;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class WorkloadConfigCommandParser
 {
-    internal static class WorkloadConfigCommandParser
+    //  dotnet workload config --update-mode workload-set
+
+    public static readonly string UpdateMode_WorkloadSet = "workload-set";
+    public static readonly string UpdateMode_Manifests = "manifests";
+
+    public static readonly CliOption<string> UpdateMode = new("--update-mode")
     {
-        //  dotnet workload config --update-mode workload-set
+        Description = LocalizableStrings.UpdateModeDescription,
+        Arity = ArgumentArity.ZeroOrOne
+    };
 
-        public static readonly string UpdateMode_WorkloadSet = "workload-set";
-        public static readonly string UpdateMode_Manifests = "manifests";
+    private static readonly CliCommand Command = ConstructCommand();
 
-        public static readonly CliOption<string> UpdateMode = new("--update-mode")
+    public static CliCommand GetCommand()
+    {
+        return Command;
+    }
+
+    private static CliCommand ConstructCommand()
+    {
+        UpdateMode.AcceptOnlyFromAmong(UpdateMode_WorkloadSet, UpdateMode_Manifests);
+
+        CliCommand command = new("config", LocalizableStrings.CommandDescription);
+        command.Options.Add(UpdateMode);
+
+        command.SetAction(parseResult =>
         {
-            Description = LocalizableStrings.UpdateModeDescription,
-            Arity = ArgumentArity.ZeroOrOne
-        };
+            new WorkloadConfigCommand(parseResult).Execute();
+        });
 
-        private static readonly CliCommand Command = ConstructCommand();
-
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
-
-        private static CliCommand ConstructCommand()
-        {
-            UpdateMode.AcceptOnlyFromAmong(UpdateMode_WorkloadSet, UpdateMode_Manifests);
-
-            CliCommand command = new("config", LocalizableStrings.CommandDescription);
-            command.Options.Add(UpdateMode);
-
-            command.SetAction(parseResult =>
-            {
-                new WorkloadConfigCommand(parseResult).Execute();
-            });
-
-            return command;
-        }
+        return command;
     }
 }

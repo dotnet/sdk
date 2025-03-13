@@ -5,24 +5,23 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Reference.List;
 using LocalizableStrings = Microsoft.DotNet.Tools.Reference.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class ReferenceListCommandParser
 {
-    internal static class ReferenceListCommandParser
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        return Command;
+    }
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+    private static CliCommand ConstructCommand()
+    {
+        var command = new CliCommand("list", LocalizableStrings.AppFullName);
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new CliCommand("list", LocalizableStrings.AppFullName);
+        command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
 
-            command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
-
-            return command;
-        }
+        return command;
     }
 }

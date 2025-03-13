@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.ToolManifest;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
-using Microsoft.DotNet.ToolManifest;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Tests
                 CommandName = $"dotnet-{toolCommandNameA.ToString()}",
             });
 
-            action.Should().Throw<GracefulException>(string.Format(CommandFactory.LocalizableStrings.NeedRunToolRestore,
+            action.Should().Throw<GracefulException>(string.Format(Cli.CommandFactory.LocalizableStrings.NeedRunToolRestore,
                 toolCommandNameA.ToString()));
         }
 
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Tests
                 CommandName = $"dotnet-{toolCommandNameA.ToString()}",
             });
 
-            action.Should().Throw<GracefulException>(string.Format(CommandFactory.LocalizableStrings.NeedRunToolRestore,
+            action.Should().Throw<GracefulException>(string.Format(Cli.CommandFactory.LocalizableStrings.NeedRunToolRestore,
                 toolCommandNameA.ToString()));
         }
 

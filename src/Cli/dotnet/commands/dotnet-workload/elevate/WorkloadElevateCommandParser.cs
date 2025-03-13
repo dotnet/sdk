@@ -5,27 +5,26 @@ using System.CommandLine;
 using Microsoft.DotNet.Workloads.Workload.Elevate;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Elevate.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class WorkloadElevateCommandParser
 {
-    internal static class WorkloadElevateCommandParser
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        return Command;
+    }
 
-        public static CliCommand GetCommand()
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("elevate", LocalizableStrings.CommandDescription)
         {
-            return Command;
-        }
+            Hidden = true
+        };
 
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("elevate", LocalizableStrings.CommandDescription)
-            {
-                Hidden = true
-            };
+        command.SetAction((parseResult) => new WorkloadElevateCommand(parseResult).Execute());
 
-            command.SetAction((parseResult) => new WorkloadElevateCommand(parseResult).Execute());
-
-            return command;
-        }
+        return command;
     }
 }

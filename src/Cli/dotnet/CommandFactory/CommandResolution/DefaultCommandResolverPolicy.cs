@@ -3,63 +3,62 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class DefaultCommandResolverPolicy : ICommandResolverPolicy
 {
-    public class DefaultCommandResolverPolicy : ICommandResolverPolicy
+    public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
     {
-        public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
+        return Create(currentWorkingDirectory);
+    }
+
+    public static CompositeCommandResolver Create(string currentWorkingDirectory = null)
+    {
+        var environment = new EnvironmentProvider();
+        var packagedCommandSpecFactory = new PackagedCommandSpecFactoryWithCliRuntime();
+        var publishedPathCommandSpecFactory = new PublishPathCommandSpecFactory();
+
+        var platformCommandSpecFactory = default(IPlatformCommandSpecFactory);
+        if (OperatingSystem.IsWindows())
         {
-            return Create(currentWorkingDirectory);
+            platformCommandSpecFactory = new WindowsExePreferredCommandSpecFactory();
+        }
+        else
+        {
+            platformCommandSpecFactory = new GenericPlatformCommandSpecFactory();
         }
 
-        public static CompositeCommandResolver Create(string currentWorkingDirectory = null)
-        {
-            var environment = new EnvironmentProvider();
-            var packagedCommandSpecFactory = new PackagedCommandSpecFactoryWithCliRuntime();
-            var publishedPathCommandSpecFactory = new PublishPathCommandSpecFactory();
+        return CreateDefaultCommandResolver(
+            environment,
+            packagedCommandSpecFactory,
+            platformCommandSpecFactory,
+            publishedPathCommandSpecFactory,
+            currentWorkingDirectory);
+    }
 
-            var platformCommandSpecFactory = default(IPlatformCommandSpecFactory);
-            if (OperatingSystem.IsWindows())
-            {
-                platformCommandSpecFactory = new WindowsExePreferredCommandSpecFactory();
-            }
-            else
-            {
-                platformCommandSpecFactory = new GenericPlatformCommandSpecFactory();
-            }
+    public static CompositeCommandResolver CreateDefaultCommandResolver(
+        IEnvironmentProvider environment,
+        IPackagedCommandSpecFactory packagedCommandSpecFactory,
+        IPlatformCommandSpecFactory platformCommandSpecFactory,
+        IPublishedPathCommandSpecFactory publishedPathCommandSpecFactory,
+        string currentWorkingDirectory = null)
+    {
+        var compositeCommandResolver = new CompositeCommandResolver();
 
-            return CreateDefaultCommandResolver(
-                environment,
-                packagedCommandSpecFactory,
-                platformCommandSpecFactory,
-                publishedPathCommandSpecFactory,
-                currentWorkingDirectory);
-        }
+        compositeCommandResolver.AddCommandResolver(new MuxerCommandResolver());
+        compositeCommandResolver.AddCommandResolver(new DotnetToolsCommandResolver());
+        compositeCommandResolver.AddCommandResolver(new LocalToolsCommandResolver(currentWorkingDirectory: currentWorkingDirectory));
+        compositeCommandResolver.AddCommandResolver(new RootedCommandResolver());
+        compositeCommandResolver.AddCommandResolver(
+            new ProjectToolsCommandResolver(packagedCommandSpecFactory, environment));
+        compositeCommandResolver.AddCommandResolver(new AppBaseDllCommandResolver());
+        compositeCommandResolver.AddCommandResolver(
+            new AppBaseCommandResolver(environment, platformCommandSpecFactory));
+        compositeCommandResolver.AddCommandResolver(
+            new PathCommandResolver(environment, platformCommandSpecFactory));
+        compositeCommandResolver.AddCommandResolver(
+            new PublishedPathCommandResolver(environment, publishedPathCommandSpecFactory));
 
-        public static CompositeCommandResolver CreateDefaultCommandResolver(
-            IEnvironmentProvider environment,
-            IPackagedCommandSpecFactory packagedCommandSpecFactory,
-            IPlatformCommandSpecFactory platformCommandSpecFactory,
-            IPublishedPathCommandSpecFactory publishedPathCommandSpecFactory,
-            string currentWorkingDirectory = null)
-        {
-            var compositeCommandResolver = new CompositeCommandResolver();
-
-            compositeCommandResolver.AddCommandResolver(new MuxerCommandResolver());
-            compositeCommandResolver.AddCommandResolver(new DotnetToolsCommandResolver());
-            compositeCommandResolver.AddCommandResolver(new LocalToolsCommandResolver(currentWorkingDirectory: currentWorkingDirectory));
-            compositeCommandResolver.AddCommandResolver(new RootedCommandResolver());
-            compositeCommandResolver.AddCommandResolver(
-                new ProjectToolsCommandResolver(packagedCommandSpecFactory, environment));
-            compositeCommandResolver.AddCommandResolver(new AppBaseDllCommandResolver());
-            compositeCommandResolver.AddCommandResolver(
-                new AppBaseCommandResolver(environment, platformCommandSpecFactory));
-            compositeCommandResolver.AddCommandResolver(
-                new PathCommandResolver(environment, platformCommandSpecFactory));
-            compositeCommandResolver.AddCommandResolver(
-                new PublishedPathCommandResolver(environment, publishedPathCommandSpecFactory));
-
-            return compositeCommandResolver;
-        }
+        return compositeCommandResolver;
     }
 }

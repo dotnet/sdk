@@ -3,41 +3,40 @@
 
 using Microsoft.Build.Framework;
 
-namespace Microsoft.DotNet.Tools.MSBuild
+namespace Microsoft.DotNet.Tools.MSBuild;
+
+public sealed class MSBuildForwardingLogger : IForwardingLogger
 {
-    public sealed class MSBuildForwardingLogger : IForwardingLogger
+    public LoggerVerbosity Verbosity { get; set; }
+
+    public string Parameters { get; set; }
+
+    public IEventRedirector BuildEventRedirector { get; set; }
+
+    public int NodeId { get; set; }
+
+    public void Initialize(IEventSource eventSource)
     {
-        public LoggerVerbosity Verbosity { get; set; }
-
-        public string Parameters { get; set; }
-
-        public IEventRedirector BuildEventRedirector { get; set; }
-
-        public int NodeId { get; set; }
-
-        public void Initialize(IEventSource eventSource)
+        // Declare lack of dependency on having properties/items in ProjectStarted events
+        // (since this logger doesn't ever care about those events it's irrelevant)
+        if (eventSource is IEventSource4 eventSource4)
         {
-            // Declare lack of dependency on having properties/items in ProjectStarted events
-            // (since this logger doesn't ever care about those events it's irrelevant)
-            if (eventSource is IEventSource4 eventSource4)
-            {
-                eventSource4.IncludeEvaluationPropertiesAndItems();
-            }
-
-            // Only forward telemetry events
-            if (eventSource is IEventSource2 eventSource2)
-            {
-                eventSource2.TelemetryLogged += (sender, args) => BuildEventRedirector.ForwardEvent(args);
-            }
+            eventSource4.IncludeEvaluationPropertiesAndItems();
         }
 
-        public void Initialize(IEventSource eventSource, int nodeCount)
+        // Only forward telemetry events
+        if (eventSource is IEventSource2 eventSource2)
         {
-            Initialize(eventSource);
+            eventSource2.TelemetryLogged += (sender, args) => BuildEventRedirector.ForwardEvent(args);
         }
+    }
 
-        public void Shutdown()
-        {
-        }
+    public void Initialize(IEventSource eventSource, int nodeCount)
+    {
+        Initialize(eventSource);
+    }
+
+    public void Shutdown()
+    {
     }
 }

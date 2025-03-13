@@ -5,33 +5,32 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using LocalizableStrings = Microsoft.DotNet.Tools.Build.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.MSBuild
+namespace Microsoft.DotNet.Tools.MSBuild;
+
+internal static class MSBuildCommandParser
 {
-    internal static class MSBuildCommandParser
+    public static readonly string DocsLink = "https://aka.ms/dotnet-msbuild";
+
+    public static readonly CliArgument<string[]> Arguments = new("arguments");
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-msbuild";
+        return Command;
+    }
 
-        public static readonly CliArgument<string[]> Arguments = new("arguments");
-
-        private static readonly CliCommand Command = ConstructCommand();
-
-        public static CliCommand GetCommand()
+    private static CliCommand ConstructCommand()
+    {
+        var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.AppFullName)
         {
-            return Command;
-        }
+            Arguments
+        };
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.AppFullName)
-            {
-                Arguments
-            };
+        command.Options.Add(CommonOptions.DisableBuildServersOption);
 
-            command.Options.Add(CommonOptions.DisableBuildServersOption);
+        command.SetAction(MSBuildCommand.Run);
 
-            command.SetAction(MSBuildCommand.Run);
-
-            return command;
-        }
+        return command;
     }
 }

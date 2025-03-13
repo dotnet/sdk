@@ -3,24 +3,23 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Tools.Sdk.Check
+namespace Microsoft.DotNet.Tools.Sdk.Check;
+
+internal static class SdkCheckCommandParser
 {
-    internal static class SdkCheckCommandParser
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        return Command;
+    }
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("check", LocalizableStrings.AppFullName);
 
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("check", LocalizableStrings.AppFullName);
+        command.SetAction(SdkCheckCommand.Run);
 
-            command.SetAction(SdkCheckCommand.Run);
-
-            return command;
-        }
+        return command;
     }
 }

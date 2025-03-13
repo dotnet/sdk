@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 

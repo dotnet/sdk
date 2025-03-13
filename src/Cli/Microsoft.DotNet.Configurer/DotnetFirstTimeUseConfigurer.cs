@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Configurer
         private readonly IFileSentinel _toolPathSentinel;
         private readonly IEnvironmentPath _pathAdder;
         private readonly Dictionary<string, double>? _performanceMeasurements;
+        private readonly bool _skipFirstTimeUseCheck;
 
         public DotnetFirstTimeUseConfigurer(
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel,
@@ -25,7 +26,8 @@ namespace Microsoft.DotNet.Configurer
             DotnetFirstRunConfiguration dotnetFirstRunConfiguration,
             IReporter reporter,
             IEnvironmentPath pathAdder,
-            Dictionary<string, double>? performanceMeasurements = null)
+            Dictionary<string, double>? performanceMeasurements = null,
+            bool skipFirstTimeUseCheck = false)
         {
             _firstTimeUseNoticeSentinel = firstTimeUseNoticeSentinel;
             _aspNetCertificateSentinel = aspNetCertificateSentinel;
@@ -35,6 +37,7 @@ namespace Microsoft.DotNet.Configurer
             _reporter = reporter;
             _pathAdder = pathAdder ?? throw new ArgumentNullException(nameof(pathAdder));
             _performanceMeasurements ??= performanceMeasurements;
+            _skipFirstTimeUseCheck = skipFirstTimeUseCheck;
         }
 
         public void Configure()
@@ -48,7 +51,7 @@ namespace Microsoft.DotNet.Configurer
                 }
             }
 
-            var isFirstTimeUse = !_firstTimeUseNoticeSentinel.Exists();
+            var isFirstTimeUse = !_skipFirstTimeUseCheck && !_firstTimeUseNoticeSentinel.Exists();
             var canShowFirstUseMessages = isFirstTimeUse && !_dotnetFirstRunConfiguration.NoLogo;
             if (isFirstTimeUse)
             {

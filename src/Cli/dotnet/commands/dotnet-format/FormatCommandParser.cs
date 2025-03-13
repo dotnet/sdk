@@ -4,29 +4,28 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 
-namespace Microsoft.DotNet.Tools.Format
+namespace Microsoft.DotNet.Tools.Format;
+
+internal static partial class FormatCommandParser
 {
-    internal static partial class FormatCommandParser
+    public static readonly CliArgument<string[]> Arguments = new("arguments");
+
+    public static readonly string DocsLink = "https://aka.ms/dotnet-format";
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly CliArgument<string[]> Arguments = new("arguments");
+        return Command;
+    }
 
-        public static readonly string DocsLink = "https://aka.ms/dotnet-format";
-
-        private static readonly CliCommand Command = ConstructCommand();
-
-        public static CliCommand GetCommand()
+    private static CliCommand ConstructCommand()
+    {
+        var formatCommand = new DocumentedCommand("format", DocsLink)
         {
-            return Command;
-        }
-
-        private static CliCommand ConstructCommand()
-        {
-            var formatCommand = new DocumentedCommand("format", DocsLink)
-            {
-                Arguments
-            };
-            formatCommand.SetAction((ParseResult parseResult) => FormatCommand.Run(parseResult.GetValue(Arguments)));
-            return formatCommand;
-        }
+            Arguments
+        };
+        formatCommand.SetAction((ParseResult parseResult) => FormatCommand.Run(parseResult.GetValue(Arguments)));
+        return formatCommand;
     }
 }

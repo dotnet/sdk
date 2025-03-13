@@ -57,13 +57,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             {
                 if (Path.GetFileNameWithoutExtension(path) == "blazorwasm")
                 {
-                    // Since blazor.boot.json gets modified on each build, we explicitly exclude it from compression so
+                    // Since boot config gets modified on each build, we explicitly exclude it from compression so
                     // its compressed asset doesn't fail the thumb print check.
-                    document.Root.Add(XElement.Parse("""
-                        <PropertyGroup>
-                          <CompressionExcludePatterns>$(CompressionExcludePatterns);_framework\blazor.boot.json</CompressionExcludePatterns>
-                        </PropertyGroup>
-                        """));
+                    document.Root.Add(XElement.Parse($"<PropertyGroup><CompressionExcludePatterns>$(CompressionExcludePatterns);_framework\\{WasmBootConfigFileName}</CompressionExcludePatterns></PropertyGroup>"));
                 }
             });
 
@@ -117,7 +113,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Pass();
 
             var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.wasm");
-            var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json");
+            var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", WasmBootConfigFileName);
 
             // Assert
             for (var i = 0; i < 3; i++)
@@ -145,7 +141,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             {
                 new FileInfo(satelliteAssemblyFile).Should().Exist();
 
-                var bootJsonFile = JsonSerializer.Deserialize<BootJsonData>(File.ReadAllText(bootJson), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
                 var satelliteResources = bootJsonFile.resources.satelliteResources;
 
 
@@ -178,7 +174,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Pass();
 
             var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.wasm");
-            var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json");
+            var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", WasmBootConfigFileName);
 
             build = CreateBuildCommand(projectDirectory, "blazorwasm");
             build.Execute("/bl:build2-msbuild.binlog")
@@ -187,7 +183,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(satelliteAssemblyFile).Should().NotExist();
 
-            var bootJsonFile = JsonSerializer.Deserialize<BootJsonData>(File.ReadAllText(bootJson), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             var satelliteResources = bootJsonFile.resources.satelliteResources;
             satelliteResources.Should().BeNull();
 
@@ -198,7 +194,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Pass();
 
             new FileInfo(satelliteAssemblyFile).Should().Exist();
-            bootJsonFile = JsonSerializer.Deserialize<BootJsonData>(File.ReadAllText(bootJson), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             satelliteResources = bootJsonFile.resources.satelliteResources;
             satelliteResources.Should().HaveCount(1);
 
@@ -229,7 +225,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Pass();
 
             var satelliteAssemblyFile = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "ja", "blazorwasm.resources.wasm");
-            var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", "blazor.boot.json");
+            var bootJson = Path.Combine(build.GetOutputDirectory(DefaultTfm).ToString(), "wwwroot", "_framework", WasmBootConfigFileName);
 
             build = CreateBuildCommand(projectDirectory, "blazorwasm");
             build.Execute()
@@ -238,7 +234,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(satelliteAssemblyFile).Should().Exist();
 
-            var bootJsonFile = JsonSerializer.Deserialize<BootJsonData>(File.ReadAllText(bootJson), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             var satelliteResources = bootJsonFile.resources.satelliteResources;
             satelliteResources.Should().HaveCount(1);
 
@@ -254,7 +250,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            bootJsonFile = JsonSerializer.Deserialize<BootJsonData>(File.ReadAllText(bootJson), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             satelliteResources = bootJsonFile.resources.satelliteResources;
             satelliteResources.Should().BeNull();
         }

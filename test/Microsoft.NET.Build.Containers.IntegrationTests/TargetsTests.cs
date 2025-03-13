@@ -26,8 +26,7 @@ public class TargetsTests
         }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-        //Assert.True(instance.Build([ ComputeContainerConfig ], []));
-        instance.Build([ ComputeContainerConfig ], []);
+        instance.Build([ _ComputeContainerExecutionArgs ], []);
         var computedAppCommand = instance.GetItems(ContainerAppCommand).Select(i => i.EvaluatedInclude);
 
         // The test was not testing anything previously, as the list returned was zero length,
@@ -35,7 +34,6 @@ public class TargetsTests
         // So, to make sure we actually test something, we check that we actually get the expected collection.
         computedAppCommand.Should().BeEquivalentTo(expectedAppCommandArgs);
     }
-
 
     public static TheoryData<string, string, bool, string[]> ContainerAppCommands()
     {
@@ -316,7 +314,7 @@ public class TargetsTests
         }, projectName: $"{nameof(CanComputeContainerUser)}_{tfm}_{rid}_{expectedUser}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        instance.Build(new[] { _ComputeContainerExecutionArgs }, new[] { logger }, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedTag = instance.GetProperty("ContainerUser")?.EvaluatedValue;
         computedTag.Should().Be(expectedUser);
     }

@@ -5,28 +5,27 @@ using System.CommandLine;
 using Microsoft.DotNet.Workloads.Workload.Clean;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Clean.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class WorkloadCleanCommandParser
 {
-    internal static class WorkloadCleanCommandParser
+    public static readonly CliOption<bool> CleanAllOption = new("--all") { Description = LocalizableStrings.CleanAllOptionDescription };
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly CliOption<bool> CleanAllOption = new("--all") { Description = LocalizableStrings.CleanAllOptionDescription };
+        return Command;
+    }
 
-        private static readonly CliCommand Command = ConstructCommand();
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("clean", LocalizableStrings.CommandDescription);
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+        command.Options.Add(CleanAllOption);
 
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("clean", LocalizableStrings.CommandDescription);
+        command.SetAction((parseResult) => new WorkloadCleanCommand(parseResult).Execute());
 
-            command.Options.Add(CleanAllOption);
-
-            command.SetAction((parseResult) => new WorkloadCleanCommand(parseResult).Execute());
-
-            return command;
-        }
+        return command;
     }
 }

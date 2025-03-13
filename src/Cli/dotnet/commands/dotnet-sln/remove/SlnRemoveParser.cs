@@ -5,33 +5,32 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Sln.Remove;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+public static class SlnRemoveParser
 {
-    public static class SlnRemoveParser
+    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.RemoveProjectPathArgumentName)
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.RemoveProjectPathArgumentName)
-        {
-            HelpName = LocalizableStrings.RemoveProjectPathArgumentName,
-            Description = LocalizableStrings.RemoveProjectPathArgumentDescription,
-            Arity = ArgumentArity.ZeroOrMore
-        };
+        HelpName = LocalizableStrings.RemoveProjectPathArgumentName,
+        Description = LocalizableStrings.RemoveProjectPathArgumentDescription,
+        Arity = ArgumentArity.ZeroOrMore
+    };
 
-        private static readonly CliCommand Command = ConstructCommand();
+    private static readonly CliCommand Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+    public static CliCommand GetCommand()
+    {
+        return Command;
+    }
 
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("remove", LocalizableStrings.RemoveAppFullName);
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("remove", LocalizableStrings.RemoveAppFullName);
 
-            command.Arguments.Add(ProjectPathArgument);
+        command.Arguments.Add(ProjectPathArgument);
 
-            command.SetAction((parseResult) => new RemoveProjectFromSolutionCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new RemoveProjectFromSolutionCommand(parseResult).Execute());
 
-            return command;
-        }
+        return command;
     }
 }

@@ -118,11 +118,6 @@
       </ResourcesReplacement>
     </ItemGroup>
 
-    <!-- Consumed By Publish -->
-    <ItemGroup>
-      <GeneratedInstallers Include="$(SdkPKGInstallerFile);$(CombinedFrameworkSdkHostPKGInstallerFile)" />
-    </ItemGroup>
-
     <ItemGroup>
       <SdkProductArchiveResourcesTemplateFiles Include="$(SdkPkgSourcesRootDirectory)/resources/**/*" />
 
@@ -232,7 +227,7 @@
   </Target>
 
   <Target Name="GeneratePkgs"
-          BeforeTargets="Pack"
+          AfterTargets="Build"
           DependsOnTargets="GenerateSdkPkg;GenerateSdkProductArchive" />
 
 </Project>

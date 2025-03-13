@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -218,8 +219,11 @@ namespace Microsoft.DotNet.Watch
                         }
                         catch (OperationCanceledException)
                         {
+                            // Ctrl+C, forced restart, or process exited.
                             Debug.Assert(iterationCancellationToken.IsCancellationRequested);
-                            waitForFileChangeBeforeRestarting = false;
+
+                            // Will wait for a file change if process exited.
+                            waitForFileChangeBeforeRestarting = true;
                             break;
                         }
 

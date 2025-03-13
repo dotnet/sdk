@@ -4,14 +4,13 @@
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Fsi
+namespace Microsoft.DotNet.Tools.Fsi;
+
+public class FsiCommand
 {
-    public class FsiCommand
+    public static int Run(string[] args)
     {
-        public static int Run(string[] args)
-        {
-            DebugHelper.HandleDebugSwitch(ref args);
-            return new FsiForwardingApp(args).Execute();
-        }
+        DebugHelper.HandleDebugSwitch(ref args);
+        return new FsiForwardingApp(args).Execute();
     }
 }

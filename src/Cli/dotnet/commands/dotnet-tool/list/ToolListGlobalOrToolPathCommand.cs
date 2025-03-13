@@ -3,139 +3,139 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.List
+namespace Microsoft.DotNet.Tools.Tool.List;
+
+internal delegate IToolPackageStoreQuery CreateToolPackageStore(DirectoryPath? nonGlobalLocation = null);
+
+internal class ToolListGlobalOrToolPathCommand : CommandBase
 {
-    internal delegate IToolPackageStoreQuery CreateToolPackageStore(DirectoryPath? nonGlobalLocation = null);
+    public const string CommandDelimiter = ", ";
+    private readonly IReporter _reporter;
+    private readonly IReporter _errorReporter;
+    private CreateToolPackageStore _createToolPackageStore;
 
-    internal class ToolListGlobalOrToolPathCommand : CommandBase
+    public ToolListGlobalOrToolPathCommand(
+        ParseResult result,
+        CreateToolPackageStore createToolPackageStore = null,
+        IReporter reporter = null)
+        : base(result)
     {
-        public const string CommandDelimiter = ", ";
-        private readonly IReporter _reporter;
-        private readonly IReporter _errorReporter;
-        private CreateToolPackageStore _createToolPackageStore;
+        _reporter = reporter ?? Reporter.Output;
+        _errorReporter = reporter ?? Reporter.Error;
+        _createToolPackageStore = createToolPackageStore ?? ToolPackageFactory.CreateToolPackageStoreQuery;
+    }
 
-        public ToolListGlobalOrToolPathCommand(
-            ParseResult result,
-            CreateToolPackageStore createToolPackageStore = null,
-            IReporter reporter = null)
-            : base(result)
+    public override int Execute()
+    {
+        var toolPathOption = _parseResult.GetValue(ToolListCommandParser.ToolPathOption);
+        var packageIdArgument = _parseResult.GetValue(ToolListCommandParser.PackageIdArgument);
+
+        PackageId? packageId = null;
+        if (!string.IsNullOrWhiteSpace(packageIdArgument))
         {
-            _reporter = reporter ?? Reporter.Output;
-            _errorReporter = reporter ?? Reporter.Error;
-            _createToolPackageStore = createToolPackageStore ?? ToolPackageFactory.CreateToolPackageStoreQuery;
+            packageId = new PackageId(packageIdArgument);
         }
 
-        public override int Execute()
+        DirectoryPath? toolPath = null;
+        if (!string.IsNullOrWhiteSpace(toolPathOption))
         {
-            var toolPathOption = _parseResult.GetValue(ToolListCommandParser.ToolPathOption);
-            var packageIdArgument = _parseResult.GetValue(ToolListCommandParser.PackageIdArgument);
-
-            PackageId? packageId = null;
-            if (!string.IsNullOrWhiteSpace(packageIdArgument))
+            if (!Directory.Exists(toolPathOption))
             {
-                packageId = new PackageId(packageIdArgument);
-            }
-
-            DirectoryPath? toolPath = null;
-            if (!string.IsNullOrWhiteSpace(toolPathOption))
-            {
-                if (!Directory.Exists(toolPathOption))
-                {
-                    throw new GracefulException(
-                        string.Format(
-                            LocalizableStrings.InvalidToolPathOption,
-                            toolPathOption));
-                }
-
-                toolPath = new DirectoryPath(toolPathOption);
-            }
-
-            var packageEnumerable = GetPackages(toolPath, packageId);
-
-            var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
-            if (formatValue is ToolListOutputFormat.json)
-            {
-                PrintJson(packageEnumerable);
-            }
-            else
-            {
-                PrintTable(packageEnumerable);
-            }
-
-            if (packageId.HasValue && !packageEnumerable.Any())
-            {
-                // return 1 if target package was not found
-                return 1;
-            }
-            return 0;
-        }
-
-        public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
-        {
-            return _createToolPackageStore(toolPath).EnumeratePackages()
-                .Where((p) => PackageHasCommand(p) && PackageIdMatches(p, packageId))
-                .OrderBy(p => p.Id)
-                .ToArray();
-        }
-
-        internal static bool PackageIdMatches(IToolPackage package, PackageId? packageId)
-        {
-            return !packageId.HasValue || package.Id.Equals(packageId);
-        }
-
-        private bool PackageHasCommand(IToolPackage package)
-        {
-            try
-            {
-                // Attempt to read the command
-                // If it fails, print a warning and treat as no commands
-                return package.Command is not null;
-            }
-            catch (Exception ex) when (ex is ToolConfigurationException)
-            {
-                _errorReporter.WriteLine(
+                throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.InvalidPackageWarning,
-                        package.Id,
-                        ex.Message).Yellow());
-                return false;
+                        LocalizableStrings.InvalidToolPathOption,
+                        toolPathOption));
             }
+
+            toolPath = new DirectoryPath(toolPathOption);
         }
 
-        private void PrintTable(IEnumerable<IToolPackage> packageEnumerable)
+        var packageEnumerable = GetPackages(toolPath, packageId);
+
+        var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
+        if (formatValue is ToolListOutputFormat.json)
         {
-            var table = new PrintableTable<IToolPackage>();
-
-            table.AddColumn(
-                LocalizableStrings.PackageIdColumn,
-                p => p.Id.ToString());
-            table.AddColumn(
-                LocalizableStrings.VersionColumn,
-                p => p.Version.ToNormalizedString());
-            table.AddColumn(
-                LocalizableStrings.CommandsColumn,
-                p => p.Command.Name.ToString());
-
-            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+            PrintJson(packageEnumerable);
+        }
+        else
+        {
+            PrintTable(packageEnumerable);
         }
 
-        private void PrintJson(IEnumerable<IToolPackage> packageEnumerable)
+        if (packageId.HasValue && !packageEnumerable.Any())
         {
-            var jsonData = new VersionedDataContract<ToolListJsonContract[]>()
+            // return 1 if target package was not found
+            return 1;
+        }
+        return 0;
+    }
+
+    public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
+    {
+        return _createToolPackageStore(toolPath).EnumeratePackages()
+            .Where((p) => PackageHasCommand(p) && PackageIdMatches(p, packageId))
+            .OrderBy(p => p.Id)
+            .ToArray();
+    }
+
+    internal static bool PackageIdMatches(IToolPackage package, PackageId? packageId)
+    {
+        return !packageId.HasValue || package.Id.Equals(packageId);
+    }
+
+    private bool PackageHasCommand(IToolPackage package)
+    {
+        try
+        {
+            // Attempt to read the command
+            // If it fails, print a warning and treat as no commands
+            return package.Command is not null;
+        }
+        catch (Exception ex) when (ex is ToolConfigurationException)
+        {
+            _errorReporter.WriteLine(
+                string.Format(
+                    LocalizableStrings.InvalidPackageWarning,
+                    package.Id,
+                    ex.Message).Yellow());
+            return false;
+        }
+    }
+
+    private void PrintTable(IEnumerable<IToolPackage> packageEnumerable)
+    {
+        var table = new PrintableTable<IToolPackage>();
+
+        table.AddColumn(
+            LocalizableStrings.PackageIdColumn,
+            p => p.Id.ToString());
+        table.AddColumn(
+            LocalizableStrings.VersionColumn,
+            p => p.Version.ToNormalizedString());
+        table.AddColumn(
+            LocalizableStrings.CommandsColumn,
+            p => p.Command.Name.ToString());
+
+        table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+    }
+
+    private void PrintJson(IEnumerable<IToolPackage> packageEnumerable)
+    {
+        var jsonData = new VersionedDataContract<ToolListJsonContract[]>()
+        {
+            Data = packageEnumerable.Select(p => new ToolListJsonContract
             {
-                Data = packageEnumerable.Select(p => new ToolListJsonContract
-                {
-                    PackageId = p.Id.ToString(),
-                    Version = p.Version.ToNormalizedString(),
-                    Commands = [p.Command.Name.Value]
-                }).ToArray()
-            };
-            var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
-            _reporter.WriteLine(jsonText);
-        }
+                PackageId = p.Id.ToString(),
+                Version = p.Version.ToNormalizedString(),
+                Commands = [p.Command.Name.Value]
+            }).ToArray()
+        };
+        var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+        _reporter.WriteLine(jsonText);
     }
 }

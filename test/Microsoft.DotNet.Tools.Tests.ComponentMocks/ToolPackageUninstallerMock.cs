@@ -4,7 +4,7 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks

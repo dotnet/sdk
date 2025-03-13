@@ -4,28 +4,27 @@
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Fsi;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class FsiCommandParser
 {
-    internal static class FsiCommandParser
+    public static readonly string DocsLink = "https://aka.ms/dotnet-fsi";
+
+    public static readonly CliArgument<string[]> Arguments = new("arguments");
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-fsi";
+        return Command;
+    }
 
-        public static readonly CliArgument<string[]> Arguments = new("arguments");
+    private static CliCommand ConstructCommand()
+    {
+        DocumentedCommand command = new("fsi", DocsLink) { Arguments };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        command.SetAction((ParseResult parseResult) => FsiCommand.Run(parseResult.GetValue(Arguments)));
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
-
-        private static CliCommand ConstructCommand()
-        {
-            DocumentedCommand command = new("fsi", DocsLink) { Arguments };
-
-            command.SetAction((ParseResult parseResult) => FsiCommand.Run(parseResult.GetValue(Arguments)));
-
-            return command;
-        }
+        return command;
     }
 }

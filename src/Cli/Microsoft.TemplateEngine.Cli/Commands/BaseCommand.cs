@@ -6,6 +6,7 @@ using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Cli.TabularOutput;

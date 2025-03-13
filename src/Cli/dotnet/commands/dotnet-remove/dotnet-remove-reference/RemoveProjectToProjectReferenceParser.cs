@@ -5,27 +5,26 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Reference.Remove;
 using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Remove.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class RemoveProjectToProjectReferenceParser
 {
-    internal static class RemoveProjectToProjectReferenceParser
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        return Command;
+    }
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+    private static CliCommand ConstructCommand()
+    {
+        var command = new CliCommand("reference", LocalizableStrings.AppFullName);
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+        command.Arguments.Add(ReferenceRemoveCommandParser.ProjectPathArgument);
+        command.Options.Add(ReferenceRemoveCommandParser.FrameworkOption);
 
-            command.Arguments.Add(ReferenceRemoveCommandParser.ProjectPathArgument);
-            command.Options.Add(ReferenceRemoveCommandParser.FrameworkOption);
+        command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
 
-            command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
-
-            return command;
-        }
+        return command;
     }
 }

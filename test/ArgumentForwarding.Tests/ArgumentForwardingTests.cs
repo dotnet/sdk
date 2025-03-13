@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
-using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {

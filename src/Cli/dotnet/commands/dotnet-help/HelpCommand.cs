@@ -4,118 +4,119 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 using NuGetDocumentedCommand = NuGet.CommandLine.XPlat.Commands.DocumentedCommand;
 
-namespace Microsoft.DotNet.Tools.Help
+namespace Microsoft.DotNet.Tools.Help;
+
+public class HelpCommand(string[] helpArgs)
 {
-    public class HelpCommand(string[] helpArgs)
+    public static int Run(ParseResult result)
     {
-        public static int Run(ParseResult result)
+        result.HandleDebugSwitch();
+
+        result.ShowHelpOrErrorIfAppropriate();
+
+        if (result.GetValue(HelpCommandParser.Argument) is string[] args && args is not [])
         {
-            result.HandleDebugSwitch();
-
-            result.ShowHelpOrErrorIfAppropriate();
-
-            if (result.GetValue(HelpCommandParser.Argument) is string[] args && args is not [])
-            {
-                return new HelpCommand(args).Execute();
-            }
-
-            PrintHelp();
-            return 0;
+            return new HelpCommand(args).Execute();
         }
 
-        public static void PrintHelp()
+        PrintHelp();
+        return 0;
+    }
+
+    public static void PrintHelp()
+    {
+        PrintVersionHeader();
+        Reporter.Output.WriteLine(HelpUsageText.UsageText);
+    }
+
+    public static void PrintVersionHeader()
+    {
+        var versionString = string.IsNullOrEmpty(Product.Version) ? string.Empty : $" ({Product.Version})";
+        Reporter.Output.WriteLine(Product.LongName + versionString);
+    }
+
+    public static Process ConfigureProcess(string docUrl)
+    {
+        ProcessStartInfo psInfo;
+        if (OperatingSystem.IsWindows())
         {
-            PrintVersionHeader();
-            Reporter.Output.WriteLine(HelpUsageText.UsageText);
+            psInfo = new ProcessStartInfo
+            {
+                FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"),
+                Arguments = $"/c start {docUrl}"
+            };
         }
-
-        public static void PrintVersionHeader()
+        else if (OperatingSystem.IsMacOS())
         {
-            var versionString = string.IsNullOrEmpty(Product.Version) ? string.Empty : $" ({Product.Version})";
-            Reporter.Output.WriteLine(Product.LongName + versionString);
+            psInfo = new ProcessStartInfo
+            {
+                FileName = @"/usr/bin/open",
+                Arguments = docUrl
+            };
         }
-
-        public static Process ConfigureProcess(string docUrl)
+        else
         {
-            ProcessStartInfo psInfo;
-            if (OperatingSystem.IsWindows())
+            var fileName = File.Exists(@"/usr/bin/xdg-open") ? @"/usr/bin/xdg-open" :
+                           File.Exists(@"/usr/sbin/xdg-open") ? @"/usr/sbin/xdg-open" :
+                           File.Exists(@"/sbin/xdg-open") ? @"/sbin/xdg-open" :
+                           "xdg-open";
+            psInfo = new ProcessStartInfo
             {
-                psInfo = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"),
-                    Arguments = $"/c start {docUrl}"
-                };
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-                psInfo = new ProcessStartInfo
-                {
-                    FileName = @"/usr/bin/open",
-                    Arguments = docUrl
-                };
-            }
-            else
-            {
-                var fileName = File.Exists(@"/usr/bin/xdg-open") ? @"/usr/bin/xdg-open" :
-                               File.Exists(@"/usr/sbin/xdg-open") ? @"/usr/sbin/xdg-open" :
-                               File.Exists(@"/sbin/xdg-open") ? @"/sbin/xdg-open" :
-                               "xdg-open";
-                psInfo = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = docUrl
-                };
-            }
-
-            return new Process
-            {
-                StartInfo = psInfo
+                FileName = fileName,
+                Arguments = docUrl
             };
         }
 
-        public int Execute()
+        return new Process
         {
-            if (TryGetDocsLink(
-                helpArgs,
-                out var docsLink) &&
-                !string.IsNullOrEmpty(docsLink))
-            {
-                var process = ConfigureProcess(docsLink);
-                process.Start();
-                process.WaitForExit();
-                return 0;
-            }
-            else
-            {
-                Reporter.Error.WriteLine(
-                    string.Format(
-                        LocalizableStrings.CommandDoesNotExist,
-                        helpArgs).Red());
-                Reporter.Output.WriteLine(HelpUsageText.UsageText);
-                return 1;
-            }
-        }
+            StartInfo = psInfo
+        };
+    }
 
-        private bool TryGetDocsLink(string[] command, out string docsLink)
+    public int Execute()
+    {
+        if (TryGetDocsLink(
+            helpArgs,
+            out var docsLink) &&
+            !string.IsNullOrEmpty(docsLink))
         {
-            var parsedCommand = Parser.Instance.Parse(["dotnet", .. command]);
-            if (parsedCommand?.CommandResult?.Command is ICommandDocument dc)
-            {
-                docsLink = dc.DocsLink;
-                return true;
-            }
-            else if (parsedCommand?.CommandResult?.Command is NuGetDocumentedCommand ndc)
-            {
-                docsLink = ndc.HelpUrl;
-                return true;
-            }
-            docsLink = null;
-            return false;
+            var process = ConfigureProcess(docsLink);
+            process.Start();
+            process.WaitForExit();
+            return 0;
         }
+        else
+        {
+            Reporter.Error.WriteLine(
+                string.Format(
+                    LocalizableStrings.CommandDoesNotExist,
+                    helpArgs).Red());
+            Reporter.Output.WriteLine(HelpUsageText.UsageText);
+            return 1;
+        }
+    }
+
+    private bool TryGetDocsLink(string[] command, out string docsLink)
+    {
+        var parsedCommand = Parser.Instance.Parse(["dotnet", .. command]);
+        if (parsedCommand?.CommandResult?.Command is ICommandDocument dc)
+        {
+            docsLink = dc.DocsLink;
+            return true;
+        }
+        else if (parsedCommand?.CommandResult?.Command is NuGetDocumentedCommand ndc)
+        {
+            docsLink = ndc.HelpUrl;
+            return true;
+        }
+        docsLink = null;
+        return false;
     }
 }

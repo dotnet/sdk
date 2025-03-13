@@ -3,44 +3,43 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class PathCommandResolverPolicy : ICommandResolverPolicy
 {
-    public class PathCommandResolverPolicy : ICommandResolverPolicy
+    public CompositeCommandResolver CreateCommandResolver(string currentWorkingDirectory = null)
     {
-        public CompositeCommandResolver CreateCommandResolver(string CurrentWorkingDirectory = null)
+        return Create();
+    }
+
+    public static CompositeCommandResolver Create()
+    {
+        var environment = new EnvironmentProvider();
+
+        var platformCommandSpecFactory = default(IPlatformCommandSpecFactory);
+        if (OperatingSystem.IsWindows())
         {
-            return Create();
+            platformCommandSpecFactory = new WindowsExePreferredCommandSpecFactory();
+        }
+        else
+        {
+            platformCommandSpecFactory = new GenericPlatformCommandSpecFactory();
         }
 
-        public static CompositeCommandResolver Create()
-        {
-            var environment = new EnvironmentProvider();
+        return CreatePathCommandResolverPolicy(
+            environment,
+            platformCommandSpecFactory);
+    }
 
-            var platformCommandSpecFactory = default(IPlatformCommandSpecFactory);
-            if (OperatingSystem.IsWindows())
-            {
-                platformCommandSpecFactory = new WindowsExePreferredCommandSpecFactory();
-            }
-            else
-            {
-                platformCommandSpecFactory = new GenericPlatformCommandSpecFactory();
-            }
+    public static CompositeCommandResolver CreatePathCommandResolverPolicy(
+        IEnvironmentProvider environment,
+        IPlatformCommandSpecFactory platformCommandSpecFactory)
+    {
+        var compositeCommandResolver = new CompositeCommandResolver();
 
-            return CreatePathCommandResolverPolicy(
-                environment,
-                platformCommandSpecFactory);
-        }
+        compositeCommandResolver.AddCommandResolver(
+            new PathCommandResolver(environment, platformCommandSpecFactory));
 
-        public static CompositeCommandResolver CreatePathCommandResolverPolicy(
-            IEnvironmentProvider environment,
-            IPlatformCommandSpecFactory platformCommandSpecFactory)
-        {
-            var compositeCommandResolver = new CompositeCommandResolver();
-
-            compositeCommandResolver.AddCommandResolver(
-                new PathCommandResolver(environment, platformCommandSpecFactory));
-
-            return compositeCommandResolver;
-        }
+        return compositeCommandResolver;
     }
 }

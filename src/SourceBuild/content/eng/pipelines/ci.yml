@@ -151,6 +151,7 @@ extends:
       parameters:
         isBuiltFromVmr: true
         isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+        desiredSigning: ${{ parameters.desiredSigning }}
         ${{ if eq(variables.isScheduleTrigger, 'true') }}:
           scope: full
         ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:

@@ -7,79 +7,78 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install
+namespace Microsoft.DotNet.Workloads.Workload.Install;
+
+internal class WorkloadInstallerFactory
 {
-    internal class WorkloadInstallerFactory
+    public static IInstaller GetWorkloadInstaller(
+        IReporter reporter,
+        SdkFeatureBand sdkFeatureBand,
+        IWorkloadResolver workloadResolver,
+        VerbosityOptions verbosity,
+        string userProfileDir,
+        bool verifySignatures,
+        INuGetPackageDownloader nugetPackageDownloader = null,
+        string dotnetDir = null,
+        string tempDirPath = null,
+        PackageSourceLocation packageSourceLocation = null,
+        RestoreActionConfig restoreActionConfig = null,
+        bool elevationRequired = true,
+        bool shouldLog = true)
     {
-        public static IInstaller GetWorkloadInstaller(
-            IReporter reporter,
-            SdkFeatureBand sdkFeatureBand,
-            IWorkloadResolver workloadResolver,
-            VerbosityOptions verbosity,
-            string userProfileDir,
-            bool verifySignatures,
-            INuGetPackageDownloader nugetPackageDownloader = null,
-            string dotnetDir = null,
-            string tempDirPath = null,
-            PackageSourceLocation packageSourceLocation = null,
-            RestoreActionConfig restoreActionConfig = null,
-            bool elevationRequired = true,
-            bool shouldLog = true)
+        dotnetDir = string.IsNullOrWhiteSpace(dotnetDir) ? Path.GetDirectoryName(Environment.ProcessPath) : dotnetDir;
+        var installType = WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetDir);
+
+        if (installType == InstallType.Msi)
         {
-            dotnetDir = string.IsNullOrWhiteSpace(dotnetDir) ? Path.GetDirectoryName(Environment.ProcessPath) : dotnetDir;
-            var installType = WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetDir);
-
-            if (installType == InstallType.Msi)
+            if (!OperatingSystem.IsWindows())
             {
-                if (!OperatingSystem.IsWindows())
-                {
-                    throw new InvalidOperationException(LocalizableStrings.OSDoesNotSupportMsi);
-                }
-                // TODO: should restoreActionConfig be flowed through to the client here as well like it is for the FileBasedInstaller below?
-                return NetSdkMsiInstallerClient.Create(verifySignatures, sdkFeatureBand, workloadResolver,
-                    nugetPackageDownloader, verbosity, packageSourceLocation, reporter, tempDirPath, shouldLog: shouldLog);
+                throw new InvalidOperationException(LocalizableStrings.OSDoesNotSupportMsi);
             }
-
-            if (elevationRequired && !WorkloadFileBasedInstall.IsUserLocal(dotnetDir, sdkFeatureBand.ToString()) && !CanWriteToDotnetRoot(dotnetDir))
-            {
-                throw new GracefulException(LocalizableStrings.InadequatePermissions, isUserError: false);
-            }
-
-            userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
-
-            return new FileBasedInstaller(
-                reporter,
-                sdkFeatureBand,
-                workloadResolver,
-                userProfileDir,
-                nugetPackageDownloader,
-                dotnetDir: dotnetDir,
-                tempDirPath: tempDirPath,
-                verbosity: verbosity,
-                packageSourceLocation: packageSourceLocation,
-                restoreActionConfig: restoreActionConfig);
+            // TODO: should restoreActionConfig be flowed through to the client here as well like it is for the FileBasedInstaller below?
+            return NetSdkMsiInstallerClient.Create(verifySignatures, sdkFeatureBand, workloadResolver,
+                nugetPackageDownloader, verbosity, packageSourceLocation, reporter, tempDirPath, shouldLog: shouldLog);
         }
 
-        private static bool CanWriteToDotnetRoot(string dotnetDir = null)
+        if (elevationRequired && !WorkloadFileBasedInstall.IsUserLocal(dotnetDir, sdkFeatureBand.ToString()) && !CanWriteToDotnetRoot(dotnetDir))
         {
-            dotnetDir ??= Path.GetDirectoryName(Environment.ProcessPath);
-            try
+            throw new GracefulException(LocalizableStrings.InadequatePermissions, isUserError: false);
+        }
+
+        userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
+
+        return new FileBasedInstaller(
+            reporter,
+            sdkFeatureBand,
+            workloadResolver,
+            userProfileDir,
+            nugetPackageDownloader,
+            dotnetDir: dotnetDir,
+            tempDirPath: tempDirPath,
+            verbosity: verbosity,
+            packageSourceLocation: packageSourceLocation,
+            restoreActionConfig: restoreActionConfig);
+    }
+
+    private static bool CanWriteToDotnetRoot(string dotnetDir = null)
+    {
+        dotnetDir ??= Path.GetDirectoryName(Environment.ProcessPath);
+        try
+        {
+            var testPath = Path.Combine(dotnetDir, "metadata", Path.GetRandomFileName());
+            if (Directory.Exists(Path.GetDirectoryName(testPath)))
             {
-                var testPath = Path.Combine(dotnetDir, "metadata", Path.GetRandomFileName());
-                if (Directory.Exists(Path.GetDirectoryName(testPath)))
-                {
-                    using FileStream fs = File.Create(testPath, 1, FileOptions.DeleteOnClose);
-                }
-                else
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(testPath));
-                }
-                return true;
+                using FileStream fs = File.Create(testPath, 1, FileOptions.DeleteOnClose);
             }
-            catch (UnauthorizedAccessException)
+            else
             {
-                return false;
+                Directory.CreateDirectory(Path.GetDirectoryName(testPath));
             }
+            return true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
         }
     }
 }

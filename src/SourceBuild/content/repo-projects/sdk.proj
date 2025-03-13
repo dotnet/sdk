@@ -7,7 +7,6 @@
     <DotNetBuildTestsOptOut Condition="'$(OS)' != 'Windows_NT'">true</DotNetBuildTestsOptOut>
 
     <BuildArgs Condition="'$(TargetOS)' == 'windows'">$(BuildArgs) -nativeToolsOnMachine</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PortableRid=$(PortableRid)</BuildArgs>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
@@ -33,8 +32,6 @@
     <BuildArgs Condition="'$(TargetRid)' == 'linux-x64' or '$(TargetRid)' == 'linux-arm64' ">$(BuildArgs) /p:BuildSdkDeb=true /p:BuildSdkRpm=true</BuildArgs>
 
     <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
-    <!-- In non-source-only scenarios, currently consume aspnetcore from the normal public base url -->
-    <BuildArgs>$(BuildArgs) /p:FallbackPublicBaseURL=https://dotnetbuilds.blob.core.windows.net/public/</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:UsePortableLinuxSharedFramework=false</BuildArgs>
 
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
@@ -68,8 +65,7 @@
     <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '2'">
-    <RepositoryReference Remove="@(RepositoryReference)" />
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
     <RepositoryReference Include="aspnetcore" DotNetBuildPass="2" />
   </ItemGroup>
 

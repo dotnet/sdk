@@ -5,28 +5,27 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Reference.List;
 using LocalizableStrings = Microsoft.DotNet.Tools.Reference.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class ListProjectToProjectReferencesCommandParser
 {
-    internal static class ListProjectToProjectReferencesCommandParser
+    public static readonly CliArgument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly CliArgument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+        return Command;
+    }
 
-        private static readonly CliCommand Command = ConstructCommand();
+    private static CliCommand ConstructCommand()
+    {
+        var command = new CliCommand("reference", LocalizableStrings.AppFullName);
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+        command.Arguments.Add(Argument);
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+        command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
 
-            command.Arguments.Add(Argument);
-
-            command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
-
-            return command;
-        }
+        return command;
     }
 }

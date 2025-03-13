@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 namespace Microsoft.DotNet.Tests
 {

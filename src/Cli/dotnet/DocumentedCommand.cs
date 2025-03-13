@@ -4,15 +4,14 @@
 using System.CommandLine;
 using Microsoft.TemplateEngine.Cli.Commands;
 
-namespace Microsoft.DotNet.Cli
-{
-    public class DocumentedCommand : CliCommand, ICommandDocument
-    {
-        public string DocsLink { get; }
+namespace Microsoft.DotNet.Cli;
 
-        public DocumentedCommand(string name, string docsLink, string description = null) : base(name, description)
-        {
-            DocsLink = docsLink;
-        }
+public class DocumentedCommand : CliCommand, ICommandDocument
+{
+    public string DocsLink { get; }
+
+    public DocumentedCommand(string name, string docsLink, string description = null) : base(name, description)
+    {
+        DocsLink = docsLink;
     }
 }
