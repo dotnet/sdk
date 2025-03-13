@@ -16,5 +16,5 @@ jobs:
           contains(github.event.pull_request.labels.*.name, 'DO NOT MERGE') || 
           contains(github.event.pull_request.labels.*.name, 'Servicing-consider') ||
           contains(github.event.pull_request.labels.*.name, 'Servicing-more-info') ||
-          contains(github.event.pull_request.labels.*.name, 'Servicing-rejected') ||
+          contains(github.event.pull_request.labels.*.name, 'Servicing-rejected')
         }}
