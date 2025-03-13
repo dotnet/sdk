@@ -81,11 +81,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet", "src\Cli\dotnet\do
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Layout", "Layout", "{71C279BD-E850-4A8D-9775-11CA26B8E5BA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tool_fsc", "src\Layout\tool_fsharp\tool_fsc.csproj", "{8274C645-CBB8-4B94-B58D-5A485FA8514C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tool_fsc", "src\Layout\redist\tools\tool_fsc.csproj", "{8274C645-CBB8-4B94-B58D-5A485FA8514C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tool_msbuild", "src\Layout\tool_msbuild\tool_msbuild.csproj", "{10D77F17-F5CB-46A1-B2A9-178615430C0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tool_msbuild", "src\Layout\redist\tools\tool_msbuild.csproj", "{10D77F17-F5CB-46A1-B2A9-178615430C0E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tool_nuget", "src\Layout\tool_nuget\tool_nuget.csproj", "{C2DF833D-2A83-408B-8122-3038ACDFDFD0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "tool_nuget", "src\Layout\redist\tools\tool_nuget.csproj", "{C2DF833D-2A83-408B-8122-3038ACDFDFD0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist", "src\Layout\redist\redist.csproj", "{AA273ACB-56FE-4F0C-8CC9-C2C45D31491D}"
 EndProject
