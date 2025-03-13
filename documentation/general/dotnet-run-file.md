@@ -92,10 +92,10 @@ For example, the remaining command-line arguments after the first argument (the 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
 We want to report an error for non-entry-point files to avoid the confusion of being able to `dotnet run util.cs`.
 
-Currently, entry-point files must contain top-level statements,
-but other entry-point forms like classic `Main` method can be recognized in the future.
-We could modify Roslyn to accept the entry-point path and then it would be the compiler's responsibility
-to check whether the file contains an entry point (of any kind) and report an error otherwise.
+We modify Roslyn to accept the entry-point path and then it is its responsibility
+to check whether the file contains an entry point (top-level statements or a valid Main method) and report an error otherwise.
+(We cannot simply use Roslyn APIs to detect entry points ourselves because parsing depends on conditional symbols like those from `<DefineConstants>`
+and we can reliably know the set of those only after invoking MSBuild, and doing that up front would be an unnecessary performance hit just to detect entry points.)
 
 Because of the [implicit project file](#implicit-project-file),
 other files in the target directory or its subdirectories are included in the compilation.
@@ -172,56 +172,54 @@ App/Program2/bin/
 App/Program2/obj/
 ```
 
-## Package references
+## Directives for project metadata
 
-It is possible to specify NuGet package references via the `#package` directive.
+It is possible to specify some project metadata via [ignored C# directives][ignored-directives].
+Directives `sdk`, `package`, and `property` are translated into `<Project Sdk="...">`, `<PackageReference>`, and `<Property>` project elements, respectively.
+Other directives result in a warning, reserving them for future use.
 
 ```cs
-#package Newtonsoft.Json 13.0.1
+#:sdk      Microsoft.NET.Sdk.Web
+#:property TargetFramework=net11.0
+#:property LangVersion=preview
+#:package  System.CommandLine=2.0.0-*
 ```
 
-The C# language needs to be updated to ignore these directives (instead of failing the compilation).
-See [the corresponding language proposal][pound].
+The value must be separated from the name of the directive by white space and any leading and trailing white space is not considered part of the value.
+The value of `#:sdk` is injected into `<Project Sdk="{0}">` as is.
+The value of `#:property` is split by the first `=` and injected as `<{0}>{1}</{0}>` in a `<PropertyGroup>`.
+It is an error if `=` does not appear in the value or if the first part (property name) is empty (the property value is allowed to be empty).
+The value of `#:package` is split by the first `=` and injected as `<PackageReference Include="{0}" Version="{1}">` in an `<ItemGroup>`.
+If `=` does not appear in the value, the value is injected as `<PackageReference Include="{0}">` instead.
+It is an error if the first part (package name) is empty (the package version is allowed to be empty, but that results in empty `Version=""`).
 
-If these directives were limited by the language to only appear near the top of the file (similar to `#define` directives),
-the dotnet CLI could be more efficient in searching for them.
+Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
+dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
+and can do that efficiently by stopping the search when it sees the first "C# token".
 
-It should be also possible to look for these directives from the dotnet CLI via a regex instead of parsing the whole C# file via Roslyn.
-
-We do not limit `#package` directives to appear only in entry point files.
-Indeed, it might be beneficial to let a non-entry-point file like `Util.cs` be self-contained and have all the `#package`s it needs specified in it,
+We do not limit these directives to appear only in entry point files.
+Indeed, it might be beneficial to let a non-entry-point file like `Util.cs` be self-contained and have all the `#:package`s it needs specified in it,
 which also makes it possible to share it independently or symlink it to multiple script folders.
 This is also similar to `global using`s which users usually put into a single file but don't have to.
 
-We could consider deduplicating `#package` directives (if they have the same version)
+We could consider deduplicating `#:package`/`#:sdk` directives (if they have the same values)
 so separate "self-contained" utilities can reference overlapping sets of packages
 even if they end up in the same compilation.
-But for starters we can simply translate every `#package` directive into `<PackageReference>`
-and let the existing MSBuild/NuGet logic deal with duplicates.
+But for starters we can
+- translate every `#:package` directive into `<PackageReference>`
+  and let the existing MSBuild/NuGet logic deal with duplicates,
+- error on multiple `#:sdk` directives.
 
-It is valid to have a `#package` directive without a version.
+It is valid to have a `#:package` directive without a version.
 That's useful when central package management (CPM) is used.
 NuGet will report an appropriate error if the version is missing and CPM is not enabled.
 
-During [grow up](#grow-up), `#package` directives are removed from the `.cs` files and turned into `<PackageReference>` elements in the corresponding `.csproj` files.
-For project-based programs, `#package` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
-
-## SDK directive
-
-We could also recognize `#sdk` directive to allow web file-based programs for example.
-
-```cs
-#sdk Microsoft.NET.Sdk.Web
-```
-
-It should have similar restrictions as the `#package` directive.
-It should also be an error to specify multiple different `#sdk` directives
-but it could be allowed to specify the same SDK multiple times similarly to `#package` directives
-(again so that self-contained utility files can declare their required SDK).
+During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the corresponding `.csproj` files.
+For project-based programs, `#:` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
 
 ## Shebang
 
-Along with `#package`, the language can also ignore `#!` which could be then used for [shebang][shebang] support.
+Along with `#:`, the language also ignores `#!` which could be then used for [shebang][shebang] support.
 
 ```cs
 #!/usr/bin/dotnet run
@@ -264,7 +262,7 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 ### `dotnet package add`
 
 Adding package references via `dotnet package add` could be supported for file-based programs as well,
-i.e., the command would add a `#package` directive to the top of a `.cs` file.
+i.e., the command would add a `#:package` directive to the top of a `.cs` file.
 
 ## Implementation
 
@@ -274,8 +272,8 @@ The build is performed using MSBuild APIs on in-memory project files.
 
 MSBuild invocation can be skipped in subsequent `dotnet run file.cs` invocations if an up-to-date check detects that inputs didn't change.
 We always need to re-run MSBuild if implicit build files like `Directory.Build.props` change but
-from `.cs` files, the only relevant MSBuild inputs are the `#package` directives,
-hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#package` directives.
+from `.cs` files, the only relevant MSBuild inputs are the `#:` directives,
+hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#:` directives.
 If only `.cs` files change, it is enough to invoke `csc.exe` (directly or via a build server)
 re-using command-line arguments that the last MSBuild invocation passed to the compiler.
 If no inputs change, it is enough to start the target executable without invoking the build at all.
@@ -289,7 +287,7 @@ The plan is to implement the feature in stages (the order might be different):
 - Multiple entry points.
 - Grow up command.
 - Folder support: `dotnet run ./dir/`.
-- Package references via `#package`.
+- Project metadata via `#:` directives.
 
 ## Alternatives
 
@@ -306,5 +304,5 @@ Instead of implicitly including files from the target directory, the importing c
 -->
 
 [artifacts-output]: https://learn.microsoft.com/dotnet/core/sdk/artifacts-output
-[pound]: https://github.com/dotnet/csharplang/issues/3507
+[ignored-directives]: https://github.com/dotnet/csharplang/blob/main/proposals/ignored-directives.md
 [shebang]: https://en.wikipedia.org/wiki/Shebang_%28Unix%29
