@@ -7,66 +7,65 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.NuGet;
 
-namespace Microsoft.DotNet.Tools.Package.Remove
+namespace Microsoft.DotNet.Tools.Package.Remove;
+
+internal class RemovePackageReferenceCommand : CommandBase
 {
-    internal class RemovePackageReferenceCommand : CommandBase
+    private readonly string _fileOrDirectory;
+    private readonly IReadOnlyCollection<string> _arguments;
+
+    public RemovePackageReferenceCommand(
+        ParseResult parseResult) : base(parseResult)
     {
-        private readonly string _fileOrDirectory;
-        private readonly IReadOnlyCollection<string> _arguments;
-
-        public RemovePackageReferenceCommand(
-            ParseResult parseResult) : base(parseResult)
+        _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
+            parseResult.GetValue(PackageCommandParser.ProjectOption) :
+            parseResult.GetValue(RemoveCommandParser.ProjectArgument);
+        _arguments = parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument).ToList().AsReadOnly();
+        if (_fileOrDirectory == null)
         {
-            _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
-                parseResult.GetValue(PackageCommandParser.ProjectOption) :
-                parseResult.GetValue(RemoveCommandParser.ProjectArgument);
-            _arguments = parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument).ToList().AsReadOnly();
-            if (_fileOrDirectory == null)
-            {
-                throw new ArgumentNullException(nameof(_fileOrDirectory));
-            }
-            if (_arguments.Count != 1)
-            {
-                throw new GracefulException(LocalizableStrings.SpecifyExactlyOnePackageReference);
-            }
+            throw new ArgumentNullException(nameof(_fileOrDirectory));
+        }
+        if (_arguments.Count != 1)
+        {
+            throw new GracefulException(LocalizableStrings.SpecifyExactlyOnePackageReference);
+        }
+    }
+
+    public override int Execute()
+    {
+        var projectFilePath = string.Empty;
+
+        if (!File.Exists(_fileOrDirectory))
+        {
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(_fileOrDirectory).FullName;
+        }
+        else
+        {
+            projectFilePath = _fileOrDirectory;
         }
 
-        public override int Execute()
+        var packageToRemove = _arguments.Single();
+        var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath));
+
+        return result;
+    }
+
+    private string[] TransformArgs(string packageId, string projectFilePath)
+    {
+        var args = new List<string>()
         {
-            var projectFilePath = string.Empty;
+            "package",
+            "remove",
+            "--package",
+            packageId,
+            "--project",
+            projectFilePath
+        };
 
-            if (!File.Exists(_fileOrDirectory))
-            {
-                projectFilePath = MsbuildProject.GetProjectFileFromDirectory(_fileOrDirectory).FullName;
-            }
-            else
-            {
-                projectFilePath = _fileOrDirectory;
-            }
+        args.AddRange(_parseResult
+            .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
+            .SelectMany(a => a.Split(' ')));
 
-            var packageToRemove = _arguments.Single();
-            var result = NuGetCommand.Run(TransformArgs(packageToRemove, projectFilePath));
-
-            return result;
-        }
-
-        private string[] TransformArgs(string packageId, string projectFilePath)
-        {
-            var args = new List<string>()
-            {
-                "package",
-                "remove",
-                "--package",
-                packageId,
-                "--project",
-                projectFilePath
-            };
-
-            args.AddRange(_parseResult
-                .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
-                .SelectMany(a => a.Split(' ')));
-
-            return args.ToArray();
-        }
+        return args.ToArray();
     }
 }

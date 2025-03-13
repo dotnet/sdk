@@ -3,45 +3,43 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools;
 using LocalizableStrings = Microsoft.DotNet.Tools.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class ListCommandParser
 {
-    internal static class ListCommandParser
+    public static readonly string DocsLink = "https://aka.ms/dotnet-list";
+
+    public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CommonLocalizableStrings.SolutionOrProjectArgumentName, CommonLocalizableStrings.SolutionOrProjectArgumentDescription);
+
+    internal static CliArgument<string> CreateSlnOrProjectArgument(string name, string description)
+        => new CliArgument<string>(name)
+        {
+            Description = description,
+            Arity = ArgumentArity.ZeroOrOne
+        }.DefaultToCurrentDirectory();
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-list";
+        return Command;
+    }
 
-        public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CommonLocalizableStrings.SolutionOrProjectArgumentName, CommonLocalizableStrings.SolutionOrProjectArgumentDescription);
-
-        internal static CliArgument<string> CreateSlnOrProjectArgument(string name, string description)
-            => new CliArgument<string>(name)
-            {
-                Description = description,
-                Arity = ArgumentArity.ZeroOrOne
-            }.DefaultToCurrentDirectory();
-
-        private static readonly CliCommand Command = ConstructCommand();
-
-        public static CliCommand GetCommand()
+    private static CliCommand ConstructCommand()
+    {
+        var command = new DocumentedCommand("list", DocsLink, LocalizableStrings.NetListCommand)
         {
-            return Command;
-        }
+            Hidden = true
+        };
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new DocumentedCommand("list", DocsLink, LocalizableStrings.NetListCommand)
-            {
-                Hidden = true
-            };
+        command.Arguments.Add(SlnOrProjectArgument);
+        command.Subcommands.Add(ListPackageReferencesCommandParser.GetCommand());
+        command.Subcommands.Add(ListProjectToProjectReferencesCommandParser.GetCommand());
 
-            command.Arguments.Add(SlnOrProjectArgument);
-            command.Subcommands.Add(ListPackageReferencesCommandParser.GetCommand());
-            command.Subcommands.Add(ListProjectToProjectReferencesCommandParser.GetCommand());
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-            command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-            return command;
-        }
+        return command;
     }
 }
