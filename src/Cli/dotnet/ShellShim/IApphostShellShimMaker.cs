@@ -3,10 +3,9 @@
 
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.ShellShim
+namespace Microsoft.DotNet.Cli.ShellShim;
+
+internal interface IAppHostShellShimMaker
 {
-    internal interface IAppHostShellShimMaker
-    {
-        void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath);
-    }
+    void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath);
 }
