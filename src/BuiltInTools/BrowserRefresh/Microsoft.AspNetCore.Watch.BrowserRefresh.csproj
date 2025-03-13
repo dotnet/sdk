@@ -16,6 +16,11 @@
     <EmbeddedResource Include="BlazorHotReload.js" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <!-- Reference 8.0.0 targeting packs in Source Build - this was the earliest version after the API surface stabilized -->
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="8.0.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Watch.BrowserRefresh.Tests" />
   </ItemGroup>
