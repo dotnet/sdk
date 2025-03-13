@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
 
 namespace Microsoft.NET.TestFramework.Assertions
@@ -16,11 +15,8 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public static AndConstraint<StringAssertions> BeVisuallyEquivalentTo(this StringAssertions assertions, string expected, string because = "", params object[] becauseArgs)
         {
-            Execute.Assertion
-                .ForCondition(string.Compare(NormalizeLineEndings(assertions.Subject), NormalizeLineEndings(expected), CultureInfo.CurrentCulture, CompareOptions.IgnoreSymbols) == 0)
-                .BecauseOf(because, becauseArgs)
-                .FailWith($"String \"{assertions.Subject}\" is not visually equivalent to expected string \"{expected}\".");
-
+            string.Compare(NormalizeLineEndings(assertions.Subject), NormalizeLineEndings(expected), CultureInfo.CurrentCulture, CompareOptions.IgnoreSymbols)
+                .Should().Be(0, $"String \"{assertions.Subject}\" is not visually equivalent to expected string \"{expected}\".");
             return new AndConstraint<StringAssertions>(assertions);
         }
 
@@ -30,17 +26,13 @@ namespace Microsoft.NET.TestFramework.Assertions
             {
                 return BeVisuallyEquivalentTo(assertions, expected, because, becauseArgs);
             }
-
             return new AndConstraint<StringAssertions>(assertions);
         }
 
         public static AndConstraint<StringAssertions> ContainVisuallySameFragment(this StringAssertions assertions, string expected, string because = "", params object[] becauseArgs)
         {
-            Execute.Assertion
-                .ForCondition(NormalizeLineEndings(assertions.Subject).Contains(NormalizeLineEndings(expected)))
-                .BecauseOf(because, becauseArgs)
-                .FailWith($"String \"{assertions.Subject}\" does not contain visually same fragment string \"{expected}\".");
-
+            NormalizeLineEndings(assertions.Subject).Contains(NormalizeLineEndings(expected))
+                .Should().BeTrue($"String \"{assertions.Subject}\" does not contain visually same fragment string \"{expected}\".");
             return new AndConstraint<StringAssertions>(assertions);
         }
 
@@ -50,7 +42,6 @@ namespace Microsoft.NET.TestFramework.Assertions
             {
                 return ContainVisuallySameFragment(assertions, expected, because, becauseArgs);
             }
-
             return new AndConstraint<StringAssertions>(assertions);
         }
     }

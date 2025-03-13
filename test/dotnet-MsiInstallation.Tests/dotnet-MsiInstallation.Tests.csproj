@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="NuGet.LibraryModel" />
     <PackageReference Include="NuGet.Versioning" />

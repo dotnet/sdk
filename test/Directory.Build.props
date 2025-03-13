@@ -24,6 +24,10 @@
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AwesomeAssertions" />
+  </ItemGroup>
+
   <!-- Global usings -->
   <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
   <ItemGroup>

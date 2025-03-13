@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
-    <PackageVersion Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
+    <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
+    <PackageVersion Include="AwesomeAssertions.Json" Version="$(AwesomeAssertionsJsonVersion)" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />

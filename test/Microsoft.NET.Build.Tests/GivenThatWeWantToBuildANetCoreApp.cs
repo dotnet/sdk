@@ -102,7 +102,7 @@ namespace Microsoft.NET.Build.Tests
             //  we know about, so that when a new runtime patch is released the test doesn't
             //  immediately start failing
             var minimumExpectedVersion = new NuGetVersion(TestContext.LatestRuntimePatchForNetCoreApp2_0);
-            netCoreAppLibrary.Version.CompareTo(minimumExpectedVersion).Should().BeGreaterOrEqualTo(0,
+            netCoreAppLibrary.Version.CompareTo(minimumExpectedVersion).Should().BeGreaterThanOrEqualTo(0,
                 "the version resolved from a RuntimeFrameworkVersion of '{0}' should be at least {1}",
                 testProject.RuntimeFrameworkVersion, TestContext.LatestRuntimePatchForNetCoreApp2_0);
         }

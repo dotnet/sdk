@@ -46,23 +46,11 @@
   </ItemGroup>
 
   <!--
-    These are third party libraries that we use in Arcade. We need to sign them even if they
-    are already signed. However, they must be signed with a 3rd party certificate.
+    Arcade is no longer signed so we don't have to sign test assemblies.
+    ReSign 3rd paty files that we use in the product
   -->
   <ItemGroup>
-    <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="CommandLine.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="FluentAssertions.Core.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="FluentAssertions.Json.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="Microsoft.3rdpartytools.MarkdownLog.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="xunit.performance.api.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="xunit.performance.core.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="xunit.performance.execution.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
 
