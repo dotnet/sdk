@@ -99,30 +99,61 @@ public class GenerateStaticWebAssetsDevelopmentManifest : Task
 
     private IEnumerable<SegmentsAssetPair> ComputeManifestAssets(IEnumerable<StaticWebAsset> assets)
     {
-        var assetsByTargetPath = assets
-            .GroupBy(a => a.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance));
-
-        foreach (var group in assetsByTargetPath)
+        var assetsByTargetPath = GroupAssetsByTargetPath(assets);
+        foreach (var kvp in assetsByTargetPath)
         {
-            var asset = StaticWebAsset.ChooseNearestAssetKind(group, StaticWebAsset.AssetKinds.Build).SingleOrDefault();
+            var path = kvp.Key;
+            var group = kvp.Value;
 
-            if (asset == null)
+            StaticWebAsset.ChooseNearestAssetKind(group, StaticWebAsset.AssetKinds.Build);
+            var candidates = group;
+
+            if (candidates.Count == 0)
             {
-                Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because it is a 'Publish' asset.", group.Key);
+                Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because it is a 'Publish' asset.", path);
                 continue;
             }
 
-            if (asset.HasSourceId(Source) && !StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetInCurrentProject(asset, StaticWebAssetsManifest.ManifestModes.Root))
+            if (candidates.Count > 1)
+            {
+                Log.LogError(@"Multiple assets with the same target path '{0}' were found. Assets:
+    {1}",
+                    path,
+                    string.Join($"{Environment.NewLine}    ", candidates.Select(c => $"{c.AssetKind} - {c.Identity}")));
+                continue;
+            }
+
+            var candidate = candidates[0];
+
+            if (candidate.HasSourceId(Source) && !StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetInCurrentProject(candidate, StaticWebAssetsManifest.ManifestModes.Root))
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping candidate asset '{0}' because asset mode is '{1}'",
-                    asset.Identity,
-                    asset.AssetMode);
+                    candidate.Identity,
+                    candidate.AssetMode);
 
                 continue;
             }
 
-            yield return new SegmentsAssetPair(group.Key, asset);
+            yield return new SegmentsAssetPair(path, candidate);
         }
+    }
+
+    private static IDictionary<string, List<StaticWebAsset>> GroupAssetsByTargetPath(IEnumerable<StaticWebAsset> assets)
+    {
+        var result = new Dictionary<string, List<StaticWebAsset>>(StringComparer.Ordinal);
+
+        foreach (var asset in assets) {
+            var targetPath = asset.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance);
+            if (!result.TryGetValue(targetPath, out var list))
+            {
+                list = [];
+                result.Add(targetPath, list);
+            }
+
+            list.Add(asset);
+        }
+
+        return result;
     }
 
     private void PersistManifest(StaticWebAssetsDevelopmentManifest manifest)

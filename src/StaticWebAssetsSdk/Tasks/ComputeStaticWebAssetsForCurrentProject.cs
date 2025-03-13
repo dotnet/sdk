@@ -28,30 +28,27 @@ public class ComputeStaticWebAssetsForCurrentProject : Task
     {
         try
         {
-            var currentProjectAssets = Assets
-                .Where(asset => StaticWebAsset.HasSourceId(asset, Source))
-                .Select(StaticWebAsset.FromTaskItem)
-                .GroupBy(
-                    a => a.ComputeTargetPath("", '/'),
-                    (key, group) => (key, StaticWebAsset.ChooseNearestAssetKind(group, AssetKind)));
+            var existingAssets = GroupAssetsByPath();
 
             var resultAssets = new List<StaticWebAsset>();
-            foreach (var (key, group) in currentProjectAssets)
+            foreach (var kvp in existingAssets)
             {
-                if (!TryGetUniqueAsset(group, out var selected))
+                var key = kvp.Key;
+                var group = kvp.Value;
+                switch (group.Count)
                 {
-                    if (selected == null)
-                    {
+                    case 0:
                         Log.LogMessage(MessageImportance.Low, "No compatible asset found for '{0}'", key);
                         continue;
-                    }
-                    else
-                    {
-                        Log.LogError("More than one compatible asset found for '{0}'.", selected.Identity);
+                    case 1:
+                        break;
+                    default:
+                        Log.LogError(@"More than one compatible asset found for '{0}'. Assets:
+    {1}", key, string.Join($"{Environment.NewLine}    ", group.Select(a => a.Identity)));
                         return false;
-                    }
                 }
 
+                var selected = group[0];
                 if (!selected.IsForReferencedProjectsOnly())
                 {
                     resultAssets.Add(selected);
@@ -62,10 +59,20 @@ public class ComputeStaticWebAssetsForCurrentProject : Task
                 }
             }
 
-            StaticWebAssets = resultAssets
-                .Select(a => a.ToTaskItem())
-                .Concat(Assets.Where(asset => !StaticWebAsset.HasSourceId(asset, Source)))
-                .ToArray();
+            var result = new List<ITaskItem>(resultAssets.Count);
+            foreach (var asset in resultAssets)
+            {
+                result.Add(asset.ToTaskItem());
+            }
+            foreach (var asset in Assets)
+            {
+                if (!StaticWebAsset.HasSourceId(asset, Source))
+                {
+                    result.Add(asset);
+                }
+            }
+
+            StaticWebAssets = [.. result];
         }
         catch (Exception ex)
         {
@@ -75,19 +82,34 @@ public class ComputeStaticWebAssetsForCurrentProject : Task
         return !Log.HasLoggedErrors;
     }
 
-    private static bool TryGetUniqueAsset(IEnumerable<StaticWebAsset> candidates, out StaticWebAsset selected)
+    private IDictionary<string, List<StaticWebAsset>> GroupAssetsByPath()
     {
-        selected = null;
-        foreach (var asset in candidates)
+        var result = new Dictionary<string, List<StaticWebAsset>>();
+
+        for (var i = 0; i < Assets.Length; i++)
         {
-            if (selected != null)
+            var candidate = Assets[i];
+            if (!StaticWebAsset.HasSourceId(candidate, Source))
             {
-                return false;
+                continue;
             }
 
-            selected = asset;
+            var asset = StaticWebAsset.FromTaskItem(candidate);
+            var key = asset.ComputeTargetPath("", '/');
+            if (!result.TryGetValue(key, out var list))
+            {
+                list = [];
+                result[key] = list;
+            }
+
+            list.Add(asset);
         }
 
-        return selected != null;
+        foreach (var kvp in result)
+        {
+            StaticWebAsset.ChooseNearestAssetKind(kvp.Value, AssetKind);
+        }
+
+        return result;
     }
 }
