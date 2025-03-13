@@ -193,6 +193,11 @@ Pro MSTest před 2.2.4 se časový limit použije pro všechny testovací příp
         <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoTestModulesErrorDescription">
+        <source>No test modules found for the given test module pattern: {0} with root directory: {1}</source>
+        <target state="new">No test modules found for the given test module pattern: {0} with root directory: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNonExistentDirectoryErrorDescription">
         <source>The provided directory path does not exist: {0}.</source>
         <target state="new">The provided directory path does not exist: {0}.</target>
@@ -201,6 +206,11 @@ Pro MSTest před 2.2.4 se časový limit použije pro všechny testovací příp
       <trans-unit id="CmdNonExistentFileErrorDescription">
         <source>The provided file path does not exist: {0}.</source>
         <target state="new">The provided file path does not exist: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentRootDirectoryErrorDescription">
+        <source>The provided root directory does not exist: {0}.</source>
+        <target state="new">The provided root directory does not exist: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNumberName">
