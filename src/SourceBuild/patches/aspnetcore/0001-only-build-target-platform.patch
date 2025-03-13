@@ -1,7 +1,7 @@
 From d55847e83339919ddd713d3a03aa1b1ad1dd1329 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 13 Mar 2025 09:45:10 +0100
-Subject: [PATCH 1/5] Only build the target platform in native projs for the VMR
+Subject: [PATCH 1/7] Only build the target platform in native projs for the VMR
 
 Backport: https://github.com/dotnet/aspnetcore/pull/60910
 
@@ -177,7 +177,7 @@ index c6beee133ff7..1e84bdfe76f4 100644
 From 4a0e84caac9a03e1abbe7927e420d6ca50648034 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 13 Mar 2025 15:45:57 +0100
-Subject: [PATCH 2/5] PR feedback - undo BP2 project move
+Subject: [PATCH 2/7] PR feedback - undo BP2 project move
 
 ---
  eng/Build.props | 6 ------
@@ -204,7 +204,7 @@ index 391054e3a329..af2876659b40 100644
 From 683f7946861584d2fe5d2cce683a3ba7e45b11d2 Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:20:41 -0700
-Subject: [PATCH 3/5] Only build ANCM native bits in pass 2
+Subject: [PATCH 3/7] Only build ANCM native bits in pass 2
 
 ---
  eng/Build.props                               |  6 +++++
@@ -303,7 +303,7 @@ index baf8bf6f5d91..1dbd04f6ed90 100644
 From d03d4ea6a36dd50f7500d379b097f77a7c666b4b Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:21:41 -0700
-Subject: [PATCH 4/5] Fixup
+Subject: [PATCH 4/7] Fixup
 
 ---
  eng/Build.props | 3 ---
@@ -327,7 +327,7 @@ index fff3753783ad..ec515d5b3e2d 100644
 From 889c767c2d578ab78946efb8f18592ba2bae6a36 Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:23:26 -0700
-Subject: [PATCH 5/5] LF
+Subject: [PATCH 5/7] LF
 
 ---
  .../Windows/AspNetCoreModule-Setup/Directory.Build.props        | 2 +-
@@ -344,3 +344,81 @@ index 1dbd04f6ed90..1b02ebf435b2 100644
 -</Project>
 \ No newline at end of file
 +</Project>
+
+From e6665a1af0c5b8532135e269255a1fe4ebf360ae Mon Sep 17 00:00:00 2001
+From: wtgodbe <wigodbe@microsoft.com>
+Date: Thu, 13 Mar 2025 11:57:17 -0700
+Subject: [PATCH 6/7] Put IIS Integration Testing back in pass 2
+
+---
+ eng/Build.props | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/eng/Build.props b/eng/Build.props
+index ec515d5b3e2d..75292f7dd962 100644
+--- a/eng/Build.props
++++ b/eng/Build.props
+@@ -61,6 +61,13 @@
+                       $(RepoRoot)src\Installers\**\*.vcxproj;
+                       "
+                       Condition=" '$(BuildNative)' == 'true' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
++
++
++    <!-- This project requires inputs from x64, x86, and arm64 on Windows - therefore in the VMR, we build it in pass 2 -->
++    <ProjectToExclude Include="
++                      $(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj;
++                      "
++                      Condition=" '$(TargetOsName)' == 'win' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
+   </ItemGroup>
+ 
+   <Choose>
+@@ -82,6 +89,9 @@
+           <AdditionalProperties>Platform=x86</AdditionalProperties>
+           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+         </ProjectToBuild>
++        <ProjectToBuild Include="$(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" >
++          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
++        </ProjectToBuild>
+       </ItemGroup>
+     </When>
+     <Otherwise>
+
+From 92e9c827a74445a06699c73cea4cc0c6bf0e9085 Mon Sep 17 00:00:00 2001
+From: wtgodbe <wigodbe@microsoft.com>
+Date: Thu, 13 Mar 2025 11:59:14 -0700
+Subject: [PATCH 7/7] Revert IntegrationTesting change
+
+---
+ ...pNetCore.Server.IntegrationTesting.IIS.csproj | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
+
+diff --git a/src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj b/src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj
+index 1e84bdfe76f4..c6beee133ff7 100644
+--- a/src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj
++++ b/src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj
+@@ -35,19 +35,15 @@
+           Condition="!Exists('$(AspNetCoreModuleV2ShimDll)') OR !Exists('$(AspNetCoreModuleV2OutOfProcessHandlerDll)')" />
+   </Target>
+ 
+-  <!-- Only build the target platform for product build (DotNetBuild=true). -->
+   <ItemGroup Condition="'$(UseIisNativeAssets)' == 'true' AND '$(TestGroupName)' != 'IISNewHandler.FunctionalTests'">
+-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="x64" Condition="'$(DotNetBuild)' != 'true'" />
+-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64" Condition="'$(DotNetBuild)' != 'true'" />
++    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="x64"/>
++    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64" />
+ 
+-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="Win32" Condition="'$(DotNetBuild)' != 'true'" />
+-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32" Condition="'$(DotNetBuild)' != 'true'" />
++    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="Win32" />
++    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32" />
+ 
+-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="ARM64" Condition="'$(DotNetBuild)' != 'true'" />
+-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="ARM64" Condition="'$(DotNetBuild)' != 'true'" />
+-
+-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(NativePlatform)" Condition="'$(DotNetBuild)' == 'true'" />
+-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="$(NativePlatform)" Condition="'$(DotNetBuild)' == 'true'" />
++    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="ARM64" />
++    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="ARM64" />
+ 
+     <UpToDateCheckInput Include="$(AspNetCoreModuleV2ShimDll)" />
+     <UpToDateCheckInput Include="$(AspNetCoreModuleV2OutOfProcessHandlerDll)" />
