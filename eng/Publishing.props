@@ -26,4 +26,15 @@
   <ItemGroup>
     <Artifact Update="$(ArtifactsShippingPackagesDir)dotnet-sdk-pgo-*" Visibility="External" />
   </ItemGroup>
+
+  <Target Name="GenerateVersionBadge"
+          Condition="'$(PublishBinariesAndBadge)' == 'true' and
+                     '$(PgoInstrument)' != 'true' and
+                     ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')"
+          BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
+    <MSBuild Projects="$(RepoRoot)eng\Badge.proj" Targets="GenerateVersionBadge">
+      <Output TaskParameter="TargetOutputs" ItemName="Artifact" />
+    </MSBuild>
+  </Target>
+
 </Project>

@@ -47,7 +47,6 @@
     <Import Project="targets\GenerateBundledVersions.targets" />
     <Import Project="targets\Crossgen.targets" />
     <Import Project="targets\GenerateLayout.targets" />
-    <Import Project="targets\Badge.targets" Condition="'$(PgoInstrument)' != 'true'" />
     <Import Project="targets\GenerateArchives.targets" />
   </ImportGroup>
 
