@@ -3,8 +3,8 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
 
 namespace Microsoft.DotNet.Tests
 {

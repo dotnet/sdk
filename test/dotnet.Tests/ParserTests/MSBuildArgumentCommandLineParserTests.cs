@@ -5,7 +5,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Cli.Extensions;
 using BuildCommand = Microsoft.DotNet.Tools.Build.BuildCommand;
 using PublishCommand = Microsoft.DotNet.Tools.Publish.PublishCommand;
 

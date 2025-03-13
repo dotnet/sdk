@@ -51,6 +51,11 @@ Defina nombres de perfiles distintos.</target>
         <target state="translated">No existe ningún perfil de inicio con el nombre "{0}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
+        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">Solo se puede especificar un proyecto a la vez mediante la opción -p.</target>
