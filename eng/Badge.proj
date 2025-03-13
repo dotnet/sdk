@@ -5,7 +5,9 @@
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
-  <Target Name="GenerateVersionBadge" AfterTargets="Build" Returns="$(VersionBadge)">
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+
+  <Target Name="GenerateVersionBadge" AfterTargets="Build" DependsOnTargets="ResolveProjectReferences" Returns="$(VersionBadge)">
     <PropertyGroup>
       <!-- Replace '-' with '_' for os names like 'linux-musl' -->
       <VersionBadgeMoniker>$(OSName.Replace('-', '_'))_$(Architecture)</VersionBadgeMoniker>
