@@ -5,9 +5,7 @@
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
-  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
-
-  <Target Name="GenerateVersionBadge" AfterTargets="Build" DependsOnTargets="ResolveProjectReferences" Returns="$(VersionBadge)">
+  <Target Name="GenerateVersionBadge" AfterTargets="Build" Returns="$(VersionBadge)">
     <PropertyGroup>
       <!-- Replace '-' with '_' for os names like 'linux-musl' -->
       <VersionBadgeMoniker>$(OSName.Replace('-', '_'))_$(Architecture)</VersionBadgeMoniker>
@@ -19,11 +17,11 @@
 
     <Message Text="$(VersionBadge)" />
 
-    <ReplaceFileContents
-      InputFiles="$(VersionSvgTemplate)"
-      DestinationFiles="$(VersionBadge)"
-      ReplacementPatterns="ver_number"
-      ReplacementStrings="$(Version)" />
+    <WriteLinesToFile
+      File="$(VersionBadge)"
+      Lines="$([System.IO.File]::ReadAllText('$(VersionSvgTemplate)').Replace('ver_number', '$(Version)'))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
   </Target>
 
 </Project>
