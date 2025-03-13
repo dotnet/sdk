@@ -13,9 +13,6 @@
 
     <Nullable>Enable</Nullable>
 
-    <UseSystemTextJson Condition="'$(TargetFramework)'!='netstandard2.0' And '$(TargetFramework)'!='net472'">True</UseSystemTextJson>
-    <DefineConstants Condition="'$(UseSystemTextJson)'=='True'">$(DefineConstants);USE_SYSTEM_TEXT_JSON</DefineConstants>
-
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
 
@@ -66,7 +63,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.NETCore.DotNetHostResolver" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
 
@@ -91,32 +87,35 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Text.Json"  VersionOverride="8.0.0" />
+    <!-- Netfx version builds against the lowest version of System.Text.Json that's guaranteed to be shipped with MSBuild in VS -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="8.0.0" />
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" />
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutablePackageVersion)" />
+    <!-- Used by ResolveHostfxrCopyLocalContent below -->
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x86" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- No PackageReference to System.Text.Json necessary, because it's included in .NET 5.0 and higher -->
-    <PackageReference Include="Newtonsoft.Json" Condition="'$(UseSystemTextJson)'!='True'"/>
-
     <!-- Reference this package to avoid package downgrade errors.  See https://github.com/dotnet/sdk/issues/3044 for details -->
     <PackageReference Include="Microsoft.NETCore.Targets" ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
 
-  <Target Name="ResolveHostfxrCopyLocalContent" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" DependsOnTargets="RunResolvePackageDependencies" BeforeTargets="AssignTargetPaths">
+  <Target Name="ResolveHostfxrCopyLocalContent" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
-      <Content Include="@(FileDefinitions->'%(ResolvedPath)')" Condition="'%(FileDefinitions.Path)' == 'runtimes/win-x86/native/hostfxr.dll'">
+      <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-x86/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-x86/native/hostfxr.dll">
         <Link>x86/hostfxr.dll</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Include="@(FileDefinitions->'%(ResolvedPath)')" Condition="'%(FileDefinitions.Path)' == 'runtimes/win-x64/native/hostfxr.dll'">
+      <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-x64/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-x64/native/hostfxr.dll">
         <Link>x64/hostfxr.dll</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Include="@(FileDefinitions->'%(ResolvedPath)')" Condition="'%(FileDefinitions.Path)' == 'runtimes/win-arm64/native/hostfxr.dll'">
+      <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-arm64/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-arm64/native/hostfxr.dll">
         <Link>arm64/hostfxr.dll</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
@@ -130,5 +129,40 @@
       </ReferencePath>
     </ItemGroup>
   </Target>
+
+  <Target Name="VerifyDependencies" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" AfterTargets="Build">
+    <ResolveAssemblyReference AssemblyFiles="$(TargetPath)" SearchPaths="" AutoUnify="true">
+      <Output TaskParameter="ResolvedDependencyFiles" ItemName="ResolvedDependencies"/>
+    </ResolveAssemblyReference>
+
+    <ItemGroup>
+      <ExpectedDependencies Include="Microsoft.Deployment.DotNet.Releases, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+      <ExpectedDependencies Include="System.Text.Json, Version=8.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.Collections.Immutable, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+    </ItemGroup>
+
+    <!-- Check that the dependencies of the output assembly match our expectations -->
+    <PropertyGroup>
+      <ResolvedDependenciesList>@(ResolvedDependencies->'%(FusionName)')</ResolvedDependenciesList>
+      <ExpectedDependenciesList>@(ExpectedDependencies->'%(Identity)')</ExpectedDependenciesList>
+      <DependencyMismatchErrorText>This may have consequences for MSBuild.exe binding redirects, please get signoff from the MSBuild team.</DependencyMismatchErrorText>
+    </PropertyGroup>
+
+    <Error Text="$(AssemblyName) is expected to depend on %(ExpectedDependencies.Identity). $(DependencyMismatchErrorText)"
+           Condition="!($([System.String]::Copy('$(ResolvedDependenciesList)').Contains('%(ExpectedDependencies.Identity)')))" />
+    <Error Text="$(AssemblyName) is not expected to depend on %(ResolvedDependencies.FusionName). $(DependencyMismatchErrorText)"
+           Condition="!($([System.String]::Copy('$(ExpectedDependenciesList)').Contains('%(ResolvedDependencies.FusionName)')))" />
+  </Target>
+
+  <Target Name="GetTargetPath" />
 
 </Project>
