@@ -11,10 +11,4 @@ jobs:
     steps:
       - name: Return error if blocking labels are present in PR
         run: echo "Labels on this PR prevent it from being merged. Please contact the repo owners for more information." && exit 1
-        if: ${{ 
-          contains(github.event.pull_request.labels.*.name, 'Branch Lockdown') || 
-          contains(github.event.pull_request.labels.*.name, 'DO NOT MERGE') || 
-          contains(github.event.pull_request.labels.*.name, 'Servicing-consider') ||
-          contains(github.event.pull_request.labels.*.name, 'Servicing-more-info') ||
-          contains(github.event.pull_request.labels.*.name, 'Servicing-rejected')
-        }}
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'Branch Lockdown') || contains(github.event.pull_request.labels.*.name, 'DO NOT MERGE') || contains(github.event.pull_request.labels.*.name, 'Servicing-consider') || contains(github.event.pull_request.labels.*.name, 'Servicing-more-info') || contains(github.event.pull_request.labels.*.name, 'Servicing-rejected') }}
