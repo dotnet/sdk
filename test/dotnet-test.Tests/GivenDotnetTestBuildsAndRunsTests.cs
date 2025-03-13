@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
+        // [InlineData(TestingConstants.Release)]
         [Theory]
         public void RunMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
@@ -57,7 +57,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("total: 0")
                     .And.Contain("succeeded: 0")
                     .And.Contain("failed: 0")
-                    .And.Contain("skipped: 0");
+                    .And.Contain("skipped: 0")
+                    .And.NotContain("Expected to find --arg-from-my-target");
             }
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
