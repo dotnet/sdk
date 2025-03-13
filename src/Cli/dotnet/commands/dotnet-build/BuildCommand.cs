@@ -5,66 +5,65 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 
-namespace Microsoft.DotNet.Tools.Build
+namespace Microsoft.DotNet.Tools.Build;
+
+public class BuildCommand : RestoringCommand
 {
-    public class BuildCommand : RestoringCommand
+    public BuildCommand(
+        IEnumerable<string> msbuildArgs,
+        bool noRestore,
+        string msbuildPath = null)
+        : base(msbuildArgs, noRestore, msbuildPath)
     {
-        public BuildCommand(
-            IEnumerable<string> msbuildArgs,
-            bool noRestore,
-            string msbuildPath = null)
-            : base(msbuildArgs, noRestore, msbuildPath)
+    }
+
+    public static BuildCommand FromArgs(string[] args, string msbuildPath = null)
+    {
+        var parser = Parser.Instance;
+        var parseResult = parser.ParseFrom("dotnet build", args);
+        return FromParseResult(parseResult, msbuildPath);
+    }
+
+    public static BuildCommand FromParseResult(ParseResult parseResult, string msbuildPath = null)
+    {
+        PerformanceLogEventSource.Log.CreateBuildCommandStart();
+
+        var msbuildArgs = new List<string>();
+
+        parseResult.ShowHelpOrErrorIfAppropriate();
+
+        CommonOptions.ValidateSelfContainedOptions(
+            parseResult.GetResult(BuildCommandParser.SelfContainedOption) is not null,
+            parseResult.GetResult(BuildCommandParser.NoSelfContainedOption) is not null);
+
+        msbuildArgs.Add($"-consoleloggerparameters:Summary");
+
+        if (parseResult.GetResult(BuildCommandParser.NoIncrementalOption) is not null)
         {
+            msbuildArgs.Add("-target:Rebuild");
         }
+        var arguments = parseResult.GetValue(BuildCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>();
 
-        public static BuildCommand FromArgs(string[] args, string msbuildPath = null)
-        {
-            var parser = Parser.Instance;
-            var parseResult = parser.ParseFrom("dotnet build", args);
-            return FromParseResult(parseResult, msbuildPath);
-        }
+        msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()));
 
-        public static BuildCommand FromParseResult(ParseResult parseResult, string msbuildPath = null)
-        {
-            PerformanceLogEventSource.Log.CreateBuildCommandStart();
+        msbuildArgs.AddRange(arguments);
 
-            var msbuildArgs = new List<string>();
+        bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
 
-            parseResult.ShowHelpOrErrorIfAppropriate();
+        BuildCommand command = new(
+            msbuildArgs,
+            noRestore,
+            msbuildPath);
 
-            CommonOptions.ValidateSelfContainedOptions(
-                parseResult.GetResult(BuildCommandParser.SelfContainedOption) is not null,
-                parseResult.GetResult(BuildCommandParser.NoSelfContainedOption) is not null);
+        PerformanceLogEventSource.Log.CreateBuildCommandStop();
 
-            msbuildArgs.Add($"-consoleloggerparameters:Summary");
+        return command;
+    }
 
-            if (parseResult.GetResult(BuildCommandParser.NoIncrementalOption) is not null)
-            {
-                msbuildArgs.Add("-target:Rebuild");
-            }
-            var arguments = parseResult.GetValue(BuildCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>();
+    public static int Run(ParseResult parseResult)
+    {
+        parseResult.HandleDebugSwitch();
 
-            msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()));
-
-            msbuildArgs.AddRange(arguments);
-
-            bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
-
-            BuildCommand command = new(
-                msbuildArgs,
-                noRestore,
-                msbuildPath);
-
-            PerformanceLogEventSource.Log.CreateBuildCommandStop();
-
-            return command;
-        }
-
-        public static int Run(ParseResult parseResult)
-        {
-            parseResult.HandleDebugSwitch();
-
-            return FromParseResult(parseResult).Execute();
-        }
+        return FromParseResult(parseResult).Execute();
     }
 }

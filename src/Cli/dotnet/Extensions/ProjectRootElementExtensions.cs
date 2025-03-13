@@ -3,18 +3,17 @@
 
 using Microsoft.Build.Construction;
 
-namespace Microsoft.DotNet.Cli.Extensions
+namespace Microsoft.DotNet.Cli.Extensions;
+
+public static class ProjectRootElementExtensions
 {
-    public static class ProjectRootElementExtensions
+    public static string GetProjectTypeGuid(this ProjectRootElement rootElement)
     {
-        public static string GetProjectTypeGuid(this ProjectRootElement rootElement)
-        {
-            return rootElement
-                .Properties
-                .FirstOrDefault(p => string.Equals(p.Name, "ProjectTypeGuids", StringComparison.OrdinalIgnoreCase))
-                ?.Value
-                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                .LastOrDefault(g => !string.IsNullOrWhiteSpace(g));
-        }
+        return rootElement
+            .Properties
+            .FirstOrDefault(p => string.Equals(p.Name, "ProjectTypeGuids", StringComparison.OrdinalIgnoreCase))
+            ?.Value
+            .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault(g => !string.IsNullOrWhiteSpace(g));
     }
 }

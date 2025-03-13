@@ -3,39 +3,37 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools;
 using LocalizableStrings = Microsoft.DotNet.Tools.Remove.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class ReferenceCommandParser
 {
-    internal static class ReferenceCommandParser
+    public static readonly string DocsLink = "https://aka.ms/dotnet-reference";
+
+    public static readonly CliOption<string> ProjectOption = new CliOption<string>("--project")
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-reference";
+        Description = CommonLocalizableStrings.ProjectArgumentDescription,
+        Recursive = true
+    };
 
-        public static readonly CliOption<string> ProjectOption = new CliOption<string>("--project")
-        {
-            Description = CommonLocalizableStrings.ProjectArgumentDescription,
-            Recursive = true
-        };
+    private static readonly CliCommand Command = ConstructCommand();
 
-        private static readonly CliCommand Command = ConstructCommand();
+    public static CliCommand GetCommand()
+    {
+        return Command;
+    }
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+    private static CliCommand ConstructCommand()
+    {
+        var command = new DocumentedCommand("reference", DocsLink, LocalizableStrings.NetRemoveCommand);
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new DocumentedCommand("reference", DocsLink, LocalizableStrings.NetRemoveCommand);
+        command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
+        command.Subcommands.Add(ReferenceListCommandParser.GetCommand());
+        command.Subcommands.Add(ReferenceRemoveCommandParser.GetCommand());
+        command.Options.Add(ProjectOption);
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-            command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
-            command.Subcommands.Add(ReferenceListCommandParser.GetCommand());
-            command.Subcommands.Add(ReferenceRemoveCommandParser.GetCommand());
-            command.Options.Add(ProjectOption);
-            command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-            return command;
-        }
+        return command;
     }
 }

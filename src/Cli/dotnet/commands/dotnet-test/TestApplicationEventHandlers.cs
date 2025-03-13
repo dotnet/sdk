@@ -6,96 +6,96 @@ using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal sealed class TestApplicationsEventHandlers
 {
-    internal sealed class TestApplicationsEventHandlers
+    private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions;
+    private readonly TerminalTestReporter _output;
+
+    public TestApplicationsEventHandlers(
+        ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> executions,
+        TerminalTestReporter output)
     {
-        private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions;
-        private readonly TerminalTestReporter _output;
+        _executions = executions;
+        _output = output;
+    }
 
-        public TestApplicationsEventHandlers(
-            ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> executions,
-            TerminalTestReporter output)
-        {
-            _executions = executions;
-            _output = output;
-        }
-
-        public void OnHandshakeReceived(object sender, HandshakeArgs args)
-        {
-            var testApplication = (TestApplication)sender;
-            var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
-            var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
-            var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
-            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.TargetPath, tfm, arch, executionId);
-            _executions[testApplication] = appInfo;
-            _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
+    public void OnHandshakeReceived(object sender, HandshakeArgs args)
+    {
+        var testApplication = (TestApplication)sender;
+        var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
+        var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
+        var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
+        (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.TargetPath, tfm, arch, executionId);
+        _executions[testApplication] = appInfo;
+        _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
 
             LogHandshake(args);
         }
 
-        private static string GetHandshakePropertyName(byte propertyId) =>
-            propertyId switch
-            {
-                HandshakeMessagePropertyNames.PID => nameof(HandshakeMessagePropertyNames.PID),
-                HandshakeMessagePropertyNames.Architecture => nameof(HandshakeMessagePropertyNames.Architecture),
-                HandshakeMessagePropertyNames.Framework => nameof(HandshakeMessagePropertyNames.Framework),
-                HandshakeMessagePropertyNames.OS => nameof(HandshakeMessagePropertyNames.OS),
-                HandshakeMessagePropertyNames.SupportedProtocolVersions => nameof(HandshakeMessagePropertyNames.SupportedProtocolVersions),
-                HandshakeMessagePropertyNames.HostType => nameof(HandshakeMessagePropertyNames.HostType),
-                HandshakeMessagePropertyNames.ModulePath => nameof(HandshakeMessagePropertyNames.ModulePath),
-                HandshakeMessagePropertyNames.ExecutionId => nameof(HandshakeMessagePropertyNames.ExecutionId),
-                _ => string.Empty,
-            };
-
-        public void OnDiscoveredTestsReceived(object sender, DiscoveredTestEventArgs args)
+    private static string GetHandshakePropertyName(byte propertyId) =>
+        propertyId switch
         {
-            var testApp = (TestApplication)sender;
-            var appInfo = _executions[testApp];
+            HandshakeMessagePropertyNames.PID => nameof(HandshakeMessagePropertyNames.PID),
+            HandshakeMessagePropertyNames.Architecture => nameof(HandshakeMessagePropertyNames.Architecture),
+            HandshakeMessagePropertyNames.Framework => nameof(HandshakeMessagePropertyNames.Framework),
+            HandshakeMessagePropertyNames.OS => nameof(HandshakeMessagePropertyNames.OS),
+            HandshakeMessagePropertyNames.SupportedProtocolVersions => nameof(HandshakeMessagePropertyNames.SupportedProtocolVersions),
+            HandshakeMessagePropertyNames.HostType => nameof(HandshakeMessagePropertyNames.HostType),
+            HandshakeMessagePropertyNames.ModulePath => nameof(HandshakeMessagePropertyNames.ModulePath),
+            HandshakeMessagePropertyNames.ExecutionId => nameof(HandshakeMessagePropertyNames.ExecutionId),
+            _ => string.Empty,
+        };
 
-            foreach (var test in args.DiscoveredTests)
-            {
-                _output.TestDiscovered(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
-                        test.DisplayName,
-                        test.Uid);
-            }
+    public void OnDiscoveredTestsReceived(object sender, DiscoveredTestEventArgs args)
+    {
+        var testApp = (TestApplication)sender;
+        var appInfo = _executions[testApp];
+
+        foreach (var test in args.DiscoveredTests)
+        {
+            _output.TestDiscovered(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                    test.DisplayName,
+                    test.Uid);
+        }
 
             LogDiscoveredTests(args);
         }
 
-        public void OnTestResultsReceived(object sender, TestResultEventArgs args)
+    public void OnTestResultsReceived(object sender, TestResultEventArgs args)
+    {
+        foreach (var testResult in args.SuccessfulTestResults)
         {
-            foreach (var testResult in args.SuccessfulTestResults)
-            {
-                var testApp = (TestApplication)sender;
-                var appInfo = _executions[testApp];
-                _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
-                    testResult.Uid,
-                    testResult.DisplayName,
-                    ToOutcome(testResult.State),
-                    TimeSpan.FromTicks(testResult.Duration ?? 0),
-                    exceptions: null,
-                    expected: null,
-                    actual: null,
-                    standardOutput: null,
-                    errorOutput: null);
-            }
+            var testApp = (TestApplication)sender;
+            var appInfo = _executions[testApp];
+            _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                testResult.Uid,
+                testResult.DisplayName,
+                ToOutcome(testResult.State),
+                TimeSpan.FromTicks(testResult.Duration ?? 0),
+                exceptions: null,
+                expected: null,
+                actual: null,
+                standardOutput: null,
+                errorOutput: null);
+        }
 
-            foreach (var testResult in args.FailedTestResults)
-            {
-                var testApp = (TestApplication)sender;
-                var appInfo = _executions[testApp];
-                _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
-                    testResult.Uid,
-                    testResult.DisplayName,
-                    ToOutcome(testResult.State),
-                    TimeSpan.FromTicks(testResult.Duration ?? 0),
-                    exceptions: testResult.Exceptions.Select(fe => new Microsoft.Testing.Platform.OutputDevice.Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
-                    expected: null,
-                    actual: null,
-                    standardOutput: null,
-                    errorOutput: null);
-            }
+        foreach (var testResult in args.FailedTestResults)
+        {
+            var testApp = (TestApplication)sender;
+            var appInfo = _executions[testApp];
+            _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                testResult.Uid,
+                testResult.DisplayName,
+                ToOutcome(testResult.State),
+                TimeSpan.FromTicks(testResult.Duration ?? 0),
+                exceptions: testResult.Exceptions.Select(fe => new Microsoft.Testing.Platform.OutputDevice.Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
+                expected: null,
+                actual: null,
+                standardOutput: null,
+                errorOutput: null);
+        }
 
             LogTestResults(args);
         }
@@ -105,44 +105,44 @@ namespace Microsoft.DotNet.Cli
             var testApp = (TestApplication)sender;
             var appInfo = _executions[testApp];
 
-            foreach (var artifact in args.FileArtifacts)
-            {
-                _output.ArtifactAdded(
-                    outOfProcess: false,
-                    appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
-                    artifact.TestDisplayName, artifact.FullPath);
-            }
+        foreach (var artifact in args.FileArtifacts)
+        {
+            _output.ArtifactAdded(
+                outOfProcess: false,
+                appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                artifact.TestDisplayName, artifact.FullPath);
+        }
 
             LogFileArtifacts(args);
         }
 
-        public void OnSessionEventReceived(object sender, SessionEventArgs args)
-        {
-            if (!Logger.TraceEnabled) return;
+    public void OnSessionEventReceived(object sender, SessionEventArgs args)
+    {
+        if (!Logger.TraceEnabled) return;
 
-            var sessionEvent = args.SessionEvent;
-            Logger.LogTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
+        var sessionEvent = args.SessionEvent;
+        Logger.LogTrace(() => $"TestSessionEvent: {sessionEvent.SessionType}, {sessionEvent.SessionUid}, {sessionEvent.ExecutionId}");
+    }
+
+    public void OnErrorReceived(object sender, ErrorEventArgs args)
+    {
+        if (!Logger.TraceEnabled) return;
+
+        Logger.LogTrace(() => args.ErrorMessage);
+    }
+
+    public void OnTestProcessExited(object sender, TestProcessExitEventArgs args)
+    {
+        var testApplication = (TestApplication)sender;
+
+        if (_executions.TryGetValue(testApplication, out var appInfo))
+        {
+            _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
-
-        public void OnErrorReceived(object sender, ErrorEventArgs args)
+        else
         {
-            if (!Logger.TraceEnabled) return;
-
-            Logger.LogTrace(() => args.ErrorMessage);
+            _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
-
-        public void OnTestProcessExited(object sender, TestProcessExitEventArgs args)
-        {
-            var testApplication = (TestApplication)sender;
-
-            if (_executions.TryGetValue(testApplication, out var appInfo))
-            {
-                _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
-            }
-            else
-            {
-                _output.AssemblyRunCompleted(testApplication.Module.TargetPath ?? testApplication.Module.ProjectFullPath, testApplication.Module.TargetFramework, architecture: null, null, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
-            }
 
             LogTestProcessExit(args);
         }

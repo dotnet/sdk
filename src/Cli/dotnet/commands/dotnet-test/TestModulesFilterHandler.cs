@@ -22,17 +22,17 @@ namespace Microsoft.DotNet.Cli
             _output = output;
         }
 
-        public bool RunWithTestModulesFilter(ParseResult parseResult)
-        {
-            // If the module path pattern(s) was provided, we will use that to filter the test modules
-            string testModules = parseResult.GetValue(TestingPlatformOptions.TestModulesFilterOption);
+    public bool RunWithTestModulesFilter(ParseResult parseResult)
+    {
+        // If the module path pattern(s) was provided, we will use that to filter the test modules
+        string testModules = parseResult.GetValue(TestingPlatformOptions.TestModulesFilterOption);
 
-            // If the root directory was provided, we will use that to search for the test modules
-            // Otherwise, we will use the current directory
-            string rootDirectory = Directory.GetCurrentDirectory();
-            if (parseResult.HasOption(TestingPlatformOptions.TestModulesRootDirectoryOption))
-            {
-                rootDirectory = parseResult.GetValue(TestingPlatformOptions.TestModulesRootDirectoryOption);
+        // If the root directory was provided, we will use that to search for the test modules
+        // Otherwise, we will use the current directory
+        string rootDirectory = Directory.GetCurrentDirectory();
+        if (parseResult.HasOption(TestingPlatformOptions.TestModulesRootDirectoryOption))
+        {
+            rootDirectory = parseResult.GetValue(TestingPlatformOptions.TestModulesRootDirectoryOption);
 
                 // If the root directory is not valid, we simply return
                 if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli
                 }
             }
 
-            var testModulePaths = GetMatchedModulePaths(testModules, rootDirectory);
+        var testModulePaths = GetMatchedModulePaths(testModules, rootDirectory);
 
             // If no matches were found, we simply return
             if (!testModulePaths.Any())
@@ -53,24 +53,23 @@ namespace Microsoft.DotNet.Cli
                 return false;
             }
 
-            foreach (string testModule in testModulePaths)
-            {
-                var testApp = new TestApplication(new TestModule(testModule, null, null, null, true, true), _args);
-                // Write the test application to the channel
-                _actionQueue.Enqueue(testApp);
-            }
-
-            return true;
-        }
-
-        private static IEnumerable<string> GetMatchedModulePaths(string testModules, string rootDirectory)
+        foreach (string testModule in testModulePaths)
         {
-            var testModulePatterns = testModules.Split([';'], StringSplitOptions.RemoveEmptyEntries);
-
-            Matcher matcher = new();
-            matcher.AddIncludePatterns(testModulePatterns);
-
-            return MatcherExtensions.GetResultsInFullPath(matcher, rootDirectory);
+            var testApp = new TestApplication(new TestModule(testModule, null, null, null, true, true), _args);
+            // Write the test application to the channel
+            _actionQueue.Enqueue(testApp);
         }
+
+        return true;
+    }
+
+    private static IEnumerable<string> GetMatchedModulePaths(string testModules, string rootDirectory)
+    {
+        var testModulePatterns = testModules.Split([';'], StringSplitOptions.RemoveEmptyEntries);
+
+        Matcher matcher = new();
+        matcher.AddIncludePatterns(testModulePatterns);
+
+        return MatcherExtensions.GetResultsInFullPath(matcher, rootDirectory);
     }
 }

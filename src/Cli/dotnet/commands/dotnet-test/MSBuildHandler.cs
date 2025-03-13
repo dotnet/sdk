@@ -8,50 +8,50 @@ using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal sealed class MSBuildHandler : IDisposable
 {
-    internal sealed class MSBuildHandler : IDisposable
+    private readonly List<string> _args;
+    private readonly TestApplicationActionQueue _actionQueue;
+    private readonly TerminalTestReporter _output;
+
+    private readonly ConcurrentBag<TestApplication> _testApplications = new();
+    private bool _areTestingPlatformApplications = true;
+
+    public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
     {
-        private readonly List<string> _args;
-        private readonly TestApplicationActionQueue _actionQueue;
-        private readonly TerminalTestReporter _output;
+        _args = args;
+        _actionQueue = actionQueue;
+        _output = output;
+    }
 
-        private readonly ConcurrentBag<TestApplication> _testApplications = new();
-        private bool _areTestingPlatformApplications = true;
-
-        public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
+    public bool RunMSBuild(BuildOptions buildOptions)
+    {
+        if (!ValidationUtility.ValidateBuildPathOptions(buildOptions, _output))
         {
-            _args = args;
-            _actionQueue = actionQueue;
-            _output = output;
+            return false;
         }
 
-        public bool RunMSBuild(BuildOptions buildOptions)
+        int msBuildExitCode;
+        string path;
+        PathOptions pathOptions = buildOptions.PathOptions;
+
+        if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
-            if (!ValidationUtility.ValidateBuildPathOptions(buildOptions, _output))
-            {
-                return false;
-            }
-
-            int msBuildExitCode;
-            string path;
-            PathOptions pathOptions = buildOptions.PathOptions;
-
-            if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
-            {
-                path = PathUtility.GetFullPath(pathOptions.ProjectPath);
-                msBuildExitCode = RunBuild(path, isSolution: false, buildOptions);
-            }
-            else if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
-            {
-                path = PathUtility.GetFullPath(pathOptions.SolutionPath);
-                msBuildExitCode = RunBuild(path, isSolution: true, buildOptions);
-            }
-            else
-            {
-                path = PathUtility.GetFullPath(pathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
-                msBuildExitCode = RunBuild(path, buildOptions);
-            }
+            path = PathUtility.GetFullPath(pathOptions.ProjectPath);
+            msBuildExitCode = RunBuild(path, isSolution: false, buildOptions);
+        }
+        else if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
+        {
+            path = PathUtility.GetFullPath(pathOptions.SolutionPath);
+            msBuildExitCode = RunBuild(path, isSolution: true, buildOptions);
+        }
+        else
+        {
+            path = PathUtility.GetFullPath(pathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
+            msBuildExitCode = RunBuild(path, buildOptions);
+        }
 
             if (msBuildExitCode != ExitCode.Success)
             {
@@ -59,43 +59,43 @@ namespace Microsoft.DotNet.Cli
                 return false;
             }
 
-            return true;
+        return true;
+    }
+
+    private int RunBuild(string directoryPath, BuildOptions buildOptions)
+    {
+        (bool solutionOrProjectFileFound, string message) = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out string projectOrSolutionFilePath, out bool isSolution);
+
+        if (!solutionOrProjectFileFound)
+        {
+            _output.WriteMessage(message);
+            return ExitCode.GenericFailure;
         }
 
-        private int RunBuild(string directoryPath, BuildOptions buildOptions)
+        (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
+
+        InitializeTestApplications(projects);
+
+        return restored ? ExitCode.Success : ExitCode.GenericFailure;
+    }
+
+    private int RunBuild(string filePath, bool isSolution, BuildOptions buildOptions)
+    {
+        (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
+
+        InitializeTestApplications(projects);
+
+        return restored ? ExitCode.Success : ExitCode.GenericFailure;
+    }
+
+    private void InitializeTestApplications(IEnumerable<TestModule> modules)
+    {
+        // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
+        IEnumerable<TestModule> vsTestTestProjects = modules.Where(module => !module.IsTestingPlatformApplication);
+
+        if (vsTestTestProjects.Any())
         {
-            (bool solutionOrProjectFileFound, string message) = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out string projectOrSolutionFilePath, out bool isSolution);
-
-            if (!solutionOrProjectFileFound)
-            {
-                _output.WriteMessage(message);
-                return ExitCode.GenericFailure;
-            }
-
-            (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
-
-            InitializeTestApplications(projects);
-
-            return restored ? ExitCode.Success : ExitCode.GenericFailure;
-        }
-
-        private int RunBuild(string filePath, bool isSolution, BuildOptions buildOptions)
-        {
-            (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
-
-            InitializeTestApplications(projects);
-
-            return restored ? ExitCode.Success : ExitCode.GenericFailure;
-        }
-
-        private void InitializeTestApplications(IEnumerable<TestModule> modules)
-        {
-            // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
-            IEnumerable<TestModule> vsTestTestProjects = modules.Where(module => !module.IsTestingPlatformApplication);
-
-            if (vsTestTestProjects.Any())
-            {
-                _areTestingPlatformApplications = false;
+            _areTestingPlatformApplications = false;
 
                 _output.WriteMessage(
                     string.Format(
@@ -103,53 +103,53 @@ namespace Microsoft.DotNet.Cli
                         string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
                     new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
 
-                return;
-            }
-
-            foreach (TestModule module in modules)
-            {
-                if (!module.IsTestProject && !module.IsTestingPlatformApplication)
-                {
-                    // This should never happen. We should only ever create TestModule if it's a test project.
-                    throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
-                }
-
-                var testApp = new TestApplication(module, _args);
-                _testApplications.Add(testApp);
-            }
+            return;
         }
 
-        public bool EnqueueTestApplications()
+        foreach (TestModule module in modules)
         {
-            if (!_areTestingPlatformApplications)
+            if (!module.IsTestProject && !module.IsTestingPlatformApplication)
             {
-                return false;
+                // This should never happen. We should only ever create TestModule if it's a test project.
+                throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
             }
 
-            foreach (var testApp in _testApplications)
-            {
-                _actionQueue.Enqueue(testApp);
-            }
-            return true;
+            var testApp = new TestApplication(module, _args);
+            _testApplications.Add(testApp);
+        }
+    }
+
+    public bool EnqueueTestApplications()
+    {
+        if (!_areTestingPlatformApplications)
+        {
+            return false;
         }
 
-        private (IEnumerable<TestModule> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
+        foreach (var testApp in _testApplications)
         {
-            (IEnumerable<TestModule> projects, bool isBuiltOrRestored) = isSolution ?
-                MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, buildOptions) :
-                MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, buildOptions);
-
-            LogProjectProperties(projects);
-
-            return (projects, isBuiltOrRestored);
+            _actionQueue.Enqueue(testApp);
         }
+        return true;
+    }
 
-        private void LogProjectProperties(IEnumerable<TestModule> modules)
+    private (IEnumerable<TestModule> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
+    {
+        (IEnumerable<TestModule> projects, bool isBuiltOrRestored) = isSolution ?
+            MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, buildOptions) :
+            MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, buildOptions);
+
+        LogProjectProperties(projects);
+
+        return (projects, isBuiltOrRestored);
+    }
+
+    private void LogProjectProperties(IEnumerable<TestModule> modules)
+    {
+        if (!Logger.TraceEnabled)
         {
-            if (!Logger.TraceEnabled)
-            {
-                return;
-            }
+            return;
+        }
 
             var logMessageBuilder = new StringBuilder();
 
@@ -167,12 +167,11 @@ namespace Microsoft.DotNet.Cli
             Logger.LogTrace(() => logMessageBuilder.ToString());
         }
 
-        public void Dispose()
+    public void Dispose()
+    {
+        foreach (var testApplication in _testApplications)
         {
-            foreach (var testApplication in _testApplications)
-            {
-                testApplication.Dispose();
-            }
+            testApplication.Dispose();
         }
     }
 }
