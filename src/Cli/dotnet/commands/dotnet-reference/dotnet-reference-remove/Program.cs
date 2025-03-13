@@ -6,56 +6,54 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 
-namespace Microsoft.DotNet.Tools.Reference.Remove
+namespace Microsoft.DotNet.Tools.Reference.Remove;
+
+internal class RemoveProjectToProjectReferenceCommand : CommandBase
 {
-    internal class RemoveProjectToProjectReferenceCommand : CommandBase
+    private readonly string _fileOrDirectory;
+    private readonly IReadOnlyCollection<string> _arguments;
+
+    public RemoveProjectToProjectReferenceCommand(
+        ParseResult parseResult) : base(parseResult)
     {
-        private readonly string _fileOrDirectory;
-        private readonly IReadOnlyCollection<string> _arguments;
+        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
+            parseResult.GetValue(RemoveCommandParser.ProjectArgument);
+        _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
 
-        public RemoveProjectToProjectReferenceCommand(
-            ParseResult parseResult) : base(parseResult)
+        if (_arguments.Count == 0)
         {
-            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-                parseResult.GetValue(RemoveCommandParser.ProjectArgument);
-            _arguments = parseResult.GetValue(ReferenceRemoveCommandParser.ProjectPathArgument).ToList().AsReadOnly();
-
-            if (_arguments.Count == 0)
-            {
-                throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneReferenceToRemove);
-            }
+            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneReferenceToRemove);
         }
+    }
 
-        public override int Execute()
+    public override int Execute()
+    {
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
+        var references = _arguments.Select(p =>
         {
-            var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
-            var references = _arguments.Select(p =>
+            var fullPath = Path.GetFullPath(p);
+            if (!Directory.Exists(fullPath))
             {
-                var fullPath = Path.GetFullPath(p);
-                if (!Directory.Exists(fullPath))
-                {
-                    return p;
-                }
-
-                return Path.GetRelativePath(
-                    msbuildProj.ProjectRootElement.FullPath,
-                    MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
-                );
-            });
-
-            int numberOfRemovedReferences = msbuildProj.RemoveProjectToProjectReferences(
-                _parseResult.GetValue(ReferenceRemoveCommandParser.FrameworkOption),
-                references);
-
-            if (numberOfRemovedReferences != 0)
-            {
-                msbuildProj.ProjectRootElement.Save();
+                return p;
             }
 
-            return 0;
+            return Path.GetRelativePath(
+                msbuildProj.ProjectRootElement.FullPath,
+                MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
+            );
+        });
+
+        int numberOfRemovedReferences = msbuildProj.RemoveProjectToProjectReferences(
+            _parseResult.GetValue(ReferenceRemoveCommandParser.FrameworkOption),
+            references);
+
+        if (numberOfRemovedReferences != 0)
+        {
+            msbuildProj.ProjectRootElement.Save();
         }
+
+        return 0;
     }
 }

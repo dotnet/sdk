@@ -6,45 +6,44 @@ using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Telemetry
+namespace Microsoft.DotNet.Cli.Telemetry;
+
+internal class AllowListToSendVerbSecondVerbFirstArgument : IParseResultLogRule
 {
-    internal class AllowListToSendVerbSecondVerbFirstArgument : IParseResultLogRule
+    public AllowListToSendVerbSecondVerbFirstArgument(
+        HashSet<string> topLevelCommandNameAllowList)
     {
-        public AllowListToSendVerbSecondVerbFirstArgument(
-            HashSet<string> topLevelCommandNameAllowList)
+        TopLevelCommandNameAllowList = topLevelCommandNameAllowList;
+    }
+
+    private HashSet<string> TopLevelCommandNameAllowList { get; }
+
+    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
+    {
+        var result = new List<ApplicationInsightsEntryFormat>();
+        var topLevelCommandNameFromParse = parseResult.RootSubCommandResult();
+
+        if (topLevelCommandNameFromParse != null)
         {
-            TopLevelCommandNameAllowList = topLevelCommandNameAllowList;
-        }
+            var secondVerb = parseResult.Tokens.Where(s => s.Type == CliTokenType.Command).Skip(1).FirstOrDefault()?.Value ?? "";
 
-        private HashSet<string> TopLevelCommandNameAllowList { get; }
-
-        public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
-        {
-            var result = new List<ApplicationInsightsEntryFormat>();
-            var topLevelCommandNameFromParse = parseResult.RootSubCommandResult();
-
-            if (topLevelCommandNameFromParse != null)
+            if (TopLevelCommandNameAllowList.Contains(topLevelCommandNameFromParse))
             {
-                var secondVerb = parseResult.Tokens.Where(s => s.Type == CliTokenType.Command).Skip(1).FirstOrDefault()?.Value ?? "";
-
-                if (TopLevelCommandNameAllowList.Contains(topLevelCommandNameFromParse))
+                var firstArgument = parseResult.Tokens.FirstOrDefault(t => t.Type.Equals(CliTokenType.Argument))?.Value ?? "";
+                if (secondVerb != null)
                 {
-                    var firstArgument = parseResult.Tokens.FirstOrDefault(t => t.Type.Equals(CliTokenType.Argument))?.Value ?? "";
-                    if (secondVerb != null)
-                    {
-                        result.Add(new ApplicationInsightsEntryFormat(
-                            "sublevelparser/command",
-                            new Dictionary<string, string>
-                            {
-                                {"verb", topLevelCommandNameFromParse},
-                                {"subcommand", secondVerb},
-                                {"argument", firstArgument}
-                            },
-                            measurements));
-                    }
+                    result.Add(new ApplicationInsightsEntryFormat(
+                        "sublevelparser/command",
+                        new Dictionary<string, string>
+                        {
+                            {"verb", topLevelCommandNameFromParse},
+                            {"subcommand", secondVerb},
+                            {"argument", firstArgument}
+                        },
+                        measurements));
                 }
             }
-            return result;
         }
+        return result;
     }
 }

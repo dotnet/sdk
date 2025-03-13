@@ -3,50 +3,49 @@
 
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+public class DotNetCommandFactory : ICommandFactory
 {
-    public class DotNetCommandFactory : ICommandFactory
+    private bool _alwaysRunOutOfProc;
+    private readonly string _currentWorkingDirectory;
+
+    public DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null)
     {
-        private bool _alwaysRunOutOfProc;
-        private readonly string _currentWorkingDirectory;
+        _alwaysRunOutOfProc = alwaysRunOutOfProc;
+        _currentWorkingDirectory = currentWorkingDirectory;
+    }
 
-        public DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null)
+    public ICommand Create(
+        string commandName,
+        IEnumerable<string> args,
+        NuGetFramework framework = null,
+        string configuration = Constants.DefaultConfiguration)
+    {
+        if (!_alwaysRunOutOfProc && TryGetBuiltInCommand(commandName, out var builtInCommand))
         {
-            _alwaysRunOutOfProc = alwaysRunOutOfProc;
-            _currentWorkingDirectory = currentWorkingDirectory;
+            Debug.Assert(framework == null, "BuiltInCommand doesn't support the 'framework' argument.");
+            Debug.Assert(configuration == Constants.DefaultConfiguration, "BuiltInCommand doesn't support the 'configuration' argument.");
+
+            return new BuiltInCommand(commandName, args, builtInCommand);
         }
 
-        public ICommand Create(
-            string commandName,
-            IEnumerable<string> args,
-            NuGetFramework framework = null,
-            string configuration = Constants.DefaultConfiguration)
+        return CommandFactoryUsingResolver.CreateDotNet(commandName, args, framework, configuration, _currentWorkingDirectory);
+    }
+
+    private bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
+    {
+        var command = Parser.GetBuiltInCommand(commandName);
+        if (command?.Action is AsynchronousCliAction action)
         {
-            if (!_alwaysRunOutOfProc && TryGetBuiltInCommand(commandName, out var builtInCommand))
-            {
-                Debug.Assert(framework == null, "BuiltInCommand doesn't support the 'framework' argument.");
-                Debug.Assert(configuration == Constants.DefaultConfiguration, "BuiltInCommand doesn't support the 'configuration' argument.");
-
-                return new BuiltInCommand(commandName, args, builtInCommand);
-            }
-
-            return CommandFactoryUsingResolver.CreateDotNet(commandName, args, framework, configuration, _currentWorkingDirectory);
+            commandFunc = (args) => action.InvokeAsync(Parser.Instance.Parse(args)).Result;
+            return true;
         }
-
-        private bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
-        {
-            var command = Parser.GetBuiltInCommand(commandName);
-            if (command?.Action is AsynchronousCliAction action)
-            {
-                commandFunc = (args) => action.InvokeAsync(Parser.Instance.Parse(args)).Result;
-                return true;
-            }
-            commandFunc = null;
-            return false;
-        }
+        commandFunc = null;
+        return false;
     }
 }
