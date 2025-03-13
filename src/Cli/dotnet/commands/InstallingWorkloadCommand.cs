@@ -47,6 +47,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
     protected readonly IWorkloadManifestUpdater _workloadManifestUpdaterFromConstructor;
     protected IInstaller _workloadInstaller;
     protected IWorkloadManifestUpdater _workloadManifestUpdater;
+    protected bool? _shouldUseWorkloadSets;
     private WorkloadHistoryState _workloadHistoryRecord;
 
     protected bool UseRollback => !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
@@ -86,7 +87,8 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         IInstaller workloadInstaller,
         INuGetPackageDownloader nugetPackageDownloader,
         IWorkloadManifestUpdater workloadManifestUpdater,
-        string tempDirPath)
+        string tempDirPath,
+        bool? shouldUseWorkloadSetsFromGlobalJson = null)
         : base(parseResult, reporter: reporter, tempDirPath: tempDirPath, nugetPackageDownloader: nugetPackageDownloader)
     {
         _arguments = parseResult.GetArguments();
@@ -132,7 +134,8 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
 
         _globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
-        _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPath);
+        _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPath, out _shouldUseWorkloadSets);
+        _shouldUseWorkloadSets = shouldUseWorkloadSetsFromGlobalJson ?? _shouldUseWorkloadSets;
 
         if (SpecifiedWorkloadSetVersionInGlobalJson && (SpecifiedWorkloadSetVersionOnCommandLine || UseRollback || FromHistory))
         {
@@ -150,6 +153,14 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name,
                 WorkloadUpdateCommandParser.FromHistoryOption.Name), isUserError: true);
         }
+        else if (_shouldUseWorkloadSets == true && (UseRollback || (FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is null)))
+        {
+            throw new GracefulException(Update.LocalizableStrings.SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion, isUserError: true);
+        }
+        else if (_shouldUseWorkloadSets == false && (SpecifiedWorkloadSetVersionInGlobalJson || SpecifiedWorkloadSetVersionOnCommandLine || (FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is not null)))
+        {
+            throw new GracefulException(Update.LocalizableStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
+        }
 
         //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
     }
@@ -161,23 +172,19 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
 
     InstallStateContents GetCurrentInstallState()
     {
-        return GetCurrentInstallState(_sdkFeatureBand, _workloadRootDir);
-    }
-
-    static InstallStateContents GetCurrentInstallState(SdkFeatureBand sdkFeatureBand, string dotnetDir)
-    {
-        string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
+        string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _workloadRootDir), "default.json");
         return InstallStateContents.FromPath(path);
     }
 
     public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
     {
-        return GetCurrentInstallState(sdkFeatureBand, dotnetDir).ShouldUseWorkloadSets();
+        return WorkloadManifestUpdater.ShouldUseWorkloadSetMode(sdkFeatureBand, dotnetDir);
     }
 
     protected void UpdateWorkloadManifests(WorkloadHistoryRecorder recorder, ITransactionContext context, DirectoryPath? offlineCache)
     {
-        var updateToLatestWorkloadSet = ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir) && !SpecifiedWorkloadSetVersionInGlobalJson;
+        var shouldUseWorkloadSetsPerInstallState = ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir);
+        var updateToLatestWorkloadSet = _shouldUseWorkloadSets ?? shouldUseWorkloadSetsPerInstallState && !SpecifiedWorkloadSetVersionInGlobalJson;
         if (FromHistory && !string.IsNullOrWhiteSpace(_WorkloadHistoryRecord.WorkloadSetVersion))
         {
             // This is essentially the same as updating to a specific workload set version, and we're now past the error check,
@@ -192,6 +199,12 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
             updateToLatestWorkloadSet = false;
         }
 
+        string resolvedWorkloadSetVersion = _workloadSetVersionFromGlobalJson;
+        if (SpecifiedWorkloadSetVersionInGlobalJson && recorder is not null)
+        {
+            recorder.HistoryRecord.GlobalJsonVersion = _workloadSetVersionFromGlobalJson;
+        }
+
         if (SpecifiedWorkloadSetVersionOnCommandLine)
         {
             updateToLatestWorkloadSet = false;
@@ -204,45 +217,37 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
             }
 
-            if (SpecifiedWorkloadSetVersionInGlobalJson && recorder is not null)
+            if (_workloadSetVersionFromCommandLine.Any(v => v.Contains('@')))
             {
-                recorder.HistoryRecord.GlobalJsonVersion = _workloadSetVersionFromGlobalJson;
-            }
-        }
+                var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
+                    _sdkFeatureBand,
+                    _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
+                    _sdkFeatureBand.IsPrerelease,
+                    PackageDownloader,
+                    _workloadSetVersionFromCommandLine,
+                    _workloadResolver,
+                    numberOfWorkloadSetsToTake: 1);
 
-        string resolvedWorkloadSetVersion = null;
-
-        if (_workloadSetVersionFromCommandLine?.Any(v => v.Contains('@')) == true)
-        {
-            var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
-                _sdkFeatureBand,
-                _workloadInstaller is not NetSdkMsiInstallerClient ? _workloadInstaller : null,
-                _sdkFeatureBand.IsPrerelease,
-                PackageDownloader,
-                _workloadSetVersionFromCommandLine,
-                _workloadResolver,
-                numberOfWorkloadSetsToTake: 1);
-
-            if (versions is null)
-            {
-                return;
-            }
-            else if (!versions.Any())
-            {
-                Reporter.WriteLine(Workloads.Workload.Update.LocalizableStrings.NoWorkloadUpdateFound);
-                return;
+                if (versions is null)
+                {
+                    return;
+                }
+                else if (!versions.Any())
+                {
+                    Reporter.WriteLine(Workloads.Workload.Update.LocalizableStrings.NoWorkloadUpdateFound);
+                    return;
+                }
+                else
+                {
+                    resolvedWorkloadSetVersion = versions.Single();
+                }
             }
             else
             {
-                resolvedWorkloadSetVersion = versions.Single();
+                resolvedWorkloadSetVersion = _workloadSetVersionFromCommandLine.Single();
             }
         }
-        else if (SpecifiedWorkloadSetVersionOnCommandLine)
-        {
-            resolvedWorkloadSetVersion = _workloadSetVersionFromCommandLine.Single();
-        }
 
-        resolvedWorkloadSetVersion = _workloadSetVersionFromGlobalJson ?? resolvedWorkloadSetVersion;
         if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback && !FromHistory)
         {
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, updateToLatestWorkloadSet, offlineCache).Wait();
@@ -270,17 +275,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
             return;
         }
 
-        IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
-        if (resolvedWorkloadSetVersion != null)
-        {
-            manifestsToUpdate = InstallWorkloadSet(context, resolvedWorkloadSetVersion);
-        }
-        else
-        {
-            manifestsToUpdate = UseRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
-                                FromHistory ? _workloadManifestUpdater.CalculateManifestUpdatesFromHistory(_WorkloadHistoryRecord) :
-                                              _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
-        }
+        IEnumerable<ManifestVersionUpdate> manifestsToUpdate =
+            resolvedWorkloadSetVersion != null ? InstallWorkloadSet(context, resolvedWorkloadSetVersion) :
+                                   UseRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
+                                   FromHistory ? _workloadManifestUpdater.CalculateManifestUpdatesFromHistory(_WorkloadHistoryRecord) :
+                                                 _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
 
         InstallStateContents oldInstallState = GetCurrentInstallState();
 

@@ -63,7 +63,11 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
             }
             else if (string.IsNullOrEmpty(_updateMode))
             {
-                if (InstallingWorkloadCommand.ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+                string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+                var globalJsonVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath, out bool? shouldUseWorkloadSets);
+                shouldUseWorkloadSets = shouldUseWorkloadSets == null ? string.IsNullOrWhiteSpace(globalJsonVersion) ? null : true : shouldUseWorkloadSets;
+
+                if (shouldUseWorkloadSets ?? InstallingWorkloadCommand.ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
                 {
                     Reporter.WriteLine(WorkloadConfigCommandParser.UpdateMode_WorkloadSet);
                 }
