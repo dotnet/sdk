@@ -1,0 +1,6 @@
+﻿{
+  "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
+  "name": "NUnit 3 測試項目",
+  "description": "建立新的 NUnit 測試類別",
+  "postActions/openInEditor/description": "在編輯器中開啟建立的測試固件類別"
+}
