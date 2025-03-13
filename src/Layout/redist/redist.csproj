@@ -103,4 +103,6 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="ReturnProductVersion" Returns="$(FullNugetVersion)" />
+
 </Project>

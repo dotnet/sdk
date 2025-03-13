@@ -26,4 +26,23 @@
   <ItemGroup>
     <Artifact Update="$(ArtifactsShippingPackagesDir)dotnet-sdk-pgo-*" Visibility="External" />
   </ItemGroup>
+
+  <Target Name="GetNonStableProductVersion">
+    <!-- Retrieve the non-stable product version. -->
+    <MSBuild Projects="$(RepoRoot)src/Layout/redist/redist.csproj"
+             Targets="ReturnProductVersion">
+      <Output TaskParameter="TargetOutputs" PropertyName="NonStableProductVersion" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="AddRelativeBlobPathToBlobArtifacts"
+          DependsOnTargets="GetNonStableProductVersion"
+          BeforeTargets="PublishToAzureDevOpsArtifacts"
+          AfterTargets="GenerateChecksumsFromArtifacts">
+    <ItemGroup>
+      <Artifact Condition="'%(Artifact.PublishFlatContainer)' == 'true' and '%(Artifact.RelativeBlobPath)' == ''"
+                RelativeBlobPath="Sdk/$(NonStableProductVersion)/%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
 </Project>
