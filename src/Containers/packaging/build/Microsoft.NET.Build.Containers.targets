@@ -256,6 +256,7 @@
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
                     BaseImageDigest="$(ContainerBaseDigest)"
+                    ImageFormat="$(ContainerImageFormat)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
@@ -275,6 +276,7 @@
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                    SkipPublishing="$(_SkipContainerPublishing)"
                     GenerateLabels="$(ContainerGenerateLabels)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
@@ -297,11 +299,17 @@
   </Target>
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
-    <Error Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
-      Condition="'$(ContainerArchiveOutputPath)' != '' and
-                 !$(ContainerArchiveOutputPath.EndsWith('/')) and
-                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and
-                 $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
+    <PropertyGroup>
+      <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
+      <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
+      <!--We don't want to skip publishing individual images in case of local daemon podman because podman loads multi-arch tarball differently - only individual image for the current platform.-->
+      <_SkipContainerPublishing>false</_SkipContainerPublishing>
+      <_SkipContainerPublishing Condition="$(ContainerArchiveOutputPath) != '' or ( $(ContainerRegistry) == '' and ( $(LocalRegistry) == '' or $(LocalRegistry) == 'Docker' ) )">true</_SkipContainerPublishing>
+    
+      <!--We want to skip CreateImageIndex task in case of local daemon podman because it is not supported.-->
+      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
+      <_SkipCreateImageIndex Condition="$(ContainerArchiveOutputPath) == '' and $(ContainerRegistry) == '' and $(LocalRegistry) == 'Podman'">true</_SkipCreateImageIndex>
+    </PropertyGroup>
 
     <ItemGroup>
       <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
@@ -314,6 +322,7 @@
           ContainerBaseRegistry=$(ContainerBaseRegistry);
           ContainerBaseName=$(ContainerBaseName);
           ContainerBaseTag=$(ContainerBaseTag);
+          ContainerBaseDigest=$(ContainerBaseDigest);
           ContainerRegistry=$(ContainerRegistry);
           _ContainerImageTags=@(ContainerImageTags, ';');
           ContainerRepository=$(ContainerRepository);
@@ -329,7 +338,8 @@
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerUser=$(ContainerUser);
           ContainerGenerateLabels=$(ContainerGenerateLabels);
-          ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest)
+          ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
+          _SkipContainerPublishing=$(_SkipContainerPublishing)
         "/>
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
@@ -337,21 +347,23 @@
     <MSBuild
         Projects="@(_InnerBuild)"
         Targets="Publish;_ParseItemsForPublishingSingleContainer;_PublishSingleContainer"
-        BuildInParallel="true">
+        BuildInParallel="$([MSBuild]::ValueOrDefault('$(ContainerPublishInParallel)', 'true'))">
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainers" />
     </MSBuild>
 
-    <PropertyGroup>
-      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
-      <_SkipCreateImageIndex Condition="'$(ContainerRegistry)' == ''">true</_SkipCreateImageIndex>
-    </PropertyGroup>
-
     <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
                       GeneratedContainers="@(GeneratedContainers)"
+                      LocalRegistry="$(LocalRegistry)"
                       OutputRegistry="$(ContainerRegistry)"
+                      ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                       Repository="$(ContainerRepository)"
-                      ImageTags="@(ContainerImageTags)">
+                      ImageTags="@(ContainerImageTags)"
+                      BaseRegistry="$(ContainerBaseRegistry)"
+                      BaseImageName="$(ContainerBaseName)"
+                      BaseImageTag="$(ContainerBaseTag)"
+                      BaseImageDigest="$(ContainerBaseDigest)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
+      <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
     </CreateImageIndex>
   </Target>
 
@@ -389,10 +401,6 @@
         Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])"
         Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])" />
     </ItemGroup>
-    <PropertyGroup>
-      <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
-      <ContainerArchiveOutputPath Condition="'$(ContainerArchiveOutputPath)' != ''">$([System.IO.Path]::Combine($(ContainerArchiveOutputPath), $(ContainerRepository)-$(ContainerRuntimeIdentifier).tar.gz))</ContainerArchiveOutputPath>
-    </PropertyGroup>
   </Target>
 
   <Target Name="PublishContainer"

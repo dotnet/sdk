@@ -244,10 +244,11 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln", true, ".sln")]
-        [InlineData("sln", false, ".sln")]
-        [InlineData("solution", true, ".sln")]
-        [InlineData("solution", false, ".sln")]
+        // needs https://github.com/microsoft/vs-solutionpersistence/pull/101
+        // [InlineData("sln", true, ".sln")]
+        // [InlineData("sln", false, ".sln")]
+        // [InlineData("solution", true, ".sln")]
+        // [InlineData("solution", false, ".sln")]
         [InlineData("sln", true, ".slnx")]
         [InlineData("solution", false, ".slnx")]
         public void WhenNestedProjectIsAddedSolutionFoldersAreCreatedBuild(string solutionCommand, bool fooFirst, string solutionExtension)
@@ -1094,6 +1095,29 @@ Options:
                 solutionExtension: solutionExtension);
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".sln")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenAddingProjectOutsideDirectoryItShouldNotAddSolutionFolders(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojInParentDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+            var projectToAdd = Path.Combine("..", "Lib", "Lib.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(Path.Join(projectDirectory, "Dir"))
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
+            cmd.Should().Pass();
+            // Should have no solution folders
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Join(projectDirectory, "Dir", $"App{solutionExtension}"));
+            SolutionModel solution = await serializer.OpenAsync(Path.Join(projectDirectory, "Dir", $"App{solutionExtension}"), CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionFolders.Count.Should().Be(0);
         }
 
         private string GetExpectedSlnContents(

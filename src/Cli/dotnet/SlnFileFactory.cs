@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Tools.Common
             try
             {
                 JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath)).RootElement;
-                originalSolutionPath = root.GetProperty("solution").GetProperty("path").GetString();
+                originalSolutionPath = Uri.UnescapeDataString(root.GetProperty("solution").GetProperty("path").GetString());
                 filteredSolutionProjectPaths = root.GetProperty("solution").GetProperty("projects").EnumerateArray().Select(p => p.GetString()).ToArray();
                 originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
             }
@@ -106,6 +106,7 @@ namespace Microsoft.DotNet.Tools.Common
 
             IEnumerable<SolutionProjectModel> projects = filteredSolutionProjectPaths
                 .Select(path => path.Replace('\\', Path.DirectorySeparatorChar))
+                .Select(path => Uri.UnescapeDataString(path))
                 .Select(path => originalSolution.FindProject(path) ?? throw new GracefulException(
                         CommonLocalizableStrings.ProjectNotFoundInTheSolution,
                         path,
