@@ -3,10 +3,12 @@ using Microsoft.Testing.Platform.Capabilities.TestFramework;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestFramework;
 
-if (args.Length != 1 || args[0] != "--arg-from-my-target")
+if (!args.Contains("--arg-from-my-target"))
 {
 	throw new Exception("Expected to find --arg-from-my-target!");
 }
+
+args = args.Where(arg => arg != "--arg-from-my-target").ToArray();
 
 var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
 
