@@ -155,11 +155,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         }
         else if (_shouldUseWorkloadSets == true && (UseRollback || (FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is null)))
         {
-            throw new GracefulException(Update.LocalizableStrings.SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion, isUserError: true);
+            throw new GracefulException(Workloads.Workload.Update.LocalizableStrings.SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion, isUserError: true);
         }
         else if (_shouldUseWorkloadSets == false && (SpecifiedWorkloadSetVersionInGlobalJson || SpecifiedWorkloadSetVersionOnCommandLine || (FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is not null)))
         {
-            throw new GracefulException(Update.LocalizableStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
+            throw new GracefulException(Workloads.Workload.Update.LocalizableStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
 
         //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
