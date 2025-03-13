@@ -5,7 +5,6 @@
 
 using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Add.Reference.Tests

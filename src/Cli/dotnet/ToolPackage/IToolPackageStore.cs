@@ -4,18 +4,17 @@
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.ToolPackage
+namespace Microsoft.DotNet.Cli.ToolPackage;
+
+internal interface IToolPackageStore
 {
-    internal interface IToolPackageStore
-    {
-        DirectoryPath Root { get; }
+    DirectoryPath Root { get; }
 
-        DirectoryPath GetRandomStagingDirectory();
+    DirectoryPath GetRandomStagingDirectory();
 
-        NuGetVersion GetStagedPackageVersion(DirectoryPath stagingDirectory, PackageId packageId);
+    NuGetVersion GetStagedPackageVersion(DirectoryPath stagingDirectory, PackageId packageId);
 
-        DirectoryPath GetRootPackageDirectory(PackageId packageId);
+    DirectoryPath GetRootPackageDirectory(PackageId packageId);
 
-        DirectoryPath GetPackageDirectory(PackageId packageId, NuGetVersion version);
-    }
+    DirectoryPath GetPackageDirectory(PackageId packageId, NuGetVersion version);
 }

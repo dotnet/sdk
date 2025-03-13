@@ -3,14 +3,13 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli.Extensions
+namespace Microsoft.DotNet.Cli.Extensions;
+
+public static class ParserExtensions
 {
-    public static class ParserExtensions
-    {
-        public static ParseResult ParseFrom(
-            this CliConfiguration parser,
-            string context,
-            string[] args = null) =>
-            parser.Parse(context.Split(' ').Concat(args).ToArray());
-    }
+    public static ParseResult ParseFrom(
+        this CliConfiguration parser,
+        string context,
+        string[] args = null) =>
+        parser.Parse(context.Split(' ').Concat(args).ToArray());
 }
