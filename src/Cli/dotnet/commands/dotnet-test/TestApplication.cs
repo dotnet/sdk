@@ -46,12 +46,12 @@ internal sealed class TestApplication : IDisposable
         _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
     }
 
-        public async Task<int> RunAsync(TestOptions testOptions)
+    public async Task<int> RunAsync(TestOptions testOptions)
+    {
+        if (testOptions.HasFilterMode && !ModulePathExists())
         {
-            if (testOptions.HasFilterMode && !ModulePathExists())
-            {
-                return ExitCode.GenericFailure;
-            }
+            return ExitCode.GenericFailure;
+        }
 
         bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
         var processStartInfo = CreateProcessStartInfo(isDll, testOptions);
@@ -127,25 +127,25 @@ internal sealed class TestApplication : IDisposable
                 NamedPipeServer pipeConnection = new(_pipeNameDescription, OnRequest, NamedPipeServerStream.MaxAllowedServerInstances, token, skipUnknownMessages: true);
                 pipeConnection.RegisterAllSerializers();
 
-                    await pipeConnection.WaitConnectionAsync(token);
-                    _testAppPipeConnections.Add(pipeConnection);
-                }
+                await pipeConnection.WaitConnectionAsync(token);
+                _testAppPipeConnections.Add(pipeConnection);
             }
-            catch (OperationCanceledException ex)
+        }
+        catch (OperationCanceledException ex)
+        {
+            // We are exiting
+            if (Logger.TraceEnabled)
             {
-                // We are exiting
-                if (Logger.TraceEnabled)
-                {
-                    string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
-                    Logger.LogTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
-                }
+                string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
+                Logger.LogTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
             }
-            catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            if (Logger.TraceEnabled)
             {
-                if (Logger.TraceEnabled)
-                {
-                    Logger.LogTrace(() => ex.ToString());
-                }
+                Logger.LogTrace(() => ex.ToString());
+            }
 
             Environment.FailFast(ex.ToString());
         }
@@ -186,25 +186,25 @@ internal sealed class TestApplication : IDisposable
                     OnSessionEvent(sessionEvent);
                     break;
 
-                    // If we don't recognize the message, log and skip it
-                    case UnknownMessage unknownMessage:
-                        if (Logger.TraceEnabled)
-                        {
-                            Logger.LogTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                        }
-                        return Task.FromResult((IResponse)VoidResponse.CachedInstance);
+                // If we don't recognize the message, log and skip it
+                case UnknownMessage unknownMessage:
+                    if (Logger.TraceEnabled)
+                    {
+                        Logger.LogTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
+                    }
+                    return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
-                    default:
-                        // If it doesn't match any of the above, throw an exception
-                        throw new NotSupportedException(string.Format(Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
-                }
+                default:
+                    // If it doesn't match any of the above, throw an exception
+                    throw new NotSupportedException(string.Format(Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
             }
-            catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            if (Logger.TraceEnabled)
             {
-                if (Logger.TraceEnabled)
-                {
-                    Logger.LogTrace(() => ex.ToString());
-                }
+                Logger.LogTrace(() => ex.ToString());
+            }
 
             Environment.FailFast(ex.ToString());
         }
@@ -235,12 +235,12 @@ internal sealed class TestApplication : IDisposable
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         });
 
-        private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
+    private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
+    {
+        if (Logger.TraceEnabled)
         {
-            if (Logger.TraceEnabled)
-            {
-                Logger.LogTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
-            }
+            Logger.LogTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
+        }
 
         var process = Process.Start(processStartInfo);
         StoreOutputAndErrorData(process);
@@ -396,15 +396,15 @@ internal sealed class TestApplication : IDisposable
             builder.Append($"{ProjectProperties.TargetPath}: {_module.TargetPath}");
         }
 
-            if (!string.IsNullOrEmpty(_module.ProjectFullPath))
-            {
-                builder.Append($"{ProjectProperties.ProjectFullPath}: {_module.ProjectFullPath}");
-            }
+        if (!string.IsNullOrEmpty(_module.ProjectFullPath))
+        {
+            builder.Append($"{ProjectProperties.ProjectFullPath}: {_module.ProjectFullPath}");
+        }
 
-            if (!string.IsNullOrEmpty(_module.TargetFramework))
-            {
-                builder.Append($"{ProjectProperties.TargetFramework} : {_module.TargetFramework}");
-            }
+        if (!string.IsNullOrEmpty(_module.TargetFramework))
+        {
+            builder.Append($"{ProjectProperties.TargetFramework} : {_module.TargetFramework}");
+        }
 
         return builder.ToString();
     }
