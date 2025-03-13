@@ -1,8 +1,9 @@
 From d55847e83339919ddd713d3a03aa1b1ad1dd1329 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 13 Mar 2025 09:45:10 +0100
-Subject: [PATCH 1/5] Only build the target platform in native projs for the
- VMR
+Subject: [PATCH 1/5] Only build the target platform in native projs for the VMR
+
+Backport: https://github.com/dotnet/aspnetcore/pull/60910
 
 ---
  eng/Common.props                              |  4 ++++
