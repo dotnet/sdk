@@ -16,7 +16,7 @@ index 5fe1ceb1a79..664c36c89c4 100644
 --- a/eng/Publishing.props
 +++ b/eng/Publishing.props
 @@ -2,7 +2,12 @@
- 
+
    <ItemGroup>
      <Artifact Include="$(ArtifactsDir)nupkgs/*.nupkg"
 -              PublishFlatContainer="false" />
@@ -27,5 +27,5 @@ index 5fe1ceb1a79..664c36c89c4 100644
 +             Visibility="Vertical"
 +             Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true' and '$(DotNetBuildOrchestrator)' == 'true'" />
   </ItemGroup>
- 
+
  </Project>
