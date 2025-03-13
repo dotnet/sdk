@@ -107,6 +107,7 @@ internal static class SolutionAndProjectUtility
     public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
     {
         var projects = new List<TestModule>();
+        // TODO: CommonRunHelpers.EvaluateProject
         ProjectInstance projectInstance = projectCollection.LoadProject(projectFilePath, globalProperties, null).CreateProjectInstance();
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
@@ -150,13 +151,13 @@ internal static class SolutionAndProjectUtility
         }
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        TestModuleRunInformation runInfo = GetTestRunInfo(project);
+        RunProperties runProperties = GetRunProperties(project);
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
         string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
-        return new TestModule(runInfo, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
 
-        static TestModuleRunInformation GetTestRunInfo(ProjectInstance project)
+        static RunProperties GetRunProperties(ProjectInstance project)
         {
             // Build API cannot be called in parallel, even if the projects are different.
             // Otherwise, BuildManager in MSBuild will fail:
@@ -167,25 +168,11 @@ internal static class SolutionAndProjectUtility
                 if (!project.Build(s_computeRunArgumentsTarget, loggers: []))
                 {
                     Logger.LogTrace(() => $"The target {s_computeRunArgumentsTarget} failed to build. Falling back to TargetPath.");
-                    return new TestModuleRunInformation(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
+                    return new RunProperties(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
                 }
             }
 
-            var runCommand = project.GetPropertyValue(ProjectProperties.RunCommand);
-            if (string.IsNullOrEmpty(runCommand) || !File.Exists(runCommand))
-            {
-                // If we can't find the executable that runCommand is pointing to, we simply use TargetPath instead.
-                // In this case, we discard everything related to "Run" (i.e, RunWorkingDirectory and RunArguments) and use only TargetPath
-                Logger.LogTrace(() => $"RunCommand '{runCommand}' was not found. Falling back to TargetPath.");
-                return new TestModuleRunInformation(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
-            }
-
-            // We expect to be almost always in this code path.
-            return new TestModuleRunInformation(
-                runCommand,
-                project.GetPropertyValue(ProjectProperties.RunArguments),
-                project.GetPropertyValue(ProjectProperties.RunWorkingDirectory)
-            );
+            return RunProperties.FromProjectAndApplicationArguments(project, Array.Empty<string>(), fallbackToTargetPath: true);
         }
     }
 }
