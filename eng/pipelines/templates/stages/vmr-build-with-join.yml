@@ -54,13 +54,16 @@ parameters:
 stages:
 # Insert all stages that build verticals
 # and publish artifacts for each vertical
-- ${{ each vertical in parameters.verticalsStages }}:
-  - ${{ insert }}: ${{ vertical }}
+- ${{ each stage in parameters.verticalsStages }}:
+  - ${{ insert }}: ${{ stage }}
 - ${{ if parameters.finalJoinCondition }}:
   # This stage should contain all jobs that take inputs from all verticals and determine the exact final outputs.
   - stage: VMR_Final_Join
     displayName: 'VMR Final Join'
-    dependsOn: ${{ parameters.verticalsStages.*.stage }}
+    dependsOn:
+    - ${{ each stage in parameters.verticalsStages }}:
+      - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
+        - ${{ stage.stage }}
     jobs:
       - job: FinalJoin
         displayName: Final Build Pass
@@ -70,10 +73,12 @@ stages:
           outputParentDirectory: $(Build.ArtifactStagingDirectory)/artifacts
           inputs:
             # Download the artifacts from every job in every vertical stage under VerticalArtifacts
-            - ${{ each vertical in parameters.verticalsStages.*.jobs.*.job }}:
-              - input: pipelineArtifact
-                path: $(Build.ArtifactStagingDirectory)/VerticalArtifacts/${{ vertical }}
-                artifactName: ${{ vertical }}_Artifacts
+            - ${{ each stage in parameters.verticalsStages }}:
+              - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
+                - ${{ each vertical in stage.jobs.*.job }}:
+                  - input: pipelineArtifact
+                    path: $(Build.ArtifactStagingDirectory)/VerticalArtifacts/${{ vertical.job }}
+                    artifactName: ${{ vertical.job }}_Artifacts
             - input: pipelineArtifact
               path: $(Build.ArtifactStagingDirectory)/VerticalManifests
               artifactName: VerticalManifests

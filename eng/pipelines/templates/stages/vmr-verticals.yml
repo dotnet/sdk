@@ -355,6 +355,8 @@ stages:
 - ${{ if and(not(parameters.isSourceOnlyBuild), or(eq(variables['Build.Reason'], 'PullRequest'), ne(variables['System.TeamProject'], 'internal'))) }}:
   - stage: VMR_Vertical_Build_Validation
     displayName: VMR Vertical Build Validation
+    templateContext:
+      validationOnly: true
     dependsOn: []
     variables:
     - template: ../variables/vmr-build.yml

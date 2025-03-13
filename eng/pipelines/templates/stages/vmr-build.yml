@@ -85,65 +85,66 @@ stages:
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
           scope: ${{ parameters.scope }}
           isSourceOnlyBuild: ${{ parameters.isSourceOnlyBuild }}
-    finalJoinCondition: ${{ and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}
+    finalJoinCondition: ${{ and(not(parameters.isSourceOnlyBuild), eq(parameters.scope, 'full')) }}
     postJoinStages:
-    - stage: Publish_Build_Assets
-      displayName: Publish Assets
-      jobs:
-      - template: /eng/common/templates-official/job/publish-build-assets.yml@self
-        parameters:
-          publishUsingPipelines: true
-          publishAssetsImmediately: true
-          pool: ${{ parameters.pool_Linux }}
-
-    - stage: VMR_Validation
-      displayName: VMR Validation
-      variables:
-      - template: ../variables/vmr-build.yml
-        parameters:
-          vmrBranch: ${{ parameters.vmrBranch }}
-          desiredSigning: ${{ parameters.desiredSigning }}
-      - group: Release-Pipeline
-      - group: DotNetBot-GitHub-AllBranches
-      jobs:
-      - job: ValidateAssetBaselines
-        displayName: Validate Asset Baselines
-        pool: ${{ parameters.pool_Windows }}
-        timeoutInMinutes: 180
-        steps:
-        - template: ../steps/vmr-validate-asset-baseline.yml
+    - ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+      - stage: Publish_Build_Assets
+        displayName: Publish Assets
+        jobs:
+        - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
-            continueOnError: true
-      - ${{ if eq(variables.signEnabled, 'true') }}:
-        - job: ValidateSigning_Windows
-          displayName: Validate Signing - Windows
+            publishUsingPipelines: true
+            publishAssetsImmediately: true
+            pool: ${{ parameters.pool_Linux }}
+
+      - stage: VMR_Validation
+        displayName: VMR Validation
+        variables:
+        - template: ../variables/vmr-build.yml
+          parameters:
+            vmrBranch: ${{ parameters.vmrBranch }}
+            desiredSigning: ${{ parameters.desiredSigning }}
+        - group: Release-Pipeline
+        - group: DotNetBot-GitHub-AllBranches
+        jobs:
+        - job: ValidateAssetBaselines
+          displayName: Validate Asset Baselines
           pool: ${{ parameters.pool_Windows }}
-          timeoutInMinutes: 240
+          timeoutInMinutes: 180
           steps:
-          - template: ../steps/vmr-validate-signing.yml
+          - template: ../steps/vmr-validate-asset-baseline.yml
             parameters:
-              artifactName: PackageArtifacts
               continueOnError: true
-              OS: Windows_NT
+        - ${{ if eq(variables.signEnabled, 'true') }}:
+          - job: ValidateSigning_Windows
+            displayName: Validate Signing - Windows
+            pool: ${{ parameters.pool_Windows }}
+            timeoutInMinutes: 240
+            steps:
+            - template: ../steps/vmr-validate-signing.yml
+              parameters:
+                artifactName: PackageArtifacts
+                continueOnError: true
+                OS: Windows_NT
 
-        - job: ValidateSigning_Mac
-          displayName: Validate Signing - Mac
-          pool: ${{ parameters.pool_Mac }}
-          timeoutInMinutes: 240
-          steps:
-          - template: ../steps/vmr-validate-signing.yml
-            parameters:
-              artifactName: BlobArtifacts
-              continueOnError: true
-              OS: Darwin
+          - job: ValidateSigning_Mac
+            displayName: Validate Signing - Mac
+            pool: ${{ parameters.pool_Mac }}
+            timeoutInMinutes: 240
+            steps:
+            - template: ../steps/vmr-validate-signing.yml
+              parameters:
+                artifactName: BlobArtifacts
+                continueOnError: true
+                OS: Darwin
 
-        - job: ValidateSigning_Linux
-          displayName: Validate Signing - Linux
-          pool: ${{ parameters.pool_Linux }}
-          timeoutInMinutes: 240
-          steps:
-          - template: ../steps/vmr-validate-signing.yml
-            parameters:
-              artifactName: BlobArtifacts
-              continueOnError: true
-              OS: Linux
+          - job: ValidateSigning_Linux
+            displayName: Validate Signing - Linux
+            pool: ${{ parameters.pool_Linux }}
+            timeoutInMinutes: 240
+            steps:
+            - template: ../steps/vmr-validate-signing.yml
+              parameters:
+                artifactName: BlobArtifacts
+                continueOnError: true
+                OS: Linux
