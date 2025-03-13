@@ -157,7 +157,9 @@ internal sealed class MSBuildHandler : IDisposable
             Logger.LogTrace(() => $"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
             Logger.LogTrace(() => $"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
             Logger.LogTrace(() => $"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-            Logger.LogTrace(() => $"{ProjectProperties.TargetPath}: {module.TargetPath}");
+            Logger.LogTrace(() => $"{ProjectProperties.RunCommand}: {module.RunInformation.RunCommand}");
+            Logger.LogTrace(() => $"{ProjectProperties.RunArguments}: {module.RunInformation.RunArguments}");
+            Logger.LogTrace(() => $"{ProjectProperties.RunWorkingDirectory}: {module.RunInformation.RunWorkingDirectory}");
             Logger.LogTrace(() => $"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
         }
     }

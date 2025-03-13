@@ -3,7 +3,9 @@
 
 namespace Microsoft.DotNet.Cli;
 
-internal sealed record TestModule(string? TargetPath, string? ProjectFullPath, string? TargetFramework, string? RunSettingsFilePath, bool IsTestingPlatformApplication, bool IsTestProject);
+internal sealed record TestModule(TestModuleRunInformation RunInformation, string? ProjectFullPath, string? TargetFramework, string? RunSettingsFilePath, bool IsTestingPlatformApplication, bool IsTestProject);
+
+internal sealed record TestModuleRunInformation(string RunCommand, string? RunArguments, string? RunWorkingDirectory);
 
 internal sealed record Handshake(Dictionary<byte, string>? Properties);
 

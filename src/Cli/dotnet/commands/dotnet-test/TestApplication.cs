@@ -53,7 +53,7 @@ internal sealed class TestApplication : IDisposable
             return 1;
         }
 
-        bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
+        bool isDll = _module.RunInformation.RunCommand.HasExtension(CliConstants.DLLExtension);
         var processStartInfo = CreateProcessStartInfo(isDll, testOptions);
 
         _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
@@ -74,6 +74,11 @@ internal sealed class TestApplication : IDisposable
             RedirectStandardError = true
         };
 
+        if (!string.IsNullOrEmpty(_module.RunInformation.RunWorkingDirectory))
+        {
+            processStartInfo.WorkingDirectory = _module.RunInformation.RunWorkingDirectory;
+        }
+
         AddRunSettingsFileToEnvironment(processStartInfo);
 
         return processStartInfo;
@@ -83,7 +88,7 @@ internal sealed class TestApplication : IDisposable
     {
         if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
         {
-            return isDll ? Environment.ProcessPath : _module.TargetPath;
+            return isDll ? Environment.ProcessPath : _module.RunInformation.RunCommand;
         }
 
         return Environment.ProcessPath;
@@ -275,9 +280,9 @@ internal sealed class TestApplication : IDisposable
 
     private bool ModulePathExists()
     {
-        if (!File.Exists(_module.TargetPath))
+        if (!File.Exists(_module.RunInformation.RunCommand))
         {
-            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.TargetPath}' not found. Build the test application before or run 'dotnet test'." });
+            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.RunInformation.RunCommand}' not found. Build the test application before or run 'dotnet test'." });
             return false;
         }
         return true;
@@ -289,7 +294,7 @@ internal sealed class TestApplication : IDisposable
 
         if (isDll)
         {
-            builder.Append($"exec {_module.TargetPath} ");
+            builder.Append($"exec {_module.RunInformation.RunCommand} ");
         }
 
         AppendCommonArgs(builder, testOptions);
@@ -340,7 +345,7 @@ internal sealed class TestApplication : IDisposable
             ? _args.Aggregate((a, b) => $"{a} {b}")
             : string.Empty);
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name} {_module.RunInformation.RunArguments}");
     }
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
@@ -348,7 +353,7 @@ internal sealed class TestApplication : IDisposable
         if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
         {
             AddExecutionId(executionId);
-            ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.TargetPath, ExecutionId = executionId });
+            ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.RunInformation.RunCommand, ExecutionId = executionId });
         }
         HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
     }
@@ -391,9 +396,19 @@ internal sealed class TestApplication : IDisposable
     {
         StringBuilder builder = new();
 
-        if (!string.IsNullOrEmpty(_module.TargetPath))
+        if (!string.IsNullOrEmpty(_module.RunInformation.RunCommand))
         {
-            builder.Append($"{ProjectProperties.TargetPath}: {_module.TargetPath}");
+            builder.Append($"{ProjectProperties.RunCommand}: {_module.RunInformation.RunCommand}");
+        }
+
+        if (!string.IsNullOrEmpty(_module.RunInformation.RunArguments))
+        {
+            builder.Append($"{ProjectProperties.RunArguments}: {_module.RunInformation.RunArguments}");
+        }
+
+        if (!string.IsNullOrEmpty(_module.RunInformation.RunWorkingDirectory))
+        {
+            builder.Append($"{ProjectProperties.RunWorkingDirectory}: {_module.RunInformation.RunWorkingDirectory}");
         }
 
         if (!string.IsNullOrEmpty(_module.ProjectFullPath))

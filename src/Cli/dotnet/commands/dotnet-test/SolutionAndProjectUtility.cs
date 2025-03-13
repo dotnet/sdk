@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class SolutionAndProjectUtility
 {
+    private static readonly string s_computeRunArgumentsTarget = "ComputeRunArguments";
+
     public static (bool SolutionOrProjectFileFound, string Message) TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
     {
         projectOrSolutionFilePath = string.Empty;
@@ -149,39 +151,63 @@ internal static class SolutionAndProjectUtility
         }
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-
-        string executablePath = GetExecutablePath(project);
-        string targetPath = !string.IsNullOrEmpty(executablePath) ? executablePath : project.GetPropertyValue(ProjectProperties.TargetPath);
+        TestModuleRunInformation runInfo = GetTestRunInfo(project);
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
         string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
-        return new TestModule(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
-    }
+        return new TestModule(runInfo, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
 
-    private static string GetExecutablePath(Project project)
-    {
-        _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsExecutable), out bool isExecutable);
-        _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.UseAppHost), out bool useAppHost);
-
-        string targetFrameworkIdentifier = project.GetPropertyValue(ProjectProperties.TargetFrameworkIdentifier);
-
-        if (targetFrameworkIdentifier.Equals(CliConstants.NetCoreIdentifier, StringComparison.OrdinalIgnoreCase) &&
-            isExecutable &&
-            useAppHost)
+        static TestModuleRunInformation GetTestRunInfo(Project project)
         {
-            string targetDir = project.GetPropertyValue(ProjectProperties.TargetDir);
-            string assemblyName = project.GetPropertyValue(ProjectProperties.AssemblyName);
-            string nativeExecutableExtension = project.GetPropertyValue(ProjectProperties.NativeExecutableExtension);
-
-            string executablePath = $"{targetDir}{assemblyName}{nativeExecutableExtension}";
-
-            if (File.Exists(executablePath))
+            // TODO: We are running ComputeRunArguments target directly.
+            // What if some user is doing <Target Name="Run" DependsOnTargets="MyTarget;$(_RunDependsOn)" /> ?
+            // Android is already doing that:
+            // https://github.com/dotnet/android/blob/155709f9917666ca046c79a4e9769924ff4ab9bb/src/Xamarin.Android.Build.Tasks/Microsoft.Android.Sdk/targets/Microsoft.Android.Sdk.Application.targets#L51
+            // Is Android actually doing it incorrectly?
+            // TODO: Build call is causing the following error. We should investigate that.
+            // Tracking as part of https://github.com/microsoft/testfx/issues/5091
+            /*
+                ❌Unhandled exception: System.AggregateException: One or more errors occurred. (The operation cannot be completed because a build is already in progress.)
+                ❌ ---> System.InvalidOperationException: The operation cannot be completed because a build is already in progress.
+                ❌   at Microsoft.Build.Shared.ErrorUtilities.ThrowInvalidOperation(String resourceName, Object[] args)
+                ❌   at Microsoft.Build.Shared.ErrorUtilities.VerifyThrowInvalidOperation(Boolean condition, String resourceName)
+                ❌   at Microsoft.Build.Execution.BuildManager.RequireState(BuildManagerState requiredState, String exceptionResouorce)
+                ❌   at Microsoft.Build.Execution.BuildManager.BeginBuild(BuildParameters parameters)
+                ❌   at Microsoft.Build.Execution.BuildManager.Build[TRequestData,TResultData](BuildParameters parameters, TRequestData requestData)
+                ❌   at Microsoft.Build.Execution.BuildManager.Build(BuildParameters parameters, BuildRequestData requestData)
+                ❌   at Microsoft.Build.Execution.ProjectInstance.Build(String[] targets, IEnumerable`1 loggers, IEnumerable`1 remoteLoggers, ILoggingService loggingService, Int32 maxNodeCount, IDictionary`2& targetOutputs)
+                ❌   at Microsoft.Build.Evaluation.Project.ProjectImpl.Build(String[] targets, IEnumerable`1 loggers, IEnumerable`1 remoteLoggers, EvaluationContext evaluationContext)
+                ❌   at Microsoft.Build.Evaluation.Project.Build(String[] targets, IEnumerable`1 loggers, IEnumerable`1 remoteLoggers, EvaluationContext evaluationContext)
+                ❌   at Microsoft.Build.Evaluation.Project.Build(String[] targets, IEnumerable`1 loggers, IEnumerable`1 remoteLoggers)
+                ❌   at Microsoft.Build.Evaluation.Project.Build(String target, IEnumerable`1 loggers, IEnumerable`1 remoteLoggers)
+                ❌   at Microsoft.Build.Evaluation.Project.Build(String target)
+                ❌   at Microsoft.DotNet.Cli.SolutionAndProjectUtility.<GetModuleFromProject>g__GetTestRunInfo|9_0(Project project) in /_/src/Cli/dotnet/commands/dotnet-test/SolutionAndProjectUtility.cs:line 211
+                ❌   at Microsoft.DotNet.Cli.SolutionAndProjectUtility.GetModuleFromProject(Project project) in /_/src/Cli/dotnet/commands/dotnet-test/SolutionAndProjectUtility.cs:line 198
+                ❌   at Microsoft.DotNet.Cli.SolutionAndProjectUtility.GetProjectProperties(String projectFilePath, IDictionary`2 globalProperties, ProjectCollection projectCollection) in /_/src/Cli/dotnet/commands/dotnet-test/SolutionAndProjectUtility.cs:line 147
+                ❌   at Microsoft.DotNet.Cli.MSBuildUtility.<>c__DisplayClass7_0.<GetProjectsProperties>b__0(String project) in /_/src/Cli/dotnet/commands/dotnet-test/MSBuildUtility.cs:line 144
+                ❌   at System.Threading.Tasks.Parallel.<>c__DisplayClass43_0`2.<PartitionerForEachWorker>b__1(IEnumerator& partitionState, Int64 timeout, Boolean& replicationDelegateYieldedBeforeCompletion)
+                */
+            if (!project.Build(s_computeRunArgumentsTarget))
             {
-                return executablePath;
+               Logger.LogTrace(() => $"The target {s_computeRunArgumentsTarget} failed to build. Falling back to TargetPath.");
+               return new TestModuleRunInformation(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
             }
+
+            var runCommand = project.GetPropertyValue(ProjectProperties.RunCommand);
+            if (string.IsNullOrEmpty(runCommand) || !File.Exists(runCommand))
+            {
+                // If we can't find the executable that runCommand is pointing to, we simply use TargetPath instead.
+                // In this case, we discard everything related to "Run" (i.e, RunWorkingDirectory and RunArguments) and use only TargetPath
+                Logger.LogTrace(() => $"RunCommand '{runCommand}' was not found. Falling back to TargetPath.");
+                return new TestModuleRunInformation(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
+            }
+
+            // We expect to be almost always in this code path.
+            return new TestModuleRunInformation(
+                runCommand,
+                project.GetPropertyValue(ProjectProperties.RunArguments),
+                project.GetPropertyValue(ProjectProperties.RunWorkingDirectory)
+            );
         }
-
-        return string.Empty;
     }
-
 }
