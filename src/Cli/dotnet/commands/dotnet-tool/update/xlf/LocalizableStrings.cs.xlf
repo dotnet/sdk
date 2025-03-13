@@ -37,6 +37,11 @@
         <target state="translated">Zadejte jedno ID balíčku nástroje, který se má aktualizovat.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateAllOptionDescription">
+        <source>Update all tools.</source>
+        <target state="translated">Aktualizuje všechny nástroje.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
         <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
         <target state="translated">Nástroj {0} je aktuální (verze {1}, soubor manifestu {2}).</target>
@@ -65,6 +70,16 @@
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">Požadovaná verze {0} je nižší než stávající verze {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndPackageId">
+        <source>One must specify either package ID or use the update all option (--all).</source>
+        <target state="translated">Jeden musí určovat buď ID balíčku, nebo použít možnost aktualizovat vše (--all).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
+        <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
+        <target state="translated">Možnost verze (--version) a možnost aktualizovat vše (--all) nejde použít naráz. Zadejte pouze jednu z možností: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidGlobalAndLocalAndToolPath">
