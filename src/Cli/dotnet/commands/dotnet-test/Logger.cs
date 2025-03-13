@@ -3,47 +3,46 @@
 
 using Microsoft.DotNet.Cli;
 
-namespace Microsoft.DotNet.Tools.Test
+namespace Microsoft.DotNet.Tools.Test;
+
+internal static class Logger
 {
-    internal static class Logger
+    public static bool TraceEnabled { get; private set; }
+    private static readonly string _traceFilePath;
+    private static readonly object _lock = new();
+
+    static Logger()
     {
-        public static bool TraceEnabled { get; private set; }
-        private static readonly string _traceFilePath;
-        private static readonly object _lock = new();
+        _traceFilePath = Environment.GetEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar);
+        TraceEnabled = !string.IsNullOrEmpty(_traceFilePath);
 
-        static Logger()
+        string directoryPath = Path.GetDirectoryName(_traceFilePath);
+        if (!string.IsNullOrEmpty(directoryPath))
         {
-            _traceFilePath = Environment.GetEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar);
-            TraceEnabled = !string.IsNullOrEmpty(_traceFilePath);
+            Directory.CreateDirectory(directoryPath);
+        }
+    }
 
-            string directoryPath = Path.GetDirectoryName(_traceFilePath);
-            if (!string.IsNullOrEmpty(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
+    public static void LogTrace(Func<string> messageLog)
+    {
+        if (!TraceEnabled)
+        {
+            return;
         }
 
-        public static void LogTrace(Func<string> messageLog)
+        try
         {
-            if (!TraceEnabled)
-            {
-                return;
-            }
+            string message = $"[dotnet test - {DateTimeOffset.UtcNow:MM/dd/yyyy HH:mm:ss.fff}]{messageLog()}";
 
-            try
+            lock (_lock)
             {
-                string message = $"[dotnet test - {DateTimeOffset.UtcNow:MM/dd/yyyy HH:mm:ss.fff}]{messageLog()}";
-
-                lock (_lock)
-                {
-                    using StreamWriter logFile = File.AppendText(_traceFilePath);
-                    logFile.WriteLine(message);
-                }
+                using StreamWriter logFile = File.AppendText(_traceFilePath);
+                logFile.WriteLine(message);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[dotnet test - {DateTimeOffset.UtcNow:MM/dd/yyyy HH:mm:ss.fff}]{ex}");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[dotnet test - {DateTimeOffset.UtcNow:MM/dd/yyyy HH:mm:ss.fff}]{ex}");
         }
     }
 }
