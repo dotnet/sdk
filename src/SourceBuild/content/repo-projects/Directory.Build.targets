@@ -390,7 +390,7 @@
       <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(DotNetBuildPass)'))" />
 
       <_DependentProjectToSkip Include="@(_DependentProject)" Exclude="@(_DependentProjectCurrentBuildPass)" />
-      <_DependentProjectToSkip Include="@(_DependentProject)" AdditionalProperties="GetDependentVerticalAssetsOnly=true" />
+      <_DependentProjectToSkip AdditionalProperties="GetDependentVerticalAssetsOnly=true" />
 
       <_DependentProject Remove="@(_DependentProject)" />
       <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
