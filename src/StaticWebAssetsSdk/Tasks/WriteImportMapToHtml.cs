@@ -161,11 +161,16 @@ public partial class WriteImportMapToHtml : Task
     private ImportMap CreateImportMapFromResources(List<ResourceAsset> assets)
     {
         Dictionary<string, string>? imports = new();
-        Dictionary<string, Dictionary<string, string>>? scopes = new(); ;
+        Dictionary<string, Dictionary<string, string>>? scopes = new();
         Dictionary<string, string>? integrity = new();
 
         foreach (var asset in assets)
         {
+            if (IncludeOnlyHardFingerprintedModules && !asset.IsHardFingerprinted)
+            {
+                continue;
+            }
+
             if (asset.Integrity != null)
             {
                 integrity ??= [];
@@ -173,7 +178,7 @@ public partial class WriteImportMapToHtml : Task
             }
 
             // Only fingerprinted assets have label
-            if (asset.Label != null && (!IncludeOnlyHardFingerprintedModules || asset.IsHardFingerprinted))
+            if (asset.Label != null)
             {
                 imports ??= [];
                 imports[$"./{asset.Label}"] = $"./{asset.Url}";
