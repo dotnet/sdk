@@ -107,7 +107,6 @@ internal static class SolutionAndProjectUtility
     public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
     {
         var projects = new List<TestModule>();
-
         ProjectInstance projectInstance = projectCollection.LoadProject(projectFilePath, globalProperties, null).CreateProjectInstance();
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
