@@ -251,7 +251,7 @@ public partial class RunCommand
                 EntryPointFileFullPath = EntryPointFileFullPath,
             };
 
-            CommonRunHelpers.AddUserPassedProperties(command.GlobalProperties, CommonRunHelpers.GetUserPassedPropertiesFromArgs(RestoreArgs));
+            CommonRunHelpers.AddUserPassedProperties(command.GlobalProperties, RestoreArgs);
 
             projectFactory = command.CreateProjectInstance;
             buildResult = command.Execute(

@@ -14,13 +14,18 @@ internal static class CommonRunHelpers
     /// <param name="globalProperties">
     /// Should have <see cref="StringComparer.OrdinalIgnoreCase"/>.
     /// </param>
-    public static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[]? userPassedProperties)
+    public static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[]? args)
     {
         Debug.Assert(globalProperties.Comparer == StringComparer.OrdinalIgnoreCase);
 
-        if (userPassedProperties != null)
+        var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
+        var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
+        var propertyParseResult = propertyParsingConfiguration.Parse(args);
+        var propertyValues = propertyParseResult.GetValue(CommonOptions.PropertiesOption);
+
+        if (propertyValues != null)
         {
-            foreach (var property in userPassedProperties)
+            foreach (var property in propertyValues)
             {
                 foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
                 {
@@ -42,7 +47,7 @@ internal static class CommonRunHelpers
             { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
         };
 
-        AddUserPassedProperties(globalProperties, GetUserPassedPropertiesFromArgs(args));
+        AddUserPassedProperties(globalProperties, args);
 
         var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
@@ -53,13 +58,5 @@ internal static class CommonRunHelpers
 
         Debug.Assert(projectFactory is not null);
         return projectFactory(collection);
-    }
-
-    public static string[]? GetUserPassedPropertiesFromArgs(string[] args)
-    {
-        var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
-        var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
-        var propertyParseResult = propertyParsingConfiguration.Parse(args);
-        return propertyParseResult.GetValue(CommonOptions.PropertiesOption);
     }
 }
