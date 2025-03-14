@@ -3,11 +3,10 @@
 
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.ToolManifest
+namespace Microsoft.DotNet.Cli.ToolManifest;
+
+internal interface IToolManifestInspector
 {
-    internal interface IToolManifestInspector
-    {
-        IReadOnlyCollection<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> Inspect(
-            FilePath? filePath = null);
-    }
+    IReadOnlyCollection<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> Inspect(
+        FilePath? filePath = null);
 }

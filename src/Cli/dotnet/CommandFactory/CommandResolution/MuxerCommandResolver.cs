@@ -4,20 +4,19 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class MuxerCommandResolver : ICommandResolver
 {
-    public class MuxerCommandResolver : ICommandResolver
+    public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
-        public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
+        if (commandResolverArguments.CommandName == Muxer.MuxerName)
         {
-            if (commandResolverArguments.CommandName == Muxer.MuxerName)
-            {
-                var muxer = new Muxer();
-                var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                    commandResolverArguments.CommandArguments.OrEmptyIfNull());
-                return new CommandSpec(muxer.MuxerPath, escapedArgs);
-            }
-            return null;
+            var muxer = new Muxer();
+            var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
+                commandResolverArguments.CommandArguments.OrEmptyIfNull());
+            return new CommandSpec(muxer.MuxerPath, escapedArgs);
         }
+        return null;
     }
 }

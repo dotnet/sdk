@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <IsPackable Condition="'$(OS)' == 'Windows_NT' and '$(PgoInstrument)' != 'true' and '$(SkipBuildingInstallers)' != 'true'">true</IsPackable>
+    <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
+    <PackageId>VS.Redist.Common.NetCore.Toolset.$(Architecture).$(MajorMinorVersion)</PackageId>
+    <PackageDescription>.NET $(MajorMinorVersion) SDK Toolset ($(Architecture)) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</PackageDescription>
+    <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\redist-installer\redist-installer.proj" />
+  </ItemGroup>
+
+  <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
+    <!-- TODO: Remove these hardcodes when redist-installer got moved into src/Layout. -->
+    <PropertyGroup>
+      <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+      <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
+      <SdkMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="$(SdkMSIInstallerFile)" PackagePath="/" />
+    </ItemGroup>
+  </Target>
+
+</Project>
