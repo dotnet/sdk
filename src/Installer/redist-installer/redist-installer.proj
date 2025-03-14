@@ -20,4 +20,6 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
+  <Target Name="ReturnProductVersion" Returns="$(FullNugetVersion)" />
+
 </Project>

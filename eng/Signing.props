@@ -1,7 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <RelativeBlobPathParent>Sdk/$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version').Trim())</RelativeBlobPathParent>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
 
@@ -85,7 +84,7 @@
     <Artifact Include="$(ArtifactsPackagesDir)**\VS.Tools.*.nupkg;
                        $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
               IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
-              PublishFlatContainer="false" />
+              Kind="Package" />
   </ItemGroup>
 
   <!-- Only publish this file from win-x64 so that we don't end up with duplicates. -->
@@ -114,8 +113,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Artifact Include="@(SdkArtifact)"
-              RelativeBlobPath="$(RelativeBlobPathParent)/%(Filename)%(Extension)">
+    <Artifact Include="@(SdkArtifact)" Kind="Blob">
       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>
