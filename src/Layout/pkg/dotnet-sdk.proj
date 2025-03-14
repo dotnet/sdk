@@ -4,7 +4,7 @@
     <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
     <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(BuildSdkRpm)' != 'true'">true</SkipBuild>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <RuntimeIdentifier>$(RID)</RuntimeIdentifier>
+    <RuntimeIdentifier>$(Rid)</RuntimeIdentifier>
     <GenerateInstallers>true</GenerateInstallers>
     <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(BuildSdkRpm)' == 'true'">true</BuildRpmPackage>
@@ -39,10 +39,9 @@
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
   <PropertyGroup>
-    <RedistLayoutPath>$(ArtifactsBinDir)redist-installer\$(Configuration)\dotnet\</RedistLayoutPath>
     <ManpagesDirectory>$(RepoRoot)documentation/manpages/sdk</ManpagesDirectory>
-    <CLISdkRoot>$(RedistLayoutPath)sdk/</CLISdkRoot>
-    <TemplatesRoot>$(RedistLayoutPath)templates/</TemplatesRoot>
+    <CLISdkRoot>$(RedistInstallerLayoutPath)sdk/</CLISdkRoot>
+    <TemplatesRoot>$(RedistInstallerLayoutPath)templates/</TemplatesRoot>
   </PropertyGroup>
 
   <Target Name="PublishToDisk">
@@ -51,7 +50,7 @@
     <ItemGroup>
       <CLISdkFiles Include="$(CLISdkRoot)**/*" />
       <TemplatesFiles Include="$(TemplatesRoot)**/*" />
-      <ManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
+      <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
     </ItemGroup>
 
     <!-- Create layout: Binaries -->

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <IsPackable Condition="'$(OS)' == 'Windows_NT' and '$(PgoInstrument)' != 'true' and '$(SkipBuildingInstallers)' != 'true'">true</IsPackable>
+    <IsPackable Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingInstallers)' != 'true'">true</IsPackable>
     <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
     <PackageId>VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(MajorMinorVersion)</PackageId>
     <PackageDescription>.NET $(MajorMinorVersion) SDK ARP Placeholder ($(Architecture)) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</PackageDescription>
@@ -16,11 +16,6 @@
   </ItemGroup>
 
   <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
-    <!-- TODO: Remove this hardcode when redist-installer got moved into src/Layout. -->
-    <PropertyGroup>
-      <SdkPlaceholderMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
-    </PropertyGroup>
-
     <ItemGroup>
       <Content Include="$(SdkPlaceholderMSIInstallerFile)" PackagePath="/" />
     </ItemGroup>

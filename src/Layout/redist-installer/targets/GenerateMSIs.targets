@@ -50,12 +50,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SdkMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
-    <!-- When building the sdk bundle only, the sdk msi is acquired via DownloadBundledComponents. -->
-    <SdkMSIInstallerFile Condition="'$(GenerateSdkBundleOnly)' == 'true'">$(DownloadsFolder)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
-
     <SdkDependencyKeyName>Dotnet_CLI</SdkDependencyKeyName>
-    <SdkPlaceholderMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
     <SdkPlaceholderDependencyKeyName>NetCore_SdkPlaceholder</SdkPlaceholderDependencyKeyName>
     <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
 

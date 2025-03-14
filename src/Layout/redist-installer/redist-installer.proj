@@ -4,7 +4,6 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <IsShippingPackage>true</IsShippingPackage>
-    <GenerateSdkBundleOnly Condition="'$(DotNetBuildPass)' == '2' and '$(OS)' == 'Windows_NT'">true</GenerateSdkBundleOnly>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">

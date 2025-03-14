@@ -62,7 +62,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(RedistLayoutPath)templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
+          DestinationFolder="$(RedistInstallerLayoutPath)templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
           Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'" />
 
     <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
@@ -71,7 +71,7 @@
     </PropertyGroup>
 
     <Copy SourceFiles="@(RepoTemplate)"
-          DestinationFiles="$(RedistLayoutPath)templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
+          DestinationFiles="$(RedistInstallerLayoutPath)templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
   </Target>
 
   <Target Name="LayoutTemplatesForMSI" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates" Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">

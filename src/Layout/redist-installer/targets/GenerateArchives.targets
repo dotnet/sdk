@@ -16,13 +16,13 @@
     <!-- Create .tar.gz files on Linux/MacOS, and .zip files on Windows -->
     <ZipFileCreateFromDirectory
         Condition=" '$(OSName)' == 'win' "
-        SourceDirectory="$(RedistLayoutPath)"
+        SourceDirectory="$(RedistInstallerLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).zip"
         OverwriteDestination="true" />
 
     <TarGzFileCreateFromDirectory
         Condition=" '$(OSName)' != 'win' "
-        SourceDirectory="$(RedistLayoutPath)"
+        SourceDirectory="$(RedistInstallerLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).tar.gz"
         OverwriteDestination="true"
         IgnoreExitCode="$(IgnoreTarExitCode)" />
