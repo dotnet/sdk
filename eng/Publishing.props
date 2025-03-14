@@ -19,11 +19,30 @@
   <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <Artifact Include="$(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
                        $(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
-              PublishFlatContainer="false" />
+              Kind="Package" />
   </ItemGroup>
 
   <!-- The PGO sdk should always have External visibility, even if someone changes the default artifact visibility -->
   <ItemGroup>
     <Artifact Update="$(ArtifactsShippingPackagesDir)dotnet-sdk-pgo-*" Visibility="External" />
   </ItemGroup>
+
+  <Target Name="GetNonStableProductVersion">
+    <!-- Retrieve the non-stable product version. -->
+    <MSBuild Projects="$(RepoRoot)src/Installer/redist-installer/redist-installer.proj"
+             Targets="ReturnProductVersion">
+      <Output TaskParameter="TargetOutputs" PropertyName="NonStableProductVersion" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="AddRelativeBlobPathToBlobArtifacts"
+          DependsOnTargets="GetNonStableProductVersion"
+          BeforeTargets="PublishToAzureDevOpsArtifacts"
+          AfterTargets="GenerateChecksumsFromArtifacts">
+    <ItemGroup>
+      <Artifact Condition="'%(Artifact.Kind)' == 'Blob' and '%(Artifact.RelativeBlobPath)' == ''"
+                RelativeBlobPath="Sdk/$(NonStableProductVersion)/%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
 </Project>
