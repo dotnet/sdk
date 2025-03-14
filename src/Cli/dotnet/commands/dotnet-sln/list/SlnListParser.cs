@@ -15,6 +15,11 @@ public static class SlnListParser
         Arity = ArgumentArity.Zero
     };
 
+    public static readonly CliOption<SlnListOutputFormat> OutputFormatOption = new("--format")
+    {
+        Description = "TODO: FORMAT"
+    };
+
     private static readonly CliCommand Command = ConstructCommand();
 
     public static CliCommand GetCommand()
@@ -27,6 +32,7 @@ public static class SlnListParser
         CliCommand command = new("list", LocalizableStrings.ListAppFullName);
 
         command.Options.Add(SolutionFolderOption);
+        command.Options.Add(OutputFormatOption);
         command.SetAction((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());
 
         return command;

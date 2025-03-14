@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
@@ -14,11 +15,14 @@ internal class ListProjectsInSolutionCommand : CommandBase
     private readonly string _fileOrDirectory;
     private readonly bool _displaySolutionFolders;
 
+    private readonly SlnListOutputFormat _outputFormat;
+
     public ListProjectsInSolutionCommand(
         ParseResult parseResult) : base(parseResult)
     {
         _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
         _displaySolutionFolders = parseResult.GetValue(SlnListParser.SolutionFolderOption);
+        _outputFormat = parseResult.GetValue(SlnListParser.OutputFormatOption);
     }
 
     public override int Execute()
@@ -38,36 +42,38 @@ internal class ListProjectsInSolutionCommand : CommandBase
     private void ListAllProjectsAsync(string solutionFileFullPath)
     {
         SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
-        string[] paths;
-        if (_displaySolutionFolders)
-        {
-            paths = solution.SolutionFolders
-                // VS-SolutionPersistence does not return a path object, so there might be issues with forward/backward slashes on different platforms
-                .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')))
-                .ToArray();
-        }
-        else
-        {
-            paths = solution.SolutionProjects
-                .Select(project => project.FilePath)
-                .ToArray();
-        }
+        string[] paths = _displaySolutionFolders
+            ? solution.SolutionFolders.Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/'))).ToArray()
+            : solution.SolutionProjects.Select(project => project.FilePath).ToArray();
+        
         if (paths.Length == 0)
         {
             Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
+            return;
         }
-        else
+
+        Array.Sort(paths);
+
+        switch(_outputFormat)
         {
-            Array.Sort(paths);
-
-            string header = _displaySolutionFolders ? LocalizableStrings.SolutionFolderHeader : LocalizableStrings.ProjectsHeader;
-            Reporter.Output.WriteLine(header);
-            Reporter.Output.WriteLine(new string('-', header.Length));
-            foreach (string slnProject in paths)
-            {
-                Reporter.Output.WriteLine(slnProject);
-            }
+            case SlnListOutputFormat.Text:
+                string header = _displaySolutionFolders ? LocalizableStrings.SolutionFolderHeader : LocalizableStrings.ProjectsHeader;
+                Reporter.Output.WriteLine(header);
+                Reporter.Output.WriteLine(new string('-', header.Length));
+                foreach (string slnProject in paths)
+                {
+                    Reporter.Output.WriteLine(slnProject);
+                }
+                break;
+            case SlnListOutputFormat.Raw:
+                foreach (string slnProject in paths)
+                {
+                    Reporter.Output.WriteLine(slnProject);
+                }
+                break;
+            case SlnListOutputFormat.Json:
+                Reporter.Output.WriteLine(JsonSerializer.Serialize(paths));
+                break;
         }
-
     }
 }
