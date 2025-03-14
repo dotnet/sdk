@@ -3,9 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Remove.Reference.Tests

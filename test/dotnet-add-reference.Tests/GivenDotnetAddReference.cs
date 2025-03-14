@@ -3,8 +3,6 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli.CommandLineValidation;
-using Microsoft.DotNet.Tools;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Add.Reference.Tests

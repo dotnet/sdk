@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using static Microsoft.DotNet.Cli.Parser;
