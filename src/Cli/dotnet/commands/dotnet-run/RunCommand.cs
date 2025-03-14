@@ -23,8 +23,6 @@ namespace Microsoft.DotNet.Tools.Run;
 
 public partial class RunCommand
 {
-    private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
-
     public bool NoBuild { get; }
 
     /// <summary>
@@ -253,7 +251,7 @@ public partial class RunCommand
                 EntryPointFileFullPath = EntryPointFileFullPath,
             };
 
-            AddUserPassedProperties(command.GlobalProperties, RestoreArgs);
+            CommonRunHelpers.AddUserPassedProperties(command.GlobalProperties, RestoreArgs);
 
             projectFactory = command.CreateProjectInstance;
             buildResult = command.Execute(
@@ -314,19 +312,11 @@ public partial class RunCommand
         var command = CreateCommandFromRunProperties(project, runProperties);
         return command;
 
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[] restoreArgs, ILogger? binaryLogger)
+        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[]? restoreArgs, ILogger? binaryLogger)
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
 
-            var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                // This property disables default item globbing to improve performance
-                // This should be safe because we are not evaluating items, only properties
-                { Constants.EnableDefaultItems,  "false" },
-                { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
-            };
-
-            AddUserPassedProperties(globalProperties, restoreArgs);
+            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(restoreArgs);
 
             var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
@@ -349,20 +339,13 @@ public partial class RunCommand
 
         static RunProperties ReadRunPropertiesFromProject(ProjectInstance project, string[] applicationArgs)
         {
-            string runProgram = project.GetPropertyValue("RunCommand");
-            if (string.IsNullOrEmpty(runProgram))
+            var runProperties = RunProperties.FromProjectAndApplicationArguments(project, applicationArgs, fallbackToTargetPath: false);
+            if (string.IsNullOrEmpty(runProperties.RunCommand))
             {
                 ThrowUnableToRunError(project);
             }
 
-            string runArguments = project.GetPropertyValue("RunArguments");
-            string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
-
-            if (applicationArgs.Any())
-            {
-                runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs);
-            }
-            return new(runProgram, runArguments, runWorkingDirectory);
+            return runProperties;
         }
 
         static ICommand CreateCommandFromRunProperties(ProjectInstance project, RunProperties runProperties)
@@ -452,37 +435,6 @@ public partial class RunCommand
         {
             var dispatcher = new PersistentDispatcher(binaryLoggers);
             return new FacadeLogger(dispatcher);
-        }
-    }
-
-    /// <param name="globalProperties">
-    /// Should have <see cref="StringComparer.OrdinalIgnoreCase"/>.
-    /// </param>
-    private static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[] args)
-    {
-        Debug.Assert(globalProperties.Comparer == StringComparer.OrdinalIgnoreCase);
-
-        var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
-        var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
-        var propertyParseResult = propertyParsingConfiguration.Parse(args);
-        var propertyValues = propertyParseResult.GetValue(CommonOptions.PropertiesOption);
-
-        if (propertyValues != null)
-        {
-            foreach (var property in propertyValues)
-            {
-                foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
-                {
-                    if (globalProperties.TryGetValue(key, out var existingValues))
-                    {
-                        globalProperties[key] = existingValues + ";" + value;
-                    }
-                    else
-                    {
-                        globalProperties[key] = value;
-                    }
-                }
-            }
         }
     }
 
