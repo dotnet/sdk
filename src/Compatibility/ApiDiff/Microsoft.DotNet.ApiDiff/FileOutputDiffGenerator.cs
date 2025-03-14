@@ -32,24 +32,24 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     private readonly Dictionary<string, string> _results;
 
     /// <summary>
-    ///
+    /// Initializes a new instance of the <see cref="FileOutputDiffGenerator"/> class.
     /// </summary>
-    /// <param name="log"></param>
-    /// <param name="beforeAssembliesFolderPath"></param>
-    /// <param name="beforeAssemblyReferencesFolderPath"></param>
-    /// <param name="afterAssembliesFolderPath"></param>
-    /// <param name="afterAssemblyReferencesFolderPath"></param>
-    /// <param name="outputFolderPath"></param>
-    /// <param name="beforeFriendlyName"></param>
-    /// <param name="afterFriendlyName"></param>
-    /// <param name="tableOfContentsTitle"></param>
+    /// <param name="log">The logger to use for logging messages.</param>
+    /// <param name="beforeAssembliesFolderPath">The folder path containing the assemblies before the changes.</param>
+    /// <param name="beforeAssemblyReferencesFolderPath">The folder path containing the assembly references before the changes.</param>
+    /// <param name="afterAssembliesFolderPath">The folder path containing the assemblies after the changes.</param>
+    /// <param name="afterAssemblyReferencesFolderPath">The folder path containing the assembly references after the changes.</param>
+    /// <param name="outputFolderPath">The folder path where the output files will be written.</param>
+    /// <param name="beforeFriendlyName">The friendly name for the before version of the assemblies.</param>
+    /// <param name="afterFriendlyName">The friendly name for the after version of the assemblies.</param>
+    /// <param name="tableOfContentsTitle">The title for the table of contents.</param>
     /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff.</param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
-    /// <param name="addPartialModifier"></param>
-    /// <param name="hideImplicitDefaultConstructors"></param>
+    /// <param name="addPartialModifier">A value indicating whether to add the partial modifier to types.</param>
+    /// <param name="hideImplicitDefaultConstructors">A value indicating whether to hide implicit default constructors.</param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="RunAsync"/>, the generated markdown files get added to the <see cref="RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
-    /// <param name="diagnosticOptions"></param>
+    /// <param name="diagnosticOptions">An optional set of diagnostic options.</param>
     internal FileOutputDiffGenerator(ILog log,
                                     string beforeAssembliesFolderPath,
                                     string? beforeAssemblyReferencesFolderPath,
