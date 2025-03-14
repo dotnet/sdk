@@ -251,7 +251,7 @@ public partial class RunCommand
                 EntryPointFileFullPath = EntryPointFileFullPath,
             };
 
-            CommonRunHelpers.AddUserPassedProperties(command.GlobalProperties, GetUserPassedPropertiesFromRestoreArgs(RestoreArgs));
+            CommonRunHelpers.AddUserPassedProperties(command.GlobalProperties, CommonRunHelpers.GetUserPassedPropertiesFromArgs(RestoreArgs));
 
             projectFactory = command.CreateProjectInstance;
             buildResult = command.Execute(
@@ -304,7 +304,7 @@ public partial class RunCommand
     private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
         FacadeLogger? logger = DetermineBinlogger(RestoreArgs);
-        var project = CommonRunHelpers.EvaluateProject(ProjectFileFullPath, projectFactory, GetUserPassedPropertiesFromRestoreArgs(RestoreArgs), logger);
+        var project = CommonRunHelpers.EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity, logger);
         logger?.ReallyShutdown();
@@ -419,14 +419,6 @@ public partial class RunCommand
             var dispatcher = new PersistentDispatcher(binaryLoggers);
             return new FacadeLogger(dispatcher);
         }
-    }
-
-    private static string[]? GetUserPassedPropertiesFromRestoreArgs(string[] args)
-    {
-        var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
-        var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
-        var propertyParseResult = propertyParsingConfiguration.Parse(args);
-        return propertyParseResult.GetValue(CommonOptions.PropertiesOption);
     }
 
     /// <summary>

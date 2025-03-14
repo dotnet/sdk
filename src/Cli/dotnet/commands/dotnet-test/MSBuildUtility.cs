@@ -48,7 +48,7 @@ internal static class MSBuildUtility
         // TODO: We should pass a binary logger if the dotnet test invocation passed one.
         // We will take the same file name but append something to it, like `-dotnet-test-evaluation`
         // Tracked by https://github.com/dotnet/sdk/issues/47494
-        IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), new ProjectCollection());
+        IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, buildOptions, new ProjectCollection());
 
         return (projects, isBuiltOrRestored);
     }
@@ -74,13 +74,9 @@ internal static class MSBuildUtility
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
             parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
             degreeOfParallelism,
-            GetGlobalProperties([.. msbuildArgs]),
             unmatchedTokens,
             msbuildArgs);
     }
-
-    private static string[]? GetGlobalProperties(IReadOnlyList<string> args)
-        => new CliConfiguration(new CliCommand("dotnet") { CommonOptions.PropertiesOption }).Parse(args).GetValue(CommonOptions.PropertiesOption);
 
     private static IEnumerable<string> GetBinaryLoggerTokens(IEnumerable<string> args)
     {
@@ -116,7 +112,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
             (project) =>
             {
-                IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions), projectCollection);
+                IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, buildOptions, projectCollection);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);
@@ -124,20 +120,5 @@ internal static class MSBuildUtility
             });
 
         return allProjects;
-    }
-
-    private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
-    {
-        var globalProperties = new Dictionary<string, string>(buildOptions.UserSpecifiedProperties.Length);
-
-        foreach (var property in buildOptions.UserSpecifiedProperties)
-        {
-            foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
-            {
-                globalProperties[key] = value;
-            }
-        }
-
-        return globalProperties;
     }
 }

@@ -104,11 +104,10 @@ internal static class SolutionAndProjectUtility
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
+    public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, BuildOptions buildOptions, ProjectCollection projectCollection)
     {
         var projects = new List<TestModule>();
-        // TODO: CommonRunHelpers.EvaluateProject
-        ProjectInstance projectInstance = projectCollection.LoadProject(projectFilePath, globalProperties, null).CreateProjectInstance();
+        ProjectInstance projectInstance = CommonRunHelpers.EvaluateProject(projectFilePath, null, [.. buildOptions.MSBuildArgs], null);
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
