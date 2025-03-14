@@ -43,16 +43,16 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     /// <summary>
     /// Initializes a new instance of the <see cref="MemoryOutputDiffGenerator"/> class.
     /// </summary>
-    /// <param name="log"></param>
-    /// <param name="beforeLoader"></param>
-    /// <param name="afterLoader"></param>
-    /// <param name="beforeAssemblySymbols"></param>
-    /// <param name="afterAssemblySymbols"></param>
+    /// <param name="log">The logger to use for logging messages.</param>
+    /// <param name="beforeLoader">The loader for the "before" assembly symbols.</param>
+    /// <param name="afterLoader">The loader for the "after" assembly symbols.</param>
+    /// <param name="beforeAssemblySymbols">The dictionary of "before" assembly symbols.</param>
+    /// <param name="afterAssemblySymbols">The dictionary of "after" assembly symbols.</param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
-    /// <param name="addPartialModifier"></param>
-    /// <param name="hideImplicitDefaultConstructors"></param>
-    /// <param name="diagnosticOptions"></param>
+    /// <param name="addPartialModifier">A boolean indicating whether to add the partial modifier to types.</param>
+    /// <param name="hideImplicitDefaultConstructors">A boolean indicating whether to hide implicit default constructors.</param>
+    /// <param name="diagnosticOptions">An optional dictionary of diagnostic options.</param>
     internal MemoryOutputDiffGenerator(
         ILog log,
         IAssemblySymbolLoader beforeLoader,
