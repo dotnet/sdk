@@ -662,6 +662,8 @@ _testhost() {
                                 case $line[1] in
                                     (add)
                                         _arguments "${_arguments_options[@]}" : \
+                                            '--output=[Location to place the generated output.]: :_files' \
+                                            '-o=[Location to place the generated output.]: :_files' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':file -- Path to the file-based program.: ' \
