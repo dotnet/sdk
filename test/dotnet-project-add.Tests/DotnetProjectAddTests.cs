@@ -60,6 +60,44 @@ public sealed class DotnetProjectAddTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void OutputOption()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "MyApp"));
+        File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
+
+        new DotnetCommand(Log, "project", "add", "MyApp.cs", "-o", "MyApp1")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateDirectories().Select(d => d.Name).Order()
+            .Should().BeEquivalentTo(["MyApp", "MyApp1"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "MyApp"))
+            .EnumerateFileSystemInfos().Should().BeEmpty();
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "MyApp1"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["MyApp.csproj", "MyApp.cs"]);
+    }
+
+    [Fact]
+    public void OutputOption_DirectoryAlreadyExists()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "SomeOutput"));
+        File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
+
+        new DotnetCommand(Log, "project", "add", "MyApp.cs", "-o", "SomeOutput")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining("The target directory already exists");
+    }
+
+    [Fact]
     public void MultipleEntryPointFiles()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

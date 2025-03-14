@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Project.Add;
+using Microsoft.TemplateEngine.Cli.Commands;
 using LocalizableStrings = Microsoft.DotNet.Tools.Project.Add.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli;
@@ -22,6 +23,7 @@ internal sealed class ProjectAddCommandParser
         CliCommand command = new("add", LocalizableStrings.AppFullName)
         {
             FileArgument,
+            SharedOptions.OutputOption,
         };
 
         command.SetAction((parseResult) => new ProjectAddCommand(parseResult).Execute());

@@ -6,16 +6,19 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Tools.Project.Add;
 
 internal sealed class ProjectAddCommand : CommandBase
 {
     private readonly string _file;
+    private readonly string? _outputDirectory;
 
     public ProjectAddCommand(ParseResult parseResult) : base(parseResult)
     {
         _file = parseResult.GetValue(ProjectAddCommandParser.FileArgument) ?? string.Empty;
+        _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
     }
 
     public override int Execute()
@@ -26,7 +29,7 @@ internal sealed class ProjectAddCommand : CommandBase
             throw new GracefulException(LocalizableStrings.InvalidFilePath, file);
         }
 
-        string targetDirectory = Path.ChangeExtension(file, null);
+        string targetDirectory = _outputDirectory ?? Path.ChangeExtension(file, null);
         if (Directory.Exists(targetDirectory))
         {
             throw new GracefulException(LocalizableStrings.DirectoryAlreadyExists, targetDirectory);
