@@ -33,22 +33,23 @@ public static class DiffGeneratorFactory
     /// <summary>
     /// Creates a new instance of <see cref="IDiffGenerator"/> that writes the diff to disk.
     /// </summary>
-    /// <param name="log"></param>
-    /// <param name="beforeAssembliesFolderPath"></param>
-    /// <param name="beforeAssemblyReferencesFolderPath"></param>
-    /// <param name="afterAssembliesFolderPath"></param>
-    /// <param name="afterAssemblyReferencesFolderPath"></param>
-    /// <param name="outputFolderPath"></param>
-    /// <param name="beforeFriendlyName"></param>
-    /// <param name="afterFriendlyName"></param>
-    /// <param name="tableOfContentsTitle"></param>
-    /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff. If <see langword="null"/>.</param>
+    /// <param name="log">The logger to use for logging messages.</param>
+    /// <param name="beforeAssembliesFolderPath">The folder path containing the assemblies before the change.</param>
+    /// <param name="beforeAssemblyReferencesFolderPath">The folder path containing the assembly references before the change.</param>
+    /// <param name="afterAssembliesFolderPath">The folder path containing the assemblies after the change.</param>
+    /// <param name="afterAssemblyReferencesFolderPath">The folder path containing the assembly references after the change.</param>
+    /// <param name="outputFolderPath">The folder path where the output will be written.</param>
+    /// <param name="beforeFriendlyName">The friendly name for the assemblies before the change.</param>
+    /// <param name="afterFriendlyName">The friendly name for the assemblies after the change.</param>
+    /// <param name="tableOfContentsTitle">The title for the table of contents in the generated diff.</param>
+    /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff. If <see langword="null"/>, no assemblies are excluded.</param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
-    /// <param name="addPartialModifier"></param>
-    /// <param name="hideImplicitDefaultConstructors"></param>
+    /// <param name="addPartialModifier">Indicates whether to add the partial modifier to types.</param>
+    /// <param name="hideImplicitDefaultConstructors">Indicates whether to hide implicit default constructors.</param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="IDiffGenerator.RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get added to the <see cref="IDiffGenerator.RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
-    /// <param name="diagnosticOptions"></param>
+    /// <param name="diagnosticOptions">An optional list of diagnostic options to use when generating the diff.</param>
+    /// <returns>A new instance of <see cref="IDiffGenerator"/> that writes the diff to disk.</returns>
     /// <returns></returns>
     public static IDiffGenerator Create(ILog log,
                                         string beforeAssembliesFolderPath,
@@ -88,17 +89,17 @@ public static class DiffGeneratorFactory
     /// <summary>
     /// Creates a new instance of <see cref="IDiffGenerator"/> that writes the diff to memory.
     /// </summary>
-    /// <param name="log"></param>
-    /// <param name="beforeLoader"></param>
-    /// <param name="afterLoader"></param>
-    /// <param name="beforeAssemblySymbols"></param>
-    /// <param name="afterAssemblySymbols"></param>
+    /// <param name="log">The logger to use for logging messages.</param>
+    /// <param name="beforeLoader">The loader to use for loading the assemblies before the change.</param>
+    /// <param name="afterLoader">The loader to use for loading the assemblies after the change.</param>
+    /// <param name="beforeAssemblySymbols">The dictionary containing the assembly symbols before the change.</param>
+    /// <param name="afterAssemblySymbols">The dictionary containing the assembly symbols after the change.</param>
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
-    /// <param name="addPartialModifier"></param>
-    /// <param name="hideImplicitDefaultConstructors"></param>
-    /// <param name="diagnosticOptions"></param>
-    /// <returns></returns>
+    /// <param name="addPartialModifier">Indicates whether to add the partial modifier to types.</param>
+    /// <param name="hideImplicitDefaultConstructors">Indicates whether to hide implicit default constructors.</param>
+    /// <param name="diagnosticOptions">An optional list of diagnostic options to use when generating the diff.</param>
+    /// <returns>A new instance of <see cref="IDiffGenerator"/> that writes the diff to memory.</returns>
     public static IDiffGenerator Create(ILog log,
                                         IAssemblySymbolLoader beforeLoader,
                                         IAssemblySymbolLoader afterLoader,
