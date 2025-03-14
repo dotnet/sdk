@@ -141,7 +141,7 @@ internal sealed class VirtualProjectBuildingCommand
         });
     }
 
-    // Keep in sync with the default `dotnet new console` project file.
+    // Kept in sync with the default `dotnet new console` project file (enforced by `DotnetProjectAddTests.SameAsTemplate`).
     private const string CommonProjectProperties = """
             <OutputType>Exe</OutputType>
             <TargetFramework>net10.0</TargetFramework>
