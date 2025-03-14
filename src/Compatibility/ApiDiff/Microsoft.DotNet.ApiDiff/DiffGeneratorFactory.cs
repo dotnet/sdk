@@ -1,0 +1,124 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions;
+using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+
+namespace Microsoft.DotNet.ApiDiff;
+
+public static class DiffGeneratorFactory
+{
+    /// <summary>
+    /// The default attributes to exclude from the diff.
+    /// </summary>
+    public static readonly string[] DefaultAttributesToExclude = [
+        "T:System.AttributeUsageAttribute",
+        "T:System.ComponentModel.EditorBrowsableAttribute",
+        "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
+        "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute"
+    ];
+
+    /// <summary>
+    /// The default diagnostic options to use when generating the diff.
+    /// </summary>
+    public static readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>> DefaultDiagnosticOptions = [
+        new ("CS8019", ReportDiagnostic.Suppress), // CS8019: Unnecessary using directive.
+        new ("CS8597", ReportDiagnostic.Suppress), // CS8597: Thrown value may be null.
+        new ("CS0067", ReportDiagnostic.Suppress), // CS0067: The API is never used.
+        new ("CS9113", ReportDiagnostic.Suppress), // CS9113: Parameter is unread.
+        new ("CS0501", ReportDiagnostic.Suppress), // CS0501: Method must declare a body because it is not marked abstract.
+    ];
+
+    /// <summary>
+    /// Creates a new instance of <see cref="IDiffGenerator"/> that writes the diff to disk.
+    /// </summary>
+    /// <param name="log"></param>
+    /// <param name="beforeAssembliesFolderPath"></param>
+    /// <param name="beforeAssemblyReferencesFolderPath"></param>
+    /// <param name="afterAssembliesFolderPath"></param>
+    /// <param name="afterAssemblyReferencesFolderPath"></param>
+    /// <param name="outputFolderPath"></param>
+    /// <param name="beforeFriendlyName"></param>
+    /// <param name="afterFriendlyName"></param>
+    /// <param name="tableOfContentsTitle"></param>
+    /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff. If <see langword="null"/>.</param>
+    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
+    /// <param name="addPartialModifier"></param>
+    /// <param name="hideImplicitDefaultConstructors"></param>
+    /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="IDiffGenerator.RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get added to the <see cref="IDiffGenerator.RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
+    /// <param name="diagnosticOptions"></param>
+    /// <returns></returns>
+    public static IDiffGenerator Create(ILog log,
+                                        string beforeAssembliesFolderPath,
+                                        string? beforeAssemblyReferencesFolderPath,
+                                        string afterAssembliesFolderPath,
+                                        string? afterAssemblyReferencesFolderPath,
+                                        string outputFolderPath,
+                                        string beforeFriendlyName,
+                                        string afterFriendlyName,
+                                        string tableOfContentsTitle,
+                                        string[]? assembliesToExclude,
+                                        string[]? attributesToExclude,
+                                        string[]? apisToExclude,
+                                        bool addPartialModifier,
+                                        bool hideImplicitDefaultConstructors,
+                                        bool writeToDisk,
+                                        IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
+    {
+        return new FileOutputDiffGenerator(log,
+                                           beforeAssembliesFolderPath,
+                                           beforeAssemblyReferencesFolderPath,
+                                           afterAssembliesFolderPath,
+                                           afterAssemblyReferencesFolderPath,
+                                           outputFolderPath,
+                                           beforeFriendlyName,
+                                           afterFriendlyName,
+                                           tableOfContentsTitle,
+                                           assembliesToExclude,
+                                           attributesToExclude,
+                                           apisToExclude,
+                                           addPartialModifier,
+                                           hideImplicitDefaultConstructors,
+                                           writeToDisk,
+                                           diagnosticOptions);
+    }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="IDiffGenerator"/> that writes the diff to memory.
+    /// </summary>
+    /// <param name="log"></param>
+    /// <param name="beforeLoader"></param>
+    /// <param name="afterLoader"></param>
+    /// <param name="beforeAssemblySymbols"></param>
+    /// <param name="afterAssemblySymbols"></param>
+    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
+    /// <param name="addPartialModifier"></param>
+    /// <param name="hideImplicitDefaultConstructors"></param>
+    /// <param name="diagnosticOptions"></param>
+    /// <returns></returns>
+    public static IDiffGenerator Create(ILog log,
+                                        IAssemblySymbolLoader beforeLoader,
+                                        IAssemblySymbolLoader afterLoader,
+                                        Dictionary<string, IAssemblySymbol> beforeAssemblySymbols,
+                                        Dictionary<string, IAssemblySymbol> afterAssemblySymbols,
+                                        string[]? attributesToExclude,
+                                        string[]? apisToExclude,
+                                        bool addPartialModifier,
+                                        bool hideImplicitDefaultConstructors,
+                                        IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
+    {
+        return new MemoryOutputDiffGenerator(log,
+                                             beforeLoader,
+                                             afterLoader,
+                                             beforeAssemblySymbols,
+                                             afterAssemblySymbols,
+                                             attributesToExclude,
+                                             apisToExclude,
+                                             addPartialModifier,
+                                             hideImplicitDefaultConstructors,
+                                             diagnosticOptions);
+    }
+}
