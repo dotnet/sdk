@@ -847,8 +847,7 @@ namespace Microsoft.NET.Build.Tasks
                                 return ToolPackSupport.UnsupportedForTargetRuntimeIdentifier;
                             }
 
-                            // If we have a separate pack pattern for the runtime pack,
-                            // we should always use the runtime pack (the host pack may not have the tooling we need for the target).
+                            // If there's an available runtime pack, use it instead of the ILCompiler package for target-specific bits.
                             bool useRuntimePackForAllTargets = false;
                             string targetPackNamePattern = packNamePattern;
                             if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern)
