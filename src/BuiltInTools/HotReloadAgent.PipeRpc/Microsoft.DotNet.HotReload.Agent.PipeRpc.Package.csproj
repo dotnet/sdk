@@ -34,9 +34,5 @@
   <ItemGroup>
     <Using Remove="@(Using)" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\HotReloadAgent\AgentMessageSeverity.cs" Link="AgentContracts\AgentMessageSeverity.cs" />
-    <Compile Include="..\HotReloadAgent\ResponseLoggingLevel.cs" Link="AgentContracts\ResponseLoggingLevel.cs" />
-    <Compile Include="..\HotReloadAgent\UpdateDelta.cs" Link="AgentContracts\UpdateDelta.cs" />
-  </ItemGroup>
+  <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
 </Project>
