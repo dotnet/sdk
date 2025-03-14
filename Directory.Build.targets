@@ -47,12 +47,6 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <PropertyGroup>
-    <FullNugetVersion>$(VersionPrefix)-$(PreReleaseVersionLabel)</FullNugetVersion>
-    <FullNugetVersion Condition="'$(PreReleaseVersionIteration)' != ''">$(FullNugetVersion).$(PreReleaseVersionIteration)</FullNugetVersion>
-    <FullNugetVersion Condition=" '$(VersionSuffixDateStamp)' != '' And '$(VersionSuffixBuildOfTheDay)' != '' ">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
-  </PropertyGroup>
-
   <!-- Optionally override arcade's test target with one which will run the tests as tools.
        Conditionally overriding a target requires a conditional import of another (.targets)
        file. -->

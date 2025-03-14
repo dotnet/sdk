@@ -21,8 +21,8 @@
       <CreateCrossgenSymbols Condition="'$(CreateCrossgenSymbols)' == ''">true</CreateCrossgenSymbols>
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx64100PackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx64100PackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
@@ -33,41 +33,41 @@
     <PropertyGroup>
       <DefaultToolTfm>net10.0</DefaultToolTfm>
 
-      <NetSdkTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
-      <BlazorWasmTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
-      <NuGetPackTools>$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\</NuGetPackTools>
-      <RazorTasks>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
-      <WindowsDesktopTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
-      <PublishTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
-      <WebTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
-      <ProjectSystemTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>
-      <WorkerTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Worker\tools\$(DefaultToolTfm)\</WorkerTools>
-      <ContainerTasks>$(SdkOutputDirectory)Containers\tasks\$(DefaultToolTfm)\</ContainerTasks>
+      <NetSdkTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
+      <BlazorWasmTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
+      <NuGetPackTools>$(InstallerOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\</NuGetPackTools>
+      <RazorTasks>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
+      <WindowsDesktopTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
+      <PublishTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
+      <WebTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
+      <ProjectSystemTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>
+      <WorkerTools>$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Worker\tools\$(DefaultToolTfm)\</WorkerTools>
+      <ContainerTasks>$(InstallerOutputDirectory)Containers\tasks\$(DefaultToolTfm)\</ContainerTasks>
     </PropertyGroup>
 
     <ItemGroup>
-      <RoslynFiles Include="$(SdkOutputDirectory)Roslyn\bincore\**\*" />
+      <RoslynFiles Include="$(InstallerOutputDirectory)Roslyn\bincore\**\*" />
 
-      <FSharpFilesRuntimes Include="$(SdkOutputDirectory)FSharp\runtimes\**\*" />
-      <FSharpFilesRoot Include="$(SdkOutputDirectory)FSharp\**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(FSharpFilesRuntimes)" />
+      <FSharpFilesRuntimes Include="$(InstallerOutputDirectory)FSharp\runtimes\**\*" />
+      <FSharpFilesRoot Include="$(InstallerOutputDirectory)FSharp\**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(FSharpFilesRuntimes)" />
       <FSharpFiles Include="@(FSharpFilesRuntimes);@(FSharpFilesRoot)" />
 
-      <RazorToolFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
+      <RazorToolFiles Include="$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
 
-      <RemainingFiles Include="$(SdkOutputDirectory)**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
+      <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
 
       <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
-      <RoslynFiles Remove="$(SdkOutputDirectory)Roslyn\bincore\Microsoft.CodeAnalysis.VisualBasic.dll" />
+      <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\Microsoft.CodeAnalysis.VisualBasic.dll" />
 
       <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error, and they need to stay their original architecture. -->
-      <RemainingFiles Remove="$(SdkOutputDirectory)TestHost*\**\*" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)TestHost*\**\*" />
       <!-- Removing Full CLR built DumpMiniTool executables from Crossgen, because they need to stay their original architecture to allow creating dumps with a given bitness. -->
-      <RemainingFiles Remove="$(SdkOutputDirectory)Extensions\dump*\**\*" />
-      <RemainingFiles Remove="$(SdkOutputDirectory)Sdks\**\*" />
-      <RemainingFiles Remove="$(SdkOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)Extensions\dump*\**\*" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)Sdks\**\*" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 
       <!-- Removing Containers as containerize .DLLs and net472 components shouldn't be crossgenned. -->
-      <RemainingFiles Remove="$(SdkOutputDirectory)Containers\**\*" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)Containers\**\*" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
       <RemainingFiles Include="$(NetSdkTools)**\*" />
@@ -82,20 +82,20 @@
       <RemainingFiles Include="$(ContainerTasks)**\*" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
-      <RemainingFiles Remove="$(SdkOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
 
       <!-- Don't CrossGen bundled DotnetTools -->
-      <RemainingFiles Remove="$(SdkOutputDirectory)DotnetTools\**\*" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)DotnetTools\**\*" />
 
       <!-- Don't crossgen satellite assemblies -->
-      <RoslynFiles Remove="$(SdkOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
-      <FSharpFiles Remove="$(SdkOutputDirectory)FSharp\**\*.resources.dll" />
-      <RazorToolFiles Remove="$(SdkOutputDirectory)**\*.resources.dll" />
-      <RemainingFiles Remove="$(SdkOutputDirectory)**\*.resources.dll" />
+      <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\**\*.resources.dll" />
+      <FSharpFiles Remove="$(InstallerOutputDirectory)FSharp\**\*.resources.dll" />
+      <RazorToolFiles Remove="$(InstallerOutputDirectory)**\*.resources.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\*.resources.dll" />
 
       <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
-      <RazorToolFiles Remove="$(SdkOutputDirectory)**\ref\*.dll" />
-      <RemainingFiles Remove="$(SdkOutputDirectory)**\ref\*.dll" />
+      <RazorToolFiles Remove="$(InstallerOutputDirectory)**\ref\*.dll" />
+      <RemainingFiles Remove="$(InstallerOutputDirectory)**\ref\*.dll" />
     </ItemGroup>
 
     <AddMetadataIsPE Items="@(RoslynFiles)">
@@ -129,8 +129,8 @@
         Currently it is not ordered and crossgen is picking the wrong dlls when resolving dependencies: https://github.com/dotnet/core-sdk/pull/6774
         As a partial solution, we remove the root folder from the list and put it back to the end.
         Remove the following 2 lines when resolving this issue: https://github.com/dotnet/core-sdk/issues/6877 -->
-      <RemainingFolders Remove="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
-      <RemainingFolders Include="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
+      <RemainingFolders Remove="$(InstallerOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
+      <RemainingFolders Include="$(InstallerOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
     </ItemGroup>
 
     <Error Text="Potentially missed crossgen for '$(NetSdkTools)', directory does not exist" Condition= "!EXISTS('$(NetSdkTools)') " />
@@ -184,8 +184,8 @@
         PlatformAssemblyPaths="@(RazorToolFolders);@(RoslynFolders);$(SharedFrameworkNameVersionPath)" />
 
     <ItemGroup>
-      <PdbsToMove Include="$(SdkOutputDirectory)**/*.pdb" />
-      <PdbsToMove Include="$(SdkOutputDirectory)**/*.ni.*.map" />
+      <PdbsToMove Include="$(InstallerOutputDirectory)**/*.pdb" />
+      <PdbsToMove Include="$(InstallerOutputDirectory)**/*.ni.*.map" />
     </ItemGroup>
 
     <!-- Move symbols to separate folder, they are not included in the layout but are published separately -->
@@ -197,8 +197,8 @@
         AfterTargets="CrossgenLayout"
         Condition=" '$(OSName)' != 'win' ">
 
-    <Exec Command="find $(SdkOutputDirectory) -type d -exec chmod 755 {} \;" />
-    <Exec Command="find $(SdkOutputDirectory) -type f -exec chmod 644 {} \;" />
+    <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" />
+    <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" />
   </Target>
 
 </Project>

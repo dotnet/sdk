@@ -2,32 +2,7 @@
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
-  <PropertyGroup>
-    <SdkBrandName>Microsoft .NET SDK $(Version)</SdkBrandName>
-    <ToolsetBrandName>Microsoft .NET Toolset $(Version)</ToolsetBrandName>
-    <SharedFrameworkBrandName>Microsoft .NET Runtime $(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkBrandName>
-    <NetCoreAppTargetingPackBrandName>Microsoft .NET Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
-    <NetStandardTargetingPackBrandName>Microsoft .NET Standard 2.1 Targeting Pack $(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackBrandName>
-    <NetCoreAppHostPackBrandName>Microsoft .NET AppHost Pack $(MicrosoftNETCoreAppHostHostPackageVersion)</NetCoreAppHostPackBrandName>
-    <SharedHostBrandName>Microsoft .NET Host $(SharedHostVersion)</SharedHostBrandName>
-    <HostFxrBrandName>Microsoft .NET Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>
-    <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
-    <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <RedistLayoutPath>$(OutputPath)dotnet\</RedistLayoutPath>
-    <SdkInternalLayoutPath>$(OutputPath)i\</SdkInternalLayoutPath>
-    <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
-    <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Any properties that depend on Version and are not in a Target must not be defined in Directory.Build.props as Version won't be available yet. -->
-    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
-    <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
-  </PropertyGroup>
-
+  <!-- Shared infra to build and use the sdk-tasks -->
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
   <Import Project="targets\RestoreLayout.targets" />
