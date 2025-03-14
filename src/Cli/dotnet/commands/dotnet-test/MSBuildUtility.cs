@@ -31,7 +31,8 @@ internal static class MSBuildUtility
         // TODO: We should pass a binary logger if the dotnet test invocation passed one.
         // We will take the same file name but append something to it, like `-dotnet-test-evaluation`
         // Tracked by https://github.com/dotnet/sdk/issues/47494
-        ConcurrentBag<TestModule> projects = GetProjectsProperties(new ProjectCollection(), solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: [], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        ConcurrentBag<TestModule> projects = GetProjectsProperties(collection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
 
         return (projects, isBuiltOrRestored);
     }
@@ -48,7 +49,8 @@ internal static class MSBuildUtility
         // TODO: We should pass a binary logger if the dotnet test invocation passed one.
         // We will take the same file name but append something to it, like `-dotnet-test-evaluation`
         // Tracked by https://github.com/dotnet/sdk/issues/47494
-        IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, buildOptions, new ProjectCollection());
+        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: [], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection);
 
         return (projects, isBuiltOrRestored);
     }
@@ -112,7 +114,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
             (project) =>
             {
-                IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, buildOptions, projectCollection);
+                IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);

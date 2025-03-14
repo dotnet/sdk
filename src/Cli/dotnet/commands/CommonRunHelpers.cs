@@ -35,10 +35,8 @@ internal static class CommonRunHelpers
         }
     }
 
-    public static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[]? args, ILogger? binaryLogger)
+    public static Dictionary<string, string> GetGlobalPropertiesFromArgs(string[]? args)
     {
-        Debug.Assert(projectFilePath is not null || projectFactory is not null);
-
         var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             // This property disables default item globbing to improve performance
@@ -48,15 +46,6 @@ internal static class CommonRunHelpers
         };
 
         AddUserPassedProperties(globalProperties, args);
-
-        var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-
-        if (projectFilePath is not null)
-        {
-            return collection.LoadProject(projectFilePath).CreateProjectInstance();
-        }
-
-        Debug.Assert(projectFactory is not null);
-        return projectFactory(collection);
+        return globalProperties;
     }
 }

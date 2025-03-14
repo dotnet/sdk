@@ -98,16 +98,30 @@ internal static class SolutionAndProjectUtility
 
     private static bool IsProjectFile(string filePath) => CliConstants.ProjectExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
 
+    private static ProjectInstance EvaluateProject(ProjectCollection collection, string projectFilePath, string? tfm)
+    {
+        Debug.Assert(projectFilePath is not null);
+
+        var project = collection.LoadProject(projectFilePath);
+        if (tfm is not null)
+        {
+            project.SetGlobalProperty(ProjectProperties.TargetFramework, tfm);
+            project.ReevaluateIfNecessary();
+        }
+
+        return project.CreateProjectInstance();
+    }
+
     public static string GetRootDirectory(string solutionOrProjectFilePath)
     {
         string fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, BuildOptions buildOptions, ProjectCollection projectCollection)
+    public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection)
     {
         var projects = new List<TestModule>();
-        ProjectInstance projectInstance = CommonRunHelpers.EvaluateProject(projectFilePath, null, [.. buildOptions.MSBuildArgs], null);
+        ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -125,8 +139,7 @@ internal static class SolutionAndProjectUtility
             var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
             foreach (var framework in frameworks)
             {
-                projectInstance.SetProperty(ProjectProperties.TargetFramework, framework);
-                //projectInstance.ReevaluateIfNecessary();
+                projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
                 Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                 if (GetModuleFromProject(projectInstance) is { } module)

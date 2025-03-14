@@ -304,13 +304,28 @@ public partial class RunCommand
     private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
         FacadeLogger? logger = DetermineBinlogger(RestoreArgs);
-        var project = CommonRunHelpers.EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
+        var project = EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity, logger);
         logger?.ReallyShutdown();
         var runProperties = ReadRunPropertiesFromProject(project, Args);
         var command = CreateCommandFromRunProperties(project, runProperties);
         return command;
+
+        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[]? args, ILogger? binaryLogger)
+        {
+            Debug.Assert(projectFilePath is not null || projectFactory is not null);
+
+            var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(args), loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
+            if (projectFilePath is not null)
+            {
+                return collection.LoadProject(projectFilePath).CreateProjectInstance();
+            }
+
+            Debug.Assert(projectFactory is not null);
+            return projectFactory(collection);
+        }
 
         static void ValidatePreconditions(ProjectInstance project)
         {
