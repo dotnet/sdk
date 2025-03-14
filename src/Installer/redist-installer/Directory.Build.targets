@@ -28,14 +28,6 @@
     <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
   </PropertyGroup>
 
-  <!-- This is a hack to make the full nuget version available during the publishing step -->
-  <Target Name="GenerateFullNugetVersionFile"
-          BeforeTargets="Build">
-    <WriteLinesToFile File="$(ArtifactsTmpDir)FullNugetVersion.version"
-                      Lines="$(FullNugetVersion)"
-                      Overwrite="true" />
-  </Target>
-
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
   <Import Project="targets\RestoreLayout.targets" />

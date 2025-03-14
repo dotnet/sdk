@@ -68,37 +68,19 @@ internal static class MSBuildUtility
             parseResult.GetValue(TestingPlatformOptions.SolutionOption),
             parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
 
-        BuildProperties buildProperties = new(
-            parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-            ResolveRuntimeIdentifier(parseResult),
-            parseResult.GetValue(TestingPlatformOptions.FrameworkOption));
-
         return new BuildOptions(
             pathOptions,
-            buildProperties,
             parseResult.GetValue(CommonOptions.NoRestoreOption),
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
             parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
             degreeOfParallelism,
-            parseResult.GetValue(CommonOptions.PropertiesOption),
+            GetGlobalProperties([.. msbuildArgs]),
             unmatchedTokens,
             msbuildArgs);
     }
 
-    private static string ResolveRuntimeIdentifier(ParseResult parseResult)
-    {
-        if (parseResult.HasOption(CommonOptions.RuntimeOption))
-        {
-            return parseResult.GetValue(CommonOptions.RuntimeOption);
-        }
-
-        if (!parseResult.HasOption(CommonOptions.OperatingSystemOption) && !parseResult.HasOption(CommonOptions.ArchitectureOption))
-        {
-            return string.Empty;
-        }
-
-        return CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(parseResult.GetValue(CommonOptions.OperatingSystemOption), parseResult.GetValue(CommonOptions.ArchitectureOption));
-    }
+    private static string[]? GetGlobalProperties(IReadOnlyList<string> args)
+        => new CliConfiguration(new CliCommand("dotnet") { CommonOptions.PropertiesOption }).Parse(args).GetValue(CommonOptions.PropertiesOption);
 
     private static IEnumerable<string> GetBinaryLoggerTokens(IEnumerable<string> args)
     {
@@ -146,37 +128,14 @@ internal static class MSBuildUtility
 
     private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
     {
-        var globalProperties = new Dictionary<string, string>();
-        var buildProperties = buildOptions.BuildProperties;
+        var globalProperties = new Dictionary<string, string>(buildOptions.UserSpecifiedProperties.Length);
 
         foreach (var property in buildOptions.UserSpecifiedProperties)
         {
             foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
             {
-                if (globalProperties.TryGetValue(key, out var existingValues))
-                {
-                    globalProperties[key] = $"{existingValues};{value}";
-                }
-                else
-                {
-                    globalProperties[key] = value;
-                }
+                globalProperties[key] = value;
             }
-        }
-
-        if (!string.IsNullOrEmpty(buildProperties.Configuration))
-        {
-            globalProperties[CliConstants.Configuration] = buildProperties.Configuration;
-        }
-
-        if (!string.IsNullOrEmpty(buildProperties.RuntimeIdentifier))
-        {
-            globalProperties[CliConstants.RuntimeIdentifier] = buildProperties.RuntimeIdentifier;
-        }
-
-        if (!string.IsNullOrEmpty(buildProperties.TargetFramework))
-        {
-            globalProperties[CliConstants.TargetFramework] = buildProperties.TargetFramework;
         }
 
         return globalProperties;
