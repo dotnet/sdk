@@ -482,7 +482,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format", "src\BuiltI
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "test\dotnet-format.Tests\tests\dotnet-format.UnitTests.csproj", "{D7495CE7-64E5-4715-9304-799A41EC1D71}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer-build", "src\Layout\finalizer\finalizer-build.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer-build", "src\Layout\finalizer\finalizer.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Layout\redist-installer\redist-installer.proj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
 EndProject
