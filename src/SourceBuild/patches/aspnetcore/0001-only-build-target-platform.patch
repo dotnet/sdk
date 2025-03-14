@@ -1,7 +1,7 @@
 From d55847e83339919ddd713d3a03aa1b1ad1dd1329 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 13 Mar 2025 09:45:10 +0100
-Subject: [PATCH 1/7] Only build the target platform in native projs for the VMR
+Subject: [PATCH 1/8] Only build the target platform in native projs for the VMR
 
 Backport: https://github.com/dotnet/aspnetcore/pull/60910
 
@@ -177,7 +177,7 @@ index c6beee133ff7..1e84bdfe76f4 100644
 From 4a0e84caac9a03e1abbe7927e420d6ca50648034 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 13 Mar 2025 15:45:57 +0100
-Subject: [PATCH 2/7] PR feedback - undo BP2 project move
+Subject: [PATCH 2/8] PR feedback - undo BP2 project move
 
 ---
  eng/Build.props | 6 ------
@@ -204,7 +204,7 @@ index 391054e3a329..af2876659b40 100644
 From 683f7946861584d2fe5d2cce683a3ba7e45b11d2 Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:20:41 -0700
-Subject: [PATCH 3/7] Only build ANCM native bits in pass 2
+Subject: [PATCH 3/8] Only build ANCM native bits in pass 2
 
 ---
  eng/Build.props                               |  6 +++++
@@ -303,7 +303,7 @@ index baf8bf6f5d91..1dbd04f6ed90 100644
 From d03d4ea6a36dd50f7500d379b097f77a7c666b4b Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:21:41 -0700
-Subject: [PATCH 4/7] Fixup
+Subject: [PATCH 4/8] Fixup
 
 ---
  eng/Build.props | 3 ---
@@ -327,7 +327,7 @@ index fff3753783ad..ec515d5b3e2d 100644
 From 889c767c2d578ab78946efb8f18592ba2bae6a36 Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:23:26 -0700
-Subject: [PATCH 5/7] LF
+Subject: [PATCH 5/8] LF
 
 ---
  .../Windows/AspNetCoreModule-Setup/Directory.Build.props        | 2 +-
@@ -348,7 +348,7 @@ index 1dbd04f6ed90..1b02ebf435b2 100644
 From e6665a1af0c5b8532135e269255a1fe4ebf360ae Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 11:57:17 -0700
-Subject: [PATCH 6/7] Put IIS Integration Testing back in pass 2
+Subject: [PATCH 6/8] Put IIS Integration Testing back in pass 2
 
 ---
  eng/Build.props | 10 ++++++++++
@@ -386,7 +386,7 @@ index ec515d5b3e2d..75292f7dd962 100644
 From 92e9c827a74445a06699c73cea4cc0c6bf0e9085 Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 11:59:14 -0700
-Subject: [PATCH 7/7] Revert IntegrationTesting change
+Subject: [PATCH 7/8] Revert IntegrationTesting change
 
 ---
  ...pNetCore.Server.IntegrationTesting.IIS.csproj | 16 ++++++----------
@@ -422,3 +422,50 @@ index 1e84bdfe76f4..c6beee133ff7 100644
  
      <UpToDateCheckInput Include="$(AspNetCoreModuleV2ShimDll)" />
      <UpToDateCheckInput Include="$(AspNetCoreModuleV2OutOfProcessHandlerDll)" />
+
+From 8976b15f3083b7fa13b194fe5c64318b9fd5cbf6 Mon Sep 17 00:00:00 2001
+From: Will Godbe <wigodbe@microsoft.com>
+Date: Thu, 13 Mar 2025 20:07:08 -0700
+Subject: [PATCH 8/8] Only build RID specific assets in ANCM
+
+---
+ .../Directory.Build.props                     | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/src/Installers/Windows/AspNetCoreModule-Setup/Directory.Build.props b/src/Installers/Windows/AspNetCoreModule-Setup/Directory.Build.props
+index 1b02ebf435b2..efa1cdb09a63 100644
+--- a/src/Installers/Windows/AspNetCoreModule-Setup/Directory.Build.props
++++ b/src/Installers/Windows/AspNetCoreModule-Setup/Directory.Build.props
+@@ -40,7 +40,7 @@
+     </DefineConstants>
+   </PropertyGroup>
+ 
+- <ItemGroup Condition="'$(BuildNative)' == 'true'">
++ <ItemGroup Condition="'$(BuildNative)' == 'true' AND ('$(DotNetBuild)' != 'true' OR or '$(DotNetBuildPass)' == '2') ">
+     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
+       <Name>AspNetCoreV2</Name>
+       <Private>True</Private>
+@@ -87,6 +87,23 @@
+     </ProjectReference>
+   </ItemGroup>
+ 
++ <ItemGroup Condition="'$(BuildNative)' == 'true' AND '$(DotNetBuild)' == 'true' AND '$(DotNetBuildPass)' != '2') ">
++    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
++      <Name>AspNetCoreV2</Name>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
++      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
++    </ProjectReference>
++    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
++      <Name>AspNetCoreV2Handler</Name>
++      <Private>True</Private>
++      <DoNotHarvest>True</DoNotHarvest>
++      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
++      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
++    </ProjectReference>
++  </ItemGroup>
++
+   <Target Name="CopyANCM" BeforeTargets="_PrepareForBuild" Condition=" '$(BuildNative)' != 'true' ">
+     <ItemGroup>
+       <None Include="%(RunShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('%(RunShimComponents.DllLocation)')" Link="%(RunShimComponents.Platform)\%(RunShimComponents.NativeAsset).dll" />
