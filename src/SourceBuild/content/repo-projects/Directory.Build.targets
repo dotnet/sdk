@@ -614,7 +614,7 @@
   </Target>
 
   <Target Name="GetProducedPackagesFromTransitiveReferences" DependsOnTargets="GetTransitiveRepositoryReferences" Returns="@(_DependencyProducedPackage)">
-    <MSBuild Projects="@(TransitiveRepositoryReference->'%(Identity).proj')"
+    <MSBuild Projects="@(TransitiveRepositoryReference->WithMetadataValue('DotNetBuildPass','$(DotNetBuildPass)')->'%(Identity).proj')"
              Targets="GetProducedPackages"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="_DependencyProducedPackage" />
