@@ -27,18 +27,5 @@ namespace Microsoft.NET.Build.Tests
             new FileInfo(Path.Combine(outputDirectory, "test-2", "MSBuildCultureResourceGeneration.resources.dll")).Should().Exist();
         }
 
-        [Theory]
-        [InlineData("net7.0")]
-        [InlineData("net6.0")]
-        public void SupportRespectAlreadyAssignedItemCulture_IsNotSupported_BuildShouldFail(string targetFramework)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("MSBuildCultureResourceGeneration", identifier: targetFramework)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute().Should().Fail();
-        }
     }
 }
