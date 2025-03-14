@@ -1,0 +1,84 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">Установщик [WixBundleName]</String>
+  <String Id="Title">[BUNDLEMONIKER]</String>
+  <String Id="ConfirmCancelMessage">Отменить?</String>
+  <String Id="ExecuteUpgradeRelatedBundleMessage">Предыдущая версия</String>
+  <String Id="HelpHeader">Справка по установке</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] - устанавливает, исправляет, удаляет
+   или создает полную локальную копию пакета в каталоге. '/install' - значение по умолчанию.
+
+/passive | /quiet — отображает минимальный пользовательский интерфейс без запросов или не отображает пользовательский интерфейс и 
+   запросы. По умолчанию отображаются пользовательский интерфейс и все запросы.
+
+/norestart — подавлять все попытки перезапуска. По умолчанию пользовательский интерфейс будет предложен перед перезагрузкой.
+/log [\[]"log.txt"[\]] - журналы в определённом файле. По умолчанию файл журнала создается в %TEMP%.</String>
+  <String Id="HelpCloseButton">&amp;Закрыть</String>
+  <String Id="InstallAcceptCheckbox">Я &amp;принимаю условия лицензии</String>
+  <String Id="InstallOptionsButton">&amp;Параметры</String>
+  <String Id="InstallInstallButton">&amp;Установить</String>
+  <String Id="InstallCloseButton">&amp;Закрыть</String>
+  <String Id="ProgressHeader">Ход установки</String>
+  <String Id="ProgressLabel">Обработка:</String>
+  <String Id="OverallProgressPackageText">Инициализация...</String>
+  <String Id="ProgressCancelButton">Отм&amp;ена</String>
+  <String Id="ModifyHeader">Изменение установки</String>
+  <String Id="ModifyRepairButton">&amp;Исправить</String>
+  <String Id="ModifyUninstallButton">&amp;Удалить</String>
+  <String Id="ModifyCloseButton">&amp;Закрыть</String>
+  <String Id="SuccessRepairHeader">Исправление успешно завершено</String>
+  <String Id="SuccessUninstallHeader">Удаление успешно завершено</String>
+  <String Id="SuccessHeader">Установка успешно завершена</String>
+  <String Id="SuccessLaunchButton">&amp;Запустить</String>
+  <String Id="SuccessRestartText">Для завершения установки программного обеспечения нужно перезагрузить компьютер.</String>
+  <String Id="SuccessRestartButton">&amp;Перезапустить</String>
+  <String Id="SuccessCloseButton">&amp;Закрыть</String>
+  <String Id="FailureHeader">Сбой установки</String>
+  <String Id="FailureInstallHeader">Сбой установки</String>
+  <String Id="FailureUninstallHeader">Сбой удаления</String>
+  <String Id="FailureRepairHeader">Сбой восстановления</String>
+  <String Id="FailureHyperlinkLogText">Одна или несколько проблем вызывали сбой программы установки. Исправьте эти проблемы и попробуйте повторить установку. Дополнительные сведения см. в &lt;a href="#"&gt;файле журнала&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">Необходимо перезагрузить компьютер, чтобы завершить откат программного обеспечения.</String>
+  <String Id="FailureRestartButton">&amp;Перезапустить</String>
+  <String Id="FailureCloseButton">&amp;Закрыть</String>
+  <String Id="FilesInUseHeader">Используемые файлы</String>
+  <String Id="FilesInUseLabel">Следующие приложения используют файлы, которые следует обновить:</String>
+  <String Id="FilesInUseCloseRadioButton">Закройте &amp;приложения и попробуйте перезапустить их.</String>
+  <String Id="FilesInUseDontCloseRadioButton">&amp;Не закрывайте приложения. Потребуется перезагрузка компьютера.</String>
+  <String Id="FilesInUseOkButton">&amp;ОК</String>
+  <String Id="FilesInUseCancelButton">&amp;Отменить</String>
+  <String Id="FirstTimeWelcomeMessage">Установка прошла успешно.
+
+Установлены следующие продукты:
+    • ПАКЕТ SDK ДЛЯ .NET [DOTNETSDKVERSION]
+    • Среда выполнения .NET [DOTNETRUNTIMEVERSION]
+    • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]
+    • Среда выполнения .NET Windows Desktop [WINFORMSANDWPFVERSION]
+
+Этот продукт собирает данные об использовании
+    • Дополнительные сведения и отказ от использования https://aka.ms/dotnet-cli-telemetry
+
+Ресурсы
+    • Документация .NET https://aka.ms/dotnet-docs
+    • Документация SDK https://aka.ms/dotnet-sdk-docs
+    • Заметки о выпуске https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • Руководства https://aka.ms/dotnet-tutorials</String>
+  <String Id="WelcomeHeaderMessage">Пакет SDK для .NET</String>
+  <String Id="WelcomeDescription">
+    Пакет SDK для .NET используется для сборки, запуска и тестирования приложений .NET. Вы можете выбрать один из нескольких языков, использовать различные редакторы и инструменты для разработчиков, а также воспользоваться преимуществами большой экосистемы библиотек для создания веб-приложений, мобильных и классических приложений, игр и приложений Интернета вещей. Надеемся, что вам понравится!</String>
+  <String Id="LearnMoreTitle">Дополнительные сведения о .NET</String>
+  <String Id="ResourcesHeader">Ресурсы</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Документация по .NET&lt;/A&gt;</String>
+  <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Документация по пакету SDK&lt;/A&gt;</String>
+  <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Заявление о конфиденциальности&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Сведения о лицензировании .NET&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;Сбор данных телеметрии и отказ от использования&lt;/A&gt;</String>
+  <String Id="InstallationNoteTitle">Примечание по установке</String>
+  <String Id="InstallationNote">В процессе установки будет выполнена команда, которая увеличит скорость восстановления проекта и обеспечит автономный доступ. Выполнение займет до минуты.
+  </String>
+  <String Id="VisualStudioWarning">Если вы планируете использовать .NET [VERSIONMAJOR].[VERSIONMINOR] с Visual Studio, требуется Visual Studio 2022 версии [MINIMUMVSVERSION] или более поздней. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Подробнее&lt;/A&gt;.
+  </String>
+  <String Id="LicenseAssent">Нажимая кнопку "Установить", вы принимаете следующие условия.</String>
+  <String Id="InstallPathx64x86">Совпадение пути установки недопустимо для установок пакетов SDK x64: "[DOTNETHOME_X64]" и SDK x86: "[DOTNETHOME_X86]".</String>
+  <String Id="InstallPathARM64x86">Совпадение пути установки недопустимо для установок пакетов SDK ARM64: "[DOTNETHOME_ARM64]" и SDK x86: "[DOTNETHOME_X86]".</String>
+  <String Id="InstallPathARM64x64">Совпадение пути установки недопустимо для установок пакетов SDK ARM64: "[DOTNETHOME_ARM64]" и SDK x64: "[DOTNETHOME_X64]".</String>
+</WixLocalization>

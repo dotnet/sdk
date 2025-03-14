@@ -894,18 +894,18 @@ namespace Microsoft.TemplateEngine.Cli {
         /// <summary>
         ///   Looks up a localized string similar to Could not parse NuGet source &apos;{0}&apos;, so it was discarded.
         /// </summary>
-        internal static string DetailsCommand_UnableToLoadResorce {
+        internal static string DetailsCommand_UnableToLoadResource {
             get {
-                return ResourceManager.GetString("DetailsCommand_UnableToLoadResorce", resourceCulture);
+                return ResourceManager.GetString("DetailsCommand_UnableToLoadResource", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to load NuGet sources configured for the folder {0}.
         /// </summary>
-        internal static string DetailsCommand_UnableToLoadResorces {
+        internal static string DetailsCommand_UnableToLoadResources {
             get {
-                return ResourceManager.GetString("DetailsCommand_UnableToLoadResorces", resourceCulture);
+                return ResourceManager.GetString("DetailsCommand_UnableToLoadResources", resourceCulture);
             }
         }
         
@@ -1395,6 +1395,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Post action argument &apos;{0}&apos; is not a valid boolean value..
+        /// </summary>
+        internal static string PostAction_ModifyJson_Error_ArgumentNotBoolean {
+            get {
+                return ResourceManager.GetString("PostAction_ModifyJson_Error_ArgumentNotBoolean", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Post action argument &apos;{0}&apos; is mandatory, but not configured..
         /// </summary>
         internal static string PostAction_ModifyJson_Error_ArgumentNotConfigured {
@@ -1436,6 +1445,15 @@ namespace Microsoft.TemplateEngine.Cli {
         internal static string PostAction_ModifyJson_Succeeded {
             get {
                 return ResourceManager.GetString("PostAction_ModifyJson_Succeeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempting to find json file &apos;{0}&apos; in &apos;{1}&apos;.
+        /// </summary>
+        internal static string PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile {
+            get {
+                return ResourceManager.GetString("PostAction_ModifyJson_Verbose_AttemptingToFindJsonFile", resourceCulture);
             }
         }
         

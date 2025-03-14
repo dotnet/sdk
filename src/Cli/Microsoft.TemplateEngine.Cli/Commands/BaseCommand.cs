@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Invocation;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
@@ -130,7 +131,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             foreach (FilterOptionDefinition filterDef in filtersToSetup)
             {
                 CliOption newOption = GetFilterOption(filterDef);
-                this.Options.Add(newOption);
+                Options.Add(newOption);
                 options[filterDef] = newOption;
             }
             return options;
@@ -141,8 +142,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         /// </summary>
         protected void SetupTabularOutputOptions(ITabularOutputCommand command)
         {
-            this.Options.Add(command.ColumnsAllOption);
-            this.Options.Add(command.ColumnsOption);
+            Options.Add(command.ColumnsAllOption);
+            Options.Add(command.ColumnsOption);
         }
 
         private static async Task HandleGlobalOptionsAsync(
@@ -219,7 +220,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Reporter.Output.WriteLine();
         }
 
-        private sealed class CommandAction : CliAction
+        private sealed class CommandAction : AsynchronousCliAction
         {
             private readonly BaseCommand<TArgs> _command;
 
@@ -282,8 +283,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
                 return (int)returnCode;
             }
-
-            public override int Invoke(ParseResult parseResult) => InvokeAsync(parseResult, CancellationToken.None).GetAwaiter().GetResult();
         }
     }
 }
