@@ -27,7 +27,7 @@ internal class ListProjectsInSolutionCommand : CommandBase
 
     public override int Execute()
     {
-        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: false);
+        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
         try
         {
             ListAllProjectsAsync(solutionFileFullPath);
@@ -43,7 +43,7 @@ internal class ListProjectsInSolutionCommand : CommandBase
     {
         SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
         string[] paths = _displaySolutionFolders
-            ? solution.SolutionFolders.Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/'))).ToArray()
+            ? solution.SolutionFolders.Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/'))).ToArray() // VS-SolutionPersistence does not return a path object, so there might be issues with forward/backward slashes on different platforms
             : solution.SolutionProjects.Select(project => project.FilePath).ToArray();
         
         if (paths.Length == 0)
