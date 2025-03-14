@@ -110,7 +110,7 @@ internal static class SolutionAndProjectUtility
 
         var targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
-        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{project.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+        Logger.LogTrace($"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{project.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
@@ -126,7 +126,7 @@ internal static class SolutionAndProjectUtility
             {
                 project.SetProperty(ProjectProperties.TargetFramework, framework);
                 project.ReevaluateIfNecessary();
-                Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+                Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                 if (GetModuleFromProject(project) is { } module)
                 {

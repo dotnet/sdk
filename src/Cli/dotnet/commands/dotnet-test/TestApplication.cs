@@ -134,20 +134,13 @@ internal sealed class TestApplication : IDisposable
         catch (OperationCanceledException ex)
         {
             // We are exiting
-            if (Logger.TraceEnabled)
-            {
-                string tokenType = ex.CancellationToken == token ? "internal token" : "external token";
-                Logger.LogTrace(() => $"WaitConnectionAsync() throws OperationCanceledException with {tokenType}");
-            }
+            Logger.LogTrace($"WaitConnectionAsync() throws OperationCanceledException with {(ex.CancellationToken == token ? "internal token" : "external token")}");
         }
         catch (Exception ex)
         {
-            if (Logger.TraceEnabled)
-            {
-                Logger.LogTrace(() => ex.ToString());
-            }
-
-            Environment.FailFast(ex.ToString());
+            var exToString = ex.ToString();
+            Logger.LogTrace(exToString);
+            Environment.FailFast(exToString);
         }
     }
 
@@ -188,10 +181,7 @@ internal sealed class TestApplication : IDisposable
 
                 // If we don't recognize the message, log and skip it
                 case UnknownMessage unknownMessage:
-                    if (Logger.TraceEnabled)
-                    {
-                        Logger.LogTrace(() => $"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
-                    }
+                    Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
                     return Task.FromResult((IResponse)VoidResponse.CachedInstance);
 
                 default:
@@ -201,12 +191,9 @@ internal sealed class TestApplication : IDisposable
         }
         catch (Exception ex)
         {
-            if (Logger.TraceEnabled)
-            {
-                Logger.LogTrace(() => ex.ToString());
-            }
-
-            Environment.FailFast(ex.ToString());
+            var exToString = ex.ToString();
+            Logger.LogTrace(exToString);
+            Environment.FailFast(exToString);
         }
 
         return Task.FromResult((IResponse)VoidResponse.CachedInstance);
@@ -237,10 +224,7 @@ internal sealed class TestApplication : IDisposable
 
     private async Task<int> StartProcess(ProcessStartInfo processStartInfo)
     {
-        if (Logger.TraceEnabled)
-        {
-            Logger.LogTrace(() => $"Test application arguments: {processStartInfo.Arguments}");
-        }
+        Logger.LogTrace($"Test application arguments: {processStartInfo.Arguments}");
 
         var process = Process.Start(processStartInfo);
         StoreOutputAndErrorData(process);
