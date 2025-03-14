@@ -22,12 +22,20 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
-  <PropertyGroup Condition="'$(PgoInstrument)' == 'true'">
-    <SkipBuildingInstallers>true</SkipBuildingInstallers>
-    <PgoTerm>-pgo</PgoTerm>
+  <PropertyGroup>
+    <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
+
+    <OSName Condition="'$(OSName)' == '' AND $(Rid) != ''">$(Rid.Substring(0, $(Rid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
   </PropertyGroup>
 
   <PropertyGroup>
+    <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>Latest</LangVersion>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
@@ -52,8 +60,6 @@
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
-
-    <!-- <ArtifactsShippingSymbolsDir>$(ArtifactsDir)symbols\$(Configuration)\Shipping</ArtifactsShippingSymbolsDir> -->
 
     <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
     <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants);MICROSOFT_ENABLE_TELEMETRY</DefineConstants>

@@ -10,14 +10,23 @@
        - We need an "empty" build after the last real repo for prebuilt detection to work - this is that file.
        - If we have a repo that is not in sdk's dependency tree, we can still build it by including it here.  -->
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">
     <RepositoryReference Include="sdk" />
-    <RepositoryReference Include="scenario-tests" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '2'">
-    <RepositoryReference Remove="@(RepositoryReference)" />
+  <!-- Build the cross-OS DACs. -->
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x86'">
+    <RepositoryReference Include="runtime" DotNetBuildPass="2" />
+  </ItemGroup>
+
+  <!-- Build the windows bundle and VS components. -->
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows'">
     <RepositoryReference Include="sdk" DotNetBuildPass="2" />
+  </ItemGroup>
+
+  <!-- Build the ASP.NET Core hosting bundle -->
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
+    <RepositoryReference Include="aspnetcore" DotNetBuildPass="2" />
   </ItemGroup>
 
 </Project>

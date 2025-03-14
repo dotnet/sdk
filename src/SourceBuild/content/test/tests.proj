@@ -15,6 +15,9 @@
 
     <!-- Short stack builds can't run scenario-tests as no SDK gets produced. -->
     <_RunScenarioTests Condition="'$(ShortStack)' == 'true' or '$(PgoInstrument)' == 'true'">false</_RunScenarioTests>
+
+    <!-- Skip BuildPass>1 verticals as the live built SDK already got validated in the BuildPass=1 vertical. -->
+    <_RunScenarioTests Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">false</_RunScenarioTests>
   </PropertyGroup>
 
   <ItemGroup>

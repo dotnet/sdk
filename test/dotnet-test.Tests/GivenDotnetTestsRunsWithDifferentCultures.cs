@@ -20,10 +20,9 @@ public class GivenDotnetTestsRunsWithDifferentCultures : SdkTest
 
         CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                 .WithWorkingDirectory(testInstance.Path)
-                                .WithEnableTestingPlatform()
                                 .WithCulture(locale)
                                 .Execute();
 
-        result.ExitCode.Should().Be(0);
+        result.ExitCode.Should().Be(ExitCode.Success);
     }
 }

@@ -30,8 +30,8 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @sharwell @arkalyanms
-/test/dotnet-format.Tests @sharwell @arkalyanms
+/src/Cli/dotnet/commands/dotnet-format @sharwell @arunchndr
+/test/dotnet-format.Tests @sharwell @arunchndr
 
 # Area-NuGet
 /src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
@@ -57,7 +57,6 @@
 
 # Area-Templates
 /src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers
-/src/Cli/dotnet-new3 @dotnet/templating-engine-maintainers
 /src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
 /test/dotnet-new.Tests @dotnet/templating-engine-maintainers
 /test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
@@ -66,22 +65,22 @@
 # ILLink and ReadyToRun targets and tasks owned by runtime team
 # Area-ILLink Area-ReadyToRun
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets @dotnet/illink
-/src/Tasks/Microsoft.NET.Build.Tasks/PrepareForReadyToRunCompilation.cs @AntonLapounov
-/src/Tasks/Microsoft.NET.Build.Tasks/RunReadyToRunCompiler.cs @AntonLapounov
+/src/Tasks/Microsoft.NET.Build.Tasks/PrepareForReadyToRunCompilation.cs @dotnet/area-type-system-and-startup 
+/src/Tasks/Microsoft.NET.Build.Tasks/RunReadyToRunCompiler.cs @dotnet/area-type-system-and-startup 
 /test/Microsoft.NET.Publish.Tests/GivenThatWeWantToRunILLink.cs @dotnet/illink
-/test/Microsoft.NET.Publish.Tests/GivenThatWeWantToPublishReadyToRun.cs @AntonLapounov
+/test/Microsoft.NET.Publish.Tests/GivenThatWeWantToPublishReadyToRun.cs @dotnet/area-type-system-and-startup
 # Publish.targets related to ILLink and ReadyToRun is own by both runtime and SDK team
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @AntonLapounov @dotnet/dotnet-cli
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @dotnet/area-type-system-and-startup @dotnet/dotnet-cli
 # Area-ClickOnce
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @tmat @arkalyanms @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @tmat @arkalyanms @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @tmat @arunchndr @dotnet/roslyn-ide
+/test/dotnet-watch.Tests/ @tmat @arunchndr @dotnet/roslyn-ide
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/* @tmat @arkalyanms @dotnet/roslyn-ide
+/src/BuiltInTools/* @tmat @arunchndr @dotnet/roslyn-ide
 /src/BuiltInTools/BrowserRefresh @dotnet/aspnet-blazor-eng
-/src/BuiltInTools/AspireService @BillHiebert @dotnet/aspnet-blazor-eng
+/src/BuiltInTools/AspireService @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries

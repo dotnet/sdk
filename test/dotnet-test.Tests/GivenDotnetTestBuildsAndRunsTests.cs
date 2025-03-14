@@ -14,14 +14,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunTestProjectWithNoTests_ShouldReturnOneAsExitCode(string configuration)
+        public void RunTestProjectWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -34,20 +33,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunMultipleTestProjectsWithNoTests_ShouldReturnOneAsExitCode(string configuration)
+        public void RunMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -57,23 +55,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("total: 0")
                     .And.Contain("succeeded: 0")
                     .And.Contain("failed: 0")
-                    .And.Contain("skipped: 0");
+                    .And.Contain("skipped: 0")
+                    .And.NotContain("Expected to find --arg-from-my-target");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunTestProjectWithTests_ShouldReturnZeroAsExitCode(string configuration)
+        public void RunTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -87,20 +85,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunMultipleTestProjectsWithFailingTests_ShouldReturnOneAsExitCode(string configuration)
+        public void RunMultipleTestProjectsWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -113,28 +110,27 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnOneAsExitCode(string configuration)
+        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute("--minimum-expected-tests 2",
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", "failed", true, "8"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", "failed", true, "2"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", "failed", true, "9"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration, "8"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Failed, true, configuration, "2"), result.StdOut);
+                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", TestingConstants.Failed, true, configuration, "9"), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -144,41 +140,39 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnOneAsExitCode(string configuration)
+        public void RunTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription);
+                result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunOnEmptyFolder_ShouldReturnOneAsExitCode(string configuration)
+        public void RunOnEmptyFolder_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("EmptyFolder", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -186,20 +180,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnOneAsExitCode(string configuration)
+        public void RunOnMultipleProjectFoldersWithoutSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultipleTestProjectsWithoutSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -207,20 +200,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunOnProjectWithSolutionFile_ShouldReturnOneAsExitCode(string configuration)
+        public void RunOnProjectWithSolutionFile_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectFileAndSolutionFile", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -228,20 +220,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
-        public void RunOnProjectWithClassLibrary_ShouldReturnOneAsExitCode(string configuration)
+        public void RunOnProjectWithClassLibrary_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithClassLibrary", Guid.NewGuid().ToString())
                 .WithSource();
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
@@ -254,7 +245,35 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.Success);
+            result.ExitCode.Should().Be(ExitCode.Success);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
+        public void RunningWithGlobalPropertyShouldProperlyPropagate(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithConditionOnGlobalProperty", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFramework($"{DotnetVersionHelper.GetPreviousDotnetVersion()}", "TestProject");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(
+                                        TestingPlatformOptions.ConfigurationOption.Name, configuration,
+                                        CommonOptions.PropertiesOption.Name, "PROPERTY_TO_ENABLE_MTP=1");
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Test run summary: Passed!")
+                    .And.Contain("total: 2")
+                    .And.Contain("succeeded: 2")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            result.ExitCode.Should().Be(ExitCode.Success);
         }
     }
 }

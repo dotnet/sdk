@@ -199,7 +199,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests!, _sdkVersionBand);
             }
 
-            if (workloadSet == null && installState.UseWorkloadSets == true && availableWorkloadSets.Any())
+            if (workloadSet == null && installState.ShouldUseWorkloadSets() && availableWorkloadSets.Any())
             {
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Aggregate((s1, s2) => VersionCompare(s1, s2) >= 0 ? s1 : s2);
                 workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
@@ -278,7 +278,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     sb.Append(bytes[b].ToString("x2"));
                 }
 
-                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: installState.UseWorkloadSets == true);
+                return new WorkloadVersionInfo($"{_sdkVersionBand.ToStringWithoutPrerelease()}-manifests.{sb}", IsInstalled: true, WorkloadSetsEnabledWithoutWorkloadSet: installState.ShouldUseWorkloadSets());
             }
         }
 
@@ -562,14 +562,17 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         var workloadSetVersion = Path.GetFileName(workloadSetDirectory);
                         var workloadSet = WorkloadSet.FromWorkloadSetFolder(workloadSetDirectory, workloadSetVersion, featureBand);
 
-                        if (!WorkloadSet.GetWorkloadSetFeatureBand(workloadSet.Version!).Equals(featureBand))
+                        if (workloadSet is not null)
                         {
-                            //  We have a workload set version where the feature band doesn't match the feature band folder that it's in.
-                            //  Skip it, as if we try to actually load it via the workload set version, we'll fail
-                            continue;
-                        }
+                            if (!WorkloadSet.GetWorkloadSetFeatureBand(workloadSet.Version!).Equals(featureBand))
+                            {
+                                //  We have a workload set version where the feature band doesn't match the feature band folder that it's in.
+                                //  Skip it, as if we try to actually load it via the workload set version, we'll fail
+                                continue;
+                            }
 
-                        availableWorkloadSets[workloadSet.Version!] = workloadSet;
+                            availableWorkloadSets[workloadSet.Version!] = workloadSet;
+                        }
                     }
                 }
             }

@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using CommandLocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Sln.List.Tests
@@ -279,6 +279,25 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
                 .Execute(solutionCommand, "App.slnf", "list");
             cmd.Should().Pass();
             cmd.StdOut.Should().ContainAll(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescaped(string solutionCommand)
+        {
+            string[] expectedOutput = { $"{CommandLocalizableStrings.ProjectsHeader}",
+                $"{new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}",
+                $"{Path.Combine("src", "App", "App.csproj")}" };
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndSlnfWithSpecialCharactersInPath", identifier: "GivenDotnetSlnList-Filter-Unescape")
+                .WithSource()
+                .Path;
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "list");
+
+            cmd.Should().Pass();
         }
     }
 }

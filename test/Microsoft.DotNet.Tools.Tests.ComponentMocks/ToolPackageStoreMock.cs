@@ -3,7 +3,8 @@
 
 #nullable disable
 
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;

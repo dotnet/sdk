@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLineValidation;
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -33,17 +33,17 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet add reference my.csproj --interactive");
 
-            result.GetValue<bool>(AddProjectToProjectReferenceParser.InteractiveOption)
+            result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
                 .Should().BeTrue();
         }
 
         [Fact]
-        public void AddReferenceDoesNotHaveInteractiveFlagByDefault()
+        public void AddReferenceDoesHaveInteractiveFlagByDefault()
         {
             var result = Parser.Instance.Parse("dotnet add reference my.csproj");
 
-            result.GetValue<bool>(AddProjectToProjectReferenceParser.InteractiveOption)
-                .Should().BeFalse();
+            result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
+                .Should().BeTrue();
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 .Errors
                 .Select(e => e.Message)
                 .Should()
-                .BeEquivalentTo(string.Format(LocalizableStrings.RequiredArgumentMissingForCommand, "'reference'."));
+                .BeEquivalentTo(string.Format(Microsoft.DotNet.Cli.CommandLineValidation.LocalizableStrings.RequiredArgumentMissingForCommand, "'reference'."));
         }
     }
 }

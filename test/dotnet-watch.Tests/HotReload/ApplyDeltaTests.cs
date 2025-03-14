@@ -385,6 +385,28 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
+        public async Task BlazorWasm_Restart()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
+                .WithSource();
+
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.ReadKeyFromStdin | TestFlags.MockBrowser);
+
+            await App.AssertWaitingForChanges();
+
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+
+            // Browser is launched based on blazor-devserver output "Now listening on: ...".
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Launching browser: http://localhost:{port}");
+
+            App.SendControlR();
+
+            await App.WaitUntilOutputContains($"dotnet watch ⌚ Reloading browser.");
+        }
+
+        [Fact]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -421,7 +443,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
-            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'app.css'.");
+            // "wwwroot" directory is required for MAUI. Web sites work with or without it.
+            App.AssertOutputContains($"dotnet watch ⌚ Sending static asset update request to browser: 'wwwroot/app.css'.");
             App.AssertOutputContains($"dotnet watch 🔥 Hot reload of static files succeeded.");
             App.AssertOutputContains(MessageDescriptor.NoCSharpChangesToApply);
             App.Process.ClearOutput();

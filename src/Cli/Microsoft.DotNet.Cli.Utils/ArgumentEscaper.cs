@@ -179,21 +179,14 @@ namespace Microsoft.DotNet.Cli.Utils
             return sb.ToString();
         }
 
-        internal static bool ShouldSurroundWithQuotes(string argument)
-        {
+        internal static bool ShouldSurroundWithQuotes(string argument) =>
             // Only quote if whitespace exists in the string
-            return ArgumentContainsWhitespace(argument);
-        }
+            ArgumentContainsWhitespace(argument);
 
-        internal static bool IsSurroundedWithQuotes(string argument)
-        {
-            return argument.StartsWith("\"", StringComparison.Ordinal) &&
-                   argument.EndsWith("\"", StringComparison.Ordinal);
-        }
+        internal static bool IsSurroundedWithQuotes(string argument) =>
+            argument.StartsWith("\"", StringComparison.Ordinal) && argument.EndsWith("\"", StringComparison.Ordinal);
 
-        internal static bool ArgumentContainsWhitespace(string argument)
-        {
-            return argument.Contains(" ") || argument.Contains("\t") || argument.Contains("\n");
-        }
+        internal static bool ArgumentContainsWhitespace(string argument) =>
+            argument.Contains(" ") || argument.Contains("\t") || argument.Contains("\n");
     }
 }

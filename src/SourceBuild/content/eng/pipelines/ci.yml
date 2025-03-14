@@ -29,6 +29,16 @@
 #   - PR: lite build
 #   - CI: release/*, internal/release/* and main only, every batched commit, full build
 
+parameters:
+- name: desiredSigning
+  displayName: 'Sign?'
+  type: string
+  default: 'Default (unsigned for manual and non-main/release builds)'
+  values:
+    - Signed
+    - Unsigned
+    - Default (unsigned for manual and non-main/release builds)
+
 variables:
 # enable source-only build for pipelines that contain the -source-build string
 - name: isSourceOnlyBuild
@@ -64,7 +74,8 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     featureFlags:
-     EnableDefenderForLinux: true
+      EnableDefenderForLinux: true
+      incrementalSDLBinaryAnalysis: true
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
@@ -110,14 +121,14 @@ extends:
       ${{ variables.azurelinuxArm64CrossContainerName }}:
         image: ${{ variables.azurelinuxArm64CrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxX64AlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
+      ${{ variables.azurelinuxX64MuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxX64MuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxArmAlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxArmAlpineCrossContainerImage }}
+      ${{ variables.azurelinuxArmMuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxArmMuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxArm64AlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxArm64AlpineCrossContainerImage }}
+      ${{ variables.azurelinuxArm64MuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxArm64MuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
       ${{ variables.androidCrossContainerName }}:
         image: ${{ variables.androidCrossContainerImage }}
@@ -140,6 +151,7 @@ extends:
       parameters:
         isBuiltFromVmr: true
         isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+        desiredSigning: ${{ parameters.desiredSigning }}
         ${{ if eq(variables.isScheduleTrigger, 'true') }}:
           scope: full
         ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:

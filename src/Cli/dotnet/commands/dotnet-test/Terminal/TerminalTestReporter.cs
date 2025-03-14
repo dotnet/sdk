@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
+using System.CommandLine.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli;
 using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
@@ -286,7 +288,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
             {
                 terminal.Append(SingleIndentation);
                 AppendAssemblySummary(assemblyRun, terminal);
-                terminal.AppendLine();
             }
 
             terminal.AppendLine();
@@ -801,6 +802,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
+        terminal.ResetColor();
         int failedTests = assemblyRun.FailedTests;
         int warnings = 0;
 
@@ -809,6 +811,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         AppendAssemblyResult(terminal, assemblyRun.Success, failedTests, warnings);
         terminal.Append(' ');
         AppendLongDuration(terminal, assemblyRun.Stopwatch.Elapsed);
+        terminal.AppendLine();
     }
 
     /// <summary>
@@ -1034,5 +1037,123 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
+    }
+
+    public void WritePlatformAndExtensionOptions(HelpContext context,
+        IEnumerable<CommandLineOption> builtInOptions,
+        IEnumerable<CommandLineOption> nonBuiltInOptions,
+        Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
+    {
+        if (_wasCancelled)
+        {
+            return;
+        }
+
+        if (builtInOptions.Any())
+        {
+            WriteOtherOptionsSection(context, LocalizableStrings.HelpPlatformOptions, builtInOptions);
+            context.Output.WriteLine();
+        }
+
+        if (nonBuiltInOptions.Any())
+        {
+            WriteOtherOptionsSection(context, LocalizableStrings.HelpExtensionOptions, nonBuiltInOptions);
+            context.Output.WriteLine();
+        }
+        WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
+    }
+
+    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOption> options)
+    {
+        List<TwoColumnHelpRow> optionRows = [];
+
+        foreach (var option in options)
+        {
+            if (option.IsHidden != true)
+            {
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description));
+            }
+        }
+
+        if (optionRows.Count > 0)
+        {
+            WriteHeading(title, null);
+            context.HelpBuilder.WriteColumns(optionRows, context);
+        }
+    }
+
+
+    private void WriteHeading(string? heading, string? description)
+    {
+        if (!string.IsNullOrWhiteSpace(heading))
+        {
+            WriteMessage(heading);
+        }
+
+        if (!string.IsNullOrWhiteSpace(description))
+        {
+            int maxWidth = int.MaxValue - SingleIndentation.Length;
+            foreach (var part in WrapText(description!, maxWidth))
+            {
+                WriteMessage(SingleIndentation);
+                WriteMessage(part);
+            }
+        }
+    }
+
+    private static IEnumerable<string> WrapText(string text, int maxWidth)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            yield break;
+        }
+
+        foreach (var part in text.Split(["\r\n", "\n"], StringSplitOptions.None))
+        {
+            for (int i = 0; i < part.Length; i += maxWidth)
+            {
+                int length = Math.Min(maxWidth, part.Length - i);
+                int lastSpace = part.LastIndexOf(' ', i + length, length);
+                if (lastSpace > i)
+                {
+                    length = lastSpace - i + 1;
+                }
+                yield return part.Substring(i, length).TrimEnd();
+            }
+        }
+    }
+
+    public void WriteModulesToMissingOptionsToConsole(Dictionary<bool, List<(string[], string[])>> modulesWithMissingOptions)
+    {
+        var yellow = new SystemConsoleColor { ConsoleColor = ConsoleColor.Yellow };
+        foreach (KeyValuePair<bool, List<(string[], string[])>> groupedModules in modulesWithMissingOptions)
+        {
+            WriteMessage(string.Empty);
+            WriteMessage(groupedModules.Key ? LocalizableStrings.HelpUnavailableOptions : LocalizableStrings.HelpUnavailableExtensionOptions, yellow);
+
+            foreach ((string[] modules, string[] missingOptions) in groupedModules.Value)
+            {
+                if (modules.Length == 0)
+                {
+                    continue;
+                }
+
+                string moduleList = string.Join("\n", modules);
+                StringBuilder line = new();
+                for (int i = 0; i < missingOptions.Length; i++)
+                {
+                    if (i == missingOptions.Length - 1)
+                        line.Append($"--{missingOptions[i]}");
+                    else
+                        line.Append($"--{missingOptions[i]}\n");
+                }
+
+                string format = modules.Length == 1
+                    ? (missingOptions.Length == 1 ? LocalizableStrings.HelpModuleIsMissingTheOptionBelow : LocalizableStrings.HelpModuleIsMissingTheOptionsBelow)
+                    : (missingOptions.Length == 1 ? LocalizableStrings.HelpModulesAreMissingTheOptionBelow : LocalizableStrings.HelpModulesAreMissingTheOptionsBelow);
+                var missing = string.Format(format, moduleList);
+                WriteMessage($"{missing}\n{line}\n");
+            }
+        }
     }
 }
