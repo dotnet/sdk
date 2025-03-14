@@ -121,8 +121,8 @@ Commands:
             var cmd = new DotnetCommand(Log, "add", "one", "two", "three", "reference")
                     .Execute("proj.csproj");
             cmd.ExitCode.Should().NotBe(0);
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(LocalizableStrings.UnrecognizedCommandOrArgument, "two")}
-{string.Format(LocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "two")}
+{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
         [Theory]

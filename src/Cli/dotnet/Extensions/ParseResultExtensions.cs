@@ -42,7 +42,7 @@ public static class ParseResultExtensions
             var unrecognizedTokenErrors = parseResult.Errors.Where(error =>
             {
                 // Can't really cache this access in a static or something because it implicitly depends on the environment.
-                var rawResourcePartsForThisLocale = DistinctFormatStringParts(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument);
+                var rawResourcePartsForThisLocale = DistinctFormatStringParts(CommonLocalizableStrings.UnrecognizedCommandOrArgument);
                 return ErrorContainsAllParts(error.Message, rawResourcePartsForThisLocale);
             });
             if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors ||

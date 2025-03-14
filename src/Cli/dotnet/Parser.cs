@@ -102,7 +102,7 @@ public static class Parser
                     Builder = DotnetHelpBuilder.Instance.Value
                 };
 
-                option.Description = CommandLineValidation.LocalizableStrings.ShowHelpInfo;
+                option.Description = CommonLocalizableStrings.ShowHelpDescription;
             }
         }
 

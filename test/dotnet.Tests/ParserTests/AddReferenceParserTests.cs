@@ -55,7 +55,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 .Errors
                 .Select(e => e.Message)
                 .Should()
-                .BeEquivalentTo(string.Format(Microsoft.DotNet.Cli.CommandLineValidation.LocalizableStrings.RequiredArgumentMissingForCommand, "'reference'."));
+                // This string comes from System.CommandLine:
+                // https://github.com/dotnet/command-line-api/blob/b4485d8417c4eb0ec3d1a291e1003686618ce598/src/System.CommandLine/Properties/Resources.resx#L135-L137
+                .BeEquivalentTo("Required argument missing for command: 'reference'.");
         }
     }
 }
