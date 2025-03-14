@@ -37,6 +37,11 @@
         <target state="translated">업데이트할 도구 패키지 ID를 하나 지정하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateAllOptionDescription">
+        <source>Update all tools.</source>
+        <target state="translated">모든 도구를 업데이트합니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
         <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
         <target state="translated">'{0}' 도구는 최신 버전(버전 '{1}' 매니페스트 파일 {2})입니다.</target>
@@ -65,6 +70,16 @@
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">요청된 버전 {0}이(가) 기존 버전 {1}보다 낮습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndPackageId">
+        <source>One must specify either package ID or use the update all option (--all).</source>
+        <target state="translated">패키지 ID를 지정하거나 모든 업데이트 옵션(--all)을 사용해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
+        <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
+        <target state="translated">버전 옵션(--version) 및 업데이트 모두 옵션(--all)을 함께 사용할 수 없습니다. 옵션 중 하나만 지정: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidGlobalAndLocalAndToolPath">

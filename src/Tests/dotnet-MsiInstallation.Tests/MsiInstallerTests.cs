@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
         }
 
         [Fact]
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            InstallWorkload("android");
+            InstallWorkload("android", skipManifestUpdate: true);
         }
 
         [Fact]
@@ -95,9 +95,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            InstallWorkload("android");
+            InstallWorkload("android", skipManifestUpdate: true);
 
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
         }
 
         [Fact]
@@ -137,6 +137,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
             else
             {
+                //  TODO: This doesn't work if we've installed additional runtimes to support the SDK
                 VM.GetRemoteDirectory($@"c:\Program Files\dotnet")
                     .Should()
                     .NotExist();
@@ -151,7 +152,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var originalManifests = GetRollback();
 
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
 
             ListWorkloads().Should().Contain("wasm-tools");
 
@@ -182,10 +183,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public void InstallStateShouldBeRemovedOnSdkUninstall()
         {
             InstallSdk();
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
             ApplyRC1Manifests();
             var featureBand = new SdkFeatureBand(SdkInstallerVersion);
-            var installStatePath = $@"c:\ProgramData\dotnet\workloads\{featureBand}\InstallState\default.json";
+            var installStatePath = $@"c:\ProgramData\dotnet\workloads\x64\{featureBand}\InstallState\default.json";
             VM.GetRemoteFile(installStatePath).Should().Exist();
             UninstallSdk();
             VM.GetRemoteFile(installStatePath).Should().NotExist();
@@ -195,9 +196,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public void UpdateWithRollback()
         {
             InstallSdk();
-            InstallWorkload("wasm-tools");
+            InstallWorkload("wasm-tools", skipManifestUpdate: true);
             ApplyRC1Manifests();
-            
+
             TestWasmWorkload();
 
             //  Second time applying same rollback file shouldn't do anything
@@ -221,6 +222,33 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         [Fact]
+        public void InstallShouldNotUpdatePinnedRollback()
+        {
+            InstallSdk();
+            ApplyRC1Manifests();
+            var workloadVersion = GetWorkloadVersion();
+            
+            InstallWorkload("aspire", skipManifestUpdate: false);
+
+            GetWorkloadVersion().Should().Be(workloadVersion);
+        }
+
+        [Fact]
+        public void UpdateShouldUndoPinnedRollback()
+        {
+            InstallSdk();
+            ApplyRC1Manifests();
+            var workloadVersion = GetWorkloadVersion();
+
+            VM.CreateRunCommand("dotnet", "workload", "update")
+                .Execute()
+                .Should().Pass();
+
+            GetWorkloadVersion().Should().NotBe(workloadVersion);
+
+        }
+
+        [Fact]
         public void ShouldNotShowRebootMessage()
         {
             throw new NotImplementedException();
@@ -230,6 +258,26 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public void ApplyRollbackShouldNotUpdateAdvertisingManifests()
         {
             throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void TestAspire()
+        {
+            InstallSdk();
+
+            //AddNuGetSource("https://pkgs.dev.azure.com/dnceng/internal/_packaging/8.0.300-rtm.24224.15-shipping/nuget/v3/index.json");
+            //AddNuGetSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-aspire-d215c528/nuget/v3/index.json");
+
+            //VM.CreateRunCommand("powershell", "-Command", "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) }")
+            //    .Execute().Should().Pass();
+
+            InstallWorkload("aspire", skipManifestUpdate: true);
+
+            VM.CreateRunCommand("dotnet", "new", "aspire-starter", "-o", "Aspire-StarterApp01")
+                .WithWorkingDirectory(@"c:\SdkTesting")
+                .Execute()
+                .Should()
+                .Pass();
         }
 
 
@@ -308,19 +356,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
 
             return installedManifestVersions;
-        }
-
-
-
-        CommandResult InstallWorkload(string workloadName)
-        {
-            var result = VM.CreateRunCommand("dotnet", "workload", "install", workloadName, "--skip-manifest-update")
-                    .WithDescription($"Install {workloadName} workload")
-                    .Execute();
-
-            result.Should().Pass();
-
-            return result;
         }
 
         string ListWorkloads()
