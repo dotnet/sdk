@@ -8,12 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
-    <ProjectReference Include="$(RepoRoot)src\Layout\redist\redist.csproj" />
+    <ProjectReference Include="..\redist\redist.csproj" />
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <ProjectReference Include="$(RepoRoot)src\Installer\finalizer\finalizer-build.csproj" />
+    <ProjectReference Include="..\finalizer\finalizer-build.csproj" />
   </ItemGroup>
 
   <ItemGroup>
