@@ -27,7 +27,7 @@ internal class ListProjectsInSolutionCommand : CommandBase
 
     public override int Execute()
     {
-        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
+        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: false);
         try
         {
             ListAllProjectsAsync(solutionFileFullPath);
