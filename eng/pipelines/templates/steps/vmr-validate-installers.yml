@@ -44,6 +44,7 @@ steps:
       fi
 
       ./build.sh \
+      --ci \
       -t \
       --projects test/Microsoft.DotNet.Installer.Tests/Microsoft.DotNet.Installer.Tests.csproj \
       /p:BlobArtifactsDir=$(Build.ArtifactStagingDirectory)/BlobArtifacts \
