@@ -470,6 +470,7 @@
                             PublishFSharp;
                             PublishBlazorWasmTools;
                             PublishStaticWebAssetsTools;
+                            GeneratePackagePruneData;
                             GenerateCliRuntimeConfigurationFiles;
                             MakeFscRunnableAndMoveToPublishDir;
                             RemoveFscFilesAfterPublish;
