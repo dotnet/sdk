@@ -327,15 +327,46 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 
         static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
         {
-            var assemblyIdentifier = assembly.GetName().Name!;
+            string assemblyIdentifier;
+
+            try
+            {
+                assemblyIdentifier = assembly.GetName().Name!;
+            }
+            catch
+            {
+                return;
+            }
+
             if (!visited.Add(assemblyIdentifier))
             {
                 return;
             }
 
-            foreach (var dependencyName in assembly.GetReferencedAssemblies())
+            AssemblyName[] referencedAssemblies;
+            try
             {
-                var dependency = Array.Find(assemblies, a => a.GetName().Name == dependencyName.Name);
+                referencedAssemblies = assembly.GetReferencedAssemblies();
+            }
+            catch
+            {
+                referencedAssemblies = [];
+            }
+
+            foreach (var dependencyName in referencedAssemblies)
+            {
+                var dependency = Array.Find(assemblies, a =>
+                {
+                    try
+                    {
+                        return a.GetName().Name == dependencyName.Name;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                });
+
                 if (dependency is not null)
                 {
                     Visit(assemblies, dependency, sortedAssemblies, visited);
