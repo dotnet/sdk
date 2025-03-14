@@ -1,0 +1,41 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <PortableOSName Condition=" '$(PortableOSName)' == '' ">$(OSName)</PortableOSName>
+    <PortableRid>$(PortableOSName)-$(Architecture)</PortableRid>
+
+    <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(PortableRid)</PortableProductMonikerRid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SkipBuildingInstallers Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' == 'arm'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="'$(PgoInstrument)' == 'true'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="
+      (
+       $(Rid.StartsWith('freebsd')) OR
+       $(Rid.StartsWith('illumos')) OR
+       $(Rid.StartsWith('linux-musl'))
+      )">true</SkipBuildingInstallers>
+
+    <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
+    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true'">true</BundleNativeAotCompiler>
+
+    <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
+    <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' AND '$(IsLinux)' == 'true' AND !$(Rid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>
+    <HighEntropyVA>true</HighEntropyVA>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
+    <NetRuntimeRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd' or '$(OSName)' == 'illumos' or '$(OSName)' == 'solaris') and '$(DotNetBuildSourceOnly)' != 'true' ">$(OSName)-$(Architecture)</NetRuntimeRid>
+    <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
+
+    <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
+    <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
+    <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
+  </PropertyGroup>
+
+</Project>

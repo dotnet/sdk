@@ -7,74 +7,73 @@ using Microsoft.DotNet.NativeWrapper;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Utils;
 
-namespace Microsoft.DotNet.Tools.New
+namespace Microsoft.DotNet.Tools.New;
+
+internal class SdkInfoProvider : ISdkInfoProvider
 {
-    internal class SdkInfoProvider : ISdkInfoProvider
+    private readonly Func<string> _getCurrentProcessPath;
+
+    public Guid Id { get; } = Guid.Parse("{A846C4E2-1E85-4BF5-954D-17655D916928}");
+
+    public SdkInfoProvider()
+        : this(null)
+    { }
+
+    internal SdkInfoProvider(Func<string> getCurrentProcessPath)
     {
-        private readonly Func<string> _getCurrentProcessPath;
+        _getCurrentProcessPath = getCurrentProcessPath;
+    }
 
-        public Guid Id { get; } = Guid.Parse("{A846C4E2-1E85-4BF5-954D-17655D916928}");
+    public Task<string> GetCurrentVersionAsync(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(Product.Version);
+    }
 
-        public SdkInfoProvider()
-            : this(null)
-        { }
+    public Task<IEnumerable<string>> GetInstalledVersionsAsync(CancellationToken cancellationToken)
+    {
+        // Get the dotnet directory, while ignoring custom msbuild resolvers
+        string dotnetDir = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(
+            key =>
+                key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
+                    ? null
+                    : Environment.GetEnvironmentVariable(key),
+            _getCurrentProcessPath);
 
-        internal SdkInfoProvider(Func<string> getCurrentProcessPath)
+        IEnumerable<string> sdks;
+        try
         {
-            _getCurrentProcessPath = getCurrentProcessPath;
+            // sdks contain the full path, version is the last part
+            //  details: https://github.com/dotnet/runtime/blob/5098d45cc1bf9649fab5df21f227da4b80daa084/src/native/corehost/fxr/sdk_info.cpp#L76
+            sdks = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(dotnetDir).Select(Path.GetFileName);
         }
-
-        public Task<string> GetCurrentVersionAsync(CancellationToken cancellationToken)
+        // The NETCoreSdkResolverNativeWrapper is not properly initialized (case of OSx in test env) - let's manually perform what
+        //  sdk_info::get_all_sdk_infos does
+        catch (Exception e) when (e is HostFxrRuntimePropertyNotSetException or HostFxrNotFoundException)
         {
-            return Task.FromResult(Product.Version);
+            string sdkDir = Path.Combine(dotnetDir, "sdk");
+            sdks =
+                Directory.Exists(sdkDir)
+                    ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion)
+                    : Enumerable.Empty<string>();
         }
+        return Task.FromResult(sdks);
+    }
 
-        public Task<IEnumerable<string>> GetInstalledVersionsAsync(CancellationToken cancellationToken)
+    public string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedVersions,
+        IReadOnlyList<string> viableInstalledVersions)
+    {
+        if (viableInstalledVersions.Any())
         {
-            // Get the dotnet directory, while ignoring custom msbuild resolvers
-            string dotnetDir = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(
-                key =>
-                    key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
-                        ? null
-                        : Environment.GetEnvironmentVariable(key),
-                _getCurrentProcessPath);
-
-            IEnumerable<string> sdks;
-            try
-            {
-                // sdks contain the full path, version is the last part
-                //  details: https://github.com/dotnet/runtime/blob/5098d45cc1bf9649fab5df21f227da4b80daa084/src/native/corehost/fxr/sdk_info.cpp#L76
-                sdks = NETCoreSdkResolverNativeWrapper.GetAvailableSdks(dotnetDir).Select(Path.GetFileName);
-            }
-            // The NETCoreSdkResolverNativeWrapper is not properly initialized (case of OSx in test env) - let's manually perform what
-            //  sdk_info::get_all_sdk_infos does
-            catch (Exception e) when (e is HostFxrRuntimePropertyNotSetException or HostFxrNotFoundException)
-            {
-                string sdkDir = Path.Combine(dotnetDir, "sdk");
-                sdks =
-                    Directory.Exists(sdkDir)
-                        ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion)
-                        : Enumerable.Empty<string>();
-            }
-            return Task.FromResult(sdks);
+            return string.Format(LocalizableStrings.SdkInfoProvider_Message_SwitchSdk, viableInstalledVersions.ToCsvString());
         }
-
-        public string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedVersions,
-            IReadOnlyList<string> viableInstalledVersions)
+        else
         {
-            if (viableInstalledVersions.Any())
-            {
-                return string.Format(LocalizableStrings.SdkInfoProvider_Message_SwitchSdk, viableInstalledVersions.ToCsvString());
-            }
-            else
-            {
-                return string.Format(LocalizableStrings.SdkInfoProvider_Message_InstallSdk, supportedVersions.ToCsvString());
-            }
+            return string.Format(LocalizableStrings.SdkInfoProvider_Message_InstallSdk, supportedVersions.ToCsvString());
         }
+    }
 
-        private static bool IsValidFxVersion(string versionString)
-        {
-            return FXVersion.TryParse(versionString, out _);
-        }
+    private static bool IsValidFxVersion(string versionString)
+    {
+        return FXVersion.TryParse(versionString, out _);
     }
 }

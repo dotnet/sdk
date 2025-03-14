@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="SetupPKGProps" DependsOnTargets="GetCurrentRuntimeInformation;SetupFileExtensions">
+  <Target Name="SetupPKGProps">
     <PropertyGroup>
       <PkgIntermediateDirectory>$(IntermediateOutputPath)pkgs/$(Version)</PkgIntermediateDirectory>
 
@@ -41,7 +41,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="SetupPkgInputsOutputs" DependsOnTargets="SetupPKGProps;SetSdkBrandingInfo">
+  <Target Name="SetupPkgInputsOutputs" DependsOnTargets="SetupPKGProps">
     <ItemGroup>
       <DistributionTemplateReplacement Include="{SharedFxComponentId}">
         <ReplacementString>$(SharedFrameworkComponentId)</ReplacementString>
@@ -118,11 +118,6 @@
       </ResourcesReplacement>
     </ItemGroup>
 
-    <!-- Consumed By Publish -->
-    <ItemGroup>
-      <GeneratedInstallers Include="$(SdkPKGInstallerFile);$(CombinedFrameworkSdkHostPKGInstallerFile)" />
-    </ItemGroup>
-
     <ItemGroup>
       <SdkProductArchiveResourcesTemplateFiles Include="$(SdkPkgSourcesRootDirectory)/resources/**/*" />
 
@@ -144,8 +139,7 @@
   <Target Name="GenerateSdkPkg"
           Inputs="@(GenerateSdkPkgInputs)"
           Outputs="$(SdkPKGInstallerFile)"
-          DependsOnTargets="GenerateLayout;SetupPkgInputsOutputs"
-          Condition=" '$(OSName)' == 'osx' and '$(DotNetBuildSourceOnly)' != 'true' ">
+          DependsOnTargets="GenerateLayout;SetupPkgInputsOutputs">
     <ItemGroup>
       <TemplateFiles Include="$(RedistLayoutPath)templates/**/*" />
     </ItemGroup>
@@ -195,8 +189,7 @@
   <Target Name="GenerateSdkProductArchive"
           Inputs="@(GenerateSdkProductArchiveInputs)"
           Outputs="$(CombinedFrameworkSdkHostPKGInstallerFile)"
-          DependsOnTargets="GenerateSdkPkg"
-          Condition=" '$(OSName)' == 'osx' and '$(DotNetBuildSourceOnly)' != 'true' ">
+          DependsOnTargets="GenerateSdkPkg">
     <ItemGroup>
       <PkgComponentsSourceFiles Include="$(SdkPKGInstallerFile);
                               $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName);
@@ -234,8 +227,7 @@
   </Target>
 
   <Target Name="GeneratePkgs"
-          DependsOnTargets="GetCurrentRuntimeInformation;
-                            GenerateSdkPkg;
-                            GenerateSdkProductArchive" />
+          AfterTargets="Build"
+          DependsOnTargets="GenerateSdkPkg;GenerateSdkProductArchive" />
 
 </Project>

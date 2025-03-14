@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Add.Reference.Tests
@@ -22,7 +23,7 @@ Arguments:
 Options:
   -f, --framework <FRAMEWORK>  Add the reference only when targeting a specific framework.
   --interactive                Allows the command to stop and wait for user input or action (for example to complete
-                               authentication).
+                               authentication). [default: True]
   --project                    The project file to operate on. If a file is not specified, the command will search the
                                current directory for one.
   -?, -h, --help               Show command line help.";
