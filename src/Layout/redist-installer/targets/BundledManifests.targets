@@ -103,7 +103,7 @@
     <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
 
     <Copy SourceFiles="@(ManifestContent)"
-          DestinationFolder="$(RedistLayoutPath)sdk-manifests/%(DestinationPath)" />
+          DestinationFolder="$(RedistInstallerLayoutPath)sdk-manifests/%(DestinationPath)" />
 
   </Target>
 
@@ -124,7 +124,7 @@
     </GetWorkloadSetFeatureBand>
 
     <PropertyGroup>
-      <RealFormattedManifestPaths>$(RedistLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>      
+      <RealFormattedManifestPaths>$(RedistInstallerLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>      
     </PropertyGroup>
 
     <ItemGroup>

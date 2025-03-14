@@ -2,11 +2,11 @@
 
   <Target Name="LayoutBundledComponents">
     <!-- Remove everything from the publish directory so we don't have left over items from previous builds -->
-    <RemoveDir Directories="$(RedistLayoutPath)" />
-    <MakeDir Directories="$(RedistLayoutPath)" />
+    <RemoveDir Directories="$(RedistInstallerLayoutPath)" />
+    <MakeDir Directories="$(RedistInstallerLayoutPath)" />
 
     <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
-                               DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
+                               DestinationDirectory="$(RedistInstallerLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
                                DirectoriesToCopy="%(BundledLayoutComponent.DirectoriesToCopy)" />
 
     <ItemGroup>
@@ -28,7 +28,7 @@
         <DestinationPath>%(BundledLayoutPackageDownloadFiles.RecursiveDir)%(BundledLayoutPackageDownloadFiles.Filename)%(BundledLayoutPackageDownloadFiles.Extension)</DestinationPath>
       </BundledLayoutPackageDownloadFiles>
       <BundledLayoutPackageDownloadFiles>
-        <DestinationPath>$(RedistLayoutPath)%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
+        <DestinationPath>$(RedistInstallerLayoutPath)%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
       </BundledLayoutPackageDownloadFiles>
       <BundledLayoutPackageDownloadFiles>
         <DestinationPath>$([MSBuild]::NormalizePath(%(BundledLayoutPackageDownloadFiles.DestinationPath)))</DestinationPath>
@@ -41,7 +41,7 @@
     <ItemGroup Condition="'@(BundledLayoutPackage->AnyHaveMetadataValue('SkipExtractPackage', 'true'))' == 'true'">
       <BundledUncompressedLayoutPackage Include="@(BundledLayoutPackage->WithMetadataValue('SkipExtractPackage', 'true'))" />
       <BundledUncompressedLayoutPackageFile Include="$(NuGetPackageRoot)\%(BundledUncompressedLayoutPackage.LoweredPackageName)\%(BundledUncompressedLayoutPackage.PackageVersion)\%(BundledUncompressedLayoutPackage.LoweredPackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg"
-                                            DestinationPath="$(RedistLayoutPath)%(BundledUncompressedLayoutPackage.RelativeLayoutPath)\%(BundledUncompressedLayoutPackage.PackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg" />
+                                            DestinationPath="$(RedistInstallerLayoutPath)%(BundledUncompressedLayoutPackage.RelativeLayoutPath)\%(BundledUncompressedLayoutPackage.PackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg" />
       
       <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledUncompressedLayoutPackageFile)" />
     </ItemGroup>
@@ -53,7 +53,7 @@
     <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->
     <ItemGroup>
       <DotnetToolsetInternalSource Include="$(SdkLayoutOutputDirectory)**\*" />
-      <DotnetToolsetInternalDestination Include="@(DotnetToolsetInternalSource->'$(RedistLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+      <DotnetToolsetInternalDestination Include="@(DotnetToolsetInternalSource->'$(RedistInstallerLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 
     <Copy SourceFiles="@(DotnetToolsetInternalSource)" DestinationFiles="@(DotnetToolsetInternalDestination)" SkipUnchangedFiles="true" />
@@ -61,7 +61,7 @@
 
   <Target Name="RetargetTools">
     <ItemGroup>
-      <ToolRuntimeConfigPath Include="$(RedistLayoutPath)sdk/$(Version)/**/*.runtimeconfig.json" />
+      <ToolRuntimeConfigPath Include="$(RedistInstallerLayoutPath)sdk/$(Version)/**/*.runtimeconfig.json" />
     </ItemGroup>
 
     <!-- Update runtimeconfig files for tools in the SDK to pin the shared frameworks to the one carried by this installer. -->
@@ -72,7 +72,7 @@
   </Target>
 
   <Target Name="GenerateVersionFile">
-    <WriteLinesToFile File="$(SdkOutputDirectory).version"
+    <WriteLinesToFile File="$(InstallerOutputDirectory).version"
                       Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
                       Overwrite="true" />
   </Target>
@@ -88,14 +88,14 @@
       <WorkloadManifestFilesContent Include="samsung.net.sdk.tizen" />
     </ItemGroup>
 
-    <WriteLinesToFile File="$(SdkOutputDirectory)KnownWorkloadManifests.txt"
+    <WriteLinesToFile File="$(InstallerOutputDirectory)KnownWorkloadManifests.txt"
                       Lines="@(WorkloadManifestFilesContent)"
                       Overwrite="true" />
   </Target>
 
   <Target Name="LayoutWorkloadUserLocalMarker"
           Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
+    <WriteLinesToFile File="$(RedistInstallerLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
                       Overwrite="true" />
   </Target>
 
@@ -103,7 +103,7 @@
     <PropertyGroup>
     <NETCoreAppHostPackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</NETCoreAppHostPackageName>
       <AppHostRestorePath>$(NuGetPackageRoot)$(NETCoreAppHostPackageName.ToLowerInvariant())\$(MicrosoftNETCoreAppHostPackageVersion)\</AppHostRestorePath>
-      <AppHostTemplatePath>$(SdkOutputDirectory)AppHostTemplate</AppHostTemplatePath>
+      <AppHostTemplatePath>$(InstallerOutputDirectory)AppHostTemplate</AppHostTemplatePath>
       <AppHostExecutableName>AppHost$(ExeExtension)</AppHostExecutableName>
     </PropertyGroup>
 
@@ -125,17 +125,17 @@
        but the expected performance win did not materialize. This target can take multiple minutes to run with every build, so disabling it until/unless we find good value for it. -->
   <Target Name="GeneratePrecomputedRarCache" DependsOnTargets="LayoutTemplates;LayoutManifests;LayoutBundledTools">
     <ItemGroup>
-      <AssembliesToResolve Include="$(RedistLayoutPath)\**\*.dll" Exclude="$(RedistLayoutPath)\**\native\**\*.dll" />
+      <AssembliesToResolve Include="$(RedistInstallerLayoutPath)\**\*.dll" Exclude="$(RedistInstallerLayoutPath)\**\native\**\*.dll" />
     </ItemGroup>
-    <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="$(ResolveAssemblyReferencesSilent)" AssemblyInformationCacheOutputPath="$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" WarnOrErrorOnTargetArchitectureMismatch="$(ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch)" />
+    <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="$(ResolveAssemblyReferencesSilent)" AssemblyInformationCacheOutputPath="$(RedistInstallerLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" WarnOrErrorOnTargetArchitectureMismatch="$(ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch)" />
   </Target>
 
   <!-- Replace files from the runtime packs with symbolic links to the corresponding shared framework files (and hostfxr) to reduce the size of the runtime pack directories. -->
   <Target Name="ReplaceBundledRuntimePackFilesWithSymbolicLinks" DependsOnTargets="LayoutBundledComponents"
                                                                  Condition="'$(BundleRuntimePacks)' == 'true' and  !$([MSBuild]::IsOSPlatform('WINDOWS'))">
-    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/host/fxr/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
-    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/host/fxr/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
   <Target Name="GenerateLayout"
@@ -164,7 +164,7 @@
 
     <!-- Create "SDK Internal" layout to create the MSI to bundle -->
     <ItemGroup>
-      <SdkInternalFiles Include="$(RedistLayoutPath)sdk/$(Version)/**/*.*" />
+      <SdkInternalFiles Include="$(RedistInstallerLayoutPath)sdk/$(Version)/**/*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(SdkInternalFiles)"

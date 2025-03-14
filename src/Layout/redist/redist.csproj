@@ -15,13 +15,9 @@
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <!-- NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. -->
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1205</MSBuildWarningsAsMessages>
+    <!-- The D.B.targets file is in subfolder so that the tools projects don't import it. -->
+    <DirectoryBuildTargetsPath>$(MSBuildThisFileDirectory)targets\Directory.Build.targets</DirectoryBuildTargetsPath>
   </PropertyGroup>
-
-  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
-  <Import Project="targets\BundledSdks.targets" />
-  <Import Project="targets\PublishDotnetWatch.targets" />
-  <Import Project="targets\GenerateLayout.targets" />
-  <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
 
   <ItemGroup>
     <PackageReference Include="NuGet.Build.Tasks" />

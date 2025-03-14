@@ -1349,7 +1349,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BundledVersionsPropsContent>
   </PropertyGroup>
 
-    <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledVersionsPropsFileName)"
+    <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledVersionsPropsFileName)"
                       Lines="$(BundledVersionsPropsContent)"
                       Overwrite="true" />
   </Target>
@@ -1384,21 +1384,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BundledBundledCliToolsPropsContent>
   </PropertyGroup>
 
-    <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledBundledCliToolsPropsFileName)"
+    <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledBundledCliToolsPropsFileName)"
                       Lines="$(BundledBundledCliToolsPropsContent)"
                       Overwrite="true" />
   </Target>
 
   <Target Name="GenerateBundledMSBuildProps">
     <PropertyGroup>
-      <MinimumMSBuildVersionFile>$(RedistLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
+      <MinimumMSBuildVersionFile>$(RedistInstallerLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
       <BundledMSBuildPropsFileName>Microsoft.NETCoreSdk.BundledMSBuildInformation.props</BundledMSBuildPropsFileName>
       <_ShippingMSBuildVersion>$(MicrosoftBuildVersion)</_ShippingMSBuildVersion>
       <_ShippingMSBuildVersion Condition="$(_ShippingMSBuildVersion.Contains('-'))">$(MicrosoftBuildVersion.Split('-')[0])</_ShippingMSBuildVersion>
       <BundledMSBuildVersion>$(_ShippingMSBuildVersion)</BundledMSBuildVersion>
     </PropertyGroup>
 
-    <Error Text="No MSBuild version file found under '$(RedistLayoutPath)sdk/$(Version)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />
+    <Error Text="No MSBuild version file found under '$(RedistInstallerLayoutPath)sdk/$(Version)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />
 
     <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
       <Output TaskParameter="Lines" PropertyName="MinimumMSBuildVersion"/>
@@ -1432,7 +1432,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </BundledMSBuildPropsFileContent>
     </PropertyGroup>
 
-  <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledMSBuildPropsFileName)"
+  <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledMSBuildPropsFileName)"
     Lines="$(BundledMSBuildPropsFileContent)"
     Overwrite="true" />
   </Target>
@@ -1446,8 +1446,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GenerateSdkRuntimeIdentifierChain
           RuntimeIdentifier="$(PortableProductMonikerRid)"
-          RuntimeIdentifierGraphPath="$(SdkOutputDirectory)PortableRuntimeIdentifierGraph.json"
-          RuntimeIdentifierChainOutputPath="$(SdkOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt" />
+          RuntimeIdentifierGraphPath="$(InstallerOutputDirectory)PortableRuntimeIdentifierGraph.json"
+          RuntimeIdentifierChainOutputPath="$(InstallerOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt" />
 
   </Target>
 
