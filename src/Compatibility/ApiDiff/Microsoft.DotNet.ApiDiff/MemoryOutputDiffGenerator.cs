@@ -82,34 +82,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _endOfLineTrivia = Environment.NewLine == "\r\n" ? SyntaxFactory.CarriageReturnLineFeed : SyntaxFactory.LineFeed;
     }
 
-    private async Task<(SyntaxNode rootNode, SemanticModel model)> GetAssemblyRootNodeAndModelAsync(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
-    {
-        CSharpAssemblyDocumentGeneratorOptions options = new(loader, _symbolFilter, _attributeSymbolFilter)
-        {
-            HideImplicitDefaultConstructors = _hideImplicitDefaultConstructors,
-            ShouldFormat = true,
-            ShouldReduce = false,
-            MetadataReferences = loader.MetadataReferences,
-            DiagnosticOptions = _diagnosticOptions,
-            SyntaxRewriters = [
-                new TypeDeclarationCSharpSyntaxRewriter(_addPartialModifier), // This must be visited BEFORE GlobalPrefixRemover as it depends on the 'global::' prefix to be found
-                GlobalPrefixRemover.Singleton, // And then call this ASAP afterwards so there are fewer identifiers to visit
-                PrimitiveSimplificationRewriter.Singleton,
-                RemoveBodyCSharpSyntaxRewriter.Singleton,
-                SingleLineStatementCSharpSyntaxRewriter.Singleton,
-            ],
-            AdditionalAnnotations = [Formatter.Annotation] // Formatter is needed to fix some spacing
-        };
-
-        CSharpAssemblyDocumentGenerator docGenerator = new(_log, options);
-
-        Document document = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
-        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.RootNodeNotFound, assemblySymbol.Name));
-        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.SemanticModelNotFound, assemblySymbol.Name));
-
-        return (root, model);
-    }
-
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, string> Results => _results.AsReadOnly();
 
@@ -200,6 +172,34 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
         _log.LogMessage($"FINAL TOTAL: {swRun.Elapsed.TotalMilliseconds / 1000.0 / 60.0:F2} mins.");
         swRun.Stop();
+    }
+
+    private async Task<(SyntaxNode rootNode, SemanticModel model)> GetAssemblyRootNodeAndModelAsync(IAssemblySymbolLoader loader, IAssemblySymbol assemblySymbol)
+    {
+        CSharpAssemblyDocumentGeneratorOptions options = new(loader, _symbolFilter, _attributeSymbolFilter)
+        {
+            HideImplicitDefaultConstructors = _hideImplicitDefaultConstructors,
+            ShouldFormat = true,
+            ShouldReduce = false,
+            MetadataReferences = loader.MetadataReferences,
+            DiagnosticOptions = _diagnosticOptions,
+            SyntaxRewriters = [
+                new TypeDeclarationCSharpSyntaxRewriter(_addPartialModifier), // This must be visited BEFORE GlobalPrefixRemover as it depends on the 'global::' prefix to be found
+                GlobalPrefixRemover.Singleton, // And then call this ASAP afterwards so there are fewer identifiers to visit
+                PrimitiveSimplificationRewriter.Singleton,
+                RemoveBodyCSharpSyntaxRewriter.Singleton,
+                SingleLineStatementCSharpSyntaxRewriter.Singleton,
+            ],
+            AdditionalAnnotations = [Formatter.Annotation] // Formatter is needed to fix some spacing
+        };
+
+        CSharpAssemblyDocumentGenerator docGenerator = new(_log, options);
+
+        Document document = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
+        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.RootNodeNotFound, assemblySymbol.Name));
+        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.SemanticModelNotFound, assemblySymbol.Name));
+
+        return (root, model);
     }
 
     private static string GetFinalAssemblyDiff(string assemblyName, string diffText)
