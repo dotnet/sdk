@@ -485,11 +485,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{3FA6F1CB-295B-4414-B18F-93845917A8CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer", "src\Installer\finalizer\finalizer.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer", "src\Layout\finalizer\finalizer.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Installer\redist-installer\redist-installer.proj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Layout\redist-installer\redist-installer.proj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sdk", "src\Installer\pkg\dotnet-sdk.proj", "{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sdk", "src\Layout\pkg\dotnet-sdk.proj", "{8D6A9984-118D-4415-A8FA-AB1F26CF5C44}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VS.Redist.Common.Net.Core.SDK.VSTemplateLocator", "src\Layout\VS.Redist.Common.Net.Core.SDK.VSTemplateLocator\VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.proj", "{0CBA5FB8-71A3-457A-89F3-E52B9602164A}"
 EndProject
