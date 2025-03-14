@@ -189,4 +189,7 @@
   <data name="SerializerNotFound" xml:space="preserve">
     <value>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</value>
   </data>
+  <data name="ListOutputFormatOptionDescription" xml:space="preserve">
+    <value>Output format for the list command.</value>
+  </data>
 </root>

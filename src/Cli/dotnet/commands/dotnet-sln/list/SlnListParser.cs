@@ -17,7 +17,7 @@ public static class SlnListParser
 
     public static readonly CliOption<SlnListOutputFormat> OutputFormatOption = new("--format")
     {
-        Description = "TODO: FORMAT"
+        Description = LocalizableStrings.ListOutputFormatOptionDescription,
     };
 
     private static readonly CliCommand Command = ConstructCommand();
