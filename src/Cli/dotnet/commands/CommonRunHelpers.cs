@@ -23,14 +23,16 @@ internal static class CommonRunHelpers
         var propertyParseResult = propertyParsingConfiguration.Parse(args);
         var propertyValues = propertyParseResult.GetValue(CommonOptions.PropertiesOption);
 
-        if (propertyValues != null)
+        if (propertyValues is null)
         {
-            foreach (var property in propertyValues)
+            return;
+        }
+
+        foreach (var property in propertyValues)
+        {
+            foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
             {
-                foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
-                {
-                    globalProperties[key] = value;
-                }
+                globalProperties[key] = value;
             }
         }
     }

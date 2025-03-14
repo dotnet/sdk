@@ -23,7 +23,7 @@ internal record RunProperties(string? RunCommand, string? RunArguments, string? 
         string runArguments = project.GetPropertyValue("RunArguments");
         string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
 
-        if (applicationArgs.Any())
+        if (applicationArgs.Length != 0)
         {
             runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs);
         }
