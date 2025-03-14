@@ -89,22 +89,21 @@
 
   <!-- Only publish this file from win-x64 so that we don't end up with duplicates. -->
   <ItemGroup Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" IsShipping="true" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" IsShipping="true" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" IsShipping="true" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.exe" IsShipping="true" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.deb" IsShipping="true" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.rpm" IsShipping="true" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" IsShipping="true" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" IsShipping="true" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.svg" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.exe" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.deb" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.rpm" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
 
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.swr" IsShipping="false" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.msi" IsShipping="false" />

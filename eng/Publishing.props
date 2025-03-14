@@ -45,4 +45,18 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="GenerateVersionBadge"
+          Condition="'$(PublishBinariesAndBadge)' == 'true' and
+                     '$(PgoInstrument)' != 'true' and
+                     ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')"
+          BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
+    <MSBuild Projects="$(RepositoryEngineeringDir)Badge.proj" Targets="GenerateVersionBadge">
+      <Output TaskParameter="TargetOutputs" ItemName="VersionBadge" />
+    </MSBuild>
+    
+    <ItemGroup>
+      <Artifact Include="@(VersionBadge)" Kind="Blob" />
+    </ItemGroup>
+  </Target>
+
 </Project>
