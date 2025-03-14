@@ -5,27 +5,30 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Sln.List;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+public static class SlnListParser
 {
-    public static class SlnListParser
+    public static readonly CliOption<bool> SolutionFolderOption = new("--solution-folders")
     {
-        public static readonly CliOption<bool> SolutionFolderOption = new("--solution-folders") { Description = LocalizableStrings.ListSolutionFoldersArgumentDescription };
+        Description = LocalizableStrings.ListSolutionFoldersArgumentDescription,
+        Arity = ArgumentArity.Zero
+    };
 
-        private static readonly CliCommand Command = ConstructCommand();
+    private static readonly CliCommand Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+    public static CliCommand GetCommand()
+    {
+        return Command;
+    }
 
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("list", LocalizableStrings.ListAppFullName);
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("list", LocalizableStrings.ListAppFullName);
 
-            command.Options.Add(SolutionFolderOption);
-            command.SetAction((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());
+        command.Options.Add(SolutionFolderOption);
+        command.SetAction((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());
 
-            return command;
-        }
+        return command;
     }
 }

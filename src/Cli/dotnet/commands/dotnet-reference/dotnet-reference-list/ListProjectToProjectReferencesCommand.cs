@@ -4,46 +4,46 @@
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Reference.List
+namespace Microsoft.DotNet.Tools.Reference.List;
+
+internal class ListProjectToProjectReferencesCommand : CommandBase
 {
-    internal class ListProjectToProjectReferencesCommand : CommandBase
+    private readonly string _fileOrDirectory;
+
+    public ListProjectToProjectReferencesCommand(
+        ParseResult parseResult) : base(parseResult)
     {
-        private readonly string _fileOrDirectory;
+        ShowHelpOrErrorIfAppropriate(parseResult);
 
-        public ListProjectToProjectReferencesCommand(
-            ParseResult parseResult) : base(parseResult)
+        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+            parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
+            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
+    }
+
+    public override int Execute()
+    {
+        var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
+
+        var p2ps = msbuildProj.GetProjectToProjectReferences();
+        if (!p2ps.Any())
         {
-            ShowHelpOrErrorIfAppropriate(parseResult);
-
-            _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
-                parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-                parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
-        }
-
-        public override int Execute()
-        {
-            var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
-
-            var p2ps = msbuildProj.GetProjectToProjectReferences();
-            if (!p2ps.Any())
-            {
-                Reporter.Output.WriteLine(string.Format(
-                                              CommonLocalizableStrings.NoReferencesFound,
-                                              CommonLocalizableStrings.P2P,
-                                              _fileOrDirectory));
-                return 0;
-            }
-
-            Reporter.Output.WriteLine($"{CommonLocalizableStrings.ProjectReferenceOneOrMore}");
-            Reporter.Output.WriteLine(new string('-', CommonLocalizableStrings.ProjectReferenceOneOrMore.Length));
-            foreach (var p2p in p2ps)
-            {
-                Reporter.Output.WriteLine(p2p.Include);
-            }
-
+            Reporter.Output.WriteLine(string.Format(
+                                          CommonLocalizableStrings.NoReferencesFound,
+                                          CommonLocalizableStrings.P2P,
+                                          _fileOrDirectory));
             return 0;
         }
+
+        Reporter.Output.WriteLine($"{CommonLocalizableStrings.ProjectReferenceOneOrMore}");
+        Reporter.Output.WriteLine(new string('-', CommonLocalizableStrings.ProjectReferenceOneOrMore.Length));
+        foreach (var p2p in p2ps)
+        {
+            Reporter.Output.WriteLine(p2p.Include);
+        }
+
+        return 0;
     }
 }

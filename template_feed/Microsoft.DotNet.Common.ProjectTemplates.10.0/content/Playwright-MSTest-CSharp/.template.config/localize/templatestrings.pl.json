@@ -31,7 +31,7 @@
   "symbols/UseMSTestSdk/displayName": "Korzystaj z narzędzia MSTest.Sdk",
   "symbols/TestRunner/description": "Wybierz moduł uruchamiający/platformę. Więcej informacji znajdziesz na https://aka.ms/mstest/sdk/extensions-profile",
   "symbols/TestRunner/displayName": "Moduł uruchamiający",
-  "symbols/TestRunner/choices/MSTest/description": "Korzystanie z modułu uruchamiającego MSTest (Microsoft.Testing.Platform)",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
   "symbols/TestRunner/choices/VSTest/description": "Korzystanie z platformy VSTest",
   "symbols/CoverageTool/description": "Narzędzie pokrycia do użycia w projekcie.",
   "symbols/CoverageTool/displayName": "Narzędzie pokrycia",

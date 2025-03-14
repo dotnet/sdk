@@ -1,8 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <!-- The FullNugetVersion.version file only gets produced in the initial build pass. -->
-    <RelativeBlobPathParent Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">Sdk/$([System.IO.File]::ReadAllText('$(ArtifactsTmpDir)FullNugetVersion.version').Trim())</RelativeBlobPathParent>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
   </PropertyGroup>
 
@@ -60,7 +58,6 @@
     <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
-    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="CommandLine.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
@@ -74,6 +71,10 @@
     <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <FileSignInfo Include="StreamJsonRpc.dll" CertificateName="MicrosoftSHA2" />
+  </ItemGroup>
+
   <!-- Filter out any test packages from ItemsToSign -->
   <ItemGroup>
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
@@ -83,10 +84,16 @@
     <Artifact Include="$(ArtifactsPackagesDir)**\VS.Tools.*.nupkg;
                        $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
               IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
-              PublishFlatContainer="false" />
+              Kind="Package" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">
+  <!-- Only publish this file from win-x64 so that we don't end up with duplicates. -->
+  <ItemGroup Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" IsShipping="true" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" IsShipping="true" />
+  </ItemGroup>
+
+  <ItemGroup>
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" IsShipping="true" />
@@ -96,9 +103,6 @@
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" IsShipping="true" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" IsShipping="true" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.svg" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
-    <!-- Only publish this file from windows x64 so that we don't end up with duplicates -->
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
-    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" IsShipping="true" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
 
@@ -107,9 +111,10 @@
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
     <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.pkg" IsShipping="false" />
+  </ItemGroup>
 
-    <Artifact Include="@(SdkArtifact)"
-              RelativeBlobPath="$(RelativeBlobPathParent)/%(Filename)%(Extension)">
+  <ItemGroup>
+    <Artifact Include="@(SdkArtifact)" Kind="Blob">
       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>
