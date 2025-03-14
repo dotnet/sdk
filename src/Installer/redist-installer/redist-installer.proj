@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <ProjectReference Include="$(RepoRoot)src\Installer\finalizer\finalizer-build.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Installer\finalizer\finalizer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
