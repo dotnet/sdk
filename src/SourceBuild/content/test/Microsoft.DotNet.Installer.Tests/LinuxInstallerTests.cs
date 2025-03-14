@@ -55,7 +55,9 @@ public class LinuxInstallerTests : IDisposable
         _contextDir = Path.Combine(_tmpDir, Path.GetRandomFileName());
         Directory.CreateDirectory(_contextDir);
 
-        _excludeLinuxArch = Config.Architecture == Architecture.X64 ? "arm64" : "x64";
+        _excludeLinuxArch = Config.Architecture == Architecture.X64 ?
+                                                   Architecture.Arm64.ToString().ToLower() :
+                                                   Architecture.X64.ToString().ToLower();
     }
 
     public void Dispose()
