@@ -151,20 +151,16 @@ internal sealed class MSBuildHandler : IDisposable
             return;
         }
 
-        var logMessageBuilder = new StringBuilder();
-
         foreach (var module in modules)
         {
-            logMessageBuilder.AppendLine($"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.TargetPath}: {module.TargetPath}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
-            logMessageBuilder.AppendLine();
+            Logger.LogTrace($"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
+            Logger.LogTrace($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
+            Logger.LogTrace($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
+            Logger.LogTrace($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
+            Logger.LogTrace($"{ProjectProperties.TargetPath}: {module.TargetPath}");
+            Logger.LogTrace($"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
+            Logger.LogTrace("");
         }
-
-        Logger.LogTrace(() => logMessageBuilder.ToString());
     }
 
     public void Dispose()
