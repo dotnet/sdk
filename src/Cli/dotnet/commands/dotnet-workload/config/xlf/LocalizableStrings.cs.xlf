@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="cs" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CommandDescription">
+        <source>Modify or display workload configuration values.
+To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</source>
+        <target state="translated">Upravit nebo zobrazit hodnoty konfigurace úlohy.
+Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řádku bez zadání hodnoty.  Například: dotnet workload config --update-mode</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateModeDescription">
+        <source>Controls whether updates should look for workload sets or the latest version of each individual manifest.</source>
+        <target state="translated">Určuje, zda mají aktualizace vyhledávat sady úloh nebo nejnovější verzi každého jednotlivého manifestu.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
