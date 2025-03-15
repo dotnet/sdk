@@ -128,8 +128,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.4-servicing.25164.2</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
-    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.4-servicing.25164.2</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>9.0.4-servicing.25164.6</VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion>
+    <VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>9.0.4-servicing.25164.6</VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion>
     <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>9.0.4</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
     <MicrosoftWindowsDesktopAppRefPackageVersion>9.0.4</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
