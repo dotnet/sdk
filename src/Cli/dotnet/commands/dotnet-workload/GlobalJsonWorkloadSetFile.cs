@@ -102,7 +102,7 @@ internal class GlobalJsonWorkloadSetsFile
     {
         try
         {
-            return SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath);
+            return SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath, out _);
         }
         catch (SdkDirectoryWorkloadManifestProvider.JsonFormatException)
         {

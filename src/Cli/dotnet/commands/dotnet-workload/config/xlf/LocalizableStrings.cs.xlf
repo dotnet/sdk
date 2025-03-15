@@ -14,6 +14,11 @@ Pokud chcete zobrazit hodnotu, zadejte odpovídající volbu příkazového řá
         <target state="translated">Určuje, zda mají aktualizace vyhledávat sady úloh nebo nejnovější verzi každého jednotlivého manifestu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
+        <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
+        <target state="new">Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

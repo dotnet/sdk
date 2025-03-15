@@ -292,9 +292,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void UpdateViaWorkloadSet(bool upgrade)
+        [InlineData(true, true, null)]
+        [InlineData(false, true, null)]
+        [InlineData(true, true, false)]
+        [InlineData(true, false, true)]
+        public void UpdateViaWorkloadSet(bool upgrade, bool? installStateUseWorkloadSet, bool? globalJsonValue)
         {
             var testDir = _testAssetsManager.CreateTestDirectory(identifier: upgrade.ToString());
             string dotnetDir = Path.Combine(testDir.Path, "dotnet");
@@ -323,11 +325,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 ],
                 fromWorkloadSet: true, workloadSetVersion: workloadSetVersion);
             var resolverFactory = new MockWorkloadResolverFactory(dotnetDir, sdkVersion, workloadResolver, userProfileDir);
-            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater);
+            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater, shouldUseWorkloadSetsFromGlobalJson: globalJsonValue);
 
             var installStatePath = Path.Combine(dotnetDir, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkVersion, "InstallState", "default.json");
             var contents = new InstallStateContents();
-            contents.UseWorkloadSets = true;
+            contents.UseWorkloadSets = installStateUseWorkloadSet;
 
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
             File.WriteAllText(installStatePath, contents.ToString());
@@ -335,6 +337,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             workloadInstaller.InstalledManifests.Count.Should().Be(1);
             workloadInstaller.InstalledManifests[0].manifestUpdate.NewVersion.ToString().Should().Be("2.3.4");
+
+            // This splits between whether installation occurred via workload set or loose manifests. (The previous test incorrectly assumed that
+            // only if the upgrade were via workload sets would the manifest be updated like that, but the MockWorkloadManifestUpdater actually
+            // doesn't really care).
+            workloadManifestUpdater.CalculateManifestUpdatesCallCount.Should().Be(globalJsonValue ?? installStateUseWorkloadSet ?? true ? 0 : 1);
         }
 
         [Fact]

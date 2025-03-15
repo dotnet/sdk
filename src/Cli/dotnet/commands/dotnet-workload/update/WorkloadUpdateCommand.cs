@@ -32,10 +32,11 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         IWorkloadManifestUpdater workloadManifestUpdater = null,
         string tempDirPath = null,
         bool isRestoring = false,
-        WorkloadHistoryRecorder recorder = null)
+        WorkloadHistoryRecorder recorder = null,
+        bool? shouldUseWorkloadSetsFromGlobalJson = null)
         : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
               nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
-              tempDirPath: tempDirPath)
+              tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson)
 
     {
         
@@ -96,9 +97,10 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         }
         else if (_adManifestOnlyOption)
         {
+            bool? shouldUseWorkloadSetsPerGlobalJson = _shouldUseWorkloadSets ?? (SpecifiedWorkloadSetVersionInGlobalJson ? true : null);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
                 _includePreviews,
-                ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
+                shouldUseWorkloadSetsPerGlobalJson ?? ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
                 string.IsNullOrWhiteSpace(_fromCacheOption) ?
                     null :
                     new DirectoryPath(_fromCacheOption))

@@ -79,7 +79,8 @@ internal class WorkloadListCommand : WorkloadCommandBase
             Reporter.WriteLine();
             var shouldPrintTable = versionInfo.IsInstalled;
             var shouldShowWorkloadSetVersion = versionInfo.GlobalJsonPath is not null ||
-                InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.UserLocalPath), "default.json")).ShouldUseWorkloadSets();
+                versionInfo.GlobalJsonSpecifiesWorkloadSets == true ||
+                WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.UserLocalPath);
 
             if (shouldShowWorkloadSetVersion)
             {

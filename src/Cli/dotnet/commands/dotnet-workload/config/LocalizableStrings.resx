@@ -124,4 +124,7 @@ To display a value, specify the corresponding command-line option without provid
   <data name="UpdateModeDescription" xml:space="preserve">
     <value>Controls whether updates should look for workload sets or the latest version of each individual manifest.</value>
   </data>
+  <data name="UpdateModeDoesNotMatchGlobalJson" xml:space="preserve">
+    <value>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</value>
+  </data>
 </root>

@@ -62,6 +62,16 @@
         <target state="translated">워크로드를 설치하지 못했습니다. 설치된 팩을 롤백하는 중...</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion">
+        <source>'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</source>
+        <target state="new">'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion">
+        <source>'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</source>
+        <target state="new">'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateFailed">
         <source>Workload '{0}' failed to update due to the following:</source>
         <target state="translated">다음으로 인해 워크로드 '{0}'을(를) 업데이트하지 못했습니다.</target>

@@ -14,6 +14,11 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">Управляет тем, должны ли обновления искать наборы рабочих нагрузок или последнюю версию каждого отдельного манифеста.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
+        <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
+        <target state="new">Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

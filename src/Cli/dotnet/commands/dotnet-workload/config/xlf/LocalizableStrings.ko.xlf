@@ -14,6 +14,11 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">업데이트에서 워크로드 집합을 찾을지 또는 각 개별 매니페스트의 최신 버전을 찾을지 여부를 제어합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
+        <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
+        <target state="new">Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

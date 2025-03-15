@@ -6,6 +6,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -53,17 +54,34 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
         //  It seems that the parser doesn't give us a good way to do that, however
         if (_hasUpdateMode)
         {
+            string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+            var globalJsonVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath, out bool? shouldUseWorkloadSets);
+            shouldUseWorkloadSets ??= string.IsNullOrWhiteSpace(globalJsonVersion) ? null : true;
             if (WorkloadConfigCommandParser.UpdateMode_WorkloadSet.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))
             {
-                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+                if (shouldUseWorkloadSets == false)
+                {
+                    Reporter.WriteLine(string.Format(LocalizableStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_WorkloadSet, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_Manifests).Yellow());
+                }
+                else
+                {
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+                }
             }
             else if (WorkloadConfigCommandParser.UpdateMode_Manifests.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))
             {
-                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
+                if (shouldUseWorkloadSets == true)
+                {
+                    Reporter.WriteLine(string.Format(LocalizableStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_Manifests, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_WorkloadSet).Yellow());
+                }
+                else
+                {
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
+                }
             }
             else if (string.IsNullOrEmpty(_updateMode))
             {
-                if (InstallingWorkloadCommand.ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+                if (shouldUseWorkloadSets ?? InstallingWorkloadCommand.ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
                 {
                     Reporter.WriteLine(WorkloadConfigCommandParser.UpdateMode_WorkloadSet);
                 }
