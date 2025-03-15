@@ -51,11 +51,6 @@ Nastavte odlišné názvy profilů.</target>
         <target state="translated">Profil spuštění s názvem {0} neexistuje.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoTopLevelStatements">
-        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
-        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">Pomocí možnosti -p je možné v jednu chvíli zadat pouze jeden projekt.</target>

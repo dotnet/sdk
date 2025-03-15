@@ -40,6 +40,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "nuget",
                 "pack",
                 "package",
+                "project",
                 "publish",
                 "reference",
                 "restore",

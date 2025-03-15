@@ -68,9 +68,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     private static readonly string s_runCommandExceptionNoProjects =
         "Couldn't find a project to run.";
 
-    private static readonly string s_noTopLevelStatements =
-        "Cannot run a file without top-level statements and without a project:";
-
     private static bool HasCaseInsensitiveFileSystem
     {
         get
@@ -300,7 +297,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_noTopLevelStatements);
+            .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
     }
 
     /// <summary>
@@ -350,7 +347,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_noTopLevelStatements);
+            .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
     }
 
     /// <summary>
@@ -401,7 +398,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Only top-level statements are supported for now; Main method is not.
+    /// Main method is supported just like top-level statements.
     /// </summary>
     [Fact]
     public void MainMethod()
@@ -412,12 +409,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(s_noTopLevelStatements);
+            .Should().Pass()
+            .And.HaveStdOut("Hello World!");
     }
 
     /// <summary>
-    /// Empty file does not contain top-level statements, so that's an error.
+    /// Empty file does not contain entry point, so that's an error.
     /// </summary>
     [Fact]
     public void EmptyFile()
@@ -429,7 +426,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_noTopLevelStatements);
+            .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
     }
 
     /// <summary>
@@ -743,5 +740,39 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Hello from Program
                 Message: 'TestProfileMessage2'
                 """);
+    }
+
+    [Fact]
+    public void Define_01()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #if MY_DEFINE
+            Console.WriteLine("Test output");
+            #endif
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:DefineConstants=MY_DEFINE")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Test output");
+    }
+
+    [Fact]
+    public void Define_02()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #if !MY_DEFINE
+            Console.WriteLine("Test output");
+            #endif
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-p:DefineConstants=MY_DEFINE")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
     }
 }

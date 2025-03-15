@@ -141,51 +141,70 @@ internal sealed class VirtualProjectBuildingCommand
         });
     }
 
+    // Kept in sync with the default `dotnet new console` project file (enforced by `DotnetProjectAddTests.SameAsTemplate`).
+    private const string CommonProjectProperties = """
+            <OutputType>Exe</OutputType>
+            <TargetFramework>net10.0</TargetFramework>
+            <ImplicitUsings>enable</ImplicitUsings>
+            <Nullable>enable</Nullable>
+        """;
+
+    public static string GetNonVirtualProjectFileText()
+    {
+        return $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+
+              <PropertyGroup>
+            {CommonProjectProperties}
+              </PropertyGroup>
+
+            </Project>
+
+            """;
+    }
+
     private ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
     {
         var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
-        var projectFileText = """
+        var projectFileText = $"""
             <Project>
-                <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
-                <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+              <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+              <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
-                <PropertyGroup>
-                    <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
-                    <ImplicitUsings>enable</ImplicitUsings>
-                    <Nullable>enable</Nullable>
+              <PropertyGroup>
+            {CommonProjectProperties}
 
-                    <EnableDefaultItems>false</EnableDefaultItems>
-                </PropertyGroup>
+                <EnableDefaultItems>false</EnableDefaultItems>
+              </PropertyGroup>
 
-                <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+              <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-                <!--
-                    Override targets which don't work with project files that are not present on disk.
-                    See https://github.com/NuGet/Home/issues/14148.
-                -->
+              <!--
+                Override targets which don't work with project files that are not present on disk.
+                See https://github.com/NuGet/Home/issues/14148.
+              -->
 
-                <Target Name="_FilterRestoreGraphProjectInputItems"
-                        DependsOnTargets="_LoadRestoreGraphEntryPoints"
-                        Returns="@(FilteredRestoreGraphProjectInputItems)">
-                    <ItemGroup>
-                        <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
-                    </ItemGroup>
-                </Target>
+              <Target Name="_FilterRestoreGraphProjectInputItems"
+                      DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                      Returns="@(FilteredRestoreGraphProjectInputItems)">
+                <ItemGroup>
+                  <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                </ItemGroup>
+              </Target>
 
-                <Target Name="_GetAllRestoreProjectPathItems"
-                        DependsOnTargets="_FilterRestoreGraphProjectInputItems"
-                        Returns="@(_RestoreProjectPathItems)">
-                    <ItemGroup>
-                        <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
-                    </ItemGroup>
-                </Target>
+              <Target Name="_GetAllRestoreProjectPathItems"
+                      DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                      Returns="@(_RestoreProjectPathItems)">
+                <ItemGroup>
+                  <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                </ItemGroup>
+              </Target>
 
-                <Target Name="_GenerateRestoreGraph"
-                        DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                        Returns="@(_RestoreGraphEntry)">
-                    <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
-                </Target>
+              <Target Name="_GenerateRestoreGraph"
+                      DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                      Returns="@(_RestoreGraphEntry)">
+                <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+              </Target>
             </Project>
             """;
         ProjectRootElement projectRoot;
@@ -196,5 +215,10 @@ internal sealed class VirtualProjectBuildingCommand
         projectRoot.AddItem(itemType: "Compile", include: EntryPointFileFullPath);
         projectRoot.FullPath = projectFileFullPath;
         return projectRoot;
+    }
+
+    public static bool IsValidEntryPointPath(string entryPointFilePath)
+    {
+        return entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) && File.Exists(entryPointFilePath);
     }
 }

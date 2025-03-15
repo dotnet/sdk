@@ -43,6 +43,7 @@ public static class Parser
         PackCommandParser.GetCommand(),
         PackageCommandParser.GetCommand(),
         ParseCommandParser.GetCommand(),
+        ProjectCommandParser.GetCommand(),
         PublishCommandParser.GetCommand(),
         ReferenceCommandParser.GetCommand(),
         RemoveCommandParser.GetCommand(),

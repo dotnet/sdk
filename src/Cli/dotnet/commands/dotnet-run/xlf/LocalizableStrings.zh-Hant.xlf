@@ -51,11 +51,6 @@ Make the profile names distinct.</source>
         <target state="translated">名稱為 '{0}' 的啟動設定檔不存在。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoTopLevelStatements">
-        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
-        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">使用 -p 選項時，一次只能指定一個專案。</target>
