@@ -66,7 +66,7 @@
     <MicrosoftNETILLinkTasksPackageVersion>8.0.15</MicrosoftNETILLinkTasksPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>8.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>8.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
-    <MicrosoftExtensionsObjectPoolPackageVersion>8.0.14</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsObjectPoolPackageVersion>8.0.15</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>8.0.0</MicrosoftWin32SystemEventsPackageVersion>
     <SystemCompositionAttributedModelPackageVersion>8.0.0</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>8.0.0</SystemCompositionConventionPackageVersion>
@@ -169,13 +169,13 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefPackageVersion>8.0.14</MicrosoftAspNetCoreAppRefPackageVersion>
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>8.0.14-servicing.25112.21</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
-    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>8.0.14-servicing.25112.21</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>8.0.14-servicing.25112.21</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>8.0.14-servicing.25112.21</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>8.0.14-servicing.25112.21</MicrosoftAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>8.0.14</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreAppRefPackageVersion>8.0.15</MicrosoftAspNetCoreAppRefPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>8.0.15-servicing.25165.2</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>8.0.15-servicing.25165.2</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>8.0.15-servicing.25165.2</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>8.0.15-servicing.25165.2</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>8.0.15-servicing.25165.2</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>8.0.15</MicrosoftAspNetCoreTestHostPackageVersion>
   </PropertyGroup>
   <!-- Dependencies from https://github.com/dotnet/razor -->
   <PropertyGroup>
