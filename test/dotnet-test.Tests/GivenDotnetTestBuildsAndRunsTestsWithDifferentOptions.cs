@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.DirectoryOption.Name, testDirectoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }

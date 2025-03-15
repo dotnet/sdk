@@ -1,23 +1,62 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Test;
+using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
+
+using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli;
 
 internal static class ValidationUtility
 {
+    public static void ValidateMutuallyExclusiveOptions(ParseResult parseResult)
+    {
+        ValidatePathOptions(parseResult);
+        ValidateOptionsIrrelevantToModulesFilter(parseResult);
+
+        static void ValidatePathOptions(ParseResult parseResult)
+        {
+            var count = 0;
+            if (parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
+                count++;
+
+            if (parseResult.HasOption(TestingPlatformOptions.DirectoryOption))
+                count++;
+
+            if (parseResult.HasOption(TestingPlatformOptions.SolutionOption))
+                count++;
+
+            if (parseResult.HasOption(TestingPlatformOptions.ProjectOption))
+                count++;
+
+            if (count > 1)
+                throw new GracefulException(LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+        }
+
+        static void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult)
+        {
+            if (!parseResult.HasOption(TestingPlatformOptions.TestModulesFilterOption))
+            {
+                return;
+            }
+
+            if (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
+                parseResult.HasOption(TestingPlatformOptions.ConfigurationOption) ||
+                parseResult.HasOption(TestingPlatformOptions.FrameworkOption) ||
+                parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
+                parseResult.HasOption(CommonOptions.RuntimeOption)
+                )
+            {
+                throw new GracefulException(LocalizableStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
+            }
+        }
+    }
     public static bool ValidateBuildPathOptions(BuildOptions buildPathOptions, TerminalTestReporter output)
     {
         PathOptions pathOptions = buildPathOptions.PathOptions;
-        if ((!string.IsNullOrEmpty(pathOptions.ProjectPath) && !string.IsNullOrEmpty(pathOptions.SolutionPath)) ||
-            (!string.IsNullOrEmpty(pathOptions.ProjectPath) && !string.IsNullOrEmpty(pathOptions.DirectoryPath)) ||
-            (!string.IsNullOrEmpty(pathOptions.SolutionPath) && !string.IsNullOrEmpty(pathOptions.DirectoryPath)))
-        {
-            output.WriteMessage(LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
-            return false;
-        }
 
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {

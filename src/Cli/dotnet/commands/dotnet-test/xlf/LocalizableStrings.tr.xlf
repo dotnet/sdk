@@ -159,8 +159,8 @@ Zaman aşımı davranışı veri tabanlı testlerle birlikte kullanıldığında
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
-        <source>Specify either the project, solution or directory option.</source>
-        <target state="new">Specify either the project, solution or directory option.</target>
+        <source>Specify either the project, solution, directory, or test modules option.</source>
+        <target state="new">Specify either the project, solution, directory, or test modules option.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
@@ -216,6 +216,11 @@ Zaman aşımı davranışı veri tabanlı testlerle birlikte kullanıldığında
       <trans-unit id="CmdNumberName">
         <source>NUMBER</source>
         <target state="new">NUMBER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
+        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
+        <target state="new">The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
