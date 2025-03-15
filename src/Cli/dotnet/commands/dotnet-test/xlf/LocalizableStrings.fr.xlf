@@ -159,8 +159,8 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
-        <source>Specify either the project, solution or directory option.</source>
-        <target state="new">Specify either the project, solution or directory option.</target>
+        <source>Specify either the project, solution, directory, or test modules option.</source>
+        <target state="new">Specify either the project, solution, directory, or test modules option.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
@@ -216,6 +216,11 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       <trans-unit id="CmdNumberName">
         <source>NUMBER</source>
         <target state="new">NUMBER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
+        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
+        <target state="new">The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
