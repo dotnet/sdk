@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli.CommandLineValidation;
+namespace Microsoft.DotNet.Cli;
 
 internal class CommandParsingException : Exception
 {

@@ -327,6 +327,11 @@ Der Standardwert lautet FALSE. Wenn sie jedoch auf .NET 7 oder niedriger abziele
         <target state="translated">Die Tooleinstellungsdatei ist für das Tool „{0}“ nicht vorhanden.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="new">Unrecognized command or argument '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Aktualisieren</target>

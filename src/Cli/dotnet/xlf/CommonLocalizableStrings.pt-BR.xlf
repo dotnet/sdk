@@ -327,6 +327,11 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">O arquivo de configurações de ferramenta não existe para a ferramenta {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="new">Unrecognized command or argument '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Atualização</target>

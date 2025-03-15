@@ -61,8 +61,8 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, "one.sln", "two.sln", "three.sln", "list");
             cmd.Should().Fail();
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
-{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three.sln")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
+{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "three.sln")}");
         }
 
         [Theory]
