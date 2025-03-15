@@ -64,6 +64,8 @@ stages:
     - ${{ each stage in parameters.verticalsStages }}:
       - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
         - ${{ stage.stage }}
+    variables:
+    - template: ../variables/vmr-build.yml
     jobs:
       - job: FinalJoin
         displayName: Final Build Pass
