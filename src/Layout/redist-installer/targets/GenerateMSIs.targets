@@ -41,7 +41,7 @@
     <SdkGenerateBundlePowershellScript>$(SdkPkgSourcesRootDirectory)/generatebundle.ps1</SdkGenerateBundlePowershellScript>
     <GenerateNupkgPowershellScript>$(SdkPkgSourcesRootDirectory)/generatenupkg.ps1</GenerateNupkgPowershellScript>
 
-    <FinalizerExe>$(ArtifactsBinDir)finalizer/$(Architecture)/$(Configuration)/bin/finalizer.exe</FinalizerExe>
+    <FinalizerExe>$(ArtifactsBinDir)finalizer\win-$(Architecture)\$(Configuration)\bin\finalizer.exe</FinalizerExe>
 
     <!-- Temp directory for light command layouts -->
     <LightCommandObjDir>$(ArtifactsObjDir)LightCommandPackages</LightCommandObjDir>
