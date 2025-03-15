@@ -19,8 +19,9 @@ Arguments:
   <SLN_FILE>    The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  --solution-folders  Display solution folder paths.
-  -?, -h, --help    Show command line help.";
+  --solution-folders        Display solution folder paths.
+  --format <Json|Raw|Text>  Output format for the list command.
+  -?, -h, --help            Show command line help.";
 
 
         public GivenDotnetSlnList(ITestOutputHelper log) : base(log)
