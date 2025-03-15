@@ -14,6 +14,7 @@ steps:
     /p:VerticalArtifactsBaseFolder=$(Build.ArtifactStagingDirectory)/VerticalArtifacts
     /p:OutputFolder=${{ parameters.outputFolder }}
   displayName: Join Verticals
+  workingDirectory: ${{ variables.vmrPath }}
 - task: CopyFiles@2
   displayName: Copy logs for upload
   inputs:

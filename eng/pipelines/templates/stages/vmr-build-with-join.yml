@@ -9,6 +9,10 @@ parameters:
 # When we should run the final join stage and the stages that depend on it.
 - name: finalJoinCondition
   type: boolean
+# True when build is running from dotnet/dotnet directly
+- name: isBuiltFromVmr
+  type: boolean
+  default: false
 # These are not expected to be passed it but rather just object variables reused below
 - name: pool_Linux
   type: object
@@ -106,6 +110,13 @@ stages:
             displayName: Publish Build Logs
             sbomEnabled: false
             condition: succeededOrFailed()
+        variables:
+        - ${{ if parameters.isBuiltFromVmr }}:
+          - name: vmrPath
+            value: $(Build.SourcesDirectory)
+        - ${{ else }}:
+          - name: vmrPath
+            value: $(Agent.BuildDirectory)/vmr
         steps:
         - template: ../steps/vmr-join-verticals.yml
           parameters:
