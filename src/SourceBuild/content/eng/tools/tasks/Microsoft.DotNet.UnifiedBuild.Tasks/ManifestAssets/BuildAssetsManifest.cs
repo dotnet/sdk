@@ -147,7 +147,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
         /// </summary>
         public bool NonShipping
         {
-            get { return GetAttribute(nameof(NonShipping)) == bool.TrueString; }
+            get { return GetAttribute(nameof(NonShipping))?.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase) ?? false; }
             set { SetAttribute(nameof(NonShipping), value.ToString(CultureInfo.InvariantCulture)); }
         }
 
@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
         /// </summary>
         public bool DotNetReleaseShipping
         {
-            get { return GetAttribute(nameof(DotNetReleaseShipping)) == bool.TrueString; }
+            get { return GetAttribute(nameof(DotNetReleaseShipping))?.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase) ?? false; }
             set { SetAttribute(nameof(DotNetReleaseShipping), value.ToString(CultureInfo.InvariantCulture)); }
         }
 
