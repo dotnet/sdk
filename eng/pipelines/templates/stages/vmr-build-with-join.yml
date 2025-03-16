@@ -11,7 +11,6 @@ parameters:
   type: boolean
 
 #### sdk parameters ####
-
 - name: isBuiltFromVmr
   displayName: True when build is running from dotnet/dotnet directly
   type: boolean
@@ -88,7 +87,7 @@ stages:
             # Download the artifacts from every job in every vertical stage under VerticalArtifacts
             - ${{ each stage in parameters.verticalsStages }}:
               - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
-                - ${{ each vertical in stage.jobs.*.job }}:
+                - ${{ each vertical in stage.jobs }}:
                   - input: pipelineArtifact
                     path: $(Build.ArtifactStagingDirectory)/VerticalArtifacts/${{ vertical.job }}
                     artifactName: ${{ vertical.job }}_Artifacts
@@ -124,6 +123,9 @@ stages:
         - ${{ else }}:
           - name: vmrPath
             value: $(Agent.BuildDirectory)/vmr
+        - template: ../variables/vmr-build.yml
+          parameters:
+            vmrBranch: ${{ parameters.vmrBranch }}
         steps:
         - ${{ if not(parameters.isBuiltFromVmr) }}:
           - template: ../steps/vmr-prepare.yml@self
@@ -131,13 +133,13 @@ stages:
               ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
                 vmrBranch: $(System.PullRequest.TargetBranch)
               ${{ else }}:
-                vmrBranch: ${{ parameters.vmrBranch }}
+                vmrBranch: ${{ variables.VmrBranch }}
 
           - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
             - template: ../steps/vmr-pull-updates.yml@self
               parameters:
                 vmrPath: $(vmrPath)
-                vmrBranch: ${{ parameters.vmrBranch }}
+                vmrBranch: ${{ variables.VmrBranch }}
                 targetRef: $(Build.SourceVersion) # Synchronize the current sdk commit
         - template: ../steps/vmr-join-verticals.yml
           parameters:
