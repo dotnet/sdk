@@ -86,6 +86,7 @@ stages:
           scope: ${{ parameters.scope }}
           isSourceOnlyBuild: ${{ parameters.isSourceOnlyBuild }}
     finalJoinCondition: ${{ and(not(parameters.isSourceOnlyBuild), eq(parameters.scope, 'full')) }}
+    vmrBranch: ${{ parameters.vmrBranch }}
     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
     postJoinStages:
     - ${{ if and(parameters.isBuiltFromVmr, not(parameters.isSourceOnlyBuild), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:

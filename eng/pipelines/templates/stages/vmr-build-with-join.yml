@@ -9,10 +9,17 @@ parameters:
 # When we should run the final join stage and the stages that depend on it.
 - name: finalJoinCondition
   type: boolean
-# True when build is running from dotnet/dotnet directly
+
+#### sdk parameters ####
+
 - name: isBuiltFromVmr
+  displayName: True when build is running from dotnet/dotnet directly
   type: boolean
-  default: false
+
+- name: vmrBranch
+  displayName: dotnet/dotnet branch to use
+  type: string
+
 # These are not expected to be passed it but rather just object variables reused below
 - name: pool_Linux
   type: object
@@ -118,6 +125,20 @@ stages:
           - name: vmrPath
             value: $(Agent.BuildDirectory)/vmr
         steps:
+        - ${{ if not(parameters.isBuiltFromVmr) }}:
+          - template: ../steps/vmr-prepare.yml@self
+            parameters:
+              ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+                vmrBranch: $(System.PullRequest.TargetBranch)
+              ${{ else }}:
+                vmrBranch: ${{ parameters.vmrBranch }}
+
+          - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+            - template: ../steps/vmr-pull-updates.yml@self
+              parameters:
+                vmrPath: $(vmrPath)
+                vmrBranch: ${{ parameters.vmrBranch }}
+                targetRef: $(Build.SourceVersion) # Synchronize the current sdk commit
         - template: ../steps/vmr-join-verticals.yml
           parameters:
             dotNetBuildPass: final
