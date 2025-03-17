@@ -39,5 +39,7 @@
     <!-- external dependencies -->
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <OctokitVersion>10.0.0</OctokitVersion>
+    <!-- Arcade versions, used in comparison tooling -->
+    <MicrosoftDotNetVersionToolsVersion>10.0.0-beta.25110.3</MicrosoftDotNetVersionToolsVersion>
   </PropertyGroup>
 </Project>
