@@ -10,8 +10,8 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Run;
 
 namespace Microsoft.DotNet.Tools;
 
@@ -102,7 +102,7 @@ internal sealed class VirtualProjectBuildingCommand
             for (int i = args.Length - 1; i >= 0; i--)
             {
                 var arg = args[i];
-                if (RunCommand.IsBinLogArgument(arg))
+                if (LoggerUtility.IsBinLogArgument(arg))
                 {
                     return new BinaryLogger
                     {
