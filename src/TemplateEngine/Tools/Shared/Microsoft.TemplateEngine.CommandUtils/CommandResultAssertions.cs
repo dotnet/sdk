@@ -18,25 +18,25 @@ namespace Microsoft.TemplateEngine.CommandUtils
 
         internal CommandResultAssertions ExitWith(int expectedExitCode)
         {
-            Assert.Equal(expectedExitCode, _commandResult.ExitCode);
+            Assert.True(expectedExitCode == _commandResult.ExitCode, AppendDiagnosticsTo($"Expected command to exit with {expectedExitCode} but it did not."));
             return this;
         }
 
         internal CommandResultAssertions Pass()
         {
-            Assert.Equal(0, _commandResult.ExitCode);
+            Assert.True(_commandResult.ExitCode == 0, AppendDiagnosticsTo("Expected command to pass but it did not."));
             return this;
         }
 
         internal CommandResultAssertions Fail()
         {
-            Assert.NotEqual(0, _commandResult.ExitCode);
+            Assert.False(_commandResult.ExitCode == 0, AppendDiagnosticsTo("Expected command to fail but it passed."));
             return this;
         }
 
         internal CommandResultAssertions HaveStdOut()
         {
-            Assert.False(string.IsNullOrEmpty(_commandResult.StdOut));
+            Assert.False(string.IsNullOrEmpty(_commandResult.StdOut), AppendDiagnosticsTo("Expected command to have standard output but it did not."));
             return this;
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.Equal(expectedOutput, _commandResult.StdOut);
+            Assert.True(expectedOutput == _commandResult.StdOut, AppendDiagnosticsTo($"Expected standard output to be '{expectedOutput}' but it was not."));
             return this;
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.Contains(pattern, _commandResult.StdOut);
+            Assert.True(_commandResult.StdOut.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard output to contain '{pattern}' but it did not."));
             return this;
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.True(predicate(_commandResult.StdOut));
+            Assert.True(predicate(_commandResult.StdOut), $"The command output did not contain expected result: {description} {Environment.NewLine}");
             return this;
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.DoesNotContain(pattern, _commandResult.StdOut);
+            Assert.True(!_commandResult.StdOut.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard output to not contain '{pattern}' but it did."));
             return this;
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
             string commandResultNoSpaces = _commandResult.StdOut.Replace(" ", string.Empty);
-            Assert.Contains(pattern, commandResultNoSpaces);
+            Assert.True(commandResultNoSpaces.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard output to contain '{pattern}' but it did not."));
             return this;
         }
 
@@ -97,7 +97,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.Contains(pattern, _commandResult.StdOut, StringComparison.OrdinalIgnoreCase);
+            Assert.True(_commandResult.StdOut.Contains(pattern, StringComparison.OrdinalIgnoreCase), AppendDiagnosticsTo($"Expected standard output to contain '{pattern}' but it did not."));
             return this;
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.Matches(pattern, _commandResult.StdOut);
+            Assert.True(Regex.Match(_commandResult.StdOut, pattern, options).Success, AppendDiagnosticsTo($"Expected standard output to match pattern '{pattern}' but it did not."));
             return this;
         }
 
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.DoesNotMatch(pattern, _commandResult.StdOut);
+            Assert.True(!Regex.Match(_commandResult.StdOut, pattern, options).Success, AppendDiagnosticsTo($"Expected standard output to not match pattern '{pattern}' but it did."));
             return this;
         }
 
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.False(string.IsNullOrEmpty(_commandResult.StdErr));
+            Assert.False(string.IsNullOrEmpty(_commandResult.StdErr), AppendDiagnosticsTo("Expected command to have standard error but it did not."));
             return this;
         }
 
@@ -137,7 +137,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Assert.Equal(expectedOutput, _commandResult.StdErr);
+            Assert.True(expectedOutput == _commandResult.StdErr, AppendDiagnosticsTo($"Expected standard error to be '{expectedOutput}' but it was not."));
             return this;
         }
 
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Assert.Contains(pattern, _commandResult.StdErr);
+            Assert.True(_commandResult.StdErr.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard error to contain '{pattern}' but it did not."));
             return this;
         }
 
@@ -157,7 +157,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Assert.DoesNotContain(pattern, _commandResult.StdErr);
+            Assert.True(!_commandResult.StdErr.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard error to contain '{pattern}' but it did not."));
             return this;
         }
 
@@ -167,7 +167,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Assert.Matches(pattern, _commandResult.StdErr);
+            Assert.True(Regex.Match(_commandResult.StdErr, pattern, options).Success, AppendDiagnosticsTo($"Expected standard error to match pattern '{pattern}' but it did not."));
             return this;
         }
 
@@ -177,7 +177,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdOut for the command was not captured");
             }
-            Assert.True(string.IsNullOrEmpty(_commandResult.StdOut));
+            Assert.True(string.IsNullOrEmpty(_commandResult.StdOut), AppendDiagnosticsTo("Expected command to not have standard output but it did."));
             return this;
         }
 
@@ -187,19 +187,27 @@ namespace Microsoft.TemplateEngine.CommandUtils
             {
                 throw new InvalidOperationException("StdErr for the command was not captured");
             }
-            Assert.True(string.IsNullOrEmpty(_commandResult.StdErr));
+            Assert.True(string.IsNullOrEmpty(_commandResult.StdErr), AppendDiagnosticsTo("Expected command to not have standard error but it did."));
             return this;
         }
 
         internal CommandResultAssertions HaveSkippedProjectCompilation(string skippedProject, string frameworkFullName)
         {
-            Assert.Contains($"Project {skippedProject} ({frameworkFullName}) was previously compiled. Skipping compilation.", _commandResult.StdOut);
+            if (_commandResult.StdOut is null)
+            {
+                throw new InvalidOperationException("StdOut for the command was not captured");
+            }
+            Assert.True(_commandResult.StdOut.Contains($"Project {skippedProject} ({frameworkFullName}) was previously compiled. Skipping compilation.", StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard output to contain 'Project {skippedProject} ({frameworkFullName}) was previously compiled. Skipping compilation.' but it did not."));
             return this;
         }
 
         internal CommandResultAssertions HaveCompiledProject(string compiledProject, string frameworkFullName)
         {
-            Assert.Contains($"Project {compiledProject} ({frameworkFullName}) will be compiled", _commandResult.StdOut);
+            if (_commandResult.StdOut is null)
+            {
+                throw new InvalidOperationException("StdOut for the command was not captured");
+            }
+            Assert.True(_commandResult.StdOut.Contains($"Project {compiledProject} ({frameworkFullName}) will be compiled", StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard output to contain 'Project {compiledProject} ({frameworkFullName}) will be compiled' but it did not."));
             return this;
         }
 
