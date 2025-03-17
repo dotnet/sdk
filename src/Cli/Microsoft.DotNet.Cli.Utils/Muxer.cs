@@ -41,10 +41,14 @@ namespace Microsoft.DotNet.Cli.Utils
             string? rootPath = Path.GetDirectoryName(Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar)));
             if (rootPath is not null)
             {
-                _muxerPath = Path.Combine(rootPath, $"{MuxerName}{FileNameSuffixes.CurrentPlatform.Exe}");
+                string muxerPathMaybe = Path.Combine(rootPath, $"{MuxerName}{FileNameSuffixes.CurrentPlatform.Exe}");
+                if (File.Exists(muxerPathMaybe))
+                {
+                    _muxerPath = muxerPathMaybe;
+                }
             }
 
-            if (_muxerPath is null || !File.Exists(_muxerPath))
+            if (_muxerPath is null)
             {
                 // Best-effort search for muxer.
                 // SDK sets DOTNET_HOST_PATH as absolute path to current dotnet executable
