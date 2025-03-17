@@ -43,7 +43,7 @@
     </PackageDownload>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' ">
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <PackageDownload Include="@(BundledManifests->'%(MsiNupkgId)')">
       <Version>[%(Version)]</Version>
     </PackageDownload>
@@ -52,7 +52,7 @@
   </ItemGroup>
 
   <Target Name="ValidateBundledManifestSigning"
-          Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm'"
+          Condition="'$(OS)' == 'Windows_NT' "
           BeforeTargets="GenerateWorkloadManifestsWxs">
     <PropertyGroup>
       <SignCheckExe>$(PkgMicrosoft_DotNet_SignCheck)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckExe>

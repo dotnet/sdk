@@ -1,16 +1,12 @@
 <Project>
 
   <PropertyGroup>
-    <GenerateMsisDependsOn>
-      DownloadBundledComponents;
-      MsiTargetsSetupInputOutputs;
-      AcquireWix;
+    <GenerateMsisDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">
       GenerateSdkMsi;
-      GenerateSdkBundle;
-      GenerateSdkPlaceholderMsi;
-      GenerateTemplatesNupkgs
+      GenerateTemplatesMsis;
+      GenerateSdkPlaceholderMsi
     </GenerateMsisDependsOn>
-    <GenerateMsisDependsOn Condition="'$(GenerateSdkBundleOnly)' == 'true'">GenerateSdkBundle</GenerateMsisDependsOn>
+    <GenerateMsisDependsOn>$(GenerateMsisDependsOn);GenerateSdkBundle</GenerateMsisDependsOn>
 
     <GenerateSdkBundleDependsOn>
       DownloadBundledComponents;
@@ -30,16 +26,13 @@
     <WixDownloadSentinel>$(WixRoot)/WixDownload.$(MicrosoftSignedWixVersion).sentinel</WixDownloadSentinel>
   </PropertyGroup>
 
-    <!-- Generate MSI/Bundle Properties -->
+  <!-- Generate MSI/Bundle Properties -->
   <PropertyGroup>
-    <CombinedFrameworkSdkHostBundleEngineName>$(ArtifactsTmpDir)/$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)-engine.exe</CombinedFrameworkSdkHostBundleEngineName>
-
     <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)../packaging/windows</SdkPkgSourcesRootDirectory>
     <SdkGenerateMsiPowershellScript>$(SdkPkgSourcesRootDirectory)/generatemsi.ps1</SdkGenerateMsiPowershellScript>
     <SdkPlaceholderGenerateMsiPowershellScript>$(SdkPkgSourcesRootDirectory)/generatesdkplaceholdermsi.ps1</SdkPlaceholderGenerateMsiPowershellScript>
     <SdkStableFileIdForApphostTransform>$(SdkPkgSourcesRootDirectory)/stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
     <SdkGenerateBundlePowershellScript>$(SdkPkgSourcesRootDirectory)/generatebundle.ps1</SdkGenerateBundlePowershellScript>
-    <GenerateNupkgPowershellScript>$(SdkPkgSourcesRootDirectory)/generatenupkg.ps1</GenerateNupkgPowershellScript>
 
     <FinalizerExe>$(ArtifactsBinDir)finalizer\win-$(Architecture)\$(Configuration)\bin\finalizer.exe</FinalizerExe>
 
@@ -351,35 +344,6 @@
       AdditionalBasePaths="$(SdkPkgSourcesRootDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle">
       <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
-  </Target>
-
-  <Target Name="GenerateTemplatesNupkgs"
-          DependsOnTargets="MsiTargetsSetupInputOutputs;GenerateTemplatesMsis;SetupTemplatesNupkgs"
-          Inputs="@(TemplatesNupkgComponent->'%(MSIInstallerFile)');
-                  $(TemplatesInstallerNuspecFile);
-                  $(GenerateNupkgPowershellScript)"
-          Outputs="@(TemplatesNupkgComponent->'%(NupkgFile)')">
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
-                      '$(ArtifactsDir)' ^
-                      '%(TemplatesNupkgComponent.MSIInstallerFile)' ^
-                      '$(FullNugetVersion)' ^
-                      '$(TemplatesInstallerNuspecFile)' ^
-                      '@(TemplatesNupkgComponent->'%(NupkgFile)')' ^
-                      '$(Architecture)' ^
-                      '@(TemplatesNupkgComponent->'%(MajorMinorVersion)')'" />
-  </Target>
-
-  <Target Name="SetupTemplatesNupkgs" DependsOnTargets="CalculateTemplatesVersions">
-    <PropertyGroup>
-      <TemplatesInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.Templates.nuspec</TemplatesInstallerNuspecFile>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <TemplatesNupkgComponent Include="@(TemplatesComponents->'%(Identity)Nupkg')">
-        <NupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Templates.%(TemplatesMajorMinorVersion).$(FullNugetVersion).nupkg</NupkgFile>
-        <MajorMinorVersion>%(TemplatesMajorMinorVersion)</MajorMinorVersion>
-      </TemplatesNupkgComponent>
-    </ItemGroup>
   </Target>
 
   <Target Name="GenerateMsis"
