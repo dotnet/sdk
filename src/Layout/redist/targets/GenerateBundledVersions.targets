@@ -513,10 +513,6 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(ProductMonikerRid)</PortableProductMonikerRid>
-    </PropertyGroup>
-
-    <PropertyGroup>
       <BundledVersionsPropsContent>
 <![CDATA[
 <!--
@@ -1391,14 +1387,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="GenerateBundledMSBuildProps">
     <PropertyGroup>
-      <MinimumMSBuildVersionFile>$(RedistInstallerLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
+      <MinimumMSBuildVersionFile>$(MSBuildProjectDirectory)\minimumMSBuildVersion</MinimumMSBuildVersionFile>
       <BundledMSBuildPropsFileName>Microsoft.NETCoreSdk.BundledMSBuildInformation.props</BundledMSBuildPropsFileName>
       <_ShippingMSBuildVersion>$(MicrosoftBuildVersion)</_ShippingMSBuildVersion>
       <_ShippingMSBuildVersion Condition="$(_ShippingMSBuildVersion.Contains('-'))">$(MicrosoftBuildVersion.Split('-')[0])</_ShippingMSBuildVersion>
       <BundledMSBuildVersion>$(_ShippingMSBuildVersion)</BundledMSBuildVersion>
     </PropertyGroup>
 
-    <Error Text="No MSBuild version file found under '$(RedistInstallerLayoutPath)sdk/$(Version)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />
+    <Error Text="No MSBuild version file found: '$(MinimumMSBuildVersionFile)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />
 
     <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
       <Output TaskParameter="Lines" PropertyName="MinimumMSBuildVersion"/>
@@ -1435,20 +1431,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledMSBuildPropsFileName)"
     Lines="$(BundledMSBuildPropsFileContent)"
     Overwrite="true" />
-  </Target>
-
-  <ItemGroup>
-    <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsPackageVersion)]" />
-  </ItemGroup>
-
-  <Target Name="LayoutRuntimeGraph"
-          DependsOnTargets="GenerateBundledVersionsProps">
-
-    <GenerateSdkRuntimeIdentifierChain
-          RuntimeIdentifier="$(PortableProductMonikerRid)"
-          RuntimeIdentifierGraphPath="$(InstallerOutputDirectory)PortableRuntimeIdentifierGraph.json"
-          RuntimeIdentifierChainOutputPath="$(InstallerOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt" />
-
   </Target>
 
 </Project>
