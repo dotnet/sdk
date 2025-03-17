@@ -1,10 +1,9 @@
 From d55847e83339919ddd713d3a03aa1b1ad1dd1329 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 13 Mar 2025 09:45:10 +0100
-Subject: [PATCH 01/10] Only build the target platform in native projs for the VMR
+Subject: [PATCH 01/11] Only build the target platform in native projs for the VMR
 
 Backport: https://github.com/dotnet/aspnetcore/pull/60910
-
 ---
  eng/Common.props                              |  4 ++++
  ...t.AspNetCore.App.Runtime.Composite.sfxproj |  4 ----
@@ -177,7 +176,7 @@ index c6beee133ff7..1e84bdfe76f4 100644
 From 4a0e84caac9a03e1abbe7927e420d6ca50648034 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 13 Mar 2025 15:45:57 +0100
-Subject: [PATCH 02/10] PR feedback - undo BP2 project move
+Subject: [PATCH 02/11] PR feedback - undo BP2 project move
 
 ---
  eng/Build.props | 6 ------
@@ -204,7 +203,7 @@ index 391054e3a329..af2876659b40 100644
 From 683f7946861584d2fe5d2cce683a3ba7e45b11d2 Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:20:41 -0700
-Subject: [PATCH 03/10] Only build ANCM native bits in pass 2
+Subject: [PATCH 03/11] Only build ANCM native bits in pass 2
 
 ---
  eng/Build.props                               |  6 +++++
@@ -303,7 +302,7 @@ index baf8bf6f5d91..1dbd04f6ed90 100644
 From d03d4ea6a36dd50f7500d379b097f77a7c666b4b Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:21:41 -0700
-Subject: [PATCH 04/10] Fixup
+Subject: [PATCH 04/11] Fixup
 
 ---
  eng/Build.props | 3 ---
@@ -327,7 +326,7 @@ index fff3753783ad..ec515d5b3e2d 100644
 From 889c767c2d578ab78946efb8f18592ba2bae6a36 Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 08:23:26 -0700
-Subject: [PATCH 05/10] LF
+Subject: [PATCH 05/11] LF
 
 ---
  .../Windows/AspNetCoreModule-Setup/Directory.Build.props        | 2 +-
@@ -348,7 +347,7 @@ index 1dbd04f6ed90..1b02ebf435b2 100644
 From e6665a1af0c5b8532135e269255a1fe4ebf360ae Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 11:57:17 -0700
-Subject: [PATCH 06/10] Put IIS Integration Testing back in pass 2
+Subject: [PATCH 06/11] Put IIS Integration Testing back in pass 2
 
 ---
  eng/Build.props | 10 ++++++++++
@@ -386,7 +385,7 @@ index ec515d5b3e2d..75292f7dd962 100644
 From 92e9c827a74445a06699c73cea4cc0c6bf0e9085 Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 11:59:14 -0700
-Subject: [PATCH 07/10] Revert IntegrationTesting change
+Subject: [PATCH 07/11] Revert IntegrationTesting change
 
 ---
  ...pNetCore.Server.IntegrationTesting.IIS.csproj | 16 ++++++----------
@@ -426,7 +425,7 @@ index 1e84bdfe76f4..c6beee133ff7 100644
 From 8976b15f3083b7fa13b194fe5c64318b9fd5cbf6 Mon Sep 17 00:00:00 2001
 From: Will Godbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 20:07:08 -0700
-Subject: [PATCH 08/10] Only build RID specific assets in ANCM
+Subject: [PATCH 08/11] Only build RID specific assets in ANCM
 
 ---
  .../Directory.Build.props                     | 19 ++++++++++++++++++-
@@ -473,7 +472,7 @@ index 1b02ebf435b2..efa1cdb09a63 100644
 From e98f3f96eddb80a425bea373c03f4c2a86ff71fa Mon Sep 17 00:00:00 2001
 From: wtgodbe <wigodbe@microsoft.com>
 Date: Thu, 13 Mar 2025 22:16:17 -0700
-Subject: [PATCH 09/10] Fix syntax
+Subject: [PATCH 09/11] Fix syntax
 
 ---
  .../Windows/AspNetCoreModule-Setup/Directory.Build.props      | 4 ++--
@@ -505,7 +504,7 @@ index efa1cdb09a63..12c34a240d5f 100644
 From 52d4135ee2057e943e564937e1e745170b3e308f Mon Sep 17 00:00:00 2001
 From: William Godbe <wigodbe@microsoft.com>
 Date: Mon, 17 Mar 2025 09:05:51 -0700
-Subject: [PATCH 10/10] Temporarily remove wow64 support for ANCMIISExpressV2
+Subject: [PATCH 10/11] Temporarily remove wow64 support for ANCMIISExpressV2
 
 ---
  .../ANCMIISExpressV2/ancm_iis_expressv2.wxs   | 46 -------------------
@@ -568,3 +567,29 @@ index df2e44ea40b2..0b43654c5b6f 100644
        </DirectoryRef>
  
          <!-- Feature Definition -->
+
+From dff917527969f002399ce4309d42b5feae6bc08c Mon Sep 17 00:00:00 2001
+From: William Godbe <wigodbe@microsoft.com>
+Date: Mon, 17 Mar 2025 10:00:43 -0700
+Subject: [PATCH 11/11] Remove redundant component references for x86 platform
+
+---
+ .../ANCMIISExpressV2/ancm_iis_expressv2.wxs                  | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/ancm_iis_expressv2.wxs b/src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/ancm_iis_expressv2.wxs
+index 0b43654c5b6f..4f8951ece3b3 100644
+--- a/src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/ancm_iis_expressv2.wxs
++++ b/src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/ancm_iis_expressv2.wxs
+@@ -290,11 +290,6 @@
+             <ComponentRef Id="AspNetCoreModuleHandler"/>
+             <?endif ?>
+             <ComponentRef Id="AspNetCoreSchema"/>
+-            <?if $(var.Platform) != "x86" ?>
+-                <ComponentRef Id="AspNetCoreModule.wow"/>
+-                <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
+-                <ComponentRef Id="AspNetCoreSchema.wow"/>
+-            <?endif ?>
+         </Feature>
+ 
+         <!-- User Interface -->
