@@ -75,7 +75,15 @@ stages:
       - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
         - ${{ stage.stage }}
     variables:
+    - ${{ if parameters.isBuiltFromVmr }}:
+      - name: vmrPath
+        value: $(Build.SourcesDirectory)
+    - ${{ else }}:
+      - name: vmrPath
+        value: $(Agent.BuildDirectory)/vmr
     - template: ../variables/vmr-build.yml
+      parameters:
+        vmrBranch: ${{ parameters.vmrBranch }}
     jobs:
       - job: FinalJoin
         displayName: Final Build Pass
@@ -116,16 +124,6 @@ stages:
             displayName: Publish Build Logs
             sbomEnabled: false
             condition: succeededOrFailed()
-        variables:
-        - ${{ if parameters.isBuiltFromVmr }}:
-          - name: vmrPath
-            value: $(Build.SourcesDirectory)
-        - ${{ else }}:
-          - name: vmrPath
-            value: $(Agent.BuildDirectory)/vmr
-        - template: ../variables/vmr-build.yml
-          parameters:
-            vmrBranch: ${{ parameters.vmrBranch }}
         steps:
         - ${{ if not(parameters.isBuiltFromVmr) }}:
           - template: ../steps/vmr-prepare.yml@self
@@ -138,7 +136,7 @@ stages:
           - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
             - template: ../steps/vmr-pull-updates.yml@self
               parameters:
-                vmrPath: $(vmrPath)
+                vmrPath: ${{ variables.vmrPath }}
                 vmrBranch: ${{ variables.VmrBranch }}
                 targetRef: $(Build.SourceVersion) # Synchronize the current sdk commit
         - template: ../steps/vmr-join-verticals.yml
