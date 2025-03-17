@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = new("Ignoring change in hidden directory '{0}': {1} '{2}'", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = new("Ignoring change in output directory: {0} '{1}'", "⌚", MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor FileAdditionTriggeredReEvaluation = new("File addition triggered re-evaluation.", "⌚", MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor NoHotReloadChangesToApply = new ("No C# changes to apply.", "⌚", MessageSeverity.Output, s_id++);
+        public static readonly MessageDescriptor NoCSharpChangesToApply = new ("No C# changes to apply.", "⌚", MessageSeverity.Output, s_id++);
     }
 
     internal interface IReporter
@@ -86,13 +86,19 @@ namespace Microsoft.DotNet.Watch
             => false;
 
         /// <summary>
-        /// True to call <see cref="ReportProcessOutput"/> when launched process writes to standard output.
+        /// If true, the output of the process will be prefixed with the project display name.
         /// Used for testing.
         /// </summary>
-        bool EnableProcessOutputReporting { get; }
+        public bool PrefixProcessOutput
+            => false;
 
+        /// <summary>
+        /// Reports the output of a process that is being watched.
+        /// </summary>
+        /// <remarks>
+        /// Not used to report output of dotnet-build processed launched by dotnet-watch to build or evaluate projects.
+        /// </remarks>
         void ReportProcessOutput(OutputLine line);
-        void ReportProcessOutput(ProjectGraphNode project, OutputLine line);
 
         void Report(MessageDescriptor descriptor, params object?[] args)
             => Report(descriptor, prefix: "", args);

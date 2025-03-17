@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -57,6 +58,7 @@ namespace Microsoft.DotNet.Watch
                 Context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
+            await using var browserConnector = new BrowserConnector(Context);
             using var fileWatcher = new FileWatcher(Context.Reporter);
 
             for (var iteration = 0; !shutdownCancellationToken.IsCancellationRequested; iteration++)
@@ -98,10 +100,8 @@ namespace Microsoft.DotNet.Watch
                         Context.Reporter.Verbose("Using Aspire process launcher.");
                     }
 
-                    await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
                     compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, shutdownCancellationToken);
-                    var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
                     var outputDirectories = GetProjectOutputDirectories(evaluationResult.ProjectGraph);
@@ -219,8 +219,11 @@ namespace Microsoft.DotNet.Watch
                         }
                         catch (OperationCanceledException)
                         {
+                            // Ctrl+C, forced restart, or process exited.
                             Debug.Assert(iterationCancellationToken.IsCancellationRequested);
-                            waitForFileChangeBeforeRestarting = false;
+
+                            // Will wait for a file change if process exited.
+                            waitForFileChangeBeforeRestarting = true;
                             break;
                         }
 
@@ -254,7 +257,7 @@ namespace Microsoft.DotNet.Watch
                         var stopwatch = Stopwatch.StartNew();
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await staticFileHandler.HandleFileChangesAsync(changedFiles, iterationCancellationToken);
+                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.ScopedCssHandler);
@@ -263,7 +266,7 @@ namespace Microsoft.DotNet.Watch
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
-                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleFileChangesAsync(restartPrompt: async (projectNames, cancellationToken) =>
+                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleManagedCodeChangesAsync(restartPrompt: async (projectNames, cancellationToken) =>
                         {
                             if (_rudeEditRestartPrompt != null)
                             {
