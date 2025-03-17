@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
     {
         public override string Name => "Microsoft.DotNet.MSBuildSdkResolver";
 
-        // Default resolver has priority 10000 and we want to go before it and leave room on either side of us. 
+        // Default resolver has priority 10000 and we want to go before it and leave room on either side of us.
         public override int Priority => 5000;
 
         private readonly Func<string, string?> _getEnvironmentVariable;
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
-        private const string DotnetHost = "DOTNET_HOST_PATH";
+        private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
@@ -201,11 +201,11 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                 if (File.Exists(dotnetExe))
                 {
                     propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(DotnetHost, dotnetExe);
+                    propertiesToAdd.Add(DotnetHostExperimentalKey, dotnetExe);
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{DotnetHost}' because dotnet executable '{dotnetExe}' does not exist.");
+                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{dotnetExe}' does not exist.");
                 }
 
                 string? runtimeVersion = dotnetRoot != null ?

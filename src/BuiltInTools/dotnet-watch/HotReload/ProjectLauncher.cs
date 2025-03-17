@@ -97,7 +97,7 @@ internal sealed class ProjectLauncher(
             }
         }
 
-        var browserRefreshServer = await browserConnector.LaunchOrRefreshBrowserAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
+        var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, processSpec, environmentBuilder, projectOptions, cancellationToken);
 
         var arguments = new List<string>()
         {

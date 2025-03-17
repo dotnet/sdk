@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
+  <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
   <Import Project="$(RepoRoot)\src\Layout\redist\targets\PublishDotnetWatch.targets" />
 
   <PropertyGroup>
@@ -39,12 +40,6 @@
     <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
 
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
-
-    <Compile Include="..\HotReloadAgent\AgentEnvironmentVariables.cs" LinkBase="AgentContracts"/>
-    <Compile Include="..\HotReloadAgent\AgentMessageSeverity.cs" LinkBase="AgentContracts" />
-    <Compile Include="..\HotReloadAgent\ResponseLoggingLevel.cs" LinkBase="AgentContracts" />
-    <Compile Include="..\HotReloadAgent\UpdateDelta.cs" LinkBase="AgentContracts" />
-    <Compile Include="..\HotReloadAgent\StaticAssetUpdate.cs" LinkBase="AgentContracts" />
   </ItemGroup>
 
   <ItemGroup>
