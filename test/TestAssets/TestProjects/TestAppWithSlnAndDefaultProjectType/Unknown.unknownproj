@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <ProjectTypeGuids>{2F08BC15-189B-4804-B644-653F34C968A8}</ProjectTypeGuids>
+    <DefaultProjectTypeGuid>{2F08BC15-189B-4804-B644-653F34C968A8}</DefaultProjectTypeGuid>
   </PropertyGroup>
 
 </Project>
