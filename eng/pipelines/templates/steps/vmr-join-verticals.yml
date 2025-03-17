@@ -3,6 +3,10 @@ parameters:
   type: string
   default: final
 
+- name: vmrPath
+  type: string
+  default: $(Agent.BuildDirectory)/vmr
+
 - name: outputFolder
   type: string
   default: $(Build.ArtifactStagingDirectory)/artifacts
@@ -14,7 +18,7 @@ steps:
     /p:VerticalArtifactsBaseFolder=$(Build.ArtifactStagingDirectory)/VerticalArtifacts
     /p:OutputFolder=${{ parameters.outputFolder }}
   displayName: Join Verticals
-  workingDirectory: ${{ variables.vmrPath }}
+  workingDirectory: ${{ parameters.vmrPath }}
 - task: CopyFiles@2
   displayName: Copy logs for upload
   inputs:

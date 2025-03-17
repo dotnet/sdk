@@ -142,6 +142,7 @@ stages:
         - template: ../steps/vmr-join-verticals.yml
           parameters:
             dotNetBuildPass: final
+            vmrPath: $(vmrPath)
             outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
   # Insert all of the post-join stages.
   - ${{ each postJoinStage in parameters.postJoinStages }}:
