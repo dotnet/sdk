@@ -180,4 +180,10 @@
   <data name="WorkloadVersionRequestedNotFound" xml:space="preserve">
     <value>Workload version {0} not found.</value>
   </data>
+  <data name="SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion" xml:space="preserve">
+    <value>'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</value>
+  </data>
+  <data name="SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion" xml:space="preserve">
+    <value>'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</value>
+  </data>
 </root>
