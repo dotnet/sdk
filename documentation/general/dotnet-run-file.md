@@ -129,6 +129,10 @@ Again, this problem exists with project-based programs as well.
 Note that having a project-based or file-based program in the drive root would result in
 [error MSB5029](https://learn.microsoft.com/visualstudio/msbuild/errors/msb5029).
 
+For `.csproj` files inside the target directory and its parent directories, we do not report any errors/warnings.
+That's because it might be perfectly reasonable to have file-based programs nested in another project-based program
+(most likely excluded from that project's compilation via something like `<Compile Exclude="./my-scripts/**" />`).
+
 ### Multiple entry points
 
 If there are multiple entry-point files in the target directory, the target path must be a file
@@ -186,11 +190,13 @@ Other directives result in a warning, reserving them for future use.
 ```
 
 The value must be separated from the name of the directive by white space and any leading and trailing white space is not considered part of the value.
-The value of `#:sdk` is injected into `<Project Sdk="{0}">` as is.
-The value of `#:property` is split by the first `=` and injected as `<{0}>{1}</{0}>` in a `<PropertyGroup>`.
-It is an error if `=` does not appear in the value or if the first part (property name) is empty (the property value is allowed to be empty).
-The value of `#:package` is split by the first `=` and injected as `<PackageReference Include="{0}" Version="{1}">` in an `<ItemGroup>`.
-If `=` does not appear in the value, the value is injected as `<PackageReference Include="{0}">` instead.
+Any value can optionally have two parts separated by `=` or `/`
+(the former is consistent with how properties are usually passed, e.g., `/p:Prop=Value`, and the latter is what the `<Project Sdk="Name/Version">` attribute uses).
+The value of `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`.
+The value of `#:property` is split by the separator and injected as `<{0}>{1}</{0}>` in a `<PropertyGroup>`.
+It is an error if no separator appears in the value or if the first part (property name) is empty (the property value is allowed to be empty).
+The value of `#:package` is split by the separator and injected as `<PackageReference Include="{0}" Version="{1}">` in an `<ItemGroup>`.
+If no separator appears in the value, the value is injected as `<PackageReference Include="{0}">` instead.
 It is an error if the first part (package name) is empty (the package version is allowed to be empty, but that results in empty `Version=""`).
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
@@ -216,6 +222,8 @@ NuGet will report an appropriate error if the version is missing and CPM is not 
 
 During [grow up](#grow-up), `#:` directives are removed from the `.cs` files and turned into elements in the corresponding `.csproj` files.
 For project-based programs, `#:` directives are an error (reported by Roslyn when it's told it is in "project-based" mode).
+`#!` directives are also removed during grow up, although we could consider to have an option to preserve them
+(since they might still be valid after grow up, depending on which program they are actually specifying to "interpret" the file, i.e., it might not be `dotnet run` at all).
 
 ## Shebang
 
