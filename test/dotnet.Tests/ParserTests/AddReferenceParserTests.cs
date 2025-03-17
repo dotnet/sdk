@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             result.Errors.Should().NotBeEmpty();
 
-            var argument = (result.Errors.FirstOrDefault()?.SymbolResult as ArgumentResult)?.Argument;
+            var argument = (result.Errors.SingleOrDefault()?.SymbolResult as ArgumentResult)?.Argument;
 
             argument.Should().Be(ReferenceAddCommandParser.ProjectPathArgument);
         }
