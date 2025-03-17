@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.Tools.Sln.Add
             {
                 project = solution.AddProject(solutionRelativeProjectPath, null, solutionFolder);
             }
-            catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
+            catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.InvalidProjectTypeReference)
             {
                 // If guid is not identified by vs-solutionpersistence, check in project element itself
                 var guid = projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
