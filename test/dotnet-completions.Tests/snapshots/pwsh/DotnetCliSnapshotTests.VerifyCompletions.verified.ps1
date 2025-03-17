@@ -657,12 +657,12 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
-                [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, "Migrate a file-based program to a project-based program.")
+                [CompletionResult]::new('convert', 'convert', [CompletionResultType]::ParameterValue, "Convert a file-based program to a project-based program.")
             )
             $completions += $staticCompletions
             break
         }
-        'testhost;project;add' {
+        'testhost;project;convert' {
             $staticCompletions = @(
                 [CompletionResult]::new('--output', '--output', [CompletionResultType]::ParameterName, "Location to place the generated output.")
                 [CompletionResult]::new('--output', '-o', [CompletionResultType]::ParameterName, "Location to place the generated output.")

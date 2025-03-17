@@ -1128,7 +1128,7 @@ _testhost_project() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="add --help" 
+    opts="convert --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1136,8 +1136,8 @@ _testhost_project() {
     fi
     
     case ${COMP_WORDS[$1]} in
-        (add)
-            _testhost_project_add $(($1+1))
+        (convert)
+            _testhost_project_convert $(($1+1))
             return
             ;;
             
@@ -1146,7 +1146,7 @@ _testhost_project() {
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
-_testhost_project_add() {
+_testhost_project_convert() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
     prev="${COMP_WORDS[COMP_CWORD-1]}" 

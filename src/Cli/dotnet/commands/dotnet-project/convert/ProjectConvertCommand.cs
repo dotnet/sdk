@@ -8,16 +8,16 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 
-namespace Microsoft.DotNet.Tools.Project.Add;
+namespace Microsoft.DotNet.Tools.Project.Convert;
 
-internal sealed class ProjectAddCommand : CommandBase
+internal sealed class ProjectConvertCommand : CommandBase
 {
     private readonly string _file;
     private readonly string? _outputDirectory;
 
-    public ProjectAddCommand(ParseResult parseResult) : base(parseResult)
+    public ProjectConvertCommand(ParseResult parseResult) : base(parseResult)
     {
-        _file = parseResult.GetValue(ProjectAddCommandParser.FileArgument) ?? string.Empty;
+        _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
         _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
     }
 

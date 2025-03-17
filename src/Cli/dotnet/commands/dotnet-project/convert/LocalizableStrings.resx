@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppFullName" xml:space="preserve">
-    <value>Migrate a file-based program to a project-based program.</value>
+    <value>Convert a file-based program to a project-based program.</value>
   </data>
   <data name="CmdFileDescription" xml:space="preserve">
     <value>Path to the file-based program.</value>

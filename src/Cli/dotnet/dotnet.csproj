@@ -38,7 +38,7 @@
     <EmbeddedResource Update="BuildServer\*.resx" Namespace="Microsoft.DotNet.Cli.BuildServer" />
     <EmbeddedResource Update="CommandFactory\*.resx" Namespace="Microsoft.DotNet.Cli.CommandFactory" />
     <EmbeddedResource Update="**\dotnet-package\add\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Add" />
-    <EmbeddedResource Update="**\dotnet-project\add\*.resx" Namespace="Microsoft.DotNet.Tools.Project.Add" />
+    <EmbeddedResource Update="**\dotnet-project\convert\*.resx" Namespace="Microsoft.DotNet.Tools.Project.Convert" />
     <EmbeddedResource Update="**\dotnet-reference-add\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Add" />
     <EmbeddedResource Update="**\dotnet-add\*.resx" Namespace="Microsoft.DotNet.Tools.Add" />
     <EmbeddedResource Update="**\dotnet-build\*.resx" Namespace="Microsoft.DotNet.Tools.Build" />

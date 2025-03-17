@@ -14,7 +14,7 @@ internal sealed class ProjectCommandParser
     {
         CliCommand command = new("project");
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-        command.Subcommands.Add(ProjectAddCommandParser.GetCommand());
+        command.Subcommands.Add(ProjectConvertCommandParser.GetCommand());
 
         return command;
     }

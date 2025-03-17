@@ -4,13 +4,13 @@
 #nullable enable
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Project.Add;
+using Microsoft.DotNet.Tools.Project.Convert;
 using Microsoft.TemplateEngine.Cli.Commands;
-using LocalizableStrings = Microsoft.DotNet.Tools.Project.Add.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli;
 
-internal sealed class ProjectAddCommandParser
+internal sealed class ProjectConvertCommandParser
 {
     public static readonly CliArgument<string> FileArgument = new("file")
     {
@@ -20,13 +20,13 @@ internal sealed class ProjectAddCommandParser
 
     public static CliCommand GetCommand()
     {
-        CliCommand command = new("add", LocalizableStrings.AppFullName)
+        CliCommand command = new("convert", LocalizableStrings.AppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,
         };
 
-        command.SetAction((parseResult) => new ProjectAddCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ProjectConvertCommand(parseResult).Execute());
         return command;
     }
 }

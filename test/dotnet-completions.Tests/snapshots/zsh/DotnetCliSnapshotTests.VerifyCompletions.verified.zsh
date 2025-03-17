@@ -660,7 +660,7 @@ _testhost() {
                                 (( CURRENT += 1 ))
                                 curcontext="${curcontext%:*:*}:testhost-project-command-$line[1]:"
                                 case $line[1] in
-                                    (add)
+                                    (convert)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--output=[Location to place the generated output.]: :_files' \
                                             '-o=[Location to place the generated output.]: :_files' \
@@ -1645,15 +1645,15 @@ _testhost__package__remove_commands() {
 (( $+functions[_testhost__project_commands] )) ||
 _testhost__project_commands() {
     local commands; commands=(
-        'add:Migrate a file-based program to a project-based program.' \
+        'convert:Convert a file-based program to a project-based program.' \
     )
     _describe -t commands 'testhost project commands' commands "$@"
 }
 
-(( $+functions[_testhost__project__add_commands] )) ||
-_testhost__project__add_commands() {
+(( $+functions[_testhost__project__convert_commands] )) ||
+_testhost__project__convert_commands() {
     local commands; commands=()
-    _describe -t commands 'testhost project add commands' commands "$@"
+    _describe -t commands 'testhost project convert commands' commands "$@"
 }
 
 (( $+functions[_testhost__publish_commands] )) ||
