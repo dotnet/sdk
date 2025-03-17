@@ -39,7 +39,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <SkipBuildingInstallers Condition="'$(OS)' == 'Windows_NT' and '$(Architecture)' == 'arm'">true</SkipBuildingInstallers>
     <SkipBuildingInstallers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SkipBuildingInstallers>
     <SkipBuildingInstallers Condition="'$(PgoInstrument)' == 'true'">true</SkipBuildingInstallers>
     <SkipBuildingInstallers Condition="
