@@ -1,4 +1,4 @@
-From df60bf78d5bd30e541860c26efd06da717227127 Mon Sep 17 00:00:00 2001
+From 206a8585f80474a12e852162c577fb351bc807e9 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Thu, 13 Mar 2025 09:45:10 +0100
 Subject: [PATCH] Only build the target platform in native projs for the VMR
@@ -80,10 +80,10 @@ index 3b743bd3f4ed..294ca282e845 100644
      <ProjectReference Condition=" '$(UseIisNativeAssets)' == 'true' AND $(BuildNative) AND '$(MSBuildRestoreSessionId)' == ''"
          Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
 diff --git a/src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/ancm_iis_expressv2.wxs b/src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/ancm_iis_expressv2.wxs
-index df2e44ea40b2..4f8951ece3b3 100644
+index 9aa2c78478e0..1a4f69ef1de7 100644
 --- a/src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/ancm_iis_expressv2.wxs
 +++ b/src/Installers/Windows/AspNetCoreModule-Setup/ANCMIISExpressV2/ancm_iis_expressv2.wxs
-@@ -274,52 +274,6 @@
+@@ -265,52 +265,6 @@
              </Component>
            </Directory>
          </Directory>
@@ -136,8 +136,8 @@ index df2e44ea40b2..4f8951ece3b3 100644
        </DirectoryRef>
  
          <!-- Feature Definition -->
-@@ -336,11 +290,6 @@
-             <ComponentRef Id="AspNetCoreModuleHandler"/>
+@@ -324,11 +278,6 @@
+             <ComponentRef Id="AspNetCoreModuleHandler.arm64" />
              <?endif ?>
              <ComponentRef Id="AspNetCoreSchema"/>
 -            <?if $(var.Platform) != "x86" ?>
