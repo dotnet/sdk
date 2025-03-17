@@ -14,6 +14,11 @@ Aby wyświetlić wartość, należy podać odpowiednią opcję wiersza poleceń 
         <target state="translated">Kontroluje, czy aktualizacje powinny szukać zestawów obciążeń, czy najnowszej wersji każdego pojedynczego manifestu.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
+        <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
+        <target state="new">Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

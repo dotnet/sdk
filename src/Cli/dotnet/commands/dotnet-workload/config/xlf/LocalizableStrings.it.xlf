@@ -14,6 +14,11 @@ Per mostrare un valore, specifica l'opzione della riga di comando corrispondente
         <target state="translated">Controlla se gli aggiornamenti devono cercare i set di carichi di lavoro o la versione più recente di ogni singolo manifesto.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
+        <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
+        <target state="new">Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
