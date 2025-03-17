@@ -460,7 +460,7 @@
     <!-- Include the swr file in the nuget package for VS authoring -->
     <Copy SourceFiles="$(SdkRuntimeAnalyzersSwrFile)" DestinationFolder="$(RuntimeAnalyzersLayoutDirectory)" />
 
-    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
+    <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) -Symbols ^
                     '$(ArtifactsDir)' ^
                     '$(RuntimeAnalyzersLayoutDirectory.TrimEnd('\'))' ^
                     '$(FullNugetVersion)' ^
