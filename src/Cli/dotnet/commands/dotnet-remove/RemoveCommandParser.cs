@@ -2,41 +2,40 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Cli.Extensions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Remove.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class RemoveCommandParser
 {
-    internal static class RemoveCommandParser
+    public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
+
+    public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CommonLocalizableStrings.ProjectArgumentName)
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
+        Description = CommonLocalizableStrings.ProjectArgumentDescription
+    }.DefaultToCurrentDirectory();
 
-        public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CommonLocalizableStrings.ProjectArgumentName)
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
+    {
+        return Command;
+    }
+
+    private static CliCommand ConstructCommand()
+    {
+        var command = new DocumentedCommand("remove", DocsLink, LocalizableStrings.NetRemoveCommand)
         {
-            Description = CommonLocalizableStrings.ProjectArgumentDescription
-        }.DefaultToCurrentDirectory();
+            Hidden = true
+        };
 
-        private static readonly CliCommand Command = ConstructCommand();
+        command.Arguments.Add(ProjectArgument);
+        command.Subcommands.Add(RemovePackageParser.GetCommand());
+        command.Subcommands.Add(RemoveProjectToProjectReferenceParser.GetCommand());
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new DocumentedCommand("remove", DocsLink, LocalizableStrings.NetRemoveCommand)
-            {
-                Hidden = true
-            };
-
-            command.Arguments.Add(ProjectArgument);
-            command.Subcommands.Add(RemovePackageParser.GetCommand());
-            command.Subcommands.Add(RemoveProjectToProjectReferenceParser.GetCommand());
-
-            command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-
-            return command;
-        }
+        return command;
     }
 }

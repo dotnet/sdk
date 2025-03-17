@@ -2,35 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Uninstall;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Uninstall.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class WorkloadUninstallCommandParser
 {
-    internal static class WorkloadUninstallCommandParser
+    public static readonly CliArgument<IEnumerable<string>> WorkloadIdArgument = WorkloadInstallCommandParser.WorkloadIdArgument;
+
+    public static readonly CliOption<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly CliArgument<IEnumerable<string>> WorkloadIdArgument = WorkloadInstallCommandParser.WorkloadIdArgument;
+        return Command;
+    }
 
-        public static readonly CliOption<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
+        command.Arguments.Add(WorkloadIdArgument);
+        command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
+        command.Options.Add(CommonOptions.VerbosityOption);
 
-        private static readonly CliCommand Command = ConstructCommand();
+        command.SetAction((parseResult) => new WorkloadUninstallCommand(parseResult).Execute());
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
-
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
-            command.Arguments.Add(WorkloadIdArgument);
-            command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
-            command.Options.Add(CommonOptions.VerbosityOption);
-
-            command.SetAction((parseResult) => new WorkloadUninstallCommand(parseResult).Execute());
-
-            return command;
-        }
+        return command;
     }
 }

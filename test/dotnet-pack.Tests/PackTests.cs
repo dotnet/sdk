@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Pack.Tests
             outputPackage.Should().Exist();
         }
 
-        [Fact(Skip = "Test project missing")]
+        [Fact]
         public void HasIncludedFiles()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("EndToEndTestApp")
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Pack.Tests
 
             new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
+                .Execute("-c", "Debug")
                 .Should().Pass();
 
             var outputPackage = new FileInfo(Path.Combine(testInstance.Path,
@@ -99,12 +99,11 @@ namespace Microsoft.DotNet.Pack.Tests
 
             ZipFile.Open(outputPackage.FullName, ZipArchiveMode.Read)
                 .Entries
-                .Should().Contain(e => e.FullName == "packfiles/pack1.txt")
-                     .And.Contain(e => e.FullName == "newpath/pack2.txt")
+                .Should().Contain(e => e.FullName == "newpath/pack1.txt")
                      .And.Contain(e => e.FullName == "anotherpath/pack2.txt");
         }
 
-        [Fact(Skip = "Test project doesn't override assembly name")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/47246")]
         public void PackAddsCorrectFilesForProjectsWithOutputNameSpecified()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")

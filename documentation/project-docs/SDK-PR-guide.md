@@ -25,18 +25,17 @@ After the minor release locks down, it transitions into servicing / "QB" (Quarte
 
 ### Servicing releases
 The .NET SDK has monthly servicing releases (e.g.`7.0.100` VS `7.0.101`) aligning with the .NET Runtime servicing releases. These are for top fixes and security updates only to limit risk.
-Any servicing release is open for check-ins from the day the [branding PRs](https://github.com/dotnet/sdk/pulls?q=is%3Apr+branding) are merged (~1st of each month) and when code complete is (typically two weeks later).
-The servicing branches are locked from the time of code complete to the next branding in case we need to respin any monthly release. Final signoffs are typically in the last week of each month.
-
+Any servicing release is open for check-ins from the day the [branding PRs](https://github.com/dotnet/sdk/pulls?q=is%3Apr+branding) are merged (~1st Tuesday of each month) and when code complete is (typically two weeks later).
+The servicing branches are locked from the time of code complete to the next branding in case we need to respin any monthly release. We use the `Branch Lockdown` label to mark PRs that should go into the next servicing release but the branch is currently not open. Final signoffs are typically in the last week of each month. We have a workflow that will automatically mark any PR targeting a servicing branch outside of the first to third Tuesday window: https://github.com/dotnet/sdk/blob/main/.github/workflows/add-lockdown-label.yml
 ### Schedule
 | Release Type | Frequency    | Lockdown Release  | Branch Open | Lockdown Date (estimate) |
 | -------------|--------------|-------------------|-------------|--------------------------|
 | Major        | Yearly (Nov) | RC2               | ~August     | Mid-September            |
 | Minor        | Quarterly    | Preview 3         | ~Prior release Preview 3 date | End of the month prior to Preview 3 (~7 weeks prior to release) |
-| Servicing    | Monthly      | N/A               | After branding, ~1st of the month | Third Tuesday of prior month (signoff is ~28th of each month) |
+| Servicing    | Monthly      | N/A               | After branding, ~1st Tuesday of the prior month | Third Tuesday of prior month (signoff is ~28th of each month) |
 
 ### Tactics approval
-Even releases that are in lockdown can still take changes as long as they are approved and the final build isn't complete. To bring a change through tactics, mark it with the label servicing-consider and update the description to include 5 sections (Description, Customer Impact, Regression?, Risk, Testing). See previously approved bugs for examples by looking for the [servicing-approved](https://github.com/dotnet/sdk/pulls?q=is%3Apr+label%3AServicing-approved+is%3Aclosed) label.
+Even releases that are in lockdown can still take changes as long as they are approved and the final build isn't complete. To bring a change through tactics, mark it with the label `servicing-consider` and update the description to include 5 sections (Description, Customer Impact, Regression?, Risk, Testing). See previously approved bugs for examples by looking for the [servicing-approved](https://github.com/dotnet/sdk/pulls?q=is%3Apr+label%3AServicing-approved+is%3Aclosed) label.
 
 ## External contributions
 External contributions are encouraged and welcome. There are so many teams working in this repo that it can be hard to track. Contributors looking to learn more about how to contribute should check out the [Developer Guide](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/developer-guide.md).
@@ -64,3 +63,16 @@ All monthly servicing releases are done of our internal branches in case there a
 That is why we have removed all servicing builds from the installer main page as those builds do not include any changes from any repo other than the installer repo so are very limited.
 Internal codeflow is merged into public GitHub repos on patch Tuesday each month to ensure we are updated.
 
+## Inter-branch codeflow
+In the SDK repo, we have automated codeflow set up for each non-preview release branch flowing from the oldest branch all the way to main. You can see the configuration for that in [github-merge-flow.jsonc](https://github.com/dotnet/sdk/blob/main/github-merge-flow.jsonc). The workflow configuration is in [inter-branch-merge-flow.yml](https://github.com/dotnet/sdk/blob/main/.github/workflows/inter-branch-merge-flow.yml)
+You can see the existing open branch codeflows [here](https://github.com/dotnet/sdk/issues?q=is%3Apr%20is%3Aopen%20author%3Aapp%2Fgithub-actions%20%20Merge%20branch)
+
+### Further updates
+These PRs will not get updated as new changes come in. This allows time to run PR checks, review, and merge. Once the existing PR is merged and all changes since that PR was created will be generated in a new PR. This leads to [failed](https://github.com/dotnet/sdk/actions/workflows/inter-branch-merge-flow.yml) workflow automation but that's expected. The workflow will report this message: _hint: Updates were rejected because the tip of your current branch is behind_.
+
+### Reviewing and merging inter-branch codeflow
+Generally we will check the commit list and scan the changes for anything out of the ordinary. We take a special look for any conflict merges that were done in getting the PR building.
+> [!Important]
+> Make sure to create a merge commit. *Do not squash*. If you squash, the next inter-branch PR will list all of the same commits.
+
+**NOTE** Some inter-branch flow will have 0 changes once the merge conflicts are resolved. This is likely when the only changes were to version numbers in the eng/*. These can be closed to save time and resources or merged to catch the commit history up (the next codeflow will have fewer commits). There is no preference either way.
