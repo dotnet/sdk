@@ -209,13 +209,11 @@ Indeed, it might be beneficial to let a non-entry-point file like `Util.cs` be s
 which also makes it possible to share it independently or symlink it to multiple script folders.
 This is also similar to `global using`s which users usually put into a single file but don't have to.
 
-We could consider deduplicating `#:package`/`#:sdk` directives (if they have the same values)
-so separate "self-contained" utilities can reference overlapping sets of packages
+We could consider deduplicating `#:` directives
+(e.g., properties could be concatenated via `;`, more specific package versions could override less specific ones),
+so for example separate "self-contained" utilities could reference overlapping sets of packages
 even if they end up in the same compilation.
-But for starters we can
-- translate every `#:package` directive into a `<PackageReference>` element,
-- translate every `#:sdk` directive into a `<Project Sdk>` attribute or an `<Sdk>` element,
-
+But for starters we can translate each directive into the corresponding project element
 and let the existing MSBuild/NuGet logic deal with duplicates.
 
 It is valid to have a `#:package` directive without a version.
