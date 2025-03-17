@@ -192,11 +192,12 @@ Other directives result in a warning, reserving them for future use.
 The value must be separated from the name of the directive by white space and any leading and trailing white space is not considered part of the value.
 Any value can optionally have two parts separated by `=` or `/`
 (the former is consistent with how properties are usually passed, e.g., `/p:Prop=Value`, and the latter is what the `<Project Sdk="Name/Version">` attribute uses).
-The value of `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`.
+The value of the first `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`,
+and the subsequent `#:sdk` directive values are split by the separator and injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if there is no separator).
+It is an error if the first part (name) is empty (the version is allowed to be empty, but that results in empty `Version=""`).
 The value of `#:property` is split by the separator and injected as `<{0}>{1}</{0}>` in a `<PropertyGroup>`.
-It is an error if no separator appears in the value or if the first part (property name) is empty (the property value is allowed to be empty).
-The value of `#:package` is split by the separator and injected as `<PackageReference Include="{0}" Version="{1}">` in an `<ItemGroup>`.
-If no separator appears in the value, the value is injected as `<PackageReference Include="{0}">` instead.
+It is an error if no separator appears in the value or if the first part (property name) is empty (the property value is allowed to be empty) or contains invalid characters.
+The value of `#:package` is split by the separator and injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if there is no separator) in an `<ItemGroup>`.
 It is an error if the first part (package name) is empty (the package version is allowed to be empty, but that results in empty `Version=""`).
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
@@ -212,9 +213,10 @@ We could consider deduplicating `#:package`/`#:sdk` directives (if they have the
 so separate "self-contained" utilities can reference overlapping sets of packages
 even if they end up in the same compilation.
 But for starters we can
-- translate every `#:package` directive into `<PackageReference>`
-  and let the existing MSBuild/NuGet logic deal with duplicates,
-- error on multiple `#:sdk` directives.
+- translate every `#:package` directive into a `<PackageReference>` element,
+- translate every `#:sdk` directive into a `<Project Sdk>` attribute or an `<Sdk>` element,
+
+and let the existing MSBuild/NuGet logic deal with duplicates.
 
 It is valid to have a `#:package` directive without a version.
 That's useful when central package management (CPM) is used.
