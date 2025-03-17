@@ -25,6 +25,8 @@
     -->
     <PrivateSourceBuiltSdkVersion>10.0.100-preview.2.25113.1</PrivateSourceBuiltSdkVersion>
     <PrivateSourceBuiltArtifactsVersion>10.0.100-preview.2.25113.1</PrivateSourceBuiltArtifactsVersion>
+    <!-- arcade dependencies -->
+    <MicrosoftDotNetVersionToolsVersion>10.0.0-beta.25110.3</MicrosoftDotNetVersionToolsVersion>
     <!-- command-line-api dependencies -->
     <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
     <!-- msbuild dependencies -->
@@ -39,7 +41,5 @@
     <!-- external dependencies -->
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <OctokitVersion>10.0.0</OctokitVersion>
-    <!-- Arcade versions, used in comparison tooling -->
-    <MicrosoftDotNetVersionToolsVersion>10.0.0-beta.25110.3</MicrosoftDotNetVersionToolsVersion>
   </PropertyGroup>
 </Project>
