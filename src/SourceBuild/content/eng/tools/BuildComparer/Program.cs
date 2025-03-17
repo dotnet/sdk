@@ -676,7 +676,7 @@ public class Program
                 // Do not close the stream.
                 if (commonFiles.Contains(entryStripped))
                 {
-                    streams[baseEntry.Name] = await CopyStreamToSeekableStreamAsync(baseEntry.DataStream);
+                    streams[entryStripped] = await CopyStreamToSeekableStreamAsync(baseEntry.DataStream);
                     return entryStripped;
                 }
             }
