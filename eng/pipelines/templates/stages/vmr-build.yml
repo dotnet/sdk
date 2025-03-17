@@ -456,6 +456,33 @@ stages:
         targetOS: iossimulator
         targetArchitecture: arm64
 
+    ### Additional jobs for internal lite builds ###
+    - ${{ if and(in(parameters.scope, 'lite'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: ${{ format('{0}_Ubuntu_BuildTests', variables.ubuntuName) }}
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            pool: ${{ parameters.pool_Linux }}
+            container:
+              name: ${{ variables.ubuntuContainerName }}
+              image: ${{ variables.ubuntuContainerImage }}
+            targetOS: linux
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildTests=true
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows_BuildTests
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x64
+            extraProperties: /p:DotNetBuildTests=true
+
     ### Additional jobs for full build ###
     - ${{ if in(parameters.scope, 'full') }}:
 
