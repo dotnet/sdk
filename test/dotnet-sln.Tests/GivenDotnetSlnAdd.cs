@@ -789,7 +789,7 @@ Options:
         [InlineData("solution", ".sln")]
         [InlineData("sln", ".slnx")]
         [InlineData("solution", ".slnx")]
-        public void WhenPassedAProjectWithoutATypeGuidOrDefaultTypeGuidItErrors(string solutionCommand, string solutionExtension)
+        public void WhenPassedAProjectWithoutATypeGuidNorDefaultTypeGuidItErrors(string solutionCommand, string solutionExtension)
         {
             var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
