@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Cli.Sln.Add.Tests
         public const string VBProjectTypeGuid = "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}";
         public const string SolutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
         public const string SharedProjectGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
+        public const string DefaultProjectGuid = "{130159A9-F047-44B3-88CF-0CF7F02ED50F}";
     }
 
     public class GivenDotnetSlnAdd : SdkTest
@@ -749,13 +750,13 @@ Options:
         [InlineData("sln", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
         [InlineData("sln", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
         [InlineData("sln", "SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
-        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", "{130159A9-F047-44B3-88CF-0CF7F02ED50F}")]
-        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", "{130159A9-F047-44B3-88CF-0CF7F02ED50F}")]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
         [InlineData("solution", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
         [InlineData("solution", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
         [InlineData("solution", "SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
-        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", "{130159A9-F047-44B3-88CF-0CF7F02ED50F}")]
-        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", "{130159A9-F047-44B3-88CF-0CF7F02ED50F}")]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
         public async Task WhenPassedAProjectItAddsCorrectProjectTypeGuid(
             string solutionCommand,
             string testAsset,
@@ -788,7 +789,7 @@ Options:
         [InlineData("solution", ".sln")]
         [InlineData("sln", ".slnx")]
         [InlineData("solution", ".slnx")]
-        public void WhenPassedAProjectWithoutATypeGuidItErrors(string solutionCommand, string solutionExtension)
+        public void WhenPassedAProjectWithoutATypeGuidOrDefaultTypeGuidItErrors(string solutionCommand, string solutionExtension)
         {
             var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
@@ -819,7 +820,7 @@ Options:
         [InlineData("solution", ".sln")]
         [InlineData("sln", ".slnx")]
         [InlineData("solution", ".slnx")]
-        public void WhenPassedAProjectWithoutATypeGuidGetDefaultGuid(string solutionCommand, string solutionExtension)
+        public void WhenPassedAProjectWithDefaultProjectGuidItPasses(string solutionCommand, string solutionExtension)
         {
             var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndDefaultProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
