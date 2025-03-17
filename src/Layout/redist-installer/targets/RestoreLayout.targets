@@ -71,7 +71,6 @@
     <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
     <SdkRootUrl>$(PublicBaseURL)Sdk/$(FullNugetVersion)</SdkRootUrl>
 
-    <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(Architecture)' == 'arm'">false</IncludeWpfAndWinForms>
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == '' AND '$(OS)' == 'Windows_NT'">true</IncludeWpfAndWinForms>
     <IncludeWpfAndWinForms Condition="'$(IncludeWpfAndWinForms)' == ''">false</IncludeWpfAndWinForms>
   </PropertyGroup>

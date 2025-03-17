@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli;
 internal sealed class TestApplication : IDisposable
 {
     private readonly TestModule _module;
-    private readonly List<string> _args;
+    private readonly BuildOptions _buildOptions;
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
@@ -35,10 +35,10 @@ internal sealed class TestApplication : IDisposable
 
     public TestModule Module => _module;
 
-    public TestApplication(TestModule module, List<string> args)
+    public TestApplication(TestModule module, BuildOptions buildOptions)
     {
         _module = module;
-        _args = args;
+        _buildOptions = buildOptions;
     }
 
     public void AddExecutionId(string executionId)
@@ -85,22 +85,17 @@ internal sealed class TestApplication : IDisposable
     }
 
     private string GetFileName(TestOptions testOptions, bool isDll)
-    {
-        if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
-        {
-            return isDll ? Environment.ProcessPath : _module.RunProperties.RunCommand;
-        }
-
-        return Environment.ProcessPath;
-    }
+        => isDll ? Environment.ProcessPath : _module.RunProperties.RunCommand;
 
     private string GetArguments(TestOptions testOptions, bool isDll)
     {
-        if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
+        if (testOptions.HasFilterMode || !isDll || !IsArchitectureSpecified(testOptions))
         {
             return BuildArgs(testOptions, isDll);
         }
 
+        // We fallback to dotnet run only when we have a dll and an architecture is specified.
+        // TODO: Is this a valid case?
         return BuildArgsWithDotnetRun(testOptions);
     }
 
@@ -312,6 +307,11 @@ internal sealed class TestApplication : IDisposable
         builder.Append($" {CommonOptions.NoRestoreOption.Name}");
         builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
 
+        // TODO: Instead of passing Architecture and Configuration this way, pass _buildOptions.MSBuildArgs
+        // _buildOptions.MSBuildArgs will include all needed global properties.
+        // TODO: Care to be taken when dealing with -bl.
+        // We will want to adjust the file name here.
+
         if (!string.IsNullOrEmpty(testOptions.Architecture))
         {
             builder.Append($" {CommonOptions.ArchitectureOption.Name} {testOptions.Architecture}");
@@ -341,8 +341,9 @@ internal sealed class TestApplication : IDisposable
             builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
         }
 
-        builder.Append(_args.Count != 0
-            ? _args.Aggregate((a, b) => $"{a} {b}")
+        var args = _buildOptions.UnmatchedTokens;
+        builder.Append(args.Count != 0
+            ? args.Aggregate((a, b) => $"{a} {b}")
             : string.Empty);
 
         builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name} {_module.RunProperties.RunArguments}");

@@ -30,6 +30,8 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         bool hasFailed = false;
         try
         {
+            ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
+
             PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
 
             InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
@@ -37,21 +39,21 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
             InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
 
             BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
-            _msBuildHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
-            TestModulesFilterHandler testModulesFilterHandler = new(buildOptions.UnmatchedTokens, _actionQueue, _output);
+            _msBuildHandler = new(buildOptions, _actionQueue, _output);
+            TestModulesFilterHandler testModulesFilterHandler = new(_actionQueue, _output);
 
             _eventHandlers = new TestApplicationsEventHandlers(_executions, _output);
 
             if (testOptions.HasFilterMode)
             {
-                if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
+                if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult, buildOptions))
                 {
                     return ExitCode.GenericFailure;
                 }
             }
             else
             {
-                if (!_msBuildHandler.RunMSBuild(buildOptions))
+                if (!_msBuildHandler.RunMSBuild())
                 {
                     return ExitCode.GenericFailure;
                 }
