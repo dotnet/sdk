@@ -819,6 +819,26 @@ Options:
         [InlineData("solution", ".sln")]
         [InlineData("sln", ".slnx")]
         [InlineData("solution", ".slnx")]
+        public void WhenPassedAProjectWithoutATypeGuidGetDefaultGuid(string solutionCommand, string solutionExtension)
+        {
+            var solutionDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndDefaultProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+            
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(solutionDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", "Unknown.unknownproj");
+            
+            cmd.Should().Pass();
+            cmd.StdErr.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         private async Task WhenSlnContainsSolutionFolderWithDifferentCasingItDoesNotCreateDuplicate(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
