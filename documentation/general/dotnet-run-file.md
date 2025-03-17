@@ -43,7 +43,7 @@ In fact, this command simply materializes the [implicit project file](#implicit-
 This action should not change the behavior of the target program.
 
 ```ps1
-dotnet project add
+dotnet project convert
 ```
 
 ## Target path
