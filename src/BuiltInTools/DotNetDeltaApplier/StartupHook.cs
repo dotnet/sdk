@@ -1,101 +1,121 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.IO.Pipes;
+using Microsoft.DotNet.Watcher;
 using Microsoft.Extensions.HotReload;
 
 internal sealed class StartupHook
 {
-    private static readonly bool LogDeltaClientMessages = Environment.GetEnvironmentVariable("HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES") == "1";
+    private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages) == "1";
+    private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName);
+    private static readonly string s_targetProcessPath = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath);
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
     /// </summary>
     public static void Initialize()
     {
-        ClearHotReloadEnvironmentVariables(Environment.GetEnvironmentVariable, Environment.SetEnvironmentVariable);
+        var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
 
-        Task.Run(async () =>
+        // Workaround for https://github.com/dotnet/sdk/issues/40484
+        // When launching the application process dotnet-watch sets Hot Reload environment variables via CLI environment directives (dotnet [env:X=Y] run).
+        // Currently, the CLI parser sets the env variables to the dotnet.exe process itself, rather then to the target process.
+        // This may cause the dotnet.exe process to connect to the named pipe and break it for the target process.
+        if (!IsMatchingProcess(processPath, s_targetProcessPath))
         {
-            using var hotReloadAgent = new HotReloadAgent(Log);
+            Log($"Ignoring process '{processPath}', expecting '{s_targetProcessPath}'");
+            return;
+        }
+
+        Log($"Loaded into process: {processPath}");
+
+        ClearHotReloadEnvironmentVariables();
+
+        _ = Task.Run(async () =>
+        {
+            Log($"Connecting to hot-reload server");
+
+            const int TimeOutMS = 5000;
+
+            using var pipeClient = new NamedPipeClientStream(".", s_namedPipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
             try
             {
-                await ReceiveDeltas(hotReloadAgent);
+                await pipeClient.ConnectAsync(TimeOutMS);
+                Log("Connected.");
+            }
+            catch (TimeoutException)
+            {
+                Log($"Failed to connect in {TimeOutMS}ms.");
+                return;
+            }
+
+            using var agent = new HotReloadAgent(pipeClient, Log);
+            try
+            {
+                await agent.ReceiveDeltasAsync();
             }
             catch (Exception ex)
             {
                 Log(ex.Message);
             }
+
+            Log("Stopped received delta updates. Server is no longer connected.");
         });
     }
 
-    internal static void ClearHotReloadEnvironmentVariables(
-        Func<string, string?> getEnvironmentVariable,
-        Action<string, string?> setEnvironmentVariable)
+    public static bool IsMatchingProcess(string processPath, string targetProcessPath)
     {
-        // Workaround for https://github.com/dotnet/runtime/issues/58000
-        // Clear any hot-reload specific environment variables. This should prevent child processes from being
-        // affected by the current app's hot reload settings.
-        const string StartupHooksEnvironment = "DOTNET_STARTUP_HOOKS";
-        var environment = getEnvironmentVariable(StartupHooksEnvironment);
-        setEnvironmentVariable(StartupHooksEnvironment, RemoveCurrentAssembly(environment));
+        var comparison = Path.DirectorySeparatorChar == '\\' ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var (shorter, longer) = (processPath.Length > targetProcessPath.Length) ? (targetProcessPath, processPath) : (processPath, targetProcessPath);
 
-        static string? RemoveCurrentAssembly(string? environment)
+        // one or both have no extension, or they have the same extension
+        if (longer.StartsWith(shorter, comparison))
         {
-            if (string.IsNullOrEmpty(environment))
-            {
-                return environment;
-            }
-
-            var assemblyLocation = typeof(StartupHook).Assembly.Location;
-            var updatedValues = environment.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-                .Where(e => !string.Equals(e, assemblyLocation, StringComparison.OrdinalIgnoreCase));
-
-            return string.Join(Path.PathSeparator, updatedValues);
+            var suffix = longer[shorter.Length..];
+            return suffix is "" || suffix.Equals(".exe", comparison) || suffix.Equals(".dll", comparison);
         }
+
+        // different extension:
+        return (processPath.EndsWith(".exe", comparison) || processPath.EndsWith(".dll", comparison)) &&
+               (targetProcessPath.EndsWith(".exe", comparison) || targetProcessPath.EndsWith(".dll", comparison)) &&
+               string.Equals(processPath[..^4], targetProcessPath[..^4], comparison);
     }
 
-    public static async Task ReceiveDeltas(HotReloadAgent hotReloadAgent)
+    internal static void ClearHotReloadEnvironmentVariables()
     {
-        Log("Attempting to receive deltas.");
+        // Clear any hot-reload specific environment variables. This prevents child processes from being
+        // affected by the current app's hot reload settings. See https://github.com/dotnet/runtime/issues/58000
 
-        // This value is configured by dotnet-watch when the app is to be launched.
-        var namedPipeName = Environment.GetEnvironmentVariable("DOTNET_HOTRELOAD_NAMEDPIPE_NAME") ??
-            throw new InvalidOperationException("DOTNET_HOTRELOAD_NAMEDPIPE_NAME was not specified.");
+        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks,
+            RemoveCurrentAssembly(Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks)));
 
-        using var pipeClient = new NamedPipeClientStream(".", namedPipeName, PipeDirection.InOut, PipeOptions.CurrentUserOnly | PipeOptions.Asynchronous);
-        try
+        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName, "");
+        Environment.SetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages, "");
+    }
+
+    internal static string RemoveCurrentAssembly(string environment)
+    {
+        if (environment is "")
         {
-            await pipeClient.ConnectAsync(5000);
-            Log("Connected.");
-        }
-        catch (TimeoutException)
-        {
-            Log("Unable to connect to hot-reload server.");
-            return;
-        }
-
-        var initPayload = new ClientInitializationPayload(hotReloadAgent.Capabilities);
-        Log("Writing capabilities: " + initPayload.Capabilities);
-        initPayload.Write(pipeClient);
-
-        while (pipeClient.IsConnected)
-        {
-            var update = await UpdatePayload.ReadAsync(pipeClient, default);
-            Log("Attempting to apply deltas.");
-
-            hotReloadAgent.ApplyDeltas(update.Deltas);
-            pipeClient.WriteByte(UpdatePayload.ApplySuccessValue);
+            return environment;
         }
 
-        Log("Stopped received delta updates. Server is no longer connected.");
+        var assemblyLocation = typeof(StartupHook).Assembly.Location;
+        var updatedValues = environment.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Where(e => !string.Equals(e, assemblyLocation, StringComparison.OrdinalIgnoreCase));
+
+        return string.Join(Path.PathSeparator, updatedValues);
     }
 
     private static void Log(string message)
     {
-        if (LogDeltaClientMessages)
+        if (s_logToStandardOutput)
         {
-            Console.WriteLine(message);
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine($"dotnet watch 🕵️ [{s_namedPipeName}] {message}");
+            Console.ResetColor();
         }
     }
 }

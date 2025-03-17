@@ -4,14 +4,19 @@
     <StaticWebAssetsSdkRoot>$(RepoRoot)\src\StaticWebAssetsSdk\</StaticWebAssetsSdkRoot>
     <PackageId>Microsoft.NET.Sdk.StaticWebAssets</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tasks</OutDirName>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <OutputType>Library</OutputType>
+    <Description>SDK for building and publishing applications containing static web assets.</Description>
+    <RootNamespace>Microsoft.NET.Sdk.StaticWebAssets</RootNamespace>
 
-    <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
@@ -28,35 +33,26 @@
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <Description>SDK for building and publishing applications containing static web assets.</Description>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Microsoft.NET.Sdk.StaticWebAssets</RootNamespace>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" Condition="'$(TargetFramework)'=='net472'" />
-    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)'=='net472'" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.Css.Parser" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="**\*.cs" />
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup>
-    <AdditionalContent Include="$(StaticWebAssetsSdkRoot)Targets\**\*.*">
-      <Pack>true</Pack>
-      <PackagePath>targets</PackagePath>
-    </AdditionalContent>
-    <AdditionalContent Include="$(StaticWebAssetsSdkRoot)Sdk\**\*.*">
-      <Pack>true</Pack>
-      <PackagePath>Sdk</PackagePath>
-    </AdditionalContent>
+  <!-- Only include these files in the outer build to avoid double writes. -->
+  <ItemGroup Condition="'$(IsCrossTargetingBuild)' == 'true'">
+    <AdditionalContent Include="$(StaticWebAssetsSdkRoot)Targets\**\*.*"
+                       Pack="true"
+                       PackagePath="targets" />
+    <AdditionalContent Include="$(StaticWebAssetsSdkRoot)Sdk\**\*.*"
+                       Pack="true"
+                       PackagePath="Sdk" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -66,49 +62,63 @@
     </PackageReference>
   </ItemDefinitionGroup>
 
-  <Target Name="CopyFileSystemGlobbing" BeforeTargets="PrepareAdditionalFilesToLayout" AfterTargets="ResolveReferences" Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">
+  <Target Name="CopyFileSystemGlobbing"
+          BeforeTargets="PrepareAdditionalFilesToLayout"
+          AfterTargets="ResolveReferences"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <ItemGroup>
       <_FileSystemGlobbing Include="@(ReferencePath)" Condition="'%(ReferencePath.NuGetPackageId)' == 'Microsoft.Extensions.FileSystemGlobbing'" />
-      <_FileSystemGlobbingContent Include ="@(_FileSystemGlobbing)" TargetPath="tasks\$(SdkTargetFramework)\%(_FileSystemGlobbing.Filename)%(_FileSystemGlobbing.Extension)" />
-      <AdditionalContent Include="@(_FileSystemGlobbing)" PackagePath="tasks\$(SdkTargetFramework)" />
+      <_FileSystemGlobbingContent Include="@(_FileSystemGlobbing)" TargetPath="tasks\$(TargetFramework)\%(_FileSystemGlobbing.Filename)%(_FileSystemGlobbing.Extension)" />
+      <AdditionalContent Include="@(_FileSystemGlobbing)" PackagePath="tasks\$(TargetFramework)" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(_FileSystemGlobbingContent)" DestinationFiles="@(_FileSystemGlobbingContent->'$(PackageLayoutOutputPath)%(TargetPath)')">
+    <Copy SourceFiles="@(_FileSystemGlobbingContent)"
+          DestinationFiles="@(_FileSystemGlobbingContent->'$(PackageLayoutOutputPath)%(TargetPath)')"
+          SkipUnchangedFiles="true">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
 
-  <Target Name="CopyCssParser" BeforeTargets="PrepareAdditionalFilesToLayout" AfterTargets="ResolveReferences" Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">
+  <Target Name="CopyCssParser"
+          BeforeTargets="PrepareAdditionalFilesToLayout"
+          AfterTargets="ResolveReferences"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <ItemGroup>
-      <_CssParser Include="@(ReferencePath)" Condition="'%(ReferencePath.NuGetPackageId)' == 'Microsoft.Css.Parser'" />
-      <_CssParserContent Include ="@(_CssParser)" TargetPath="tasks\$(SdkTargetFramework)\%(_CssParser.Filename)%(_CssParser.Extension)" />
-      <AdditionalContent Include="@(_CssParser)" PackagePath="tasks\$(SdkTargetFramework)" />
+      <_CssParser Include="@(ReferencePath->WithMetadataValue('NuGetPackageId', 'Microsoft.Css.Parser'))" />
+      <_CssParserContent Include="@(_CssParser)" TargetPath="tasks\$(TargetFramework)\%(_CssParser.Filename)%(_CssParser.Extension)" />
+      <AdditionalContent Include="@(_CssParser)" PackagePath="tasks\$(TargetFramework)" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(_CssParserContent)" DestinationFiles="@(_CssParserContent->'$(PackageLayoutOutputPath)%(TargetPath)')">
+    <Copy SourceFiles="@(_CssParserContent)"
+          DestinationFiles="@(_CssParserContent->'$(PackageLayoutOutputPath)%(TargetPath)')"
+          SkipUnchangedFiles="true">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
 
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
-      <LayoutFile Include="@(AdditionalContent)" Condition="'%(AdditionalContent.PackagePath)' != '' and '%(AdditionalContent.PackagePath)' != 'Icon.png'">
-        <TargetPath>%(AdditionalContent.PackagePath)\%(AdditionalContent.RecursiveDir)%(AdditionalContent.Filename)%(AdditionalContent.Extension)</TargetPath>
-      </LayoutFile>
+      <LayoutFile Include="@(AdditionalContent)"
+                  Condition="'%(AdditionalContent.PackagePath)' != '' and '%(AdditionalContent.PackagePath)' != 'Icon.png'"
+                  TargetPath="%(AdditionalContent.PackagePath)\%(AdditionalContent.RecursiveDir)%(AdditionalContent.Filename)%(AdditionalContent.Extension)" />
     </ItemGroup>
   </Target>
 
   <Target Name="CopyAdditionalFilesToLayout"
           DependsOnTargets="PrepareAdditionalFilesToLayout"
-          AfterTargets="Build" Inputs="@(LayoutFile)"
+          AfterTargets="Build"
+          Inputs="@(LayoutFile)"
           Outputs="@(LayoutFile->'$(PackageLayoutOutputPath)%(TargetPath)')">
     <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile->'$(PackageLayoutOutputPath)%(TargetPath)')">
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
 
-  <Target Name="PackLayout" DependsOnTargets="CopyAdditionalFilesToLayout" BeforeTargets="$(GenerateNuspecDependsOn)">
+  <Target Name="PackLayout"
+          DependsOnTargets="CopyAdditionalFilesToLayout"
+          BeforeTargets="$(GenerateNuspecDependsOn)">
     <Message Importance="high" Text="Packing assets at $(PackageLayoutOutputPath)" />
+
     <ItemGroup>
       <Content Include="$(PackageLayoutOutputPath)**\*" PackagePath="\" />
     </ItemGroup>
