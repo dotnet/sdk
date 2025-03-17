@@ -1,11 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Authoring.Tasks.IntegrationTests

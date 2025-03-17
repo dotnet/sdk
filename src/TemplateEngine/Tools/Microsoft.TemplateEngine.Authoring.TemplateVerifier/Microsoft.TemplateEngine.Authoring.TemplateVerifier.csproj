@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Verify.DiffPlex" />
-    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
