@@ -24,7 +24,7 @@ public class AzureDevOpsClient : IDisposable
     private const string _azureDevOpsApiVersion = "7.1-preview.5";
     // download in 100 MB chunks
     private const int _downloadBufferSize = 1024 * 1024 * 100;
-    private const int _httpTimeoutSeconds = 300;
+    private const int _httpTimeoutSeconds = 1800; // 30 minutes
 
     public AzureDevOpsClient(
         string? azureDevOpsToken,
@@ -52,9 +52,17 @@ public class AzureDevOpsClient : IDisposable
     /// <summary>
     /// Downloads a build artifact as zip file
     /// </summary>
-    public async Task DownloadArtifactZip(string buildId, string artifactName, string downloadPath, int retryCount)
+    public async Task DownloadArtifactZip(
+        string buildId,
+        string artifactName,
+        string downloadPath,
+        int retryCount,
+        AzureDevOpsArtifactInformation? artifactInformation = null)
     {
-        var artifactInformation = await GetArtifactInformation(buildId, artifactName, retryCount);
+        if (artifactInformation == null)
+        {
+            artifactInformation = await GetArtifactInformation(buildId, artifactName, retryCount);
+        }
         string downloadUrl = artifactInformation.Resource.DownloadUrl;
 
         _logger.LogMessage(MessageImportance.High, $"Downloading artifact zip from {downloadUrl}");
@@ -95,9 +103,23 @@ public class AzureDevOpsClient : IDisposable
         }
     }
 
-    public async Task<ArtifactFiles> GetArtifactFilesInformation(string buildId, string artifactName, int retryCount)
+    public async Task<ArtifactFiles> GetArtifactFilesInformation(
+        string buildId,
+        string artifactName,
+        int retryCount,
+        AzureDevOpsArtifactInformation? artifactInformation = null)
     {
-        var artifactInformation = await GetArtifactInformation(buildId, artifactName, retryCount);
+        if (artifactInformation == null)
+        {
+            artifactInformation = await GetArtifactInformation(buildId, artifactName, retryCount);
+        }
+
+        if (artifactInformation.Resource.Type == "Container")
+        {
+            throw new InvalidOperationException($"Artifact {artifactName} is a container." +
+                $"In order to get the list of files, please download and unzip the artifact.");
+        }
+
         string artifactId = artifactInformation.Resource.Data;
 
         var getManifestUrl = $"build/builds/{buildId}/artifacts?artifactName={artifactName}&fileId={artifactId}&fileName={artifactName}&api-version={_azureDevOpsApiVersion}";

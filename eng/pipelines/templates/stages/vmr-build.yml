@@ -998,7 +998,6 @@ stages:
         steps:
         - template: ../steps/vmr-validate-signing.yml
           parameters:
-            artifactName: PackageArtifacts
             continueOnError: true
             OS: Windows_NT
       - job: ValidateSigning_Mac
@@ -1008,7 +1007,6 @@ stages:
         steps:
         - template: ../steps/vmr-validate-signing.yml
           parameters:
-            artifactName: BlobArtifacts
             continueOnError: true
             OS: Darwin
       - job: ValidateSigning_Linux
@@ -1018,6 +1016,5 @@ stages:
         steps:
         - template: ../steps/vmr-validate-signing.yml
           parameters:
-            artifactName: BlobArtifacts
             continueOnError: true
             OS: Linux
