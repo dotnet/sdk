@@ -161,11 +161,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
-    <BuildCompressionFormats>$(BuildCompressionFormats);gzip</BuildCompressionFormats>
-    <PublishCompressionFormats>$(PublishCompressionFormats);gzip;brotli</PublishCompressionFormats>
+    <EnableDefaultCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == ''">true</EnableDefaultCompressionFormats>
+    <BuildCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(BuildCompressionFormats);gzip</BuildCompressionFormats>
+    <PublishCompressionFormats Condition="'$(EnableDefaultCompressionFormats)' == 'true'">$(PublishCompressionFormats);gzip;brotli</PublishCompressionFormats>
     <DisableBuildCompression Condition="'$(DisableBuildCompression)' == ''">false</DisableBuildCompression>
-    <CompressionIncludePatterns>$(CompressionIncludePatterns)</CompressionIncludePatterns>
-    <CompressionExcludePatterns>$(CompressionExcludePatterns)</CompressionExcludePatterns>
+    <!-- Support passing in a custom compression level to brotli and respect the old internal flag for blazor -->
+    <BrotliCompressionLevel Condition="'$(_BlazorBrotliCompressionLevel)' != ''">$(_BlazorBrotliCompressionLevel)</BrotliCompressionLevel>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -195,7 +196,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           GeneratePublishCompressedStaticWebAssets
             ResolvePublishCompressedStaticWebAssetsConfiguration
      -->
-    <ResolvePublishRelatedStaticWebAssetsDependsOn Condition="'$(DisableBuildCompression)' != 'true'">
+    <ResolvePublishRelatedStaticWebAssetsDependsOn>
       ResolvePublishCompressedStaticWebAssets;
       $(ResolvePublishRelatedStaticWebAssetsDependsOn)
     </ResolvePublishRelatedStaticWebAssetsDependsOn>
@@ -216,7 +217,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_DotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</_DotNetHostFileName>
   </PropertyGroup>
 
-<!-- Build -->
+  <!-- Build -->
 
   <Target Name="ResolveBuildCompressedStaticWebAssets" DependsOnTargets="$(ResolveBuildCompressedStaticWebAssetsDependsOn)">
     <DefineStaticWebAssets
@@ -265,7 +266,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <BrotliCompress Condition="'@(_BrotliCompressedStaticWebAssets)' != ''"
       FilesToCompress="@(_BrotliCompressedStaticWebAssets)"
-      CompressionLevel="$(_BlazorBrotliCompressionLevel)"
+      CompressionLevel="$(BrotliCompressionLevel)"
       ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)" />
