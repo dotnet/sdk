@@ -1,6 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -68,7 +71,7 @@ public class DiscoverPrecompressedAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private StaticWebAsset FindRelatedAsset(StaticWebAsset candidate, IDictionary<string, StaticWebAsset> candidates)
+    private static StaticWebAsset FindRelatedAsset(StaticWebAsset candidate, IDictionary<string, StaticWebAsset> candidates)
     {
         // The only pattern that we support is a related asset that lives in the same directory, with the same name,
         // but without the compression extension. In any other case we are not going to consider the assets related
@@ -77,7 +80,7 @@ public class DiscoverPrecompressedAssets : Task
         return candidates.TryGetValue(identityWithoutExtension, out var relatedAsset) ? relatedAsset : null;
     }
 
-    private bool HasCompressionExtension(string relativePath)
+    private static bool HasCompressionExtension(string relativePath)
     {
         return relativePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) ||
                relativePath.EndsWith(".br", StringComparison.OrdinalIgnoreCase);
@@ -86,7 +89,7 @@ public class DiscoverPrecompressedAssets : Task
     private static bool IsCompressedAsset(StaticWebAsset asset)
         => string.Equals("Content-Encoding", asset.AssetTraitName, StringComparison.Ordinal);
 
-    private void UpdateCompressedAsset(StaticWebAsset asset, StaticWebAsset relatedAsset)
+    private static void UpdateCompressedAsset(StaticWebAsset asset, StaticWebAsset relatedAsset)
     {
         string fileExtension;
         string assetTraitValue;
@@ -102,7 +105,6 @@ public class DiscoverPrecompressedAssets : Task
             assetTraitValue = GzipAssetTraitValue;
         }
 
-        var originalItemSpec = asset.OriginalItemSpec;
         var relativePath = relatedAsset.EmbedTokens(relatedAsset.RelativePath);
 
         asset.RelativePath = $"{relativePath}{fileExtension}";

@@ -3,27 +3,26 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class ParseCommandParser
 {
-    internal static class ParseCommandParser
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        private static readonly CliCommand Command = ConstructCommand();
+        return Command;
+    }
 
-        public static CliCommand GetCommand()
+    private static CliCommand ConstructCommand()
+    {
+        var command = new CliCommand("parse")
         {
-            return Command;
-        }
+            Hidden = true
+        };
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new CliCommand("parse")
-            {
-                Hidden = true
-            };
+        command.SetAction(ParseCommand.Run);
 
-            command.SetAction(ParseCommand.Run);
-
-            return command;
-        }
+        return command;
     }
 }

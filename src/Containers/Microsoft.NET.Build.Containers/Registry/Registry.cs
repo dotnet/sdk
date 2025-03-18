@@ -411,15 +411,22 @@ internal sealed class Registry
             return localPath;
         }
 
-        // No local copy, so download one
-        using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
-
         string tempTarballPath = ContentStore.GetTempFile();
-        using (FileStream fs = File.Create(tempTarballPath))
-        {
-            await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
-        }
 
+        try
+        {
+            // No local copy, so download one
+            using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
+
+            using (FileStream fs = File.Create(tempTarballPath))
+            {
+                await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        catch (Exception)
+        {
+            throw new UnableToDownloadFromRepositoryException(repository);
+        }
         cancellationToken.ThrowIfCancellationRequested();
 
         File.Move(tempTarballPath, localPath, overwrite: true);

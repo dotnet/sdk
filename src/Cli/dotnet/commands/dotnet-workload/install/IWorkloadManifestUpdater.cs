@@ -5,27 +5,26 @@ using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install
+namespace Microsoft.DotNet.Workloads.Workload.Install;
+
+internal interface IWorkloadManifestUpdater
 {
-    internal interface IWorkloadManifestUpdater
-    {
-        Task UpdateAdvertisingManifestsAsync(bool includePreviews, bool useWorkloadSets = false, DirectoryPath? offlineCache = null);
+    Task UpdateAdvertisingManifestsAsync(bool includePreviews, bool useWorkloadSets = false, DirectoryPath? offlineCache = null);
 
-        Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+    Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
 
-        IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
+    IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
 
-        string GetAdvertisedWorkloadSetVersion();
-        IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, WorkloadHistoryRecorder recorder = null);
-        IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryState state);
-        IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesForWorkloadSet(WorkloadSet workloadSet);
+    string GetAdvertisedWorkloadSetVersion();
+    IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, WorkloadHistoryRecorder recorder = null);
+    IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryState state);
+    IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesForWorkloadSet(WorkloadSet workloadSet);
 
-        Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
+    Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
 
-        IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads);
+    IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads);
 
-        void DeleteUpdatableWorkloadsFile();
-    }
-
-    internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);
+    void DeleteUpdatableWorkloadsFile();
 }
+
+internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);

@@ -1,14 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.BuildServer;
+#nullable disable
+
+using Microsoft.DotNet.Cli.BuildServer;
+using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;
 using NuGet.Frameworks;
-using LocalizableStrings = Microsoft.DotNet.BuildServer.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Cli.BuildServer.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.BuildServerTests
 {
