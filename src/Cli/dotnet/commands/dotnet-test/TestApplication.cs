@@ -307,20 +307,11 @@ internal sealed class TestApplication : IDisposable
         builder.Append($" {CommonOptions.NoRestoreOption.Name}");
         builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
 
-        // TODO: Instead of passing Architecture and Configuration this way, pass _buildOptions.MSBuildArgs
-        // _buildOptions.MSBuildArgs will include all needed global properties.
-        // TODO: Care to be taken when dealing with -bl.
-        // We will want to adjust the file name here.
-
-        if (!string.IsNullOrEmpty(testOptions.Architecture))
+        foreach (var arg in _buildOptions.MSBuildArgs)
         {
-            builder.Append($" {CommonOptions.ArchitectureOption.Name} {testOptions.Architecture}");
+            builder.Append($" {arg}");
         }
 
-        if (!string.IsNullOrEmpty(testOptions.Configuration))
-        {
-            builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {testOptions.Configuration}");
-        }
 
         if (!string.IsNullOrEmpty(_module.TargetFramework))
         {
