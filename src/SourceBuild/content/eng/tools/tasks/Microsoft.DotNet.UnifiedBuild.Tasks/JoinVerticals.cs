@@ -50,7 +50,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         List<AssetVerticalMatchResult> selectedVerticals = joinVerticalsAssetSelector.SelectAssetMatchingVertical(manifests).ToList();
 
         var notMatchedAssets = selectedVerticals.Where(o => o.MatchType == AssetVerticalMatchType.NotSpecified).ToList();
-        Log.LogMessage(MessageImportance.High, $"### {notMatchedAssets.Count} Assets not properly matched to vertical: ###");
+        Log.LogError($"### {notMatchedAssets.Count} Assets not properly matched to vertical: ###");
         foreach (var matchResult in notMatchedAssets)
         {
             Log.LogMessage(MessageImportance.High, $"Asset: {matchResult.AssetId} -- Matched to: {matchResult.VerticalName}, Other verticals: {string.Join(", ", matchResult.OtherVerticals)}");
@@ -85,7 +85,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _packagesFolderName, _releaseFolderName), packagesOutputDirectory, assetListPackages);
             CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _assetsFolderName, _releaseFolderName), assetsOutputDirectory, assetListBlobs);
         }
-        
+
         return !Log.HasLoggedErrors;
 
 
