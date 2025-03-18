@@ -85,7 +85,7 @@
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)build</BuildActions>
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
-    <BuildActions Condition="'$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
+    <BuildActions Condition="'$(DotNetBuildSign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
     <TestActions>$(FlagParameterPrefix)test</TestActions>
   </PropertyGroup>

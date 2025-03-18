@@ -125,7 +125,7 @@ while [[ $# > 0 ]]; do
       test=true
       ;;
     -sign)
-      properties+=( "/p:Sign=true" )
+      properties+=( "/p:DotNetBuildSign=true" )
       ;;
 
     # Source-only settings

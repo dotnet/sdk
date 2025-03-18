@@ -64,7 +64,7 @@ if ($test) {
 
 $arguments = @()
 if ($sign) {
-  $arguments += "/p:Sign=true"
+  $arguments += "/p:DotNetBuildSign=true"
 }
 
 if ($buildRepoTests) {
@@ -84,7 +84,7 @@ function Build {
     $buildProj `
     /p:Projects=$project `
     /p:RepoRoot=$RepoRoot `
-    -tl:off `
+    "-tl:off" `
     $bl `
     /p:Configuration=$configuration `
     /p:DotNetPublishUsingPipelines=true `

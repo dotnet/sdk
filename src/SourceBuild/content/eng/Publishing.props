@@ -1,5 +1,6 @@
 <Project InitialTargets="DiscoverArtifacts">
   <PropertyGroup>
+    <EnableDefaultArtifacts>false</EnableDefaultArtifacts>
     <PushToLocalStorage>true</PushToLocalStorage>
     <PreserveRepoOrigin>true</PreserveRepoOrigin>
     <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
