@@ -850,7 +850,7 @@ namespace Microsoft.NET.Build.Tasks
                             // If there's an available runtime pack, use it instead of the ILCompiler package for target-specific bits.
                             bool useRuntimePackForAllTargets = false;
                             string targetPackNamePattern = packNamePattern;
-                            if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern)
+                            if (knownPack.GetMetadata("ILCompilerRuntimePackNamePattern") is string runtimePackNamePattern && runtimePackNamePattern != string.Empty)
                             {
                                 targetPackNamePattern = runtimePackNamePattern;
                                 useRuntimePackForAllTargets = true;
