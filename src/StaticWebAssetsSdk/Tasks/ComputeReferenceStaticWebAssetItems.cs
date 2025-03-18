@@ -26,6 +26,8 @@ public class ComputeReferenceStaticWebAssetItems : Task
 
     public bool UpdateSourceType { get; set; } = true;
 
+    public bool MakeReferencedAssetOriginalItemSpecAbsolute { get; set; }
+
     [Output]
     public ITaskItem[] StaticWebAssets { get; set; }
 
@@ -63,6 +65,14 @@ public class ComputeReferenceStaticWebAssetItems : Task
                 if (ShouldIncludeAssetAsReference(selected, out var reason))
                 {
                     selected.SourceType = UpdateSourceType ? StaticWebAsset.SourceTypes.Project : selected.SourceType;
+                    if (MakeReferencedAssetOriginalItemSpecAbsolute)
+                    {
+                        selected.OriginalItemSpec = Path.GetFullPath(selected.OriginalItemSpec);
+                    }
+                    else
+                    {
+                        selected.OriginalItemSpec = selected.OriginalItemSpec;
+                    }
                     resultAssets.Add(selected);
                 }
                 Log.LogMessage(MessageImportance.Low, reason);
