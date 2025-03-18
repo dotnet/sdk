@@ -45,9 +45,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
                 // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4892
                 StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.Diagnostics.NETCore.Client") ||
                 StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.NET.Sdk.Aspire.Manifest-8.0.100") ||
-                // Skip all Nuget packaged as they are missing UB version suffix +100 patch version
-                // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4894
-                StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.Asset.RepoOrigin, "nuget-client") ||
                 // Skip productVersion.txt files from all repos except sdk
                 // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4596
                 (assetVerticalMatch.AssetId.Contains("/productVersion.txt", StringComparison.OrdinalIgnoreCase) && (assetVerticalMatch.Asset.RepoOrigin != "sdk"));
