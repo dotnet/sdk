@@ -391,8 +391,9 @@ public class Program
             {
                 using (PackageArchiveReader baselinePackageReader = new PackageArchiveReader(baselineNugetPackagePath))
                 {
-                    ComparePackageFileLists(mapping, diffPackageReader, baselinePackageReader);
+                    await ComparePackageFileLists(mapping, diffPackageReader, baselinePackageReader);
                     await ComparePackageAssemblyVersions(mapping, diffPackageReader, baselinePackageReader);
+                    await ComparePackageMetadata(mapping, diffPackageReader, baselinePackageReader);
                 }
             }
         }
@@ -403,12 +404,90 @@ public class Program
     }
 
     /// <summary>
+    /// Compare nuspecs for meaningful equality
+    /// </summary>
+    /// <param name="mapping">Mapping to compare</param>
+    /// <param name="diffPackageReader">Diff (VMR) package reader</param>
+    /// <param name="baselinePackageReader">Baseline package reader</param>
+    private async Task ComparePackageMetadata(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader baselinePackageReader)
+    {
+        try
+        {
+            var diffNuspecReader = await diffPackageReader.GetNuspecReaderAsync(CancellationToken.None);
+            var baseNuspecReader = await baselinePackageReader.GetNuspecReaderAsync(CancellationToken.None);
+
+            // Compare basic fields
+            ComparePackageMetadataStringField(mapping, "Authors", baseNuspecReader.GetAuthors(), diffNuspecReader.GetAuthors());
+            ComparePackageMetadataStringField(mapping, "ProjectUrl", baseNuspecReader.GetProjectUrl()?.ToString(), diffNuspecReader.GetProjectUrl()?.ToString());
+            ComparePackageMetadataStringField(mapping, "LicenseUrl", baseNuspecReader.GetLicenseUrl()?.ToString(), diffNuspecReader.GetLicenseUrl()?.ToString());
+            ComparePackageMetadataStringField(mapping, "Copyright", baseNuspecReader.GetCopyright(), diffNuspecReader.GetCopyright());
+            ComparePackageMetadataStringField(mapping, "Tags", baseNuspecReader.GetTags(), diffNuspecReader.GetTags());
+
+            // Compare target frameworks
+            var baseGroups = baseNuspecReader.GetDependencyGroups().ToList();
+            var diffGroups = diffNuspecReader.GetDependencyGroups().ToList();
+
+            var baseTfms = new HashSet<string>(baseGroups.Select(g => g.TargetFramework.GetShortFolderName()), StringComparer.OrdinalIgnoreCase);
+            var diffTfms = new HashSet<string>(diffGroups.Select(g => g.TargetFramework.GetShortFolderName()), StringComparer.OrdinalIgnoreCase);
+
+            if (!baseTfms.SetEquals(diffTfms))
+            {
+                mapping.Issues.Add(new Issue
+                {
+                    IssueType = IssueType.PackageTFMs,
+                    Description = $"Package target frameworks differ: base={string.Join(",", baseTfms)}, diff={string.Join(",", diffTfms)}"
+                });
+            }
+
+            // Compare dependencies within matching TFMs (ignore version differences)
+            foreach (var tfm in baseTfms.Intersect(diffTfms, StringComparer.OrdinalIgnoreCase))
+            {
+                var baseDeps = baseGroups.First(g => g.TargetFramework.GetShortFolderName().Equals(tfm, StringComparison.OrdinalIgnoreCase)).Packages;
+                var diffDeps = diffGroups.First(g => g.TargetFramework.GetShortFolderName().Equals(tfm, StringComparison.OrdinalIgnoreCase)).Packages;
+
+                var baseDepIds = new HashSet<string>(baseDeps.Select(d => d.Id), StringComparer.OrdinalIgnoreCase);
+                var diffDepIds = new HashSet<string>(diffDeps.Select(d => d.Id), StringComparer.OrdinalIgnoreCase);
+
+                if (!baseDepIds.SetEquals(diffDepIds))
+                {
+                    var missingInDiff = baseDepIds.Except(diffDepIds);
+                    var extraInDiff = diffDepIds.Except(baseDepIds);
+
+                    mapping.Issues.Add(new Issue
+                    {
+                        IssueType = IssueType.PackageDependencies,
+                        Description = $"Package dependencies differ in TFM '{tfm}'. "
+                                     + $"Missing from diff: {string.Join(", ", missingInDiff)}; "
+                                     + $"Extra in diff: {string.Join(", ", extraInDiff)}."
+                    });
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            mapping.EvaluationErrors.Add(e.ToString());
+        }
+    }
+
+    private void ComparePackageMetadataStringField(AssetMapping mapping, string fieldName, string baseValue, string diffValue)
+    {
+        if (!StringComparer.OrdinalIgnoreCase.Equals(baseValue ?? string.Empty, diffValue ?? string.Empty))
+        {
+            mapping.Issues.Add(new Issue
+            {
+                IssueType = IssueType.PackageMetadataDifference, // Reuse or define new IssueType if needed
+                Description = $"Package nuspec '{fieldName}': base='{baseValue}' vs diff='{diffValue}'"
+            });
+        }
+    }
+
+    /// <summary>
     /// Compare the file lists of packages, identifying missing and extra files.
     /// </summary>
     /// <param name="mapping">Asset mapping to compare lists for</param>
     /// <param name="diffPackageReader">Diff (VMR) package reader</param>
     /// <param name="basePackageReader">Baseline (old build) package reader</param>
-    private async void ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader basePackageReader)
+    private async Task ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader basePackageReader)
     {
         IEnumerable<string> baselineFiles = (await basePackageReader.GetFilesAsync(CancellationToken.None));
         IEnumerable<string> testFiles = (await diffPackageReader.GetFilesAsync(CancellationToken.None));
