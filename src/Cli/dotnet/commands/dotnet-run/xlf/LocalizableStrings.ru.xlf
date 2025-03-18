@@ -51,11 +51,6 @@ Make the profile names distinct.</source>
         <target state="translated">Профиль запуска с именем "{0}" не существует.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoTopLevelStatements">
-        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
-        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">С помощью параметра -p можно указать только один проект за раз.</target>
