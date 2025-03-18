@@ -515,3 +515,16 @@ indent_style = unset
 insert_final_newline = false
 tab_width = unset
 trim_trailing_whitespace = false
+
+# Build Checks
+[*.{csproj,vbproj,proj,nativeproj,locproj}]
+build_check.BC0101.Severity=suggestion
+build_check.BC0102.Severity=suggestion
+build_check.BC0103.Severity=suggestion
+build_check.BC0104.Severity=suggestion
+build_check.BC0105.Severity=suggestion
+build_check.BC0106.Severity=suggestion
+build_check.BC0107.Severity=suggestion
+build_check.BC0201.Severity=suggestion
+build_check.BC0202.Severity=suggestion
+build_check.BC0203.Severity=suggestion
