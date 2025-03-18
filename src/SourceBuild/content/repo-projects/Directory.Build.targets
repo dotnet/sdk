@@ -3,27 +3,31 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.targets, $(MSBuildThisFileDirectory)..))" />
 
   <PropertyGroup Condition="'$(UseInnerClone)' == 'true'">
-    <BuildArgs>$(BuildArgs) /p:UseInnerClone=true</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:CopySrcInsteadOfClone=true</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</BuildArgs>
+    <CommonArgs>$(CommonArgs) /p:UseInnerClone=true</CommonArgs>
+    <CommonArgs>$(CommonArgs) /p:CopySrcInsteadOfClone=true</CommonArgs>
+    <CommonArgs>$(CommonArgs) /p:CopyWipIntoInnerSourceBuildRepo=true</CommonArgs>
   </PropertyGroup>
 
   <PropertyGroup>
+    <DiskUsageCommand Condition="'$(BuildOS)' == 'windows'">powershell -NoProfile "Get-PSDrive -PSProvider FileSystem -Name (Get-Item "$(RepoRoot.TrimEnd('\'))").PSDrive.Name"</DiskUsageCommand>
+    <DiskUsageCommand Condition="'$(BuildOS)' != 'windows'">df -h $(RepoRoot)</DiskUsageCommand>
+
     <!-- Force use of dotnet msbuild (ignoring global.json contents) unless ForceDotNetMSBuildEngine is explicitly set in the repo project. -->
-    <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(ForceDotNetMSBuildEngine)' != 'false'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
+    <CommonArgs Condition="'$(BuildOS)' == 'windows' and '$(ForceDotNetMSBuildEngine)' != 'false'">$(CommonArgs) $(FlagParameterPrefix)msbuildEngine dotnet</CommonArgs>
+
     <!-- Add the overrides for the shipping and non-shipping packages here to allow repo projects to identify a project as reference-only -->
     <RepoArtifactsShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$([MSBuild]::NormalizeDirectory('$(ArtifactsShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsShippingPackagesDir>
     <RepoArtifactsShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsShippingPackagesDir>
     <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$([MSBuild]::NormalizeDirectory('$(ArtifactsNonShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsNonShippingPackagesDir>
     <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsNonShippingPackagesDir>
-
-    <RepoArtifactsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts'))</RepoArtifactsDir>
-    <RepoArtifactsPackageCache>$([MSBuild]::NormalizeDirectory('$(RepoArtifactsDir)', 'sb', 'package-cache'))</RepoArtifactsPackageCache>
+    <RepoArtifactsPdbArtifactsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsSymStoreDirectory)', '$(RepositoryName)'))</RepoArtifactsPdbArtifactsDir>
 
     <!-- Pass location for packages -->
-    <BuildArgs>$(BuildArgs) /p:SourceBuiltShippingPackagesDir=$(RepoArtifactsShippingPackagesDir)</BuildArgs>
+    <CommonArgs>$(CommonArgs) /p:SourceBuiltShippingPackagesDir=$(RepoArtifactsShippingPackagesDir)</CommonArgs>
     <!-- Trim the trailing slash as it breaks argument parsing on Windows if this is the last argument. -->
-    <BuildArgs>$(BuildArgs) /p:SourceBuiltNonShippingPackagesDir=$(RepoArtifactsNonShippingPackagesDir.TrimEnd('\'))</BuildArgs>
+    <CommonArgs>$(CommonArgs) /p:SourceBuiltNonShippingPackagesDir=$(RepoArtifactsNonShippingPackagesDir.TrimEnd('\'))</CommonArgs>
+    <CommonArgs>$(CommonArgs) /p:SourceBuiltPdbArtifactsDir=$(RepoArtifactsPdbArtifactsDir.TrimEnd('\'))</CommonArgs>
+    <CommonArgs>$(CommonArgs) /p:SourceBuiltNonShippingPackagesDir=$(RepoArtifactsNonShippingPackagesDir.TrimEnd('\'))</CommonArgs>
 
     <!-- Pass RID and Portable/non-portable information -->
     <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
@@ -31,14 +35,15 @@
 
     <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
     <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(TargetArchitecture)</BaseOS>
-    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
-    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
-    <BuildArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
+    <CommonArgs>$(CommonArgs) /p:PortableBuild=$(PortableBuild)</CommonArgs>
+    <CommonArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(CommonArgs) /p:RuntimeOS=$(RuntimeOS)</CommonArgs>
+    <CommonArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(CommonArgs) /p:BaseOS=$(BaseOS)</CommonArgs>
+
+    <!-- Only pass these properites through when necessary to reduce command line noise. -->
+    <CommonArgs Condition="'$(DotNetBuildTests)' == 'true' and '$(DotNetBuildTestsOptOut)' != 'true'">$(CommonArgs) /p:DotNetBuildTests=true</CommonArgs>
   </PropertyGroup>
 
   <PropertyGroup>
-    <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
-
     <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console.
          Enable it by default as with prallel repository builds the log becomes non-readable. -->
     <RepoConsoleLogFile>$(ArtifactsLogRepoDir)$(RepositoryName).log</RepoConsoleLogFile>
@@ -116,6 +121,15 @@
       </RepositoryReferenceInfo>
     </ItemGroup>
 
+    <ItemGroup Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">
+      <RepositoryReferenceInfo Include="$(RepositoryName)">
+        <ShippingSourceName>$(PreviousBuildPassSourceNamePrefix)$(RepositoryName)</ShippingSourceName>
+        <NonShippingSourceName>$(PreviousBuildPassSourceNamePrefix)transport-$(RepositoryName)</NonShippingSourceName>
+        <ShippingPackagesPath>$(ArtifactsShippingPackagesDir)/$(RepositoryName)/</ShippingPackagesPath>
+        <NonShippingPackagesPath>$(ArtifactsNonShippingPackagesDir)/$(RepositoryName)/</NonShippingPackagesPath>
+      </RepositoryReferenceInfo>
+    </ItemGroup>
+
     <ItemGroup Condition="'@(RepositoryReferenceInfo)' != ''">
       <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(ShippingSourceName)')" />
       <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(NonShippingSourceName)')" />
@@ -123,15 +137,12 @@
   </Target>
 
   <Target Name="CopyNuGetConfig"
-          Condition="'$(NuGetConfigFile)' != ''"
-          Inputs="$(MSBuildProjectFullPath);$(OriginalNuGetConfigFile)"
-          Outputs="$(NuGetConfigFile)">
-
+          Condition="'$(NuGetConfigFile)' != ''">
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(NuGetConfigFile)'))" />
 
-    <Copy
-      SourceFiles="$(OriginalNuGetConfigFile)"
-      DestinationFiles="$(NuGetConfigFile)">
+    <Copy SourceFiles="$(OriginalNuGetConfigFile)"
+          DestinationFiles="$(NuGetConfigFile)"
+          SkipUnchangedFiles="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
   </Target>
@@ -236,6 +247,7 @@
       PreviouslySourceBuiltSourceName="$(PreviouslySourceBuiltNuGetSourceName)"
       PrebuiltSourceName="$(PrebuiltNuGetSourceName)"
       SourceBuiltSourceNamePrefix="$(SourceBuiltSourceNamePrefix)"
+      PreviousBuildPassSourceNamePrefix="$(PreviousBuildPassSourceNamePrefix)"
       CustomSources="$(NetSdkSupportingFeedName)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
@@ -294,7 +306,7 @@
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreateBuildInputProps"
-          DependsOnTargets="GetProducedPackagesFromTransitiveReferences"
+          DependsOnTargets="GetProducedPackagesFromTransitiveReferences;GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete">
 
@@ -311,7 +323,7 @@
       Text="Invalid PackageVersionPropsFlowType '$(PackageVersionPropsFlowType)'. Must be 'AllPackages' or 'DependenciesOnly'." />
 
     <PropertyGroup>
-      <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)/eng/Version.Details.xml</_VersionDetailsXml>
+      <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)eng/Version.Details.xml</_VersionDetailsXml>
     </PropertyGroup>
 
     <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
@@ -378,6 +390,7 @@
       <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(DotNetBuildPass)'))" />
 
       <_DependentProjectToSkip Include="@(_DependentProject)" Exclude="@(_DependentProjectCurrentBuildPass)" />
+      <_DependentProjectToSkip AdditionalProperties="GetDependentVerticalAssetsOnly=true" />
 
       <_DependentProject Remove="@(_DependentProject)" />
       <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
@@ -400,8 +413,7 @@
              Condition="'@(_DependentProjectToSkip)' != ''" />
   </Target>
 
-  <Target Name="DiscoverBuiltSdkOverrides"
-          DependsOnTargets="BuildRepoReferences;GetProducedPackagesFromTransitiveReferences">
+  <Target Name="DiscoverBuiltSdkOverrides" DependsOnTargets="GetProducedPackagesFromTransitiveReferences;GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses">
     <!--
       Discover the Arcade SDKs built from the live Arcade source and set them as overrides here.
       This will automatically no-op for Arcade and SBRP, as these packages will not have been produced yet.
@@ -449,6 +461,20 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="SetBuildProperties"
+          DependsOnTargets="GetTransitiveRepositoryReferences">
+    <PropertyGroup>
+      <!-- Infer the projects runtime identifier as the vertical's RID when doing a vertical build
+           and filter down RID lists to the target RID in such a scenario. This is necessary when the host (SDK) rid
+           is different from the target rid, i.e. when building win-x86 with a win-x64 SDK but only when consuming
+           live runtime. Exclude from source-only builds which don't use the portable RID format which causes the
+           ProcessFrameworkReferences not be able to restore for the given RID.  -->
+      <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true' and '@(TransitiveRepositoryReference->AnyHaveMetadataValue('Identity', 'runtime'))' == 'true'">$(BuildArgs) /p:DotNetBuildTargetRidOnly=true</BuildArgs>
+
+      <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(CommonArgs) $(BuildArgs)</BuildCommand>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="RepoBuild"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)Build.complete"
@@ -460,18 +486,18 @@
                             UpdateEngCommonFiles;
                             CreateBuildInputProps;
                             DiscoverBuiltSdkOverrides;
-                            SetSourceBuiltSdkOverrides">
+                            SetSourceBuiltSdkOverrides;
+                            SetBuildProperties">
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
     <Message Importance="High" Text="  $(BuildCommand)" />
     <Message Importance="High" Text="  Log: $(RepoConsoleLogFile)" Condition="'$(MinimalConsoleLogOutput)' == 'true'" />
     <Message Importance="High" Text="  With Environment Variables:"/>
     <Message Importance="High" Text="    %(EnvironmentVariables.Identity)" />
+    <Message Importance="High" Text="    %(BuildEnvironmentVariable.Identity)" Condition="'@(BuildEnvironmentVariable)' != ''" />
 
-    <Message Text="DirSize Before Building $(RepositoryName)" Importance="High"
-             Condition=" '$(CleanWhileBuilding)' == 'true' and '$(BuildOS)' != 'windows'" />
-    <Exec Command="df -h $(RepoRoot)"
-          Condition=" '$(CleanWhileBuilding)' == 'true' and '$(BuildOS)' != 'windows'" />
+    <Message Text="DirSize Before Building $(RepositoryName)" Importance="High" Condition=" '$(CleanWhileBuilding)' == 'true'" />
+    <Exec Command="$(DiskUsageCommand)" Condition="'$(CleanWhileBuilding)' == 'true'" />
 
     <PropertyGroup>
       <FullCommand>$(BuildCommand)</FullCommand>
@@ -490,7 +516,7 @@
 
     <Exec Command="$(FullCommand)"
           WorkingDirectory="$(ProjectDirectory)"
-          EnvironmentVariables="@(EnvironmentVariables)"
+          EnvironmentVariables="@(EnvironmentVariables);@(BuildEnvironmentVariable)"
           IgnoreStandardErrorWarningFormat="true">
       <Output TaskParameter="ExitCode" PropertyName="RepoBuildExitCode" />
     </Exec>
@@ -528,7 +554,26 @@
     </Touch>
   </Target>
 
+  <Target Name="GetProducedPackagesFromDependentVerticals"
+          Condition="'$(IsUtilityProject)' != 'true'"
+          Returns="@(ProducedPackageFromDependentVertical)">
+    <!-- Add manifests from dependent verticals. -->
+    <ItemGroup>
+      <RepoAssetManifestFromDependentVertical Include="$(ArtifactsAssetManifestsDir)*.xml" Exclude="$(MergedAssetManifestOutputPath)" />
+    </ItemGroup>
+
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifestFromDependentVertical)" RepoOrigin="$(RepositoryName)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackageFromDependentVertical" />
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAssetFromDependentVertical" />
+    </GetKnownArtifactsFromAssetManifests>
+
+    <ItemGroup>
+      <ProducedPackageFromDependentVertical ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="GetProducedPackages"
+          DependsOnTargets="GetProducedPackagesFromDependentVerticals"
           Condition="'$(IsUtilityProject)' != 'true'"
           Returns="@(ProducedPackage);@(ProducedPackageFromDependentVertical)">
     <ItemGroup>
@@ -563,24 +608,26 @@
       <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" Condition="'%(Visibility)' != 'Vertical'"/>
     </ItemGroup>
 
-    <!-- Add manifests from dependent verticals. -->
-    <ItemGroup>
-      <RepoAssetManifestFromDependentVertical Include="$(ArtifactsAssetManifestsDir)*.xml" Exclude="$(MergedAssetManifestOutputPath)" />
-    </ItemGroup>
-
-    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifestFromDependentVertical)" RepoOrigin="$(RepositoryName)">
-      <Output TaskParameter="KnownPackages" ItemName="ProducedPackageFromDependentVertical" />
-      <Output TaskParameter="KnownBlobs" ItemName="ProducedAssetFromDependentVertical" />
-    </GetKnownArtifactsFromAssetManifests>
-
     <ItemGroup>
       <ProducedPackage ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
-      <ProducedPackageFromDependentVertical ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
     </ItemGroup>
   </Target>
 
+  <Target Name="GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses" DependsOnTargets="GetTransitiveRepositoryReferences" Returns="@(_DependencyProducedPackage)">
+    <ItemGroup>
+      <_TransitivelyThisBuildPassReferencedRepo Include="@(TransitiveRepositoryReference->WithMetadataValue('DotNetBuildPass','$(DotNetBuildPass)'))" />
+      <_TransitivelyPreviousBuildPassReferencedRepo Include="@(TransitiveRepositoryReference)"
+                                                    Exclude="@(_TransitivelyThisBuildPassReferencedRepo)" />
+    </ItemGroup>
+    <MSBuild Projects="@(_TransitivelyPreviousBuildPassReferencedRepo->'%(Identity).proj')"
+             Targets="GetProducedPackagesFromDependentVerticals"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DependencyProducedPackage" />
+    </MSBuild>
+  </Target>
+
   <Target Name="GetProducedPackagesFromTransitiveReferences" DependsOnTargets="GetTransitiveRepositoryReferences" Returns="@(_DependencyProducedPackage)">
-    <MSBuild Projects="@(TransitiveRepositoryReference->'%(Identity).proj')"
+    <MSBuild Projects="@(TransitiveRepositoryReference->WithMetadataValue('DotNetBuildPass','$(DotNetBuildPass)')->'%(Identity).proj')"
              Targets="GetProducedPackages"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="_DependencyProducedPackage" />
@@ -602,6 +649,7 @@
           DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
           SkipUnchangedFiles="true"
           Retries="5"
+          UseHardlinksIfPossible="true"
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
@@ -625,9 +673,28 @@
           Condition="'@(PrebuiltReportsToMove)' != ''" />
   </Target>
 
+  <!-- Make a copy of project.assets.json files for prebuilt report generation. -->
+  <Target Name="BackupProjectAssetsJsonFiles"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <PropertyGroup>
+      <ProjectAssetsJsonBackupDir>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', 'project-assets-json'))</ProjectAssetsJsonBackupDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectAssetsJsonFile Include="$(RepoArtifactsDir)**/project.assets.json" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ProjectAssetsJsonFile)"
+          DestinationFolder="$(ProjectAssetsJsonBackupDir)%(RecursiveDir)"
+          UseHardlinksIfPossible="true"
+          SkipUnchangedFiles="true"
+          Condition="'@(ProjectAssetsJsonFile)' != ''" />
+  </Target>
+
   <Target Name="CleanupRepo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CleanupRepo.complete"
+          DependsOnTargets="BackupProjectAssetsJsonFiles"
           Condition="'$(IsUtilityProject)' != 'true' and
                      '$(CleanWhileBuilding)' == 'true' and
                      Exists('$(RepoArtifactsDir)')">
@@ -640,41 +707,26 @@
 
       Don't run when source building to prevent the build from hanging indefinitely - https://github.com/dotnet/source-build/issues/4796
     -->
-    <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler"
+    <Exec Command="$(DotNetTool) build-server shutdown --vbcscompiler"
           Condition="'$(DotNetBuildSourceOnly)' != 'true'"
           EnvironmentVariables="NUGET_PACKAGES=$(RepoArtifactsPackageCache)"
           IgnoreStandardErrorWarningFormat="true"
           IgnoreExitCode="true" />
 
+    <Message Text="DirSize After Building $(RepositoryName)" Importance="High" />
+    <Exec Command="$(DiskUsageCommand)" />
+
+    <!-- Cleanup the entire repo artifacts dir. Ignore failures as this is best effort.
+         Don't use Removedir as ContinueOnError on it doesn't work when using warnaserror/TreatWarningsAsErrors. -->
     <PropertyGroup>
-      <BuildObjDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildObj'))</BuildObjDir>
+      <RepoCleanCommand Condition="'$(BuildOS)' == 'windows'">rmdir "$(RepoArtifactsDir.TrimEnd('\'))" /s /q</RepoCleanCommand>
+      <RepoCleanCommand Condition="'$(BuildOS)' != 'windows'">rm -rf "$(RepoArtifactsDir)"</RepoCleanCommand>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ObjFilesToCopy Include="$(RepoArtifactsDir)**/project.assets.json" />
-    </ItemGroup>
+    <Exec Command="$(RepoCleanCommand)" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" />
 
-    <!-- Make a copy of project.assets.json files -->
-    <Copy SourceFiles="@(ObjFilesToCopy)"
-          DestinationFolder="$(BuildObjDir)%(RecursiveDir)"
-          Condition="'@(ObjFilesToCopy)' != ''" />
-
-    <ItemGroup>
-      <DirsToDelete Include="$([System.IO.Directory]::GetDirectories('$(RepoArtifactsDir)'))" />
-
-      <DirsToDeleteWithTrailingSeparator Include="$([MSBuild]::EnsureTrailingSlash('%(DirsToDelete.Identity)'))" />
-      <DirsToDeleteWithTrailingSeparator Remove="$(BuildObjDir)" />
-    </ItemGroup>
-
-    <Message Text="DirSize After Building $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows' and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
-    <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows' and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
-
-    <!-- Cleanup everything else. Ignore errors as out-of-band build servers don't reliably shut down, even with the build-server shutdown command.
-         https://github.com/dotnet/source-build/issues/4175 tracks a long term fix. -->
-    <RemoveDir Directories="@(DirsToDeleteWithTrailingSeparator)" ContinueOnError="true" />
-
-    <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
-    <Exec Command="df -h $(RepoRoot)" Condition="'$(BuildOS)' != 'windows'and '@(DirsToDeleteWithTrailingSeparator)' != ''" />
+    <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" />
+    <Exec Command="$(DiskUsageCommand)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)CleanupRepo.complete" AlwaysCreate="true">
@@ -682,7 +734,12 @@
     </Touch>
   </Target>
 
-  <Target Name="DiscoverToolPackageVersions" DependsOnTargets="GetProducedPackages">
+  <PropertyGroup>
+    <_DiscoverToolPackageVersionsDependsOn>GetProducedPackages</_DiscoverToolPackageVersionsDependsOn>
+    <_DiscoverToolPackageVersionsDependsOn Condition="'$(GetDependentVerticalAssetsOnly)' == 'true'">GetProducedPackagesFromDependentVerticals</_DiscoverToolPackageVersionsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="DiscoverToolPackageVersions" DependsOnTargets="$(_DiscoverToolPackageVersionsDependsOn)">
     <JoinItems Left="@(ProducedPackage);@(ProducedPackageFromDependentVertical)"
                Right="@(BuiltSdkPackage)"
                LeftMetadata="*">
@@ -720,7 +777,9 @@
       <ExtractedToolFiles Include="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/**/*netcore*/*.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(ExtractedToolFiles)" DestinationFolder="$(SourceBuiltSdksDir)/" />
+    <Copy SourceFiles="@(ExtractedToolFiles)"
+          DestinationFolder="$(SourceBuiltSdksDir)/"
+          UseHardlinksIfPossible="true" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)ExtractToolPackage.complete" AlwaysCreate="true">
@@ -734,19 +793,27 @@
   <Target Name="Build"
           DependsOnTargets="
     BuildRepoReferences;
+    SetBuildProperties;
     RepoBuild;
+    MoveDotNetBuildLogs;
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
-    MoveDotNetBuildLogs;
     CleanupRepo" />
 
-  <Target Name="RepoTest">
+  <Target Name="RepoTest"
+          DependsOnTargets="DiscoverBuiltSdkOverrides;
+                            SetSourceBuiltSdkOverrides">
+    <PropertyGroup>
+      <TestCommand>$(BuildScript) $(TestActions) $(CommonArgs) $(TestArgs)</TestCommand>
+    </PropertyGroup>
+
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Testing $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
     <Message Importance="High" Text="  $(TestCommand)" />
     <Message Importance="High" Text="  With Environment Variables:"/>
-    <Message Importance="High" Text="    %(TestEnvironmentVariable.Identity)" />
+    <Message Importance="High" Text="    %(EnvironmentVariables.Identity)" />
+    <Message Importance="High" Text="    %(TestEnvironmentVariable.Identity)" Condition="'@(TestEnvironmentVariable)' != ''" />
 
     <PropertyGroup>
       <FullTestCommand>$(TestCommand)</FullTestCommand>
@@ -755,7 +822,7 @@
 
     <Exec Command="$(FullTestCommand)"
           WorkingDirectory="$(ProjectDirectory)"
-          EnvironmentVariables="@(TestEnvironmentVariable)">
+          EnvironmentVariables="@(EnvironmentVariables);@(TestEnvironmentVariable)">
       <Output TaskParameter="ExitCode" PropertyName="RepoTestExitCode" />
     </Exec>
 
@@ -764,7 +831,10 @@
     <OnError ExecuteTargets="MoveDotNetBuildLogs" />
   </Target>
 
-  <Target Name="Test" DependsOnTargets="RepoTest;MoveDotNetBuildLogs" />
+  <Target Name="Test"
+          DependsOnTargets="RepoTest;
+                            MoveDotNetBuildLogs;
+                            CleanupRepo" />
   <Target Name="VSTest" DependsOnTargets="Test" />
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />

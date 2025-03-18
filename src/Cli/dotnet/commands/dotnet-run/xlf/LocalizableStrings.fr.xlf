@@ -17,6 +17,11 @@
         <target state="translated">Générez et exécutez l'application à l'aide du framework spécifié. Le framework doit être spécifié dans le fichier projet. </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">N’utilisez pas les arguments spécifiés dans le profil de lancement pour exécuter l’application.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">Chemin du fichier projet à exécuter (la valeur par défaut est le répertoire actif s'il n'y a qu'un seul projet).</target>
@@ -44,6 +49,11 @@ faites en sorte que les noms de profil soient distincts.</target>
       <trans-unit id="LaunchProfileDoesNotExist">
         <source>A launch profile with the name '{0}' doesn't exist.</source>
         <target state="translated">Un profil de lancement avec le nom '{0}' n'existe pas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
+        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">

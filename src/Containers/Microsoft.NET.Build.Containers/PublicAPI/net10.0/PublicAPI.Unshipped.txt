@@ -19,6 +19,20 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseRegistry.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageName.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageName.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageTag.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageTag.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageDigest.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageDigest.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedArchiveOutputPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedArchiveOutputPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Cancel() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.CreateImageIndex() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Dispose() -> void
@@ -241,8 +255,14 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.get -> string?
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedDigestLabel.get -> Microsoft.Build.Framework.ITaskItem?
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedDigestLabel.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void

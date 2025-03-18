@@ -1,10 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -25,7 +23,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     /// </summary>
     public string ToolPath { get; set; }
 
-    private bool IsLocalPull => string.IsNullOrEmpty(BaseRegistry);
+    private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
 
@@ -72,7 +70,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             OutputRegistry,
             LocalRegistry);
 
-        var telemetry = CreateTelemetryContext(sourceImageReference, destinationImageReference);
+        var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
@@ -122,7 +120,46 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
-        SafeLog(Strings.ContainerBuilder_StartBuildingImage, Repository, string.Join(",", ImageTags), sourceImageReference);
+        (string message, object[] parameters) = SkipPublishing ?
+            (Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
+            (Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
+        Log.LogMessage(MessageImportance.High, message, parameters);
+
+        // forcibly change the media type if required
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
+            {
+                imageBuilder.ManifestMediaType = imageFormat switch
+                {
+                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+                };
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+            }
+        }
+
+        // forcibly change the media type if required
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
+            {
+                imageBuilder.ManifestMediaType = imageFormat switch
+                {
+                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+                };
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+            }
+        }
 
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
         imageBuilder.AddLayer(newLayer);
@@ -131,6 +168,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
         imageBuilder.SetEntrypointAndCmd(entrypoint, cmd);
 
+        string? baseImageLabel = null;
+        string? baseImageDigest = null;
         if (GenerateLabels)
         {
             foreach (ITaskItem label in Labels)
@@ -140,7 +179,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
             if (GenerateDigestLabel)
             {
-                imageBuilder.AddBaseImageDigestLabel();
+                (baseImageLabel, baseImageDigest) = imageBuilder.AddBaseImageDigestLabel();
             }
         }
         else
@@ -170,114 +209,26 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
-        GeneratedContainerManifest = JsonSerializer.Serialize(builtImage.Manifest);
+        GeneratedContainerManifest = builtImage.Manifest;
         GeneratedContainerConfiguration = builtImage.Config;
-        GeneratedContainerDigest = builtImage.Manifest.GetDigest();
+        GeneratedContainerDigest = builtImage.ManifestDigest;
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
-
-        switch (destinationImageReference.Kind)
+        if (baseImageLabel is not null && baseImageDigest is not null)
         {
-            case DestinationImageReferenceKind.LocalRegistry:
-                await PushToLocalRegistryAsync(builtImage,
-                    sourceImageReference,
-                    destinationImageReference,
-                    telemetry,
-                    cancellationToken).ConfigureAwait(false);
-                break;
-            case DestinationImageReferenceKind.RemoteRegistry:
-                await PushToRemoteRegistryAsync(builtImage,
-                    sourceImageReference,
-                    destinationImageReference,
-                    telemetry,
-                    cancellationToken).ConfigureAwait(false);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            var labelItem = new Microsoft.Build.Utilities.TaskItem(baseImageLabel);
+            labelItem.SetMetadata("Value", baseImageDigest);
+            GeneratedDigestLabel = labelItem;
         }
 
-        telemetry.LogPublishSuccess();
+        if (!SkipPublishing)
+        {
+            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         return !Log.HasLoggedErrors;
-    }
-
-    private async Task PushToLocalRegistryAsync(BuiltImage builtImage, SourceImageReference sourceImageReference,
-        DestinationImageReference destinationImageReference,
-        Telemetry telemetry,
-        CancellationToken cancellationToken)
-    {
-        ILocalRegistry localRegistry = destinationImageReference.LocalRegistry!;
-        if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
-        {
-            telemetry.LogMissingLocalBinary();
-            Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
-            return;
-        }
-        try
-        {
-            await localRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-            SafeLog(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
-
-            if (localRegistry is ArchiveFileRegistry archive)
-            {
-                GeneratedArchiveOutputPath = archive.ArchiveOutputPath;
-            }
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
-        {
-            telemetry.LogLocalLoadError();
-            Log.LogErrorFromException(dle, showStackTrace: false);
-        }
-        catch (ArgumentException argEx)
-        {
-            Log.LogErrorFromException(argEx, showStackTrace: false);
-        }
-    }
-
-    private async Task PushToRemoteRegistryAsync(BuiltImage builtImage, SourceImageReference sourceImageReference,
-        DestinationImageReference destinationImageReference,
-        Telemetry telemetry,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            await destinationImageReference.RemoteRegistry!.PushAsync(
-                builtImage,
-                sourceImageReference,
-                destinationImageReference,
-                cancellationToken).ConfigureAwait(false);
-            SafeLog(Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference, OutputRegistry);
-        }
-        catch (UnableToAccessRepositoryException)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
-            }
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (Exception e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
-                Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
-            }
-        }
     }
 
     private void SetPorts(ImageBuilder image, ITaskItem[] exposedPorts)
@@ -326,11 +277,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private void SafeLog(string message, params object[] formatParams)
-    {
-        if (BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
-    }
-
     public void Dispose()
     {
         _cancellationTokenSource.Dispose();
@@ -348,110 +294,5 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         return ImageBuilder.DetermineEntrypointAndCmd(entrypoint, entrypointArgs, cmd, appCommand, appCommandArgs, appCommandInstruction, baseImageEntrypoint,
             logWarning: s => Log.LogWarningWithCodeFromResources(s),
             logError: (s, a) => { if (a is null) Log.LogErrorWithCodeFromResources(s); else Log.LogErrorWithCodeFromResources(s, a); });
-    }
-
-    private Telemetry CreateTelemetryContext(SourceImageReference source, DestinationImageReference destination)
-    {
-        var context = new PublishTelemetryContext(
-            source.Registry is not null ? GetRegistryType(source.Registry) : null,
-            null, // we don't support local pull yet, but we may in the future
-            destination.RemoteRegistry is not null ? GetRegistryType(destination.RemoteRegistry) : null,
-            destination.LocalRegistry is not null ? GetLocalStorageType(destination.LocalRegistry) : null);
-        return new Telemetry(Log, context);
-    }
-
-    private RegistryType GetRegistryType(Registry r)
-    {
-        if (r.IsMcr) return RegistryType.MCR;
-        if (r.IsGithubPackageRegistry) return RegistryType.GitHub;
-        if (r.IsAmazonECRRegistry) return RegistryType.AWS;
-        if (r.IsAzureContainerRegistry) return RegistryType.Azure;
-        if (r.IsGoogleArtifactRegistry) return RegistryType.Google;
-        if (r.IsDockerHub) return RegistryType.DockerHub;
-        return RegistryType.Other;
-    }
-
-    private LocalStorageType GetLocalStorageType(ILocalRegistry r)
-    {
-        if (r is ArchiveFileRegistry) return LocalStorageType.Tarball;
-        var d = r as DockerCli;
-        System.Diagnostics.Debug.Assert(d != null, "Unknown local registry type");
-        if (d.GetCommand() == DockerCli.DockerCommand) return LocalStorageType.Docker;
-        else return LocalStorageType.Podman;
-    }
-
-    /// <summary>
-    /// Interesting data about the container publish - used to track the usage rates of various sources/targets of the process
-    /// and to help diagnose issues with the container publish overall.
-    /// </summary>
-    /// <param name="RemotePullType">If the base image came from a remote registry, what kind of registry was it?</param>
-    /// <param name="LocalPullType">If the base image came from a local store of some kind, what kind of store was it?</param>
-    /// <param name="RemotePushType">If the new image is being pushed to a remote registry, what kind of registry is it?</param>
-    /// <param name="LocalPushType">If the new image is being stored in a local store of some kind, what kind of store is it?</param>
-    private record class PublishTelemetryContext(RegistryType? RemotePullType, LocalStorageType? LocalPullType, RegistryType? RemotePushType, LocalStorageType? LocalPushType);
-    private enum RegistryType { Azure, AWS, Google, GitHub, DockerHub, MCR, Other }
-    private enum LocalStorageType { Docker, Podman, Tarball }
-
-    private class Telemetry(Microsoft.Build.Utilities.TaskLoggingHelper Log, PublishTelemetryContext context)
-    {
-        private IDictionary<string, string?> ContextProperties() => new Dictionary<string, string?>
-            {
-                { nameof(context.RemotePullType), context.RemotePullType?.ToString() },
-                { nameof(context.LocalPullType), context.LocalPullType?.ToString() },
-                { nameof(context.RemotePushType), context.RemotePushType?.ToString() },
-                { nameof(context.LocalPushType), context.LocalPushType?.ToString() }
-            };
-
-        public void LogPublishSuccess()
-        {
-            Log.LogTelemetry("sdk/container/publish/success", ContextProperties());
-        }
-
-        public void LogUnknownRepository()
-        {
-            var props = ContextProperties();
-            props.Add("error", "unknown_repository");
-            Log.LogTelemetry("sdk/container/publish/error", props);
-        }
-
-        public void LogCredentialFailure(SourceImageReference _)
-        {
-            var props = ContextProperties();
-            props.Add("error", "credential_failure");
-            props.Add("direction", "pull");
-            Log.LogTelemetry("sdk/container/publish/error", props);
-        }
-
-        public void LogCredentialFailure(DestinationImageReference d)
-        {
-            var props = ContextProperties();
-            props.Add("error", "credential_failure");
-            props.Add("direction", "push");
-            Log.LogTelemetry("sdk/container/publish/error", props);
-        }
-
-        public void LogRidMismatch(string desiredRid, string[] availableRids)
-        {
-            var props = ContextProperties();
-            props.Add("error", "rid_mismatch");
-            props.Add("target_rid", desiredRid);
-            props.Add("available_rids", string.Join(",", availableRids));
-            Log.LogTelemetry("sdk/container/publish/error", props);
-        }
-
-        public void LogMissingLocalBinary()
-        {
-            var props = ContextProperties();
-            props.Add("error", "missing_binary");
-            Log.LogTelemetry("sdk/container/publish/error", props);
-        }
-
-        public void LogLocalLoadError()
-        {
-            var props = ContextProperties();
-            props.Add("error", "local_load");
-            Log.LogTelemetry("sdk/container/publish/error", props);
-        }
-
     }
 }

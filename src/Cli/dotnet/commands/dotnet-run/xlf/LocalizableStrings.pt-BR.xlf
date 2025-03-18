@@ -17,6 +17,11 @@
         <target state="translated">Compila e executa um aplicativo usando a estrutura especificada. A estrutura deve ser especificada no arquivo de projeto. </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">Não use argumentos especificados no perfil de inicialização para executar o aplicativo.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">O caminho para o arquivo de projeto a ser executado (usará como padrão o diretório atual se houver apenas um projeto).</target>
@@ -44,6 +49,11 @@ Diferencie os nomes dos perfis.</target>
       <trans-unit id="LaunchProfileDoesNotExist">
         <source>A launch profile with the name '{0}' doesn't exist.</source>
         <target state="translated">Um perfil de lançamento com o nome '{0}' não existe.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
+        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">

@@ -17,6 +17,11 @@
         <target state="translated">Сборка и выполнение приложения с использованием определенной платформы. Платформа должна быть указана в файле проекта. </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">Не используйте аргументы, указанные в профиле запуска, для запуска приложения.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">Путь к выполняемому файлу проекта (по умолчанию — текущий каталог, если имеется только один проект).</target>
@@ -44,6 +49,11 @@ Make the profile names distinct.</source>
       <trans-unit id="LaunchProfileDoesNotExist">
         <source>A launch profile with the name '{0}' doesn't exist.</source>
         <target state="translated">Профиль запуска с именем "{0}" не существует.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>Cannot run a file without top-level statements and without a project: '{0}'</source>
+        <target state="new">Cannot run a file without top-level statements and without a project: '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">

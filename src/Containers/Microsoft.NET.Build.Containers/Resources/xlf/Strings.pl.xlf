@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
         <source>Building image index '{0}' on top of manifests {1}.</source>
-        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <target state="translated">Tworzenie '{0}' indeksu obrazu na górze manifestów {1}.</target>
         <note>
       {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </note>
@@ -77,6 +77,11 @@
       <trans-unit id="ContainerBuilder_StartBuildingImage">
         <source>Building image '{0}' with tags '{1}' on top of base image '{2}'.</source>
         <target state="translated">Tworzenie obrazu „{0}” z tagami „{1}” nad obrazem podstawowym „{2}”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ContainerBuilder_StartBuildingImageForRid">
+        <source>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</source>
+        <target state="translated">Kompilowanie obrazu „{0}” dla identyfikatora środowiska uruchomieniowego „{1}” na podstawie obrazu podstawowego „{2}”.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
@@ -159,9 +164,24 @@
         <target state="translated">Nie wykryto obiektu hosta.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageConfigMissingArchitecture">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</source>
+        <target state="translated">Nie można utworzyć indeksu obrazu, ponieważ w co najmniej jednej konfiguracji dostarczonego obrazu brakuje elementu "architecture".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageConfigMissingOs">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'os'.</source>
+        <target state="translated">Nie można utworzyć indeksu obrazu, ponieważ w co najmniej jednej konfiguracji dostarczonego obrazu brakuje elementu "os".</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
         <source>Pushed image index '{0}' to registry '{1}'.</source>
-        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <target state="translated">Wypchnięto indeks obrazu „{0}” do rejestru „{1}”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageIndex_PodmanNotSupported">
+        <source>Image index creation for Podman is not supported.</source>
+        <target state="translated">Tworzenie indeksu obrazu dla podmanu nie jest obsługiwane.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
@@ -169,24 +189,44 @@
         <target state="needs-review-translation">CONTAINER1009: Nie można załadować obrazu z rejestru lokalnego. stdout: {0}</target>
         <note>{StrBegins="CONTAINER1009: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_ContainerdStoreDisabled">
+        <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
+        <target state="translated">CONTAINER1020: nie można załadować obrazu, ponieważ kontenerowy magazyn obrazów nie jest włączony dla platformy Docker. Porada: możesz ją włączyć, zaznaczając pozycję "Użyj kontenera do ściągania i przechowywania obrazów" w ustawieniach programu Docker Desktop.</target>
+        <note>{StrBegin="CONTAINER1020: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="needs-review-translation">CONTAINER1010: Ściąganie obrazów z rejestru lokalnego nie jest obsługiwane.</target>
         <note>{StrBegins="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="ImagesEmpty">
-        <source>Cannot create manifest list (image index) because no images were provided.</source>
-        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <source>Cannot create image index because no images were provided.</source>
+        <target state="translated">Nie można utworzyć indeksu obrazu, ponieważ nie podano obrazów.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InvalidContainerImageFormat">
+        <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
+        <target state="translated">CONTAINER2031: '{0}' formatu obrazu kontenera nie jest obsługiwany. Obsługiwane formaty są '{1}'.</target>
+        <note>{StrBegins="CONTAINER2031: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="needs-review-translation">CONTAINER2015: {0}: „{1}” nie jest prawidłową zmienną środowiskową. Ignorowanie.</target>
         <note>{StrBegins="CONTAINER2015: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidImageConfig">
+        <source>Cannot create image index because at least one of the provided images' config is invalid.</source>
+        <target state="translated">Nie można utworzyć indeksu obrazu, ponieważ co najmniej jedna z podanych konfiguracji obrazów jest nieprawidłowa.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidImageManifest">
+        <source>Cannot create image index because at least one of the provided images' manifest is invalid.</source>
+        <target state="translated">Nie można utworzyć indeksu obrazu, ponieważ co najmniej jeden z podanych manifestów obrazów jest nieprawidłowy.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidImageMetadata">
-        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
+        <target state="translated">Nie można utworzyć indeksu obrazu, ponieważ podane obrazy są nieprawidłowe. Elementy muszą mieć metadane "Config", "Manifest", "ManifestMediaType" i "ManifestDigest".</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -236,7 +276,7 @@
       </trans-unit>
       <trans-unit id="InvalidTargetRuntimeIdentifiers">
         <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
-        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <target state="translated">Nieprawidłowy element string[] TargetRuntimeIdentifiers. Wszystkie powinny mieć wartość "linux-musl" lub brak.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidTokenResponse">
@@ -275,8 +315,8 @@
         <note>{StrBegins="CONTAINER2016: "}</note>
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
-        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
-        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <source>'mediaType' of manifests should be the same in image index.</source>
+        <target state="translated">Element "mediaType" manifestów powinien być taki sam w indeksie obrazu.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -287,11 +327,6 @@
       <trans-unit id="NormalizedContainerName">
         <source>'{0}' was not a valid container image name, it was normalized to '{1}'</source>
         <target state="translated">Nazwa „{0}” nie była prawidłową nazwą obrazu kontenera, została znormalizowana do „{1}”</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OciImageMultipleTagsNotSupported">
-        <source>Unable to create tarball for oci image with multiple tags.</source>
-        <target state="translated">Nie można utworzyć elementu tarball dla obrazu OCI z wieloma tagami.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
@@ -394,6 +429,11 @@
         <target state="needs-review-translation">CONTAINER1016: nie można uzyskać dostępu do repozytorium „{0}” w rejestrze „{1}”. Upewnij się, że poświadczenia są poprawne oraz że masz dostęp do tego repozytorium i rejestru.</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}'.</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}'.</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: Nieznana instrukcja AppCommandInstruction „{0}”. Prawidłowe instrukcje to{1}.</target>
@@ -415,8 +455,8 @@
         <note>{StrBegins="CONTAINER2001: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
-        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <source>Cannot create image index for the provided 'mediaType' = '{0}'.</source>
+        <target state="translated">Nie można utworzyć indeksu obrazu dla podanego elementu "mediaType" = '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">

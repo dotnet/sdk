@@ -28,6 +28,8 @@
     <Compile Include="..\dotnet-back-compat.Tests\**\*.cs" LinkBase="dotnet-back-compat" />
     <Compile Include="..\dotnet-build.Tests\**\*.cs" LinkBase="dotnet-build" />
     <Compile Include="..\dotnet-clean.Tests\**\*.cs" LinkBase="dotnet-clean" />
+    <Compile Include="..\dotnet-completions.Tests\**\*.cs" Exclude="..\dotnet-completions.Tests\snapshots\**\*" LinkBase="dotnet-completions" />
+    <Content Include="..\dotnet-completions.Tests\snapshots/**/*" LinkBase="snapshots" CopyToOutputDirectory="PreserveNewest" Pack="false" />
     <Compile Include="..\dotnet-format.Tests\*.cs" LinkBase="dotnet-format" />
     <Compile Include="..\dotnet-fsi.Tests\**\*.cs" LinkBase="dotnet-fsi" />
     <Compile Include="..\dotnet-help.Tests\**\*.cs" LinkBase="dotnet-help" />
@@ -56,6 +58,7 @@
     <Compile Include="..\Microsoft.DotNet.CommandFactory.Tests\**\*.cs" LinkBase="CommandFactory" />
     <Compile Include="..\Microsoft.DotNet.Configurer.UnitTests\**\*.cs" LinkBase="Configurer" />
     <Compile Include="..\Microsoft.DotNet.ShellShim.Tests\**\*.cs" LinkBase="ShellShim" />
+    <Compile Remove="..\dotnet-test.Tests\MSBuildHandlerTests.cs" />
 
     <None Include="..\Microsoft.DotNet.ShellShim.Tests\WpfBinaryTestAsssets\testwpf.dll" LinkBase="WpfBinaryTestAsssets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -110,19 +113,20 @@
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Sln.Internal\Microsoft.DotNet.Cli.Sln.Internal.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Moq" />
-    <PackageReference Include="System.ComponentModel.TypeConverter" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
+    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
   <!-- Global usings -->

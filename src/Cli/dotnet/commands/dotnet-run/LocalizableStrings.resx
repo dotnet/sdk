@@ -139,6 +139,9 @@
   <data name="CommandOptionNoLaunchProfileDescription" xml:space="preserve">
     <value>Do not attempt to use launchSettings.json to configure the application.</value>
   </data>
+  <data name="CommandOptionNoLaunchProfileArgumentsDescription" xml:space="preserve">
+    <value>Do not use arguments specified in launch profile to run the application.</value>
+  </data>
   <data name="ConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to run for. The default for most projects is 'Debug'.</value>
   </data>
@@ -240,5 +243,8 @@ Make the profile names distinct.</value>
   </data>
   <data name="LaunchProfileDoesNotExist" xml:space="preserve">
     <value>A launch profile with the name '{0}' doesn't exist.</value>
+  </data>
+  <data name="NoTopLevelStatements" xml:space="preserve">
+    <value>Cannot run a file without top-level statements and without a project: '{0}'</value>
   </data>
 </root>

@@ -29,6 +29,25 @@
 #   - PR: lite build
 #   - CI: release/*, internal/release/* and main only, every batched commit, full build
 
+parameters:
+- name: desiredSigning
+  displayName: 'Sign?'
+  type: string
+  default: 'Default (unsigned for manual and non-main/release builds)'
+  values:
+    - Signed
+    - Unsigned
+    - Default (unsigned for manual and non-main/release builds)
+
+- name: desiredIBC
+  displayName: 'Enable IBC?'
+  type: string
+  default: 'Default (disabled for manual and non-main/release builds)'
+  values:
+    - Enabled
+    - Disabled
+    - Default (disabled for manual and non-main/release builds)
+
 variables:
 # enable source-only build for pipelines that contain the -source-build string
 - name: isSourceOnlyBuild
@@ -42,6 +61,13 @@ variables:
 
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+
+- ${{ if eq(variables['System.TeamProject'], 'public') }}:
+  - name: skipComponentGovernanceDetection  # we run CG on internal builds only
+    value: true
+
+  - name: Codeql.Enabled  # we run CodeQL on internal builds only
+    value: false
 
 - template: /eng/common/templates-official/variables/pool-providers.yml@self
 - template: /src/sdk/eng/pipelines/templates/variables/vmr-build.yml@self
@@ -57,7 +83,8 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     featureFlags:
-     EnableDefenderForLinux: true
+      EnableDefenderForLinux: true
+      incrementalSDLBinaryAnalysis: true
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
@@ -79,11 +106,8 @@ extends:
       ${{ variables.almaLinuxContainerName }}:
         image: ${{ variables.almaLinuxContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.alpineLatestContainerName }}:
-        image: ${{ variables.alpineLatestContainerImage }}
-        options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.alpinePreviousContainerName }}:
-        image: ${{ variables.alpinePreviousContainerImage }}
+      ${{ variables.alpineContainerName }}:
+        image: ${{ variables.alpineContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
       ${{ variables.centOSStreamContainerName }}:
         image: ${{ variables.centOSStreamContainerImage }}
@@ -106,14 +130,14 @@ extends:
       ${{ variables.azurelinuxArm64CrossContainerName }}:
         image: ${{ variables.azurelinuxArm64CrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxX64AlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxX64AlpineCrossContainerImage }}
+      ${{ variables.azurelinuxX64MuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxX64MuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxArmAlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxArmAlpineCrossContainerImage }}
+      ${{ variables.azurelinuxArmMuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxArmMuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
-      ${{ variables.azurelinuxArm64AlpineCrossContainerName }}:
-        image: ${{ variables.azurelinuxArm64AlpineCrossContainerImage }}
+      ${{ variables.azurelinuxArm64MuslCrossContainerName }}:
+        image: ${{ variables.azurelinuxArm64MuslCrossContainerImage }}
         options: ${{ variables.defaultContainerOptions }}
       ${{ variables.androidCrossContainerName }}:
         image: ${{ variables.androidCrossContainerImage }}
@@ -136,6 +160,8 @@ extends:
       parameters:
         isBuiltFromVmr: true
         isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+        desiredSigning: ${{ parameters.desiredSigning }}
+        desiredIBC: ${{ parameters.desiredIBC }}
         ${{ if eq(variables.isScheduleTrigger, 'true') }}:
           scope: full
         ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:

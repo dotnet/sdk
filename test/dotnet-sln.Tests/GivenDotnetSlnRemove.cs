@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
@@ -19,7 +19,7 @@ Usage:
 
 Arguments:
   <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
-  <PROJECT_PATH>    The paths to the projects to remove from the solution.
+  <PROJECT_PATH>    The project paths or names to remove from the solution.
 
 Options:
   -?, -h, --help    Show command line help.";
@@ -49,8 +49,8 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, "one.sln", "two.sln", "three.slnx", "remove");
             cmd.Should().Fail();
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
-{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
+{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
         }
 
         [Theory]
@@ -241,6 +241,37 @@ Options:
                 .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
+
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenPassedAReferenceWithoutExtensionItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
+
+            var projectToRemove = "Lib";
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, Path.Combine(projectToRemove, "Lib.csproj")));
 
             solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(1);
@@ -627,24 +658,26 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln")]
-        [InlineData("solution")]
-        public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand)
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenSolutionIsPassedAsProjectItPrintsSuggestionAndUsage(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}")
+                .CopyTestAsset("TestAppWithSlnAndCsprojFiles", identifier: $"{solutionCommand}{solutionExtension}")
                 .WithSource()
                 .Path;
 
             var projectArg = Path.Combine("Lib", "Lib.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(solutionCommand, "remove", "App.sln", projectArg);
+                .Execute(solutionCommand, "remove", $"App{solutionExtension}", projectArg);
             cmd.Should().Fail();
             cmd.StdErr.Should().BeVisuallyEquivalentTo(
-                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, "App.sln") + Environment.NewLine
+                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, $"App{solutionExtension}") + Environment.NewLine
                 + CommonLocalizableStrings.DidYouMean + Environment.NewLine
-                 + $"  dotnet solution App.sln remove {projectArg}"
+                 + $"  dotnet solution App{solutionExtension} remove {projectArg}"
             );
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }

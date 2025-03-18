@@ -123,6 +123,9 @@
   <data name="AppDescription" xml:space="preserve">
     <value>Test Driver for the .NET Platform</value>
   </data>
+  <data name="DotnetTestCommand" xml:space="preserve">
+    <value>.NET Test Command</value>
+  </data>
   <data name="CmdSettingsFile" xml:space="preserve">
     <value>SETTINGS_FILE</value>
   </data>
@@ -267,7 +270,7 @@ Implies --blame.</value>
     <value>The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.</value>
   </data>
   <data name="CmdBlameHangDescription" xml:space="preserve">
-    <value>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout. Implies --blame-hang.</value>
+    <value>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</value>
   </data>
   <data name="CmdBlameHangDumpTypeDescription" xml:space="preserve">
     <value>The type of crash dump to be collected. The supported values are full (default), mini, and none. When 'none' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.</value>
@@ -287,27 +290,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   <data name="HangTimeoutArgumentName" xml:space="preserve">
     <value>TIMESPAN</value>
   </data>
-  <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
-    <value>Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
-
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
-</value>
-  </data>
-  <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
-    <value>NAME="VALUE"</value>
-  </data>
   <data name="NoSerializerRegisteredWithIdErrorMessage" xml:space="preserve">
-      <value>No serializer registered with ID '{0}'</value>
+    <value>No serializer registered with ID '{0}'</value>
   </data>
   <data name="NoSerializerRegisteredWithTypeErrorMessage" xml:space="preserve">
-      <value>No serializer registered with type '{0}'</value>
+    <value>No serializer registered with type '{0}'</value>
   </data>
   <data name="CmdMaxParallelTestModulesDescription" xml:space="preserve">
     <value>The max number of test modules that can run in parallel.</value>
@@ -330,10 +317,121 @@ Examples:
     <comment>{0} - test message state</comment>
   </data>
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
-    <value>Test application(s) that support VSTest are not supported.</value>
+    <value>When opting-in via dotnet.config, all test projects are expected to be using Microsoft.Testing.Platform.
+The following test projects are using VSTest:
+{0}
+See https://aka.ms/dotnet-test/mtp for more information.</value>
+  </data>
+  <data name="Aborted" xml:space="preserve">
+    <value>Aborted</value>
+  </data>
+  <data name="ActiveTestsRunning_FullTestsCount" xml:space="preserve">
+    <value>{0} tests running</value>
+  </data>
+  <data name="ActiveTestsRunning_MoreTestsCount" xml:space="preserve">
+    <value>and {0} more</value>
+  </data>
+  <data name="Actual" xml:space="preserve">
+    <value>Actual</value>
+  </data>
+  <data name="CancelledLowercase" xml:space="preserve">
+    <value>canceled</value>
+  </data>
+  <data name="CancellingTestSession" xml:space="preserve">
+    <value>Canceling the test session...</value>
+  </data>
+  <data name="ConsoleIsAlreadyInBatchingMode" xml:space="preserve">
+    <value>Console is already in batching mode.</value>
+    <comment>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</comment>
+  </data>
+  <data name="DiscoveredTestsInAssembly" xml:space="preserve">
+    <value>Discovered {0} tests in assembly</value>
+    <comment>0 is count, the sentence is followed by the path of the assebly</comment>
+  </data>
+  <data name="DiscoveringTestsFrom" xml:space="preserve">
+    <value>Discovering tests from</value>
+  </data>
+  <data name="ExitCode" xml:space="preserve">
+    <value>Exit code</value>
+  </data>
+  <data name="Expected" xml:space="preserve">
+    <value>Expected</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="FailedLowercase" xml:space="preserve">
+    <value>failed</value>
+  </data>
+  <data name="FailedWithErrors" xml:space="preserve">
+    <value>failed with {0} error(s)</value>
+  </data>
+  <data name="FailedWithErrorsAndWarnings" xml:space="preserve">
+    <value>failed with {0} error(s) and {1} warning(s)</value>
+  </data>
+  <data name="FailedWithWarnings" xml:space="preserve">
+    <value>failed with {0} warning(s)</value>
+  </data>
+  <data name="ForTest" xml:space="preserve">
+    <value>For test</value>
+    <comment>is followed by test name</comment>
+  </data>
+  <data name="FromFile" xml:space="preserve">
+    <value>from</value>
+    <comment>from followed by a file name to point to the file from which test is originating</comment>
+  </data>
+  <data name="InProcessArtifactsProduced" xml:space="preserve">
+    <value>In process file artifacts produced:</value>
+  </data>
+  <data name="MinimumExpectedTestsPolicyViolation" xml:space="preserve">
+    <value>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</value>
+    <comment>{0}, {1} number of tests</comment>
+  </data>
+  <data name="OutOfProcessArtifactsProduced" xml:space="preserve">
+    <value>Out of process file artifacts produced:</value>
+  </data>
+  <data name="Passed" xml:space="preserve">
+    <value>Passed</value>
+  </data>
+  <data name="PassedLowercase" xml:space="preserve">
+    <value>passed</value>
+  </data>
+  <data name="RunningTestsFrom" xml:space="preserve">
+    <value>Running tests from</value>
+  </data>
+  <data name="SkippedLowercase" xml:space="preserve">
+    <value>skipped</value>
+  </data>
+  <data name="StackFrameAt" xml:space="preserve">
+    <value>at</value>
+    <comment>at that is used for a stack frame location in a stack trace, is followed by a class and method name</comment>
+  </data>
+  <data name="StackFrameIn" xml:space="preserve">
+    <value>in</value>
+    <comment>in that is used in stack frame it is followed by file name</comment>
+  </data>
+  <data name="StandardError" xml:space="preserve">
+    <value>Error output</value>
+  </data>
+  <data name="StandardOutput" xml:space="preserve">
+    <value>Standard output</value>
+  </data>
+  <data name="TestDiscoverySummary" xml:space="preserve">
+    <value>Discovered {0} tests in {1} assemblies.</value>
+    <comment>0 is number of tests, 1 is count of assemblies</comment>
+  </data>
+  <data name="TestDiscoverySummarySingular" xml:space="preserve">
+    <value>Discovered {0} tests.</value>
+    <comment>0 is number of tests</comment>
+  </data>
+  <data name="TestRunSummary" xml:space="preserve">
+    <value>Test run summary:</value>
+  </data>
+  <data name="ZeroTestsRan" xml:space="preserve">
+    <value>Zero tests ran</value>
   </data>
   <data name="CmdUnsupportedTestRunnerDescription" xml:space="preserve">
-    <value>Test runner not supported: {0}.</value>
+    <value>Test runner '{0}' is not supported.</value>
   </data>
   <data name="CmdNonExistentFileErrorDescription" xml:space="preserve">
     <value>The provided file path does not exist: {0}.</value>
@@ -357,6 +455,79 @@ Examples:
     <value>The provided project file has an invalid extension: {0}.</value>
   </data>
   <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
-    <value>Specify either the project, solution or directory option.</value>
+    <value>Specify either the project, solution, directory, or test modules option.</value>
+  </data>
+  <data name="CmdOptionCannotBeUsedWithTestModulesDescription" xml:space="preserve">
+    <value>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</value>
+  </data>
+  <data name="CmdNoAnsiDescription" xml:space="preserve">
+    <value>Disable ANSI output.</value>
+  </data>
+  <data name="CmdNoProgressDescription" xml:space="preserve">
+    <value>Disable progress reporting.</value>
+  </data>
+  <data name="CmdTestOutputDescription" xml:space="preserve">
+    <value>Verbosity of test output.</value>
+  </data>
+  <data name="HelpExtensionOptions" xml:space="preserve">
+    <value>Extension Options:</value>
+  </data>
+  <data name="HelpModuleIsMissingTheOptionBelow" xml:space="preserve">
+    <value>{0} is missing the option below</value>
+    <comment>0 is name of the module, this string is followed by lined that list the option</comment>
+  </data>
+  <data name="HelpModuleIsMissingTheOptionsBelow" xml:space="preserve">
+    <value>{0} is missing the options below</value>
+    <comment>0 is name of the module, this string is followed by lined that list the options</comment>
+  </data>
+  <data name="HelpModulesAreMissingTheOptionBelow" xml:space="preserve">
+    <value>{0} are missing the option below</value>
+    <comment>0 is name of the module, this string is followed by lined that list the option</comment>
+  </data>
+  <data name="HelpModulesAreMissingTheOptionsBelow" xml:space="preserve">
+    <value>{0} are missing the options below</value>
+    <comment>0 is name of the module, this string is followed by lined that list the options</comment>
+  </data>
+  <data name="HelpOptions" xml:space="preserve">
+    <value>Options:</value>
+  </data>
+  <data name="HelpPlatformOptions" xml:space="preserve">
+    <value>Platform Options:</value>
+  </data>
+  <data name="HelpUnavailableExtensionOptions" xml:space="preserve">
+    <value>Unavailable extension options:</value>
+  </data>
+  <data name="HelpUnavailableOptions" xml:space="preserve">
+    <value>Unavailable options:</value>
+  </data>
+  <data name="HelpWaitingForOptionsAndExtensions" xml:space="preserve">
+    <value>Waiting for options and extensions...</value>
+  </data>
+  <data name="CmdNonExistentRootDirectoryErrorDescription" xml:space="preserve">
+    <value>The provided root directory does not exist: {0}.</value>
+  </data>
+  <data name="CmdNoTestModulesErrorDescription" xml:space="preserve">
+    <value>No test modules found for the given test module pattern: {0} with root directory: {1}</value>
+  </data>
+  <data name="CmdHelpUsageTitle" xml:space="preserve">
+    <value>Usage:</value>
+  </data>
+  <data name="CmdProjectPathName" xml:space="preserve">
+    <value>PROJECT_PATH</value>
+  </data>
+  <data name="CmdSolutionPathName" xml:space="preserve">
+    <value>SOLUTION_PATH</value>
+  </data>
+  <data name="CmdDirectoryPathName" xml:space="preserve">
+    <value>DIRECTORY_PATH</value>
+  </data>
+  <data name="CmdExpressionName" xml:space="preserve">
+    <value>EXPRESSION</value>
+  </data>
+  <data name="CmdRootPathName" xml:space="preserve">
+    <value>ROOT_PATH</value>
+  </data>
+  <data name="CmdNumberName" xml:space="preserve">
+    <value>NUMBER</value>
   </data>
 </root>

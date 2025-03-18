@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
         <source>Building image index '{0}' on top of manifests {1}.</source>
-        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <target state="translated">Vytváření '{0}' indexu obrázků nad manifesty {1}.</target>
         <note>
       {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </note>
@@ -77,6 +77,11 @@
       <trans-unit id="ContainerBuilder_StartBuildingImage">
         <source>Building image '{0}' with tags '{1}' on top of base image '{2}'.</source>
         <target state="translated">Sestavení image {0} se značkami {1} nad základní imagí {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ContainerBuilder_StartBuildingImageForRid">
+        <source>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</source>
+        <target state="translated">Sestavování image {0} pro identifikátor modulu runtime {1} nad základní imagí {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
@@ -159,9 +164,24 @@
         <target state="translated">Nebyl zjištěn žádný objekt hostitele.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageConfigMissingArchitecture">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</source>
+        <target state="translated">Index image nejde vytvořit, protože v konfiguraci aspoň jedné ze zadaných imagí chybí architecture.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageConfigMissingOs">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'os'.</source>
+        <target state="translated">Index image nejde vytvořit, protože v konfiguraci aspoň jedné ze zadaných imagí chybí os.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
         <source>Pushed image index '{0}' to registry '{1}'.</source>
-        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <target state="translated">Image s indexem {0} byla vložena do registru {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageIndex_PodmanNotSupported">
+        <source>Image index creation for Podman is not supported.</source>
+        <target state="translated">Vytvoření indexu image pro Podman se nepodporuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
@@ -169,24 +189,44 @@
         <target state="needs-review-translation">CONTAINER1009: Nepodařilo se načíst bitovou kopii z místního registru. stdout: {0}</target>
         <note>{StrBegins="CONTAINER1009: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_ContainerdStoreDisabled">
+        <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
+        <target state="translated">CONTAINER1020: Image se nepovedlo načíst, protože pro Docker není povolené úložiště kontejnerových imagí. Tip: Tuto možnost můžete povolit tak, že v nastavení Docker Desktopu zaškrtnete Použít kontejnery pro přijímání a ukládání imagí.</target>
+        <note>{StrBegin="CONTAINER1020: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="needs-review-translation">CONTAINER1010: Načítání imagí z místního registru se nepodporuje.</target>
         <note>{StrBegins="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="ImagesEmpty">
-        <source>Cannot create manifest list (image index) because no images were provided.</source>
-        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <source>Cannot create image index because no images were provided.</source>
+        <target state="translated">Index image nelze vytvořit, protože nebyly zadány žádné obrázky.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InvalidContainerImageFormat">
+        <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
+        <target state="translated">CONTAINER2031: '{0}' formátu kontejnerové image se nepodporuje. Podporované formáty jsou '{1}'.</target>
+        <note>{StrBegins="CONTAINER2031: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="needs-review-translation">CONTAINER2015: {0}: '{1}' není platná proměnná prostředí. Ignorování.</target>
         <note>{StrBegins="CONTAINER2015: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidImageConfig">
+        <source>Cannot create image index because at least one of the provided images' config is invalid.</source>
+        <target state="translated">Index image nejde vytvořit, protože nejméně jedna ze zadaných konfigurací imagí je neplatná.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidImageManifest">
+        <source>Cannot create image index because at least one of the provided images' manifest is invalid.</source>
+        <target state="translated">Index image nejde vytvořit, protože nejméně jeden manifest poskytnutých imagí je neplatný.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidImageMetadata">
-        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
+        <target state="translated">Index image nejde vytvořit, protože zadané image nejsou platné. Položky musí mít metadata Config, Manifest, ManifestMediaType a ManifestDigest.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -236,7 +276,7 @@
       </trans-unit>
       <trans-unit id="InvalidTargetRuntimeIdentifiers">
         <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
-        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <target state="translated">Neplatný řetězec[] TargetRuntimeIdentifiers Buď by všechny měly být linux-musl, nebo žádné.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidTokenResponse">
@@ -275,8 +315,8 @@
         <note>{StrBegins="CONTAINER2016: "}</note>
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
-        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
-        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <source>'mediaType' of manifests should be the same in image index.</source>
+        <target state="translated">MediaType manifestů by měl být stejný v indexu image.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -287,11 +327,6 @@
       <trans-unit id="NormalizedContainerName">
         <source>'{0}' was not a valid container image name, it was normalized to '{1}'</source>
         <target state="translated">'{0}' nebyl platný název image kontejneru, byl normalizován na '{1}'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OciImageMultipleTagsNotSupported">
-        <source>Unable to create tarball for oci image with multiple tags.</source>
-        <target state="translated">Nepovedlo se vytvořit tarball pro image OCI s více značkami.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
@@ -394,6 +429,11 @@
         <target state="needs-review-translation">CONTAINER1016: Nelze získat přístup k úložišti „{0}“ v registru „{1}“. Ověřte prosím správnost vašich přihlašovacích údajů a to, že máte přístup k tomuto úložišti a registru.</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}'.</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}'.</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: Neznámé AppCommandInstruction „{0}“. Platné pokyny jsou {1}.</target>
@@ -415,8 +455,8 @@
         <note>{StrBegins="CONTAINER2001: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
-        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <source>Cannot create image index for the provided 'mediaType' = '{0}'.</source>
+        <target state="translated">Nelze vytvořit index bitové kopie pro zadanou hodnotu mediaType = '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">

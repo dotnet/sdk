@@ -2,136 +2,131 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
-namespace Microsoft.DotNet.Tools.Sln.Remove
+namespace Microsoft.DotNet.Tools.Sln.Remove;
+
+internal class RemoveProjectFromSolutionCommand : CommandBase
 {
-    internal class RemoveProjectFromSolutionCommand : CommandBase
+    private readonly string _fileOrDirectory;
+    private readonly IReadOnlyCollection<string> _projects;
+
+    public RemoveProjectFromSolutionCommand(ParseResult parseResult) : base(parseResult)
     {
-        private readonly string _fileOrDirectory;
-        private readonly IReadOnlyCollection<string> _projects;
+        _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 
-        private int CountNonFolderDescendants(
-            SolutionModel solution,
-            SolutionFolderModel item,
-            Dictionary<SolutionFolderModel, SolutionItemModel[]> solutionItemsGroupedByParent,
-            Dictionary<SolutionFolderModel, int> cached)
+        _projects = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
+
+        SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Remove);
+    }
+
+    public override int Execute()
+    {
+        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
+        if (_projects.Count == 0)
         {
-            if (cached.ContainsKey(item))
-            {
-                return cached[item];
-            }
-            int count = item.Files?.Count ?? 0;
-            var children = solutionItemsGroupedByParent.TryGetValue(item, out var items) ? items : Array.Empty<SolutionItemModel>();
-            foreach (var child in children)
-            {
-                count += child is SolutionFolderModel folderModel
-                    ? CountNonFolderDescendants(solution, folderModel, solutionItemsGroupedByParent, cached)
-                    : 1;
-            }
-            cached.Add(item, count);
-            return count;
+            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
         }
 
-        public RemoveProjectFromSolutionCommand(ParseResult parseResult) : base(parseResult)
+        try
         {
-            _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
+            var relativeProjectPaths = _projects
+                .Select(p => Path.GetFullPath(p))
+                .Select(p => Path.GetRelativePath(
+                    Path.GetDirectoryName(solutionFileFullPath),
+                    Directory.Exists(p)
+                        ? MsbuildProject.GetProjectFileFromDirectory(p).FullName
+                        : p));
 
-            _projects = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
+            RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+            return 0;
+        }
+        catch (Exception ex) when (ex is not GracefulException)
+        {
+            if (ex is SolutionException || ex.InnerException is SolutionException)
+            {
+                throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+            }
+            throw new GracefulException(ex.Message, ex);
+        }
+    }
 
-            SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Remove);
+    private async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    {
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+        ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
+
+        // set UTF-8 BOM encoding for .sln
+        if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
+        {
+            solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
+            {
+                Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+            });
         }
 
-        public override int Execute()
+        foreach (var projectPath in projectPaths)
         {
-            string solutionFileFullPath = SlnCommandParser.GetSlnFileFullPath(_fileOrDirectory);
-            if (_projects.Count == 0)
+            var project = solution.FindProject(projectPath);
+            // If the project is not found, try to find it by name without extension
+            if (project is null && !Path.HasExtension(projectPath))
             {
-                throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
+                var projectsMatchByName = solution.SolutionProjects.Where(p => Path.GetFileNameWithoutExtension(p.DisplayName).Equals(projectPath));
+                project = projectsMatchByName.Count() == 1 ? projectsMatchByName.First() : null;
             }
-
-            try
+            // If project is still not found, print error
+            if (project is null)
             {
-                var relativeProjectPaths = _projects.Select(p =>
-                {
-                    var fullPath = Path.GetFullPath(p);
-                    return Path.GetRelativePath(
-                        Path.GetDirectoryName(solutionFileFullPath),
-                        Directory.Exists(fullPath)
-                            ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName
-                            : fullPath);
-                });
-                RemoveProjectsAsync(solutionFileFullPath, relativeProjectPaths, CancellationToken.None).Wait();
-                return 0;
+                Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectNotFoundInTheSolution, projectPath);
             }
-            catch (Exception ex) when (ex is not GracefulException)
+            // If project is found, remove it
+            else
             {
-                if (ex is SolutionException || ex.InnerException is SolutionException)
-                {
-                    throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
-                }
-                if (ex.InnerException is GracefulException)
-                {
-                    throw ex.InnerException;
-                }
-                throw new GracefulException(ex.Message, ex);
+                solution.RemoveProject(project);
+                Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectPath);
             }
         }
 
-        private async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+        for (int i = 0; i < solution.SolutionFolders.Count; i++)
         {
-            ISolutionSerializer serializer = SlnCommandParser.GetSolutionSerializer(solutionFileFullPath);
-            SolutionModel solution = await serializer.OpenAsync(solutionFileFullPath, cancellationToken);
+            var folder = solution.SolutionFolders[i];
+            int nonFolderDescendants = 0;
+            Stack<SolutionFolderModel> stack = new();
+            stack.Push(folder);
 
-            // set UTF8 BOM encoding for .sln
-            if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
+            while (stack.Count > 0)
             {
-                solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
-                {
-                    Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
-                });
-            }
+                var current = stack.Pop();
 
-            foreach (var projectPath in projectPaths)
-            {
-                var project = solution.FindProject(projectPath);
-                if (project != null)
+                nonFolderDescendants += current.Files?.Count ?? 0;
+                foreach (var child in solution.SolutionItems)
                 {
-                    solution.RemoveProject(project);
-                    Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectPath);
+                    if (child is { Parent: var parent } && parent == current)
+                    {
+                        if (child is SolutionFolderModel childFolder)
+                        {
+                            stack.Push(childFolder);
+                        }
+                        else
+                        {
+                            nonFolderDescendants++;
+                        }
+                    }
                 }
-                else
-                {
-                    Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectNotFoundInTheSolution, projectPath);
-                }
             }
 
-            Dictionary<SolutionFolderModel, SolutionItemModel[]> solutionItemsGroupedByParent = solution.SolutionItems
-                .Where(i => i.Parent != null)
-                .GroupBy(i => i.Parent)
-                .ToDictionary(g => g.Key, g => g.ToArray());
-
-            Dictionary<SolutionFolderModel, int> nonFolderDescendantsCount = new();
-            foreach (var item in solution.SolutionFolders)
-            {
-                CountNonFolderDescendants(solution, item, solutionItemsGroupedByParent, nonFolderDescendantsCount);
-            }
-
-            var emptyFolders = nonFolderDescendantsCount.Where(i => i.Value == 0).Select(i => i.Key);
-            foreach (var folder in emptyFolders)
+            if (nonFolderDescendants == 0)
             {
                 solution.RemoveFolder(folder);
+                // After removal, adjust index and continue to avoid skipping folders after removal
+                i--; 
             }
-
-            await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
         }
+
+        await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
     }
 }

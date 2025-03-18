@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -57,6 +58,7 @@ namespace Microsoft.DotNet.Watch
                 Context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
+            await using var browserConnector = new BrowserConnector(Context);
             using var fileWatcher = new FileWatcher(Context.Reporter);
 
             for (var iteration = 0; !shutdownCancellationToken.IsCancellationRequested; iteration++)
@@ -72,7 +74,6 @@ namespace Microsoft.DotNet.Watch
                 var waitForFileChangeBeforeRestarting = true;
                 EvaluationResult? evaluationResult = null;
                 RunningProject? rootRunningProject = null;
-                Task<ImmutableList<ChangedFile>>? fileWatcherTask = null;
                 IRuntimeProcessLauncher? runtimeProcessLauncher = null;
                 CompilationHandler? compilationHandler = null;
                 Action<ChangedPath>? fileChangedCallback = null;
@@ -99,10 +100,8 @@ namespace Microsoft.DotNet.Watch
                         Context.Reporter.Verbose("Using Aspire process launcher.");
                     }
 
-                    await using var browserConnector = new BrowserConnector(Context);
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    compilationHandler = new CompilationHandler(Context.Reporter);
-                    var staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
+                    compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, shutdownCancellationToken);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
                     var outputDirectories = GetProjectOutputDirectories(evaluationResult.ProjectGraph);
@@ -111,7 +110,7 @@ namespace Microsoft.DotNet.Watch
 
                     var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
-                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions.BuildArguments);
+                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions);
                     if (runtimeProcessLauncher != null)
                     {
                         var launcherEnvironment = runtimeProcessLauncher.GetEnvironmentVariables();
@@ -220,8 +219,11 @@ namespace Microsoft.DotNet.Watch
                         }
                         catch (OperationCanceledException)
                         {
+                            // Ctrl+C, forced restart, or process exited.
                             Debug.Assert(iterationCancellationToken.IsCancellationRequested);
-                            waitForFileChangeBeforeRestarting = false;
+
+                            // Will wait for a file change if process exited.
+                            waitForFileChangeBeforeRestarting = true;
                             break;
                         }
 
@@ -255,7 +257,7 @@ namespace Microsoft.DotNet.Watch
                         var stopwatch = Stopwatch.StartNew();
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.StaticHandler);
-                        await staticFileHandler.HandleFileChangesAsync(changedFiles, iterationCancellationToken);
+                        await compilationHandler.HandleStaticAssetChangesAsync(changedFiles, projectMap, iterationCancellationToken);
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.StaticHandler);
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.ScopedCssHandler);
@@ -264,7 +266,7 @@ namespace Microsoft.DotNet.Watch
 
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
-                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleFileChangesAsync(restartPrompt: async (projectNames, cancellationToken) =>
+                        var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleManagedCodeChangesAsync(restartPrompt: async (projectNames, cancellationToken) =>
                         {
                             if (_rudeEditRestartPrompt != null)
                             {
@@ -517,38 +519,24 @@ namespace Microsoft.DotNet.Watch
                         await compilationHandler.TerminateNonRootProcessesAndDispose(CancellationToken.None);
                     }
 
-                    if (!rootProcessTerminationSource.IsCancellationRequested)
+                    if (rootRunningProject != null)
                     {
-                        rootProcessTerminationSource.Cancel();
+                        await rootRunningProject.TerminateAsync(shutdownCancellationToken);
                     }
 
-                    try
+                    if (runtimeProcessLauncher != null)
                     {
-                        // Wait for the root process to exit.
-                        await Task.WhenAll(new[] { (Task?)rootRunningProject?.RunningProcess, fileWatcherTask }.Where(t => t != null)!);
+                        await runtimeProcessLauncher.DisposeAsync();
                     }
-                    catch (OperationCanceledException) when (!shutdownCancellationToken.IsCancellationRequested)
+
+                    rootRunningProject?.Dispose();
+
+                    if (waitForFileChangeBeforeRestarting &&
+                        !shutdownCancellationToken.IsCancellationRequested &&
+                        !forceRestartCancellationSource.IsCancellationRequested)
                     {
-                        // nop
-                    }
-                    finally
-                    {
-                        fileWatcherTask = null;
-
-                        if (runtimeProcessLauncher != null)
-                        {
-                            await runtimeProcessLauncher.DisposeAsync();
-                        }
-
-                        rootRunningProject?.Dispose();
-
-                        if (waitForFileChangeBeforeRestarting &&
-                            !shutdownCancellationToken.IsCancellationRequested &&
-                            !forceRestartCancellationSource.IsCancellationRequested)
-                        {
-                            using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
-                            await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
-                        }
+                        using var shutdownOrForcedRestartSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
+                        await WaitForFileChangeBeforeRestarting(fileWatcher, evaluationResult, shutdownOrForcedRestartSource.Token);
                     }
                 }
             }

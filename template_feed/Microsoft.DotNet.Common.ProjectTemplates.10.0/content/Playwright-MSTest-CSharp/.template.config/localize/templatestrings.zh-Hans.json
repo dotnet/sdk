@@ -31,7 +31,7 @@
   "symbols/UseMSTestSdk/displayName": "使用 MSTest.Sdk",
   "symbols/TestRunner/description": "选择运行器/平台。有关详细信息，请访问 https://aka.ms/mstest/sdk/extensions-profile",
   "symbols/TestRunner/displayName": "Test Runner",
-  "symbols/TestRunner/choices/MSTest/description": "使用 MSTest 运行器(Microsoft.Testing.Platform)",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
   "symbols/TestRunner/choices/VSTest/description": "使用 VSTest 平台",
   "symbols/CoverageTool/description": "要用于项目的覆盖率工具。",
   "symbols/CoverageTool/displayName": "覆盖工具",

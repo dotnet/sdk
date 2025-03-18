@@ -25,8 +25,13 @@
   <Target Name="ReportSbrpUsage"
           BeforeTargets="Build"
           Condition="'$(ReportSbrpUsage)' == 'true'">
+    <ItemGroup>
+      <ProjectAssetsJsonFile Include="$(ArtifactsDir)**/project.assets.json" />
+      <ProjectAssetsJsonFile Include="$(SrcDir)**/artifacts/**/project.assets.json" />
+    </ItemGroup>
+
     <WriteSbrpUsageReport SbrpRepoSrcPath="$(SbrpRepoSrcDir)"
-                          SrcPath="$(SrcDir)"
+                          ProjectAssetsJsons="@(ProjectAssetsJsonFile)"
                           OutputPath="$(ArtifactsLogDir)" />
   </Target>
 
@@ -124,12 +129,22 @@
           Outputs="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" >
     <ItemGroup>
       <!-- Exclude the Private.SourceBuilt.Artifacts archive from poison usage scan. -->
-      <PoisonFileToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
-      <PoisonFileToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
+      <AssetToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
+      <AssetToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
       <!-- Include shipping nuget packages. -->
-      <PoisonFileToCheck Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
+      <ShippingPackageToCheck Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
       <!-- Add and mark SBRP packages to validate that they have the correct poison attribute. -->
-      <PoisonFileToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
+      <SbrpPackageToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
+    </ItemGroup>
+
+    <Error Condition="'@(AssetToCheck)' == ''" Text="No assets will be poison checked - this is unexpected!" />
+    <Error Condition="'@(ShippingPackageToCheck)' == ''" Text="No shipping packages will be poison checked - this is unexpected!" />
+    <Error Condition="'@(SbrpPackageToCheck)' == ''" Text="No SBRP packages will be poison checked - this is unexpected!" />
+
+    <ItemGroup>
+      <PoisonFileToCheck Include="@(AssetToCheck)" />
+      <PoisonFileToCheck Include="@(ShippingPackageToCheck)" />
+      <PoisonFileToCheck Include="@(SbrpPackageToCheck)" />
     </ItemGroup>
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(PoisonFileToCheck) for poisoned files." />

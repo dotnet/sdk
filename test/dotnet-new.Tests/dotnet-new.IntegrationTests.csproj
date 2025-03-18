@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="..\..\src\Cli\dotnet-new3\dotnet-new3.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Verify.Xunit" />
