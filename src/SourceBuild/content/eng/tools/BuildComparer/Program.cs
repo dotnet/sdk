@@ -280,13 +280,37 @@ public class Program
         Console.WriteLine($"Errors: {_comparisonReport.ErrorCount}");
         Console.WriteLine($"Issues: {_comparisonReport.IssueCount}");
         Console.WriteLine($"Baselined issues: {_comparisonReport.BaselineCount}");
+
+        var allAssetWithIssues = _assetMappings
+            .Where(mapping => mapping.Issues.Any() && !mapping.EvaluationErrors.Any())
+            .ToList();
+
+        // Print detailed issue counts by type
+        var issueCountsByType = allAssetWithIssues
+            .SelectMany(mapping => mapping.Issues)
+            .Where(issue => issue.Baseline == null)
+            .GroupBy(issue => issue.IssueType)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        var baselinedIssueCountsByType = allAssetWithIssues
+            .SelectMany(mapping => mapping.Issues)
+            .Where(issue => issue.Baseline != null)
+            .GroupBy(issue => issue.IssueType)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        Console.WriteLine("Detailed issue counts by type:");
+        foreach (var issueType in Enum.GetValues(typeof(IssueType)).Cast<IssueType>())
+        {
+            issueCountsByType.TryGetValue(issueType, out int issueCount);
+            baselinedIssueCountsByType.TryGetValue(issueType, out int baselinedIssueCount);
+            Console.WriteLine($"  {issueType}: Issues w/o Baseline = {issueCount}, Baselined issues = {baselinedIssueCount}");
+        }
     }
 
     /// <summary>
     /// Evaluates a single asset mapping for issues based on its type (Package or Blob).
     /// </summary>
-    /// <param name="mapping"></param>
-    /// <returns></returns>
+    /// <param name="mapping">Asset mapping to evaluate</param>
     private async Task EvaluateAsset(AssetMapping mapping)
     {
         if (mapping.AssetType == AssetType.Package)
@@ -349,8 +373,7 @@ public class Program
     /// <summary>
     /// Evaluate the contents of a mapping between two packages.
     /// </summary>
-    /// <param name="mapping"></param>
-    /// <returns></returns>
+    /// <param name="mapping">Package mapping to evaluate</param>
     public async Task EvaluatePackageContents(AssetMapping mapping)
     {
         var diffNugetPackagePath = mapping.DiffFilePath;
@@ -364,12 +387,12 @@ public class Program
 
         try
         {
-            using (PackageArchiveReader testPackageReader = new PackageArchiveReader(File.OpenRead(diffNugetPackagePath)))
+            using (PackageArchiveReader diffPackageReader = new PackageArchiveReader(File.OpenRead(diffNugetPackagePath)))
             {
                 using (PackageArchiveReader baselinePackageReader = new PackageArchiveReader(baselineNugetPackagePath))
                 {
-                    ComparePackageFileLists(mapping, testPackageReader, baselinePackageReader);
-                    await ComparePackageAssemblyVersions(mapping, testPackageReader, baselinePackageReader);
+                    ComparePackageFileLists(mapping, diffPackageReader, baselinePackageReader);
+                    await ComparePackageAssemblyVersions(mapping, diffPackageReader, baselinePackageReader);
                 }
             }
         }
@@ -382,13 +405,13 @@ public class Program
     /// <summary>
     /// Compare the file lists of packages, identifying missing and extra files.
     /// </summary>
-    /// <param name="mapping"></param>
-    /// <param name="testPackageReader"></param>
-    /// <param name="baselinePackageReader"></param>
-    private async void ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader testPackageReader, PackageArchiveReader baselinePackageReader)
+    /// <param name="mapping">Asset mapping to compare lists for</param>
+    /// <param name="diffPackageReader">Diff (VMR) package reader</param>
+    /// <param name="basePackageReader">Baseline (old build) package reader</param>
+    private async void ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader basePackageReader)
     {
-        IEnumerable<string> baselineFiles = (await baselinePackageReader.GetFilesAsync(CancellationToken.None));
-        IEnumerable<string> testFiles = (await testPackageReader.GetFilesAsync(CancellationToken.None));
+        IEnumerable<string> baselineFiles = (await basePackageReader.GetFilesAsync(CancellationToken.None));
+        IEnumerable<string> testFiles = (await diffPackageReader.GetFilesAsync(CancellationToken.None));
 
         // Strip down the baseline and test files to remove version numbers.
         var strippedBaselineFiles = baselineFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
@@ -427,20 +450,18 @@ public class Program
     /// Compares the assembly versions of the files in the test and baseline packages.
     /// </summary>
     /// <param name="mapping">Mapping to evaluate</param>
-    /// <param name="packageName"></param>
-    /// <param name="testPackageReader"></param>
-    /// <param name="baselinePackageReader"></param>
-    /// <returns></returns>
-    private static async Task ComparePackageAssemblyVersions(AssetMapping mapping, PackageArchiveReader testPackageReader, PackageArchiveReader baselinePackageReader)
+    /// <param name="diffPackageReader">Diff (VMR) package reader</param>
+    /// <param name="basePackageReader">Baseline (old build) package reader</param>
+    private static async Task ComparePackageAssemblyVersions(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader basePackageReader)
     {
-        IEnumerable<string> baselineFiles = (await baselinePackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
-        IEnumerable<string> testFiles = (await testPackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
+        IEnumerable<string> baselineFiles = (await basePackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
+        IEnumerable<string> testFiles = (await diffPackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
         foreach (var fileName in baselineFiles.Intersect(testFiles))
         {
             try
             {
-                using var baselineStream = await CopyStreamToSeekableStreamAsync(baselinePackageReader.GetEntry(fileName).Open());
-                using var testStream = await CopyStreamToSeekableStreamAsync(testPackageReader.GetEntry(fileName).Open());
+                using var baselineStream = await CopyStreamToSeekableStreamAsync(basePackageReader.GetEntry(fileName).Open());
+                using var testStream = await CopyStreamToSeekableStreamAsync(diffPackageReader.GetEntry(fileName).Open());
 
                 CompareAssemblyVersions(mapping, fileName, baselineStream, testStream);
             }
@@ -454,8 +475,8 @@ public class Program
     /// <summary>
     /// Copies a stream from an archive to a seekable stream (MemoryStream).
     /// </summary>
-    /// <param name="stream"></param>
-    /// <returns></returns>
+    /// <param name="stream">Stream to copy</param>
+    /// <returns>Memory stream containing the stream contents.</returns>
     private static async Task<Stream> CopyStreamToSeekableStreamAsync(Stream stream)
     {
         var outputStream = new MemoryStream();
@@ -505,8 +526,7 @@ public class Program
     /// <summary>
     /// Evaluates a single blob mapping for issues.
     /// </summary>
-    /// <param name="mapping"></param>
-    /// <returns></returns>
+    /// <param name="mapping">Blob mapping to evaluate</param>
     private async Task EvaluateBlob(AssetMapping mapping)
     {
         try
@@ -590,6 +610,11 @@ public class Program
         }
     }
 
+    /// <summary>
+    /// Retrieve the file list from a tar.gz file.
+    /// </summary>
+    /// <param name="archivePath"></param>
+    /// <returns></returns>
     private List<string> GetTarGzArchiveFileList(string archivePath)
     {
         List<string> entries = new();
@@ -610,12 +635,11 @@ public class Program
     }
 
     /// <summary>
-    /// This method is called "USE ALL AVAILABLE MEMORY"
+    /// Compare the assembly versions in a tar.gz file.
     /// </summary>
-    /// <param name="mapping"></param>
-    /// <param name="baselineFiles"></param>
-    /// <param name="diffFiles"></param>
-    /// <returns></returns>
+    /// <param name="mapping">Mapping to compare</param>
+    /// <param name="baselineFiles">Files existing in the baseline archive</param>
+    /// <param name="diffFiles">Files existing in the diff archive</param>
     private async Task CompareTarGzAssemblyVersions(AssetMapping mapping, IEnumerable<string> baselineFiles, IEnumerable<string> diffFiles)
     {
         // Get the list of common files and create a map of file->stream
@@ -786,7 +810,7 @@ public class Program
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.AssemblyVersionMismatch,
-                Description = $"Assembly '{fileName}' in blob '{mapping.Id}' has different versions in the VMR and base build."
+                Description = $"Assembly '{fileName}' in {mapping.AssetType.ToString().ToLowerInvariant()} '{mapping.Id}' has different but unknown versions in the VMR and base build."
             });
         }
         else if (baselineAssemblyName == null && testAssemblyName == null)
@@ -799,7 +823,8 @@ public class Program
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.AssemblyVersionMismatch,
-                Description = $"Assembly '{fileName}' in blob '{mapping.Id}' has different versions in the VMR and base build. VMR version: {baselineAssemblyName}, base build version: {testAssemblyName}"
+                Description = $"Assembly '{fileName}' in {mapping.AssetType.ToString().ToLowerInvariant()} '{mapping.Id}'. " +
+                    $"VMR version: {baselineAssemblyName}, base build version: {testAssemblyName}"
             });
         }
     }
