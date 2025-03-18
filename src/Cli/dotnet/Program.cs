@@ -15,7 +15,6 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.ShellShim;
-using Microsoft.DotNet.Cli.CommandLineValidation;
 
 namespace Microsoft.DotNet.Cli;
 
