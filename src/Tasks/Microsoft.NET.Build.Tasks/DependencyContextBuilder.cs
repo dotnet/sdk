@@ -317,7 +317,10 @@ namespace Microsoft.NET.Build.Tasks
             {
                 foreach (var dependency in reference.Library.Dependencies)
                 {
-                    references[dependency.Name].Dependents.Add(reference.Library.Name);
+                    if (references.TryGetValue(dependency.Name, out var dep))
+                    {
+                        dep.Dependents.Add(reference.Library.Name);
+                    }
                 }
             }
 
@@ -330,18 +333,24 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (lib.Library.RuntimeAssemblyGroups.Count == 0 && lib.Library.NativeLibraryGroups.Count == 0 && lib.Library.ResourceAssemblies.Count == 0)
                 {
-                    if (lib.Library.Dependencies.All(d => !references.ContainsKey(d.Name) || references[d.Name].Dependents.Count > 1))
+                    if (lib.Library.Dependencies.All(d => !references.TryGetValue(d.Name, out var dependency) || dependency.Dependents.Count > 1))
                     {
                         runtimeLibraries.Remove(lib);
                         references.Remove(lib.Library.Name);
                         foreach (var dependency in lib.Library.Dependencies)
                         {
-                            references[dependency.Name].Dependents.Remove(lib.Library.Name);
+                            if (references.TryGetValue(dependency.Name, out ModifiableRuntimeLibrary? value))
+                            {
+                                value.Dependents.Remove(lib.Library.Name);
+                            }
                         }
 
                         foreach (var dependent in lib.Dependents)
                         {
-                            temp.Add(references[dependent]);
+                            if (references.TryGetValue(dependent, out var dep))
+                            {
+                                temp.Add(dep);
+                            }
                         }
                     }
                 }
