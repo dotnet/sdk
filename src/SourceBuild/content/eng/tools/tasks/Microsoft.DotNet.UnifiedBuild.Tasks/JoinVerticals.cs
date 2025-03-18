@@ -50,12 +50,14 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         List<AssetVerticalMatchResult> selectedVerticals = joinVerticalsAssetSelector.SelectAssetMatchingVertical(manifests).ToList();
 
         var notMatchedAssets = selectedVerticals.Where(o => o.MatchType == AssetVerticalMatchType.NotSpecified).ToList();
-        Log.LogError($"### {notMatchedAssets.Count} Assets not properly matched to vertical: ###");
-        foreach (var matchResult in notMatchedAssets)
+        if (notMatchedAssets.Count > 0)
         {
-            Log.LogMessage(MessageImportance.High, $"Asset: {matchResult.AssetId} -- Matched to: {matchResult.VerticalName}, Other verticals: {string.Join(", ", matchResult.OtherVerticals)}");
+            Log.LogError($"### {notMatchedAssets.Count} Assets not properly matched to vertical: ###");
+            foreach (var matchResult in notMatchedAssets)
+            {
+                Log.LogMessage(MessageImportance.High, $"Asset: {matchResult.AssetId} -- Matched to: {matchResult.VerticalName}, Other verticals: {string.Join(", ", matchResult.OtherVerticals)}");
+            }
         }
-
         // save manifest and download all the assets
         string packagesOutputDirectory = Path.Combine(OutputFolder, _packagesFolderName);
         ForceDirectory(packagesOutputDirectory);
