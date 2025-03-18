@@ -4,7 +4,7 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 

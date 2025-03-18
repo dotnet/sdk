@@ -3,43 +3,42 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Tools.Test
+namespace Microsoft.DotNet.Tools.Test;
+
+internal sealed class HandshakeMessageSerializer : BaseSerializer, INamedPipeSerializer
 {
-    internal sealed class HandshakeMessageSerializer : BaseSerializer, INamedPipeSerializer
+    public int Id => HandshakeMessageFieldsId.MessagesSerializerId;
+
+    public object Deserialize(Stream stream)
     {
-        public int Id => HandshakeMessageFieldsId.MessagesSerializerId;
+        Dictionary<byte, string> properties = new();
 
-        public object Deserialize(Stream stream)
+        ushort fieldCount = ReadShort(stream);
+
+        for (int i = 0; i < fieldCount; i++)
         {
-            Dictionary<byte, string> properties = new();
-
-            ushort fieldCount = ReadShort(stream);
-
-            for (int i = 0; i < fieldCount; i++)
-            {
-                properties.Add(ReadByte(stream), ReadString(stream));
-            }
-
-            return new HandshakeMessage(properties);
+            properties.Add(ReadByte(stream), ReadString(stream));
         }
 
-        public void Serialize(object objectToSerialize, Stream stream)
+        return new HandshakeMessage(properties);
+    }
+
+    public void Serialize(object objectToSerialize, Stream stream)
+    {
+        Debug.Assert(stream.CanSeek, "We expect a seekable stream.");
+
+        var handshakeMessage = (HandshakeMessage)objectToSerialize;
+
+        if (handshakeMessage.Properties is null || handshakeMessage.Properties.Count == 0)
         {
-            Debug.Assert(stream.CanSeek, "We expect a seekable stream.");
+            return;
+        }
 
-            var handshakeMessage = (HandshakeMessage)objectToSerialize;
-
-            if (handshakeMessage.Properties is null || handshakeMessage.Properties.Count == 0)
-            {
-                return;
-            }
-
-            WriteShort(stream, (ushort)handshakeMessage.Properties.Count);
-            foreach (KeyValuePair<byte, string> property in handshakeMessage.Properties)
-            {
-                WriteField(stream, property.Key);
-                WriteField(stream, property.Value);
-            }
+        WriteShort(stream, (ushort)handshakeMessage.Properties.Count);
+        foreach (KeyValuePair<byte, string> property in handshakeMessage.Properties)
+        {
+            WriteField(stream, property.Key);
+            WriteField(stream, property.Value);
         }
     }
 }

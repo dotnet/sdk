@@ -143,9 +143,9 @@ namespace Microsoft.NET.TestFramework.Assertions
         {
             var lines = _commandResult.StdErr?.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
             var matchingLines = lines?.Where(line => line.Contains(pattern)).Count();
-            Execute.Assertion.ForCondition(matchingLines == 0)
+            Execute.Assertion.ForCondition(matchingLines != 0)
                 .FailWith(AppendDiagnosticsTo($"The command error output did not contain expected result: {pattern}{Environment.NewLine}"));
-            Execute.Assertion.ForCondition(matchingLines != 1)
+            Execute.Assertion.ForCondition(matchingLines == 1)
                 .FailWith(AppendDiagnosticsTo($"The command error output was expected to contain the pattern '{pattern}' once, but found it {matchingLines} times.{Environment.NewLine}"));
             return new AndConstraint<CommandResultAssertions>(this);
         }

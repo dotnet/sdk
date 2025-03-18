@@ -28,6 +28,8 @@
     <Compile Include="..\dotnet-back-compat.Tests\**\*.cs" LinkBase="dotnet-back-compat" />
     <Compile Include="..\dotnet-build.Tests\**\*.cs" LinkBase="dotnet-build" />
     <Compile Include="..\dotnet-clean.Tests\**\*.cs" LinkBase="dotnet-clean" />
+    <Compile Include="..\dotnet-completions.Tests\**\*.cs" Exclude="..\dotnet-completions.Tests\snapshots\**\*" LinkBase="dotnet-completions" />
+    <Content Include="..\dotnet-completions.Tests\snapshots/**/*" LinkBase="snapshots" CopyToOutputDirectory="PreserveNewest" Pack="false" />
     <Compile Include="..\dotnet-format.Tests\*.cs" LinkBase="dotnet-format" />
     <Compile Include="..\dotnet-fsi.Tests\**\*.cs" LinkBase="dotnet-fsi" />
     <Compile Include="..\dotnet-help.Tests\**\*.cs" LinkBase="dotnet-help" />
@@ -36,6 +38,7 @@
     <Compile Include="..\dotnet-list-reference.Tests\**\*.cs" LinkBase="dotnet-list-reference" />
     <Compile Include="..\dotnet-nuget.UnitTests\**\*.cs" LinkBase="dotnet-nuget" />
     <Compile Include="..\dotnet-pack.Tests\**\*.cs" LinkBase="dotnet-pack" />
+    <Compile Include="..\dotnet-project-convert.Tests\**\*.cs" LinkBase="dotnet-project-convert" />
     <Compile Include="..\dotnet-publish.Tests\**\*.cs" LinkBase="dotnet-publish" />
     <Compile Include="..\dotnet-remove-package.Tests\**\*.cs" LinkBase="dotnet-remove-package" />
     <Compile Include="..\dotnet-remove-reference.Tests\**\*.cs" LinkBase="dotnet-remove-reference" />
@@ -120,8 +123,11 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.DiffPlex" />
     <!-- This package comes from dotnet/runtime-assets -->
     <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
+    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
   <!-- Global usings -->

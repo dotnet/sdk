@@ -31,7 +31,7 @@
   "symbols/UseMSTestSdk/displayName": "MSTest.Sdk 사용",
   "symbols/TestRunner/description": "실행기/플랫폼을 선택합니다. 자세한 내용은 https://aka.ms/mstest/sdk/extensions-profile을 확인하세요.",
   "symbols/TestRunner/displayName": "Test Runner",
-  "symbols/TestRunner/choices/MSTest/description": "MSTest 실행기 사용(Microsoft.Testing.Platform)",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
   "symbols/TestRunner/choices/VSTest/description": "VSTest 플랫폼 사용",
   "symbols/CoverageTool/description": "프로젝트에 사용할 검사 도구입니다.",
   "symbols/CoverageTool/displayName": "적용 범위 도구",

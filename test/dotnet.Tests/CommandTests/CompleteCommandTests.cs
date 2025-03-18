@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "build",
                 "build-server",
                 "clean",
+                "completions",
                 "format",
                 "sdk",
                 "fsi",
@@ -39,6 +40,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "nuget",
                 "pack",
                 "package",
+                "project",
                 "publish",
                 "reference",
                 "restore",
@@ -182,6 +184,7 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             var expected = new[] {
                 "--api-key",
+                "--configfile",
                 "--disable-buffering",
                 "--force-english-output",
                 "--help",

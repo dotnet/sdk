@@ -331,16 +331,11 @@ jobs:
             TargetFolder: $(sourcesPath)/prereqs/packages/archive/
 
       - ${{ else }}:
-        - download: current
-          artifact: ${{ reuseBuildArtifacts }}_Artifacts
-          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
-
-        - task: CopyFiles@2
-          displayName: Copy Previous Build (${{ reuseBuildArtifacts }})
+        - task: DownloadPipelineArtifact@2
           inputs:
-            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/
-            OverWrite: false
-            TargetFolder: $(sourcesPath)/artifacts/
+            artifactName: ${{ reuseBuildArtifacts }}_Artifacts
+            targetPath: $(sourcesPath)/artifacts/
+          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
 
   - ${{ if eq(parameters.withPreviousSDK, 'true') }}:
     - script: |
@@ -411,7 +406,7 @@ jobs:
         $(signArguments)
         $(buildPassArguments)
         $(ibcArguments)
-        $(_SignDiagnosicFilesArgs)
+        $(_SignDiagnosticFilesArgs)
         ${{ parameters.extraProperties }}
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
