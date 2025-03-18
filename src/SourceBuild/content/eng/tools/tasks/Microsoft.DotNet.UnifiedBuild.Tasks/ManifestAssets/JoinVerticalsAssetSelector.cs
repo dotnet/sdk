@@ -66,25 +66,22 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             {
                 string assetId = assetGroup.Key;
 
-                int verticalsCount = assetGroup.Count();
                 var verticalNames = assetGroup.Select(o => o.manifest.VerticalName!).ToList();
-                if (verticalsCount > 0)
+
+                (AssetVerticalMatchType matchType, string verticalName) = SelectVerticalForAsset(verticalNames);
+
+                AssetVerticalMatchResult assetVerticalMatch = new AssetVerticalMatchResult
                 {
-                    (AssetVerticalMatchType matchType, string verticalName) = SelectVerticalForAsset(verticalNames);
+                    AssetId = assetGroup.Key,
+                    MatchType = matchType,
+                    VerticalName = verticalName,
+                    Asset = assetGroup.FirstOrDefault().asset,
+                    OtherVerticals = assetGroup.Select(o => o.manifest.VerticalName!).Skip(1).ToList()
+                };
 
-                    AssetVerticalMatchResult assetVerticalMatch = new AssetVerticalMatchResult
-                    {
-                        AssetId = assetGroup.Key,
-                        MatchType = matchType,
-                        VerticalName = verticalName,
-                        Asset = assetGroup.FirstOrDefault().asset,
-                        OtherVerticals = assetGroup.Select(o => o.manifest.VerticalName!).Skip(1).ToList()
-                    };
-
-                    if (!ExcludeAsset(assetVerticalMatch))
-                    {
-                        yield return assetVerticalMatch;
-                    }
+                if (!ExcludeAsset(assetVerticalMatch))
+                {
+                    yield return assetVerticalMatch;
                 }
             }
         }
