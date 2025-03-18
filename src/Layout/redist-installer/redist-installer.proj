@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <ProjectReference Include="..\finalizer\finalizer-build.csproj" />
+    <ProjectReference Include="..\finalizer\finalizer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

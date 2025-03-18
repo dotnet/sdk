@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Help;
 using System.Reflection;
-using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -43,6 +42,7 @@ public static class Parser
         PackCommandParser.GetCommand(),
         PackageCommandParser.GetCommand(),
         ParseCommandParser.GetCommand(),
+        ProjectCommandParser.GetCommand(),
         PublishCommandParser.GetCommand(),
         ReferenceCommandParser.GetCommand(),
         RemoveCommandParser.GetCommand(),
@@ -102,7 +102,7 @@ public static class Parser
                     Builder = DotnetHelpBuilder.Instance.Value
                 };
 
-                option.Description = CommandLineValidation.LocalizableStrings.ShowHelpInfo;
+                option.Description = CommonLocalizableStrings.ShowHelpDescription;
             }
         }
 

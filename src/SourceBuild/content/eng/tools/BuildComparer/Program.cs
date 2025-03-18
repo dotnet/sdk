@@ -2,6 +2,7 @@
 using NuGet.Packaging;
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.Formats.Tar;
 using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -44,7 +45,7 @@ public class Program
         var parallelismArgument = new CliOption<int>("-parallel")
         {
             Description = "Amount of parallelism used while analyzing the builds.",
-            DefaultValueFactory = _ => 16,
+            DefaultValueFactory = _ => 8,
             Required = true
         };
         var baselineArgument = new CliOption<string>("-baseline")
@@ -345,6 +346,11 @@ public class Program
     static readonly ImmutableArray<string> IncludedAssemblyNameCheckFileExtensions = [".dll", ".exe"];
 
 
+    /// <summary>
+    /// Evaluate the contents of a mapping between two packages.
+    /// </summary>
+    /// <param name="mapping"></param>
+    /// <returns></returns>
     public async Task EvaluatePackageContents(AssetMapping mapping)
     {
         var diffNugetPackagePath = mapping.DiffFilePath;
@@ -373,31 +379,41 @@ public class Program
         }
     }
 
+    /// <summary>
+    /// Compare the file lists of packages, identifying missing and extra files.
+    /// </summary>
+    /// <param name="mapping"></param>
+    /// <param name="testPackageReader"></param>
+    /// <param name="baselinePackageReader"></param>
     private async void ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader testPackageReader, PackageArchiveReader baselinePackageReader)
     {
         IEnumerable<string> baselineFiles = (await baselinePackageReader.GetFilesAsync(CancellationToken.None));
         IEnumerable<string> testFiles = (await testPackageReader.GetFilesAsync(CancellationToken.None));
 
-        var missingFiles = RemovePackageFilesToIgnore(baselineFiles.Except(testFiles));
+        // Strip down the baseline and test files to remove version numbers.
+        var strippedBaselineFiles = baselineFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+        var strippedTestFiles = testFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+
+        var missingFiles = RemovePackageFilesToIgnore(strippedBaselineFiles.Except(strippedTestFiles));
 
         foreach (var missingFile in missingFiles)
         {
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.MissingPackageContent,
-                Description = $"Package '{mapping.Id}' is missing the following files in the VMR: {string.Join(", ", missingFile)}"
+                Description = missingFile,
             });
         }
 
         // Compare the other way, and identify content in the VMR that is not in the baseline
-        var extraFiles = RemovePackageFilesToIgnore(testFiles.Except(baselineFiles));
+        var extraFiles = RemovePackageFilesToIgnore(strippedTestFiles.Except(strippedBaselineFiles));
 
         foreach (var extraFile in extraFiles)
         {
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.ExtraPackageContent,
-                Description = $"Package '{mapping.Id}' has extra files in the VMR: {string.Join(", ", extraFile)}"
+                Description = extraFile
             });
         }
 
@@ -423,8 +439,8 @@ public class Program
         {
             try
             {
-                using var baselineStream = await CopyStreamToSeekableStream(baselinePackageReader.GetEntry(fileName).Open());
-                using var testStream = await CopyStreamToSeekableStream(testPackageReader.GetEntry(fileName).Open());
+                using var baselineStream = await CopyStreamToSeekableStreamAsync(baselinePackageReader.GetEntry(fileName).Open());
+                using var testStream = await CopyStreamToSeekableStreamAsync(testPackageReader.GetEntry(fileName).Open());
 
                 CompareAssemblyVersions(mapping, fileName, baselineStream, testStream);
             }
@@ -435,7 +451,12 @@ public class Program
         }
     }
 
-    private static async Task<Stream> CopyStreamToSeekableStream(Stream stream)
+    /// <summary>
+    /// Copies a stream from an archive to a seekable stream (MemoryStream).
+    /// </summary>
+    /// <param name="stream"></param>
+    /// <returns></returns>
+    private static async Task<Stream> CopyStreamToSeekableStreamAsync(Stream stream)
     {
         var outputStream = new MemoryStream();
         await stream.CopyToAsync(outputStream, CancellationToken.None);
@@ -532,14 +553,163 @@ public class Program
     {
         // Switch on the file type, and call a helper based on the type
 
-        switch (Path.GetExtension(mapping.Id))
+        if (mapping.Id.EndsWith(".zip"))
         {
-            case ".zip":
-                await CompareZipArchiveContents(mapping);
-                break;
-            default:
-                return;
+            await CompareZipArchiveContents(mapping);
         }
+        else if (mapping.Id.EndsWith(".tar.gz") || mapping.Id.EndsWith(".tgz"))
+        {
+            await CompareTarArchiveContents(mapping);
+        }
+    }
+    private async Task CompareTarArchiveContents(AssetMapping mapping)
+    {
+        var diffTarPath = mapping.DiffFilePath;
+        var baselineTarPath = mapping.BaseBuildFilePath;
+        // If either of the paths don't exist, we can't run this comparison
+        if (diffTarPath == null || baselineTarPath == null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Get the file lists for the baseline and diff tar files
+            IEnumerable<string> baselineFiles = GetTarGzArchiveFileList(baselineTarPath);
+            IEnumerable<string> diffFiles = GetTarGzArchiveFileList(diffTarPath);
+
+            // Compare file lists
+            CompareBlobArchiveFileLists(mapping, baselineFiles, diffFiles);
+
+            // Compare assembly versions
+            await CompareTarGzAssemblyVersions(mapping, baselineFiles, diffFiles);
+        }
+        catch (Exception e)
+        {
+            mapping.EvaluationErrors.Add(e.ToString());
+        }
+    }
+
+    private List<string> GetTarGzArchiveFileList(string archivePath)
+    {
+        List<string> entries = new();
+        using (FileStream fileStream = File.OpenRead(archivePath))
+        {
+            using (GZipStream gzipStream = new GZipStream(fileStream, CompressionMode.Decompress))
+            using (TarReader reader = new TarReader(gzipStream))
+            {
+                TarEntry entry;
+                while ((entry = reader.GetNextEntry()) != null)
+                {
+                    entries.Add(entry.Name);
+                }
+            }
+        }
+
+        return entries;
+    }
+
+    /// <summary>
+    /// This method is called "USE ALL AVAILABLE MEMORY"
+    /// </summary>
+    /// <param name="mapping"></param>
+    /// <param name="baselineFiles"></param>
+    /// <param name="diffFiles"></param>
+    /// <returns></returns>
+    private async Task CompareTarGzAssemblyVersions(AssetMapping mapping, IEnumerable<string> baselineFiles, IEnumerable<string> diffFiles)
+    {
+        // Get the list of common files and create a map of file->stream
+        var strippedBaselineFiles = baselineFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+        var strippedDiffFiles = diffFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+
+        var commonFiles = strippedBaselineFiles.Intersect(strippedDiffFiles).ToHashSet();
+
+        var baselineStreams = new Dictionary<string, Stream>();
+        var diffStreams = new Dictionary<string, Stream>();
+
+        using (FileStream baseStream = File.OpenRead(mapping.BaseBuildFilePath))
+        {
+            using (FileStream diffStream = File.OpenRead(mapping.DiffFilePath))
+            {
+                using (GZipStream baseGzipStream = new GZipStream(baseStream, CompressionMode.Decompress))
+                using (TarReader baseReader = new TarReader(baseGzipStream))
+                {
+                    using (GZipStream diffGzipStream = new GZipStream(diffStream, CompressionMode.Decompress))
+                    using (TarReader diffReader = new TarReader(diffGzipStream))
+                    {
+                        string nextBaseEntry = null;
+                        string nextDiffEntry = null;
+                        do
+                        {
+                            nextBaseEntry = await WalkNextCommon(commonFiles, baseReader, baselineStreams);
+                            if (nextBaseEntry != null)
+                            {
+                                CompareAvailableStreams(mapping, baselineStreams, diffStreams, nextBaseEntry);
+                            }
+
+                            nextDiffEntry = await WalkNextCommon(commonFiles, diffReader, diffStreams);
+                            if (nextDiffEntry != null)
+                            {
+                                CompareAvailableStreams(mapping, baselineStreams, diffStreams, nextDiffEntry);
+                            }
+                        }
+                        while (nextBaseEntry != null || nextDiffEntry != null);
+
+                        // If there are any remaining streams, create an evaluation error
+                        if (baselineStreams.Count > 0 || diffStreams.Count > 0)
+                        {
+                            mapping.EvaluationErrors.Add("Failed to compare all tar entries.");
+                        }
+                    }
+                }
+            }
+        }
+
+        // Walk the tar to the next entry that exists in both the base and the diff
+        static async Task<string> WalkNextCommon(HashSet<string> commonFiles, TarReader reader, Dictionary<string, Stream> streams)
+        {
+            TarEntry baseEntry;
+            while ((baseEntry = reader.GetNextEntry()) != null && baseEntry.DataStream != null)
+            {
+                string entryStripped = RemoveVersionsNormalized(baseEntry.Name);
+                // If the element lives in the common files hash set, then copy it to a memory stream.
+                // Do not close the stream.
+                if (commonFiles.Contains(entryStripped))
+                {
+                    streams[entryStripped] = await CopyStreamToSeekableStreamAsync(baseEntry.DataStream);
+                    return entryStripped;
+                }
+            }
+            return null;
+        }
+
+        // Given we have a new entry that is common between base and diff, attempt to do some comparisons.
+        void CompareAvailableStreams(AssetMapping mapping, Dictionary<string, Stream> baselineStreams, Dictionary<string, Stream> diffStreams,
+             string entry)
+        {
+            if (baselineStreams.TryGetValue(entry, out var baselineFileStream) &&
+                diffStreams.TryGetValue(entry, out var diffFileStream))
+            {
+                CompareAssemblyVersions(mapping, entry, baselineFileStream, diffFileStream);
+                baselineFileStream.Dispose();
+                diffFileStream.Dispose();
+                baselineStreams.Remove(entry);
+                diffStreams.Remove(entry);
+            }
+        }
+    }
+
+    private static string RemoveVersionsNormalized(string path)
+    {
+        string strippedPath = path.Replace("\\", "//");
+        string prevPath = path;
+        do
+        {
+            prevPath = strippedPath;
+            strippedPath = VersionIdentifier.RemoveVersions(strippedPath);
+        } while (prevPath != strippedPath);
+
+        return strippedPath;
     }
 
     private async Task CompareZipArchiveContents(AssetMapping mapping)
@@ -586,8 +756,8 @@ public class Program
         {
             try
             {
-                using var baselineStream = await CopyStreamToSeekableStream(baselineArchive.GetEntry(fileName).Open());
-                using var testStream = await CopyStreamToSeekableStream(diffArchive.GetEntry(fileName).Open());
+                using var baselineStream = await CopyStreamToSeekableStreamAsync(baselineArchive.GetEntry(fileName).Open());
+                using var testStream = await CopyStreamToSeekableStreamAsync(diffArchive.GetEntry(fileName).Open());
                 
                 CompareAssemblyVersions(mapping, fileName, baselineStream, testStream);
             }
@@ -600,7 +770,16 @@ public class Program
 
     private static void CompareAssemblyVersions(AssetMapping mapping, string fileName, Stream baselineStream, Stream testStream)
     {
-        AssemblyName baselineAssemblyName = GetAssemblyName(baselineStream, fileName);
+        AssemblyName baselineAssemblyName = null;
+        try
+        {
+            baselineAssemblyName = GetAssemblyName(baselineStream, fileName);
+        }
+        catch (BadImageFormatException)
+        {
+            // Assume the file is not an assembly, and then don't attempt for the test assembly
+            return;
+        }
         AssemblyName testAssemblyName = GetAssemblyName(testStream, fileName);
         if ((baselineAssemblyName == null) != (testAssemblyName == null))
         {
@@ -629,8 +808,8 @@ public class Program
     {
         // Because these typically contain version numbers in their paths, we need to go and remove those.
 
-        var strippedBaselineFiles = baselineFiles.Select(f => VersionIdentifier.RemoveVersions(f)).ToList();
-        var strippedDiffFiles = diffFiles.Select(f => VersionIdentifier.RemoveVersions(f)).ToList();
+        var strippedBaselineFiles = baselineFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+        var strippedDiffFiles = diffFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
 
         var missingFiles = strippedBaselineFiles.Except(strippedDiffFiles);
         foreach (var missingFile in missingFiles)
@@ -638,7 +817,7 @@ public class Program
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.MissingPackageContent,
-                Description = $"Blob '{mapping.Id}' is missing the following files in the VMR: {string.Join(", ", missingFile)}"
+                Description = missingFile
             });
         }
         // Compare the other way, and identify content in the VMR that is not in the baseline
@@ -648,7 +827,7 @@ public class Program
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.ExtraPackageContent,
-                Description = $"Blob '{mapping.Id}' has extra files in the VMR: {string.Join(", ", extraFile)}"
+                Description = extraFile
             });
         }
     }

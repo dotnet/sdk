@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.DirectoryOption.Name, testDirectoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
@@ -365,6 +365,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
+            Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, "msbuild-dotnet-test.binlog")));
 
             result.ExitCode.Should().Be(ExitCode.Success);
         }

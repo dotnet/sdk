@@ -117,118 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LastArgumentMultiValueError" xml:space="preserve">
-    <value>The last argument '{0}' accepts multiple values. No more argument can be added.</value>
+  <data name="AppFullName" xml:space="preserve">
+    <value>Convert a file-based program to a project-based program.</value>
   </data>
-  <data name="OptionRequiresSingleValueWhichIsMissing" xml:space="preserve">
-    <value>Required value for option '{0}' was not provided.</value>
+  <data name="CmdFileDescription" xml:space="preserve">
+    <value>Path to the file-based program.</value>
   </data>
-  <data name="UnexpectedValueForOptionError" xml:space="preserve">
-    <value>Unexpected value '{0}' for option '{1}'</value>
+  <data name="InvalidFilePath" xml:space="preserve">
+    <value>The specified file must exist and have '.cs' file extension: '{0}'</value>
+    <comment>{Locked=".cs"}</comment>
   </data>
-  <data name="UnexpectedArgumentError" xml:space="preserve">
-    <value>Unrecognized {0} '{1}'</value>
-  </data>
-  <data name="ResponseFileNotFoundError" xml:space="preserve">
-    <value>Response file '{0}' doesn't exist.</value>
-  </data>
-  <data name="ShowHelpInfo" xml:space="preserve">
-    <value>Show command line help.</value>
-  </data>
-  <data name="ShowVersionInfo" xml:space="preserve">
-    <value>Show version information</value>
-  </data>
-  <data name="ShowHintInfo" xml:space="preserve">
-    <value>Specify --{0} for a list of available options and commands.</value>
-  </data>
-  <data name="UsageHeader" xml:space="preserve">
-    <value>Usage:</value>
-  </data>
-  <data name="UsageArgumentsToken" xml:space="preserve">
-    <value> [arguments]</value>
-  </data>
-  <data name="UsageArgumentsHeader" xml:space="preserve">
-    <value>Arguments:</value>
-  </data>
-  <data name="UsageOptionsToken" xml:space="preserve">
-    <value> [options]</value>
-  </data>
-  <data name="UsageOptionsHeader" xml:space="preserve">
-    <value>Options:</value>
-  </data>
-  <data name="UsageCommandToken" xml:space="preserve">
-    <value> [command]</value>
-  </data>
-  <data name="UsageCommandsHeader" xml:space="preserve">
-    <value>Commands:</value>
-  </data>
-  <data name="UsageCommandsDetailHelp" xml:space="preserve">
-    <value>Use "{0} [command] --help" for more information about a command.</value>
-  </data>
-  <data name="UsageCommandArgs" xml:space="preserve">
-    <value> [args]</value>
-  </data>
-  <data name="UsageCommandAdditionalArgs" xml:space="preserve">
-    <value> [[--] &lt;additional arguments&gt;...]]</value>
-  </data>
-  <data name="UsageCommandsAdditionalArgsHeader" xml:space="preserve">
-    <value>Additional Arguments:</value>
-  </data>
-  <data name="InvalidTemplateError" xml:space="preserve">
-    <value>Invalid template pattern '{0}'</value>
-  </data>
-  <data name="MSBuildAdditionalArgsHelpText" xml:space="preserve">
-    <value>Any extra options that should be passed to MSBuild. See 'dotnet msbuild -h' for available options.</value>
-  </data>
-  <data name="CommandAcceptsOnlyOneArgument" xml:space="preserve">
-    <value>Command '{0}' only accepts a single argument but {1} were provided.</value>
-  </data>
-  <data name="FileDoesNotExist" xml:space="preserve">
-    <value>File does not exist: {0}</value>
-  </data>
-  <data name="OptionAcceptsOnlyOneArgument" xml:space="preserve">
-    <value>Option '{0}' only accepts a single argument but {1} were provided.</value>
-  </data>
-  <data name="RequiredArgumentMissingForCommand" xml:space="preserve">
-    <value>Required argument missing for command: {0}</value>
-  </data>
-  <data name="RequiredArgumentMissingForOption" xml:space="preserve">
-    <value>Required argument missing for option: {0}</value>
-  </data>
-  <data name="RequiredCommandWasNotProvided" xml:space="preserve">
-    <value>Required command was not provided.</value>
-  </data>
-  <data name="UnrecognizedArgument" xml:space="preserve">
-    <value>Argument '{0}' not recognized. Must be one of: {1}</value>
-  </data>
-  <data name="UnrecognizedCommandOrArgument" xml:space="preserve">
-    <value>Unrecognized command or argument '{0}'</value>
-  </data>
-  <data name="CommandExpectsFewerArguments" xml:space="preserve">
-    <value>Command '{0}' expects no more than {1} arguments, but {2} were provided.</value>
-  </data>
-  <data name="OptionExpectsFewerArguments" xml:space="preserve">
-    <value>Option '{0}' expects no more than {1} arguments, but {2} were provided.</value>
-  </data>
-  <data name="DirectoryDoesNotExist" xml:space="preserve">
-    <value>Directory does not exist: {0}</value>
-  </data>
-  <data name="FileOrDirectoryDoesNotExist" xml:space="preserve">
-    <value>File or directory does not exist: {0}</value>
-  </data>
-  <data name="CharacterNotAllowedInPath" xml:space="preserve">
-    <value>Character not allowed in a path: {0}</value>
-  </data>
-  <data name="RequiredCommandArgumentMissing" xml:space="preserve">
-    <value>Required argument missing for command: {0}</value>
-  </data>
-  <data name="RequiredOptionArgumentMissing" xml:space="preserve">
-    <value>Required argument missing for option: {0}</value>
-  </data>
-  <data name="ResponseFileNotFound" xml:space="preserve">
-    <value>Response file not found '{0}'</value>
-  </data>
-  <data name="ErrorReadingResponseFile" xml:space="preserve">
-    <value>Error reading response file '{0}': {1}</value>
+  <data name="DirectoryAlreadyExists" xml:space="preserve">
+    <value>The target directory already exists: '{0}'</value>
   </data>
 </root>

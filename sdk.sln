@@ -482,7 +482,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format", "src\BuiltI
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "test\dotnet-format.Tests\tests\dotnet-format.UnitTests.csproj", "{D7495CE7-64E5-4715-9304-799A41EC1D71}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer-build", "src\Layout\finalizer\finalizer-build.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer", "src\Layout\finalizer\finalizer.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "redist-installer", "src\Layout\redist-installer\redist-installer.proj", "{FAADC193-BA41-449D-97CE-0EF82836046A}"
 EndProject
@@ -527,6 +527,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VS.Redist.Common.NetCore.Toolset", "src\Layout\VS.Redist.Common.NetCore.Toolset\VS.Redist.Common.NetCore.Toolset.proj", "{93A4A3DA-9D0F-FAEA-5AD7-A34650D326D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers", "src\Layout\VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers\VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.proj", "{C5C4F9CA-25B8-2B20-826D-EA93F667C316}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VS.Redist.Common.NetCore.Templates", "src\Layout\VS.Redist.Common.NetCore.Templates\VS.Redist.Common.NetCore.Templates.proj", "{6A7E16BE-FF2F-7927-AAF7-366CC0C42AE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1014,6 +1016,10 @@ Global
 		{C5C4F9CA-25B8-2B20-826D-EA93F667C316}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5C4F9CA-25B8-2B20-826D-EA93F667C316}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5C4F9CA-25B8-2B20-826D-EA93F667C316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A7E16BE-FF2F-7927-AAF7-366CC0C42AE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A7E16BE-FF2F-7927-AAF7-366CC0C42AE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A7E16BE-FF2F-7927-AAF7-366CC0C42AE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A7E16BE-FF2F-7927-AAF7-366CC0C42AE4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1200,6 +1206,7 @@ Global
 		{20CA4572-8865-38BF-31C9-E58855D0CD40} = {71C279BD-E850-4A8D-9775-11CA26B8E5BA}
 		{93A4A3DA-9D0F-FAEA-5AD7-A34650D326D0} = {71C279BD-E850-4A8D-9775-11CA26B8E5BA}
 		{C5C4F9CA-25B8-2B20-826D-EA93F667C316} = {71C279BD-E850-4A8D-9775-11CA26B8E5BA}
+		{6A7E16BE-FF2F-7927-AAF7-366CC0C42AE4} = {71C279BD-E850-4A8D-9775-11CA26B8E5BA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}

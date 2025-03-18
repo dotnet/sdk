@@ -311,7 +311,7 @@
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreateBuildInputProps"
-          DependsOnTargets="GetProducedPackagesFromTransitiveReferences"
+          DependsOnTargets="GetProducedPackagesFromTransitiveReferences;GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete">
 
@@ -418,7 +418,7 @@
              Condition="'@(_DependentProjectToSkip)' != ''" />
   </Target>
 
-  <Target Name="DiscoverBuiltSdkOverrides" DependsOnTargets="GetProducedPackagesFromTransitiveReferences">
+  <Target Name="DiscoverBuiltSdkOverrides" DependsOnTargets="GetProducedPackagesFromTransitiveReferences;GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses">
     <!--
       Discover the Arcade SDKs built from the live Arcade source and set them as overrides here.
       This will automatically no-op for Arcade and SBRP, as these packages will not have been produced yet.
@@ -618,8 +618,21 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses" DependsOnTargets="GetTransitiveRepositoryReferences" Returns="@(_DependencyProducedPackage)">
+    <ItemGroup>
+      <_TransitivelyThisBuildPassReferencedRepo Include="@(TransitiveRepositoryReference->WithMetadataValue('DotNetBuildPass','$(DotNetBuildPass)'))" />
+      <_TransitivelyPreviousBuildPassReferencedRepo Include="@(TransitiveRepositoryReference)"
+                                                    Exclude="@(_TransitivelyThisBuildPassReferencedRepo)" />
+    </ItemGroup>
+    <MSBuild Projects="@(_TransitivelyPreviousBuildPassReferencedRepo->'%(Identity).proj')"
+             Targets="GetProducedPackagesFromDependentVerticals"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DependencyProducedPackage" />
+    </MSBuild>
+  </Target>
+
   <Target Name="GetProducedPackagesFromTransitiveReferences" DependsOnTargets="GetTransitiveRepositoryReferences" Returns="@(_DependencyProducedPackage)">
-    <MSBuild Projects="@(TransitiveRepositoryReference->'%(Identity).proj')"
+    <MSBuild Projects="@(TransitiveRepositoryReference->WithMetadataValue('DotNetBuildPass','$(DotNetBuildPass)')->'%(Identity).proj')"
              Targets="GetProducedPackages"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="_DependencyProducedPackage" />
