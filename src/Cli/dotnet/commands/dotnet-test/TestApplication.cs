@@ -79,8 +79,6 @@ internal sealed class TestApplication : IDisposable
             processStartInfo.WorkingDirectory = _module.RunProperties.RunWorkingDirectory;
         }
 
-        AddRunSettingsFileToEnvironment(processStartInfo);
-
         return processStartInfo;
     }
 
@@ -97,14 +95,6 @@ internal sealed class TestApplication : IDisposable
         // We fallback to dotnet run only when we have a dll and an architecture is specified.
         // TODO: Is this a valid case?
         return BuildArgsWithDotnetRun(testOptions);
-    }
-
-    private void AddRunSettingsFileToEnvironment(ProcessStartInfo processStartInfo)
-    {
-        if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
-        {
-            processStartInfo.EnvironmentVariables.Add(CliConstants.TestingPlatformVsTestBridgeRunSettingsFileEnvVar, _module.RunSettingsFilePath);
-        }
     }
 
     private static bool IsArchitectureSpecified(TestOptions testOptions)
