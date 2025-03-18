@@ -365,6 +365,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
+            Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, "msbuild-dotnet-test.binlog")));
 
             result.ExitCode.Should().Be(ExitCode.Success);
         }
