@@ -47,7 +47,7 @@
 
   <!--
     Arcade is no longer signed so we don't have to sign test assemblies.
-    ReSign 3rd paty files that we use in the product
+    ReSign 3rd party files that we use in the product
   -->
   <ItemGroup>
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
