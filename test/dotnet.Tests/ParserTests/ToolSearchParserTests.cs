@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Tools.Tool.Search;
 using Parser = Microsoft.DotNet.Cli.Parser;
 

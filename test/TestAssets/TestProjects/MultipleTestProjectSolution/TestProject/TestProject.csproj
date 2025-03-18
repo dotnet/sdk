@@ -16,4 +16,10 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Testing.Platform" Version="$(MicrosoftTestingPlatformVersion)" />		
 	</ItemGroup>
+
+	<Target Name="MYTARGET" BeforeTargets="ComputeRunArguments">
+		<PropertyGroup>
+			<RunArguments>--arg-from-my-target</RunArguments>
+		</PropertyGroup>
+	</Target>
 </Project>

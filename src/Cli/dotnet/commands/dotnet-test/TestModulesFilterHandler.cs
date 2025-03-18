@@ -3,23 +3,24 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Test;
 using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Testing.Platform.OutputDevice;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli;
 
 internal sealed class TestModulesFilterHandler
 {
-    private readonly List<string> _args;
     private readonly TestApplicationActionQueue _actionQueue;
+    private readonly TerminalTestReporter _output;
 
-    public TestModulesFilterHandler(List<string> args, TestApplicationActionQueue actionQueue)
+    public TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
     {
-        _args = args;
         _actionQueue = actionQueue;
+        _output = output;
     }
 
-    public bool RunWithTestModulesFilter(ParseResult parseResult)
+    public bool RunWithTestModulesFilter(ParseResult parseResult, BuildOptions buildOptions)
     {
         // If the module path pattern(s) was provided, we will use that to filter the test modules
         string testModules = parseResult.GetValue(TestingPlatformOptions.TestModulesFilterOption);
@@ -34,7 +35,8 @@ internal sealed class TestModulesFilterHandler
             // If the root directory is not valid, we simply return
             if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))
             {
-                VSTestTrace.SafeWriteTrace(() => $"The provided root directory does not exist: {rootDirectory}");
+                _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentRootDirectoryErrorDescription, rootDirectory),
+                    new SystemConsoleColor() { ConsoleColor = ConsoleColor.Yellow });
                 return false;
             }
         }
@@ -44,13 +46,14 @@ internal sealed class TestModulesFilterHandler
         // If no matches were found, we simply return
         if (!testModulePaths.Any())
         {
-            Logger.LogTrace(() => $"No test modules found for the given test module pattern: {testModules} with root directory: {rootDirectory}");
+            _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdNoTestModulesErrorDescription, testModules, rootDirectory),
+                new SystemConsoleColor() { ConsoleColor = ConsoleColor.Yellow });
             return false;
         }
 
         foreach (string testModule in testModulePaths)
         {
-            var testApp = new TestApplication(new TestModule(testModule, null, null, null, true, true), _args);
+            var testApp = new TestApplication(new TestModule(new RunProperties(testModule, null, null), null, null, null, true, true), buildOptions);
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }

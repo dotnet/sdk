@@ -159,8 +159,8 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
-        <source>Specify either the project, solution or directory option.</source>
-        <target state="new">Specify either the project, solution or directory option.</target>
+        <source>Specify either the project, solution, directory, or test modules option.</source>
+        <target state="new">Specify either the project, solution, directory, or test modules option.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
@@ -193,6 +193,11 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoTestModulesErrorDescription">
+        <source>No test modules found for the given test module pattern: {0} with root directory: {1}</source>
+        <target state="new">No test modules found for the given test module pattern: {0} with root directory: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNonExistentDirectoryErrorDescription">
         <source>The provided directory path does not exist: {0}.</source>
         <target state="new">The provided directory path does not exist: {0}.</target>
@@ -203,9 +208,19 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="new">The provided file path does not exist: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNonExistentRootDirectoryErrorDescription">
+        <source>The provided root directory does not exist: {0}.</source>
+        <target state="new">The provided root directory does not exist: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNumberName">
         <source>NUMBER</source>
         <target state="new">NUMBER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
+        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
+        <target state="new">The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectDescription">

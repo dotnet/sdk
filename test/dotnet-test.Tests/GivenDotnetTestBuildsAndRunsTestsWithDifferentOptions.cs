@@ -23,7 +23,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -43,7 +42,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -64,7 +62,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -83,7 +80,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory($"{testInstance.Path}{Path.DirectorySeparatorChar}SolutionFilter")
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
@@ -103,7 +99,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, invalidProjectPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -123,7 +118,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, invalidSolutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -145,13 +139,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                              TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                              TestingPlatformOptions.DirectoryOption.Name, testDirectoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
@@ -168,12 +161,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                              TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCode.GenericFailure);
         }
@@ -189,7 +181,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, testProjectPath,
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -210,7 +201,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, solutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -231,7 +221,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.DirectoryOption.Name, directoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -249,7 +238,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var arch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(CommonOptions.ArchitectureOption.Name, arch,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -271,7 +259,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(CommonOptions.RuntimeOption.Name, runtime,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -292,7 +279,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(CommonOptions.RuntimeOption.Name, runtime,
                                             CommonOptions.ArchitectureOption.Name, arch,
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
@@ -311,7 +297,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(CommonOptions.OperatingSystemOption.Name, runtime.Split('-')[0],
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -332,7 +317,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(CommonOptions.OperatingSystemOption.Name, runtime.Split('-')[0],
                                             CommonOptions.ArchitectureOption.Name, arch,
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
@@ -358,7 +342,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration,
                                             CommonOptions.NoRestoreOption.Name,
@@ -379,7 +362,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
@@ -396,7 +378,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, "TestProject.csproj",
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration,
                                             "--property:WarningLevel=2", $"--property:Configuration={configuration}");
@@ -423,7 +404,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration,
                                             "--property:WarningLevel=2");
 
@@ -449,7 +429,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.FrameworkOption.Name, ToolsetInfo.CurrentTargetFramework,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -484,7 +463,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Restore then fails for OtherTestProject, and we run nothing.
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.FrameworkOption.Name, DotnetVersionHelper.GetPreviousDotnetVersion(),
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -535,7 +513,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // In total, 2 passing, 2 skipped, 4 failing
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.FrameworkOption.Name, ToolsetInfo.CurrentTargetFramework,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -567,7 +544,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar, traceFile)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.True(File.Exists(Path.Combine(testInstance.Path, traceFile)), "Trace file should exist after test execution.");
@@ -586,7 +562,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(CliConstants.TestTraceLoggingEnvVar, traceFile)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.True(File.Exists(Path.Combine(testInstance.Path, traceFile)), "Trace file should exist after test execution.");
