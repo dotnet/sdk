@@ -318,7 +318,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
     {
         var sortedAssemblies = new List<Assembly>(assemblies.Length);
 
-        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var assembly in assemblies)
         {
@@ -359,7 +359,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
                 {
                     try
                     {
-                        return a.GetName().Name == dependencyName.Name;
+                        return a.GetName().Name.Equals(dependencyName.Name, StringComparison.OrdinalIgnoreCase);
                     }
                     catch
                     {
