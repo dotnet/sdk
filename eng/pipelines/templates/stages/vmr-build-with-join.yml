@@ -125,6 +125,21 @@ stages:
             sbomEnabled: false
             condition: succeededOrFailed()
         steps:
+        - ${{ if ne(variables['System.TeamProject'], 'internal') }}:
+          - task: DownloadPipelineArtifact@2
+            displayName: Download asset manifests
+            inputs:
+              path: $(Build.ArtifactStagingDirectory)/VerticalManifests
+              artifactName: VerticalManifests
+          # Download the artifacts from every job in every vertical stage under VerticalArtifacts
+          - ${{ each stage in parameters.verticalsStages }}:
+            - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
+              - ${{ each vertical in stage.jobs }}:
+                - task: DownloadPipelineArtifact@2
+                  displayName: Download Artifacts for ${{ vertical.job }}
+                  inputs:
+                    path: $(Build.ArtifactStagingDirectory)/VerticalArtifacts/${{ vertical.job }}
+                    artifactName: ${{ vertical.job }}_Artifacts
         - ${{ if not(parameters.isBuiltFromVmr) }}:
           - template: ../steps/vmr-prepare.yml@self
             parameters:
