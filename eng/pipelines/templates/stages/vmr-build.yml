@@ -11,6 +11,10 @@ parameters:
   type: string
   default: ''
 
+- name: desiredIbc
+  type: string
+  default: ''
+
 # Scope of jobs which are executed
 - name: scope
   type: string
@@ -396,6 +400,7 @@ stages:
       parameters:
         vmrBranch: ${{ parameters.vmrBranch }}
         desiredSigning: ${{ parameters.desiredSigning }}
+        desiredIBC: ${{ parameters.desiredIBC }}
     jobs:
 
     - template: ../jobs/vmr-build.yml
@@ -901,7 +906,7 @@ stages:
             - AzureLinux_x64_Cross_Alpine_arm64
             - AzureLinux_x64_Cross_arm
             - AzureLinux_x64_Cross_Alpine_arm
-          
+
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Windows
