@@ -408,7 +408,7 @@ public class Program
     /// <param name="mapping">Asset mapping to compare lists for</param>
     /// <param name="diffPackageReader">Diff (VMR) package reader</param>
     /// <param name="basePackageReader">Baseline (old build) package reader</param>
-    private async void ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader basePackageReader)
+    private async Task ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader basePackageReader)
     {
         IEnumerable<string> baselineFiles = (await basePackageReader.GetFilesAsync(CancellationToken.None));
         IEnumerable<string> testFiles = (await diffPackageReader.GetFilesAsync(CancellationToken.None));
