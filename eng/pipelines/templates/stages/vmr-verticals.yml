@@ -11,6 +11,10 @@ parameters:
   type: string
   default: ''
 
+- name: desiredIbc
+  type: string
+  default: ''
+
 # Scope of jobs which are executed
 - name: scope
   type: string
@@ -398,6 +402,7 @@ stages:
       parameters:
         vmrBranch: ${{ parameters.vmrBranch }}
         desiredSigning: ${{ parameters.desiredSigning }}
+        desiredIBC: ${{ parameters.desiredIBC }}
     jobs:
 
     - template: ../jobs/vmr-build.yml
