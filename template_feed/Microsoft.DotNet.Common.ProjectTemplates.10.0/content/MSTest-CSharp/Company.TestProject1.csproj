@@ -54,13 +54,6 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
-<!--#if (CoverageTool == "Microsoft.CodeCoverage")-->
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.14.2" />
-<!--#endif-->
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.6.3" />
-<!--#endif-->
     <PackageReference Include="MSTest" Version="3.8.3" />
   </ItemGroup>
 
