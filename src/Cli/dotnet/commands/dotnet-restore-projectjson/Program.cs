@@ -3,15 +3,14 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.RestoreProjectJson
-{
-    public partial class RestoreProjectJsonCommand
-    {
-        public static int Run(string[] args)
-        {
-            DebugHelper.HandleDebugSwitch(ref args);
+namespace Microsoft.DotNet.Tools.RestoreProjectJson;
 
-            return NuGet3.Restore(args);
-        }
+public partial class RestoreProjectJsonCommand
+{
+    public static int Run(string[] args)
+    {
+        DebugHelper.HandleDebugSwitch(ref args);
+
+        return NuGet3.Restore(args);
     }
 }
