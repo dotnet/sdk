@@ -995,3 +995,77 @@ stages:
             - Windows_x64
             - Windows_x86
             - Windows_arm64
+
+        # Source Build Leg
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: ${{ format('{0}_SourceBuild_Online_MsftSdk', variables.centOSStreamName) }}
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            targetArchitecture: x64
+            pool: ${{ parameters.pool_Linux }}
+            container:
+              name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}
+            buildSourceOnly: true
+            runOnline: true
+            runTests: false
+            extraProperties: "/p:EnableDevBuildAsDefaultForSourceOnly=true"
+
+        # Source Build Validation
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: ${{ format('{0}_SourceBuild_Online_MsftSdk', variables.centOSStreamName) }}_Validation
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            targetArchitecture: x64
+            pool: ${{ parameters.pool_Linux }}
+            container:
+              name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}
+            buildSourceOnly: true
+            runOnline: true
+            runTests: true
+            skipBuild: true
+            extraProperties: >
+              /p:DotNetSourceOnlyTestOnly=true
+              /p:ExtraRestoreSourcePath=$(Pipeline.Workspace)/msft-pkgs
+              /p:SourceBuildTestsCustomSourceBuiltPackagesPath=$(Pipeline.Workspace)/msft-pkgs
+              /p:SourceBuildTestsCustomSourceBuiltPackagesPathIsInclusive=true
+            dependsOn:
+            - AzureLinux_x64_Cross_x64
+            - Browser_Shortstack_wasm
+            - Windows_x64
+            - ${{ format('{0}_SourceBuild_Online_MsftSdk_x64', variables.centOSStreamName) }}
+            testInitSteps:
+            # Ensure the artifacts staging directory exists so that even if no files get placed there, it won't fail
+            # when publishing the artifacts.
+            - script: mkdir -p $(artifactsStagingDir)
+              displayName: Create Artifacts Staging Directory
+            - template: ../steps/download-artifacts.yml
+              parameters:
+                artifactDescription: Microsoft Linux Packages
+                artifactName: AzureLinux_x64_Cross_x64_Artifacts
+                downloadFilePatterns: packages/Release/Shipping/**
+                copyDestination: $(Pipeline.Workspace)/msft-pkgs
+                flattenDirs: true
+            - template: ../steps/download-artifacts.yml
+              parameters:
+                artifactDescription: Microsoft WASM Packages
+                artifactName: Browser_Shortstack_wasm_Artifacts
+                downloadFilePatterns: packages/Release/Shipping/**
+                copyDestination: $(Pipeline.Workspace)/msft-pkgs
+                flattenDirs: true
+            - template: ../steps/download-artifacts.yml
+              parameters:
+                artifactDescription: Microsoft Windows Packages
+                artifactName: Windows_x64_Artifacts
+                downloadFilePatterns: packages/Release/Shipping/**
+                copyDestination: $(Pipeline.Workspace)/msft-pkgs
+                flattenDirs: true
+            - template: ../steps/download-artifacts.yml
+              parameters:
+                artifactDescription: Source Build Assets
+                artifactName: ${{ format('{0}_SourceBuild_Online_MsftSdk_x64', variables.centOSStreamName) }}_Artifacts
+                downloadFilePatterns: assets/Release/**/*.tar.gz
+                copyDestination: $(Build.SourcesDirectory)/artifacts

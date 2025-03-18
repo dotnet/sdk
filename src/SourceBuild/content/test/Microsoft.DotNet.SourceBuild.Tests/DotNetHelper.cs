@@ -49,7 +49,7 @@ internal class DotNetHelper
     private static void InitNugetConfig()
     {
         bool useCustomPackages = !string.IsNullOrEmpty(Config.CustomPackagesPath);
-        string nugetConfigPrefix = useCustomPackages ? "custom" : "default";
+        string nugetConfigPrefix = useCustomPackages && !Config.CustomPackagesPathIsInclusive ? "custom" : "default";
         string nugetConfigPath = Path.Combine(ProjectsDirectory, "NuGet.Config");
         File.Copy(
             Path.Combine(BaselineHelper.GetAssetsDirectory(), $"{nugetConfigPrefix}.NuGet.Config"),
@@ -66,6 +66,13 @@ internal class DotNetHelper
 
             string nugetConfig = File.ReadAllText(nugetConfigPath)
                 .Replace("CUSTOM_PACKAGE_FEED", Config.CustomPackagesPath);
+            File.WriteAllText(nugetConfigPath, nugetConfig);
+        }
+        else
+        {
+            // Clear out the unused custom package feed
+             string nugetConfig = File.ReadAllText(nugetConfigPath)
+                .Replace("<add key=\"custom-packages\" value=\"CUSTOM_PACKAGE_FEED\" />", "");
             File.WriteAllText(nugetConfigPath, nugetConfig);
         }
     }
