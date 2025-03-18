@@ -647,6 +647,32 @@ _testhost() {
                             ;;
                         esac
                     ;;
+                (project)
+                    _arguments "${_arguments_options[@]}" : \
+                        '--help[Show command line help.]' \
+                        '-h[Show command line help.]' \
+                        ":: :_testhost__project_commands" \
+                        "*::: :->project" \
+                        && ret=0
+                        case $state in
+                            (project)
+                                words=($line[1] "${words[@]}")
+                                (( CURRENT += 1 ))
+                                curcontext="${curcontext%:*:*}:testhost-project-command-$line[1]:"
+                                case $line[1] in
+                                    (convert)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--output=[Location to place the generated output.]: :_files' \
+                                            '-o=[Location to place the generated output.]: :_files' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            ':file -- Path to the file-based program.: ' \
+                                            && ret=0
+                                        ;;
+                                esac
+                            ;;
+                        esac
+                    ;;
                 (publish)
                     _arguments "${_arguments_options[@]}" : \
                         '--use-current-runtime[Use current runtime as the target runtime.]' \
@@ -1351,6 +1377,7 @@ _testhost_commands() {
         'nuget:' \
         'pack:.NET Core NuGet Package Packer' \
         'package:' \
+        'project:' \
         'publish:Publisher for the .NET Platform' \
         'reference:.NET Remove Command' \
         'restore:.NET dependency restorer' \
@@ -1613,6 +1640,20 @@ _testhost__package__list_commands() {
 _testhost__package__remove_commands() {
     local commands; commands=()
     _describe -t commands 'testhost package remove commands' commands "$@"
+}
+
+(( $+functions[_testhost__project_commands] )) ||
+_testhost__project_commands() {
+    local commands; commands=(
+        'convert:Convert a file-based program to a project-based program.' \
+    )
+    _describe -t commands 'testhost project commands' commands "$@"
+}
+
+(( $+functions[_testhost__project__convert_commands] )) ||
+_testhost__project__convert_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost project convert commands' commands "$@"
 }
 
 (( $+functions[_testhost__publish_commands] )) ||

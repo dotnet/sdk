@@ -3,31 +3,30 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class InternalReportinstallsuccessCommandParser
 {
-    internal static class InternalReportinstallsuccessCommandParser
+    public static readonly CliArgument<string> Argument = new("internal-reportinstallsuccess-arg");
+
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly CliArgument<string> Argument = new("internal-reportinstallsuccess-arg");
+        return Command;
+    }
 
-        private static readonly CliCommand Command = ConstructCommand();
-
-        public static CliCommand GetCommand()
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("internal-reportinstallsuccess")
         {
-            return Command;
-        }
+            Hidden = true
+        };
 
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("internal-reportinstallsuccess")
-            {
-                Hidden = true
-            };
+        command.Arguments.Add(Argument);
 
-            command.Arguments.Add(Argument);
+        command.SetAction(InternalReportinstallsuccess.Run);
 
-            command.SetAction(InternalReportinstallsuccess.Run);
-
-            return command;
-        }
+        return command;
     }
 }

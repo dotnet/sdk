@@ -60,6 +60,7 @@ public partial class StaticWebAssetsBaselineFactory
         "blazor.server",
         "dotnet.runtime",
         "dotnet.native",
+        "dotnet.boot",
         "dotnet"
     ];
 

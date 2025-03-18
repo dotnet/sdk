@@ -6,108 +6,108 @@ using System.Reflection;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
-namespace Microsoft.DotNet.Tools.MSBuild
+namespace Microsoft.DotNet.Tools.MSBuild;
+
+public class MSBuildForwardingApp
 {
-    public class MSBuildForwardingApp
+    internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
+
+    private MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
+
+    private static IEnumerable<string> ConcatTelemetryLogger(IEnumerable<string> argsToForward)
     {
-        internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
-
-        private MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
-
-        private static IEnumerable<string> ConcatTelemetryLogger(IEnumerable<string> argsToForward)
+        if (Telemetry.CurrentSessionId != null)
         {
-            if (Telemetry.CurrentSessionId != null)
+            try
             {
-                try
-                {
-                    Type loggerType = typeof(MSBuildLogger);
-                    Type forwardingLoggerType = typeof(MSBuildForwardingLogger);
+                Type loggerType = typeof(MSBuildLogger);
+                Type forwardingLoggerType = typeof(MSBuildForwardingLogger);
 
-                    return argsToForward
-                        .Concat(new[]
-                        {
-                            $"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}"
-                        });
-                }
-                catch (Exception)
-                {
-                    // Exceptions during telemetry shouldn't cause anything else to fail
-                }
+                return argsToForward
+                    .Concat(new[]
+                    {
+                        $"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}"
+                    });
             }
-            return argsToForward;
-        }
-
-        public MSBuildForwardingApp(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
-        {
-            _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
-                ConcatTelemetryLogger(argsToForward),
-                msbuildPath: msbuildPath,
-                includeLogo: includeLogo);
-
-            // Add the performance log location to the environment of the target process.
-            if (PerformanceLogManager.Instance != null && !string.IsNullOrEmpty(PerformanceLogManager.Instance.CurrentLogDirectory))
+            catch (Exception)
             {
-                EnvironmentVariable(PerformanceLogManager.PerfLogDirEnvVar, PerformanceLogManager.Instance.CurrentLogDirectory);
+                // Exceptions during telemetry shouldn't cause anything else to fail
             }
         }
+        return argsToForward;
+    }
 
-        public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
+    public MSBuildForwardingApp(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
+    {
+        _forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(
+            ConcatTelemetryLogger(argsToForward),
+            msbuildPath: msbuildPath,
+            includeLogo: includeLogo);
 
-        public void EnvironmentVariable(string name, string value)
+        // Add the performance log location to the environment of the target process.
+        if (PerformanceLogManager.Instance != null && !string.IsNullOrEmpty(PerformanceLogManager.Instance.CurrentLogDirectory))
         {
-            _forwardingAppWithoutLogging.EnvironmentVariable(name, value);
+            EnvironmentVariable(PerformanceLogManager.PerfLogDirEnvVar, PerformanceLogManager.Instance.CurrentLogDirectory);
         }
+    }
 
-        public ProcessStartInfo GetProcessStartInfo()
+    public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
+
+    public void EnvironmentVariable(string name, string value)
+    {
+        _forwardingAppWithoutLogging.EnvironmentVariable(name, value);
+    }
+
+    public ProcessStartInfo GetProcessStartInfo()
+    {
+        InitializeRequiredEnvironmentVariables();
+
+        return _forwardingAppWithoutLogging.GetProcessStartInfo();
+    }
+
+    private void InitializeRequiredEnvironmentVariables()
+    {
+        EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.CurrentSessionId);
+    }
+
+    /// <summary>
+    /// Test hook returning concatenated and escaped command line arguments that would be passed to MSBuild.
+    /// </summary>
+    internal string GetArgumentsToMSBuild() => ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(GetArgumentTokensToMSBuild());
+
+    internal string[] GetArgumentTokensToMSBuild() => _forwardingAppWithoutLogging.GetAllArguments();
+
+    public virtual int Execute()
+    {
+        // Ignore Ctrl-C for the remainder of the command's execution
+        // Forwarding commands will just spawn the child process and exit
+        Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
+
+        int exitCode;
+        if (_forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
+        {
+            ProcessStartInfo startInfo = GetProcessStartInfo();
+
+            PerformanceLogEventSource.Log.LogMSBuildStart(startInfo.FileName, startInfo.Arguments);
+            exitCode = startInfo.Execute();
+            PerformanceLogEventSource.Log.MSBuildStop(exitCode);
+        }
+        else
         {
             InitializeRequiredEnvironmentVariables();
-
-            return _forwardingAppWithoutLogging.GetProcessStartInfo();
-        }
-
-        private void InitializeRequiredEnvironmentVariables()
-        {
-            EnvironmentVariable(TelemetrySessionIdEnvironmentVariableName, Telemetry.CurrentSessionId);
-        }
-
-        /// <summary>
-        /// Test hook returning concatenated and escaped command line arguments that would be passed to MSBuild.
-        /// </summary>
-        internal string GetArgumentsToMSBuild() => ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(GetArgumentTokensToMSBuild());
-
-        internal string[] GetArgumentTokensToMSBuild() => _forwardingAppWithoutLogging.GetAllArguments();
-
-        public virtual int Execute()
-        {
-            // Ignore Ctrl-C for the remainder of the command's execution
-            // Forwarding commands will just spawn the child process and exit
-            Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
-
-            int exitCode;
-            if (_forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
+            string[] arguments = _forwardingAppWithoutLogging.GetAllArguments();
+            if (PerformanceLogEventSource.Log.IsEnabled())
             {
-                ProcessStartInfo startInfo = GetProcessStartInfo();
-
-                PerformanceLogEventSource.Log.LogMSBuildStart(startInfo.FileName, startInfo.Arguments);
-                exitCode = startInfo.Execute();
-                PerformanceLogEventSource.Log.MSBuildStop(exitCode);
+                PerformanceLogEventSource.Log.LogMSBuildStart(
+                    _forwardingAppWithoutLogging.MSBuildPath,
+                    ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(arguments));
             }
-            else
-            {
-                InitializeRequiredEnvironmentVariables();
-                string[] arguments = _forwardingAppWithoutLogging.GetAllArguments();
-                if (PerformanceLogEventSource.Log.IsEnabled())
-                {
-                    PerformanceLogEventSource.Log.LogMSBuildStart(
-                        _forwardingAppWithoutLogging.MSBuildPath,
-                        ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(arguments));
-                }
-                exitCode = _forwardingAppWithoutLogging.ExecuteInProc(arguments);
-                PerformanceLogEventSource.Log.MSBuildStop(exitCode);
-            }
-
-            return exitCode;
+            exitCode = _forwardingAppWithoutLogging.ExecuteInProc(arguments);
+            PerformanceLogEventSource.Log.MSBuildStop(exitCode);
         }
+
+        return exitCode;
     }
 }
