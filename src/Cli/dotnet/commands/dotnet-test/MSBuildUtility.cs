@@ -13,6 +13,8 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class MSBuildUtility
 {
+    private const string dotnetTestVerb = "dotnet-test";
+
     public static (IEnumerable<TestModule> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
@@ -28,7 +30,11 @@ internal static class MSBuildUtility
                 Path.GetDirectoryName(solutionModel.Description) :
                 SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
-        ConcurrentBag<TestModule> projects = GetProjectsProperties(new ProjectCollection(), solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
+        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
+        ConcurrentBag<TestModule> projects = GetProjectsProperties(collection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+        logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
     }
@@ -42,64 +48,48 @@ internal static class MSBuildUtility
             return (Array.Empty<TestModule>(), isBuiltOrRestored);
         }
 
-        IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, GetGlobalProperties(buildOptions), new ProjectCollection());
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
+        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
+        IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection);
+        logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
     {
-        IEnumerable<string> binaryLoggerTokens = GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
+        var binLogArgs = new List<string>();
+        var otherArgs = new List<string>();
+
+        foreach (var arg in parseResult.UnmatchedTokens)
+        {
+            if (LoggerUtility.IsBinLogArgument(arg))
+            {
+                binLogArgs.Add(arg);
+            }
+            else
+            {
+                otherArgs.Add(arg);
+            }
+        }
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
-            .Concat(binaryLoggerTokens);
-
-        List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-        unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
+            .Concat(binLogArgs);
 
         PathOptions pathOptions = new(parseResult.GetValue(
             TestingPlatformOptions.ProjectOption),
             parseResult.GetValue(TestingPlatformOptions.SolutionOption),
             parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
 
-        BuildProperties buildProperties = new(
-            parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-            ResolveRuntimeIdentifier(parseResult),
-            parseResult.GetValue(TestingPlatformOptions.FrameworkOption));
-
         return new BuildOptions(
             pathOptions,
-            buildProperties,
             parseResult.GetValue(CommonOptions.NoRestoreOption),
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
             parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
             degreeOfParallelism,
-            parseResult.GetValue(CommonOptions.PropertiesOption),
-            unmatchedTokens,
+            otherArgs,
             msbuildArgs);
-    }
-
-    private static string ResolveRuntimeIdentifier(ParseResult parseResult)
-    {
-        if (parseResult.HasOption(CommonOptions.RuntimeOption))
-        {
-            return parseResult.GetValue(CommonOptions.RuntimeOption);
-        }
-
-        if (!parseResult.HasOption(CommonOptions.OperatingSystemOption) && !parseResult.HasOption(CommonOptions.ArchitectureOption))
-        {
-            return string.Empty;
-        }
-
-        return CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(parseResult.GetValue(CommonOptions.OperatingSystemOption), parseResult.GetValue(CommonOptions.ArchitectureOption));
-    }
-
-    private static IEnumerable<string> GetBinaryLoggerTokens(IEnumerable<string> args)
-    {
-        return args.Where(arg =>
-            arg.StartsWith("/bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("/bl", StringComparison.OrdinalIgnoreCase) ||
-            arg.StartsWith("--binaryLogger:", StringComparison.OrdinalIgnoreCase) || arg.Equals("--binaryLogger", StringComparison.OrdinalIgnoreCase) ||
-            arg.StartsWith("-bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("-bl", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
@@ -128,7 +118,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
             (project) =>
             {
-                IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, GetGlobalProperties(buildOptions), projectCollection);
+                IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);
@@ -136,43 +126,5 @@ internal static class MSBuildUtility
             });
 
         return allProjects;
-    }
-
-    private static Dictionary<string, string> GetGlobalProperties(BuildOptions buildOptions)
-    {
-        var globalProperties = new Dictionary<string, string>();
-        var buildProperties = buildOptions.BuildProperties;
-
-        foreach (var property in buildOptions.UserSpecifiedProperties)
-        {
-            foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
-            {
-                if (globalProperties.TryGetValue(key, out var existingValues))
-                {
-                    globalProperties[key] = $"{existingValues};{value}";
-                }
-                else
-                {
-                    globalProperties[key] = value;
-                }
-            }
-        }
-
-        if (!string.IsNullOrEmpty(buildProperties.Configuration))
-        {
-            globalProperties[CliConstants.Configuration] = buildProperties.Configuration;
-        }
-
-        if (!string.IsNullOrEmpty(buildProperties.RuntimeIdentifier))
-        {
-            globalProperties[CliConstants.RuntimeIdentifier] = buildProperties.RuntimeIdentifier;
-        }
-
-        if (!string.IsNullOrEmpty(buildProperties.TargetFramework))
-        {
-            globalProperties[CliConstants.TargetFramework] = buildProperties.TargetFramework;
-        }
-
-        return globalProperties;
     }
 }

@@ -11,18 +11,16 @@ namespace Microsoft.DotNet.Cli;
 
 internal sealed class TestModulesFilterHandler
 {
-    private readonly List<string> _args;
     private readonly TestApplicationActionQueue _actionQueue;
     private readonly TerminalTestReporter _output;
 
-    public TestModulesFilterHandler(List<string> args, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
+    public TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
     {
-        _args = args;
         _actionQueue = actionQueue;
         _output = output;
     }
 
-    public bool RunWithTestModulesFilter(ParseResult parseResult)
+    public bool RunWithTestModulesFilter(ParseResult parseResult, BuildOptions buildOptions)
     {
         // If the module path pattern(s) was provided, we will use that to filter the test modules
         string testModules = parseResult.GetValue(TestingPlatformOptions.TestModulesFilterOption);
@@ -55,7 +53,7 @@ internal sealed class TestModulesFilterHandler
 
         foreach (string testModule in testModulePaths)
         {
-            var testApp = new TestApplication(new TestModule(testModule, null, null, null, true, true), _args);
+            var testApp = new TestApplication(new TestModule(new RunProperties(testModule, null, null), null, null, null, true, true), buildOptions);
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }

@@ -19,14 +19,6 @@ public partial class RunCommand
         return FromParseResult(parseResult);
     }
 
-    internal static bool IsBinLogArgument(string arg)
-    {
-        const StringComparison comp = StringComparison.OrdinalIgnoreCase;
-        return arg.StartsWith("/bl:", comp) || arg.Equals("/bl", comp)
-            || arg.StartsWith("--binaryLogger:", comp) || arg.Equals("--binaryLogger", comp)
-            || arg.StartsWith("-bl:", comp) || arg.Equals("-bl", comp);
-    }
-
     public static RunCommand FromParseResult(ParseResult parseResult)
     {
         if (parseResult.UsingRunCommandShorthandProjectOption())
@@ -45,7 +37,7 @@ public partial class RunCommand
         var nonBinLogArgs = new List<string>();
         foreach (var arg in applicationArguments)
         {
-            if (IsBinLogArgument(arg))
+            if (LoggerUtility.IsBinLogArgument(arg))
             {
                 binlogArgs.Add(arg);
             }

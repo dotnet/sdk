@@ -48,6 +48,7 @@ steps:
     -vmrAssetBasePath "$(Build.ArtifactStagingDirectory)\vmr-assets"
     -msftAssetBasePath "$(Build.ArtifactStagingDirectory)\base-assets"
     -report "$(Build.SourcesDirectory)\artifacts\AssetBaselines\BaselineComparison.xml"
+    -baseline "$(Build.SourcesDirectory)\src\sdk\eng\vmr-msft-comparison-baseline.json"
   displayName: Validate Asset Baselines
 
 - task: 1ES.PublishPipelineArtifact@1

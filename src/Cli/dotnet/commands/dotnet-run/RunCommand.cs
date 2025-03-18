@@ -9,9 +9,6 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Extensions;
@@ -23,8 +20,6 @@ namespace Microsoft.DotNet.Tools.Run;
 
 public partial class RunCommand
 {
-    private record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory);
-
     public bool NoBuild { get; }
 
     /// <summary>
@@ -253,7 +248,7 @@ public partial class RunCommand
                 EntryPointFileFullPath = EntryPointFileFullPath,
             };
 
-            AddUserPassedProperties(command.GlobalProperties, RestoreArgs);
+            CommonRunHelpers.AddUserPassedProperties(command.GlobalProperties, RestoreArgs);
 
             projectFactory = command.CreateProjectInstance;
             buildResult = command.Execute(
@@ -305,7 +300,7 @@ public partial class RunCommand
 
     private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
-        FacadeLogger? logger = DetermineBinlogger(RestoreArgs);
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger(RestoreArgs, "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
         ValidatePreconditions(project);
         InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity, logger);
@@ -314,19 +309,11 @@ public partial class RunCommand
         var command = CreateCommandFromRunProperties(project, runProperties);
         return command;
 
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[] restoreArgs, ILogger? binaryLogger)
+        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[]? restoreArgs, ILogger? binaryLogger)
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
 
-            var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                // This property disables default item globbing to improve performance
-                // This should be safe because we are not evaluating items, only properties
-                { Constants.EnableDefaultItems,  "false" },
-                { Constants.MSBuildExtensionsPath, AppContext.BaseDirectory }
-            };
-
-            AddUserPassedProperties(globalProperties, restoreArgs);
+            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(restoreArgs);
 
             var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
@@ -349,20 +336,13 @@ public partial class RunCommand
 
         static RunProperties ReadRunPropertiesFromProject(ProjectInstance project, string[] applicationArgs)
         {
-            string runProgram = project.GetPropertyValue("RunCommand");
-            if (string.IsNullOrEmpty(runProgram))
+            var runProperties = RunProperties.FromProjectAndApplicationArguments(project, applicationArgs, fallbackToTargetPath: false);
+            if (string.IsNullOrEmpty(runProperties.RunCommand))
             {
                 ThrowUnableToRunError(project);
             }
 
-            string runArguments = project.GetPropertyValue("RunArguments");
-            string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
-
-            if (applicationArgs.Any())
-            {
-                runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs);
-            }
-            return new(runProgram, runArguments, runWorkingDirectory);
+            return runProperties;
         }
 
         static ICommand CreateCommandFromRunProperties(ProjectInstance project, RunProperties runProperties)
@@ -400,174 +380,8 @@ public partial class RunCommand
                 throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
             }
         }
-
-        static FacadeLogger? DetermineBinlogger(string[] restoreArgs)
-        {
-            List<BinaryLogger> binaryLoggers = new();
-
-            for (int i = restoreArgs.Length - 1; i >= 0; i--)
-            {
-                string blArg = restoreArgs[i];
-                if (!IsBinLogArgument(blArg))
-                {
-                    continue;
-                }
-
-                if (blArg.Contains(':'))
-                {
-                    // split and forward args
-                    var split = blArg.Split(':', 2);
-                    var filename = split[1];
-                    if (filename.EndsWith(".binlog"))
-                    {
-                        filename = filename.Substring(0, filename.Length - ".binlog".Length);
-                        filename = filename + "-dotnet-run" + ".binlog";
-                    }
-                    binaryLoggers.Add(new BinaryLogger { Parameters = filename });
-                }
-                else
-                {
-                    // the same name will be used for the build and run-restore-exec steps, so we need to make sure they don't conflict
-                    var filename = "msbuild-dotnet-run" + ".binlog";
-                    binaryLoggers.Add(new BinaryLogger { Parameters = filename });
-                }
-
-                // Like in MSBuild, only the last binary logger is used.
-                break;
-            }
-
-            // this binaryLogger needs to be used for both evaluation and execution, so we need to only call it with a single IEventSource across
-            // both of those phases.
-            // We need a custom logger to handle this, because the MSBuild API for evaluation and execution calls logger Initialize and Shutdown methods, so will not allow us to do this.
-            if (binaryLoggers.Count > 0)
-            {
-                var fakeLogger = ConfigureDispatcher(binaryLoggers);
-
-                return fakeLogger;
-            }
-            return null;
-        }
-
-        static FacadeLogger ConfigureDispatcher(List<BinaryLogger> binaryLoggers)
-        {
-            var dispatcher = new PersistentDispatcher(binaryLoggers);
-            return new FacadeLogger(dispatcher);
-        }
     }
 
-    /// <param name="globalProperties">
-    /// Should have <see cref="StringComparer.OrdinalIgnoreCase"/>.
-    /// </param>
-    private static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[] args)
-    {
-        Debug.Assert(globalProperties.Comparer == StringComparer.OrdinalIgnoreCase);
-
-        var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
-        var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
-        var propertyParseResult = propertyParsingConfiguration.Parse(args);
-        var propertyValues = propertyParseResult.GetValue(CommonOptions.PropertiesOption);
-
-        if (propertyValues != null)
-        {
-            foreach (var property in propertyValues)
-            {
-                foreach (var (key, value) in MSBuildPropertyParser.ParseProperties(property))
-                {
-                    if (globalProperties.TryGetValue(key, out var existingValues))
-                    {
-                        globalProperties[key] = existingValues + ";" + value;
-                    }
-                    else
-                    {
-                        globalProperties[key] = value;
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// This class acts as a wrapper around the BinaryLogger, to allow us to keep the BinaryLogger alive across multiple phases of the build.
-    /// The methods here are stubs so that the real binarylogger sees that we support these functionalities.
-    /// We need to ensure that the child logger is Initialized and Shutdown only once, so this fake event source
-    /// acts as a buffer. We'll provide this dispatcher to another fake logger, and that logger will
-    /// bind to this dispatcher to foward events from the actual build to the binary logger through this dispatcher.
-    /// </summary>
-    /// <param name="innerLogger"></param>
-    private class PersistentDispatcher : EventArgsDispatcher, IEventSource4
-    {
-        private List<BinaryLogger> innerLoggers;
-
-        public PersistentDispatcher(List<BinaryLogger> innerLoggers)
-        {
-            this.innerLoggers = innerLoggers;
-            foreach (var logger in innerLoggers)
-            {
-                logger.Initialize(this);
-            }
-        }
-        public event TelemetryEventHandler TelemetryLogged { add { } remove { } }
-
-        public void IncludeEvaluationMetaprojects() { }
-        public void IncludeEvaluationProfiles() { }
-        public void IncludeEvaluationPropertiesAndItems() { }
-        public void IncludeTaskInputs() { }
-
-        public void Destroy()
-        {
-            foreach (var innerLogger in innerLoggers)
-            {
-                innerLogger.Shutdown();
-            }
-        }
-    }
-
-    /// <summary>
-    /// This logger acts as a forwarder to the provided dispatcher, so that multiple different build engine operations
-    /// can be forwarded to the shared binary logger held by the dispatcher.
-    /// We opt into lots of data to ensure that we can forward all events to the binary logger.
-    /// </summary>
-    /// <param name="dispatcher"></param>
-    private class FacadeLogger(PersistentDispatcher dispatcher) : ILogger
-    {
-        public PersistentDispatcher Dispatcher => dispatcher;
-
-        public LoggerVerbosity Verbosity { get => LoggerVerbosity.Diagnostic; set { } }
-        public string? Parameters { get => ""; set { } }
-
-        public void Initialize(IEventSource eventSource)
-        {
-            if (eventSource is IEventSource3 eventSource3)
-            {
-                eventSource3.IncludeEvaluationMetaprojects();
-                dispatcher.IncludeEvaluationMetaprojects();
-
-                eventSource3.IncludeEvaluationProfiles();
-                dispatcher.IncludeEvaluationProfiles();
-
-                eventSource3.IncludeTaskInputs();
-                dispatcher.IncludeTaskInputs();
-            }
-
-            eventSource.AnyEventRaised += (sender, args) => dispatcher.Dispatch(args);
-
-            if (eventSource is IEventSource4 eventSource4)
-            {
-                eventSource4.IncludeEvaluationPropertiesAndItems();
-                dispatcher.IncludeEvaluationPropertiesAndItems();
-            }
-        }
-
-        public void ReallyShutdown()
-        {
-            dispatcher.Destroy();
-        }
-
-        // we don't do anything on shutdown, because we want to keep the dispatcher alive for the next phase
-        public void Shutdown()
-        {
-        }
-    }
 
     static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
     {
@@ -660,31 +474,13 @@ public partial class RunCommand
         static string? TryFindEntryPointFilePath(ref string[] args)
         {
             if (args is not [{ } arg, ..] ||
-                !arg.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
-                !File.Exists(arg))
+                !VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
             {
                 return null;
             }
 
-            if (!HasTopLevelStatements(arg))
-            {
-                throw new GracefulException(LocalizableStrings.NoTopLevelStatements, arg);
-            }
-
             args = args[1..];
             return Path.GetFullPath(arg);
-        }
-
-        static bool HasTopLevelStatements(string entryPointFilePath)
-        {
-            var tree = ParseCSharp(entryPointFilePath);
-            return tree.GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().Any();
-        }
-
-        static CSharpSyntaxTree ParseCSharp(string filePath)
-        {
-            using var stream = File.OpenRead(filePath);
-            return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(SourceText.From(stream, Encoding.UTF8), path: filePath);
         }
     }
 }

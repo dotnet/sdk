@@ -97,7 +97,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="GenerateHtmlImportMapBuildStaticWebAssets" DependsOnTargets="$(GenerateHtmlImportMapBuildStaticWebAssetsDependsOn)">
     <WriteImportMapToHtml
+      Assets="@(_EsModuleCandidate)"
       Endpoints="@(_EsModuleCandidateEndpoints)"
+      IncludeOnlyHardFingerprintedModules="false"
       HtmlFiles="@(_HtmlStaticWebAssets)"
       OutputPath="$(_BuildImportMapHtmlPath)">
       <Output TaskParameter="HtmlCandidates" ItemName="_HtmlCandidates" />
@@ -165,7 +167,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="GenerateHtmlImportMapPublishStaticWebAssets" DependsOnTargets="$(GenerateHtmlImportMapPublishStaticWebAssetsDependsOn)">
     <WriteImportMapToHtml
+      Assets="@(_EsModuleCandidateForPublish)"
       Endpoints="@(_EsModuleCandidateForPublishEndpoints)"
+      IncludeOnlyHardFingerprintedModules="true"
       HtmlFiles="@(_HtmlStaticWebAssets)"
       OutputPath="$(_PublishImportMapHtmlPath)">
       <Output TaskParameter="HtmlCandidates" ItemName="_HtmlPublishCandidates" />

@@ -1,17 +1,21 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Test;
-using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli;
 
 internal static class SolutionAndProjectUtility
 {
+    private static readonly string s_computeRunArgumentsTarget = "ComputeRunArguments";
+    private static readonly Lock s_buildLock = new Lock();
+
     public static (bool SolutionOrProjectFileFound, string Message) TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
     {
         projectOrSolutionFilePath = string.Empty;
@@ -78,13 +82,10 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static string[] GetSolutionFilePaths(string directory)
-    {
-        string[] solutionFiles = Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly);
-        solutionFiles.AddRange(Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly));
-
-        return solutionFiles;
-    }
+    private static string[] GetSolutionFilePaths(string directory) => [
+            .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
+            .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
+        ];
 
     private static string[] GetSolutionFilterFilePaths(string directory)
     {
@@ -95,26 +96,38 @@ internal static class SolutionAndProjectUtility
 
     private static bool IsProjectFile(string filePath) => CliConstants.ProjectExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
 
+    private static ProjectInstance EvaluateProject(ProjectCollection collection, string projectFilePath, string? tfm)
+    {
+        Debug.Assert(projectFilePath is not null);
+
+        var project = collection.LoadProject(projectFilePath);
+        if (tfm is not null)
+        {
+            project.SetGlobalProperty(ProjectProperties.TargetFramework, tfm);
+            project.ReevaluateIfNecessary();
+        }
+
+        return project.CreateProjectInstance();
+    }
+
     public static string GetRootDirectory(string solutionOrProjectFilePath)
     {
         string fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, IDictionary<string, string> globalProperties, ProjectCollection projectCollection)
+    public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection)
     {
         var projects = new List<TestModule>();
+        ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
 
-
-        var project = projectCollection.LoadProject(projectFilePath, globalProperties, null);
-
-        var targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        var targetFrameworks = project.GetPropertyValue(ProjectProperties.TargetFrameworks);
-        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{project.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
+        var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+        var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+        Logger.LogTrace(() => $"Loaded project '{Path.GetFileName(projectFilePath)}' with TargetFramework '{targetFramework}', TargetFrameworks '{targetFrameworks}', IsTestProject '{projectInstance.GetPropertyValue(ProjectProperties.IsTestProject)}', and '{ProjectProperties.IsTestingPlatformApplication}' is '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}'.");
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(project) is { } module)
+            if (GetModuleFromProject(projectInstance, projectCollection.Loggers) is { } module)
             {
                 projects.Add(module);
             }
@@ -124,11 +137,10 @@ internal static class SolutionAndProjectUtility
             var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
             foreach (var framework in frameworks)
             {
-                project.SetProperty(ProjectProperties.TargetFramework, framework);
-                project.ReevaluateIfNecessary();
-                Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
+                projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
+                Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                if (GetModuleFromProject(project) is { } module)
+                if (GetModuleFromProject(projectInstance, projectCollection.Loggers) is { } module)
                 {
                     projects.Add(module);
                 }
@@ -138,7 +150,7 @@ internal static class SolutionAndProjectUtility
         return projects;
     }
 
-    private static TestModule? GetModuleFromProject(Project project)
+    private static TestModule? GetModuleFromProject(ProjectInstance project, ICollection<ILogger>? loggers)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -149,39 +161,28 @@ internal static class SolutionAndProjectUtility
         }
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-
-        string executablePath = GetExecutablePath(project);
-        string targetPath = !string.IsNullOrEmpty(executablePath) ? executablePath : project.GetPropertyValue(ProjectProperties.TargetPath);
+        RunProperties runProperties = GetRunProperties(project, loggers);
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
         string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
-        return new TestModule(targetPath, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
-    }
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
 
-    private static string GetExecutablePath(Project project)
-    {
-        _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsExecutable), out bool isExecutable);
-        _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.UseAppHost), out bool useAppHost);
-
-        string targetFrameworkIdentifier = project.GetPropertyValue(ProjectProperties.TargetFrameworkIdentifier);
-
-        if (targetFrameworkIdentifier.Equals(CliConstants.NetCoreIdentifier, StringComparison.OrdinalIgnoreCase) &&
-            isExecutable &&
-            useAppHost)
+        static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
-            string targetDir = project.GetPropertyValue(ProjectProperties.TargetDir);
-            string assemblyName = project.GetPropertyValue(ProjectProperties.AssemblyName);
-            string nativeExecutableExtension = project.GetPropertyValue(ProjectProperties.NativeExecutableExtension);
-
-            string executablePath = $"{targetDir}{assemblyName}{nativeExecutableExtension}";
-
-            if (File.Exists(executablePath))
+            // Build API cannot be called in parallel, even if the projects are different.
+            // Otherwise, BuildManager in MSBuild will fail:
+            // System.InvalidOperationException: The operation cannot be completed because a build is already in progress.
+            // NOTE: BuildManager is singleton.
+            lock (s_buildLock)
             {
-                return executablePath;
+                if (!project.Build(s_computeRunArgumentsTarget, loggers: loggers))
+                {
+                    Logger.LogTrace(() => $"The target {s_computeRunArgumentsTarget} failed to build. Falling back to TargetPath.");
+                    return new RunProperties(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
+                }
             }
+
+            return RunProperties.FromProjectAndApplicationArguments(project, Array.Empty<string>(), fallbackToTargetPath: true);
         }
-
-        return string.Empty;
     }
-
 }
