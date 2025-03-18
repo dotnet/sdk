@@ -364,6 +364,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 // Add these to avoid accessing the disk to compute them
                 Integrity = "integrity",
                 Fingerprint = "fingerprint",
+                FileLength = 10,
+                LastWriteTime = DateTime.UtcNow,
             };
 
             result.ApplyDefaults();
