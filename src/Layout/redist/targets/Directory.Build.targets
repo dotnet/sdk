@@ -1,0 +1,13 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Shared infra to build and use the sdk-tasks -->
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+
+  <Import Project="BundledSdks.targets" />
+  <Import Project="PublishDotnetWatch.targets" />
+  <Import Project="GenerateLayout.targets" />
+  <Import Project="OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
+
+</Project>

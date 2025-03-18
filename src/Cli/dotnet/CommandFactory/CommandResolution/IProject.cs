@@ -4,28 +4,27 @@
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+internal interface IProject
 {
-    internal interface IProject
-    {
-        LockFile GetLockFile();
+    LockFile GetLockFile();
 
-        bool TryGetLockFile(out LockFile lockFile);
+    bool TryGetLockFile(out LockFile lockFile);
 
-        IEnumerable<SingleProjectInfo> GetTools();
+    IEnumerable<SingleProjectInfo> GetTools();
 
-        string DepsJsonPath { get; }
+    string DepsJsonPath { get; }
 
-        string ProjectRoot { get; }
+    string ProjectRoot { get; }
 
-        string RuntimeConfigJsonPath { get; }
+    string RuntimeConfigJsonPath { get; }
 
-        string FullOutputPath { get; }
+    string FullOutputPath { get; }
 
-        NuGetFramework DotnetCliToolTargetFramework { get; }
+    NuGetFramework DotnetCliToolTargetFramework { get; }
 
-        Dictionary<string, string> EnvironmentVariables { get; }
+    Dictionary<string, string> EnvironmentVariables { get; }
 
-        string ToolDepsJsonGeneratorProject { get; }
-    }
+    string ToolDepsJsonGeneratorProject { get; }
 }

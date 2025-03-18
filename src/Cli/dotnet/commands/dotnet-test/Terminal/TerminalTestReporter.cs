@@ -2,8 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
+using System.CommandLine.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli;
 using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
@@ -1037,7 +1039,51 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
-    public void WriteHeading(string? heading, string? description)
+    public void WritePlatformAndExtensionOptions(HelpContext context,
+        IEnumerable<CommandLineOption> builtInOptions,
+        IEnumerable<CommandLineOption> nonBuiltInOptions,
+        Dictionary<bool, List<(string[], string[])>> moduleToMissingOptions)
+    {
+        if (_wasCancelled)
+        {
+            return;
+        }
+
+        if (builtInOptions.Any())
+        {
+            WriteOtherOptionsSection(context, LocalizableStrings.HelpPlatformOptions, builtInOptions);
+            context.Output.WriteLine();
+        }
+
+        if (nonBuiltInOptions.Any())
+        {
+            WriteOtherOptionsSection(context, LocalizableStrings.HelpExtensionOptions, nonBuiltInOptions);
+            context.Output.WriteLine();
+        }
+        WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
+    }
+
+    private void WriteOtherOptionsSection(HelpContext context, string title, IEnumerable<CommandLineOption> options)
+    {
+        List<TwoColumnHelpRow> optionRows = [];
+
+        foreach (var option in options)
+        {
+            if (option.IsHidden != true)
+            {
+                optionRows.Add(new TwoColumnHelpRow($"--{option.Name}", option.Description));
+            }
+        }
+
+        if (optionRows.Count > 0)
+        {
+            WriteHeading(title, null);
+            context.HelpBuilder.WriteColumns(optionRows, context);
+        }
+    }
+
+
+    private void WriteHeading(string? heading, string? description)
     {
         if (!string.IsNullOrWhiteSpace(heading))
         {
