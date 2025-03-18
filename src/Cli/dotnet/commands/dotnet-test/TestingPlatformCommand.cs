@@ -167,8 +167,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     }
 
     private static TestOptions GetTestOptions(ParseResult parseResult, bool hasFilterMode, bool isHelp) =>
-        new(parseResult.GetValue(TestingPlatformOptions.ConfigurationOption),
-            parseResult.GetValue(CommonOptions.ArchitectureOption),
+        new(parseResult.GetValue(CommonOptions.ArchitectureOption),
             hasFilterMode,
             isHelp);
 
