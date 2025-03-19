@@ -57,9 +57,9 @@
 
     <!-- URLs -->
     <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
-    <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
+    <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://builds.dotnet.microsoft.com/internal/</InternalBaseURL>
     <!-- Base url for official releases. Used to obtain some assets from older releases when necessary. -->
-    <OfficialBaseURL>https://dotnetcli.blob.core.windows.net/dotnet/</OfficialBaseURL>
+    <OfficialBaseURL>https://builds.dotnet.microsoft.com/dotnet/</OfficialBaseURL>
     <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">$(OfficialBaseURL)</PublicBaseURL>
     <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
     <PublicBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'">$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))</PublicBaseURL>
