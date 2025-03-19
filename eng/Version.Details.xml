@@ -125,47 +125,47 @@
       <Sha>345742da75dc6c5fe485ef1236d3f034ebcdcb53</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-3.25164.10">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-3.25168.13">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>517e95f9430d387e0e387a23fa2c8351a0863c4a</Sha>
+      <Sha>4aaf16082daf8d83b60951a7475b86d6973d9790</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.14.0-preview.1.78">
       <Uri>https://github.com/nuget/nuget.client</Uri>
