@@ -14,7 +14,7 @@
 <!--#if (CoverageTool == "coverlet")-->
 
   <ItemGroup>
-      <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
   </ItemGroup>
 <!--#endif-->
 <!--#else-->
