@@ -12,9 +12,8 @@ internal sealed class ModuleMessageSerializer : BaseSerializer, INamedPipeSerial
         string modulePath = ReadString(stream);
         string projectPath = ReadString(stream);
         string targetFramework = ReadString(stream);
-        string runSettingsFilePath = ReadString(stream);
         string isTestingPlatformApplication = ReadString(stream);
-        return new ModuleMessage(modulePath.Trim(), projectPath.Trim(), targetFramework.Trim(), runSettingsFilePath.Trim(), isTestingPlatformApplication.Trim());
+        return new ModuleMessage(modulePath.Trim(), projectPath.Trim(), targetFramework.Trim(), isTestingPlatformApplication.Trim());
     }
 
     public void Serialize(object objectToSerialize, Stream stream)
@@ -22,7 +21,6 @@ internal sealed class ModuleMessageSerializer : BaseSerializer, INamedPipeSerial
         WriteString(stream, ((ModuleMessage)objectToSerialize).DllOrExePath);
         WriteString(stream, ((ModuleMessage)objectToSerialize).ProjectPath);
         WriteString(stream, ((ModuleMessage)objectToSerialize).TargetFramework);
-        WriteString(stream, ((ModuleMessage)objectToSerialize).RunSettingsFilePath);
         WriteString(stream, ((ModuleMessage)objectToSerialize).IsTestingPlatformApplication);
     }
 }

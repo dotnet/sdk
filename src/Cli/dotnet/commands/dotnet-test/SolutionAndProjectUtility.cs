@@ -163,9 +163,8 @@ internal static class SolutionAndProjectUtility
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
         RunProperties runProperties = GetRunProperties(project, loggers);
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
-        string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject);
 
         static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
