@@ -1,0 +1,12 @@
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 1631f76ce95..7b88a2177d0 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -1,6 +1,6 @@
+ <!-- When altering this file, include @dotnet/product-construction as a reviewer. -->
+ 
+-<Project>
++<Project TreatAsLocalProperty="TargetOS;TargetRid">
+ 
+   <PropertyGroup>
+     <GitHubRepositoryName>runtime</GitHubRepositoryName>
