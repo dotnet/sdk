@@ -7,7 +7,6 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
-using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli;
@@ -83,13 +82,10 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static string[] GetSolutionFilePaths(string directory)
-    {
-        string[] solutionFiles = Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly);
-        solutionFiles.AddRange(Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly));
-
-        return solutionFiles;
-    }
+    private static string[] GetSolutionFilePaths(string directory) => [
+            .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
+            .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
+        ];
 
     private static string[] GetSolutionFilterFilePaths(string directory)
     {

@@ -20,7 +20,7 @@ internal class ListPackageReferencesCommand : CommandBase
         _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
             parseResult.HasOption(PackageCommandParser.ProjectOption) ?
             parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument));
+            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ?? "");
     }
 
     private static string GetAbsolutePath(string currentDirectory, string relativePath)

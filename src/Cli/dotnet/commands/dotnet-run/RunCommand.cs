@@ -9,9 +9,6 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Extensions;
@@ -477,31 +474,13 @@ public partial class RunCommand
         static string? TryFindEntryPointFilePath(ref string[] args)
         {
             if (args is not [{ } arg, ..] ||
-                !arg.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
-                !File.Exists(arg))
+                !VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
             {
                 return null;
             }
 
-            if (!HasTopLevelStatements(arg))
-            {
-                throw new GracefulException(LocalizableStrings.NoTopLevelStatements, arg);
-            }
-
             args = args[1..];
             return Path.GetFullPath(arg);
-        }
-
-        static bool HasTopLevelStatements(string entryPointFilePath)
-        {
-            var tree = ParseCSharp(entryPointFilePath);
-            return tree.GetRoot().ChildNodes().OfType<GlobalStatementSyntax>().Any();
-        }
-
-        static CSharpSyntaxTree ParseCSharp(string filePath)
-        {
-            using var stream = File.OpenRead(filePath);
-            return (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(SourceText.From(stream, Encoding.UTF8), path: filePath);
         }
     }
 }

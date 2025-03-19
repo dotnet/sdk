@@ -5,7 +5,7 @@ _testhost() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="build build-server clean format fsi msbuild new nuget pack package publish reference restore run solution store test tool vstest help sdk workload completions --help --diagnostics --version --info --list-sdks --list-runtimes" 
+    opts="build build-server clean format fsi msbuild new nuget pack package project publish reference restore run solution store test tool vstest help sdk workload completions --help --diagnostics --version --info --list-sdks --list-runtimes" 
     
     if [[ $COMP_CWORD == "1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -60,6 +60,11 @@ _testhost() {
             
         (package)
             _testhost_package 2
+            return
+            ;;
+            
+        (project)
+            _testhost_project 2
             return
             ;;
             
@@ -1107,6 +1112,47 @@ _testhost_package_remove() {
     COMPREPLY=()
     
     opts="--interactive --project --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_project() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="convert --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    case ${COMP_WORDS[$1]} in
+        (convert)
+            _testhost_project_convert $(($1+1))
+            return
+            ;;
+            
+    esac
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+_testhost_project_convert() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--output --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
