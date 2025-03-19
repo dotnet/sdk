@@ -41,7 +41,6 @@ internal static class CliConstants
 
     public const string BinLogFileName = "msbuild.binlog";
 
-    public const string TestingPlatformVsTestBridgeRunSettingsFileEnvVar = "TESTINGPLATFORM_VSTESTBRIDGE_RUNSETTINGS_FILE";
     public const string DLLExtension = ".dll";
 
     public const string MTPTarget = "_MTPBuild";
@@ -91,7 +90,6 @@ internal static class ProjectProperties
     internal const string TargetFrameworks = "TargetFrameworks";
     internal const string TargetPath = "TargetPath";
     internal const string ProjectFullPath = "MSBuildProjectFullPath";
-    internal const string RunSettingsFilePath = "RunSettingsFilePath";
     internal const string RunCommand = "RunCommand";
     internal const string RunArguments = "RunArguments";
     internal const string RunWorkingDirectory = "RunWorkingDirectory";
