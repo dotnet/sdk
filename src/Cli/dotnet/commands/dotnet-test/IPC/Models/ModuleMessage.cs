@@ -3,4 +3,4 @@
 
 namespace Microsoft.DotNet.Tools.Test;
 
-internal sealed record ModuleMessage(string? DllOrExePath, string? ProjectPath, string? TargetFramework, string? RunSettingsFilePath, string IsTestingPlatformApplication) : IRequest;
+internal sealed record ModuleMessage(string? DllOrExePath, string? ProjectPath, string? TargetFramework, string IsTestingPlatformApplication) : IRequest;
