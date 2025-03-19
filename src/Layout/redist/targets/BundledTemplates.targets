@@ -76,7 +76,7 @@
 
   <Target Name="LayoutTemplatesForMSI" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates" Condition="$(ProductMonikerRid.StartsWith('win'))">
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(BaseOutputPath)$(Configuration)\templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
+          DestinationFolder="$(RedistInstallerBaseOutputPath)templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
 
     <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
     <PropertyGroup>
@@ -84,7 +84,7 @@
       <CurrentTemplateFrameworkVersion>%(CurrentVersionBundledTemplates.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
     </PropertyGroup>
     <Copy SourceFiles="@(RepoTemplate)"
-          DestinationFiles="$(BaseOutputPath)$(Configuration)\templates-$(CurrentTemplateFrameworkVersion)\templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
+          DestinationFiles="$(RedistInstallerBaseOutputPath)templates-$(CurrentTemplateFrameworkVersion)\templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
   </Target>
 
 </Project>

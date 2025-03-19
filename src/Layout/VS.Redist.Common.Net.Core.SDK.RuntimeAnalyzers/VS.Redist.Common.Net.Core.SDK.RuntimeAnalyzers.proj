@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
-    <ProjectReference Include="..\redist-installer\redist-installer.proj" />
+    <ProjectReference Include="..\redist\redist.csproj" />
   </ItemGroup>
 
   <!-- Shared infra to build and use the sdk-tasks -->

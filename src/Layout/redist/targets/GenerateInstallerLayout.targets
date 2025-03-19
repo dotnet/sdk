@@ -59,7 +59,7 @@
     <Copy SourceFiles="@(DotnetToolsetInternalSource)" DestinationFiles="@(DotnetToolsetInternalDestination)" SkipUnchangedFiles="true" />
   </Target>
 
-  <Target Name="RetargetTools">
+  <Target Name="RetargetInstallerTools">
     <ItemGroup>
       <ToolRuntimeConfigPath Include="$(RedistInstallerLayoutPath)sdk/$(Version)/**/*.runtimeconfig.json" />
     </ItemGroup>
@@ -138,27 +138,23 @@
     <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
-  <Target Name="GenerateLayout"
+  <Target Name="GenerateInstallerLayout"
           DependsOnTargets="DownloadBundledComponents;
+                            GenerateLayout;
                             LayoutBundledComponents;
                             GenerateVersionFile;
                             CopyKnownWorkloadManifestFile;
                             GenerateBundledVersions;
-                            LayoutRuntimeGraph;
                             LayoutTemplates;
                             LayoutManifests;
                             LayoutBaselineWorkloadSet;
                             LayoutWorkloadUserLocalMarker;
                             LayoutBundledTools;
-                            RetargetTools;
+                            RetargetInstallerTools;
                             CrossgenLayout;
                             LayoutAppHostTemplate;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
-          BeforeTargets="AfterBuild" />
-
-  <Target Name="GenerateInternalLayout"
-          DependsOnTargets="GenerateLayout"
-          BeforeTargets="AfterBuild" >
+          AfterTargets="Build">
     <RemoveDir Directories="$(SdkInternalLayoutPath)" />
     <MakeDir Directories="$(SdkInternalLayoutPath)" />
 

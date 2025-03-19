@@ -17,15 +17,15 @@
       <PkgInstallDirectory>/usr/local/share/dotnet</PkgInstallDirectory>
       <x64EmulationPkgInstallDirectory>/usr/local/share/dotnet/x64</x64EmulationPkgInstallDirectory>
 
-      <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)../packaging/osx</SdkPkgSourcesRootDirectory>
-      <SdkPkgScriptsDirectory>$(SdkPkgSourcesRootDirectory)/scripts</SdkPkgScriptsDirectory>
+      <SdkPkgSourcesOSXDirectory>$(SdkPkgSourcesRootDirectory)osx</SdkPkgSourcesOSXDirectory>
+      <SdkPkgScriptsDirectory>$(SdkPkgSourcesOSXDirectory)/scripts</SdkPkgScriptsDirectory>
       <SdkPkgScriptTemplateFile>$(SdkPkgScriptsDirectory)/postinstall</SdkPkgScriptTemplateFile>
       <SdkPkgDestinationScriptsDirectory>$(PkgIntermediateDirectory)/scripts</SdkPkgDestinationScriptsDirectory>
       <SdkPkgScriptFile>$(SdkPkgDestinationScriptsDirectory)/postinstall</SdkPkgScriptFile>
       <SdkProductArchiveResourcesDirectory>$(PkgIntermediateDirectory)/resources</SdkProductArchiveResourcesDirectory>
 
-      <SdkProductArchiveDistributionTemplateFile Condition="'$(Architecture)' != 'x64'">$(SdkPkgSourcesRootDirectory)/Distribution-Template</SdkProductArchiveDistributionTemplateFile>
-      <SdkProductArchiveDistributionTemplateFile Condition="'$(Architecture)' == 'x64'">$(SdkPkgSourcesRootDirectory)/Distribution-Template-x64</SdkProductArchiveDistributionTemplateFile>
+      <SdkProductArchiveDistributionTemplateFile Condition="'$(Architecture)' != 'x64'">$(SdkPkgSourcesOSXDirectory)/Distribution-Template</SdkProductArchiveDistributionTemplateFile>
+      <SdkProductArchiveDistributionTemplateFile Condition="'$(Architecture)' == 'x64'">$(SdkPkgSourcesOSXDirectory)/Distribution-Template-x64</SdkProductArchiveDistributionTemplateFile>
       <SdkProductArchiveDistributionFile>$(PkgIntermediateDirectory)/CLI-SDK-Formatted-Distribution-Template.xml</SdkProductArchiveDistributionFile>
 
       <SdkPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SdkComponentId).pkg</SdkPkgIntermediatePath>
@@ -139,7 +139,7 @@
   <Target Name="GenerateSdkPkg"
           Inputs="@(GenerateSdkPkgInputs)"
           Outputs="$(SdkPKGInstallerFile)"
-          DependsOnTargets="GenerateLayout;SetupPkgInputsOutputs">
+          DependsOnTargets="GenerateInstallerLayout;SetupPkgInputsOutputs">
     <ItemGroup>
       <TemplateFiles Include="$(RedistLayoutPath)templates/**/*" />
     </ItemGroup>

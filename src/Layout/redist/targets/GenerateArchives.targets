@@ -1,8 +1,8 @@
 <Project>
 
   <Target Name="GenerateArchives"
-          DependsOnTargets="GenerateLayout"
-          BeforeTargets="AfterBuild">
+          DependsOnTargets="GenerateInstallerLayout"
+          AfterTargets="Build">
     <!-- When running in Docker under a Windows host, tar is warning "file changed as we read it" for several files and returning exit code 1.
          So this flag allows that to be ignored. -->
     <PropertyGroup Condition="'$(IgnoreTarExitCode)' == ''">
