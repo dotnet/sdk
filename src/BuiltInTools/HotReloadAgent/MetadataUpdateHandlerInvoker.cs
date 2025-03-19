@@ -331,14 +331,14 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 
             try
             {
-                assemblyIdentifier = assembly.GetName().Name!;
+                assemblyIdentifier = assembly.GetName().Name;
             }
             catch
             {
                 return;
             }
 
-            if (!visited.Add(assemblyIdentifier))
+            if (assemblyIdentifier == null || !visited.Add(assemblyIdentifier))
             {
                 return;
             }
@@ -359,7 +359,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
                 {
                     try
                     {
-                        return a.GetName().Name.Equals(dependencyName.Name, StringComparison.OrdinalIgnoreCase);
+                        return string.Equals(a.GetName().Name, dependencyName.Name, StringComparison.OrdinalIgnoreCase);
                     }
                     catch
                     {
