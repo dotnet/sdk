@@ -12,11 +12,60 @@
   {
     "issueType": "AssemblyVersionMismatch",
     "descriptionMatch": ".resources.dll",
+    "allowRevisionOnlyVariance": true,
     "justification": "Resource dlls get per-build versioning but this doesn't matter."
   },
   {
     "issueType": "MissingShipping",
     "descriptionMatch": "Aspire.*",
     "justification": "Aspire to be removed from the VMR. Also .NET does not ship these packages."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.CodeAnalysis.*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "CodeAnalysis dlls vary build to build with patch number."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.Build\\.CodeAnalysis.*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "CodeAnalysis dlls vary build to build with patch number."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.Build.*\\.CodeAnalysis\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "CodeAnalysis dlls vary build to build with patch number."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Metrics.*\\.exe",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Analyzers vary build to build"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.NET\\..*\\.Tasks\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Allow build-build patch variance"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "NuGet\\..*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Nuget DLLs vary build to build."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.DotNet\\..*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Arcade binaries vary build to build."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "analyzers/dotnet/.*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Analyzers vary build to build"
   }
 ]

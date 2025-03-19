@@ -28,11 +28,11 @@
 
   <!-- Generate MSI/Bundle Properties -->
   <PropertyGroup>
-    <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)../packaging/windows</SdkPkgSourcesRootDirectory>
-    <SdkGenerateMsiPowershellScript>$(SdkPkgSourcesRootDirectory)/generatemsi.ps1</SdkGenerateMsiPowershellScript>
-    <SdkPlaceholderGenerateMsiPowershellScript>$(SdkPkgSourcesRootDirectory)/generatesdkplaceholdermsi.ps1</SdkPlaceholderGenerateMsiPowershellScript>
-    <SdkStableFileIdForApphostTransform>$(SdkPkgSourcesRootDirectory)/stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
-    <SdkGenerateBundlePowershellScript>$(SdkPkgSourcesRootDirectory)/generatebundle.ps1</SdkGenerateBundlePowershellScript>
+    <SdkPkgSourcesWindowsDirectory>$(SdkPkgSourcesRootDirectory)windows</SdkPkgSourcesWindowsDirectory>
+    <SdkGenerateMsiPowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatemsi.ps1</SdkGenerateMsiPowershellScript>
+    <SdkPlaceholderGenerateMsiPowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatesdkplaceholdermsi.ps1</SdkPlaceholderGenerateMsiPowershellScript>
+    <SdkStableFileIdForApphostTransform>$(SdkPkgSourcesWindowsDirectory)\stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
+    <SdkGenerateBundlePowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatebundle.ps1</SdkGenerateBundlePowershellScript>
 
     <FinalizerExe>$(ArtifactsBinDir)finalizer\win-$(Architecture)\$(Configuration)\bin\finalizer.exe</FinalizerExe>
 
@@ -93,7 +93,7 @@
   </Target>
 
   <Target Name="GenerateSdkMsi"
-          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs"
+          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs"
           Inputs="$(SdkInternalLayoutPath)**/*;
                   $(SdkGenerateMsiPowershellScript)"
           Outputs="$(SdkMSIInstallerFile)">
@@ -129,7 +129,7 @@
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
       OutputFolder="$(LightCommandPackagesDir)"
-      AdditionalBasePaths="$(SdkPkgSourcesRootDirectory)"
+      AdditionalBasePaths="$(SdkPkgSourcesWindowsDirectory)"
       NoLogo="true"
       Cultures="en-us"
       InstallerFile="$(SdkMSIInstallerFile)"
@@ -174,13 +174,13 @@
       InstallerFile="$(SdkPlaceholderMSIInstallerFile)"
       WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
       WixSrcFiles="@(SdkPlaceholdMsiWixSrcFiles)"
-      AdditionalBasePaths="$(SdkPkgSourcesRootDirectory)">
+      AdditionalBasePaths="$(SdkPkgSourcesWindowsDirectory)">
       <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
   </Target>
 
   <Target Name="GenerateTemplatesMsis"
-          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetupTemplatesMsis"
+          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetupTemplatesMsis"
           Inputs="@(TemplatesMsiComponent);$(TemplatesGenerateMsiPowershellScript)"
           Outputs="%(TemplatesMsiComponent.MSIInstallerFile)">
     <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
@@ -219,12 +219,12 @@
 
   <Target Name="SetupTemplatesMsis" DependsOnTargets="CalculateTemplatesVersions">
     <PropertyGroup>
-      <TemplatesGenerateMsiPowershellScript>$(SdkPkgSourcesRootDirectory)/generatetemplatesmsi.ps1</TemplatesGenerateMsiPowershellScript>
+      <TemplatesGenerateMsiPowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatetemplatesmsi.ps1</TemplatesGenerateMsiPowershellScript>
     </PropertyGroup>
 
     <ItemGroup>
       <TemplatesMsiComponent Include="@(TemplatesComponents)">
-        <LayoutPath>$(BaseOutputPath)$(Configuration)\templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
+        <LayoutPath>$(RedistInstallerBaseOutputPath)templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
         <BrandName>%(TemplatesComponents.BrandNameWithoutVersion) $(Version)</BrandName>
         <MsiVersion>%(TemplatesComponents.MSIVersion)</MsiVersion>
         <UpgradeCode>%(TemplatesComponents.InstallerUpgradeCode)</UpgradeCode>
@@ -341,7 +341,7 @@
       InstallerFile="$(CombinedFrameworkSdkHostMSIInstallerFile)"
       WixExtensions="WixBalExtension;WixUtilExtension;WixTagExtension"
       WixSrcFiles="@(BundleMsiWixSrcFiles)"
-      AdditionalBasePaths="$(SdkPkgSourcesRootDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle">
+      AdditionalBasePaths="$(SdkPkgSourcesWindowsDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle">
       <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
   </Target>

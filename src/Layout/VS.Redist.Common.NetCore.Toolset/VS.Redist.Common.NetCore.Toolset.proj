@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\redist-installer\redist-installer.proj" />
+    <ProjectReference Include="..\redist\redist.csproj" />
   </ItemGroup>
 
   <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
