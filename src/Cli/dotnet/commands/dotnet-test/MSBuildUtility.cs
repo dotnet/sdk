@@ -13,6 +13,8 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class MSBuildUtility
 {
+    private const string dotnetTestVerb = "dotnet-test";
+
     public static (IEnumerable<TestModule> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
@@ -28,11 +30,11 @@ internal static class MSBuildUtility
                 Path.GetDirectoryName(solutionModel.Description) :
                 SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
-        // TODO: We should pass a binary logger if the dotnet test invocation passed one.
-        // We will take the same file name but append something to it, like `-dotnet-test-evaluation`
-        // Tracked by https://github.com/dotnet/sdk/issues/47494
-        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: [], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
+        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
         ConcurrentBag<TestModule> projects = GetProjectsProperties(collection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
+        logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
     }
@@ -46,24 +48,34 @@ internal static class MSBuildUtility
             return (Array.Empty<TestModule>(), isBuiltOrRestored);
         }
 
-        // TODO: We should pass a binary logger if the dotnet test invocation passed one.
-        // We will take the same file name but append something to it, like `-dotnet-test-evaluation`
-        // Tracked by https://github.com/dotnet/sdk/issues/47494
-        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: [], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
+        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
         IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection);
+        logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
     {
-        IEnumerable<string> binaryLoggerTokens = GetBinaryLoggerTokens(parseResult.UnmatchedTokens);
+        var binLogArgs = new List<string>();
+        var otherArgs = new List<string>();
+
+        foreach (var arg in parseResult.UnmatchedTokens)
+        {
+            if (LoggerUtility.IsBinLogArgument(arg))
+            {
+                binLogArgs.Add(arg);
+            }
+            else
+            {
+                otherArgs.Add(arg);
+            }
+        }
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
-            .Concat(binaryLoggerTokens);
-
-        List<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
-        unmatchedTokens.RemoveAll(arg => binaryLoggerTokens.Contains(arg));
+            .Concat(binLogArgs);
 
         PathOptions pathOptions = new(parseResult.GetValue(
             TestingPlatformOptions.ProjectOption),
@@ -76,16 +88,8 @@ internal static class MSBuildUtility
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
             parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
             degreeOfParallelism,
-            unmatchedTokens,
+            otherArgs,
             msbuildArgs);
-    }
-
-    private static IEnumerable<string> GetBinaryLoggerTokens(IEnumerable<string> args)
-    {
-        return args.Where(arg =>
-            arg.StartsWith("/bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("/bl", StringComparison.OrdinalIgnoreCase) ||
-            arg.StartsWith("--binaryLogger:", StringComparison.OrdinalIgnoreCase) || arg.Equals("--binaryLogger", StringComparison.OrdinalIgnoreCase) ||
-            arg.StartsWith("-bl:", StringComparison.OrdinalIgnoreCase) || arg.Equals("-bl", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)

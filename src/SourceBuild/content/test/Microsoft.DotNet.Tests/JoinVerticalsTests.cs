@@ -138,42 +138,6 @@ namespace Microsoft.DotNet.Tests
                     OutputHelper.WriteLine($"{verticalCount.vertical}");
                 }
             }
-
-
-            // Ambiguous verticals stats
-            var ambiguousAssetsByVertical = selectedVerticals
-                .Where(o => o.MatchType == AssetVerticalMatchType.PriorityVerticals)
-                .GroupBy(o => o.VerticalName)
-                .OrderByDescending(o => o.Count())
-                .ToList();
-            if (ambiguousAssetsByVertical.Any())
-            {
-                foreach (var verticalAssets in ambiguousAssetsByVertical)
-                {
-                    if (StringComparer.OrdinalIgnoreCase.Equals(verticalAssets.Key, "Windows_x64"))
-                    {
-                        continue;
-                    }
-
-                    OutputHelper.WriteLine(string.Empty);
-                    OutputHelper.WriteLine($"Ambiguous assets stats for vertical: {verticalAssets.Key}");
-                    var otherVerticalGroups = verticalAssets
-                        .SelectMany(a => a.OtherVerticals)
-                        .GroupBy(v => v)
-                        .Select(g => new { Vertical = g.Key, Count = g.Count() })
-                        .OrderByDescending(x => x.Count);
-
-                    foreach (var group in otherVerticalGroups)
-                    {
-                        OutputHelper.WriteLine($" - {group.Vertical}: {group.Count}");
-                    }
-                    OutputHelper.WriteLine($"Ambiguous assets:");
-                    foreach (var assetSelectionInfo in verticalAssets)
-                    {
-                        OutputHelper.WriteLine($"{assetSelectionInfo.AssetId}");
-                    }
-                }
-            }
         }
 
         #endregion
