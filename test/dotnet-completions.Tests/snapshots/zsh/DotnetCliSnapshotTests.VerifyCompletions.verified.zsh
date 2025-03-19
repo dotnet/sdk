@@ -45,7 +45,7 @@ _testhost() {
                         '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
                         '--no-restore[Do not restore the project before building.]' \
-                        '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                        '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '--debug[]' \
@@ -111,7 +111,7 @@ _testhost() {
                         '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--configuration=[The configuration to clean for. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to clean for. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
-                        '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                        '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '--output=[The directory containing the build artifacts to clean.]:OUTPUT_DIR: ' \
@@ -326,7 +326,7 @@ _testhost() {
                                             '--api-key=[]: : ' \
                                             '-k=[]: : ' \
                                             '--no-service-endpoint[]' \
-                                            '--interactive=[]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::package-paths: ' \
@@ -362,7 +362,7 @@ _testhost() {
                                             '--no-symbols[]' \
                                             '-n[]' \
                                             '--no-service-endpoint[]' \
-                                            '--interactive=[]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--skip-duplicate[]' \
                                             '--configfile=[]: : ' \
                                             '--help[Show command line help.]' \
@@ -526,7 +526,7 @@ _testhost() {
                         '--serviceable[Set the serviceable flag in the package. See https\://aka.ms/nupkgservicing for more information.]' \
                         '-s[Set the serviceable flag in the package. See https\://aka.ms/nupkgservicing for more information.]' \
                         '--nologo[Do not display the startup banner or the copyright message.]' \
-                        '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                        '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -570,7 +570,7 @@ _testhost() {
                                             '--take=[Number of results to return. Default 20.]:Take: ' \
                                             '--skip=[Number of results to skip, to allow pagination. Default 0.]:Skip: ' \
                                             '--exact-match[Require that the search term exactly match the name of the package. Causes \`--take\` and \`--skip\` options to be ignored.]' \
-                                            '--interactive[Stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--prerelease[Include prerelease packages.]' \
                                             '--configfile=[The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https\://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior]:ConfigFile: ' \
                                             '--format=[Format the output accordingly. Either \`table\`, or \`json\`. The default value is \`table\`.]:Format: ' \
@@ -647,6 +647,32 @@ _testhost() {
                             ;;
                         esac
                     ;;
+                (project)
+                    _arguments "${_arguments_options[@]}" : \
+                        '--help[Show command line help.]' \
+                        '-h[Show command line help.]' \
+                        ":: :_testhost__project_commands" \
+                        "*::: :->project" \
+                        && ret=0
+                        case $state in
+                            (project)
+                                words=($line[1] "${words[@]}")
+                                (( CURRENT += 1 ))
+                                curcontext="${curcontext%:*:*}:testhost-project-command-$line[1]:"
+                                case $line[1] in
+                                    (convert)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--output=[Location to place the generated output.]: :_files' \
+                                            '-o=[Location to place the generated output.]: :_files' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            ':file -- Path to the file-based program.: ' \
+                                            && ret=0
+                                        ;;
+                                esac
+                            ;;
+                        esac
+                    ;;
                 (publish)
                     _arguments "${_arguments_options[@]}" : \
                         '--use-current-runtime[Use current runtime as the target runtime.]' \
@@ -667,7 +693,7 @@ _testhost() {
                         '--configuration=[The configuration to publish for. The default is '\''Release'\'' for NET 8.0 projects and above, but '\''Debug'\'' for older projects.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to publish for. The default is '\''Release'\'' for NET 8.0 projects and above, but '\''Debug'\'' for older projects.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
-                        '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                        '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -775,7 +801,7 @@ _testhost() {
                         '--no-dependencies[Do not restore project-to-project references and only restore the specified project.]' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                        '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                        '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--artifacts-path=[The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.]:ARTIFACTS_DIR: ' \
                         '--use-lock-file[Enables project lock file to be generated and used with restore.]' \
                         '--locked-mode[Don'\''t allow updating project lock file.]' \
@@ -811,7 +837,7 @@ _testhost() {
                         '-lp=[The name of the launch profile (if any) to use when launching the application.]: : ' \
                         '--no-launch-profile[Do not attempt to use launchSettings.json to configure the application.]' \
                         '--no-build[Do not build the project before running. Implies --no-restore.]' \
-                        '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                        '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
@@ -959,7 +985,7 @@ _testhost() {
                         '--runtime=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--no-restore[Do not restore the project before building.]' \
-                        '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                        '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '--arch=[The target architecture.]:ARCH: ' \
@@ -1176,7 +1202,7 @@ _testhost() {
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
@@ -1198,7 +1224,7 @@ _testhost() {
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--from-history=[Update workloads to a previous version specified by the argument. Use the '\''dotnet workload history'\'' to see available workload history records.]: : ' \
@@ -1260,7 +1286,7 @@ _testhost() {
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0
@@ -1276,7 +1302,7 @@ _testhost() {
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
-                                            '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '*--version=[A workload version to display or one or more workloads and their versions joined by the '\''@'\'' character.]: : ' \
@@ -1351,6 +1377,7 @@ _testhost_commands() {
         'nuget:' \
         'pack:.NET Core NuGet Package Packer' \
         'package:' \
+        'project:' \
         'publish:Publisher for the .NET Platform' \
         'reference:.NET Remove Command' \
         'restore:.NET dependency restorer' \
@@ -1613,6 +1640,20 @@ _testhost__package__list_commands() {
 _testhost__package__remove_commands() {
     local commands; commands=()
     _describe -t commands 'testhost package remove commands' commands "$@"
+}
+
+(( $+functions[_testhost__project_commands] )) ||
+_testhost__project_commands() {
+    local commands; commands=(
+        'convert:Convert a file-based program to a project-based program.' \
+    )
+    _describe -t commands 'testhost project commands' commands "$@"
+}
+
+(( $+functions[_testhost__project__convert_commands] )) ||
+_testhost__project__convert_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost project convert commands' commands "$@"
 }
 
 (( $+functions[_testhost__publish_commands] )) ||

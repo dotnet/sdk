@@ -38,9 +38,14 @@
     <CommonArgs>$(CommonArgs) /p:PortableBuild=$(PortableBuild)</CommonArgs>
     <CommonArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(CommonArgs) /p:RuntimeOS=$(RuntimeOS)</CommonArgs>
     <CommonArgs Condition="'$(ShortStack)' != 'true' and '$(TargetOS)' != 'linux-musl'">$(CommonArgs) /p:BaseOS=$(BaseOS)</CommonArgs>
+    <CommonArgs Condition="'$(DefaultArtifactVisibility)' != ''">$(CommonArgs) /p:DefaultArtifactVisibility=$(DefaultArtifactVisibility)</CommonArgs>
 
     <!-- Only pass these properites through when necessary to reduce command line noise. -->
     <CommonArgs Condition="'$(DotNetBuildTests)' == 'true' and '$(DotNetBuildTestsOptOut)' != 'true'">$(CommonArgs) /p:DotNetBuildTests=true</CommonArgs>
+
+    <BuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' != ''">$(BuildArgs) /p:EnableDefaultRidSpecificArtifacts=$(EnableDefaultRidSpecificArtifacts)</BuildArgs>
+    <!-- If a repo has no RID-specific artifacts, then we expect the repo to not have any artifacts when only publishing RID-specific artifacts. -->
+    <BuildArgs Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">$(BuildArgs) /p:AllowEmptySignList=true</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -306,7 +311,7 @@
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreateBuildInputProps"
-          DependsOnTargets="GetProducedPackagesFromTransitiveReferences"
+          DependsOnTargets="GetProducedPackagesFromTransitiveReferences;GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete">
 
@@ -390,6 +395,7 @@
       <_DependentProjectCurrentBuildPass Include="@(_DependentProject->WithMetadataValue('DotNetBuildPass', '$(DotNetBuildPass)'))" />
 
       <_DependentProjectToSkip Include="@(_DependentProject)" Exclude="@(_DependentProjectCurrentBuildPass)" />
+      <_DependentProjectToSkip AdditionalProperties="GetDependentVerticalAssetsOnly=true" />
 
       <_DependentProject Remove="@(_DependentProject)" />
       <_DependentProject Include="@(_DependentProjectCurrentBuildPass)" />
@@ -412,7 +418,7 @@
              Condition="'@(_DependentProjectToSkip)' != ''" />
   </Target>
 
-  <Target Name="DiscoverBuiltSdkOverrides" DependsOnTargets="GetProducedPackagesFromTransitiveReferences">
+  <Target Name="DiscoverBuiltSdkOverrides" DependsOnTargets="GetProducedPackagesFromTransitiveReferences;GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses">
     <!--
       Discover the Arcade SDKs built from the live Arcade source and set them as overrides here.
       This will automatically no-op for Arcade and SBRP, as these packages will not have been produced yet.
@@ -553,7 +559,26 @@
     </Touch>
   </Target>
 
+  <Target Name="GetProducedPackagesFromDependentVerticals"
+          Condition="'$(IsUtilityProject)' != 'true'"
+          Returns="@(ProducedPackageFromDependentVertical)">
+    <!-- Add manifests from dependent verticals. -->
+    <ItemGroup>
+      <RepoAssetManifestFromDependentVertical Include="$(ArtifactsAssetManifestsDir)*.xml" Exclude="$(MergedAssetManifestOutputPath)" />
+    </ItemGroup>
+
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifestFromDependentVertical)" RepoOrigin="$(RepositoryName)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackageFromDependentVertical" />
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAssetFromDependentVertical" />
+    </GetKnownArtifactsFromAssetManifests>
+
+    <ItemGroup>
+      <ProducedPackageFromDependentVertical ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="GetProducedPackages"
+          DependsOnTargets="GetProducedPackagesFromDependentVerticals"
           Condition="'$(IsUtilityProject)' != 'true'"
           Returns="@(ProducedPackage);@(ProducedPackageFromDependentVertical)">
     <ItemGroup>
@@ -588,24 +613,26 @@
       <BinPlaceFile Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" Condition="'%(Visibility)' != 'Vertical'"/>
     </ItemGroup>
 
-    <!-- Add manifests from dependent verticals. -->
-    <ItemGroup>
-      <RepoAssetManifestFromDependentVertical Include="$(ArtifactsAssetManifestsDir)*.xml" Exclude="$(MergedAssetManifestOutputPath)" />
-    </ItemGroup>
-
-    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoAssetManifestFromDependentVertical)" RepoOrigin="$(RepositoryName)">
-      <Output TaskParameter="KnownPackages" ItemName="ProducedPackageFromDependentVertical" />
-      <Output TaskParameter="KnownBlobs" ItemName="ProducedAssetFromDependentVertical" />
-    </GetKnownArtifactsFromAssetManifests>
-
     <ItemGroup>
       <ProducedPackage ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
-      <ProducedPackageFromDependentVertical ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
     </ItemGroup>
   </Target>
 
+  <Target Name="GetProducedPackagesFromTransitiveReferencesFromPreviousBuildPasses" DependsOnTargets="GetTransitiveRepositoryReferences" Returns="@(_DependencyProducedPackage)">
+    <ItemGroup>
+      <_TransitivelyThisBuildPassReferencedRepo Include="@(TransitiveRepositoryReference->WithMetadataValue('DotNetBuildPass','$(DotNetBuildPass)'))" />
+      <_TransitivelyPreviousBuildPassReferencedRepo Include="@(TransitiveRepositoryReference)"
+                                                    Exclude="@(_TransitivelyThisBuildPassReferencedRepo)" />
+    </ItemGroup>
+    <MSBuild Projects="@(_TransitivelyPreviousBuildPassReferencedRepo->'%(Identity).proj')"
+             Targets="GetProducedPackagesFromDependentVerticals"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DependencyProducedPackage" />
+    </MSBuild>
+  </Target>
+
   <Target Name="GetProducedPackagesFromTransitiveReferences" DependsOnTargets="GetTransitiveRepositoryReferences" Returns="@(_DependencyProducedPackage)">
-    <MSBuild Projects="@(TransitiveRepositoryReference->'%(Identity).proj')"
+    <MSBuild Projects="@(TransitiveRepositoryReference->WithMetadataValue('DotNetBuildPass','$(DotNetBuildPass)')->'%(Identity).proj')"
              Targets="GetProducedPackages"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="_DependencyProducedPackage" />
@@ -712,7 +739,12 @@
     </Touch>
   </Target>
 
-  <Target Name="DiscoverToolPackageVersions" DependsOnTargets="GetProducedPackages">
+  <PropertyGroup>
+    <_DiscoverToolPackageVersionsDependsOn>GetProducedPackages</_DiscoverToolPackageVersionsDependsOn>
+    <_DiscoverToolPackageVersionsDependsOn Condition="'$(GetDependentVerticalAssetsOnly)' == 'true'">GetProducedPackagesFromDependentVerticals</_DiscoverToolPackageVersionsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="DiscoverToolPackageVersions" DependsOnTargets="$(_DiscoverToolPackageVersionsDependsOn)">
     <JoinItems Left="@(ProducedPackage);@(ProducedPackageFromDependentVertical)"
                Right="@(BuiltSdkPackage)"
                LeftMetadata="*">

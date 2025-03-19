@@ -212,7 +212,7 @@
           BeforeTargets="Build">
     <MSBuild
       Targets="Publish"
-      Projects="$(RepoRoot)/src/Layout/tool_fsharp/tool_fsc.csproj"
+      Projects="$(MSBuildProjectDirectory)\tools\tool_fsc.csproj"
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/FSharp" />
   </Target>
 
@@ -242,6 +242,17 @@
 
   <Target Name="GenerateCliRuntimeConfigurationFiles"
           AfterTargets="Build">
+    <ItemGroup>
+      <BundledTools Include="MSBuild;
+                            dotnet;
+                            NuGet.CommandLine.XPlat" />
+
+      <BundledToolProjects Include="tool_msbuild;
+                                    tool_nuget;
+                                    tool_cli;
+                                    redist;" />
+    </ItemGroup>
+
     <RemoveAssetFromDepsPackages DepsFile="$(OutputPath)/$(TargetName).deps.json"
                                  SectionName="runtime"
                                  AssetPath="%(BundledToolProjects.Identity).dll" />

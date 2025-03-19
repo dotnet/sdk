@@ -13,7 +13,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
     public enum AssetVerticalMatchType
     {
         ExactMatch,
-        PriorityVerticals,
         NotSpecified
     }
 
@@ -29,13 +28,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
     public class JoinVerticalsAssetSelector
     {
         private const string cAssetVisibilityExternal = "External";
-
-        private JoinVerticalsConfig _config;
-
-        public JoinVerticalsAssetSelector(JoinVerticalsConfig? config = null)
-        {
-            _config = config ?? JoinVerticalsConfig.GetDefaultConfig();
-        }
 
         // Temporary solution to exclude some assets from Unified Build
         private bool ExcludeAsset(AssetVerticalMatchResult assetVerticalMatch)
@@ -74,25 +66,22 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             {
                 string assetId = assetGroup.Key;
 
-                int verticalsCount = assetGroup.Count();
                 var verticalNames = assetGroup.Select(o => o.manifest.VerticalName!).ToList();
-                if (verticalsCount > 0)
+
+                (AssetVerticalMatchType matchType, string verticalName) = SelectVerticalForAsset(verticalNames);
+
+                AssetVerticalMatchResult assetVerticalMatch = new AssetVerticalMatchResult
                 {
-                    (AssetVerticalMatchType matchType, string verticalName) = SelectVerticalForAsset(verticalNames);
+                    AssetId = assetGroup.Key,
+                    MatchType = matchType,
+                    VerticalName = verticalName,
+                    Asset = assetGroup.FirstOrDefault().asset,
+                    OtherVerticals = assetGroup.Select(o => o.manifest.VerticalName!).Skip(1).ToList()
+                };
 
-                    AssetVerticalMatchResult assetVerticalMatch = new AssetVerticalMatchResult
-                    {
-                        AssetId = assetGroup.Key,
-                        MatchType = matchType,
-                        VerticalName = verticalName,
-                        Asset = assetGroup.FirstOrDefault(o => VerticalNameMatches(o.manifest.VerticalName, verticalName)).asset,
-                        OtherVerticals = assetGroup.Select(o => o.manifest.VerticalName!).Where(o => !VerticalNameMatches(o, verticalName)).ToList()
-                    };
-
-                    if (!ExcludeAsset(assetVerticalMatch))
-                    {
-                        yield return assetVerticalMatch;
-                    }
+                if (!ExcludeAsset(assetVerticalMatch))
+                {
+                    yield return assetVerticalMatch;
                 }
             }
         }
@@ -103,12 +92,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             if (verticalNames.Count == 1)
             {
                 return (AssetVerticalMatchType.ExactMatch, verticalNames.Single());
-            }
-
-            // Apply general priority ordered list of primary verticals
-            if (verticalNames.Contains(_config.PriorityVertical, StringComparer.OrdinalIgnoreCase))
-            {
-                return (AssetVerticalMatchType.PriorityVerticals, _config.PriorityVertical);
             }
 
             // Select first vertical from the list and report it as ambiguous match

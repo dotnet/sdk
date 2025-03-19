@@ -4,6 +4,7 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -78,7 +79,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool restore --no-cache");
 
-            result.OptionValuesToBeForwarded(ToolRestoreCommandParser.GetCommand()).Should().ContainSingle("--no-cache");
+            result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption).Should().BeTrue();
         }
 
         [Fact]
@@ -87,7 +88,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool restore --no-http-cache");
 
-            result.OptionValuesToBeForwarded(ToolRestoreCommandParser.GetCommand()).Should().ContainSingle("--no-http-cache");
+            result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption).Should().BeTrue();
         }
 
         [Fact]
@@ -96,7 +97,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool restore --ignore-failed-sources");
 
-            result.OptionValuesToBeForwarded(ToolRestoreCommandParser.GetCommand()).Should().ContainSingle("--ignore-failed-sources");
+            result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption).Should().BeTrue();
         }
 
         [Fact]
@@ -105,7 +106,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool restore --disable-parallel");
 
-            result.OptionValuesToBeForwarded(ToolRestoreCommandParser.GetCommand()).Should().ContainSingle("--disable-parallel");
+            result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption).Should().BeTrue();
         }
 
         [Fact]
@@ -114,7 +115,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result =
                 Parser.Instance.Parse(@"dotnet tool restore --interactive");
 
-            result.OptionValuesToBeForwarded(ToolRestoreCommandParser.GetCommand()).Should().ContainSingle("--interactive");
+            result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption).Should().BeTrue();
         }
     }
 }

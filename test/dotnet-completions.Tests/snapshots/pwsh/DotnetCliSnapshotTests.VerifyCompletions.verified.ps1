@@ -40,6 +40,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('nuget', 'nuget', [CompletionResultType]::ParameterValue, "nuget")
                 [CompletionResult]::new('pack', 'pack', [CompletionResultType]::ParameterValue, ".NET Core NuGet Package Packer")
                 [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, "package")
+                [CompletionResult]::new('project', 'project', [CompletionResultType]::ParameterValue, "project")
                 [CompletionResult]::new('publish', 'publish', [CompletionResultType]::ParameterValue, "Publisher for the .NET Platform")
                 [CompletionResult]::new('reference', 'reference', [CompletionResultType]::ParameterValue, ".NET Remove Command")
                 [CompletionResult]::new('restore', 'restore', [CompletionResultType]::ParameterValue, ".NET dependency restorer")
@@ -337,7 +338,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--api-key', '--api-key', [CompletionResultType]::ParameterName, "--api-key")
                 [CompletionResult]::new('--api-key', '-k', [CompletionResultType]::ParameterName, "--api-key")
                 [CompletionResult]::new('--no-service-endpoint', '--no-service-endpoint', [CompletionResultType]::ParameterName, "--no-service-endpoint")
-                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "--interactive")
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -380,7 +381,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--no-symbols', '--no-symbols', [CompletionResultType]::ParameterName, "--no-symbols")
                 [CompletionResult]::new('--no-symbols', '-n', [CompletionResultType]::ParameterName, "--no-symbols")
                 [CompletionResult]::new('--no-service-endpoint', '--no-service-endpoint', [CompletionResultType]::ParameterName, "--no-service-endpoint")
-                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "--interactive")
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--skip-duplicate', '--skip-duplicate', [CompletionResultType]::ParameterName, "--skip-duplicate")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "--configfile")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
@@ -580,7 +581,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--take', '--take', [CompletionResultType]::ParameterName, "Number of results to return. Default 20.")
                 [CompletionResult]::new('--skip', '--skip', [CompletionResultType]::ParameterName, "Number of results to skip, to allow pagination. Default 0.")
                 [CompletionResult]::new('--exact-match', '--exact-match', [CompletionResultType]::ParameterName, "Require that the search term exactly match the name of the package. Causes ``--take`` and ``--skip`` options to be ignored.")
-                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Stop and wait for user input or action (for example to complete authentication).")
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--prerelease', '--prerelease', [CompletionResultType]::ParameterName, "Include prerelease packages.")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior")
                 [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "Format the output accordingly. Either ``table``, or ``json``. The default value is ``table``.")
@@ -646,6 +647,25 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+            )
+            $completions += $staticCompletions
+            break
+        }
+        'testhost;project' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('convert', 'convert', [CompletionResultType]::ParameterValue, "Convert a file-based program to a project-based program.")
+            )
+            $completions += $staticCompletions
+            break
+        }
+        'testhost;project;convert' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--output', '--output', [CompletionResultType]::ParameterName, "Location to place the generated output.")
+                [CompletionResult]::new('--output', '-o', [CompletionResultType]::ParameterName, "Location to place the generated output.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

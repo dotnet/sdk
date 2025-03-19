@@ -15,15 +15,55 @@
   <PropertyGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
+    <!--
+      We only want to publish the FSharp assets externally when we're publishing all artifacts, not only RID-specific ones.
+      Add these packages as "Vertical" visibility when we're only publishing RID-specific packages so we don't publish this one.
+    -->
+    <FSharpArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Vertical</FSharpArtifactVisibility>
+    <FSharpArtifactVisibility Condition="'$(FSharpArtifactVisibility)' == ''">External</FSharpArtifactVisibility>
   </PropertyGroup>
   <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <Artifact Include="$(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
                        $(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
-              PublishFlatContainer="false" />
+              Kind="Package"
+              Visibility="$(FSharpArtifactVisibility)" />
   </ItemGroup>
 
   <!-- The PGO sdk should always have External visibility, even if someone changes the default artifact visibility -->
   <ItemGroup>
     <Artifact Update="$(ArtifactsShippingPackagesDir)dotnet-sdk-pgo-*" Visibility="External" />
   </ItemGroup>
+
+  <Target Name="GetNonStableProductVersion">
+    <!-- Retrieve the non-stable product version. -->
+    <MSBuild Projects="$(RepoRoot)src\Layout\redist-installer\redist-installer.proj"
+             Targets="ReturnProductVersion">
+      <Output TaskParameter="TargetOutputs" PropertyName="NonStableProductVersion" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="AddRelativeBlobPathToBlobArtifacts"
+          DependsOnTargets="GetNonStableProductVersion"
+          BeforeTargets="PublishToAzureDevOpsArtifacts"
+          AfterTargets="GenerateChecksumsFromArtifacts">
+    <ItemGroup>
+      <Artifact Condition="'%(Artifact.Kind)' == 'Blob' and '%(Artifact.RelativeBlobPath)' == ''"
+                RelativeBlobPath="Sdk/$(NonStableProductVersion)/%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateVersionBadge"
+          Condition="'$(PublishBinariesAndBadge)' == 'true' and
+                     '$(PgoInstrument)' != 'true' and
+                     ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')"
+          BeforeTargets="AddRelativeBlobPathToBlobArtifacts;PublishToAzureDevOpsArtifacts">
+    <MSBuild Projects="$(RepositoryEngineeringDir)Badge.proj" Targets="GenerateVersionBadge">
+      <Output TaskParameter="TargetOutputs" ItemName="VersionBadge" />
+    </MSBuild>
+
+    <ItemGroup>
+      <Artifact Include="@(VersionBadge)" Kind="Blob" />
+    </ItemGroup>
+  </Target>
+
 </Project>

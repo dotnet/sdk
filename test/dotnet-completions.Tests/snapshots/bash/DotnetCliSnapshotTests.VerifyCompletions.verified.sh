@@ -5,7 +5,7 @@ _testhost() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="build build-server clean format fsi msbuild new nuget pack package publish reference restore run solution store test tool vstest help sdk workload completions --help --diagnostics --version --info --list-sdks --list-runtimes" 
+    opts="build build-server clean format fsi msbuild new nuget pack package project publish reference restore run solution store test tool vstest help sdk workload completions --help --diagnostics --version --info --list-sdks --list-runtimes" 
     
     if [[ $COMP_CWORD == "1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -60,6 +60,11 @@ _testhost() {
             
         (package)
             _testhost_package 2
+            return
+            ;;
+            
+        (project)
+            _testhost_project 2
             return
             ;;
             
@@ -159,6 +164,10 @@ _testhost_build() {
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
             return
         ;;
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
@@ -238,6 +247,10 @@ _testhost_clean() {
         ;;
         --configuration|-c)
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
         --verbosity|-v)
@@ -614,13 +627,6 @@ _testhost_nuget_delete() {
         return
     fi
     
-    case $prev in
-        --interactive)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-    esac
-    
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
 
@@ -655,13 +661,6 @@ _testhost_nuget_push() {
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return
     fi
-    
-    case $prev in
-        --interactive)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-    esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
@@ -979,6 +978,10 @@ _testhost_pack() {
     fi
     
     case $prev in
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
@@ -1119,6 +1122,47 @@ _testhost_package_remove() {
 }
 
 
+_testhost_project() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="convert --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    case ${COMP_WORDS[$1]} in
+        (convert)
+            _testhost_project_convert $(($1+1))
+            return
+            ;;
+            
+    esac
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+_testhost_project_convert() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--output --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
 _testhost_publish() {
 
     cur="${COMP_WORDS[COMP_CWORD]}" 
@@ -1147,6 +1191,10 @@ _testhost_publish() {
         ;;
         --configuration|-c)
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
         --verbosity|-v)
@@ -1274,6 +1322,10 @@ _testhost_restore() {
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
     esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1304,6 +1356,10 @@ _testhost_run() {
         ;;
         --runtime|-r)
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
         --self-contained|--sc)
@@ -1498,6 +1554,10 @@ _testhost_test() {
         ;;
         --runtime|-r)
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
+        --interactive)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
         --verbosity|-v)
@@ -1873,10 +1933,6 @@ _testhost_workload_install() {
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
-        --interactive)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
@@ -1906,10 +1962,6 @@ _testhost_workload_update() {
             return
         ;;
         --from-previous-sdk)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-        --interactive)
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
@@ -2030,10 +2082,6 @@ _testhost_workload_repair() {
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
-        --interactive)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
     esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -2055,10 +2103,6 @@ _testhost_workload_restore() {
     
     case $prev in
         --include-previews)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
-            return
-        ;;
-        --interactive)
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;

@@ -5,61 +5,60 @@ using System.CommandLine;
 using Microsoft.DotNet.Tools.Tool.Search;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Search.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class ToolSearchCommandParser
 {
-    internal static class ToolSearchCommandParser
+    public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
     {
-        public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
-        {
-            HelpName = LocalizableStrings.SearchTermArgumentName,
-            Description = LocalizableStrings.SearchTermDescription
-        };
+        HelpName = LocalizableStrings.SearchTermArgumentName,
+        Description = LocalizableStrings.SearchTermDescription
+    };
 
-        public static readonly CliOption<bool> DetailOption = new("--detail")
-        {
-            Description = LocalizableStrings.DetailDescription,
-            Arity = ArgumentArity.Zero
-        };
+    public static readonly CliOption<bool> DetailOption = new("--detail")
+    {
+        Description = LocalizableStrings.DetailDescription,
+        Arity = ArgumentArity.Zero
+    };
 
-        public static readonly CliOption<string> SkipOption = new("--skip")
-        {
-            Description = LocalizableStrings.SkipDescription,
-            HelpName = LocalizableStrings.SkipArgumentName
-        };
+    public static readonly CliOption<string> SkipOption = new("--skip")
+    {
+        Description = LocalizableStrings.SkipDescription,
+        HelpName = LocalizableStrings.SkipArgumentName
+    };
 
-        public static readonly CliOption<string> TakeOption = new("--take")
-        {
-            Description = LocalizableStrings.TakeDescription,
-            HelpName = LocalizableStrings.TakeArgumentName
-        };
+    public static readonly CliOption<string> TakeOption = new("--take")
+    {
+        Description = LocalizableStrings.TakeDescription,
+        HelpName = LocalizableStrings.TakeArgumentName
+    };
 
-        public static readonly CliOption<bool> PrereleaseOption = new("--prerelease")
-        {
-            Description = LocalizableStrings.PrereleaseDescription,
-            Arity = ArgumentArity.Zero
-        };
+    public static readonly CliOption<bool> PrereleaseOption = new("--prerelease")
+    {
+        Description = LocalizableStrings.PrereleaseDescription,
+        Arity = ArgumentArity.Zero
+    };
 
-        private static readonly CliCommand Command = ConstructCommand();
+    private static readonly CliCommand Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+    public static CliCommand GetCommand()
+    {
+        return Command;
+    }
 
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("search", LocalizableStrings.CommandDescription);
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("search", LocalizableStrings.CommandDescription);
 
-            command.Arguments.Add(SearchTermArgument);
+        command.Arguments.Add(SearchTermArgument);
 
-            command.Options.Add(DetailOption);
-            command.Options.Add(SkipOption);
-            command.Options.Add(TakeOption);
-            command.Options.Add(PrereleaseOption);
+        command.Options.Add(DetailOption);
+        command.Options.Add(SkipOption);
+        command.Options.Add(TakeOption);
+        command.Options.Add(PrereleaseOption);
 
-            command.SetAction((parseResult) => new ToolSearchCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ToolSearchCommand(parseResult).Execute());
 
-            return command;
-        }
+        return command;
     }
 }

@@ -317,7 +317,9 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
     <comment>{0} - test message state</comment>
   </data>
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
-    <value>Test projects that use both VSTest and Microsoft.Testing.Platform in the same solution are not supported. 
+    <value>When opting-in via dotnet.config, all test projects are expected to be using Microsoft.Testing.Platform.
+The following test projects are using VSTest:
+{0}
 See https://aka.ms/dotnet-test/mtp for more information.</value>
   </data>
   <data name="Aborted" xml:space="preserve">
@@ -453,7 +455,10 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
     <value>The provided project file has an invalid extension: {0}.</value>
   </data>
   <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
-    <value>Specify either the project, solution or directory option.</value>
+    <value>Specify either the project, solution, directory, or test modules option.</value>
+  </data>
+  <data name="CmdOptionCannotBeUsedWithTestModulesDescription" xml:space="preserve">
+    <value>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</value>
   </data>
   <data name="CmdNoAnsiDescription" xml:space="preserve">
     <value>Disable ANSI output.</value>
@@ -497,6 +502,12 @@ See https://aka.ms/dotnet-test/mtp for more information.</value>
   </data>
   <data name="HelpWaitingForOptionsAndExtensions" xml:space="preserve">
     <value>Waiting for options and extensions...</value>
+  </data>
+  <data name="CmdNonExistentRootDirectoryErrorDescription" xml:space="preserve">
+    <value>The provided root directory does not exist: {0}.</value>
+  </data>
+  <data name="CmdNoTestModulesErrorDescription" xml:space="preserve">
+    <value>No test modules found for the given test module pattern: {0} with root directory: {1}</value>
   </data>
   <data name="CmdHelpUsageTitle" xml:space="preserve">
     <value>Usage:</value>
