@@ -4,9 +4,9 @@
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
-using NuGet.Packaging;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli;
@@ -82,13 +82,10 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static string[] GetSolutionFilePaths(string directory)
-    {
-        string[] solutionFiles = Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly);
-        solutionFiles.AddRange(Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly));
-
-        return solutionFiles;
-    }
+    private static string[] GetSolutionFilePaths(string directory) => [
+            .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
+            .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
+        ];
 
     private static string[] GetSolutionFilterFilePaths(string directory)
     {
@@ -130,7 +127,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance) is { } module)
+            if (GetModuleFromProject(projectInstance, projectCollection.Loggers) is { } module)
             {
                 projects.Add(module);
             }
@@ -143,7 +140,7 @@ internal static class SolutionAndProjectUtility
                 projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
                 Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                if (GetModuleFromProject(projectInstance) is { } module)
+                if (GetModuleFromProject(projectInstance, projectCollection.Loggers) is { } module)
                 {
                     projects.Add(module);
                 }
@@ -153,7 +150,7 @@ internal static class SolutionAndProjectUtility
         return projects;
     }
 
-    private static TestModule? GetModuleFromProject(ProjectInstance project)
+    private static TestModule? GetModuleFromProject(ProjectInstance project, ICollection<ILogger>? loggers)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -164,13 +161,13 @@ internal static class SolutionAndProjectUtility
         }
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
-        RunProperties runProperties = GetRunProperties(project);
+        RunProperties runProperties = GetRunProperties(project, loggers);
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
         string runSettingsFilePath = project.GetPropertyValue(ProjectProperties.RunSettingsFilePath);
 
         return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, runSettingsFilePath, isTestingPlatformApplication, isTestProject);
 
-        static RunProperties GetRunProperties(ProjectInstance project)
+        static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
             // Build API cannot be called in parallel, even if the projects are different.
             // Otherwise, BuildManager in MSBuild will fail:
@@ -178,7 +175,7 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
-                if (!project.Build(s_computeRunArgumentsTarget, loggers: []))
+                if (!project.Build(s_computeRunArgumentsTarget, loggers: loggers))
                 {
                     Logger.LogTrace(() => $"The target {s_computeRunArgumentsTarget} failed to build. Falling back to TargetPath.");
                     return new RunProperties(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
