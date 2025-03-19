@@ -51,7 +51,7 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildVersion)" />
     <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildVersion)" />
 
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
