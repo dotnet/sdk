@@ -103,6 +103,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_ResolveJsInitializerModuleStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rjimswa.dswa.cache.json</_ResolveJsInitializerModuleStaticWebAssetsCachePath>
     </PropertyGroup>
 
+
+    <PropertyGroup>
+      <_ResolveJsInitializerModuleStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rjimswa.dswa.cache.json</_ResolveJsInitializerModuleStaticWebAssetsCachePath>
+    </PropertyGroup>
+
     <DefineStaticWebAssets Condition="@(_JSModuleCandidates) != ''"
       CandidateAssets="@(_JSModuleCandidates)"
       AssetTraitName="JSModule"
