@@ -63,7 +63,7 @@ Specifically we will be:
 1. Changing `msbuild` to use tools and tasks from the .NET SDK when building .NET SDK projects.
 2. Changing Visual Studio to use analyzers installed with Visual Studio.
 
-In addition to making our builds more reliable this will also massively simplify our [analyzer Development strategy][sdk-lifecycle]. Analyzers in the SDK following this model can always target the latest Roslyn version without the need for complicated multi-targeting. Further it will allow Visual Studio the ability to NGEN or R2R analyzers which is a long standing request from the Visual Studio perf team.
+In addition to making our builds more reliable this will also massively simplify our [analyzer development strategy][sdk-lifecycle]. Analyzers in the SDK following this model can always target the latest Roslyn version without the need for complicated multi-targeting. Further it will allow Visual Studio the ability to NGEN or R2R analyzers which is a long standing request from the Visual Studio perf team.
 
 ## Torn State Scenarios
 
@@ -74,7 +74,7 @@ There are a number of scenarios where customers end up in a torn state. The most
 
 This means that CI systems are updated to the latest .NET SDK virtually as soon as we release them. However the version of Visual Studio is updated much later as CI images usually take several weeks to upgrade to a new Visual Studio version. This is a very common CI setup and means a significant number of our customers end up in a torn state for several weeks.
 
-Teams also get into this state when the Visual Studio used for developement is older than the .NET SDK they are using:
+Teams also get into this state when the Visual Studio used for development is older than the .NET SDK they are using:
 
 1. Teams can get locked into older Visual Studio via org policy but freely update to newer .NET SDKs.
 2. Using a preview version of the .NET SDK. These inherently represent a torn SDK state because they almost never match the compiler in Visual Studio. This results in blockers for big teams like Bing from testing out our previews.
@@ -90,7 +90,7 @@ To facilitate tasks from the .NET SDK launching .NET Core based processes, the `
 
 This change will allow for `msbuild` to have a more consistent build experience with `dotnet build` for .NET SDK projects. It will have no impact on non-SDK projects as they will continue to use the compiler tasks that come from Visual Studio.
 
-## .NET SDK analyzers will load from Visual Studio
+### .NET SDK analyzers will load from Visual Studio
 
 Analyzers and generators which ship in the .NET SDK box will change to having a copy checked into Visual Studio. This will occur as part of the .NET SDK insertion process. When .NET SDK based projects are loaded at design time, the Visual Studio copy of the analyzer will be loaded.
 
