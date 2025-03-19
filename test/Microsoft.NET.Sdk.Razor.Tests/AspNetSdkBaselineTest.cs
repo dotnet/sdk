@@ -22,10 +22,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 #if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
-        public static bool GenerateBaselines = true || bool.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_TEST_BASELINES"), out var result) && result;
+        public static bool GenerateBaselines = bool.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_TEST_BASELINES"), out var result) && result;
 #endif
 
-        private readonly bool _generateBaselines = true || GenerateBaselines;
+        private readonly bool _generateBaselines = GenerateBaselines;
 
         public AspNetSdkBaselineTest(ITestOutputHelper log) : base(log)
         {
