@@ -5,9 +5,14 @@
       <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
     </PropertyGroup>
 
+    <ItemGroup>
+      <InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
+      <InstallerOutputFileDestination Include="@(InstallerOutputFile->'$(RedistLayoutPath)%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
     <!-- Copy the live built SDK folder -->
-    <Copy SourceFolder="$(RedistInstallerLayoutPath)"
-          DestinationFolder="$(RedistLayoutPath)"
+    <Copy SourceFiles="@(InstallerOutputFile)"
+          DestinationFolder="$(InstallerOutputFileDestination)"
           SkipUnchangedFiles="true" />
 
     <PropertyGroup>
@@ -22,7 +27,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(OverlaySDK)"
-          DestinationFiles="@(OverlaySDK->'$(RedistLayoutPath)\%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(OverlaySDK->'$(RedistLayoutPath)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>
 
     <!-- Run "dotnet new" (which will just display usage and available templates) in order to print first time
