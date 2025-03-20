@@ -35,7 +35,8 @@ public class ApplyCompressionNegotiationTest
                     "All",
                     "All",
                     "original-fingerprint",
-                    "original"
+                    "original",
+                    fileLength: 20
                 ),
                 CreateCandidate(
                     Path.Combine("compressed", "candidate.js.gz"),
@@ -48,7 +49,8 @@ public class ApplyCompressionNegotiationTest
                     "compressed",
                     Path.Combine("wwwroot", "candidate.js"),
                     "Content-Encoding",
-                    "gzip"
+                    "gzip",
+                    9
                 )
             ],
             CandidateEndpoints =
@@ -63,12 +65,6 @@ public class ApplyCompressionNegotiationTest
                     Path.Combine("compressed", "candidate.js.gz"),
                     CreateHeaders("text/javascript", [("Content-Length", "9")]))
             ],
-            TestResolveFileLength = value => value switch
-            {
-                string candidateGz when candidateGz.EndsWith(Path.Combine("compressed", "candidate.js.gz")) => 9,
-                string candidate when candidate.EndsWith(Path.Combine("compressed", "candidate.js")) => 20,
-                _ => throw new InvalidOperationException()
-            }
         };
 
         // Act
@@ -139,7 +135,9 @@ public class ApplyCompressionNegotiationTest
                 "All",
                 "All",
                 "original-fingerprint",
-                "original"
+                "original",
+                fileLength: 20,
+                lastModified: now
             )
         ];
 
@@ -156,20 +154,14 @@ public class ApplyCompressionNegotiationTest
         var compressedAssets = compressedTask.AssetsToCompress;
         compressedAssets[0].SetMetadata(nameof(StaticWebAsset.Fingerprint), "gzip");
         compressedAssets[0].SetMetadata(nameof(StaticWebAsset.Integrity), "compressed-gzip");
+        compressedAssets[0].SetMetadata(nameof(StaticWebAsset.FileLength), "9");
         compressedAssets[1].SetMetadata(nameof(StaticWebAsset.Fingerprint), "brotli");
         compressedAssets[1].SetMetadata(nameof(StaticWebAsset.Integrity), "compressed-brotli");
+        compressedAssets[1].SetMetadata(nameof(StaticWebAsset.FileLength), "7");
         candidateAssets.AddRange(compressedAssets);
         var expectedName = Path.GetFileNameWithoutExtension(compressedAssets[0].ItemSpec);
         var defineStaticAssetEndpointsTask = new DefineStaticWebAssetEndpoints
         {
-            TestLengthResolver = value => value switch
-            {
-                string candidateBr when candidateBr.EndsWith(".br") => 7,
-                string candidateGz when candidateGz.EndsWith(".gz") => 9,
-                string candidate when candidate.EndsWith(".js") => 20,
-                _ => throw new InvalidOperationException()
-            },
-            TestLastWriteResolver = value => now,
             BuildEngine = buildEngine.Object,
             CandidateAssets = [.. candidateAssets],
             ExistingEndpoints = [],
@@ -183,13 +175,6 @@ public class ApplyCompressionNegotiationTest
             BuildEngine = buildEngine.Object,
             CandidateAssets = [.. candidateAssets],
             CandidateEndpoints = compressed,
-            TestResolveFileLength = value => value switch
-            {
-                string candidateBr when candidateBr.EndsWith(".br") => 7,
-                string candidateGz when candidateGz.EndsWith(".gz") => 9,
-                string candidate when candidate.EndsWith(".js") => 20,
-                _ => throw new InvalidOperationException()
-            }
         };
 
         // Act
@@ -839,7 +824,8 @@ public class ApplyCompressionNegotiationTest
                     "All",
                     "All",
                     "original-fingerprint",
-                    "original"
+                    "original",
+                    fileLength: 20
                 ),
                 CreateCandidate(
                     Path.Combine("compressed", "candidate.js.gz"),
@@ -852,7 +838,8 @@ public class ApplyCompressionNegotiationTest
                     "compressed",
                     Path.Combine("wwwroot", "candidate.js"),
                     "Content-Encoding",
-                    "gzip"
+                    "gzip",
+                    fileLength: 9
                 )
             ],
             CandidateEndpoints =
@@ -870,12 +857,6 @@ public class ApplyCompressionNegotiationTest
                     Path.Combine("compressed", "candidate.js.gz"),
                     CreateHeaders("text/javascript"))
             ],
-            TestResolveFileLength = value => value switch
-            {
-                string candidateGz when candidateGz.EndsWith(Path.Combine("compressed", "candidate.js.gz")) => 9,
-                string candidate when candidate.EndsWith(Path.Combine("compressed", "candidate.js")) => 20,
-                _ => throw new InvalidOperationException()
-            }
         };
 
         // Act
@@ -1050,12 +1031,6 @@ public class ApplyCompressionNegotiationTest
                     Selectors = []
                 }
             }.Select(e => e.ToTaskItem()).ToArray(),
-            TestResolveFileLength = value => value switch
-            {
-                string candidateGz when candidateGz.EndsWith(Path.Combine("compressed", "candidate.js.gz")) => 9,
-                string candidate when candidate.EndsWith(Path.Combine("compressed", "candidate.js")) => 20,
-                _ => throw new InvalidOperationException()
-            }
         };
 
         // Act
@@ -1150,7 +1125,8 @@ public class ApplyCompressionNegotiationTest
                     "All",
                     "All",
                     "original-fingerprint",
-                    "original"
+                    "original",
+                    fileLength: 20
                 ),
                 CreateCandidate(
                     Path.Combine("compressed", "candidate.js.gz"),
@@ -1163,7 +1139,8 @@ public class ApplyCompressionNegotiationTest
                     "compressed",
                     Path.Combine("wwwroot", "candidate.js"),
                     "Content-Encoding",
-                    "gzip"
+                    "gzip",
+                    fileLength: 9
                 ),
                 CreateCandidate(
                     Path.Combine("compressed", "candidate.js.br"),
@@ -1176,7 +1153,8 @@ public class ApplyCompressionNegotiationTest
                     "compressed",
                     Path.Combine("wwwroot", "candidate.js"),
                     "Content-Encoding",
-                    "br"
+                    "br",
+                    fileLength: 9
                 )
             ],
             CandidateEndpoints = new StaticWebAssetEndpoint[]
@@ -1254,13 +1232,6 @@ public class ApplyCompressionNegotiationTest
                     Selectors = []
                 }
             }.Select(e => e.ToTaskItem()).ToArray(),
-            TestResolveFileLength = value => value switch
-            {
-                string candidateGz when candidateGz.EndsWith(Path.Combine("compressed", "candidate.js.gz")) => 9,
-                string candidateGz when candidateGz.EndsWith(Path.Combine("compressed", "candidate.js.br")) => 9,
-                string candidate when candidate.EndsWith(Path.Combine("compressed", "candidate.js")) => 20,
-                _ => throw new InvalidOperationException()
-            }
         };
 
         // Act
@@ -1409,8 +1380,11 @@ public class ApplyCompressionNegotiationTest
         string integrity = "",
         string relatedAsset = "",
         string assetTraitName = "",
-        string assetTraitValue = "")
+        string assetTraitValue = "",
+        long fileLength = 9,
+        DateTimeOffset? lastModified = null)
     {
+        lastModified ??= new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero);
         var result = new StaticWebAsset()
         {
             Identity = Path.GetFullPath(itemSpec),
@@ -1431,6 +1405,8 @@ public class ApplyCompressionNegotiationTest
             // Add these to avoid accessing the disk to compute them
             Integrity = integrity,
             Fingerprint = "fingerprint",
+            FileLength = fileLength,
+            LastWriteTime = lastModified.Value,
         };
 
         result.ApplyDefaults();
