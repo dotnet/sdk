@@ -48,8 +48,8 @@ internal static class DiscoveredTestMessagesFieldsId
     public const int MessagesSerializerId = 5;
 
     public const ushort ExecutionId = 1;
-    public const ushort InstanceId = 2;
-    public const ushort DiscoveredTestMessageList = 3;
+    public const ushort DiscoveredTestMessageList = 2;
+    public const ushort InstanceId = 3;
 }
 
 internal static class DiscoveredTestMessageFieldsId
@@ -63,9 +63,9 @@ internal static class TestResultMessagesFieldsId
     public const int MessagesSerializerId = 6;
 
     public const ushort ExecutionId = 1;
-    public const ushort InstanceId = 2;
-    public const ushort SuccessfulTestMessageList = 3;
-    public const ushort FailedTestMessageList = 4;
+    public const ushort SuccessfulTestMessageList = 2;
+    public const ushort FailedTestMessageList = 3;
+    public const ushort InstanceId = 4;
 }
 
 internal static class SuccessfulTestResultMessageFieldsId
@@ -105,8 +105,8 @@ internal static class FileArtifactMessagesFieldsId
     public const int MessagesSerializerId = 7;
 
     public const ushort ExecutionId = 1;
-    public const ushort InstanceId = 2;
-    public const ushort FileArtifactMessageList = 3;
+    public const ushort FileArtifactMessageList = 2;
+    public const ushort InstanceId = 3;
 }
 
 internal static class FileArtifactMessageFieldsId
