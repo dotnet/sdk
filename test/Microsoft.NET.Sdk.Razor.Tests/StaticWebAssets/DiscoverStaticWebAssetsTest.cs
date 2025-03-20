@@ -561,7 +561,7 @@ for path 'candidate.js'");
             // Arrange
             var (cache, inputHashes) = SetupCache([], []);
             // Assert
-            cache.PrepareForProcessing([], [], [], inputHashes);
+            cache.Update([], [], [], inputHashes);
 
             // Assert
             Assert.True(cache.IsUpToDate());
@@ -574,7 +574,7 @@ for path 'candidate.js'");
             var (cache, inputHashes) = SetupCache(["input1"], ["input1"]);
 
             // Act
-            cache.PrepareForProcessing([], [], [], inputHashes);
+            cache.Update([], [], [], inputHashes);
 
             // Assert
             Assert.True(cache.IsUpToDate());
@@ -593,13 +593,13 @@ for path 'candidate.js'");
             switch (updated)
             {
                 case UpdatedHash.GlobalProperties:
-                    cache.PrepareForProcessing([1], [], [], inputHashes);
+                    cache.Update([1], [], [], inputHashes);
                     break;
                 case UpdatedHash.FingerprintPatterns:
-                    cache.PrepareForProcessing([], [1], [], inputHashes);
+                    cache.Update([], [1], [], inputHashes);
                     break;
                 case UpdatedHash.Overrides:
-                    cache.PrepareForProcessing([], [], [1], inputHashes);
+                    cache.Update([], [], [1], inputHashes);
                     break;
             }
 
@@ -615,13 +615,13 @@ for path 'candidate.js'");
             var cachedAsset = cache.CachedAssets.Values.Single();
 
             // Act
-            cache.PrepareForProcessing([], [], [], inputHashes);
+            cache.Update([], [], [], inputHashes);
 
             // Assert
             Assert.False(cache.IsUpToDate());
             Assert.NotSame(inputHashes, cache.OutOfDateInputs());
             var input1 = Assert.Single(cache.OutOfDateInputs());
-            var ouput = cache.ComputeOutputs();
+            var ouput = cache.GetComputedOutputs();
             var input2 = Assert.Single(ouput.Assets);
         }
 
@@ -630,7 +630,7 @@ for path 'candidate.js'");
         {
             // Arrange
             var (cache, inputHashes) = SetupCache(["input1"], ["input2"], appendCachedToInputHashes: true);
-            cache.PrepareForProcessing([], [], [], inputHashes);
+            cache.Update([], [], [], inputHashes);
 
             // Act
             var newAssetItem = inputHashes["input1"];
@@ -643,7 +643,7 @@ for path 'candidate.js'");
             var input1 = Assert.Single(cache.OutOfDateInputs());
             Assert.Contains("input1", cache.CachedAssets.Keys);
 
-            var ouput = cache.ComputeOutputs();
+            var ouput = cache.GetComputedOutputs();
             Assert.Equal(2, ouput.Assets.Count);
             Assert.Equal("input2", ouput.Assets[0].ItemSpec);
             Assert.Equal("input1", ouput.Assets[1].ItemSpec);
@@ -669,7 +669,7 @@ for path 'candidate.js'");
                 var newAsset = CreateCandidate(Path.Combine(Environment.CurrentDirectory, "Input1.txt"), "Input1.txt");
                 inputHashes["input1"] = newAsset;
 
-                cache.PrepareForProcessing([], [], [], inputHashes);
+                cache.Update([], [], [], inputHashes);
                 cache.AppendAsset("input1", new StaticWebAsset { Identity = newAsset.ItemSpec, RelativePath = "Input1.txt" }, newAsset);
                 cache.WriteCacheManifest();
 

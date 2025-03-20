@@ -14,6 +14,13 @@ public partial class DefineStaticWebAssets : Task
 {
     private DefineStaticWebAssetsCache GetOrCreateAssetsCache()
     {
+        var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, CacheManifestPath);
+        if (CacheManifestPath == null)
+        {
+            assetsCache.NoCache(CandidateAssets);
+            return assetsCache;
+        }
+
         var memoryStream = new MemoryStream();
 #if NET9_0_OR_GREATER
         Span<string> properties = new[] {
@@ -47,8 +54,7 @@ public partial class DefineStaticWebAssets : Task
         };
         var inputHashes = HashingUtils.ComputeHashLookup(memoryStream, CandidateAssets ?? [], candidateAssetMetadata);
 
-        var assetsCache = DefineStaticWebAssetsCache.ReadOrCreateCache(Log, CacheManifestPath);
-        assetsCache.PrepareForProcessing(propertiesHash, fingerprintPatternsHash, propertyOverridesHash, inputHashes);
+        assetsCache.Update(propertiesHash, fingerprintPatternsHash, propertyOverridesHash, inputHashes);
 
         return assetsCache;
     }
@@ -58,14 +64,15 @@ public partial class DefineStaticWebAssets : Task
         private readonly List<ITaskItem> _assets = [];
         private readonly List<ITaskItem> _copyCandidates = [];
         private string? _manifestPath;
-        private IDictionary<string, ITaskItem> _inputHashes = new Dictionary<string, ITaskItem>();
+        private IDictionary<string, ITaskItem>? _inputByHash;
+        private ITaskItem[]? _noCacheCandidates;
         private bool _cacheUpToDate;
         private TaskLoggingHelper? _log;
 
         public DefineStaticWebAssetsCache() { }
 
         internal DefineStaticWebAssetsCache(TaskLoggingHelper log, string? manifestPath) : this()
-            => (_log, _manifestPath) = (log, manifestPath);
+            => SetPathAndLogger(manifestPath, log);
 
         // Inputs for the cache
         public byte[] GlobalPropertiesHash { get; set; } = [];
@@ -110,17 +117,23 @@ public partial class DefineStaticWebAssets : Task
         {
             asset.AssetKind = item.GetMetadata(nameof(StaticWebAsset.AssetKind));
             _assets.Add(item);
-            CachedAssets[hash] = asset;
+            if (!string.IsNullOrEmpty(hash))
+            {
+                CachedAssets[hash] = asset;
+            }
         }
 
         internal void AppendCopyCandidate(string hash, string identity, string targetPath)
         {
             var copyCandidate = new CopyCandidate(identity, targetPath);
             _copyCandidates.Add(copyCandidate.ToTaskItem());
-            CachedCopyCandidates[hash] = copyCandidate;
+            if (!string.IsNullOrEmpty(hash))
+            {
+                CachedCopyCandidates[hash] = copyCandidate;
+            }
         }
 
-        internal void PrepareForProcessing(
+        internal void Update(
             byte[] propertiesHash,
             byte[] fingerprintPatternsHash,
             byte[] propertyOverridesHash,
@@ -138,17 +151,17 @@ public partial class DefineStaticWebAssets : Task
             }
         }
 
-        internal void TotalUpdate(byte[] propertiesHash, byte[] fingerprintPatternsHash, byte[] propertyOverridesHash, IDictionary<string, ITaskItem> inputsByHash)
+        private void TotalUpdate(byte[] propertiesHash, byte[] fingerprintPatternsHash, byte[] propertyOverridesHash, IDictionary<string, ITaskItem> inputsByHash)
         {
             _log?.LogMessage(MessageImportance.Low, "Updating cache completely.");
             GlobalPropertiesHash = propertiesHash;
             FingerprintPatternsHash = fingerprintPatternsHash;
             PropertyOverridesHash = propertyOverridesHash;
             InputHashes = [.. inputsByHash.Keys];
-            _inputHashes = inputsByHash;
+            _inputByHash = inputsByHash;
         }
 
-        internal void PartialUpdate(Dictionary<string, ITaskItem> inputHashes)
+        private void PartialUpdate(Dictionary<string, ITaskItem> inputHashes)
         {
             var newHashes = new HashSet<string>(inputHashes.Keys);
             var oldHashes = InputHashes;
@@ -199,14 +212,38 @@ public partial class DefineStaticWebAssets : Task
                 CachedCopyCandidates.Remove(hash);
             }
 
-            _inputHashes = remainingCandidates;
+            _inputByHash = remainingCandidates;
         }
 
-        internal void SetPathAndLogger(string manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
+        internal void SetPathAndLogger(string? manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
 
-        public (IList<ITaskItem> CopyCandidates, IList<ITaskItem> Assets) ComputeOutputs() => (_copyCandidates, _assets);
+        public (IList<ITaskItem> CopyCandidates, IList<ITaskItem> Assets) GetComputedOutputs() => (_copyCandidates, _assets);
 
-        internal IEnumerable<KeyValuePair<string, ITaskItem>> OutOfDateInputs() => _cacheUpToDate ? [] : _inputHashes;
+        internal void NoCache(ITaskItem[] candidateAssets)
+        {
+            _log?.LogMessage(MessageImportance.Low, "No cache manifest path specified. Cache will not be used.");
+            _cacheUpToDate = false;
+            _noCacheCandidates = candidateAssets;
+        }
+
+        internal IEnumerable<KeyValuePair<string, ITaskItem>> OutOfDateInputs()
+        {
+            if (_noCacheCandidates != null)
+            {
+                return EnumerateNoCache();
+            }
+
+            return _cacheUpToDate || _inputByHash == null ? [] : _inputByHash;
+
+            IEnumerable<KeyValuePair<string, ITaskItem>> EnumerateNoCache()
+            {
+                foreach (var candidate in _noCacheCandidates)
+                {
+                    var hash = "";
+                    yield return new KeyValuePair<string, ITaskItem>(hash, candidate);
+                }
+            }
+        }
 
         internal bool IsUpToDate() => _cacheUpToDate;
     }

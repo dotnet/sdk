@@ -79,7 +79,7 @@ public partial class DefineStaticWebAssets : Task
 
         if (assetsCache.IsUpToDate())
         {
-            var outputs = assetsCache.ComputeOutputs();
+            var outputs = assetsCache.GetComputedOutputs();
             Assets = [.. outputs.Assets];
             CopyCandidates = [.. outputs.CopyCandidates];
 
@@ -265,7 +265,7 @@ public partial class DefineStaticWebAssets : Task
                 assetsCache.AppendAsset(hash, asset, item);
             }
 
-            var outputs = assetsCache.ComputeOutputs();
+            var outputs = assetsCache.GetComputedOutputs();
             var results = outputs.Assets;
 
             assetsCache.WriteCacheManifest();
