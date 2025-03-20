@@ -12,45 +12,45 @@ namespace Microsoft.DotNet.Cli;
 
 internal sealed class MSBuildHandler : IDisposable
 {
-    private readonly List<string> _args;
+    private readonly BuildOptions _buildOptions;
     private readonly TestApplicationActionQueue _actionQueue;
     private readonly TerminalTestReporter _output;
 
     private readonly ConcurrentBag<TestApplication> _testApplications = new();
     private bool _areTestingPlatformApplications = true;
 
-    public MSBuildHandler(List<string> args, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
+    public MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
     {
-        _args = args;
+        _buildOptions = buildOptions;
         _actionQueue = actionQueue;
         _output = output;
     }
 
-    public bool RunMSBuild(BuildOptions buildOptions)
+    public bool RunMSBuild()
     {
-        if (!ValidationUtility.ValidateBuildPathOptions(buildOptions, _output))
+        if (!ValidationUtility.ValidateBuildPathOptions(_buildOptions, _output))
         {
             return false;
         }
 
         int msBuildExitCode;
         string path;
-        PathOptions pathOptions = buildOptions.PathOptions;
+        PathOptions pathOptions = _buildOptions.PathOptions;
 
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
             path = PathUtility.GetFullPath(pathOptions.ProjectPath);
-            msBuildExitCode = RunBuild(path, isSolution: false, buildOptions);
+            msBuildExitCode = RunBuild(path, isSolution: false);
         }
         else if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
         {
             path = PathUtility.GetFullPath(pathOptions.SolutionPath);
-            msBuildExitCode = RunBuild(path, isSolution: true, buildOptions);
+            msBuildExitCode = RunBuild(path, isSolution: true);
         }
         else
         {
             path = PathUtility.GetFullPath(pathOptions.DirectoryPath ?? Directory.GetCurrentDirectory());
-            msBuildExitCode = RunBuild(path, buildOptions);
+            msBuildExitCode = RunBuild(path);
         }
 
         if (msBuildExitCode != ExitCode.Success)
@@ -62,7 +62,7 @@ internal sealed class MSBuildHandler : IDisposable
         return true;
     }
 
-    private int RunBuild(string directoryPath, BuildOptions buildOptions)
+    private int RunBuild(string directoryPath)
     {
         (bool solutionOrProjectFileFound, string message) = SolutionAndProjectUtility.TryGetProjectOrSolutionFilePath(directoryPath, out string projectOrSolutionFilePath, out bool isSolution);
 
@@ -72,16 +72,16 @@ internal sealed class MSBuildHandler : IDisposable
             return ExitCode.GenericFailure;
         }
 
-        (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution, buildOptions);
+        (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
 
         InitializeTestApplications(projects);
 
         return restored ? ExitCode.Success : ExitCode.GenericFailure;
     }
 
-    private int RunBuild(string filePath, bool isSolution, BuildOptions buildOptions)
+    private int RunBuild(string filePath, bool isSolution)
     {
-        (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(filePath, isSolution, buildOptions);
+        (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(filePath, isSolution);
 
         InitializeTestApplications(projects);
 
@@ -114,7 +114,7 @@ internal sealed class MSBuildHandler : IDisposable
                 throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
             }
 
-            var testApp = new TestApplication(module, _args);
+            var testApp = new TestApplication(module, _buildOptions);
             _testApplications.Add(testApp);
         }
     }
@@ -133,11 +133,11 @@ internal sealed class MSBuildHandler : IDisposable
         return true;
     }
 
-    private (IEnumerable<TestModule> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution, BuildOptions buildOptions)
+    private (IEnumerable<TestModule> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
     {
         (IEnumerable<TestModule> projects, bool isBuiltOrRestored) = isSolution ?
-            MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, buildOptions) :
-            MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, buildOptions);
+            MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, _buildOptions) :
+            MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, _buildOptions);
 
         LogProjectProperties(projects);
 
@@ -159,8 +159,9 @@ internal sealed class MSBuildHandler : IDisposable
             logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
             logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
             logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.TargetPath}: {module.TargetPath}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.RunSettingsFilePath}: {module.RunSettingsFilePath}");
+            logMessageBuilder.AppendLine($"{ProjectProperties.RunCommand}: {module.RunProperties.RunCommand}");
+            logMessageBuilder.AppendLine($"{ProjectProperties.RunArguments}: {module.RunProperties.RunArguments}");
+            logMessageBuilder.AppendLine($"{ProjectProperties.RunWorkingDirectory}: {module.RunProperties.RunWorkingDirectory}");
             logMessageBuilder.AppendLine();
         }
 

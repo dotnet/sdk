@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli;
 internal sealed class TestApplication : IDisposable
 {
     private readonly TestModule _module;
-    private readonly List<string> _args;
+    private readonly BuildOptions _buildOptions;
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
@@ -35,10 +35,10 @@ internal sealed class TestApplication : IDisposable
 
     public TestModule Module => _module;
 
-    public TestApplication(TestModule module, List<string> args)
+    public TestApplication(TestModule module, BuildOptions buildOptions)
     {
         _module = module;
-        _args = args;
+        _buildOptions = buildOptions;
     }
 
     public void AddExecutionId(string executionId)
@@ -53,7 +53,7 @@ internal sealed class TestApplication : IDisposable
             return ExitCode.GenericFailure;
         }
 
-        bool isDll = _module.TargetPath.HasExtension(CliConstants.DLLExtension);
+        bool isDll = _module.RunProperties.RunCommand.HasExtension(CliConstants.DLLExtension);
         var processStartInfo = CreateProcessStartInfo(isDll, testOptions);
 
         _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
@@ -74,37 +74,27 @@ internal sealed class TestApplication : IDisposable
             RedirectStandardError = true
         };
 
-        AddRunSettingsFileToEnvironment(processStartInfo);
+        if (!string.IsNullOrEmpty(_module.RunProperties.RunWorkingDirectory))
+        {
+            processStartInfo.WorkingDirectory = _module.RunProperties.RunWorkingDirectory;
+        }
 
         return processStartInfo;
     }
 
     private string GetFileName(TestOptions testOptions, bool isDll)
-    {
-        if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
-        {
-            return isDll ? Environment.ProcessPath : _module.TargetPath;
-        }
-
-        return Environment.ProcessPath;
-    }
+        => isDll ? Environment.ProcessPath : _module.RunProperties.RunCommand;
 
     private string GetArguments(TestOptions testOptions, bool isDll)
     {
-        if (testOptions.HasFilterMode || !IsArchitectureSpecified(testOptions))
+        if (testOptions.HasFilterMode || !isDll || !IsArchitectureSpecified(testOptions))
         {
             return BuildArgs(testOptions, isDll);
         }
 
+        // We fallback to dotnet run only when we have a dll and an architecture is specified.
+        // TODO: Is this a valid case?
         return BuildArgsWithDotnetRun(testOptions);
-    }
-
-    private void AddRunSettingsFileToEnvironment(ProcessStartInfo processStartInfo)
-    {
-        if (!string.IsNullOrEmpty(_module.RunSettingsFilePath))
-        {
-            processStartInfo.EnvironmentVariables.Add(CliConstants.TestingPlatformVsTestBridgeRunSettingsFileEnvVar, _module.RunSettingsFilePath);
-        }
     }
 
     private static bool IsArchitectureSpecified(TestOptions testOptions)
@@ -275,9 +265,9 @@ internal sealed class TestApplication : IDisposable
 
     private bool ModulePathExists()
     {
-        if (!File.Exists(_module.TargetPath))
+        if (!File.Exists(_module.RunProperties.RunCommand))
         {
-            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.TargetPath}' not found. Build the test application before or run 'dotnet test'." });
+            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.RunProperties.RunCommand}' not found. Build the test application before or run 'dotnet test'." });
             return false;
         }
         return true;
@@ -289,7 +279,7 @@ internal sealed class TestApplication : IDisposable
 
         if (isDll)
         {
-            builder.Append($"exec {_module.TargetPath} ");
+            builder.Append($"exec {_module.RunProperties.RunCommand} ");
         }
 
         AppendCommonArgs(builder, testOptions);
@@ -307,15 +297,11 @@ internal sealed class TestApplication : IDisposable
         builder.Append($" {CommonOptions.NoRestoreOption.Name}");
         builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
 
-        if (!string.IsNullOrEmpty(testOptions.Architecture))
+        foreach (var arg in _buildOptions.MSBuildArgs)
         {
-            builder.Append($" {CommonOptions.ArchitectureOption.Name} {testOptions.Architecture}");
+            builder.Append($" {arg}");
         }
 
-        if (!string.IsNullOrEmpty(testOptions.Configuration))
-        {
-            builder.Append($" {TestingPlatformOptions.ConfigurationOption.Name} {testOptions.Configuration}");
-        }
 
         if (!string.IsNullOrEmpty(_module.TargetFramework))
         {
@@ -336,11 +322,12 @@ internal sealed class TestApplication : IDisposable
             builder.Append($" {TestingPlatformOptions.HelpOption.Name} ");
         }
 
-        builder.Append(_args.Count != 0
-            ? _args.Aggregate((a, b) => $"{a} {b}")
+        var args = _buildOptions.UnmatchedTokens;
+        builder.Append(args.Count != 0
+            ? args.Aggregate((a, b) => $"{a} {b}")
             : string.Empty);
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name}");
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name} {_module.RunProperties.RunArguments}");
     }
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
@@ -348,7 +335,7 @@ internal sealed class TestApplication : IDisposable
         if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
         {
             AddExecutionId(executionId);
-            ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.TargetPath, ExecutionId = executionId });
+            ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.RunProperties.RunCommand, ExecutionId = executionId });
         }
         HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
     }
@@ -391,9 +378,19 @@ internal sealed class TestApplication : IDisposable
     {
         StringBuilder builder = new();
 
-        if (!string.IsNullOrEmpty(_module.TargetPath))
+        if (!string.IsNullOrEmpty(_module.RunProperties.RunCommand))
         {
-            builder.Append($"{ProjectProperties.TargetPath}: {_module.TargetPath}");
+            builder.Append($"{ProjectProperties.RunCommand}: {_module.RunProperties.RunCommand}");
+        }
+
+        if (!string.IsNullOrEmpty(_module.RunProperties.RunArguments))
+        {
+            builder.Append($"{ProjectProperties.RunArguments}: {_module.RunProperties.RunArguments}");
+        }
+
+        if (!string.IsNullOrEmpty(_module.RunProperties.RunWorkingDirectory))
+        {
+            builder.Append($"{ProjectProperties.RunWorkingDirectory}: {_module.RunProperties.RunWorkingDirectory}");
         }
 
         if (!string.IsNullOrEmpty(_module.ProjectFullPath))

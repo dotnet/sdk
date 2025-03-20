@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
-    <ProjectReference Include="$(RepoRoot)src\Installer\redist-installer\redist-installer.proj" />
+    <ProjectReference Include="..\redist\redist.csproj" />
   </ItemGroup>
 
   <!-- Shared infra to build and use the sdk-tasks -->
@@ -21,16 +21,15 @@
   <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
     <PropertyGroup>
       <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
-      <RuntimeAnalyzersSourceRoot>$(ArtifactsBinDir)redist-installer\$(Configuration)\dotnet\</RuntimeAnalyzersSourceRoot>
     </PropertyGroup>
 
     <ItemGroup>
       <RuntimeAnalyzersContent Include="$(ArtifactsBinDir)Microsoft.Net.Sdk.AnalyzerRedirecting\$(Configuration)\net472\**\*.*" DeploymentSubpath="AnalyzerRedirecting" />
-      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)packs\Microsoft.NetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="NetCoreAnalyzers" />
-      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)packs\Microsoft.WindowsDesktop.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="WindowsDesktopAnalyzers" />
-      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)packs\Microsoft.AspNetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="AspNetCoreAnalyzers" />
-      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)sdk\*\Sdks\Microsoft.NET.Sdk\analyzers\**\*.*" DeploymentSubpath="SDKAnalyzers" />
-      <RuntimeAnalyzersContent Include="$(RuntimeAnalyzersSourceRoot)sdk\*\Sdks\Microsoft.NET.Sdk.Web\analyzers\**\*.*" DeploymentSubpath="WebSDKAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.NetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="NetCoreAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.WindowsDesktop.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="WindowsDesktopAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.AspNetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="AspNetCoreAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk\analyzers\**\*.*" DeploymentSubpath="SDKAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk.Web\analyzers\**\*.*" DeploymentSubpath="WebSDKAnalyzers" />
     </ItemGroup>
 
     <Copy SourceFiles="@(RuntimeAnalyzersContent)"

@@ -24,4 +24,9 @@
     <RepositoryReference Include="sdk" DotNetBuildPass="2" />
   </ItemGroup>
 
+  <!-- Build the ASP.NET Core hosting bundle -->
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
+    <RepositoryReference Include="aspnetcore" DotNetBuildPass="2" />
+  </ItemGroup>
+
 </Project>

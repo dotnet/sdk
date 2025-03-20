@@ -2,185 +2,12 @@
 using NuGet.Packaging;
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.Formats.Tar;
 using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Xml.Linq;
-using System.Xml.Serialization;
-
-/// <summary>
-/// Defines the type of asset being processed in the build comparison tool.
-/// </summary>
-public enum AssetType
-{
-    /// <summary>
-    /// Represents a random non-package file in the build.
-    /// </summary>
-    Blob,
-    
-    /// <summary>
-    /// Represents a NuGet package asset.
-    /// </summary>
-    Package,
-    
-    /// <summary>
-    /// Represents an asset of unknown type.
-    /// </summary>
-    Unknown
-}
-
-/// <summary>
-/// Contains the results of a build comparison between Microsoft and VMR builds.
-/// </summary>
-public class ComparisonReport
-{
-    /// <summary>
-    /// Gets the number of assets with identified issues.
-    /// </summary>
-    [XmlAttribute("IssueCount")]
-    public int IssueCount { get => AssetsWithIssues.Count; }
-
-    /// <summary>
-    /// Gets the number of assets with evaluation errors.
-    /// </summary>
-    [XmlAttribute("ErrorCount")]
-    public int ErrorCount { get => AssetsWithErrors.Count; }
-
-    /// <summary>
-    /// Gets the total number of assets analyzed in the report.
-    /// </summary>
-    [XmlAttribute("TotalCount")]
-    public int TotalCount { get => AssetsWithIssues.Count + AssetsWithoutIssues.Count; }
-    
-    /// <summary>
-    /// Gets or sets the list of assets that have issues.
-    /// </summary>
-    public List<AssetMapping> AssetsWithIssues { get; set; }
-    
-    /// <summary>
-    /// Gets or sets the list of assets that have evaluation errors.
-    /// </summary>
-    public List<AssetMapping> AssetsWithErrors { get; set; }
-    
-    /// <summary>
-    /// Gets or sets the list of assets without any identified issues.
-    /// </summary>
-    public List<AssetMapping> AssetsWithoutIssues { get; set; }
-}
-
-/// <summary>
-/// Represents the mapping between base build and VMR build for a specific asset.
-/// </summary>
-public class AssetMapping
-{
-    /// <summary>
-    /// Gets or sets the identifier of the asset.
-    /// </summary>
-    [XmlAttribute("Id")]
-    public string Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets the type of the asset.
-    /// </summary>
-    [XmlAttribute("Type")]
-    public AssetType AssetType { get; set; } = AssetType.Unknown;
-    
-    /// <summary>
-    /// Gets a value indicating whether a corresponding element was found in the diff manifest.
-    /// </summary>
-    [XmlIgnore]
-    public bool DiffElementFound { get => DiffManifestElement != null; }
-    
-    /// <summary>
-    /// Gets a value indicating whether a corresponding file was found in the diff build.
-    /// </summary>
-    [XmlIgnore]
-    public bool DiffFileFound { get => DiffFilePath != null; }
-
-    /// <summary>
-    /// Gets or sets the path to the diff file.
-    /// </summary>
-    [XmlElement("DiffFile")]
-    public string DiffFilePath { get; set; }
-    
-    /// <summary>
-    /// Gets or sets the XML element from the diff manifest.
-    /// </summary>
-    [XmlIgnore]
-    public XElement DiffManifestElement { get; set; }
-
-    /// <summary>
-    /// Gets or sets the path to the base build file.
-    /// </summary>
-    [XmlElement("BaseFile")]
-    public string BaseBuildFilePath { get; set; }
-
-    /// <summary>
-    /// Gets or sets the XML element from the base build manifest.
-    /// </summary>
-    [XmlIgnore]
-    public XElement BaseBuildManifestElement
-    {
-        get; set;
-    }
-
-    /// <summary>
-    /// Gets or sets the list of errors encountered during evaluation.
-    /// </summary>
-    public List<string> EvaluationErrors { get; set; } = new List<string>();
-
-    /// <summary>
-    /// Gets or sets the list of issues identified for this asset.
-    /// </summary>
-    public List<Issue> Issues { get; set; } = new List<Issue>();
-}
-
-/// <summary>
-/// Defines types of issues that can be identified during asset comparison.
-/// </summary>
-public enum IssueType
-{
-    /// <summary>
-    /// Indicates a shipping asset is missing in the VMR build.
-    /// </summary>
-    MissingShipping,
-    
-    /// <summary>
-    /// Indicates a non-shipping asset is missing in the VMR build.
-    /// </summary>
-    MissingNonShipping,
-    
-    /// <summary>
-    /// Indicates an asset is classified differently between base and VMR builds.
-    /// </summary>
-    MisclassifiedAsset,
-    
-    /// <summary>
-    /// Indicates a version mismatch between assemblies in base and VMR builds.
-    /// </summary>
-    AssemblyVersionMismatch,
-    MissingPackageContent,
-    ExtraPackageContent,
-}
-
-/// <summary>
-/// Represents an issue identified during asset comparison.
-/// </summary>
-public class Issue
-{
-    /// <summary>
-    /// Gets or sets the type of issue.
-    /// </summary>
-    [XmlAttribute("Type")]
-    public IssueType IssueType { get; set; }
-    
-    /// <summary>
-    /// Gets or sets a description of the issue.
-    /// </summary>
-    [XmlAttribute("Description")]
-    public string Description { get; set; }
-}
 
 /// <summary>
 /// Tool for comparing Microsoft builds with VMR (Virtual Mono Repo) builds.
@@ -218,7 +45,12 @@ public class Program
         var parallelismArgument = new CliOption<int>("-parallel")
         {
             Description = "Amount of parallelism used while analyzing the builds.",
-            DefaultValueFactory = _ => 16,
+            DefaultValueFactory = _ => 8,
+            Required = true
+        };
+        var baselineArgument = new CliOption<string>("-baseline")
+        {
+            Description = "Path to the baseline build manifest.",
             Required = true
         };
         var rootCommand = new CliRootCommand(description: "Tool for comparing Microsoft builds with VMR builds.")
@@ -227,6 +59,7 @@ public class Program
             vmrAssetBasePathArgument,
             msftAssetBasePathArgument,
             outputFileArgument,
+            baselineArgument,
             parallelismArgument
         };
 
@@ -237,6 +70,7 @@ public class Program
                                     result.GetValue(vmrAssetBasePathArgument),
                                     result.GetValue(msftAssetBasePathArgument),
                                     result.GetValue(outputFileArgument),
+                                    result.GetValue(baselineArgument),
                                     result.GetValue(parallelismArgument));
 
 
@@ -279,6 +113,8 @@ public class Program
     /// </summary>
     private List<AssetMapping> _assetMappings = new List<AssetMapping>();
 
+    private Baseline _baseline;
+
     /// <summary>
     /// Initializes a new instance of the Program class with specified parameters.
     /// </summary>
@@ -291,6 +127,7 @@ public class Program
                     string vmrAssetBasePath,
                     string baseBuildAssetBasePath,
                     string outputFilePath,
+                    string baselineFilePath,
                     int parallelTasks)
     {
         _vmrManifestPath = vmrManifestPath;
@@ -298,6 +135,11 @@ public class Program
         _baseBuildAssetBasePath = baseBuildAssetBasePath;
         _outputFilePath = outputFilePath;
         _throttle = new SemaphoreSlim(parallelTasks, parallelTasks);
+
+        if (!string.IsNullOrEmpty(baselineFilePath))
+        {
+            _baseline = new Baseline(baselineFilePath);
+        }
     }
 
     /// <summary>
@@ -310,6 +152,7 @@ public class Program
         {
             GenerateAssetMappings();
             await EvaluateAssets();
+            ApplyBaselines();
             GenerateReport();
 
             return 0;
@@ -318,6 +161,24 @@ public class Program
         {
             Console.WriteLine($"Error: {ex.ToString()}");
             return 1;
+        }
+    }
+
+    private void ApplyBaselines()
+    {
+        if (_baseline == null)
+        {
+            return;
+        }
+
+        Console.WriteLine($"Applying baseline.");
+
+        foreach (var mapping in _assetMappings)
+        {
+            foreach (var issue in mapping.Issues)
+            {
+                issue.Baseline = _baseline.GetMatchingBaselineEntries(issue, mapping).FirstOrDefault();
+            }
         }
     }
 
@@ -384,11 +245,28 @@ public class Program
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_outputFilePath));
 
-        // Generate the AssetReportType by grouping the asset mappings by whether they
-        // have issues
-        _comparisonReport.AssetsWithErrors = _assetMappings.Where(a => a.EvaluationErrors.Count > 0).OrderByDescending(a => a.EvaluationErrors.Count).ToList();
-        _comparisonReport.AssetsWithIssues = _assetMappings.Where(a => a.Issues.Count > 0).OrderByDescending(a => a.Issues.Count).ToList();
-        _comparisonReport.AssetsWithoutIssues = _assetMappings.Where(a => a.Issues.Count == 0).ToList();
+        // Bucketize asset mappings
+        _comparisonReport.AssetsWithoutIssues = _assetMappings
+            .Where(mapping => !mapping.Issues.Any(i => i.Baseline == null) && !mapping.EvaluationErrors.Any())
+            .ToList();
+
+        _comparisonReport.AssetsWithErrors = _assetMappings
+            .Where(mapping => mapping.EvaluationErrors.Any())
+            .ToList();
+
+        _comparisonReport.AssetsWithIssues = _assetMappings
+            .Where(mapping => mapping.Issues.Any(issue => issue.Baseline == null))
+            .OrderByDescending(mapping => mapping.Issues.Count(issue => issue.Baseline == null))
+            .ToList();
+
+        // Sort issues within each mapping
+        foreach (var mapping in _comparisonReport.AssetsWithIssues)
+        {
+            mapping.Issues = mapping.Issues
+                .OrderBy(issue => issue.Baseline != null)
+                .ThenBy(issue => issue.IssueType)
+                .ToList();
+        }
 
         // Serialize all asset mappings to xml
         var serializer = new System.Xml.Serialization.XmlSerializer(typeof(ComparisonReport));
@@ -397,13 +275,42 @@ public class Program
             serializer.Serialize(stream, _comparisonReport);
             stream.Close();
         }
+
+        Console.WriteLine($"Comparison report saved to {_outputFilePath}");
+        Console.WriteLine($"Errors: {_comparisonReport.ErrorCount}");
+        Console.WriteLine($"Issues: {_comparisonReport.IssueCount}");
+        Console.WriteLine($"Baselined issues: {_comparisonReport.BaselineCount}");
+
+        var allAssetWithIssues = _assetMappings
+            .Where(mapping => mapping.Issues.Any() && !mapping.EvaluationErrors.Any())
+            .ToList();
+
+        // Print detailed issue counts by type
+        var issueCountsByType = allAssetWithIssues
+            .SelectMany(mapping => mapping.Issues)
+            .Where(issue => issue.Baseline == null)
+            .GroupBy(issue => issue.IssueType)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        var baselinedIssueCountsByType = allAssetWithIssues
+            .SelectMany(mapping => mapping.Issues)
+            .Where(issue => issue.Baseline != null)
+            .GroupBy(issue => issue.IssueType)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        Console.WriteLine("Detailed issue counts by type:");
+        foreach (var issueType in Enum.GetValues(typeof(IssueType)).Cast<IssueType>())
+        {
+            issueCountsByType.TryGetValue(issueType, out int issueCount);
+            baselinedIssueCountsByType.TryGetValue(issueType, out int baselinedIssueCount);
+            Console.WriteLine($"  {issueType}: Issues w/o Baseline = {issueCount}, Baselined issues = {baselinedIssueCount}");
+        }
     }
 
     /// <summary>
     /// Evaluates a single asset mapping for issues based on its type (Package or Blob).
     /// </summary>
-    /// <param name="mapping"></param>
-    /// <returns></returns>
+    /// <param name="mapping">Asset mapping to evaluate</param>
     private async Task EvaluateAsset(AssetMapping mapping)
     {
         if (mapping.AssetType == AssetType.Package)
@@ -463,6 +370,10 @@ public class Program
     static readonly ImmutableArray<string> IncludedAssemblyNameCheckFileExtensions = [".dll", ".exe"];
 
 
+    /// <summary>
+    /// Evaluate the contents of a mapping between two packages.
+    /// </summary>
+    /// <param name="mapping">Package mapping to evaluate</param>
     public async Task EvaluatePackageContents(AssetMapping mapping)
     {
         var diffNugetPackagePath = mapping.DiffFilePath;
@@ -476,12 +387,13 @@ public class Program
 
         try
         {
-            using (PackageArchiveReader testPackageReader = new PackageArchiveReader(File.OpenRead(diffNugetPackagePath)))
+            using (PackageArchiveReader diffPackageReader = new PackageArchiveReader(File.OpenRead(diffNugetPackagePath)))
             {
                 using (PackageArchiveReader baselinePackageReader = new PackageArchiveReader(baselineNugetPackagePath))
                 {
-                    ComparePackageFileLists(mapping, testPackageReader, baselinePackageReader);
-                    await ComparePackageAssemblyVersions(mapping, testPackageReader, baselinePackageReader);
+                    await ComparePackageFileLists(mapping, diffPackageReader, baselinePackageReader);
+                    await ComparePackageAssemblyVersions(mapping, diffPackageReader, baselinePackageReader);
+                    await ComparePackageMetadata(mapping, diffPackageReader, baselinePackageReader);
                 }
             }
         }
@@ -491,31 +403,119 @@ public class Program
         }
     }
 
-    private async void ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader testPackageReader, PackageArchiveReader baselinePackageReader)
+    /// <summary>
+    /// Compare nuspecs for meaningful equality
+    /// </summary>
+    /// <param name="mapping">Mapping to compare</param>
+    /// <param name="diffPackageReader">Diff (VMR) package reader</param>
+    /// <param name="baselinePackageReader">Baseline package reader</param>
+    private async Task ComparePackageMetadata(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader baselinePackageReader)
     {
-        IEnumerable<string> baselineFiles = (await baselinePackageReader.GetFilesAsync(CancellationToken.None));
-        IEnumerable<string> testFiles = (await testPackageReader.GetFilesAsync(CancellationToken.None));
+        try
+        {
+            var diffNuspecReader = await diffPackageReader.GetNuspecReaderAsync(CancellationToken.None);
+            var baseNuspecReader = await baselinePackageReader.GetNuspecReaderAsync(CancellationToken.None);
 
-        var missingFiles = RemovePackageFilesToIgnore(baselineFiles.Except(testFiles));
+            // Compare basic fields
+            ComparePackageMetadataStringField(mapping, "Authors", baseNuspecReader.GetAuthors(), diffNuspecReader.GetAuthors());
+            ComparePackageMetadataStringField(mapping, "ProjectUrl", baseNuspecReader.GetProjectUrl()?.ToString(), diffNuspecReader.GetProjectUrl()?.ToString());
+            ComparePackageMetadataStringField(mapping, "LicenseUrl", baseNuspecReader.GetLicenseUrl()?.ToString(), diffNuspecReader.GetLicenseUrl()?.ToString());
+            ComparePackageMetadataStringField(mapping, "Copyright", baseNuspecReader.GetCopyright(), diffNuspecReader.GetCopyright());
+            ComparePackageMetadataStringField(mapping, "Tags", baseNuspecReader.GetTags(), diffNuspecReader.GetTags());
+
+            // Compare target frameworks
+            var baseGroups = baseNuspecReader.GetDependencyGroups().ToList();
+            var diffGroups = diffNuspecReader.GetDependencyGroups().ToList();
+
+            var baseTfms = new HashSet<string>(baseGroups.Select(g => g.TargetFramework.GetShortFolderName()), StringComparer.OrdinalIgnoreCase);
+            var diffTfms = new HashSet<string>(diffGroups.Select(g => g.TargetFramework.GetShortFolderName()), StringComparer.OrdinalIgnoreCase);
+
+            if (!baseTfms.SetEquals(diffTfms))
+            {
+                mapping.Issues.Add(new Issue
+                {
+                    IssueType = IssueType.PackageTFMs,
+                    Description = $"Package target frameworks differ: base={string.Join(",", baseTfms)}, diff={string.Join(",", diffTfms)}"
+                });
+            }
+
+            // Compare dependencies within matching TFMs (ignore version differences)
+            foreach (var tfm in baseTfms.Intersect(diffTfms, StringComparer.OrdinalIgnoreCase))
+            {
+                var baseDeps = baseGroups.First(g => g.TargetFramework.GetShortFolderName().Equals(tfm, StringComparison.OrdinalIgnoreCase)).Packages;
+                var diffDeps = diffGroups.First(g => g.TargetFramework.GetShortFolderName().Equals(tfm, StringComparison.OrdinalIgnoreCase)).Packages;
+
+                var baseDepIds = new HashSet<string>(baseDeps.Select(d => d.Id), StringComparer.OrdinalIgnoreCase);
+                var diffDepIds = new HashSet<string>(diffDeps.Select(d => d.Id), StringComparer.OrdinalIgnoreCase);
+
+                if (!baseDepIds.SetEquals(diffDepIds))
+                {
+                    var missingInDiff = baseDepIds.Except(diffDepIds);
+                    var extraInDiff = diffDepIds.Except(baseDepIds);
+
+                    mapping.Issues.Add(new Issue
+                    {
+                        IssueType = IssueType.PackageDependencies,
+                        Description = $"Package dependencies differ in TFM '{tfm}'. "
+                                     + $"Missing from diff: {string.Join(", ", missingInDiff)}; "
+                                     + $"Extra in diff: {string.Join(", ", extraInDiff)}."
+                    });
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            mapping.EvaluationErrors.Add(e.ToString());
+        }
+    }
+
+    private void ComparePackageMetadataStringField(AssetMapping mapping, string fieldName, string baseValue, string diffValue)
+    {
+        if (!StringComparer.OrdinalIgnoreCase.Equals(baseValue ?? string.Empty, diffValue ?? string.Empty))
+        {
+            mapping.Issues.Add(new Issue
+            {
+                IssueType = IssueType.PackageMetadataDifference, // Reuse or define new IssueType if needed
+                Description = $"Package nuspec '{fieldName}': base='{baseValue}' vs diff='{diffValue}'"
+            });
+        }
+    }
+
+    /// <summary>
+    /// Compare the file lists of packages, identifying missing and extra files.
+    /// </summary>
+    /// <param name="mapping">Asset mapping to compare lists for</param>
+    /// <param name="diffPackageReader">Diff (VMR) package reader</param>
+    /// <param name="basePackageReader">Baseline (old build) package reader</param>
+    private async Task ComparePackageFileLists(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader basePackageReader)
+    {
+        IEnumerable<string> baselineFiles = (await basePackageReader.GetFilesAsync(CancellationToken.None));
+        IEnumerable<string> testFiles = (await diffPackageReader.GetFilesAsync(CancellationToken.None));
+
+        // Strip down the baseline and test files to remove version numbers.
+        var strippedBaselineFiles = baselineFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+        var strippedTestFiles = testFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+
+        var missingFiles = RemovePackageFilesToIgnore(strippedBaselineFiles.Except(strippedTestFiles));
 
         foreach (var missingFile in missingFiles)
         {
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.MissingPackageContent,
-                Description = $"Package '{mapping.Id}' is missing the following files in the VMR: {string.Join(", ", missingFile)}"
+                Description = missingFile,
             });
         }
 
         // Compare the other way, and identify content in the VMR that is not in the baseline
-        var extraFiles = RemovePackageFilesToIgnore(testFiles.Except(baselineFiles));
+        var extraFiles = RemovePackageFilesToIgnore(strippedTestFiles.Except(strippedBaselineFiles));
 
         foreach (var extraFile in extraFiles)
         {
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.ExtraPackageContent,
-                Description = $"Package '{mapping.Id}' has extra files in the VMR: {string.Join(", ", extraFile)}"
+                Description = extraFile
             });
         }
 
@@ -529,20 +529,18 @@ public class Program
     /// Compares the assembly versions of the files in the test and baseline packages.
     /// </summary>
     /// <param name="mapping">Mapping to evaluate</param>
-    /// <param name="packageName"></param>
-    /// <param name="testPackageReader"></param>
-    /// <param name="baselinePackageReader"></param>
-    /// <returns></returns>
-    private static async Task ComparePackageAssemblyVersions(AssetMapping mapping, PackageArchiveReader testPackageReader, PackageArchiveReader baselinePackageReader)
+    /// <param name="diffPackageReader">Diff (VMR) package reader</param>
+    /// <param name="basePackageReader">Baseline (old build) package reader</param>
+    private static async Task ComparePackageAssemblyVersions(AssetMapping mapping, PackageArchiveReader diffPackageReader, PackageArchiveReader basePackageReader)
     {
-        IEnumerable<string> baselineFiles = (await baselinePackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
-        IEnumerable<string> testFiles = (await testPackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
+        IEnumerable<string> baselineFiles = (await basePackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
+        IEnumerable<string> testFiles = (await diffPackageReader.GetFilesAsync(CancellationToken.None)).Where(f => IncludedAssemblyNameCheckFileExtensions.Contains(Path.GetExtension(f)));
         foreach (var fileName in baselineFiles.Intersect(testFiles))
         {
             try
             {
-                using var baselineStream = await CopyStreamToSeekableStream(baselinePackageReader.GetEntry(fileName).Open());
-                using var testStream = await CopyStreamToSeekableStream(testPackageReader.GetEntry(fileName).Open());
+                using var baselineStream = await CopyStreamToSeekableStreamAsync(basePackageReader.GetEntry(fileName).Open());
+                using var testStream = await CopyStreamToSeekableStreamAsync(diffPackageReader.GetEntry(fileName).Open());
 
                 CompareAssemblyVersions(mapping, fileName, baselineStream, testStream);
             }
@@ -553,7 +551,12 @@ public class Program
         }
     }
 
-    private static async Task<Stream> CopyStreamToSeekableStream(Stream stream)
+    /// <summary>
+    /// Copies a stream from an archive to a seekable stream (MemoryStream).
+    /// </summary>
+    /// <param name="stream">Stream to copy</param>
+    /// <returns>Memory stream containing the stream contents.</returns>
+    private static async Task<Stream> CopyStreamToSeekableStreamAsync(Stream stream)
     {
         var outputStream = new MemoryStream();
         await stream.CopyToAsync(outputStream, CancellationToken.None);
@@ -602,8 +605,7 @@ public class Program
     /// <summary>
     /// Evaluates a single blob mapping for issues.
     /// </summary>
-    /// <param name="mapping"></param>
-    /// <returns></returns>
+    /// <param name="mapping">Blob mapping to evaluate</param>
     private async Task EvaluateBlob(AssetMapping mapping)
     {
         try
@@ -650,14 +652,167 @@ public class Program
     {
         // Switch on the file type, and call a helper based on the type
 
-        switch (Path.GetExtension(mapping.Id))
+        if (mapping.Id.EndsWith(".zip"))
         {
-            case ".zip":
-                await CompareZipArchiveContents(mapping);
-                break;
-            default:
-                return;
+            await CompareZipArchiveContents(mapping);
         }
+        else if (mapping.Id.EndsWith(".tar.gz") || mapping.Id.EndsWith(".tgz"))
+        {
+            await CompareTarArchiveContents(mapping);
+        }
+    }
+    private async Task CompareTarArchiveContents(AssetMapping mapping)
+    {
+        var diffTarPath = mapping.DiffFilePath;
+        var baselineTarPath = mapping.BaseBuildFilePath;
+        // If either of the paths don't exist, we can't run this comparison
+        if (diffTarPath == null || baselineTarPath == null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Get the file lists for the baseline and diff tar files
+            IEnumerable<string> baselineFiles = GetTarGzArchiveFileList(baselineTarPath);
+            IEnumerable<string> diffFiles = GetTarGzArchiveFileList(diffTarPath);
+
+            // Compare file lists
+            CompareBlobArchiveFileLists(mapping, baselineFiles, diffFiles);
+
+            // Compare assembly versions
+            await CompareTarGzAssemblyVersions(mapping, baselineFiles, diffFiles);
+        }
+        catch (Exception e)
+        {
+            mapping.EvaluationErrors.Add(e.ToString());
+        }
+    }
+
+    /// <summary>
+    /// Retrieve the file list from a tar.gz file.
+    /// </summary>
+    /// <param name="archivePath"></param>
+    /// <returns></returns>
+    private List<string> GetTarGzArchiveFileList(string archivePath)
+    {
+        List<string> entries = new();
+        using (FileStream fileStream = File.OpenRead(archivePath))
+        {
+            using (GZipStream gzipStream = new GZipStream(fileStream, CompressionMode.Decompress))
+            using (TarReader reader = new TarReader(gzipStream))
+            {
+                TarEntry entry;
+                while ((entry = reader.GetNextEntry()) != null)
+                {
+                    entries.Add(entry.Name);
+                }
+            }
+        }
+
+        return entries;
+    }
+
+    /// <summary>
+    /// Compare the assembly versions in a tar.gz file.
+    /// </summary>
+    /// <param name="mapping">Mapping to compare</param>
+    /// <param name="baselineFiles">Files existing in the baseline archive</param>
+    /// <param name="diffFiles">Files existing in the diff archive</param>
+    private async Task CompareTarGzAssemblyVersions(AssetMapping mapping, IEnumerable<string> baselineFiles, IEnumerable<string> diffFiles)
+    {
+        // Get the list of common files and create a map of file->stream
+        var strippedBaselineFiles = baselineFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+        var strippedDiffFiles = diffFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+
+        var commonFiles = strippedBaselineFiles.Intersect(strippedDiffFiles).ToHashSet();
+
+        var baselineStreams = new Dictionary<string, Stream>();
+        var diffStreams = new Dictionary<string, Stream>();
+
+        using (FileStream baseStream = File.OpenRead(mapping.BaseBuildFilePath))
+        {
+            using (FileStream diffStream = File.OpenRead(mapping.DiffFilePath))
+            {
+                using (GZipStream baseGzipStream = new GZipStream(baseStream, CompressionMode.Decompress))
+                using (TarReader baseReader = new TarReader(baseGzipStream))
+                {
+                    using (GZipStream diffGzipStream = new GZipStream(diffStream, CompressionMode.Decompress))
+                    using (TarReader diffReader = new TarReader(diffGzipStream))
+                    {
+                        string nextBaseEntry = null;
+                        string nextDiffEntry = null;
+                        do
+                        {
+                            nextBaseEntry = await WalkNextCommon(commonFiles, baseReader, baselineStreams);
+                            if (nextBaseEntry != null)
+                            {
+                                CompareAvailableStreams(mapping, baselineStreams, diffStreams, nextBaseEntry);
+                            }
+
+                            nextDiffEntry = await WalkNextCommon(commonFiles, diffReader, diffStreams);
+                            if (nextDiffEntry != null)
+                            {
+                                CompareAvailableStreams(mapping, baselineStreams, diffStreams, nextDiffEntry);
+                            }
+                        }
+                        while (nextBaseEntry != null || nextDiffEntry != null);
+
+                        // If there are any remaining streams, create an evaluation error
+                        if (baselineStreams.Count > 0 || diffStreams.Count > 0)
+                        {
+                            mapping.EvaluationErrors.Add("Failed to compare all tar entries.");
+                        }
+                    }
+                }
+            }
+        }
+
+        // Walk the tar to the next entry that exists in both the base and the diff
+        static async Task<string> WalkNextCommon(HashSet<string> commonFiles, TarReader reader, Dictionary<string, Stream> streams)
+        {
+            TarEntry baseEntry;
+            while ((baseEntry = reader.GetNextEntry()) != null && baseEntry.DataStream != null)
+            {
+                string entryStripped = RemoveVersionsNormalized(baseEntry.Name);
+                // If the element lives in the common files hash set, then copy it to a memory stream.
+                // Do not close the stream.
+                if (commonFiles.Contains(entryStripped))
+                {
+                    streams[entryStripped] = await CopyStreamToSeekableStreamAsync(baseEntry.DataStream);
+                    return entryStripped;
+                }
+            }
+            return null;
+        }
+
+        // Given we have a new entry that is common between base and diff, attempt to do some comparisons.
+        void CompareAvailableStreams(AssetMapping mapping, Dictionary<string, Stream> baselineStreams, Dictionary<string, Stream> diffStreams,
+             string entry)
+        {
+            if (baselineStreams.TryGetValue(entry, out var baselineFileStream) &&
+                diffStreams.TryGetValue(entry, out var diffFileStream))
+            {
+                CompareAssemblyVersions(mapping, entry, baselineFileStream, diffFileStream);
+                baselineFileStream.Dispose();
+                diffFileStream.Dispose();
+                baselineStreams.Remove(entry);
+                diffStreams.Remove(entry);
+            }
+        }
+    }
+
+    private static string RemoveVersionsNormalized(string path)
+    {
+        string strippedPath = path.Replace("\\", "//");
+        string prevPath = path;
+        do
+        {
+            prevPath = strippedPath;
+            strippedPath = VersionIdentifier.RemoveVersions(strippedPath);
+        } while (prevPath != strippedPath);
+
+        return strippedPath;
     }
 
     private async Task CompareZipArchiveContents(AssetMapping mapping)
@@ -704,8 +859,8 @@ public class Program
         {
             try
             {
-                using var baselineStream = await CopyStreamToSeekableStream(baselineArchive.GetEntry(fileName).Open());
-                using var testStream = await CopyStreamToSeekableStream(diffArchive.GetEntry(fileName).Open());
+                using var baselineStream = await CopyStreamToSeekableStreamAsync(baselineArchive.GetEntry(fileName).Open());
+                using var testStream = await CopyStreamToSeekableStreamAsync(diffArchive.GetEntry(fileName).Open());
                 
                 CompareAssemblyVersions(mapping, fileName, baselineStream, testStream);
             }
@@ -718,20 +873,23 @@ public class Program
 
     private static void CompareAssemblyVersions(AssetMapping mapping, string fileName, Stream baselineStream, Stream testStream)
     {
-        // Ignore resource dlls
-        if (fileName.EndsWith(".resources.dll", StringComparison.OrdinalIgnoreCase))
+        AssemblyName baselineAssemblyName = null;
+        try
         {
+            baselineAssemblyName = GetAssemblyName(baselineStream, fileName);
+        }
+        catch (BadImageFormatException)
+        {
+            // Assume the file is not an assembly, and then don't attempt for the test assembly
             return;
         }
-
-        AssemblyName baselineAssemblyName = GetAssemblyName(baselineStream, fileName);
         AssemblyName testAssemblyName = GetAssemblyName(testStream, fileName);
         if ((baselineAssemblyName == null) != (testAssemblyName == null))
         {
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.AssemblyVersionMismatch,
-                Description = $"Assembly '{fileName}' in blob '{mapping.Id}' has different versions in the VMR and base build."
+                Description = $"Assembly '{fileName}' in {mapping.AssetType.ToString().ToLowerInvariant()} '{mapping.Id}' has different but unknown versions in the VMR and base build."
             });
         }
         else if (baselineAssemblyName == null && testAssemblyName == null)
@@ -744,7 +902,8 @@ public class Program
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.AssemblyVersionMismatch,
-                Description = $"Assembly '{fileName}' in blob '{mapping.Id}' has different versions in the VMR and base build. VMR version: {baselineAssemblyName}, base build version: {testAssemblyName}"
+                Description = $"Assembly '{fileName}' in {mapping.AssetType.ToString().ToLowerInvariant()} '{mapping.Id}'. " +
+                    $"VMR version: {baselineAssemblyName}, base build version: {testAssemblyName}"
             });
         }
     }
@@ -753,8 +912,8 @@ public class Program
     {
         // Because these typically contain version numbers in their paths, we need to go and remove those.
 
-        var strippedBaselineFiles = baselineFiles.Select(f => VersionIdentifier.RemoveVersions(f)).ToList();
-        var strippedDiffFiles = diffFiles.Select(f => VersionIdentifier.RemoveVersions(f)).ToList();
+        var strippedBaselineFiles = baselineFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
+        var strippedDiffFiles = diffFiles.Select(f => RemoveVersionsNormalized(f)).ToList();
 
         var missingFiles = strippedBaselineFiles.Except(strippedDiffFiles);
         foreach (var missingFile in missingFiles)
@@ -762,7 +921,7 @@ public class Program
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.MissingPackageContent,
-                Description = $"Blob '{mapping.Id}' is missing the following files in the VMR: {string.Join(", ", missingFile)}"
+                Description = missingFile
             });
         }
         // Compare the other way, and identify content in the VMR that is not in the baseline
@@ -772,7 +931,7 @@ public class Program
             mapping.Issues.Add(new Issue
             {
                 IssueType = IssueType.ExtraPackageContent,
-                Description = $"Blob '{mapping.Id}' has extra files in the VMR: {string.Join(", ", extraFile)}"
+                Description = extraFile
             });
         }
     }
