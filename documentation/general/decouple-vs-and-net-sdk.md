@@ -127,7 +127,7 @@ For those customers we will recommend that they set `<RoslynUseMSBuildCompiler>t
 
 ### Build server shutdown
 
-Today there is not a 100% reliable way to shutdown the VBCSCompiler process. The `dotnet build-server shutdown` command works in common cases but fails once in a number of corner cases. This has lead to customers who require the server to be shutdown to add lines like `kill VBCSCompiler` into their infrastructure scripts. This proposal will break those scripts as it will change the process name of the compiler server from `VBCSCompiler` to `dotnet`.
+Today there is not a 100% reliable way to shutdown the VBCSCompiler process. The `dotnet build-server shutdown` command works in common cases but fails in a number of corner cases. This has lead to customers who require the server to be shutdown to add lines like `kill VBCSCompiler` into their infrastructure scripts. This proposal will break those scripts as it will change the process name of the compiler server from `VBCSCompiler` to `dotnet`.
 
 To mitigate this we will be fixing the `build-server shutdown` command to be reliable across all the scenarios we care about. The details of this are captured in [issue 45956](https://github.com/dotnet/sdk/issues/45956).
 
@@ -177,7 +177,7 @@ There is only one version of the DevKit extension. It is released using the late
 - [Long term build-server shutdown issue](https://github.com/dotnet/msbuild/issues/10035)
 - [MSBuild decouple issue](https://github.com/dotnet/msbuild/issues/11142)
 
-[^1]: This specific problem is now largely mitigated in `msbuild` scenarios by the .NET SDK implicitly adding the Microsoft.Net.Sdk.Compilers.Toolset package to builds in a torn state. This will install and use a newer C# compiler when MSBuild is older than the .NET SDK. That fixes a large amount of the problems but has a number of downsides: increases restore time, compiler must go through full JIT, corner case scenarios like `$(NUGET_PACKAGES)` not being set lead to errors, only fixes one type of torn state, etc ... 
+[^1]: This specific problem is now largely mitigated in `msbuild` scenarios by the .NET SDK implicitly adding the Microsoft.Net.Sdk.Compilers.Toolset package to builds in a torn state. This will install and use a newer C# compiler when MSBuild is older than the .NET SDK. That fixes a large amount of the problems but has a number of downsides: increases restore time, compiler must go through full JIT, corner case scenarios like `$(NuGetPackageRoot)` not being set lead to errors, only fixes one type of torn state, etc ... 
 
 
 [matrix-of-paine]: https://aka.ms/dotnet/matrixofpaine
