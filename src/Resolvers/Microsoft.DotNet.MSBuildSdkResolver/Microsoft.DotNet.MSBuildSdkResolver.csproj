@@ -3,37 +3,22 @@
   <PropertyGroup>
     <!-- The version is frozen to allow MSBuild.exe loading it into the default load context -->
     <AssemblyVersion>8.0.100.0</AssemblyVersion>
-    <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(ResolverTargetFramework)</TargetFrameworks>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <RuntimeIdentifiers Condition="$([MSBuild]::IsOSPlatform(`Windows`))">win-x86;win-x64</RuntimeIdentifiers>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TargetFramework>net472</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <IsPackable>true</IsPackable>
-
-    <Nullable>Enable</Nullable>
-
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
-
-    <!--https://github.com/NuGet/Home/issues/3891#issuecomment-377319939-->
-    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <!-- For product build, this project only builds in the second build pass as it depends on assets from other
+         verticals that are built in the first build pass. -->
+    <ExcludeFromDotNetBuild Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
   </PropertyGroup>
-
-  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="ResolveReferences" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <ItemGroup>
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))" />
-      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('NuGetPackageId', 'Newtonsoft.Json'))" />
-    </ItemGroup>
-  </Target>
 
   <ItemGroup>
     <EmbeddedResource Include="..\Microsoft.NET.Sdk.WorkloadManifestReader\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Sdk.Localization"/>
   </ItemGroup>
 
   <!-- We need to use relative path due to if we want to run tests in helix. Since we would need to run the tests in a different helix machine
-  and the absolute path will not work on a different machine. We also made sure the relative file structure is preserved on helix machines.-->
-  <Target Name="WriteFullFrameworkResolverManifest" AfterTargets="AfterBuild" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+       and the absolute path will not work on a different machine. We also made sure the relative file structure is preserved on helix machines.-->
+  <Target Name="WriteFullFrameworkResolverManifest" AfterTargets="AfterBuild" Condition="'$(ExcludeFromDotNetBuild)' != 'true'">
     <PropertyGroup>
       <_ResolverManifestDir>$(OutputPath)\SdkResolvers\$(AssemblyName)\</_ResolverManifestDir>
       <_TargetPathRelativePath>..\..\$(TargetFileName)</_TargetPathRelativePath>
@@ -61,11 +46,6 @@
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
-  </ItemGroup>
-
   <!-- To reduce dll load (cause RPS perf regression). Directly compile files from Microsoft.DotNet.NativeWrapper, Microsoft.DotNet.SdkResolver, and the workload resolver -->
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-workload\InstallStateContents.cs" LinkBase="Cli"/>
@@ -83,47 +63,34 @@
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
-    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <!-- Netfx version builds against the lowest version of System.Text.Json that's guaranteed to be shipped with MSBuild in VS -->
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="8.0.0" />
+  <ItemGroup>
+    <!-- Netfx version builds against the lowest version of these dependencies that's guaranteed to be shipped with MSBuild in VS -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" VersionOverride="$(MicrosoftDeploymentDotNetReleasesToolsetPackageVersion)" />
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" />
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutablePackageVersion)" />
-    <!-- Used by ResolveHostfxrCopyLocalContent below -->
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x86" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Reference this package to avoid package downgrade errors.  See https://github.com/dotnet/sdk/issues/3044 for details -->
-    <PackageReference Include="Microsoft.NETCore.Targets" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x86" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-x64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+
+    <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-x86/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-x86/native/hostfxr.dll"
+             Link="x86/hostfxr.dll"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-x64/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-x64/native/hostfxr.dll"
+             Link="x64/hostfxr.dll"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-arm64/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-arm64/native/hostfxr.dll"
+             Link="arm64/hostfxr.dll"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <Target Name="ResolveHostfxrCopyLocalContent" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" BeforeTargets="AssignTargetPaths">
-    <ItemGroup>
-      <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-x86/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-x86/native/hostfxr.dll">
-        <Link>x86/hostfxr.dll</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-x64/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-x64/native/hostfxr.dll">
-        <Link>x64/hostfxr.dll</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-      <Content Include="$(NuGetPackageRoot)/microsoft.netcore.app.runtime.win-arm64/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/win-arm64/native/hostfxr.dll">
-        <Link>arm64/hostfxr.dll</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">
+  <Target Name="LinkVSEmbeddableAssemblies" AfterTargets="ResolveReferences" Condition="'$(ExcludeFromDotNetBuild)' != 'true'">
     <ItemGroup>
       <ReferencePath Condition="'%(ReferencePath.FileName)' == 'Microsoft.VisualStudio.Setup.Configuration.Interop'">
         <EmbedInteropTypes>true</EmbedInteropTypes>
@@ -131,14 +98,14 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="VerifyDependencies" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" AfterTargets="Build">
+  <Target Name="VerifyDependencies" AfterTargets="Build" Condition="'$(ExcludeFromDotNetBuild)' != 'true'">
     <ResolveAssemblyReference AssemblyFiles="$(TargetPath)" SearchPaths="" AutoUnify="true">
       <Output TaskParameter="ResolvedDependencyFiles" ItemName="ResolvedDependencies"/>
     </ResolveAssemblyReference>
 
     <ItemGroup>
       <ExpectedDependencies Include="Microsoft.Deployment.DotNet.Releases, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-      <ExpectedDependencies Include="System.Text.Json, Version=8.0.0.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Text.Json, Version=8.0.0.5, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
       <ExpectedDependencies Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
       <ExpectedDependencies Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
       <ExpectedDependencies Include="System.Collections.Immutable, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
@@ -163,7 +130,5 @@
     <Error Text="$(AssemblyName) is not expected to depend on %(ResolvedDependencies.FusionName). $(DependencyMismatchErrorText)"
            Condition="!($([System.String]::Copy('$(ExpectedDependenciesList)').Contains('%(ResolvedDependencies.FusionName)')))" />
   </Target>
-
-  <Target Name="GetTargetPath" />
 
 </Project>

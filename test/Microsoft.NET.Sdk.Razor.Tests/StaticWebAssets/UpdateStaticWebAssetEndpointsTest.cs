@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests.StaticWebAssets;
@@ -291,7 +292,7 @@ public class UpdateStaticWebAssetEndpointsTest
         }
     }
 
-    private ITaskItem CreateOperation(string type, string target, string name, string value, string newValue = null)
+    private static ITaskItem CreateOperation(string type, string target, string name, string value, string newValue = null)
     {
         return new TaskItem(type, new Dictionary<string, string>
         {
@@ -323,7 +324,7 @@ public class UpdateStaticWebAssetEndpointsTest
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
     }
 
-    private TaskItem CreateContentMapping(string pattern, string contentType)
+    private static TaskItem CreateContentMapping(string pattern, string contentType)
     {
         return new TaskItem(contentType, new Dictionary<string, string>
         {
