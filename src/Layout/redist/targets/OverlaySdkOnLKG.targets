@@ -1,6 +1,10 @@
 <Project>
 
-  <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateLayout">
+  <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateSdkLayout">
+    <PropertyGroup>
+      <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\sdk\$(Version)</RedistLayoutPath>
+    </PropertyGroup>
+
     <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
     and a property. -->
     <Exec Command="$(DotnetTool) --version" ConsoleToMsbuild="true">
@@ -44,8 +48,7 @@
       <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/DotnetTools/**/*" RelativeDestination="DotnetTools"
         Exclude="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/DotnetTools/dotnet-watch/**;$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/DotnetTools/dotnet-format/**" />
       <OverlaySdkFilesFromStage0 Include="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/AppHostTemplate/**/*" RelativeDestination="AppHostTemplate"/>
-      <ToolsetToOverlay Include="$(OutputPath)/**/*"
-        Exclude="$(OutputPath)/DotnetTools/dotnet-watch/**" />
+      <ToolsetToOverlay Include="$(OutputPath)/**/*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(OverlaySDK)"
