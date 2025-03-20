@@ -4,8 +4,7 @@
 
   <PropertyGroup>
     <DownloadsFolder>$(IntermediateOutputPath)\redist-downloads\</DownloadsFolder>
-
-    <RedistInstallerLayoutPath>$(ArtifactsBinDir)redist-installer\$(Configuration)\dotnet\</RedistInstallerLayoutPath>
+    <RedistInstallerLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet-installer\</RedistInstallerLayoutPath>
     <InstallerOutputDirectory>$(RedistInstallerLayoutPath)sdk\$(Version)\</InstallerOutputDirectory>
   </PropertyGroup>
 
