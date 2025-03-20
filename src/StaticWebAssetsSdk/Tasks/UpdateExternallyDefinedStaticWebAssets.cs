@@ -38,9 +38,7 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
     {
         var assets = Assets.Select(StaticWebAsset.FromV1TaskItem).ToArray();
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
-        var endpointByAsset = endpoints
-            .GroupBy(e => e.AssetFile, OSPath.PathComparer)
-            .ToDictionary(e => e.Key, e => e.ToArray(), OSPath.PathComparer);
+        var endpointByAsset = StaticWebAssetEndpoint.ToAssetFileDictionary(endpoints);
 
         var fingerprintExpressions = CreateFingerprintExpressions(FingerprintInferenceExpressions);
 
@@ -64,9 +62,9 @@ public class UpdateExternallyDefinedStaticWebAssets : Task
             }
         }
 
-        UpdatedAssets = assets.Select(a => a.ToTaskItem()).ToArray();
-        UpdatedEndpoints = endpoints.Select(e => e.ToTaskItem()).ToArray();
-        AssetsWithoutEndpoints = assetsWithoutEndpoints.Select(a => a.ToTaskItem()).ToArray();
+        UpdatedAssets = StaticWebAsset.ToTaskItemArray(assets);
+        UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
+        AssetsWithoutEndpoints = StaticWebAsset.ToTaskItemArray(assetsWithoutEndpoints);
 
         return !Log.HasLoggedErrors;
     }

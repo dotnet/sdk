@@ -970,6 +970,65 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
     }
 
+    internal static StaticWebAsset[] FromTaskItemGroup(ITaskItem[] candidateAssets)
+    {
+        var assets = new StaticWebAsset[candidateAssets.Length];
+        for (var i = 0; i < candidateAssets.Length; i++)
+        {
+            var asset = FromTaskItem(candidateAssets[i]);
+            assets[i] = asset;
+        }
+        return assets;
+    }
+
+    internal static StaticWebAsset [] FromV1ItemGroup(ITaskItem[] candidateAssets)
+    {
+        var assets = new StaticWebAsset[candidateAssets.Length];
+        for (var i = 0; i < candidateAssets.Length; i++)
+        {
+            var asset = FromV1TaskItem(candidateAssets[i]);
+            assets[i] = asset;
+        }
+        return assets;
+    }
+
+    internal static IDictionary<string, StaticWebAsset> ToDictionaryFromItemGroup(ITaskItem[] assets)
+    {
+        var finalDictionary = new Dictionary<string, StaticWebAsset>(assets.Length);
+        for (var i = 0; i < assets.Length; i++)
+        {
+            var asset = FromTaskItem(assets[i]);
+            if (!finalDictionary.ContainsKey(asset.Identity))
+            {
+                finalDictionary.Add(asset.Identity, asset);
+            }
+        }
+
+        return finalDictionary;
+    }
+
+    internal static ITaskItem[] ToTaskItemArray(IList<StaticWebAsset> assets)
+    {
+        var taskItems = new ITaskItem[assets.Count];
+        for (var i = 0; i < assets.Count; i++)
+        {
+            var asset = assets[i];
+            taskItems[i] = asset.ToTaskItem();
+        }
+        return taskItems;
+    }
+
+    internal static ITaskItem[] ToTaskItemArray(ICollection<StaticWebAsset> values)
+    {
+        var taskItems = new ITaskItem[values.Count];
+        var i = 0;
+        foreach (var asset in values)
+        {
+            taskItems[i++] = asset.ToTaskItem();
+        }
+        return taskItems;
+    }
+
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     internal sealed class StaticWebAssetResolvedRoute(string pathLabel, string path, Dictionary<string, string> tokens)
     {

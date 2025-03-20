@@ -21,11 +21,9 @@ public class ApplyCompressionNegotiation : Task
 
     public override bool Execute()
     {
-        var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
+        var assetsById = StaticWebAsset.ToDictionaryFromItemGroup(CandidateAssets);
 
-        var endpointsByAsset = CandidateEndpoints.Select(StaticWebAssetEndpoint.FromTaskItem)
-            .GroupBy(e => e.AssetFile)
-            .ToDictionary(g => g.Key, g => g.ToList());
+        var endpointsByAsset = StaticWebAssetEndpoint.ToAssetFileDictionary(CandidateEndpoints);
 
         var compressedAssets = assetsById.Values.Where(a => a.AssetTraitName == "Content-Encoding").ToList();
         var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(StaticWebAssetEndpoint.RouteAndAssetComparer);

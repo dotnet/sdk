@@ -36,9 +36,9 @@ public class ReadStaticWebAssetsManifestFile : Task
         {
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(ManifestPath));
 
-            Assets = manifest.Assets?.Select(a => a.ToTaskItem()).ToArray() ?? [];
+            Assets = StaticWebAsset.ToTaskItemArray(manifest.Assets ?? []);
 
-            Endpoints = manifest.Endpoints?.Select(a => a.ToTaskItem()).ToArray() ?? Array.Empty<ITaskItem>();
+            Endpoints = StaticWebAssetEndpoint.ToTaskItems(manifest.Endpoints ?? []);
 
             DiscoveryPatterns = manifest.DiscoveryPatterns?.Select(dp => dp.ToTaskItem()).ToArray() ?? [];
 

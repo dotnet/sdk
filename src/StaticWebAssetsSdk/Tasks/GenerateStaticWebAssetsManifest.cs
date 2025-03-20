@@ -44,12 +44,11 @@ public class GenerateStaticWebAssetsManifest : Task
     {
         try
         {
-            var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem).ToArray();
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets);
+            Array.Sort(assets);
 
-            var endpoints = FilterPublishEndpointsIfNeeded(assets)
-                .OrderBy(a => a.Route)
-                .ThenBy(a => a.AssetFile)
-                .ToArray();
+            var endpoints = FilterPublishEndpointsIfNeeded(assets);
+            Array.Sort(endpoints, StaticWebAssetEndpoint.RouteAndAssetSortingComparer);
 
             Log.LogMessage(MessageImportance.Low, "Generating manifest for '{0}' assets and '{1}' endpoints", assets.Length, endpoints.Length);
 
@@ -90,7 +89,7 @@ public class GenerateStaticWebAssetsManifest : Task
         return !Log.HasLoggedErrors;
     }
 
-    private IEnumerable<StaticWebAssetEndpoint> FilterPublishEndpointsIfNeeded(IEnumerable<StaticWebAsset> assets)
+    private StaticWebAssetEndpoint[] FilterPublishEndpointsIfNeeded(IEnumerable<StaticWebAsset> assets)
     {
         // Only include endpoints for assets that are going to be available in production. We do the filtering
         // inside the manifest because its cumbersome to do it in MSBuild directly.
@@ -99,7 +98,7 @@ public class GenerateStaticWebAssetsManifest : Task
             var assetsByIdentity = assets.ToDictionary(a => a.Identity, a => a, OSPath.PathComparer);
             var filteredEndpoints = new List<StaticWebAssetEndpoint>();
 
-            foreach (var endpoint in Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem))
+            foreach (var endpoint in StaticWebAssetEndpoint.FromItemGroup(Endpoints))
             {
                 if (assetsByIdentity.ContainsKey(endpoint.AssetFile))
                 {
@@ -112,10 +111,10 @@ public class GenerateStaticWebAssetsManifest : Task
                 }
             }
 
-            return filteredEndpoints;
+            return [.. filteredEndpoints];
         }
 
-        return Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem);
+        return StaticWebAssetEndpoint.FromItemGroup(Endpoints);
     }
 
     private void PersistManifest(StaticWebAssetsManifest manifest)

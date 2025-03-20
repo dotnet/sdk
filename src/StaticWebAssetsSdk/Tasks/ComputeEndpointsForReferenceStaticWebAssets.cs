@@ -20,7 +20,7 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
 
     public override bool Execute()
     {
-        var assets = Assets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity, a => a);
+        var assets = StaticWebAsset.ToDictionaryFromItemGroup(Assets);
         var candidateEndpoints = StaticWebAssetEndpoint.FromItemGroup(CandidateEndpoints);
 
         var endpoints = new List<StaticWebAssetEndpoint>();

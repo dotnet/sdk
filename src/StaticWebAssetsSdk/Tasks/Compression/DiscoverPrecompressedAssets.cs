@@ -29,8 +29,8 @@ public class DiscoverPrecompressedAssets : Task
             return true;
         }
 
-        var candidates = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray();
-        var assetsToUpdate = new List<ITaskItem>();
+        var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
+        var assetsToUpdate = new List<StaticWebAsset>();
 
         var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);
 
@@ -62,11 +62,11 @@ public class DiscoverPrecompressedAssets : Task
                     candidate.Identity,
                     relatedAsset.Identity);
                 UpdateCompressedAsset(candidate, relatedAsset);
-                assetsToUpdate.Add(candidate.ToTaskItem());
+                assetsToUpdate.Add(candidate);
             }
         }
 
-        DiscoveredCompressedAssets = [.. assetsToUpdate];
+        DiscoveredCompressedAssets = StaticWebAsset.ToTaskItemArray(assetsToUpdate);
 
         return !Log.HasLoggedErrors;
     }
