@@ -2,7 +2,7 @@
 
   <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateInstallerLayout">
     <PropertyGroup>
-      <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
+      <TestHostFolder>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</TestHostFolder>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -11,30 +11,29 @@
       <_DotNetHiveRoot Condition="!HasTrailingSlash('$(_DotNetHiveRoot)')">$(_DotNetHiveRoot)/</_DotNetHiveRoot>
     </PropertyGroup>
 
-    <!-- Ignore the sdk and templates directories which should only contain the live built artifacts. -->
+    <!-- Copy artifacts from the stage0 SDK folder.
+         Ignore the sdk and templates directories which should only contain the live built artifacts. -->
     <ItemGroup>
-      <OverlaySDKFile Include="$(_DotNetHiveRoot)/**/*"
-                      Exclude="$(_DotNetHiveRoot)sdk/**/*;
-                               $(_DotNetHiveRoot)templates/**/*"/>
+      <_OverlaySDKFile Include="$(_DotNetHiveRoot)\**\*"
+                       Exclude="$(_DotNetHiveRoot)sdk\**\*;
+                                $(_DotNetHiveRoot)templates\**\*"/>
+      <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostFolder)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
     </ItemGroup>
 
-    <!-- Copy artifacts from the stage0 SDK folder. -->
-    <Copy SourceFiles="@(OverlaySDKFile)"
-          DestinationFiles="@(OverlaySDKFile->'$(RedistLayoutPath)%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true"/>
-
     <ItemGroup>
-      <InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
+      <_InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
+      <InstallerOutputFile Include="@(_InstallerOutputFile->'$(TestHostFolder)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
+      <InstallerOutputFile Include="@(OverlaySDKFile)" Exclude="@(InstallerOutputFile)" />
     </ItemGroup>
 
-    <!-- Copy the live built SDK folder. -->
-    <Copy SourceFiles="@(InstallerOutputFile)"
-          DestinationFiles="@(InstallerOutputFile->'$(RedistLayoutPath)%(RecursiveDir)%(Filename)%(Extension)')"
+    <!-- Copy artifacts to the testhost folder. -->
+    <Copy DestinationFiles="@(InstallerOutputFile)"
+          SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
           SkipUnchangedFiles="true" />
 
     <!-- Run "dotnet new" (which will just display usage and available templates) in order to print first time
          use message so that it doesn't interfere with tests which check the output of commands. -->
-    <Exec Command="$(RedistLayoutPath)dotnet new"
+    <Exec Command="$(TestHostFolder)$([System.IO.Path]::GetFileName('$(DotNetTool)')) new"
           EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)" />
   </Target>
 
