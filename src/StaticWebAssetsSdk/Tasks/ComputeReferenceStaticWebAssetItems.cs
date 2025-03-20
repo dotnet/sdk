@@ -21,7 +21,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public string Source { get; set; }
 
-        public bool UpdateSourceType { get; set; } = true;
+    public bool UpdateSourceType { get; set; } = true;
+
+    public bool MakeReferencedAssetOriginalItemSpecAbsolute { get; set; }
 
         [Output]
         public ITaskItem[] StaticWebAssets { get; set; }
@@ -57,13 +59,21 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         }
                     }
 
-                    if (ShouldIncludeAssetAsReference(selected, out var reason))
+                if (ShouldIncludeAssetAsReference(selected, out var reason))
+                {
+                    selected.SourceType = UpdateSourceType ? StaticWebAsset.SourceTypes.Project : selected.SourceType;
+                    if (MakeReferencedAssetOriginalItemSpecAbsolute)
                     {
-                        selected.SourceType = UpdateSourceType ? StaticWebAsset.SourceTypes.Project : selected.SourceType;
-                        resultAssets.Add(selected);
+                        selected.OriginalItemSpec = Path.GetFullPath(selected.OriginalItemSpec);
                     }
-                    Log.LogMessage(MessageImportance.Low, reason);
+                    else
+                    {
+                        selected.OriginalItemSpec = selected.OriginalItemSpec;
+                    }
+                    resultAssets.Add(selected);
                 }
+                Log.LogMessage(MessageImportance.Low, reason);
+            }
 
                 var patterns = new List<StaticWebAssetsDiscoveryPattern>();
                 if (Patterns != null)

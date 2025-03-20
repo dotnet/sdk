@@ -245,6 +245,8 @@ public partial class StaticWebAssetsBaselineFactory
 
         asset.Fingerprint = string.IsNullOrEmpty(asset.Fingerprint) ? asset.Fingerprint : "__fingerprint__";
         asset.Integrity = string.IsNullOrEmpty(asset.Integrity) ? asset.Integrity : "__integrity__";
+        asset.FileLength = -1;
+        asset.LastWriteTime = DateTimeOffset.MinValue;
     }
 
     internal IEnumerable<string> TemplatizeExpectedFiles(
