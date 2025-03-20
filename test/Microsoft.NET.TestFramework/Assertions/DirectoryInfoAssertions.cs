@@ -28,14 +28,14 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<DirectoryInfoAssertions> HaveFile(string expectedFile)
         {
-            var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(string.Empty);
+            var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(expectedFile);
             file.Should().Exist($"Expected File {expectedFile} cannot be found in directory {_dirInfo.FullName}.");
             return new AndConstraint<DirectoryInfoAssertions>(this);
         }
 
         public AndConstraint<DirectoryInfoAssertions> NotHaveFile(string expectedFile)
         {
-            var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(string.Empty);
+            var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(expectedFile);
             file.Should().NotExist($"File {expectedFile} should not be found in directory {_dirInfo.FullName}.");
             return new AndConstraint<DirectoryInfoAssertions>(this);
         }
@@ -83,10 +83,10 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<DirectoryInfoAssertions> HaveDirectory(string expectedDir)
         {
-            var dir = _dirInfo.EnumerateDirectories(expectedDir, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new DirectoryInfo(string.Empty);
+            var dir = _dirInfo.EnumerateDirectories(expectedDir, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new DirectoryInfo(expectedDir);
             dir.Exists.Should().BeTrue($"Expected directory {expectedDir} cannot be found inside directory {_dirInfo.FullName}.");
 
-            return new AndConstraint<DirectoryInfoAssertions>(new DirectoryInfoAssertions(dir ?? new DirectoryInfo(string.Empty)));
+            return new AndConstraint<DirectoryInfoAssertions>(new DirectoryInfoAssertions(dir ?? new DirectoryInfo(expectedDir)));
         }
 
         public AndConstraint<DirectoryInfoAssertions> OnlyHaveFiles(IEnumerable<string> expectedFiles, SearchOption searchOption = SearchOption.AllDirectories)
