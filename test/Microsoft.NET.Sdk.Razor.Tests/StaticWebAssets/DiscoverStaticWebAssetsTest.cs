@@ -10,6 +10,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class DiscoverStaticWebAssetsTest
     {
+        private readonly Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> _testResolveFileDetails =
+            (string identity, string originalItemSpec) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero));
+
         [Fact]
         public void DiscoversMatchingAssetsBasedOnPattern()
         {
@@ -21,6 +24,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"))
@@ -36,7 +40,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -69,6 +73,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", file))
@@ -122,6 +127,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", candidate.Replace('/', Path.DirectorySeparatorChar)))
@@ -171,11 +177,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", fileName))
                 ],
-                FingerprintPatterns = [new TaskItem("JsModule",new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js", ["Expression"] = expression })],
+                FingerprintPatterns = [new TaskItem("JsModule", new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js", ["Expression"] = expression })],
                 FingerprintCandidates = true,
                 RelativePathPattern = "wwwroot\\**",
                 SourceType = "Discovered",
@@ -219,6 +226,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), relativePath: "subdir/candidate.js")
@@ -234,7 +242,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -265,6 +273,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), targetPath: Path.Combine("wwwroot", "subdir", "candidate.publish.js"))
@@ -280,7 +289,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -311,6 +320,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), link: Path.Combine("wwwroot", "subdir", "candidate.link.js"))
@@ -326,7 +336,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -357,6 +367,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), copyToPublishDirectory: "Never"),
@@ -410,6 +421,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(
@@ -464,6 +476,7 @@ for path 'candidate.js'");
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate("wwwroot\\candidate.js")
@@ -479,7 +492,7 @@ for path 'candidate.js'");
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -515,6 +528,7 @@ for path 'candidate.js'");
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate("wwwroot\\candidate.js")
@@ -530,7 +544,7 @@ for path 'candidate.js'");
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -556,6 +570,8 @@ for path 'candidate.js'");
                 // Add these to avoid accessing the disk to compute them
                 ["Integrity"] = "integrity",
                 ["Fingerprint"] = "fingerprint",
+                ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                ["FileLength"] = "10",
             });
         }
     }

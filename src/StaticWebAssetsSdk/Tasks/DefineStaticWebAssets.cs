@@ -1,15 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq.Expressions;
-using System.Net.Http.Headers;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
+#nullable disable
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -78,16 +72,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Output]
         public ITaskItem[] CopyCandidates { get; set; }
 
-        [Output]
-        public ITaskItem[] AssetDetails { get; set; }
+    public Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> TestResolveFileDetails { get; set; }
 
-        public override bool Execute()
+    public override bool Execute()
+    {
+        try
         {
-            try
-            {
-                var results = new List<ITaskItem>();
-                var copyCandidates = new List<ITaskItem>();
-                var assetDetails = new List<ITaskItem>();
+            var results = new List<ITaskItem>();
+            var copyCandidates = new List<ITaskItem>();
 
             var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
                 new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathPattern).Build() :
@@ -180,44 +172,34 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         nameof(StaticWebAsset.OriginalItemSpec),
                         PropertyOverrides == null || PropertyOverrides.Length == 0 ? candidate.ItemSpec : candidate.GetMetadata("OriginalItemSpec"));
 
-                    // Compute the fingerprint and integrity for the asset. The integrity is the Base64(SHA256) of the asset content
-                    // and the fingerprint is the first 9 chars of the Base36(SHA256) of the asset.
-                    // The hash can always be re-computed using the integrity value (just undo the Base64 encoding) if its needed in any
-                    // other format.
-                    // We differentiate between Integrity and Fingerprint because they are useful in different contexts. The integrity
-                    // is useful when we want to verify the content of the asset and the fingerprint is useful when we want to cache-bust
-                    // the asset.
-                    var fingerprint = ComputePropertyValue(candidate, nameof(StaticWebAsset.Fingerprint), null, false);
-                    var integrity = ComputePropertyValue(candidate, nameof(StaticWebAsset.Integrity), null, false);
-                    FileInfo file = null;
-                    switch ((fingerprint, integrity))
-                    {
-                        case (null, null):
-                            Log.LogMessage(MessageImportance.Low, "Computing fingerprint and integrity for asset '{0}'", candidate.ItemSpec);
-                            file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
-                            (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(file));
-                            break;
-                        case (null, not null):
-                            Log.LogMessage(MessageImportance.Low, "Computing fingerprint for asset '{0}'", candidate.ItemSpec);
-                            fingerprint = FileHasher.ToBase36(Convert.FromBase64String(integrity));
-                            break;
-                        case (not null, null):
-                            Log.LogMessage(MessageImportance.Low, "Computing integrity for asset '{0}'", candidate.ItemSpec);
-                            file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
-                            integrity = StaticWebAsset.ComputeIntegrity(file);
-                            break;
-                    }
+                // Compute the fingerprint and integrity for the asset. The integrity is the Base64(SHA256) of the asset content
+                // and the fingerprint is the first 9 chars of the Base36(SHA256) of the asset.
+                // The hash can always be re-computed using the integrity value (just undo the Base64 encoding) if its needed in any
+                // other format.
+                // We differentiate between Integrity and Fingerprint because they are useful in different contexts. The integrity
+                // is useful when we want to verify the content of the asset and the fingerprint is useful when we want to cache-bust
+                // the asset.
+                var fingerprint = ComputePropertyValue(candidate, nameof(StaticWebAsset.Fingerprint), null, false);
+                var integrity = ComputePropertyValue(candidate, nameof(StaticWebAsset.Integrity), null, false);
 
-                    if (file != null)
-                    {
-                        // Record the FileLength and LastWriteTimeUtc for the asset so that we don't have to read it again on other tasks
-                        // we'll flow this information to them
-                        assetDetails.Add(new TaskItem(file.FullName, new Dictionary<string, string>
-                        {
-                            ["FileLength"] = file.Length.ToString(CultureInfo.InvariantCulture),
-                            ["LastWriteTimeUtc"] = file.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture),
-                        }));
-                    }
+                var identity = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+                var (file, fileLength, lastWriteTimeUtc) = ResolveFileDetails(originalItemSpec, identity);
+
+                switch ((fingerprint, integrity))
+                {
+                    case (null, null):
+                        Log.LogMessage(MessageImportance.Low, "Computing fingerprint and integrity for asset '{0}'", candidate.ItemSpec);
+                        (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(file));
+                        break;
+                    case (null, not null):
+                        Log.LogMessage(MessageImportance.Low, "Computing fingerprint for asset '{0}'", candidate.ItemSpec);
+                        fingerprint = FileHasher.ToBase36(Convert.FromBase64String(integrity));
+                        break;
+                    case (not null, null):
+                        Log.LogMessage(MessageImportance.Low, "Computing integrity for asset '{0}'", candidate.ItemSpec);
+                        integrity = StaticWebAsset.ComputeIntegrity(file);
+                        break;
+                }
 
                     // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
                     if (Log.HasLoggedErrors)
@@ -225,7 +207,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         break;
                     }
 
-                var identity = Path.GetFullPath(candidate.GetMetadata("FullPath"));
                 if (!string.Equals(SourceType, StaticWebAsset.SourceTypes.Discovered, StringComparison.OrdinalIgnoreCase))
                 {
                     // We ignore the content root for publish only assets since it doesn't matter.
@@ -247,48 +228,62 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     relativePathCandidate = StaticWebAsset.Normalize(fingerprintPatternMatcher.AppendFingerprintPattern(matchContext, identity));
                 }
 
-                    var asset = StaticWebAsset.FromProperties(
-                        identity,
-                        sourceId,
-                        sourceType,
-                        basePath,
-                        relativePathCandidate,
-                        contentRoot,
-                        assetKind,
-                        assetMode,
-                        assetRole,
-                        assetMergeSource,
-                        relatedAsset,
-                        assetTraitName,
-                        assetTraitValue,
-                        fingerprint,
-                        integrity,
-                        copyToOutputDirectory,
-                        copyToPublishDirectory,
-                        originalItemSpec);
+                var asset = StaticWebAsset.FromProperties(
+                    identity,
+                    sourceId,
+                    sourceType,
+                    basePath,
+                    relativePathCandidate,
+                    contentRoot,
+                    assetKind,
+                    assetMode,
+                    assetRole,
+                    assetMergeSource,
+                    relatedAsset,
+                    assetTraitName,
+                    assetTraitValue,
+                    fingerprint,
+                    integrity,
+                    copyToOutputDirectory,
+                    copyToPublishDirectory,
+                    originalItemSpec,
+                    fileLength,
+                    lastWriteTimeUtc);
 
-                    asset.Normalize();
-                    var item = asset.ToTaskItem();
-                    if (SourceType == StaticWebAsset.SourceTypes.Discovered)
-                    {
-                        item.SetMetadata(nameof(StaticWebAsset.AssetKind), !asset.ShouldCopyToPublishDirectory() ? StaticWebAsset.AssetKinds.Build : StaticWebAsset.AssetKinds.All);
-                        UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
-                    }
+                var item = asset.ToTaskItem();
+                if (SourceType == StaticWebAsset.SourceTypes.Discovered)
+                {
+                    item.SetMetadata(nameof(StaticWebAsset.AssetKind), !asset.ShouldCopyToPublishDirectory() ? StaticWebAsset.AssetKinds.Build : StaticWebAsset.AssetKinds.All);
+                    UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
+                }
 
                     results.Add(item);
                 }
 
-                Assets = [.. results];
-                CopyCandidates = [.. copyCandidates];
-                AssetDetails = [.. assetDetails];
-            }
-            catch (Exception ex)
-            {
-                Log.LogError(ex.ToString());
-            }
-
-            return !Log.HasLoggedErrors;
+            Assets = [.. results];
+            CopyCandidates = [.. copyCandidates];
         }
+        catch (Exception ex)
+        {
+            Log.LogError(ex.ToString());
+        }
+
+        return !Log.HasLoggedErrors;
+    }
+
+    private (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc) ResolveFileDetails(
+        string originalItemSpec,
+        string identity)
+    {
+        if (TestResolveFileDetails != null)
+        {
+            return TestResolveFileDetails(identity, originalItemSpec);
+        }
+        var file = StaticWebAsset.ResolveFile(identity, originalItemSpec);
+        var fileLength = file.Length;
+        var lastWriteTimeUtc = file.LastWriteTimeUtc;
+        return (file, fileLength, lastWriteTimeUtc);
+    }
 
     private (string identity, bool computed) ComputeCandidateIdentity(
         ITaskItem candidate,

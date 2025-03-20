@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
+#nullable disable
 using Microsoft.Build.Framework;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Utilities;
@@ -15,47 +15,31 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public ITaskItem[] ExistingEndpoints { get; set; }
 
-        [Required]
-        public ITaskItem[] ContentTypeMappings { get; set; }
+    [Required]
+    public ITaskItem[] ContentTypeMappings { get; set; }
 
-        public ITaskItem[] AssetFileDetails { get; set; }
+    [Output]
+    public ITaskItem[] Endpoints { get; set; }
 
-        [Output]
-        public ITaskItem[] Endpoints { get; set; }
+    public override bool Execute()
+    {
+        var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
+        var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
+        var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
+        var endpoints = new List<StaticWebAssetEndpoint>();
 
-        public Func<string, int> TestLengthResolver;
-        public Func<string, DateTime> TestLastWriteResolver;
-
-        private Dictionary<string, ITaskItem> _assetFileDetails;
-
-        public override bool Execute()
-        {
-            if (AssetFileDetails != null)
-            {
-                var item = AssetFileDetails[i];
-                _assetFileDetails[item.ItemSpec] = item;
-            }
-
-            var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
-            var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
-            var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
-            var endpoints = new List<StaticWebAssetEndpoint>();
-
-            Parallel.For(
-                0,
-                CandidateAssets.Length,
-                () => new ParallelWorker(
-                    endpoints,
-                    new List<StaticWebAssetEndpoint>(),
-                    CandidateAssets,
-                    existingEndpointsByAssetFile,
-                    Log,
-                    contentTypeProvider,
-                    _assetFileDetails,
-                    TestLengthResolver,
-                    TestLastWriteResolver),
-                static (i, loop, state) => state.Process(i, loop),
-                static worker => worker.Finally());
+        Parallel.For(
+            0,
+            CandidateAssets.Length,
+            () => new ParallelWorker(
+                endpoints,
+                new List<StaticWebAssetEndpoint>(),
+                CandidateAssets,
+                existingEndpointsByAssetFile,
+                Log,
+                contentTypeProvider),
+            static (i, loop, state) => state.Process(i, loop),
+            static worker => worker.Finally());
 
             Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
 
@@ -98,10 +82,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         ITaskItem[] candidateAssets,
         Dictionary<string, HashSet<string>> existingEndpointsByAssetFile,
         TaskLoggingHelper log,
-        ContentTypeProvider contentTypeProvider,
-        Dictionary<string, ITaskItem> assetDetails,
-        Func<string, int> testLengthResolver,
-        Func<string, DateTime> testLastWriteResolver)
+        ContentTypeProvider contentTypeProvider)
     {
         public List<StaticWebAssetEndpoint> CollectedEndpoints { get; } = collectedEndpoints;
         public List<StaticWebAssetEndpoint> CurrentEndpoints { get; } = currentEndpoints;
@@ -109,16 +90,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public Dictionary<string, HashSet<string>> ExistingEndpointsByAssetFile { get; } = existingEndpointsByAssetFile;
         public TaskLoggingHelper Log { get; } = log;
         public ContentTypeProvider ContentTypeProvider { get; } = contentTypeProvider;
-        public Dictionary<string, ITaskItem> AssetDetails { get; } = assetDetails;
-        public Func<string, int> TestLengthResolver { get; } = testLengthResolver;
-        public Func<string, DateTime> TestLastWriteResolver { get; } = testLastWriteResolver;
 
         private List<StaticWebAssetEndpoint> CreateEndpoints(
             List<StaticWebAsset.StaticWebAssetResolvedRoute> routes,
             StaticWebAsset asset,
+            string length,
+            string lastModified,
             StaticWebAssetGlobMatcher.MatchContext matchContext)
         {
-            var (length, lastModified) = ResolveDetails(asset);
             var result = new List<StaticWebAssetEndpoint>();
             foreach (var (label, route, values) in routes)
             {
@@ -147,7 +126,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     new()
                     {
                         Name = "Last-Modified",
-                        Value = lastModified
+                        Value = lastModified,
                     },
                 ];
 
@@ -194,74 +173,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return result;
         }
 
-        // Last-Modified: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
-        // Directives
-        // <day-name>
-        // One of "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", or "Sun" (case-sensitive).
-        //
-        // <day>
-        // 2 digit day number, e.g. "04" or "23".
-        //
-        // <month>
-        // One of "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" (case sensitive).
-        //
-        // <year>
-        // 4 digit year number, e.g. "1990" or "2016".
-        //
-        // <hour>
-        // 2 digit hour number, e.g. "09" or "23".
-        //
-        // <minute>
-        // 2 digit minute number, e.g. "04" or "59".
-        //
-        // <second>
-        // 2 digit second number, e.g. "04" or "59".
-        //
-        // GMT
-        // Greenwich Mean Time.HTTP dates are always expressed in GMT, never in local time.
-        private (string length, string lastModified) ResolveDetails(StaticWebAsset asset)
-        {
-            if (AssetDetails != null && AssetDetails.TryGetValue(asset.Identity, out var details))
-            {
-                return (length: details.GetMetadata("FileLength"), lastModified: details.GetMetadata("LastWriteTimeUtc"));
-            }
-            else if (AssetDetails != null && AssetDetails.TryGetValue(asset.OriginalItemSpec, out var originalDetails))
-            {
-                return (length: originalDetails.GetMetadata("FileLength"), lastModified: originalDetails.GetMetadata("LastWriteTimeUtc"));
-            }
-            else if (TestLastWriteResolver != null || TestLengthResolver != null)
-            {
-                return (length: GetTestFileLength(asset), lastModified: GetTestFileLastModified(asset));
-            }
-            else
-            {
-                Log.LogMessage(MessageImportance.Normal, $"No details found for {asset.Identity}. Using file system to resolve details.");
-                var fileInfo = StaticWebAsset.ResolveFile(asset.Identity, asset.OriginalItemSpec);
-                var length = fileInfo.Length.ToString(CultureInfo.InvariantCulture);
-                var lastModified = fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
-                return (length, lastModified);
-            }
-        }
-
-        // Only used for testing
-        private string GetTestFileLastModified(StaticWebAsset asset)
-        {
-            var lastWrite = TestLastWriteResolver != null ? TestLastWriteResolver(asset.Identity) : asset.ResolveFile().LastWriteTimeUtc;
-            return lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
-        }
-
-        // Only used for testing
-        private string GetTestFileLength(StaticWebAsset asset)
-        {
-            if (TestLengthResolver != null)
-            {
-                return TestLengthResolver(asset.Identity).ToString(CultureInfo.InvariantCulture);
-            }
-
-            var fileInfo = asset.ResolveFile();
-            return fileInfo.Length.ToString(CultureInfo.InvariantCulture);
-        }
-
         private static (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider, StaticWebAssetGlobMatcher.MatchContext matchContext, TaskLoggingHelper log)
         {
             var relativePath = asset.ComputePathWithoutTokens(asset.RelativePath);
@@ -291,6 +202,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
             var routes = asset.ComputeRoutes().ToList();
+            // We extract these from the metadata because we avoid the conversion to their typed version and then back to string.
+            var length = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.FileLength));
+            var lastWriteTime = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.LastWriteTime));
             var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
 
             if (ExistingEndpointsByAssetFile != null && ExistingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
@@ -315,7 +229,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 }
             }
 
-            foreach (var endpoint in CreateEndpoints(routes, asset, matchContext))
+            foreach (var endpoint in CreateEndpoints(routes, asset, length, lastWriteTime, matchContext))
             {
                 Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
                 CurrentEndpoints.Add(endpoint);
