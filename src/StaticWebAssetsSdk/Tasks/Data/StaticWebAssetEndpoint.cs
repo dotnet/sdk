@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, IComparable<StaticWebAssetEndpoint>
 {
+    private static readonly RouteAndAssetEqualityComparer _routeAndAssetEqualityComparer = new RouteAndAssetEqualityComparer();
+
     // Route as it should be registered in the routing table.
     public string Route { get; set; }
 
@@ -28,7 +30,9 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     // Properties associated with the endpoint.
     public StaticWebAssetEndpointProperty[] EndpointProperties { get; set; } = [];
 
-    public static IEqualityComparer<StaticWebAssetEndpoint> RouteAndAssetComparer { get; } = new RouteAndAssetEqualityComparer();
+    public static IEqualityComparer<StaticWebAssetEndpoint> RouteAndAssetComparer { get; } = _routeAndAssetEqualityComparer;
+
+    public static IComparer<StaticWebAssetEndpoint> RouteAndAssetSortingComparer { get; } = _routeAndAssetEqualityComparer;
 
     public static StaticWebAssetEndpoint[] FromItemGroup(ITaskItem[] endpoints)
     {
@@ -41,17 +45,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
             Array.Sort(result[i].EndpointProperties);
         }
 
-        Array.Sort(result, (a, b) => (a.Route, b.Route) switch
-        {
-            (null, null) => 0,
-            (null, _) => -1,
-            (_, null) => 1,
-            var (x, y) => string.Compare(x, y, StringComparison.Ordinal) switch
-            {
-                0 => string.Compare(a.AssetFile, b.AssetFile, StringComparison.Ordinal),
-                int result => result
-            }
-        });
+        Array.Sort(result, RouteAndAssetSortingComparer);
 
         return result;
     }
@@ -252,8 +246,66 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return endpointItems;
     }
 
-    private sealed class RouteAndAssetEqualityComparer : IEqualityComparer<StaticWebAssetEndpoint>
+    internal static IDictionary<string, List<StaticWebAssetEndpoint>> ToAssetFileDictionary(ITaskItem[] candidateEndpoints)
     {
+        var endpointDictionary = new ConcurrentDictionary<string, List<StaticWebAssetEndpoint>>();
+
+        foreach (var item in candidateEndpoints)
+        {
+            var endpoint = FromTaskItem(item);
+            if (!endpointDictionary.TryGetValue(endpoint.AssetFile, out var list))
+            {
+                list = new List<StaticWebAssetEndpoint>();
+                endpointDictionary[endpoint.AssetFile] = list;
+            }
+            list.Add(endpoint);
+        }
+
+        return endpointDictionary;
+    }
+
+    internal static IDictionary<string, List<StaticWebAssetEndpoint>> ToAssetFileDictionary(StaticWebAssetEndpoint[] candidateEndpoints)
+    {
+        var endpointDictionary = new ConcurrentDictionary<string, List<StaticWebAssetEndpoint>>();
+
+        for (var i = 0; i < candidateEndpoints.Length; i++)
+        {
+            var endpoint = candidateEndpoints[i];
+            if (!endpointDictionary.TryGetValue(endpoint.AssetFile, out var list))
+            {
+                list = new List<StaticWebAssetEndpoint>();
+                endpointDictionary[endpoint.AssetFile] = list;
+            }
+            list.Add(endpoint);
+        }
+
+        return endpointDictionary;
+    }
+
+    private sealed class RouteAndAssetEqualityComparer : IEqualityComparer<StaticWebAssetEndpoint>, IComparer<StaticWebAssetEndpoint>
+    {
+        public int Compare(StaticWebAssetEndpoint x, StaticWebAssetEndpoint y)
+        {
+            if (x is null && y is null)
+            {
+                return 0;
+            }
+            if (x is null)
+            {
+                return -1;
+            }
+            if (y is null)
+            {
+                return 1;
+            }
+            var routeComparison = string.Compare(x.Route, y.Route, StringComparison.Ordinal);
+            if (routeComparison != 0)
+            {
+                return routeComparison;
+            }
+
+            return string.Compare(x.AssetFile, y.AssetFile, StringComparison.Ordinal);
+        }
         public bool Equals(StaticWebAssetEndpoint x, StaticWebAssetEndpoint y)
         {
             if (ReferenceEquals(x, y))
