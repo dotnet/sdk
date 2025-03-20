@@ -5,16 +5,6 @@
       <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
     </PropertyGroup>
 
-    <ItemGroup>
-      <InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
-      <InstallerOutputFileDestination Include="@(InstallerOutputFile->'$(RedistLayoutPath)%(RecursiveDir)%(Filename)%(Extension)')" />
-    </ItemGroup>
-
-    <!-- Copy the live built SDK folder -->
-    <Copy SourceFiles="@(InstallerOutputFile)"
-          DestinationFolder="$(InstallerOutputFileDestination)"
-          SkipUnchangedFiles="true" />
-
     <PropertyGroup>
       <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
       <_DotNetHiveRoot Condition="'$(_DotNetHiveRoot)' == ''">$(RepoRoot).dotnet/</_DotNetHiveRoot>
@@ -23,12 +13,24 @@
 
     <!-- Ignore the sdk and templates directories which should only contain the live built artifacts. -->
     <ItemGroup>
-      <OverlaySDK Include="$(_DotNetHiveRoot)/**/*" Exclude="$(_DotNetHiveRoot)sdk/**/*;$(_DotNetHiveRoot)templates/**/*"/>
+      <OverlaySDKFile Include="$(_DotNetHiveRoot)/**/*"
+                      Exclude="$(_DotNetHiveRoot)sdk/**/*;
+                               $(_DotNetHiveRoot)templates/**/*"/>
     </ItemGroup>
 
-    <Copy SourceFiles="@(OverlaySDK)"
-          DestinationFiles="@(OverlaySDK->'$(RedistLayoutPath)%(RecursiveDir)%(Filename)%(Extension)')"
+    <!-- Copy artifacts from the stage0 SDK folder. -->
+    <Copy SourceFiles="@(OverlaySDKFile)"
+          DestinationFiles="@(OverlaySDKFile->'$(RedistLayoutPath)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>
+
+    <ItemGroup>
+      <InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
+    </ItemGroup>
+
+    <!-- Copy the live built SDK folder. -->
+    <Copy SourceFiles="@(InstallerOutputFile)"
+          DestinationFiles="@(InstallerOutputFile->'$(RedistLayoutPath)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
 
     <!-- Run "dotnet new" (which will just display usage and available templates) in order to print first time
          use message so that it doesn't interfere with tests which check the output of commands. -->
