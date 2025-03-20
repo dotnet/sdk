@@ -189,6 +189,6 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     private void CleanUp()
     {
         _msBuildHandler?.Dispose();
-        _eventHandlers.Dispose();
+        _eventHandlers?.Dispose();
     }
 }
