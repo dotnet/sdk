@@ -336,8 +336,8 @@ internal sealed class TestApplication : IDisposable
         DiscoveredTestsReceived?.Invoke(this, new DiscoveredTestEventArgs
         {
             ExecutionId = discoveredTestMessages.ExecutionId,
-            DiscoveredTests = discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName)).ToArray()
-            InstanceId = discoveredTestMessages.InstanceId,
+            DiscoveredTests = discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName)).ToArray(),
+            InstanceId = discoveredTestMessages.InstanceId
         });
     }
 
@@ -347,8 +347,8 @@ internal sealed class TestApplication : IDisposable
         {
             ExecutionId = testResultMessage.ExecutionId,
             SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
-            FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace)).ToArray(), message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
-            InstanceId = testResultMessage.InstanceId,
+            FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace)).ToArray(), message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
+            InstanceId = testResultMessage.InstanceId
         });
     }
 
@@ -357,8 +357,8 @@ internal sealed class TestApplication : IDisposable
         FileArtifactsReceived?.Invoke(this, new FileArtifactEventArgs
         {
             ExecutionId = fileArtifactMessages.ExecutionId,
-            FileArtifacts = fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid)).ToArray()
-            InstanceId = fileArtifactMessages.InstanceId,
+            FileArtifacts = fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid)).ToArray(),
+            InstanceId = fileArtifactMessages.InstanceId
         });
     }
 
