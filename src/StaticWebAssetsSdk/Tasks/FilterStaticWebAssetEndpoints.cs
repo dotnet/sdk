@@ -62,14 +62,14 @@ public class FilterStaticWebAssetEndpoints : Task
             }
         }
 
-        FilteredEndpoints = filteredEndpoints.Select(e => e.ToTaskItem()).ToArray();
+        FilteredEndpoints = StaticWebAssetEndpoint.ToTaskItems(filteredEndpoints);
 
         foreach (var asset in endpointFoundMatchingAsset)
         {
             assetFiles.Remove(asset.Key);
         }
 
-        AssetsWithoutMatchingEndpoints = assetFiles.Values.Select(a => a.ToTaskItem()).ToArray();
+        AssetsWithoutMatchingEndpoints = StaticWebAsset.ToTaskItemArray(assetFiles.Values);
         return !Log.HasLoggedErrors;
     }
 

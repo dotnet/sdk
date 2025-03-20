@@ -95,8 +95,8 @@ public class ComputeReferenceStaticWebAssetItems : Task
                 }
             }
 
-            StaticWebAssets = resultAssets.Select(a => a.ToTaskItem()).ToArray();
-            DiscoveryPatterns = patterns.Select(p => p.ToTaskItem()).ToArray();
+            StaticWebAssets = StaticWebAsset.ToTaskItemArray(resultAssets);
+            DiscoveryPatterns = [.. patterns.Select(p => p.ToTaskItem())];
         }
         catch (Exception ex)
         {
