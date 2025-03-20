@@ -242,8 +242,6 @@ public class GenerateStaticWebAssetEndpointsManifestTest
             ContentTypeMappings = []
         };
         defineStaticWebAssetEndpoints.BuildEngine = Mock.Of<IBuildEngine>();
-        defineStaticWebAssetEndpoints.TestLengthResolver = name => 10;
-        defineStaticWebAssetEndpoints.TestLastWriteResolver = name => new DateTime(2000,1,1,0,0,1);
 
         defineStaticWebAssetEndpoints.Execute();
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
@@ -285,7 +283,9 @@ public class GenerateStaticWebAssetEndpointsManifestTest
             OriginalItemSpec = itemSpec,
             // Add these to avoid accessing the disk to compute them
             Integrity = "integrity",
-            Fingerprint = "fingerprint"
+            Fingerprint = "fingerprint",
+            FileLength = 10,
+            LastWriteTime = new DateTime(2000, 1, 1, 0, 0, 1)
         };
 
         result.ApplyDefaults();
