@@ -15,8 +15,12 @@ public partial class DefineStaticWebAssets : Task
     private DefineStaticWebAssetsCache GetOrCreateAssetsCache()
     {
         var memoryStream = new MemoryStream();
+#if NET9_0_OR_GREATER
+        Span<string> properties = new[] {
+#else
         var properties = new[] {
-            SourceId, SourceType, BasePath, ContentRoot, RelativePathPattern, RelativePathFilter,
+#endif
+        SourceId, SourceType, BasePath, ContentRoot, RelativePathPattern, RelativePathFilter,
             AssetKind, AssetMode, AssetRole, AssetMergeSource, AssetMergeBehavior, RelatedAsset,
             AssetTraitName, AssetTraitValue, CopyToOutputDirectory, CopyToPublishDirectory,
             FingerprintCandidates.ToString()
@@ -28,7 +32,11 @@ public partial class DefineStaticWebAssets : Task
 
         var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides, nameof(ITaskItem.GetMetadata));
 
+#if NET9_0_OR_GREATER
+        Span<string> candidateAssetMetadata = new[] {
+#else
         var candidateAssetMetadata = new[] {
+#endif
             "FullPath", "RelativePath", "TargetPath", "Link", "ModifiedTime", nameof(StaticWebAsset.SourceId),
             nameof(StaticWebAsset.SourceType), nameof(StaticWebAsset.BasePath), nameof(StaticWebAsset.ContentRoot),
             nameof(StaticWebAsset.AssetKind), nameof(StaticWebAsset.AssetMode), nameof(StaticWebAsset.AssetRole),

@@ -8,7 +8,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 
 internal static class HashingUtils
 {
+#if NET9_0_OR_GREATER
+    public static byte[] ComputeHash(MemoryStream memoryStream, Span<string> values)
+#else
     public static byte[] ComputeHash(MemoryStream memoryStream, params string[] values)
+#endif
     {
         using var writer = CreateWriter(memoryStream);
         using var sha256 = SHA256.Create();
@@ -21,7 +25,11 @@ internal static class HashingUtils
         return sha256.ComputeHash(memoryStream);
     }
 
+#if NET9_0_OR_GREATER
+    public static byte[] ComputeHash(MemoryStream memoryStream, Span<ITaskItem> items, params Span<string> properties)
+#else
     public static byte[] ComputeHash(MemoryStream memoryStream, Span<ITaskItem> items, params string[] properties)
+#endif
     {
         using var writer = CreateWriter(memoryStream);
         using var sha256 = SHA256.Create();
@@ -42,7 +50,11 @@ internal static class HashingUtils
     internal static Dictionary<string, ITaskItem> ComputeHashLookup(
         MemoryStream memoryStream,
         ITaskItem[] candidateAssets,
+#if NET9_0_OR_GREATER
+        Span<string> metadata)
+#else
         params string[] metadata)
+#endif
     {
         var hashSet = new Dictionary<string, ITaskItem>(candidateAssets.Length);
         for (var i = 0; i < candidateAssets.Length; i++)
