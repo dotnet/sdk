@@ -182,7 +182,7 @@ internal sealed class TestApplicationsEventHandlers : IDisposable
         var logMessageBuilder = new StringBuilder();
 
         logMessageBuilder.AppendLine($"DiscoveredTests Execution Id: {args.ExecutionId}");
-        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.InstanceId}");
 
         foreach (var discoveredTestMessage in args.DiscoveredTests)
         {
@@ -202,7 +202,7 @@ internal sealed class TestApplicationsEventHandlers : IDisposable
         var logMessageBuilder = new StringBuilder();
 
         logMessageBuilder.AppendLine($"TestResults Execution Id: {args.ExecutionId}");
-        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.InstanceId}");
 
         foreach (SuccessfulTestResult successfulTestResult in args.SuccessfulTestResults)
         {
@@ -231,7 +231,7 @@ internal sealed class TestApplicationsEventHandlers : IDisposable
         var logMessageBuilder = new StringBuilder();
 
         logMessageBuilder.AppendLine($"FileArtifactMessages Execution Id: {args.ExecutionId}");
-        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.InstanceId}");
 
         foreach (FileArtifact fileArtifactMessage in args.FileArtifacts)
         {

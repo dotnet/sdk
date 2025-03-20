@@ -75,7 +75,7 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
                     break;
 
                 case FileArtifactMessagesFieldsId.InstanceId:
-                    executionId = ReadStringValue(stream, fieldSize);
+                    instanceId = ReadStringValue(stream, fieldSize);
                     break;
 
                 case FileArtifactMessagesFieldsId.FileArtifactMessageList:
