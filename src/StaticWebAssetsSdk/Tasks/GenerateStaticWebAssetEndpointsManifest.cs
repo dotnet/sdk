@@ -28,7 +28,23 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
 
     public override bool Execute()
     {
-        if (!string.IsNullOrEmpty(CacheFilePath) && File.Exists(ManifestPath) && File.GetLastWriteTimeUtc(ManifestPath) > File.GetLastWriteTimeUtc(CacheFilePath))
+        if (string.IsNullOrEmpty(CacheFilePath))
+        {
+            Log.LogMessage(MessageImportance.Low, "Regenerating manifest because CacheFilePath is not set.");
+        }
+        else if (!File.Exists(CacheFilePath))
+        {
+            Log.LogMessage(MessageImportance.Low, "Regenerating manifest because CacheFilePath '{0}' does not exist.", CacheFilePath);
+        }
+        else if (!File.Exists(ManifestPath))
+        {
+            Log.LogMessage(MessageImportance.Low, "Regenerating manifest because manifest file '{0}' does not exist.", ManifestPath);
+        }
+        else if (File.GetLastWriteTimeUtc(ManifestPath) < File.GetLastWriteTimeUtc(CacheFilePath))
+        {
+            Log.LogMessage(MessageImportance.Low, "Regenerating manifest because manifest file '{0}' is older than cache file '{1}'.", ManifestPath, CacheFilePath);
+        }
+        else
         {
             Log.LogMessage(MessageImportance.Low, "Skipping manifest generation because manifest file '{0}' is up to date.", ManifestPath);
             return true;
@@ -37,7 +53,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         try
         {
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
-            var manifestAssets = ComputeManifestAssets(Assets.Select(StaticWebAsset.FromTaskItem), ManifestType)
+            var manifestAssets = ComputeManifestAssets(StaticWebAsset.FromTaskItemGroup(Assets), ManifestType)
                 .ToDictionary(a => a.ResolvedAsset.Identity, a => a, OSPath.PathComparer);
 
             // Filter out the endpoints to those that point to the assets that are part of the manifest

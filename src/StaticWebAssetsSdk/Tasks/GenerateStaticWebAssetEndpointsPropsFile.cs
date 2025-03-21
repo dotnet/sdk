@@ -25,7 +25,7 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
     public override bool Execute()
     {
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(StaticWebAssetEndpoints);
-        var assets = StaticWebAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity, a => a);
+        var assets = StaticWebAsset.ToDictionaryFromItemGroup(StaticWebAssets);
         if (!ValidateArguments(endpoints, assets))
         {
             return false;
@@ -34,7 +34,7 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
         return ExecuteCore(endpoints, assets);
     }
 
-    private bool ExecuteCore(StaticWebAssetEndpoint[] endpoints, Dictionary<string, StaticWebAsset> assets)
+    private bool ExecuteCore(StaticWebAssetEndpoint[] endpoints, IDictionary<string, StaticWebAsset> assets)
     {
         if (endpoints.Length == 0)
         {
@@ -119,7 +119,7 @@ public class GenerateStaticWebAssetEndpointsPropsFile : Task
         return Convert.ToBase64String(result);
     }
 
-    private bool ValidateArguments(StaticWebAssetEndpoint[] endpoints, Dictionary<string, StaticWebAsset> asset)
+    private bool ValidateArguments(StaticWebAssetEndpoint[] endpoints, IDictionary<string, StaticWebAsset> asset)
     {
         var valid = true;
         foreach (var endpoint in endpoints)

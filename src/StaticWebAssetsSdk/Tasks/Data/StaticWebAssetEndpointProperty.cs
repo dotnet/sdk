@@ -19,7 +19,8 @@ public class StaticWebAssetEndpointProperty : IComparable<StaticWebAssetEndpoint
 
     public string Value { get; set; }
 
-    internal static StaticWebAssetEndpointProperty[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
+    internal static StaticWebAssetEndpointProperty[] FromMetadataValue(string value) =>
+        string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
     internal static string ToMetadataValue(StaticWebAssetEndpointProperty[] responseHeaders) => JsonSerializer.Serialize(responseHeaders ?? []);
 
