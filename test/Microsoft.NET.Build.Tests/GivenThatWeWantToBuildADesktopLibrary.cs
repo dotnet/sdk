@@ -105,6 +105,34 @@ public class NETFramework
 
         }
 
+        [Theory]
+        [InlineData("RazorSimpleMvc22", "netcoreapp2.2", "SimpleMvc22")]
+        [InlineData("DesktopReferencingNetStandardLibrary", "net46", "Library")]
+        public void PackageReferences_with_private_assets_do_not_appear_in_deps_file(string asset, string targetFramework, string exeName)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(asset)
+                .WithSource();
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(targetFramework).FullName, exeName + ".deps.json")))
+            {
+                var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
+                if (asset.Equals("DesktopReferencingNetStandardLibrary"))
+                {
+                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Library")).Should().BeTrue();
+                    dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Library")).Should().BeTrue();
+                }
+                else
+                {
+                    dependencyContext.CompileLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeTrue();
+                    dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
+                }
+            }
+        }
+
         [WindowsOnlyFact]
         public void It_can_reference_a_netstandard2_library_and_exchange_types()
         {
