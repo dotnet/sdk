@@ -160,17 +160,17 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 var allSimpleSelectors = selector.Children.OfType<SimpleSelector>();
                 var firstDeepCombinator = allSimpleSelectors.FirstOrDefault(s => s_deepCombinatorRegex.IsMatch(s.Text));
 
-            var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
-            if (lastSimpleSelector != null)
-            {
-                Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionToInsertInSelector(lastSimpleSelector) });
-            }
-            else if (firstDeepCombinator != null)
-            {
-                // For a leading deep combinator, we want to insert the scope attribute at the start
-                // Otherwise the result would be a CSS rule that isn't scoped at all
-                Edits.Add(new InsertSelectorScopeEdit { Position = firstDeepCombinator.Start });
-            }
+                var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
+                if (lastSimpleSelector != null)
+                {
+                    Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionToInsertInSelector(lastSimpleSelector) });
+                }
+                else if (firstDeepCombinator != null)
+                {
+                    // For a leading deep combinator, we want to insert the scope attribute at the start
+                    // Otherwise the result would be a CSS rule that isn't scoped at all
+                    Edits.Add(new InsertSelectorScopeEdit { Position = firstDeepCombinator.Start });
+                }
 
                 // Also remove the deep combinator if we matched one
                 if (firstDeepCombinator != null)

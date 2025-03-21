@@ -91,9 +91,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 return 0;
             });
 
-        var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
-        return manifest;
-    }
+            var manifest = CreateManifest(assetsWithPathSegments, discoveryPatternsByBasePath);
+            return manifest;
+        }
 
         private IEnumerable<SegmentsAssetPair> ComputeManifestAssets(IEnumerable<StaticWebAsset> assets)
         {
