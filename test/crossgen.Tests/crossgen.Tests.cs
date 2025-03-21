@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Reflection.PortableExecutable;
 
 namespace Microsoft.DotNet.Tests
@@ -22,7 +20,7 @@ namespace Microsoft.DotNet.Tests
             //  TODO: Update method of finding cliPath (right now it's finding a ref path in stage 0
             string dotnetDir = FindDotnetDirInPath();
             string cliPath = Directory.EnumerateFiles(dotnetDir, "dotnet.dll", SearchOption.AllDirectories).First();
-            cliPath = Path.GetDirectoryName(cliPath);
+            cliPath = Path.GetDirectoryName(cliPath) ?? string.Empty;
             CheckDirectoryIsCrossgened(cliPath);
         }
 
@@ -32,7 +30,7 @@ namespace Microsoft.DotNet.Tests
             //  TODO: Update method of finding sharedFxPath
             string dotnetDir = FindDotnetDirInPath();
             string sharedFxPath = Directory.EnumerateFiles(dotnetDir, "mscorlib*.dll", SearchOption.AllDirectories).First();
-            sharedFxPath = Path.GetDirectoryName(sharedFxPath);
+            sharedFxPath = Path.GetDirectoryName(sharedFxPath) ?? string.Empty;
             CheckDirectoryIsCrossgened(sharedFxPath);
         }
 
@@ -68,7 +66,11 @@ namespace Microsoft.DotNet.Tests
                 string dotnetPath = Path.Combine(path, dotnetExecutable);
                 if (File.Exists(dotnetPath))
                 {
-                    return Path.GetDirectoryName(dotnetPath);
+                    var directoryName = Path.GetDirectoryName(dotnetPath);
+                    if (directoryName is not null)
+                    {
+                        return directoryName;
+                    }
                 }
             }
 

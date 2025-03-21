@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
@@ -243,7 +241,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             return project;
         }
 
-        private string GetPackagePath(string targetFramework, string packageName, string version, [CallerMemberName] string callingMethod = "", string identifier = null)
+        private string GetPackagePath(string targetFramework, string packageName, string version, [CallerMemberName] string callingMethod = "", string? identifier = null)
         {
             var project = GetProject(targetFramework, packageName, version);
             var packCommand = new PackCommand(_testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, identifier: identifier));

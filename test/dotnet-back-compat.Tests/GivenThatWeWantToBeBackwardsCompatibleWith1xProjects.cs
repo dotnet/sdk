@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
     public class GivenThatWeWantToBeBackwardsCompatibleWith1xProjects : SdkTest
@@ -87,10 +85,10 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         void ChangeProjectTargetFramework(string projectFile, string target)
         {
             var projectXml = XDocument.Load(projectFile);
-            var ns = projectXml.Root.Name.Namespace;
-            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();
-            var rootNamespaceElement = propertyGroup.Element(ns + "TargetFramework");
-            rootNamespaceElement.SetValue(target);
+            var ns = projectXml.Root?.Name.Namespace ?? string.Empty;
+            var propertyGroup = projectXml.Root?.Elements(ns + "PropertyGroup").First();
+            var rootNamespaceElement = propertyGroup?.Element(ns + "TargetFramework");
+            rootNamespaceElement?.SetValue(target);
             projectXml.Save(projectFile.ToString());
         }
 
