@@ -5,28 +5,28 @@ using System.Security.Cryptography;
 using System.Xml;
 using Microsoft.Build.Framework;
 
-namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
-
-public class GenerateStaticWebAssetsPropsFile : Task
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
-    private const string SourceType = "SourceType";
-    private const string SourceId = "SourceId";
-    private const string ContentRoot = "ContentRoot";
-    private const string BasePath = "BasePath";
-    private const string RelativePath = "RelativePath";
-    private const string AssetKind = "AssetKind";
-    private const string AssetMode = "AssetMode";
-    private const string AssetRole = "AssetRole";
-    private const string RelatedAsset = "RelatedAsset";
-    private const string AssetTraitName = "AssetTraitName";
-    private const string AssetTraitValue = "AssetTraitValue";
-    private const string Fingerprint = "Fingerprint";
-    private const string Integrity = "Integrity";
-    private const string CopyToOutputDirectory = "CopyToOutputDirectory";
-    private const string CopyToPublishDirectory = "CopyToPublishDirectory";
-    private const string OriginalItemSpec = "OriginalItemSpec";
-    private const string FileLength = "FileLength";
-    private const string LastWriteTime = "LastWriteTime";
+    public class GenerateStaticWebAssetsPropsFile : Task
+    {
+        private const string SourceType = "SourceType";
+        private const string SourceId = "SourceId";
+        private const string ContentRoot = "ContentRoot";
+        private const string BasePath = "BasePath";
+        private const string RelativePath = "RelativePath";
+        private const string AssetKind = "AssetKind";
+        private const string AssetMode = "AssetMode";
+        private const string AssetRole = "AssetRole";
+        private const string RelatedAsset = "RelatedAsset";
+        private const string AssetTraitName = "AssetTraitName";
+        private const string AssetTraitValue = "AssetTraitValue";
+        private const string Fingerprint = "Fingerprint";
+        private const string Integrity = "Integrity";
+        private const string CopyToOutputDirectory = "CopyToOutputDirectory";
+        private const string CopyToPublishDirectory = "CopyToPublishDirectory";
+        private const string OriginalItemSpec = "OriginalItemSpec";
+        private const string FileLength = "FileLength";
+        private const string LastWriteTime = "LastWriteTime";
 
         [Required]
         public string TargetPropsFilePath { get; set; }
@@ -57,36 +57,36 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
             var tokenResolver = StaticWebAssetTokenResolver.Instance;
 
-        var itemGroup = new XElement("ItemGroup");
-        var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
-            .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
-        foreach (var element in orderedAssets)
-        {
-            var asset = StaticWebAsset.FromTaskItem(element);
-            var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
-            var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
-            var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
-            itemGroup.Add(new XElement("StaticWebAsset",
-                new XAttribute("Include", fullPathExpression),
-                new XElement(SourceType, "Package"),
-                new XElement(SourceId, element.GetMetadata(SourceId)),
-                new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
-                new XElement(BasePath, element.GetMetadata(BasePath)),
-                new XElement(RelativePath, relativePath),
-                new XElement(AssetKind, element.GetMetadata(AssetKind)),
-                new XElement(AssetMode, element.GetMetadata(AssetMode)),
-                new XElement(AssetRole, element.GetMetadata(AssetRole)),
-                new XElement(RelatedAsset, element.GetMetadata(RelatedAsset)),
-                new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
-                new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
-                new XElement(Fingerprint, element.GetMetadata(Fingerprint)),
-                new XElement(Integrity, element.GetMetadata(Integrity)),
-                new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
-                new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory)),
-                new XElement(FileLength, element.GetMetadata(FileLength)),
-                new XElement(LastWriteTime, element.GetMetadata(LastWriteTime)),
-                new XElement(OriginalItemSpec, fullPathExpression)));
-        }
+            var itemGroup = new XElement("ItemGroup");
+            var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
+                .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
+            foreach (var element in orderedAssets)
+            {
+                var asset = StaticWebAsset.FromTaskItem(element);
+                var packagePath = asset.ComputeTargetPath(PackagePathPrefix, '\\', tokenResolver);
+                var relativePath = asset.ReplaceTokens(asset.RelativePath, tokenResolver);
+                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\{packagePath}'))";
+                itemGroup.Add(new XElement("StaticWebAsset",
+                    new XAttribute("Include", fullPathExpression),
+                    new XElement(SourceType, "Package"),
+                    new XElement(SourceId, element.GetMetadata(SourceId)),
+                    new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
+                    new XElement(BasePath, element.GetMetadata(BasePath)),
+                    new XElement(RelativePath, relativePath),
+                    new XElement(AssetKind, element.GetMetadata(AssetKind)),
+                    new XElement(AssetMode, element.GetMetadata(AssetMode)),
+                    new XElement(AssetRole, element.GetMetadata(AssetRole)),
+                    new XElement(RelatedAsset, element.GetMetadata(RelatedAsset)),
+                    new XElement(AssetTraitName, element.GetMetadata(AssetTraitName)),
+                    new XElement(AssetTraitValue, element.GetMetadata(AssetTraitValue)),
+                    new XElement(Fingerprint, element.GetMetadata(Fingerprint)),
+                    new XElement(Integrity, element.GetMetadata(Integrity)),
+                    new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
+                    new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory)),
+                    new XElement(FileLength, element.GetMetadata(FileLength)),
+                    new XElement(LastWriteTime, element.GetMetadata(LastWriteTime)),
+                    new XElement(OriginalItemSpec, fullPathExpression)));
+            }
 
             var document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"));
             var root = new XElement("Project", itemGroup);
@@ -141,16 +141,13 @@ public class GenerateStaticWebAssetsPropsFile : Task
 
         private static string ComputeHash(byte[] data)
         {
+#if !NET9_0_OR_GREATER
             using var sha256 = SHA256.Create();
-
             var result = sha256.ComputeHash(data);
+#else
+            var result = SHA256.HashData(data);
+#endif
             return Convert.ToBase64String(result);
-        }
-
-        private XmlWriter GetXmlWriter(XmlWriterSettings settings)
-        {
-            var fileStream = new FileStream(TargetPropsFilePath, FileMode.Create);
-            return XmlWriter.Create(fileStream, settings);
         }
 
         private bool ValidateArguments()
@@ -215,10 +212,10 @@ public class GenerateStaticWebAssetsPropsFile : Task
             return true;
         }
 
-    private bool EnsureRequiredMetadata(ITaskItem item, string metadataName, bool allowEmpty = false)
-    {
-        var value = item.GetMetadata(metadataName);
-        var isInvalidValue = allowEmpty ? !HasMetadata(item, metadataName) : string.IsNullOrEmpty(value);
+        private bool EnsureRequiredMetadata(ITaskItem item, string metadataName, bool allowEmpty = false)
+        {
+            var value = item.GetMetadata(metadataName);
+            var isInvalidValue = allowEmpty ? !HasMetadata(item, metadataName) : string.IsNullOrEmpty(value);
 
             if (isInvalidValue)
             {
@@ -229,7 +226,7 @@ public class GenerateStaticWebAssetsPropsFile : Task
             return true;
         }
 
-        private bool HasMetadata(ITaskItem item, string metadataName)
+        private static bool HasMetadata(ITaskItem item, string metadataName)
         {
             foreach (var name in item.MetadataNames)
             {
