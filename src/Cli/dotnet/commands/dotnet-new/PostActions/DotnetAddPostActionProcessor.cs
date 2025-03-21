@@ -1,215 +1,212 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Utils;
 
-namespace Microsoft.DotNet.Tools.New.PostActionProcessors
+namespace Microsoft.DotNet.Tools.New.PostActionProcessors;
+
+internal class DotnetAddPostActionProcessor : PostActionProcessorBase
 {
-    internal class DotnetAddPostActionProcessor : PostActionProcessorBase
+    private readonly Func<string, string, string?, bool> _addPackageReferenceCallback;
+    private readonly Func<string, string, bool> _addProjectReferenceCallback;
+
+    public DotnetAddPostActionProcessor(
+        Func<string, string, string?, bool>? addPackageReferenceCallback = null,
+        Func<string, string, bool>? addProjectReferenceCallback = null)
     {
-        private readonly Func<string, string, string?, bool> _addPackageReferenceCallback;
-        private readonly Func<string, string, bool> _addProjectReferenceCallback;
+        _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
+        _addProjectReferenceCallback = addProjectReferenceCallback ?? DotnetCommandCallbacks.AddProjectReference;
+    }
 
-        public DotnetAddPostActionProcessor(
-            Func<string, string, string?, bool>? addPackageReferenceCallback = null,
-            Func<string, string, bool>? addProjectReferenceCallback = null)
+    public override Guid Id => ActionProcessorId;
+
+    internal static Guid ActionProcessorId { get; } = new("B17581D1-C5C9-4489-8F0A-004BE667B814");
+
+    internal static IReadOnlyList<string> FindProjFileAtOrAbovePath(IPhysicalFileSystem fileSystem, string startPath, HashSet<string> extensionLimiters)
+    {
+        if (extensionLimiters.Count == 0)
         {
-            _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
-            _addProjectReferenceCallback = addProjectReferenceCallback ?? DotnetCommandCallbacks.AddProjectReference;
+            return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, startPath, "*.*proj");
         }
-
-        public override Guid Id => ActionProcessorId;
-
-        internal static Guid ActionProcessorId { get; } = new("B17581D1-C5C9-4489-8F0A-004BE667B814");
-
-        internal static IReadOnlyList<string> FindProjFileAtOrAbovePath(IPhysicalFileSystem fileSystem, string startPath, HashSet<string> extensionLimiters)
+        else
         {
-            if (extensionLimiters.Count == 0)
-            {
-                return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, startPath, "*.*proj");
-            }
-            else
-            {
-                return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, startPath, "*.*proj", (filename) => extensionLimiters.Contains(Path.GetExtension(filename)));
-            }
+            return FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, startPath, "*.*proj", (filename) => extensionLimiters.Contains(Path.GetExtension(filename)));
         }
+    }
 
-        protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
+    protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction action, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
+    {
+        IReadOnlyList<string>? projectsToProcess = GetConfiguredFiles(action.Args, creationEffects, "targetFiles", outputBasePath);
+
+        if (!projectsToProcess.Any())
         {
-            IReadOnlyList<string>? projectsToProcess = GetConfiguredFiles(action.Args, creationEffects, "targetFiles", outputBasePath);
-
-            if (!projectsToProcess.Any())
+            //If the author didn't opt in to the new behavior by specifying "targetFiles", search for project file in current output directory or above.
+            HashSet<string> extensionLimiters = new(StringComparer.Ordinal);
+            if (action.Args.TryGetValue("projectFileExtensions", out string? projectFileExtensions))
             {
-                //If the author didn't opt in to the new behavior by specifying "targetFiles", search for project file in current output directory or above.
-                HashSet<string> extensionLimiters = new(StringComparer.Ordinal);
-                if (action.Args.TryGetValue("projectFileExtensions", out string? projectFileExtensions))
+                if (projectFileExtensions.Contains('/') || projectFileExtensions.Contains('\\') || projectFileExtensions.Contains('*'))
                 {
-                    if (projectFileExtensions.Contains('/') || projectFileExtensions.Contains('\\') || projectFileExtensions.Contains('*'))
-                    {
-                        // these must be literals
-                        Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
-                        return false;
-                    }
-
-                    extensionLimiters.UnionWith(projectFileExtensions.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
-                }
-                projectsToProcess = TryFindProjects(environment, outputBasePath, extensionLimiters);
-                if (projectsToProcess.Count > 1)
-                {
-                    // multiple projects at the same level. Error.
-                    Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_UnresolvedProjFile);
-                    Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ProjFileListHeader);
-                    foreach (string projectFile in projectsToProcess)
-                    {
-                        Reporter.Error.WriteLine(string.Format("\t{0}", projectFile));
-                    }
+                    // these must be literals
+                    Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
                     return false;
                 }
-            }
 
-            if (!projectsToProcess.Any())
-            {
-                projectsToProcess = FindExistingTargetFiles(environment.Host.FileSystem, action.Args, outputBasePath);
+                extensionLimiters.UnionWith(projectFileExtensions.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
             }
-
-            if (!projectsToProcess.Any())
+            projectsToProcess = TryFindProjects(environment, outputBasePath, extensionLimiters);
+            if (projectsToProcess.Count > 1)
             {
-                // no projects found. Error.
+                // multiple projects at the same level. Error.
                 Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_UnresolvedProjFile);
-                return false;
-            }
-
-            bool success = true;
-            foreach (string projectFile in projectsToProcess)
-            {
-                success &= AddReference(action, projectFile, outputBasePath, creationEffects);
-
-                if (!success)
+                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ProjFileListHeader);
+                foreach (string projectFile in projectsToProcess)
                 {
-                    return false;
+                    Reporter.Error.WriteLine(string.Format("\t{0}", projectFile));
                 }
-            }
-            return true;
-        }
-
-        private static IReadOnlyList<string> TryFindProjects(IEngineEnvironmentSettings environment, string outputBasePath, HashSet<string> extensionLimiters)
-        {
-            try
-            {
-                return FindProjFileAtOrAbovePath(environment.Host.FileSystem, outputBasePath, extensionLimiters);
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return [];
+                return false;
             }
         }
 
-        private static IReadOnlyList<string> FindExistingTargetFiles(IPhysicalFileSystem fileSystem, IReadOnlyDictionary<string, string> actionArgs, string outputBasePath)
+        if (!projectsToProcess.Any())
         {
-            var targetFiles = GetTargetFilesPaths(actionArgs, outputBasePath);
-            var foundFiles = targetFiles?
-                .Where(fileSystem.FileExists)
-                .ToList();
-            return foundFiles ?? [];
+            projectsToProcess = FindExistingTargetFiles(environment.Host.FileSystem, action.Args, outputBasePath);
         }
 
-        private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects)
+        if (!projectsToProcess.Any())
         {
-            if (actionConfig.Args == null || !actionConfig.Args.TryGetValue("reference", out string? referenceToAdd))
+            // no projects found. Error.
+            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_UnresolvedProjFile);
+            return false;
+        }
+
+        bool success = true;
+        foreach (string projectFile in projectsToProcess)
+        {
+            success &= AddReference(action, projectFile, outputBasePath, creationEffects);
+
+            if (!success)
             {
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
                 return false;
             }
+        }
+        return true;
+    }
 
-            if (!actionConfig.Args.TryGetValue("referenceType", out string? referenceType))
-            {
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
-                return false;
-            }
+    private static IReadOnlyList<string> TryFindProjects(IEngineEnvironmentSettings environment, string outputBasePath, HashSet<string> extensionLimiters)
+    {
+        try
+        {
+            return FindProjFileAtOrAbovePath(environment.Host.FileSystem, outputBasePath, extensionLimiters);
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return [];
+        }
+    }
 
-            if (string.Equals(referenceType, "project", StringComparison.OrdinalIgnoreCase))
-            {
-                // replace the referenced project file's name in case it has been renamed
-                string? referenceNameChange = GetTargetForSource((ICreationEffects2)creationEffects, referenceToAdd, outputBasePath).SingleOrDefault();
-                string relativeProjectReference = referenceNameChange ?? referenceToAdd;
+    private static IReadOnlyList<string> FindExistingTargetFiles(IPhysicalFileSystem fileSystem, IReadOnlyDictionary<string, string> actionArgs, string outputBasePath)
+    {
+        var targetFiles = GetTargetFilesPaths(actionArgs, outputBasePath);
+        var foundFiles = targetFiles?
+            .Where(fileSystem.FileExists)
+            .ToList();
+        return foundFiles ?? [];
+    }
 
-                referenceToAdd = Path.GetFullPath(relativeProjectReference, outputBasePath);
-                return AddProjectReference(projectFile, referenceToAdd);
-            }
-            else if (string.Equals(referenceType, "package", StringComparison.OrdinalIgnoreCase))
+    private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects)
+    {
+        if (actionConfig.Args == null || !actionConfig.Args.TryGetValue("reference", out string? referenceToAdd))
+        {
+            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
+            return false;
+        }
+
+        if (!actionConfig.Args.TryGetValue("referenceType", out string? referenceType))
+        {
+            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
+            return false;
+        }
+
+        if (string.Equals(referenceType, "project", StringComparison.OrdinalIgnoreCase))
+        {
+            // replace the referenced project file's name in case it has been renamed
+            string? referenceNameChange = GetTargetForSource((ICreationEffects2)creationEffects, referenceToAdd, outputBasePath).SingleOrDefault();
+            string relativeProjectReference = referenceNameChange ?? referenceToAdd;
+
+            referenceToAdd = Path.GetFullPath(relativeProjectReference, outputBasePath);
+            return AddProjectReference(projectFile, referenceToAdd);
+        }
+        else if (string.Equals(referenceType, "package", StringComparison.OrdinalIgnoreCase))
+        {
+            actionConfig.Args.TryGetValue("version", out string? version);
+            return AddPackageReference(projectFile, referenceToAdd, version);
+        }
+        else if (string.Equals(referenceType, "framework", StringComparison.OrdinalIgnoreCase))
+        {
+            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_Error_FrameworkNotSupported, referenceToAdd));
+            return false;
+        }
+        else
+        {
+            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_Error_UnsupportedRefType, referenceType));
+            return false;
+        }
+    }
+
+    private bool AddPackageReference(string projectPath, string packageName, string? version)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(version))
             {
-                actionConfig.Args.TryGetValue("version", out string? version);
-                return AddPackageReference(projectFile, referenceToAdd, version);
-            }
-            else if (string.Equals(referenceType, "framework", StringComparison.OrdinalIgnoreCase))
-            {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_Error_FrameworkNotSupported, referenceToAdd));
-                return false;
+                Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference, packageName, projectPath));
             }
             else
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_Error_UnsupportedRefType, referenceType));
-                return false;
+                Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference_WithVersion, packageName, version, projectPath));
             }
+            bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version);
+            if (succeeded)
+            {
+                Reporter.Output.WriteLine(LocalizableStrings.PostAction_AddReference_Succeeded);
+            }
+            else
+            {
+                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Failed);
+            }
+            return succeeded;
         }
-
-        private bool AddPackageReference(string projectPath, string packageName, string? version)
+        catch (Exception e)
         {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(version))
-                {
-                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference, packageName, projectPath));
-                }
-                else
-                {
-                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference_WithVersion, packageName, version, projectPath));
-                }
-                bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version);
-                if (succeeded)
-                {
-                    Reporter.Output.WriteLine(LocalizableStrings.PostAction_AddReference_Succeeded);
-                }
-                else
-                {
-                    Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Failed);
-                }
-                return succeeded;
-            }
-            catch (Exception e)
-            {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference_Failed, e.Message));
-                return false;
-            }
+            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference_Failed, e.Message));
+            return false;
         }
+    }
 
-        private bool AddProjectReference(string projectPath, string projectToAdd)
+    private bool AddProjectReference(string projectPath, string projectToAdd)
+    {
+        try
         {
-            try
+            Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddProjectReference, projectToAdd, projectPath));
+            bool succeeded = _addProjectReferenceCallback(projectPath, projectToAdd);
+            if (succeeded)
             {
-                Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddProjectReference, projectToAdd, projectPath));
-                bool succeeded = _addProjectReferenceCallback(projectPath, projectToAdd);
-                if (succeeded)
-                {
-                    Reporter.Output.WriteLine(LocalizableStrings.PostAction_AddReference_Succeeded);
-                }
-                else
-                {
-                    Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Failed);
-                }
-                return succeeded;
+                Reporter.Output.WriteLine(LocalizableStrings.PostAction_AddReference_Succeeded);
             }
-            catch (Exception e)
+            else
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddProjectReference_Failed, e.Message));
-                return false;
+                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Failed);
             }
+            return succeeded;
+        }
+        catch (Exception e)
+        {
+            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddProjectReference_Failed, e.Message));
+            return false;
         }
     }
 }

@@ -6,42 +6,41 @@ using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Update;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class ToolUpdateCommandParser
 {
-    internal static class ToolUpdateCommandParser
+    public static readonly CliArgument<string> PackageIdArgument = new("packageId")
     {
-        public static readonly CliArgument<string> PackageIdArgument = new("packageId")
-        {
-            HelpName = LocalizableStrings.PackageIdArgumentName,
-            Description = LocalizableStrings.PackageIdArgumentDescription,
-            Arity = ArgumentArity.ZeroOrOne
-        };
+        HelpName = LocalizableStrings.PackageIdArgumentName,
+        Description = LocalizableStrings.PackageIdArgumentDescription,
+        Arity = ArgumentArity.ZeroOrOne
+    };
 
-        public static readonly CliOption<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
+    public static readonly CliOption<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
 
-        public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
+    public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
 
-        private static readonly CliCommand Command = ConstructCommand();
+    private static readonly CliCommand Command = ConstructCommand();
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+    public static CliCommand GetCommand()
+    {
+        return Command;
+    }
 
-        private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new("update", LocalizableStrings.CommandDescription);
+    private static CliCommand ConstructCommand()
+    {
+        CliCommand command = new("update", LocalizableStrings.CommandDescription);
 
-            command.Arguments.Add(PackageIdArgument);
+        command.Arguments.Add(PackageIdArgument);
 
-            ToolInstallCommandParser.AddCommandOptions(command);
-            command.Options.Add(AllowPackageDowngradeOption);
-            command.Options.Add(UpdateAllOption);
+        ToolInstallCommandParser.AddCommandOptions(command);
+        command.Options.Add(AllowPackageDowngradeOption);
+        command.Options.Add(UpdateAllOption);
 
-            command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 
-            return command;
-        }
+        return command;
     }
 }
 

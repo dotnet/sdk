@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -10,6 +12,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class DiscoverStaticWebAssetsTest
     {
+        private readonly Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> _testResolveFileDetails =
+            (string identity, string originalItemSpec) => (null, 10, new DateTimeOffset(2023, 10, 1, 0, 0, 0, TimeSpan.Zero));
+
         [Fact]
         public void DiscoversMatchingAssetsBasedOnPattern()
         {
@@ -21,6 +26,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"))
@@ -36,7 +42,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -69,6 +75,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", file))
@@ -122,6 +129,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", candidate.Replace('/', Path.DirectorySeparatorChar)))
@@ -171,11 +179,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", fileName))
                 ],
-                FingerprintPatterns = [new TaskItem("JsModule",new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js", ["Expression"] = expression })],
+                FingerprintPatterns = [new TaskItem("JsModule", new Dictionary<string, string> { ["Pattern"] = "*.lib.module.js", ["Expression"] = expression })],
                 FingerprintCandidates = true,
                 RelativePathPattern = "wwwroot\\**",
                 SourceType = "Discovered",
@@ -219,6 +228,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), relativePath: "subdir/candidate.js")
@@ -234,7 +244,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -265,6 +275,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), targetPath: Path.Combine("wwwroot", "subdir", "candidate.publish.js"))
@@ -280,7 +291,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -311,6 +322,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), link: Path.Combine("wwwroot", "subdir", "candidate.link.js"))
@@ -326,7 +338,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -357,6 +369,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), copyToPublishDirectory: "Never"),
@@ -410,6 +423,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate(
@@ -464,6 +478,7 @@ for path 'candidate.js'");
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate("wwwroot\\candidate.js")
@@ -479,7 +494,7 @@ for path 'candidate.js'");
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -491,14 +506,16 @@ for path 'candidate.js'");
             get
             {
                 var currentPath = Path.GetFullPath(".");
-                var result = new TheoryData<string, string>();
-                result.Add("wwwroot", Path.GetFullPath("wwwroot") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir" + Path.DirectorySeparatorChar, Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir" + Path.AltDirectorySeparatorChar, Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.AltDirectorySeparatorChar + "wwwroot" + Path.AltDirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.AltDirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
-                result.Add(currentPath + Path.AltDirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar);
+                var result = new TheoryData<string, string>
+                {
+                    { "wwwroot", Path.GetFullPath("wwwroot") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir" + Path.DirectorySeparatorChar, Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir" + Path.AltDirectorySeparatorChar, Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.AltDirectorySeparatorChar + "wwwroot" + Path.AltDirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.DirectorySeparatorChar + "wwwroot" + Path.AltDirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar },
+                    { currentPath + Path.AltDirectorySeparatorChar + "wwwroot" + Path.DirectorySeparatorChar + "subdir", Path.GetFullPath("wwwroot/subdir") + Path.DirectorySeparatorChar }
+                };
                 return result;
             }
         }
@@ -515,6 +532,7 @@ for path 'candidate.js'");
             var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
+                TestResolveFileDetails = _testResolveFileDetails,
                 CandidateAssets =
                 [
                     CreateCandidate("wwwroot\\candidate.js")
@@ -530,7 +548,7 @@ for path 'candidate.js'");
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
             task.Assets.Length.Should().Be(1);
             var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
@@ -538,7 +556,7 @@ for path 'candidate.js'");
         }
 
 
-        private ITaskItem CreateCandidate(
+        private static ITaskItem CreateCandidate(
             string itemSpec,
             string relativePath = null,
             string targetPath = null,
@@ -556,6 +574,8 @@ for path 'candidate.js'");
                 // Add these to avoid accessing the disk to compute them
                 ["Integrity"] = "integrity",
                 ["Fingerprint"] = "fingerprint",
+                ["LastWriteTime"] = DateTime.UtcNow.ToString(StaticWebAsset.DateTimeAssetFormat),
+                ["FileLength"] = "10",
             });
         }
     }
