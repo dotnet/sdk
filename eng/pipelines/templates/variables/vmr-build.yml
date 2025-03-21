@@ -197,7 +197,7 @@ variables:
 
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - name: defaultPoolName
-    value: NetCore-Public-XL
+    value: NetCore-Public-Test
   - name: shortStackPoolName
     value: NetCore-Public
   - name: poolImage_Linux
