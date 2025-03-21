@@ -539,10 +539,10 @@
                             CopyKnownWorkloadManifestFile;
                             LayoutAppHostTemplate;
                             LayoutBundledTools;
-                            ChmodPublishDir;
                             DeleteSymbolsFromPublishDir;
                             RetargetTools;
-                            RemoveResourcesFromDotnetDeps"
+                            RemoveResourcesFromDotnetDeps;
+                            ChmodPublishDir"
           AfterTargets="Build" />
 
 </Project>

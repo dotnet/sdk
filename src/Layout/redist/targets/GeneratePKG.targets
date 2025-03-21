@@ -189,9 +189,7 @@
       ReplacementPatterns="@(ResourcesReplacement -> '%(Identity)')"
       ReplacementStrings="@(ResourcesReplacement -> '%(ReplacementString)')" />
 
-    <Chmod
-      Glob="$(SdkPkgScriptFile)"
-      Mode="ugo+x" />
+    <Exec Command="chmod ugo+x $(SdkPkgScriptFile)" />
 
     <Exec Command="pkgbuild \
                     --root '$(SdkInternalLayoutPath)' \
