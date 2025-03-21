@@ -29,8 +29,6 @@ public class ApplyCompressionNegotiation : Task
 
         var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(StaticWebAssetEndpoint.RouteAndAssetComparer);
 
-        var preservedEndpoints = new HashSet<(string, string)>();
-
         var compressionHeadersByEncoding = new Dictionary<string, StaticWebAssetEndpointResponseHeader[]>();
 
         // Add response headers to compressed endpoints
@@ -76,17 +74,11 @@ public class ApplyCompressionNegotiation : Task
 
                     var endpointCopy = CreateUpdatedEndpoint(compressedAsset, quality, compressedEndpoint, relatedEndpointCandidate);
                     updatedEndpoints.Add(endpointCopy);
-
                     // Since we are going to remove the endpoints from the associated item group and the route is
                     // the ItemSpec, we want to add the original as well so that it gets re-added.
                     // The endpoint pointing to the uncompressed asset doesn't have a Content-Encoding selector and
                     // will use the default "identity" encoding during content negotiation.
-                    if (!preservedEndpoints.Contains((relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile)))
-                    {
-                        preservedEndpoints.Add((relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile));
-
-                        updatedEndpoints.Add(relatedEndpointCandidate);
-                    }
+                    updatedEndpoints.Add(relatedEndpointCandidate);
                 }
             }
         }
