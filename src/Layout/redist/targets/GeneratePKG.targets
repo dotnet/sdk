@@ -121,7 +121,7 @@
     <ItemGroup>
       <SdkProductArchiveResourcesTemplateFiles Include="$(SdkPkgSourcesRootDirectory)/resources/**/*" />
 
-      <GenerateSdkPkgInputs Include="$(SdkInternalLayoutPath)/**/*" />
+      <GenerateSdkPkgInputs Include="$(OutputPath)**/*" />
       <GenerateSdkPkgInputs Include="$(SdkPkgScriptsDirectory)/**/*" />
 
       <GenerateSdkProductArchiveInputs Include="$(SdkPKGInstallerFile)" />
@@ -140,26 +140,42 @@
           Inputs="@(GenerateSdkPkgInputs)"
           Outputs="$(SdkPKGInstallerFile)"
           DependsOnTargets="GenerateInstallerLayout;SetupPkgInputsOutputs">
+    <!-- Copy the sdk layout into a temporary folder to be able to make changes to it. -->
+    <PropertyGroup>
+      <SdkInternalLayoutPath>$(IntermediateOutputPath)installer/</SdkInternalLayoutPath>
+    </PropertyGroup>
+
+    <!-- Create "SDK Internal" layout. -->
     <ItemGroup>
-      <TemplateFiles Include="$(RedistLayoutPath)templates/**/*" />
+      <SdkOutputFile Include="$(OutputPath)**/*" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
-    </ItemGroup>
-    
+    <Copy SourceFiles="@(SdkOutputFile)"
+          DestinationFiles="@(SdkOutputFile -> '$(SdkInternalLayoutPath)sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
+
     <!-- Copy ASP.NET runtime and targeting pack to internal layout, as we don't currently chain that in with a pkg dependency -->
     <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetCoreSharedFxArchiveFileName)"
-                                DestinationDirectory="$(SdkInternalLayoutPath)"
-                                DirectoriesToCopy="shared/Microsoft.AspNetCore.App" />
+                               DestinationDirectory="$(SdkInternalLayoutPath)"
+                               DirectoriesToCopy="shared/Microsoft.AspNetCore.App" />
     <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetTargetingPackArchiveFileName)"
-                                DestinationDirectory="$(SdkInternalLayoutPath)" />
+                               DestinationDirectory="$(SdkInternalLayoutPath)" />
+
+    <ItemGroup>
+      <TemplateFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
+      <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
+    </ItemGroup>
 
     <Copy SourceFiles="@(TemplateFiles)"
-          DestinationFiles="@(TemplateFiles->'$(SdkInternalLayoutPath)/templates/%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(TemplateFiles->'$(SdkInternalLayoutPath)templates/%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
 
     <Copy SourceFiles="@(ManifestFiles)"
-          DestinationFiles="@(ManifestFiles->'$(SdkInternalLayoutPath)/sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(ManifestFiles->'$(SdkInternalLayoutPath)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
 
     <ReplaceFileContents
       InputFiles="$(SdkPkgScriptTemplateFile)"
@@ -173,9 +189,7 @@
       ReplacementPatterns="@(ResourcesReplacement -> '%(Identity)')"
       ReplacementStrings="@(ResourcesReplacement -> '%(ReplacementString)')" />
 
-    <Chmod
-      Glob="$(SdkPkgScriptFile)"
-      Mode="ugo+x" />
+    <Exec Command="chmod ugo+x $(SdkPkgScriptFile)" />
 
     <Exec Command="pkgbuild \
                     --root '$(SdkInternalLayoutPath)' \

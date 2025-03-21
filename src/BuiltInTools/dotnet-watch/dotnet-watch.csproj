@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
-  <Import Project="$(RepoRoot)\src\Layout\redist\targets\PublishDotnetWatch.targets" />
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -50,10 +50,4 @@
     <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!--
-    Publish the dotnet-watch binaries to the redist directory (artifacts\bin\redist\{config}\dotnet\sdk\{version}\DotnetTools).
-    These files are used for layout generation in redist project.
-    Tests are also running dotnet.exe from redist artifacts.
-  -->
-  <Target Name="PublishToRedist" DependsOnTargets="PublishDotnetWatchToRedist" BeforeTargets="AfterBuild" />
 </Project>
