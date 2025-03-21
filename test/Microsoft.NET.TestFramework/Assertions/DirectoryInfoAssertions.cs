@@ -28,14 +28,14 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<DirectoryInfoAssertions> HaveFile(string expectedFile)
         {
-            var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(expectedFile);
+            var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(Path.Combine(_dirInfo.FullName, expectedFile));
             file.Should().Exist($"Expected File {expectedFile} cannot be found in directory {_dirInfo.FullName}.");
             return new AndConstraint<DirectoryInfoAssertions>(this);
         }
 
         public AndConstraint<DirectoryInfoAssertions> NotHaveFile(string expectedFile)
         {
-            var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(expectedFile);
+            var file = _dirInfo.EnumerateFiles(expectedFile, SearchOption.TopDirectoryOnly).SingleOrDefault() ?? new FileInfo(Path.Combine(_dirInfo.FullName, expectedFile));
             file.Should().NotExist($"File {expectedFile} should not be found in directory {_dirInfo.FullName}.");
             return new AndConstraint<DirectoryInfoAssertions>(this);
         }
