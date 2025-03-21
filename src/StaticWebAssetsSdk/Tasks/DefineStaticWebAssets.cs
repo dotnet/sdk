@@ -5,7 +5,6 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // There is also a RelativePathPattern that is used to automatically transform the relative path of the candidates to match
 // the expected path of the final asset. This is typically use to remove a common path prefix, like `wwwroot` from the target
 // path of the assets and so on.
-public class DefineStaticWebAssets : Task
+public partial class DefineStaticWebAssets : Task
 {
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
@@ -64,6 +63,8 @@ public class DefineStaticWebAssets : Task
 
     public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
 
+    public string CacheManifestPath { get; set; }
+
     [Output]
     public ITaskItem[] Assets { get; set; }
 
@@ -74,11 +75,19 @@ public class DefineStaticWebAssets : Task
 
     public override bool Execute()
     {
+        var assetsCache = GetOrCreateAssetsCache();
+
+        if (assetsCache.IsUpToDate())
+        {
+            var outputs = assetsCache.GetComputedOutputs();
+            Assets = [.. outputs.Assets];
+            CopyCandidates = [.. outputs.CopyCandidates];
+
+            return !Log.HasLoggedErrors;
+        }
+
         try
         {
-            var results = new List<ITaskItem>();
-            var copyCandidates = new List<ITaskItem>();
-
             var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
                 new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathPattern).Build() :
                 null;
@@ -90,9 +99,10 @@ public class DefineStaticWebAssets : Task
             var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
             var fingerprintPatternMatcher = new FingerprintPatternMatcher(Log, FingerprintCandidates ? (FingerprintPatterns ?? []) : []);
             var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
-            for (var i = 0; i < CandidateAssets.Length; i++)
+            foreach (var kvp in assetsCache.OutOfDateInputs())
             {
-                var candidate = CandidateAssets[i];
+                var hash = kvp.Key;
+                var candidate = kvp.Value;
                 var relativePathCandidate = string.Empty;
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
@@ -213,10 +223,7 @@ public class DefineStaticWebAssets : Task
 
                     if (computed)
                     {
-                        copyCandidates.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
-                        {
-                            ["TargetPath"] = identity
-                        }));
+                        assetsCache.AppendCopyCandidate(hash, candidate.ItemSpec, identity);
                     }
                 }
 
@@ -255,11 +262,16 @@ public class DefineStaticWebAssets : Task
                     UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
                 }
 
-                results.Add(item);
+                assetsCache.AppendAsset(hash, asset, item);
             }
 
-            Assets = [.. results];
-            CopyCandidates = [.. copyCandidates];
+            var outputs = assetsCache.GetComputedOutputs();
+            var results = outputs.Assets;
+
+            assetsCache.WriteCacheManifest();
+
+            Assets = [.. outputs.Assets];
+            CopyCandidates = [.. outputs.CopyCandidates];
         }
         catch (Exception ex)
         {
