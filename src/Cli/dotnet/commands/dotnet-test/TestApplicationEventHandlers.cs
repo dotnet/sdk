@@ -132,7 +132,7 @@ internal sealed class TestApplicationsEventHandlers : IDisposable
     {
         var testApplication = (TestApplication)sender;
 
-        if (_executions.TryGetValue((testApplication), out var appInfo))
+        if (_executions.TryGetValue(testApplication, out var appInfo))
         {
             _output.AssemblyRunCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.ExitCode, string.Join(Environment.NewLine, args.OutputData), string.Join(Environment.NewLine, args.ErrorData));
         }
