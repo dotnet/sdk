@@ -5,4 +5,4 @@ namespace Microsoft.DotNet.Tools.Test;
 
 internal sealed record DiscoveredTestMessage(string? Uid, string? DisplayName);
 
-internal sealed record DiscoveredTestMessages(string? ExecutionId, DiscoveredTestMessage[] DiscoveredMessages, string? InstanceId) : IRequest;
+internal sealed record DiscoveredTestMessages(string? ExecutionId, string? InstanceId, DiscoveredTestMessage[] DiscoveredMessages) : IRequest;

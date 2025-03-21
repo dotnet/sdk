@@ -15,6 +15,10 @@ namespace Microsoft.DotNet.Tools.Test;
 |---ExecutionId Size---| (4 bytes)
 |---ExecutionId Value---| (n bytes)
 
+|---InstanceId---| (2 bytes)
+|---InstanceId Size---| (4 bytes)
+|---InstanceId Value---| (n bytes)
+
 |---FileArtifactMessageList Id---| (2 bytes)
 |---FileArtifactMessageList Size---| (4 bytes)
 |---FileArtifactMessageList Value---| (n bytes)
@@ -45,10 +49,6 @@ namespace Microsoft.DotNet.Tools.Test;
     |---FileArtifactMessageList[0].SessionUid Id---| (2 bytes)
     |---FileArtifactMessageList[0].SessionUid Size---| (4 bytes)
     |---FileArtifactMessageList[0].SessionUid Value---| (n bytes)
-
-|---InstanceId---| (2 bytes)
-|---InstanceId Size---| (4 bytes)
-|---InstanceId Value---| (n bytes)
 */
 
 internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPipeSerializer
@@ -58,8 +58,8 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
     public object Deserialize(Stream stream)
     {
         string? executionId = null;
-        List<FileArtifactMessage>? fileArtifactMessages = null;
         string? instanceId = null;
+        List<FileArtifactMessage>? fileArtifactMessages = null;
 
         ushort fieldCount = ReadShort(stream);
 
@@ -74,12 +74,12 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
                     executionId = ReadStringValue(stream, fieldSize);
                     break;
 
-                case FileArtifactMessagesFieldsId.FileArtifactMessageList:
-                    fileArtifactMessages = ReadFileArtifactMessagesPayload(stream);
-                    break;
-
                 case FileArtifactMessagesFieldsId.InstanceId:
                     instanceId = ReadStringValue(stream, fieldSize);
+                    break;
+
+                case FileArtifactMessagesFieldsId.FileArtifactMessageList:
+                    fileArtifactMessages = ReadFileArtifactMessagesPayload(stream);
                     break;
 
                 default:
@@ -89,7 +89,7 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
             }
         }
 
-        return new FileArtifactMessages(executionId, fileArtifactMessages is null ? [] : [.. fileArtifactMessages], instanceId);
+        return new FileArtifactMessages(executionId, instanceId, fileArtifactMessages is null ? [] : [.. fileArtifactMessages]);
     }
 
     private static List<FileArtifactMessage> ReadFileArtifactMessagesPayload(Stream stream)
@@ -155,8 +155,8 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
         WriteShort(stream, GetFieldCount(fileArtifactMessages));
 
         WriteField(stream, FileArtifactMessagesFieldsId.ExecutionId, fileArtifactMessages.ExecutionId);
-        WriteFileArtifactMessagesPayload(stream, fileArtifactMessages.FileArtifacts);
         WriteField(stream, FileArtifactMessagesFieldsId.InstanceId, fileArtifactMessages.InstanceId);
+        WriteFileArtifactMessagesPayload(stream, fileArtifactMessages.FileArtifacts);
     }
 
     private static void WriteFileArtifactMessagesPayload(Stream stream, FileArtifactMessage[]? fileArtifactMessageList)
@@ -193,8 +193,8 @@ internal sealed class FileArtifactMessagesSerializer : BaseSerializer, INamedPip
 
     private static ushort GetFieldCount(FileArtifactMessages fileArtifactMessages) =>
         (ushort)((fileArtifactMessages.ExecutionId is null ? 0 : 1) +
-        (IsNullOrEmpty(fileArtifactMessages.FileArtifacts) ? 0 : 1) +
-        (fileArtifactMessages.InstanceId is null ? 0 : 1));
+        (fileArtifactMessages.InstanceId is null ? 0 : 1) +
+        (IsNullOrEmpty(fileArtifactMessages.FileArtifacts) ? 0 : 1));
 
     private static ushort GetFieldCount(FileArtifactMessage fileArtifactMessage) =>
         (ushort)((fileArtifactMessage.FullPath is null ? 0 : 1) +

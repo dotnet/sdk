@@ -9,4 +9,4 @@ internal sealed record FailedTestResultMessage(string? Uid, string? DisplayName,
 
 internal sealed record ExceptionMessage(string? ErrorMessage, string? ErrorType, string? StackTrace);
 
-internal sealed record TestResultMessages(string? ExecutionId, SuccessfulTestResultMessage[] SuccessfulTestMessages, FailedTestResultMessage[] FailedTestMessages, string? InstanceId) : IRequest;
+internal sealed record TestResultMessages(string? ExecutionId, string? InstanceId, SuccessfulTestResultMessage[] SuccessfulTestMessages, FailedTestResultMessage[] FailedTestMessages) : IRequest;
