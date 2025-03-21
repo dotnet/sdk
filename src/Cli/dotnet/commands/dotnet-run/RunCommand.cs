@@ -110,7 +110,7 @@ public partial class RunCommand
             projectFactory = new VirtualProjectBuildingCommand
             {
                 EntryPointFileFullPath = EntryPointFileFullPath,
-            }.CreateProjectInstance;
+            }.PrepareProjectInstance().CreateProjectInstance;
         }
 
         try

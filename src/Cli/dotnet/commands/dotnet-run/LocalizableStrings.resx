@@ -244,4 +244,20 @@ Make the profile names distinct.</value>
   <data name="LaunchProfileDoesNotExist" xml:space="preserve">
     <value>A launch profile with the name '{0}' doesn't exist.</value>
   </data>
+  <data name="UnrecognizedDirective" xml:space="preserve">
+    <value>Unrecognized directive '{0}' at {1}.</value>
+    <comment>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</comment>
+  </data>
+  <data name="MissingDirectiveName" xml:space="preserve">
+    <value>Missing name of '{0}' at {1}.</value>
+    <comment>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</comment>
+  </data>
+  <data name="PropertyDirectiveMissingParts" xml:space="preserve">
+    <value>The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</value>
+    <comment>{0} is the file path and line number. {Locked="="}</comment>
+  </data>
+  <data name="PropertyDirectiveInvalidName" xml:space="preserve">
+    <value>Invalid property name at {0}. {1}</value>
+    <comment>{0} is the file path and line number. {1} is an inner exception message.</comment>
+  </data>
 </root>

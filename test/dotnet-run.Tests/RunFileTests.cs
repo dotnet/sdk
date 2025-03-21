@@ -775,4 +775,26 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Fail()
             .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
     }
+
+    [Fact]
+    public void PackageReference()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:package System.CommandLine=2.0.0-beta4.22272.1
+            using System.CommandLine;
+
+            var rootCommand = new RootCommand("Sample app for System.CommandLine");
+            return await rootCommand.InvokeAsync(args);
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "--", "--help")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                Description:
+                  Sample app for System.CommandLine
+                """);
+    }
 }
