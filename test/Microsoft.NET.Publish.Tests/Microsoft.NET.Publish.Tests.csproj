@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions.Json" />
+    <PackageReference Include="AwesomeAssertions.Json" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" />
   </ItemGroup>
 
