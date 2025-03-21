@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using static Microsoft.DotNet.Cli.Parser;
@@ -42,7 +41,7 @@ public static class ParseResultExtensions
             var unrecognizedTokenErrors = parseResult.Errors.Where(error =>
             {
                 // Can't really cache this access in a static or something because it implicitly depends on the environment.
-                var rawResourcePartsForThisLocale = DistinctFormatStringParts(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument);
+                var rawResourcePartsForThisLocale = DistinctFormatStringParts(CommonLocalizableStrings.UnrecognizedCommandOrArgument);
                 return ErrorContainsAllParts(error.Message, rawResourcePartsForThisLocale);
             });
             if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors ||
