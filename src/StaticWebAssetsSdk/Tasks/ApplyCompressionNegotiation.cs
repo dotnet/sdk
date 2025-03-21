@@ -49,7 +49,7 @@ public class ApplyCompressionNegotiation : Task
             {
                 if (HasContentEncodingSelector(compressedEndpoint))
                 {
-                    Log.LogMessage(MessageImportance.Low, $"  Skipping endpoint '{compressedEndpoint.Route}' since it already has a Content-Encoding selector");
+                    Log.LogMessage(MessageImportance.Low, "  Skipping endpoint '{0}' since it already has a Content-Encoding selector", compressedEndpoint.Route);
                     continue;
                 }
 
