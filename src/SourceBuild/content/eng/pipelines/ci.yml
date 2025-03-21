@@ -39,6 +39,15 @@ parameters:
     - Unsigned
     - Default (unsigned for manual and non-main/release builds)
 
+- name: desiredIBC
+  displayName: 'Enable IBC?'
+  type: string
+  default: 'Default (disabled for manual and non-main/release builds)'
+  values:
+    - Enabled
+    - Disabled
+    - Default (disabled for manual and non-main/release builds)
+
 variables:
 # enable source-only build for pipelines that contain the -source-build string
 - name: isSourceOnlyBuild
@@ -151,6 +160,8 @@ extends:
       parameters:
         isBuiltFromVmr: true
         isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+        desiredSigning: ${{ parameters.desiredSigning }}
+        desiredIBC: ${{ parameters.desiredIBC }}
         ${{ if eq(variables.isScheduleTrigger, 'true') }}:
           scope: full
         ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:

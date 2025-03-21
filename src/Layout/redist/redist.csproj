@@ -15,14 +15,12 @@
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <!-- NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. -->
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1205</MSBuildWarningsAsMessages>
+    <!-- The D.B.targets file is in subfolder so that the tools projects don't import it. -->
+    <DirectoryBuildTargetsPath>$(MSBuildThisFileDirectory)targets\Directory.Build.targets</DirectoryBuildTargetsPath>
+    <!-- Needed to calculate the stable FileVersion for the sdk bundle version. -->
+    <IsShippingPackage>true</IsShippingPackage>
+    <NoWarn>$(NoWarn);NU1505</NoWarn>
   </PropertyGroup>
-
-  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
-  <Import Project="targets\BundledSdks.targets" />
-  <Import Project="targets\BundledTools.targets" />
-  <Import Project="targets\PublishDotnetWatch.targets" />
-  <Import Project="targets\GenerateLayout.targets" />
-  <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
 
   <ItemGroup>
     <PackageReference Include="NuGet.Build.Tasks" />
@@ -52,22 +50,30 @@
     <PackageReference Include="Microsoft.Build.Framework" VersionOverride="$(MicrosoftBuildVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildVersion)" />
     <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildVersion)" />
+
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
     <!-- These project references with ReferenceOutputAssembly="false" should also set SkipGetTargetFrameworkProperties="true".  Otherwise, only the inner
          build of a multi-targeted project will be built to fulfill the project reference, and if the redist project depends on output that is created
          in the outer build (which is the case for some of these references), there may be sporadic incorrect builds if the outer build happens to run concurrently
          with or after the redist build. -->
     <ProjectReference Include="..\..\Containers\packaging\package.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
-    <ProjectReference Include="..\tool_msbuild\tool_msbuild.csproj" />
-    <ProjectReference Include="..\tool_nuget\tool_nuget.csproj" />
+    <ProjectReference Include="tools\tool_msbuild.csproj" />
+    <ProjectReference Include="tools\tool_nuget.csproj" />
     <ProjectReference Include="..\..\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
     <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
     <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-format\dotnet-format.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"  Private="false" />
+
+    <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\finalizer\finalizer.csproj" Condition="'$(OS)' == 'Windows_NT'" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"  Private="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -102,5 +108,7 @@
       <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)" Condition="'%(FileName)' == 'MSBuild'" />
     </ItemGroup>
   </Target>
+
+  <Target Name="ReturnProductVersion" Returns="$(FullNugetVersion)" />
 
 </Project>
