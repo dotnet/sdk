@@ -7,7 +7,7 @@
                 "type": "nuget",
                 "nuget": {
                     "name": "coverlet.collector",
-                    "version": "6.0.2"
+                    "version": "6.0.4"
                 }
             }
         },
