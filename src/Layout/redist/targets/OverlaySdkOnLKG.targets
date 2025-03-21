@@ -31,7 +31,8 @@
     <!-- Copy artifacts to the testhost folder. -->
     <Copy DestinationFiles="@(InstallerOutputFile)"
           SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
-          SkipUnchangedFiles="true" />
+          SkipUnchangedFiles="true"
+          UseHardlinksIfPossible="true" />
 
     <!-- Run "dotnet new" (which will just display usage and available templates) in order to print first time
          use message so that it doesn't interfere with tests which check the output of commands. -->

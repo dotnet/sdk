@@ -152,6 +152,7 @@
 
     <Copy SourceFiles="@(SdkOutputFile)"
           DestinationFiles="@(SdkOutputFile -> '$(SdkInternalLayoutPath)sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
           SkipUnchangedFiles="true" />
 
     <!-- Copy ASP.NET runtime and targeting pack to internal layout, as we don't currently chain that in with a pkg dependency -->
@@ -167,10 +168,14 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(TemplateFiles)"
-          DestinationFiles="@(TemplateFiles->'$(SdkInternalLayoutPath)templates/%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(TemplateFiles->'$(SdkInternalLayoutPath)templates/%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
 
     <Copy SourceFiles="@(ManifestFiles)"
-          DestinationFiles="@(ManifestFiles->'$(SdkInternalLayoutPath)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(ManifestFiles->'$(SdkInternalLayoutPath)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
 
     <ReplaceFileContents
       InputFiles="$(SdkPkgScriptTemplateFile)"
