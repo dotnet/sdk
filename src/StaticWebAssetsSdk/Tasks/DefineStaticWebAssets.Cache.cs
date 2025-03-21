@@ -71,15 +71,15 @@ public partial class DefineStaticWebAssets : Task
     {
         private readonly List<ITaskItem> _assets = [];
         private readonly List<ITaskItem> _copyCandidates = [];
-        private string? _manifestPath;
-        private IDictionary<string, ITaskItem>? _inputByHash;
-        private ITaskItem[]? _noCacheCandidates;
+        private string _manifestPath;
+        private IDictionary<string, ITaskItem> _inputByHash;
+        private ITaskItem[] _noCacheCandidates;
         private bool _cacheUpToDate;
-        private TaskLoggingHelper? _log;
+        private TaskLoggingHelper _log;
 
         public DefineStaticWebAssetsCache() { }
 
-        internal DefineStaticWebAssetsCache(TaskLoggingHelper log, string? manifestPath) : this()
+        internal DefineStaticWebAssetsCache(TaskLoggingHelper log, string manifestPath) : this()
             => SetPathAndLogger(manifestPath, log);
 
         // Inputs for the cache
@@ -223,7 +223,7 @@ public partial class DefineStaticWebAssets : Task
             _inputByHash = remainingCandidates;
         }
 
-        internal void SetPathAndLogger(string? manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
+        internal void SetPathAndLogger(string manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
 
         public (IList<ITaskItem> CopyCandidates, IList<ITaskItem> Assets) GetComputedOutputs() => (_copyCandidates, _assets);
 

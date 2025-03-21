@@ -964,6 +964,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             {
                 return fileInfo;
             }
+
+            throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
         }
 
         [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
