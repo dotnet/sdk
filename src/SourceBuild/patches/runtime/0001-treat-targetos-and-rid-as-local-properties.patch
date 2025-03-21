@@ -1,3 +1,12 @@
+From 9e230fef55109e2e16716136443d8fd5c83bdfae Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 21 Mar 2025 09:09:52 -0700
+Subject: [PATCH] Allow TargetOS and TargetRid to be overridden in
+ DotNetBuild.props
+
+This is needed to fix the linux-bionic builds in the VMR
+Backport: https://github.com/dotnet/runtime/pull/113765
+---
 diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
 index 1631f76ce95..7b88a2177d0 100644
 --- a/eng/DotNetBuild.props
