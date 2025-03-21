@@ -23,15 +23,19 @@ public partial class DefineStaticWebAssets : Task
 
         var memoryStream = new MemoryStream();
 #if NET9_0_OR_GREATER
-        Span<string> properties = new[] {
+        Span<string> properties = [
 #else
-        var properties = new[] {
+        var properties = new string[] {
 #endif
         SourceId, SourceType, BasePath, ContentRoot, RelativePathPattern, RelativePathFilter,
             AssetKind, AssetMode, AssetRole, AssetMergeSource, AssetMergeBehavior, RelatedAsset,
             AssetTraitName, AssetTraitValue, CopyToOutputDirectory, CopyToPublishDirectory,
             FingerprintCandidates.ToString()
+#if NET9_0_OR_GREATER
+        ];
+#else
         };
+
         var propertiesHash = HashingUtils.ComputeHash(memoryStream, properties);
 
         var patternMetadata = new[] { nameof(FingerprintPattern.Pattern), nameof(FingerprintPattern.Expression) };
@@ -40,7 +44,7 @@ public partial class DefineStaticWebAssets : Task
         var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides, nameof(ITaskItem.GetMetadata));
 
 #if NET9_0_OR_GREATER
-        Span<string> candidateAssetMetadata = new[] {
+        Span<string> candidateAssetMetadata = [
 #else
         var candidateAssetMetadata = new[] {
 #endif
@@ -51,7 +55,11 @@ public partial class DefineStaticWebAssets : Task
             nameof(StaticWebAsset.AssetTraitName), nameof(StaticWebAsset.AssetTraitValue), nameof(StaticWebAsset.Fingerprint),
             nameof(StaticWebAsset.Integrity), nameof(StaticWebAsset.CopyToOutputDirectory), nameof(StaticWebAsset.CopyToPublishDirectory),
             nameof(StaticWebAsset.OriginalItemSpec)
+#if NET9_0_OR_GREATER
+        ];
+#else
         };
+#endif
         var inputHashes = HashingUtils.ComputeHashLookup(memoryStream, CandidateAssets ?? [], candidateAssetMetadata);
 
         assetsCache.Update(propertiesHash, fingerprintPatternsHash, propertyOverridesHash, inputHashes);
