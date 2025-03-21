@@ -86,6 +86,24 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return endpointItems;
     }
 
+    public static ITaskItem[] ToTaskItems(ICollection<StaticWebAssetEndpoint> endpoints)
+    {
+        if (endpoints == null || endpoints.Count == 0)
+        {
+            return [];
+        }
+
+        var endpointItems = new ITaskItem[endpoints.Count];
+        var i = 0;
+        foreach (var endpoint in endpoints)
+        {
+            endpointItems[i++] = endpoint.ToTaskItem();
+        }
+
+        return endpointItems;
+    }
+
+
     public TaskItem ToTaskItem()
     {
         var item = new TaskItem(Route);
