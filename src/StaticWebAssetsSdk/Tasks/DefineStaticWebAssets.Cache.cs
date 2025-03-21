@@ -35,7 +35,7 @@ public partial class DefineStaticWebAssets : Task
         ];
 #else
         };
-
+#endif
         var propertiesHash = HashingUtils.ComputeHash(memoryStream, properties);
 
         var patternMetadata = new[] { nameof(FingerprintPattern.Pattern), nameof(FingerprintPattern.Expression) };
