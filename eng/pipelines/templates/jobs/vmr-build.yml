@@ -217,7 +217,12 @@ jobs:
     value: $(officialBuildParameter) /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
 
   - name: targetProperties
-    value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+    ${{ if and(ne(parameters.targetOS, ''), ne(parameters.targetArchitecture, '')) }}:
+      value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+    ${{ elseif ne(parameters.targetOS, '') }}:
+      value: /p:TargetOS=${{ parameters.targetOS }}
+    ${{ else }}:
+      value: /p:TargetArchitecture=${{ parameters.targetArchitecture }}
 
   ### Signing
   - name: _SignDiagnosticFilesArgs
