@@ -12,17 +12,19 @@
     </PropertyGroup>
 
     <!-- Copy artifacts from the stage0 SDK folder.
-         Ignore the sdk and templates directories which should only contain the live built artifacts. -->
+         Ignore the sdk, templates and host files for which only live built artifacts should be used. -->
     <ItemGroup>
       <_OverlaySDKFile Include="$(_DotNetHiveRoot)\**\*"
                        Exclude="$(_DotNetHiveRoot)sdk\**\*;
-                                $(_DotNetHiveRoot)templates\**\*"/>
+                                $(_DotNetHiveRoot)templates\**\*;
+                                $(_DotNetHiveRoot)host\**\*"/>
       <OverlaySDKFile Include="@(_OverlaySDKFile->'$(TestHostFolder)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
     </ItemGroup>
 
     <ItemGroup>
       <_InstallerOutputFile Include="$(RedistInstallerLayoutPath)**\*" />
       <InstallerOutputFile Include="@(_InstallerOutputFile->'$(TestHostFolder)%(RecursiveDir)%(Filename)%(Extension)')" Source="%(Identity)" />
+      <!-- Use available live built artifacts instead of stage0 files. -->
       <InstallerOutputFile Include="@(OverlaySDKFile)" Exclude="@(InstallerOutputFile)" />
     </ItemGroup>
 
