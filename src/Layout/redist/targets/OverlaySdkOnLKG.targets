@@ -1,10 +1,10 @@
 <Project>
 
-  <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateInstallerLayout">
-    <PropertyGroup>
-      <TestHostFolder>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</TestHostFolder>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TestHostFolder>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</TestHostFolder>
+  </PropertyGroup>
 
+  <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateInstallerLayout">
     <PropertyGroup>
       <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
       <_DotNetHiveRoot Condition="'$(_DotNetHiveRoot)' == ''">$(RepoRoot).dotnet/</_DotNetHiveRoot>
@@ -35,6 +35,30 @@
          use message so that it doesn't interfere with tests which check the output of commands. -->
     <Exec Command="$(TestHostFolder)$([System.IO.Path]::GetFileName('$(DotNetTool)')) new"
           EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)" />
+  </Target>
+
+  <Target Name="PublishTestWorkloads"
+          AfterTargets="OverlaySdkOnLKG">
+    <PropertyGroup>
+      <!-- Calculate the version band (ie the band should still be 5.0.100 if the VersionPrefix is 5.0.101 -->
+      <_VersionPrefixMajor>$(VersionPrefix.Split('.')[0])</_VersionPrefixMajor>
+      <_VersionPrefixMinor>$(VersionPrefix.Split('.')[1])</_VersionPrefixMinor>
+      <_VersionPrefixPatch>$(VersionPrefix.Split('.')[2])</_VersionPrefixPatch>
+      <_VersionPrefixPatchBand>$([System.Convert]::ToUInt16($([MSBuild]::Divide($(_VersionPrefixPatch), 100))))</_VersionPrefixPatchBand>
+      <_VersionPrefixPatchBand>$([MSBuild]::Multiply($(_VersionPrefixPatchBand), 100))</_VersionPrefixPatchBand>
+      <VersionBand>$(_VersionPrefixMajor).$(_VersionPrefixMinor).$(_VersionPrefixPatchBand)</VersionBand>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <WorkloadManifestContent Include="$(RepoRoot)test\TestAssets\TestWorkloads\manifests\**\*.*" />
+      <WorkloadPackContent Include="$(RepoRoot)test\TestAssets\TestWorkloads\packs\**\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(WorkloadManifestContent)"
+          DestinationFiles="@(WorkloadManifestContent->'$(TestHostFolder)sdk-manifests\$(VersionBand)\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Copy SourceFiles="@(WorkloadPackContent)"
+          DestinationFiles="@(WorkloadPackContent->'$(TestHostFolder)packs\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
 </Project>
