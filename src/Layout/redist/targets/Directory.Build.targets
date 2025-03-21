@@ -12,6 +12,7 @@
     <Import Project="BundledSdks.targets" />
     <Import Project="PublishDotnetWatch.targets" />
     <Import Project="GenerateLayout.targets" />
+    <Import Project="GeneratePackagePruneData.targets" />
     <Import Project="OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
 
     <Import Project="BundledTemplates.targets" />
