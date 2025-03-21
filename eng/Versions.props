@@ -226,15 +226,15 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetVersion>4.14.0-3.25170.16</MicrosoftNetCompilersToolsetVersion>
-    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>4.14.0-3.25170.16</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>4.14.0-3.25170.16</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>4.14.0-3.25170.16</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.14.0-3.25170.16</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
-    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.14.0-3.25170.16</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>4.14.0-3.25170.16</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.14.0-3.25170.16</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.14.0-3.25170.16</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftNetCompilersToolsetVersion>4.14.0-3.25171.6</MicrosoftNetCompilersToolsetVersion>
+    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>4.14.0-3.25171.6</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>4.14.0-3.25171.6</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>4.14.0-3.25171.6</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.14.0-3.25171.6</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.14.0-3.25171.6</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>4.14.0-3.25171.6</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.14.0-3.25171.6</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.14.0-3.25171.6</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
