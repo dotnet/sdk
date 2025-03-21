@@ -530,7 +530,6 @@ stages:
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
               image: ${{ variables.linuxBionicCrossContainerImage }}
-            crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm64
 
@@ -544,7 +543,6 @@ stages:
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
               image: ${{ variables.linuxBionicCrossContainerImage }}
-            crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm
 
@@ -558,7 +556,6 @@ stages:
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
               image: ${{ variables.linuxBionicCrossContainerImage }}
-            crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: x64
 

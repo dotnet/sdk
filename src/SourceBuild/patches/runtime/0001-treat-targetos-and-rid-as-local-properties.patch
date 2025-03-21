@@ -1,0 +1,33 @@
+From 9e230fef55109e2e16716136443d8fd5c83bdfae Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Fri, 21 Mar 2025 09:09:52 -0700
+Subject: [PATCH] Allow TargetOS and TargetRid to be overridden in
+ DotNetBuild.props
+
+This is needed to fix the linux-bionic builds in the VMR
+Backport: https://github.com/dotnet/runtime/pull/113765
+---
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 1631f76ce95..7b88a2177d0 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -1,6 +1,6 @@
+ <!-- When altering this file, include @dotnet/product-construction as a reviewer. -->
+ 
+-<Project>
++<Project TreatAsLocalProperty="TargetOS;TargetRid">
+ 
+   <PropertyGroup>
+     <GitHubRepositoryName>runtime</GitHubRepositoryName>
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 7b88a2177d0deb..5403d38e544465 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -16,6 +16,7 @@
+     <_targetRidPlatformIndex>$(TargetRid.LastIndexOf('-'))</_targetRidPlatformIndex>
+     <TargetArch>$(TargetRid.Substring($(_targetRidPlatformIndex)).TrimStart('-'))</TargetArch>
+     <TargetOS>$(TargetRid.Substring(0, $(_targetRidPlatformIndex)))</TargetOS>
++    <TargetOS Condition="'$(TargetOS)' == 'win'">windows</TargetOS>
+ 
+     <_hostRidPlatformIndex>$(_hostRid.LastIndexOf('-'))</_hostRidPlatformIndex>
+     <_hostArch>$(_hostRid.Substring($(_hostRidPlatformIndex)).TrimStart('-'))</_hostArch>
