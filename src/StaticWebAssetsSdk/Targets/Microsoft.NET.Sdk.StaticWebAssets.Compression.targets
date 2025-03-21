@@ -219,8 +219,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 <!-- Build -->
 
   <Target Name="ResolveBuildCompressedStaticWebAssets" DependsOnTargets="$(ResolveBuildCompressedStaticWebAssetsDependsOn)">
+
+    <PropertyGroup>
+      <_ResolveBuildCompressedStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rbcswa.dswa.cache.json</_ResolveBuildCompressedStaticWebAssetsCachePath>
+    </PropertyGroup>
+
     <DefineStaticWebAssets
       CandidateAssets="@(_CompressedStaticWebAssets)"
+      CacheManifestPath="$(_ResolveBuildCompressedStaticWebAssetsCachePath)"
     >
       <Output TaskParameter="Assets" ItemName="_CompressionBuildStaticWebAsset" />
     </DefineStaticWebAssets>

@@ -671,6 +671,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     BeforeTargets="AssignTargetPaths"
     DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
 
+    <PropertyGroup>
+      <_ResolveProjectStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rpswa.dswa.cache.json</_ResolveProjectStaticWebAssetsCachePath>
+    </PropertyGroup>
+
     <DefineStaticWebAssets
       CandidateAssets="@(Content)"
       FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
@@ -680,7 +684,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       SourceId="$(PackageId)"
       ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+      AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      CacheManifestPath="$(_ResolveProjectStaticWebAssetsCachePath)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
         <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
     </DefineStaticWebAssets>
