@@ -106,10 +106,10 @@ configuration:
 
             1. [ ] Create and link to this PR and the issue a matching issue in the dotnet/docs repo using the [breaking change documentation template](https://aka.ms/dotnet/docs/new-breaking-change-issue), then remove this `needs-breaking-change-doc-created` label.
 
-            2. [ ] Ask a committer to mail the `.NET Breaking Change Notification` DL.
+            2. [ ] Ask a committer to mail the `.NET SDK Breaking Change Notification` email list.
 
 
-            Tagging @dotnet/compat for awareness of the breaking change.
-      description: Add breaking change doc label to PR
+            You can refer to the [.NET SDK breaking change guidelines](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/breaking-change-guidelines.md)
+      description: Add breaking change instructions to PR.
 onFailure: 
 onSuccess: 
