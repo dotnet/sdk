@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.DotNet.Tools.Tool.Run;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -39,7 +38,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             {
                 CommandName = "dotnet-a",
                 CommandArguments = testForwardArgument
-            }, toolRunCommand._allowRollForward); 
+            }, toolRunCommand._allowRollForward);
 
             result.Should().NotBeNull();
             result.Args.Should().Contain("--roll-forward", "Major", fakeExecutable.Value);
