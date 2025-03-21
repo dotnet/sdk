@@ -5,7 +5,6 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -64,7 +63,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public string CopyToOutputDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.Never;
 
-        public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
+    public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
+
+    public string CacheManifestPath { get; set; }
 
         [Output]
         public ITaskItem[] Assets { get; set; }
@@ -76,11 +77,19 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
     public override bool Execute()
     {
+        var assetsCache = GetOrCreateAssetsCache();
+
+        if (assetsCache.IsUpToDate())
+        {
+            var outputs = assetsCache.GetComputedOutputs();
+            Assets = [.. outputs.Assets];
+            CopyCandidates = [.. outputs.CopyCandidates];
+
+            return !Log.HasLoggedErrors;
+        }
+
         try
         {
-            var results = new List<ITaskItem>();
-            var copyCandidates = new List<ITaskItem>();
-
             var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
                 new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathPattern).Build() :
                 null;
@@ -92,9 +101,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
             var fingerprintPatternMatcher = new FingerprintPatternMatcher(Log, FingerprintCandidates ? (FingerprintPatterns ?? []) : []);
             var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
-            for (var i = 0; i < CandidateAssets.Length; i++)
+            foreach (var kvp in assetsCache.OutOfDateInputs())
             {
-                var candidate = CandidateAssets[i];
+                var hash = kvp.Key;
+                var candidate = kvp.Value;
                 var relativePathCandidate = string.Empty;
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
@@ -213,14 +223,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     var contentRootPrefix = StaticWebAsset.AssetKinds.IsPublish(assetKind) ? null : contentRoot;
                     (identity, var computed) = ComputeCandidateIdentity(candidate, contentRootPrefix, relativePathCandidate, matcher, matchContext);
 
-                        if (computed)
-                        {
-                            copyCandidates.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
-                            {
-                                ["TargetPath"] = identity
-                            }));
-                        }
+                    if (computed)
+                    {
+                        assetsCache.AppendCopyCandidate(hash, candidate.ItemSpec, identity);
                     }
+                }
 
                 if (FingerprintCandidates)
                 {
@@ -257,11 +264,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
                 }
 
-                    results.Add(item);
-                }
+                assetsCache.AppendAsset(hash, asset, item);
+            }
 
-            Assets = [.. results];
-            CopyCandidates = [.. copyCandidates];
+            var outputs = assetsCache.GetComputedOutputs();
+            var results = outputs.Assets;
+
+            assetsCache.WriteCacheManifest();
+
+            Assets = [.. outputs.Assets];
+            CopyCandidates = [.. outputs.CopyCandidates];
         }
         catch (Exception ex)
         {
