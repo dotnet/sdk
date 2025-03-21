@@ -139,11 +139,11 @@ src/vstest/test/Microsoft.TestPlatform.Utilities.UnitTests/TestFiles/fullcovered
 src/vstest/test/TestAssets/LegacySettingsUnitTestProject/DependencyAssembly/DependencyAssemblyForTest.dll
 
 # winforms
-src/winforms/src/System.Windows.Forms/tests/IntegrationTests/MauiTests/lib/*.dll
-src/winforms/src/System.Windows.Forms/tests/IntegrationTests/WinformsControlsTest/Resources/media.mpg
-src/winforms/src/System.Windows.Forms/tests/UnitTests/bitmaps/milkmateya01.emf
-src/winforms/src/System.Windows.Forms/tests/UnitTests/TestResources/VB6/SimpleControl.vb6
-src/winforms/src/System.Windows.Forms*/**/*.wmf
+src/winforms/src/test/integration/MauiTests/lib/*.dll
+src/winforms/src/test/integration/WinformsControlsTest/Resources/media.mpg
+src/winforms/src/test/unit/System.Windows.Forms/bitmaps/milkmateya01.emf
+src/winforms/src/test/unit/System.Windows.Forms/TestResources/VB6/SimpleControl.vb6
+src/winforms/src/**/System.Windows.Forms*/**/*.wmf
 src/winforms/src/System.Windows.Forms.Design/src/Resources/colordlg.data
 
 # wpf
