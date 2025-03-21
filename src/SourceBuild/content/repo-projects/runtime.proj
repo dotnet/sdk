@@ -38,16 +38,8 @@
     <!-- Temporarily disable building tests until the next runtime codeflow with an updated SDK. -->
     <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
 
-    <!--
-      Publish only RID-specific assets when we're not doing source-build and one of the following cases is true:
-      - This is not the Windows-x64 vertical
-      - This is a BuildPass1 build
-    -->
-    <EnableDefaultRidSpecificArtifacts
-      Condition="('$(VerticalName)' != '' and '$(VerticalName)' != 'Windows_x64')
-                  and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')
-                  and '$(DotNetBuildSourceOnly)' != 'true'">true</EnableDefaultRidSpecificArtifacts>
-    <BuildArgs Condition="'$(EnableDefaultArtifacts)' == 'true'">$(BuildArgs) /p:EnableDefaultRidSpecificArtifacts=true</BuildArgs>
+    <!-- Explicitly disable RID-specific artifacts when it's not enabled. Runtime's build defaults to using RID-specific artifacts, so we must explicitly opt-out. -->
+    <EnableDefaultRidSpecificArtifacts Condition="'$(EnableDefaultRidSpecificArtifacts)' != 'true'">false</EnableDefaultRidSpecificArtifacts>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">

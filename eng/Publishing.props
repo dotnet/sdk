@@ -15,11 +15,18 @@
   <PropertyGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
+    <!--
+      We only want to publish the FSharp assets externally when we're publishing all artifacts, not only RID-specific ones.
+      Add these packages as "Vertical" visibility when we're only publishing RID-specific packages so we don't publish this one.
+    -->
+    <FSharpArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Vertical</FSharpArtifactVisibility>
+    <FSharpArtifactVisibility Condition="'$(FSharpArtifactVisibility)' == ''">External</FSharpArtifactVisibility>
   </PropertyGroup>
   <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <Artifact Include="$(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
                        $(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
-              Kind="Package" />
+              Kind="Package"
+              Visibility="$(FSharpArtifactVisibility)" />
   </ItemGroup>
 
   <!-- The PGO sdk should always have External visibility, even if someone changes the default artifact visibility -->
@@ -29,7 +36,7 @@
 
   <Target Name="GetNonStableProductVersion">
     <!-- Retrieve the non-stable product version. -->
-    <MSBuild Projects="$(RepoRoot)src\Layout\redist-installer\redist-installer.proj"
+    <MSBuild Projects="$(RepoRoot)src\Layout\redist\redist.csproj"
              Targets="ReturnProductVersion">
       <Output TaskParameter="TargetOutputs" PropertyName="NonStableProductVersion" />
     </MSBuild>
@@ -53,7 +60,7 @@
     <MSBuild Projects="$(RepositoryEngineeringDir)Badge.proj" Targets="GenerateVersionBadge">
       <Output TaskParameter="TargetOutputs" ItemName="VersionBadge" />
     </MSBuild>
-    
+
     <ItemGroup>
       <Artifact Include="@(VersionBadge)" Kind="Blob" />
     </ItemGroup>
