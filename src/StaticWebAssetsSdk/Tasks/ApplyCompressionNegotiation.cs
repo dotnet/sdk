@@ -27,16 +27,20 @@ public class ApplyCompressionNegotiation : Task
             .GroupBy(e => e.AssetFile)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        var compressedAssets = assetsById.Values.Where(a => a.AssetTraitName == "Content-Encoding").ToList();
         var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(StaticWebAssetEndpoint.RouteAndAssetComparer);
 
-        var preservedEndpoints = new Dictionary<(string, string), StaticWebAssetEndpoint>();
+        var preservedEndpoints = new HashSet<(string, string)>();
 
         var compressionHeadersByEncoding = new Dictionary<string, StaticWebAssetEndpointResponseHeader[]>();
 
         // Add response headers to compressed endpoints
-        foreach (var compressedAsset in compressedAssets)
+        foreach (var compressedAsset in assetsById.Values)
         {
+            if (!string.Equals(compressedAsset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             var (compressedEndpoints, relatedAssetEndpoints) = ResolveEndpoints(assetsById, endpointsByAsset, compressedAsset);
 
             Log.LogMessage("Processing compressed asset: {0}", compressedAsset.Identity);
@@ -77,11 +81,9 @@ public class ApplyCompressionNegotiation : Task
                     // the ItemSpec, we want to add the original as well so that it gets re-added.
                     // The endpoint pointing to the uncompressed asset doesn't have a Content-Encoding selector and
                     // will use the default "identity" encoding during content negotiation.
-                    if (!preservedEndpoints.ContainsKey((relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile)))
+                    if (!preservedEndpoints.Contains((relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile)))
                     {
-                        preservedEndpoints.Add(
-                            (relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile),
-                            relatedEndpointCandidate);
+                        preservedEndpoints.Add((relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile));
 
                         updatedEndpoints.Add(relatedEndpointCandidate);
                     }
@@ -137,7 +139,7 @@ public class ApplyCompressionNegotiation : Task
         }
 
         updatedEndpoints.UnionWith(additionalUpdatedEndpoints);
-        
+
         UpdatedEndpoints = StaticWebAssetEndpoint.ToTaskItems(updatedEndpoints);
 
         return true;
@@ -175,18 +177,19 @@ public class ApplyCompressionNegotiation : Task
         return compressionHeaders;
     }
 
-    private static StaticWebAssetEndpointResponseHeader[] CreateCompressionHeaders(StaticWebAsset compressedAsset) => [
-                        new()
-                    {
-                        Name = "Content-Encoding",
-                        Value = compressedAsset.AssetTraitValue
-                    },
-                    new()
-                    {
-                        Name = "Vary",
-                        Value = "Content-Encoding"
-                    }
-                    ];
+    private static StaticWebAssetEndpointResponseHeader[] CreateCompressionHeaders(StaticWebAsset compressedAsset) =>
+        [
+            new()
+            {
+                Name = "Content-Encoding",
+                Value = compressedAsset.AssetTraitValue
+            },
+            new()
+            {
+                Name = "Vary",
+                Value = "Content-Encoding"
+            }
+        ];
 
     private StaticWebAssetEndpoint CreateUpdatedEndpoint(
         StaticWebAsset compressedAsset,
@@ -223,7 +226,7 @@ public class ApplyCompressionNegotiation : Task
         return endpointCopy;
     }
 
-    private bool HasContentEncodingResponseHeader(StaticWebAssetEndpoint compressedEndpoint)
+    private static bool HasContentEncodingResponseHeader(StaticWebAssetEndpoint compressedEndpoint)
     {
         for (var i = 0; i < compressedEndpoint.ResponseHeaders.Length; i++)
         {
@@ -282,9 +285,21 @@ public class ApplyCompressionNegotiation : Task
 
     private static bool IsCompatible(StaticWebAssetEndpoint compressedEndpoint, StaticWebAssetEndpoint relatedEndpointCandidate)
     {
-        var compressedFingerprint = compressedEndpoint.EndpointProperties.FirstOrDefault(ep => ep.Name == "fingerprint");
-        var relatedFingerprint = relatedEndpointCandidate.EndpointProperties.FirstOrDefault(ep => ep.Name == "fingerprint");
+        var compressedFingerprint = ResolveFingerprint(compressedEndpoint);
+        var relatedFingerprint = ResolveFingerprint(relatedEndpointCandidate);
         return string.Equals(compressedFingerprint?.Value, relatedFingerprint?.Value, StringComparison.Ordinal);
+    }
+
+    private static StaticWebAssetEndpointProperty ResolveFingerprint(StaticWebAssetEndpoint compressedEndpoint)
+    {
+        foreach (var property in compressedEndpoint.EndpointProperties)
+        {
+            if (string.Equals(property.Name, "fingerprint", StringComparison.Ordinal))
+            {
+                return property;
+            }
+        }
+        return null;
     }
 
     private void ApplyCompressedEndpointHeaders(List<StaticWebAssetEndpointResponseHeader> headers, StaticWebAssetEndpoint compressedEndpoint, string relatedEndpointCandidateRoute)

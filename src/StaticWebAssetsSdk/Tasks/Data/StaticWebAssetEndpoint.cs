@@ -103,7 +103,6 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return endpointItems;
     }
 
-
     public TaskItem ToTaskItem()
     {
         var item = new TaskItem(Route);
