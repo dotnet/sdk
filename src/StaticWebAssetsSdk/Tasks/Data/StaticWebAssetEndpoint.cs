@@ -272,7 +272,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
             var endpoint = FromTaskItem(item);
             if (!endpointDictionary.TryGetValue(endpoint.AssetFile, out var list))
             {
-                list = new List<StaticWebAssetEndpoint>();
+                list = [];
                 endpointDictionary[endpoint.AssetFile] = list;
             }
             list.Add(endpoint);

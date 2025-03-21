@@ -21,7 +21,8 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
 
     public string Quality { get; set; }
 
-    public static StaticWebAssetEndpointSelector[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
+    public static StaticWebAssetEndpointSelector[] FromMetadataValue(string value) =>
+        string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
     public static string ToMetadataValue(StaticWebAssetEndpointSelector[] selectors) => JsonSerializer.Serialize(selectors ?? []);
 
