@@ -4,10 +4,10 @@ The .NET SDK is intended to be a collection of tools for manipulating, building,
 # Types of Threats
 
 ## Untrusted Source Code
-You should never build or run code from an untrusted source without employing mitigating factors like those described [here](https://github.com/dotnet/sdk/blob/main/documentation/general/ExecutingCustomerCode.md). Additionally, some SDK commands will automatically find code or code-adjacent files in the current directory, project directory, executable directory, or any parent directory of any of those up to the file system root. Files that may affect a build or other command if found include but are not limited to a Directory.Build.props, global.json, NuGet.config, or dotnet-tools.json. You should also check your home folder as well as environment variables that may point to other locations the SDK will search to find code or configuration files.
+You should never build or run code from an untrusted source without employing mitigating factors like those described [here](ExecutingCustomerCode.md). Additionally, some SDK commands will automatically find code or code-adjacent files in the current directory, project directory, executable directory, or any parent directory of any of those up to the file system root. Files that may affect a build or other command if found include but are not limited to a Directory.Build.props, global.json, NuGet.config, or dotnet-tools.json. You should also check your home folder as well as environment variables that may point to other locations the SDK will search to find code or configuration files.
 
 ## Untrusted Locations
-Some folders often store untrusted files. (The Downloads folder is a fairly straightforward example of that.) Some commands look "next to" the project, solution, or other code file being worked with in the directory. Do not run dotnet commands from within any directory that contains any files you do not trust.
+Some folders often store untrusted files. (The Downloads folder is a fairly straightforward example of that.) Some commands look "next to" the project, solution, or other code file being worked with in the directory. Do not run dotnet CLI commands from within any directory that contains any files you do not trust.
 
 ## Untrusted Packages
 Since many SDK commands utilize NuGet under the covers, we further assume that:
