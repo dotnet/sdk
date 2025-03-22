@@ -12,7 +12,7 @@
       "src\\Cli\\Microsoft.DotNet.Configurer\\Microsoft.DotNet.Configurer.csproj",
       "src\\Cli\\Microsoft.DotNet.InternalAbstractions\\Microsoft.DotNet.InternalAbstractions.csproj",
       "src\\Cli\\Microsoft.TemplateEngine.Cli\\Microsoft.TemplateEngine.Cli.csproj",
-      "src\\Cli\\dotnet\\Microsoft.DotNet.Cli.csproj",
+      "src\\Cli\\Microsoft.DotNet.Cli\\Microsoft.DotNet.Cli.csproj",
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompat.Shared\\Microsoft.DotNet.ApiCompat.Shared.shproj",
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompat.Task\\Microsoft.DotNet.ApiCompat.Task.csproj",
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompatibility\\Microsoft.DotNet.ApiCompatibility.csproj",

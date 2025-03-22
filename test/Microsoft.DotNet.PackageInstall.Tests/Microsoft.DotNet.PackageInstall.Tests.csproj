@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Cli\dotnet\Microsoft.DotNet.Cli.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli\Microsoft.DotNet.Cli.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />

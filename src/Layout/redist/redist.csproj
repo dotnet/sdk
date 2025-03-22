@@ -62,7 +62,7 @@
     <ProjectReference Include="..\..\Containers\packaging\package.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
     <ProjectReference Include="tools\tool_msbuild.csproj" />
     <ProjectReference Include="tools\tool_nuget.csproj" />
-    <ProjectReference Include="..\..\Cli\dotnet\Microsoft.DotNet.Cli.csproj" />
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli\Microsoft.DotNet.Cli.csproj" />
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
