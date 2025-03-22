@@ -1,6 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
-<Project>
+﻿<Project>
+
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
     <RunSettingsFilePath>$(MSBuildThisFileDirectory)\dotnet-MsiInstallation.Tests.runsettings</RunSettingsFilePath>
@@ -36,9 +35,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-    <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\..\src\Cli\dotnet\Microsoft.DotNet.Cli.csproj" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  
+
 </Project>

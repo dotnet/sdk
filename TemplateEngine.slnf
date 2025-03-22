@@ -8,7 +8,7 @@
       "src\\Cli\\Microsoft.DotNet.Configurer\\Microsoft.DotNet.Configurer.csproj",
       "src\\Cli\\Microsoft.DotNet.InternalAbstractions\\Microsoft.DotNet.InternalAbstractions.csproj",
       "src\\Cli\\Microsoft.TemplateEngine.Cli\\Microsoft.TemplateEngine.Cli.csproj",
-      "src\\Cli\\dotnet\\dotnet.csproj",
+      "src\\Cli\\dotnet\\Microsoft.DotNet.Cli.csproj",
       "src\\Microsoft.DotNet.TemplateLocator\\Microsoft.DotNet.TemplateLocator.csproj",
       "src\\Microsoft.Win32.Msi\\Microsoft.Win32.Msi.csproj",
       "src\\Resolvers\\Microsoft.DotNet.NativeWrapper\\Microsoft.DotNet.NativeWrapper.csproj",

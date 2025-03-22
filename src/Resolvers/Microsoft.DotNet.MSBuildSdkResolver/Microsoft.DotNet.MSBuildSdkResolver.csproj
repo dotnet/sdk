@@ -31,7 +31,7 @@
     </PropertyGroup>
 
     <Error Condition=" '$(MSBuildRuntimeType)' == 'Core' And '$(_TargetPathRelativePath)' != '$(_TargetPathRelativePathCheck)'"
-           Text="Incorrect relative path calculation"/>
+           Text="Incorrect relative path calculation" />
 
     <ItemGroup>
       <ManifestLines Include="&lt;SdkResolver&gt;" />
