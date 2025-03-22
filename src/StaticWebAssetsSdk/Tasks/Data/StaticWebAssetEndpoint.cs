@@ -18,8 +18,11 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     private StaticWebAssetEndpointProperty[] _endpointProperties;
     private StaticWebAssetEndpointSelector[] _selectors;
     private string _selectorsMetadataValue = string.Empty;
+    private bool _selectorsMetadataUpdated;
     private string _responseHeadersMetadataValue = string.Empty;
+    private bool _responseHeadersMetadataUpdated;
     private string _endpointPropertiesMetadataValue = string.Empty;
+    private bool _endpointPropertiesMetadataUpdated;
 
     // Route as it should be registered in the routing table.
     public string Route { get; set; }
@@ -31,20 +34,33 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     public StaticWebAssetEndpointSelector[] Selectors
     {
         get => _selectors ??= StaticWebAssetEndpointSelector.FromMetadataValue(_selectorsMetadataValue);
-        set => _selectors = value;
+        set
+        {
+            _selectorsMetadataUpdated = true;
+            _selectors = value;
+        }
     }
 
     // Response headers that must be added to the response.
     public StaticWebAssetEndpointResponseHeader[] ResponseHeaders
     {
         get => _responseHeaders ??= StaticWebAssetEndpointResponseHeader.FromMetadataValue(_responseHeadersMetadataValue);
-        set => _responseHeaders = value;
+        set
+        {
+            _responseHeadersMetadataUpdated = true;
+            _responseHeaders = value;
+        }
     }
 
     // Properties associated with the endpoint.
-    public StaticWebAssetEndpointProperty[] EndpointProperties {
+    public StaticWebAssetEndpointProperty[] EndpointProperties
+    {
         get => _endpointProperties ??= StaticWebAssetEndpointProperty.FromMetadataValue(_endpointPropertiesMetadataValue);
-        set => _endpointProperties = value;
+        set
+        {
+            _endpointPropertiesMetadataUpdated = true;
+            _endpointProperties = value;
+        }
     }
 
     public static IEqualityComparer<StaticWebAssetEndpoint> RouteAndAssetComparer { get; } = _routeAndAssetEqualityComparer;
@@ -96,9 +112,16 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     {
         var item = new TaskItem(Route);
         item.SetMetadata(nameof(AssetFile), AssetFile);
-        item.SetMetadata(nameof(Selectors), StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));
-        item.SetMetadata(nameof(ResponseHeaders), StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders));
-        item.SetMetadata(nameof(EndpointProperties), StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties));
+
+        item.SetMetadata(nameof(Selectors), !_selectorsMetadataUpdated && !string.IsNullOrEmpty(_selectorsMetadataValue) ?
+            _selectorsMetadataValue : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));
+
+        item.SetMetadata(nameof(ResponseHeaders), !_responseHeadersMetadataUpdated && !string.IsNullOrEmpty(_responseHeadersMetadataValue) ?
+            _responseHeadersMetadataValue : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders));
+
+        item.SetMetadata(nameof(EndpointProperties), !_endpointPropertiesMetadataUpdated && !string.IsNullOrEmpty(_endpointPropertiesMetadataValue) ?
+            _endpointPropertiesMetadataValue : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties));
+
         return item;
     }
 

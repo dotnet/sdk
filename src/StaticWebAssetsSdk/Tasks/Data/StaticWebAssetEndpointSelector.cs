@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointSelector>, IComparable<StaticWebAssetEndpointSelector>
 {
     private static readonly JsonTypeInfo<StaticWebAssetEndpointSelector[]> _jsonTypeInfo =
-        StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointSelectorArray;
+        StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointSelectorArray;
 
     public string Name { get; set; }
 
@@ -23,7 +23,17 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
 
     public static StaticWebAssetEndpointSelector[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
-    public static string ToMetadataValue(StaticWebAssetEndpointSelector[] selectors) => JsonSerializer.Serialize(selectors ?? []);
+    public static string ToMetadataValue(StaticWebAssetEndpointSelector[] selectors)
+    {
+        if (selectors is null || selectors.Length == 0)
+        {
+            return "[]";
+        }
+        else
+        {
+            return JsonSerializer.Serialize(selectors, _jsonTypeInfo);
+        }
+    }
 
     public int CompareTo(StaticWebAssetEndpointSelector other)
     {
