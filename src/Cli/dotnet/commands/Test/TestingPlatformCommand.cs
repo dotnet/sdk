@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -15,10 +14,10 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
     private TestApplicationActionQueue _actionQueue;
-    private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
+    private TestApplicationsEventHandlers _eventHandlers;
+
     private byte _cancelled;
     private bool _isDiscovery;
-    private TestApplicationsEventHandlers _eventHandlers;
 
     public TestingPlatformCommand(string name, string description = null) : base(name, description)
     {
@@ -42,7 +41,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
             _msBuildHandler = new(buildOptions, _actionQueue, _output);
             TestModulesFilterHandler testModulesFilterHandler = new(_actionQueue, _output);
 
-            _eventHandlers = new TestApplicationsEventHandlers(_executions, _output);
+            _eventHandlers = new TestApplicationsEventHandlers(_output);
 
             if (testOptions.HasFilterMode)
             {
@@ -114,7 +113,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     private void InitializeOutput(int degreeOfParallelism, ParseResult parseResult, bool isHelp)
     {
         var console = new SystemConsole();
-        var showPassedTests = parseResult.GetValue<OutputOptions>(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
+        var showPassedTests = parseResult.GetValue(TestingPlatformOptions.OutputOption) == OutputOptions.Detailed;
         var noProgress = parseResult.HasOption(TestingPlatformOptions.NoProgressOption);
         var noAnsi = parseResult.HasOption(TestingPlatformOptions.NoAnsiOption);
         _output = new TerminalTestReporter(console, new TerminalTestReporterOptions()
@@ -136,7 +135,6 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
             testApp.HelpRequested += OnHelpRequested;
             testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
             testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
-            testApp.ExecutionIdReceived += _eventHandlers.OnExecutionIdReceived;
 
             return await testApp.RunAsync(testOptions);
         });
@@ -153,7 +151,6 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
             testApp.SessionEventReceived += _eventHandlers.OnSessionEventReceived;
             testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
             testApp.TestProcessExited += _eventHandlers.OnTestProcessExited;
-            testApp.ExecutionIdReceived += _eventHandlers.OnExecutionIdReceived;
 
             return await testApp.RunAsync(testOptions);
         });
@@ -192,9 +189,6 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
     private void CleanUp()
     {
         _msBuildHandler?.Dispose();
-        foreach (var execution in _executions)
-        {
-            execution.Key.Dispose();
-        }
+        _eventHandlers?.Dispose();
     }
 }

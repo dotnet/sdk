@@ -19,12 +19,16 @@ internal class DiscoveredTestEventArgs : EventArgs
 {
     public string ExecutionId { get; set; }
 
+    public string InstanceId { get; set; }
+
     public DiscoveredTest[] DiscoveredTests { get; set; }
 }
 
 internal class TestResultEventArgs : EventArgs
 {
     public string ExecutionId { get; set; }
+
+    public string InstanceId { get; set; }
 
     public SuccessfulTestResult[] SuccessfulTestResults { get; set; }
 
@@ -34,6 +38,8 @@ internal class TestResultEventArgs : EventArgs
 internal class FileArtifactEventArgs : EventArgs
 {
     public string ExecutionId { get; set; }
+
+    public string InstanceId { get; set; }
 
     public FileArtifact[] FileArtifacts { get; set; }
 }

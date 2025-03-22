@@ -8,16 +8,13 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli;
 
-internal sealed class TestApplicationsEventHandlers
+internal sealed class TestApplicationsEventHandlers : IDisposable
 {
-    private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions;
+    private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
     private readonly TerminalTestReporter _output;
 
-    public TestApplicationsEventHandlers(
-        ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> executions,
-        TerminalTestReporter output)
+    public TestApplicationsEventHandlers(TerminalTestReporter output)
     {
-        _executions = executions;
         _output = output;
     }
 
@@ -45,6 +42,7 @@ internal sealed class TestApplicationsEventHandlers
             HandshakeMessagePropertyNames.HostType => nameof(HandshakeMessagePropertyNames.HostType),
             HandshakeMessagePropertyNames.ModulePath => nameof(HandshakeMessagePropertyNames.ModulePath),
             HandshakeMessagePropertyNames.ExecutionId => nameof(HandshakeMessagePropertyNames.ExecutionId),
+            HandshakeMessagePropertyNames.InstanceId => nameof(HandshakeMessagePropertyNames.InstanceId),
             _ => string.Empty,
         };
 
@@ -65,10 +63,11 @@ internal sealed class TestApplicationsEventHandlers
 
     public void OnTestResultsReceived(object sender, TestResultEventArgs args)
     {
+        var testApp = (TestApplication)sender;
+        var appInfo = _executions[testApp];
+
         foreach (var testResult in args.SuccessfulTestResults)
         {
-            var testApp = (TestApplication)sender;
-            var appInfo = _executions[testApp];
             _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
                 testResult.Uid,
                 testResult.DisplayName,
@@ -77,24 +76,22 @@ internal sealed class TestApplicationsEventHandlers
                 exceptions: null,
                 expected: null,
                 actual: null,
-                standardOutput: null,
-                errorOutput: null);
+                standardOutput: testResult.StandardOutput,
+                errorOutput: testResult.ErrorOutput);
         }
 
         foreach (var testResult in args.FailedTestResults)
         {
-            var testApp = (TestApplication)sender;
-            var appInfo = _executions[testApp];
             _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
                 testResult.Uid,
                 testResult.DisplayName,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
-                exceptions: testResult.Exceptions.Select(fe => new Microsoft.Testing.Platform.OutputDevice.Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
+                exceptions: testResult.Exceptions.Select(fe => new Testing.Platform.OutputDevice.Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
                 expected: null,
                 actual: null,
-                standardOutput: null,
-                errorOutput: null);
+                standardOutput: testResult.StandardOutput,
+                errorOutput: testResult.ErrorOutput);
         }
 
         LogTestResults(args);
@@ -147,10 +144,6 @@ internal sealed class TestApplicationsEventHandlers
         LogTestProcessExit(args);
     }
 
-    public void OnExecutionIdReceived(object sender, ExecutionEventArgs args)
-    {
-    }
-
     public static TestOutcome ToOutcome(byte? testState) => testState switch
     {
         TestStates.Passed => TestOutcome.Passed,
@@ -189,6 +182,8 @@ internal sealed class TestApplicationsEventHandlers
         var logMessageBuilder = new StringBuilder();
 
         logMessageBuilder.AppendLine($"DiscoveredTests Execution Id: {args.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.InstanceId}");
+
         foreach (var discoveredTestMessage in args.DiscoveredTests)
         {
             logMessageBuilder.AppendLine($"DiscoveredTest: {discoveredTestMessage.Uid}, {discoveredTestMessage.DisplayName}");
@@ -207,6 +202,7 @@ internal sealed class TestApplicationsEventHandlers
         var logMessageBuilder = new StringBuilder();
 
         logMessageBuilder.AppendLine($"TestResults Execution Id: {args.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.InstanceId}");
 
         foreach (SuccessfulTestResult successfulTestResult in args.SuccessfulTestResults)
         {
@@ -235,6 +231,7 @@ internal sealed class TestApplicationsEventHandlers
         var logMessageBuilder = new StringBuilder();
 
         logMessageBuilder.AppendLine($"FileArtifactMessages Execution Id: {args.ExecutionId}");
+        logMessageBuilder.AppendLine($"TestResults Instance Id: {args.InstanceId}");
 
         foreach (FileArtifact fileArtifactMessage in args.FileArtifacts)
         {
@@ -271,5 +268,13 @@ internal sealed class TestApplicationsEventHandlers
         }
 
         Logger.LogTrace(() => logMessageBuilder.ToString());
+    }
+
+    public void Dispose()
+    {
+        foreach (var execution in _executions)
+        {
+            execution.Key.Dispose();
+        }
     }
 }

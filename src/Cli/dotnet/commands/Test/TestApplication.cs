@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
@@ -21,7 +20,6 @@ internal sealed class TestApplication : IDisposable
 
     private Task _testAppPipeConnectionLoop;
     private readonly List<NamedPipeServer> _testAppPipeConnections = new();
-    private readonly ConcurrentDictionary<string, string> _executionIds = [];
 
     public event EventHandler<HandshakeArgs> HandshakeReceived;
     public event EventHandler<HelpEventArgs> HelpRequested;
@@ -31,7 +29,6 @@ internal sealed class TestApplication : IDisposable
     public event EventHandler<SessionEventArgs> SessionEventReceived;
     public event EventHandler<ErrorEventArgs> ErrorReceived;
     public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
-    public event EventHandler<ExecutionEventArgs> ExecutionIdReceived;
 
     public TestModule Module => _module;
 
@@ -39,11 +36,6 @@ internal sealed class TestApplication : IDisposable
     {
         _module = module;
         _buildOptions = buildOptions;
-    }
-
-    public void AddExecutionId(string executionId)
-    {
-        _ = _executionIds.GetOrAdd(executionId, _ => string.Empty);
     }
 
     public async Task<int> RunAsync(TestOptions testOptions)
@@ -186,7 +178,7 @@ internal sealed class TestApplication : IDisposable
 
                 default:
                     // If it doesn't match any of the above, throw an exception
-                    throw new NotSupportedException(string.Format(Microsoft.DotNet.Tools.Test.LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                    throw new NotSupportedException(string.Format(Tools.Test.LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
             }
         }
         catch (Exception ex)
@@ -302,7 +294,6 @@ internal sealed class TestApplication : IDisposable
             builder.Append($" {arg}");
         }
 
-
         if (!string.IsNullOrEmpty(_module.TargetFramework))
         {
             builder.Append($" {CliConstants.FrameworkOptionKey} {_module.TargetFramework}");
@@ -332,11 +323,6 @@ internal sealed class TestApplication : IDisposable
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
     {
-        if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ExecutionId, out string executionId))
-        {
-            AddExecutionId(executionId);
-            ExecutionIdReceived?.Invoke(this, new ExecutionEventArgs { ModulePath = _module.RunProperties.RunCommand, ExecutionId = executionId });
-        }
         HandshakeReceived?.Invoke(this, new HandshakeArgs { Handshake = new Handshake(handshakeMessage.Properties) });
     }
 
@@ -350,6 +336,7 @@ internal sealed class TestApplication : IDisposable
         DiscoveredTestsReceived?.Invoke(this, new DiscoveredTestEventArgs
         {
             ExecutionId = discoveredTestMessages.ExecutionId,
+            InstanceId = discoveredTestMessages.InstanceId,
             DiscoveredTests = discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName)).ToArray()
         });
     }
@@ -359,6 +346,7 @@ internal sealed class TestApplication : IDisposable
         TestResultsReceived?.Invoke(this, new TestResultEventArgs
         {
             ExecutionId = testResultMessage.ExecutionId,
+            InstanceId = testResultMessage.InstanceId,
             SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
             FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace)).ToArray(), message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
         });
@@ -366,7 +354,12 @@ internal sealed class TestApplication : IDisposable
 
     internal void OnFileArtifactMessages(FileArtifactMessages fileArtifactMessages)
     {
-        FileArtifactsReceived?.Invoke(this, new FileArtifactEventArgs { FileArtifacts = fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid)).ToArray() });
+        FileArtifactsReceived?.Invoke(this, new FileArtifactEventArgs
+        {
+            ExecutionId = fileArtifactMessages.ExecutionId,
+            InstanceId = fileArtifactMessages.InstanceId,
+            FileArtifacts = fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid)).ToArray()
+        });
     }
 
     internal void OnSessionEvent(TestSessionEvent sessionEvent)
