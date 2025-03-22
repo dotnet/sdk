@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 public class StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEndpointResponseHeader>, IComparable<StaticWebAssetEndpointResponseHeader>
 {
     private static readonly JsonTypeInfo<StaticWebAssetEndpointResponseHeader[]> _jsonTypeInfo =
-        StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointResponseHeaderArray;
+        StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointResponseHeaderArray;
 
     public string Name { get; set; }
 
@@ -21,7 +21,17 @@ public class StaticWebAssetEndpointResponseHeader : IEquatable<StaticWebAssetEnd
 
     internal static StaticWebAssetEndpointResponseHeader[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
-    internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders) => JsonSerializer.Serialize(responseHeaders ?? []);
+    internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders)
+    {
+        if (responseHeaders is null || responseHeaders.Length == 0)
+        {
+            return "[]";
+        }
+        else
+        {
+            return JsonSerializer.Serialize(responseHeaders, _jsonTypeInfo);
+        }
+    }
 
     private string GetDebuggerDisplay() => $"{Name}: {Value}";
 

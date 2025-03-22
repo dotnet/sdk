@@ -18,7 +18,7 @@ public class UpgradeLegacyWasmStaticWebAssets : Task
 
     public override bool Execute()
     {
-        var upgradedAssets = new List<ITaskItem>();
+        var upgradedAssets = new List<StaticWebAsset>();
 
         var legacyAssets = LegacyAssets.Select(StaticWebAsset.FromV1TaskItem).ToArray();
         var assetsByFinalPath = legacyAssets
@@ -51,10 +51,10 @@ public class UpgradeLegacyWasmStaticWebAssets : Task
                 upgradedAsset.AssetTraitValue = "gzip";
             }
 
-            upgradedAssets.Add(upgradedAsset.ToTaskItem());
+            upgradedAssets.Add(upgradedAsset);
         }
 
-        UpgradedAssets = [.. upgradedAssets];
+        UpgradedAssets = StaticWebAsset.ToTaskItemArray(upgradedAssets);
 
         return !Log.HasLoggedErrors;
     }
