@@ -49,6 +49,13 @@ public class GenerateStaticWebAssetsManifest : Task
 
             var endpoints = FilterPublishEndpointsIfNeeded(assets);
             Array.Sort(endpoints, StaticWebAssetEndpoint.RouteAndAssetSortingComparer);
+            for (var i = 0; i < endpoints.Length; i++)
+            {
+                var endpoint = endpoints[i];
+                Array.Sort(endpoint.Selectors);
+                Array.Sort(endpoint.EndpointProperties);
+                Array.Sort(endpoint.ResponseHeaders);
+            }
 
             Log.LogMessage(MessageImportance.Low, "Generating manifest for '{0}' assets and '{1}' endpoints", assets.Length, endpoints.Length);
 
