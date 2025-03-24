@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
         <source>Building image index '{0}' on top of manifests {1}.</source>
-        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <target state="translated">매니페스트 {1} 위에 이미지 인덱스를 '{0}'.</target>
         <note>
       {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </note>
@@ -77,6 +77,11 @@
       <trans-unit id="ContainerBuilder_StartBuildingImage">
         <source>Building image '{0}' with tags '{1}' on top of base image '{2}'.</source>
         <target state="translated">기본 이미지 '{2}' 위에 '{1}' 태그가 있는 '{0}' 이미지를 빌드하는 중입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ContainerBuilder_StartBuildingImageForRid">
+        <source>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</source>
+        <target state="translated">기본 이미지 '{2}' 위에 런타임 식별자 '{1}'에 대한 '{0}' 이미지를 빌드하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
@@ -159,9 +164,24 @@
         <target state="translated">호스트 개체가 검색되지 않았습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageConfigMissingArchitecture">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</source>
+        <target state="translated">제공된 이미지 구성 중 하나 이상에 'architecture'가 없으므로 이미지 인덱스를 만들 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageConfigMissingOs">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'os'.</source>
+        <target state="translated">제공된 이미지 구성 중 하나 이상에 'os'가 없으므로 이미지 인덱스를 만들 수 없습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
         <source>Pushed image index '{0}' to registry '{1}'.</source>
-        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <target state="translated">'{0}' 이미지 인덱스를 '{1}' 레지스트리에 푸시했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageIndex_PodmanNotSupported">
+        <source>Image index creation for Podman is not supported.</source>
+        <target state="translated">Podman에 대한 이미지 인덱스 만들기는 지원되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
@@ -169,24 +189,44 @@
         <target state="needs-review-translation">CONTAINER1009: 로컬 레지스트리에서 이미지를 로드하지 못했습니다. stdout: {0}</target>
         <note>{StrBegins="CONTAINER1009: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_ContainerdStoreDisabled">
+        <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
+        <target state="translated">CONTAINER1020: 컨테이너화된 이미지 저장소가 Docker에 대해 사용하도록 설정되어 있지 않으므로 이미지를 로드하지 못했습니다. 팁: Docker Desktop 설정에서 '이미지를 풀하고 저장하는 데 컨테이너 사용'을 선택하여 사용하도록 설정할 수 있습니다.</target>
+        <note>{StrBegin="CONTAINER1020: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="needs-review-translation">CONTAINER1010: 로컬 레지스트리에서 이미지 끌어오기가 지원되지 않습니다.</target>
         <note>{StrBegins="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="ImagesEmpty">
-        <source>Cannot create manifest list (image index) because no images were provided.</source>
-        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <source>Cannot create image index because no images were provided.</source>
+        <target state="translated">이미지가 제공되지 않았으므로 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InvalidContainerImageFormat">
+        <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
+        <target state="translated">CONTAINER2031: 컨테이너 이미지 형식 '{0}' 지원되지 않습니다. 지원되는 형식은 '{1}'.</target>
+        <note>{StrBegins="CONTAINER2031: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="needs-review-translation">CONTAINER2015: {0}: '{1}'은(는) 유효한 환경 변수가 아닙니다. 무시 중.</target>
         <note>{StrBegins="CONTAINER2015: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidImageConfig">
+        <source>Cannot create image index because at least one of the provided images' config is invalid.</source>
+        <target state="translated">제공된 이미지의 구성 중 하나 이상이 잘못되었으므로 이미지 인덱스를 만들 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidImageManifest">
+        <source>Cannot create image index because at least one of the provided images' manifest is invalid.</source>
+        <target state="translated">제공된 이미지의 매니페스트 중 하나 이상이 잘못되었으므로 이미지 인덱스를 만들 수 없습니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidImageMetadata">
-        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
+        <target state="translated">제공된 이미지가 잘못되었으므로 이미지 인덱스를 만들 수 없습니다. 항목에는 'Config', 'Manifest', 'ManifestMediaType' 및 'ManifestDigest' 메타데이터가 있어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -236,7 +276,7 @@
       </trans-unit>
       <trans-unit id="InvalidTargetRuntimeIdentifiers">
         <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
-        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <target state="translated">잘못된 string[] TargetRuntimeIdentifiers입니다. 모두 'linux-readl' 또는 none이어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidTokenResponse">
@@ -275,8 +315,8 @@
         <note>{StrBegins="CONTAINER2016: "}</note>
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
-        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
-        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <source>'mediaType' of manifests should be the same in image index.</source>
+        <target state="translated">매니페스트의 'mediaType'은 이미지 인덱스에서 같아야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -287,11 +327,6 @@
       <trans-unit id="NormalizedContainerName">
         <source>'{0}' was not a valid container image name, it was normalized to '{1}'</source>
         <target state="translated">'{0}'은(는) 유효한 컨테이너 이미지 이름이 아닙니다. '{1}'(으)로 정규화되었습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OciImageMultipleTagsNotSupported">
-        <source>Unable to create tarball for oci image with multiple tags.</source>
-        <target state="translated">태그가 여러 개 있는 OCI 이미지에 대한 tarball을 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
@@ -394,6 +429,11 @@
         <target state="needs-review-translation">CONTAINER1016: '{1}' 레지스트리의 '{0}' 리포지토리에 액세스할 수 없습니다. 자격 증명이 올바르고 이 리포지토리 및 레지스트리에 액세스할 수 있는지 확인하세요.</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}'.</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}'.</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: 알 수 없는 AppCommandInstruction '{0}'. 올바른 지침은 {1}입니다.</target>
@@ -415,8 +455,8 @@
         <note>{StrBegins="CONTAINER2001: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
-        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <source>Cannot create image index for the provided 'mediaType' = '{0}'.</source>
+        <target state="translated">제공된 'mediaType' = '{0}' 이미지 인덱스를 만들 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">

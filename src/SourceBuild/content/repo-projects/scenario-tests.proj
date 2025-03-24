@@ -4,19 +4,19 @@
     <!-- The scenario-tests repo shouldn't be cleaned after building as we run tests from it. -->
     <CleanWhileBuilding>false</CleanWhileBuilding>
 
-    <ScenarioTestsArtifactsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'scenario-tests'))</ScenarioTestsArtifactsDir>
-    <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
-    <NuGetConfigInputForScenarioTests>$([MSBuild]::NormalizePath('$(SrcDir)', 'sdk', 'NuGet.config'))</NuGetConfigInputForScenarioTests>
-    <NuGetConfigOutputForScenarioTests>$(ScenarioTestsArtifactsDir)NuGet.config</NuGetConfigOutputForScenarioTests>
+    <TestArgs>$(TestArgs) /p:TestBinlogDir="$(ArtifactsLogRepoDir.TrimEnd('/\'))"</TestArgs>
+    <TestArgs>$(TestArgs) /p:TestDotNetRoot="$(DotNetSdkExtractDir.TrimEnd('/\'))"</TestArgs>
 
-    <!-- TODO: Remove when source-build uses an Arcade SDK with an updated NetCurrent property. -->
-    <BuildArgs>$(BuildArgs) /p:NetCurrent=$(NetCurrent)</BuildArgs>
-    <TestCommand>$(TestCommand) /p:NetCurrent=$(NetCurrent)</TestCommand>
+    <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
+         the Microsoft built packages should be used. -->
+    <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
   </PropertyGroup>
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
+    <!-- Depend on NuGet packages from the sdk repo and transitive repositories. -->
+    <RepositoryReference Include="sdk" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -24,46 +24,31 @@
     <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
-  <Target Name="SetupNuGetConfig"
-          Inputs="$(NuGetConfigInputForScenarioTests)"
-          Outputs="$(NuGetConfigOutputForScenarioTests)">
-    <Copy SourceFiles="$(NuGetConfigInputForScenarioTests)"
-          DestinationFiles="$(NuGetConfigOutputForScenarioTests)" />
-  </Target>
-
   <Target Name="PrepareScenarioTestsInputs"
-          DependsOnTargets="SetupNuGetConfig;DetermineSourceBuiltSdkVersion"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion;DetermineSourceBuiltRuntimeVersion"
           BeforeTargets="RepoTest">
     <PropertyGroup>
-      <_CurrentDateTime>$([System.DateTime]::Now.ToString("yyyy-MM-dd_HH_mm_ss"))</_CurrentDateTime>
-      <_TestXmlOutputPath>$(ScenarioTestsResultsDir)$(_CurrentDateTime).xml</_TestXmlOutputPath>
-      <_ScenarioTestsAdditionalArgs>--xml $(_TestXmlOutputPath) --target-rid $(TargetRid) --no-cleanup --no-traits Category=MultiTFM</_ScenarioTestsAdditionalArgs>
-
-      <!-- Define the test root as a sub-directory of the scenario test artifacts directory. It needs to be a sub-directory because the scenario test execution
-           will clean that directory. Since we need the NuGet.config file that we copied in to be preserved, that's stored in the directory above the test root. -->
-      <_TestRoot>$(ScenarioTestsArtifactsDir)artifacts/</_TestRoot>
-
-      <!-- It's necessary to explicitly define the path to the dotnet tool to prevent Arcade from attempting to derive it. Otherwise, it will run the dotnet
-           install script to get a new one. We must use the locally built SDK instead in order to support non-portable RIDs for source build. -->
-      <_DotNetTool>$(DotNetSdkExtractDir)$([System.IO.Path]::GetFileName('$(DotNetTool)'))</_DotNetTool>
+      <TestArgs>$(TestArgs) /p:TestSdkVersion=$(SourceBuiltSdkVersion)</TestArgs>
+      <TestArgs>$(TestArgs) /p:TestFxVersion=$(SourceBuiltRuntimeVersion)</TestArgs>
     </PropertyGroup>
 
-    <MakeDir Directories="$(ScenarioTestsResultsDir)" />
+    <PropertyGroup>
+      <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
+      <TestXmlOutputPath>$(ScenarioTestsResultsDir)$([System.DateTime]::Now.ToString("yyyy-MM-dd_HH_mm_ss")).xml</TestXmlOutputPath>
+      <ScenarioTestsAdditionalArgs>--xml $(TestXmlOutputPath) --target-rid $(TargetRid) --portable-rid $(PortableRid) --no-cleanup --no-traits Category=MultiTFM</ScenarioTestsAdditionalArgs>
+    </PropertyGroup>
 
+    <!-- Needs to be set as an env var as the eng/common/tools parser can't handle this string. -->
     <ItemGroup>
-      <TestEnvironmentVariable Include="
-        TestRoot=$(_TestRoot);
-        DotNetRoot=$(DotNetSdkExtractDir);
-        TestSdkVersion=$(SourceBuiltSdkVersion);
-        AdditionalTestArgs=$(_ScenarioTestsAdditionalArgs);
-        DotNetTool=$(_DotNetTool);
-        _InitializeDotNetCli=$(DotNetSdkExtractDir.TrimEnd('/\'))" />
+      <TestEnvironmentVariable Include="AdditionalTestArgs=$(ScenarioTestsAdditionalArgs)" />
     </ItemGroup>
+
+    <MakeDir Directories="$(ScenarioTestsResultsDir)" />
   </Target>
 
   <Target Name="SetAzureDevOpsVariableForScenarioTests"
           Condition="'$(ContinuousIntegrationBuild)' == 'true'"
-          BeforeTargets="Test">
+          BeforeTargets="RepoTest">
     <Message Importance="High" Text="##vso[task.setvariable variable=hasScenarioTestResults]true" />
   </Target>
 

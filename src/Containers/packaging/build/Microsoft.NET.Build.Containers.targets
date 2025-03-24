@@ -15,6 +15,8 @@
     <_ContainerIsTargetingNet8TFM Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))">true</_ContainerIsTargetingNet8TFM>
     <_ContainerIsSelfContained>false</_ContainerIsSelfContained>
     <_ContainerIsSelfContained Condition="'$(SelfContained)' == 'true' or '$(PublishSelfContained)' == 'true'">true</_ContainerIsSelfContained>
+
+    <EnableSdkContainerSupport Condition="'$(EnableSdkContainerSupport)' == '' and '$(OutputType)' != 'Library'" >true</EnableSdkContainerSupport>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,19 +36,16 @@
   <Target Name="ComputeContainerBaseImage"
           Returns="$(ContainerBaseImage)">
     <PropertyGroup>
-      <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
            For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
-      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</ContainerRuntimeIdentifier>
+      <ContainerRuntimeIdentifiers Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(ContainerRuntimeIdentifiers)' == '' and '$(IsRidAgnostic)' != 'true'">$(RuntimeIdentifiers)</ContainerRuntimeIdentifiers>
       <ContainerRuntimeIdentifier Condition="'$(ContainerRuntimeIdentifier)' == '' and '$(ContainerRuntimeIdentifiers)' == ''">linux-$(NETCoreSdkPortableRuntimeIdentifier.Split('-')[1])</ContainerRuntimeIdentifier>
-
-      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
-      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
     </PropertyGroup>
 
     <ItemGroup>
-      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
-      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifier)" Condition="'$(ContainerRuntimeIdentifiers)' == ''" />
+      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifier)" Condition="'$(ContainerRuntimeIdentifier)' != ''" />
+      <_TargetRuntimeIdentifiers Include="$(ContainerRuntimeIdentifiers)" Condition="@(_TargetRuntimeIdentifiers->Count()) == 0" />
     </ItemGroup>
 
     <ComputeDotnetBaseImageAndTag
@@ -97,27 +96,6 @@
       <!-- Only default a tag name if no tag names at all are provided -->
       <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
-
-      <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
-           For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
-      <_ContainerIsTargetingWindows>false</_ContainerIsTargetingWindows>
-      <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
-
-      <!-- Set the WorkingDirectory depending on the RID -->
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
-      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
-    </PropertyGroup>
-
-    <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
-      <!-- For self-contained, invoke the native executable as a single arg -->
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
-      <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
-      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
-    </ItemGroup>
-
-    <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
-    <PropertyGroup Label="ContainerUser Assignment" Condition="$(_ContainerIsUsingMicrosoftDefaultImages) and $(_ContainerIsTargetingNet8TFM) and '$(ContainerUser)' == ''">
-      <ContainerUser Condition="$(_ContainerIsTargetingWindows)">ContainerUser</ContainerUser>
     </PropertyGroup>
 
     <ParseContainerProperties FullyQualifiedBaseImageName="$(ContainerBaseImage)"
@@ -184,7 +162,7 @@
     </ItemGroup>
 
     <!-- These sourcelink-derived properties are only allowed to flow to generated artifacts if `PublishRepositoryUrl` is set as a user signal for opt-in.
-             In addition, the 'nice' property names are currently set by NuGet Pack targets and so we have to use the private/generic names here.  -->
+             In addition, the 'nice' property names are currently set by NuGet Pack targets and so we have to use the private/generic names here. -->
     <PropertyGroup Label="Source control label assignment" Condition="'$(ContainerGenerateLabels)' == 'true' and '$(PublishRepositoryUrl)' == 'true'">
       <!-- Sourcelink gives us the .git suffix, but scanning tools aren't looking for that so we trim it off here. -->
       <_TrimmedRepositoryUrl Condition="'$(RepositoryType)' == 'git' and '$(PrivateRepositoryUrl)' != '' and $(PrivateRepositoryUrl.EndsWith('.git'))">$(PrivateRepositoryUrl.Substring(0, $(PrivateRepositoryUrl.LastIndexOf('.git'))))</_TrimmedRepositoryUrl>
@@ -203,6 +181,36 @@
       _CheckContainersPackage
     </PublishContainerDependsOn>
   </PropertyGroup>
+
+  <!-- These args are relevant to container execution and are per-RID by nature. Therefore they're a direct dependency of the _PublishSingleContainer
+       target and not computed at the outer layer. -->
+  <Target Name="_ComputeContainerExecutionArgs">
+    <PropertyGroup>
+      <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
+           For builds that have a RID, we default to that RID. Otherwise, we default to the Linux RID matching the architecture of the currently-executing SDK. -->
+      <_ContainerIsTargetingWindows>false</_ContainerIsTargetingWindows>
+      <_ContainerIsTargetingWindows Condition="$(ContainerRuntimeIdentifier.StartsWith('win'))">true</_ContainerIsTargetingWindows>
+    
+      <!-- Set the WorkingDirectory depending on the RID -->
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows)">/app/</ContainerWorkingDirectory>
+      <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows)">C:\app\</ContainerWorkingDirectory>
+      
+      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' == ''">true</_ContainerIsUsingMicrosoftDefaultImages>
+      <_ContainerIsUsingMicrosoftDefaultImages Condition="'$(ContainerBaseImage)' != ''">false</_ContainerIsUsingMicrosoftDefaultImages>
+    </PropertyGroup>
+
+      <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
+    <PropertyGroup Label="ContainerUser Assignment" Condition="$(_ContainerIsUsingMicrosoftDefaultImages) and $(_ContainerIsTargetingNet8TFM) and '$(ContainerUser)' == ''">
+      <ContainerUser Condition="$(_ContainerIsTargetingWindows)">ContainerUser</ContainerUser>
+    </PropertyGroup>
+
+    <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
+      <!-- For self-contained, invoke the native executable as a single arg -->
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and $(_ContainerIsSelfContained)" Include="$(ContainerWorkingDirectory)$(AssemblyName)$(_NativeExecutableExtension)" />
+      <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
+      <ContainerAppCommand Condition="@(ContainerAppCommand->Count()) == 0 and !$(_ContainerIsSelfContained)" Include="dotnet;$(ContainerWorkingDirectory)$(TargetFileName)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_CheckContainersPackage" AfterTargets="Build">
     <PropertyGroup>
@@ -235,14 +243,9 @@
         )"
       Code="CONTAINER005"
       Text="The $(_ContainersPackageIdentity) NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to $(_ContainersPackageIdentity) because it is no longer needed." />
-
-    <PropertyGroup>
-      <EnableSdkContainerSupport Condition="'@(ContainersPackage)' != ''">true</EnableSdkContainerSupport>
-    </PropertyGroup>
   </Target>
 
-  <Target Name="_PublishSingleContainer"
-          Returns="@(GeneratedContainers)">
+  <Target Name="_PublishSingleContainer" DependsOnTargets="_ComputeContainerExecutionArgs" Returns="@(GeneratedContainer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -256,6 +259,7 @@
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
                     BaseImageDigest="$(ContainerBaseDigest)"
+                    ImageFormat="$(ContainerImageFormat)"
                     LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
@@ -275,6 +279,7 @@
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                    SkipPublishing="$(_SkipContainerPublishing)"
                     GenerateLabels="$(ContainerGenerateLabels)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
@@ -284,24 +289,31 @@
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
       <Output TaskParameter="GeneratedContainerMediaType" PropertyName="GeneratedContainerMediaType" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
+      <Output TaskParameter="GeneratedDigestLabel" ItemName="ContainerLabel" />
     </CreateNewImage>
 
     <ItemGroup>
-      <GeneratedContainers Include="GeneratedContainer">
+      <GeneratedContainer Include="GeneratedContainer">
         <Manifest>$(GeneratedContainerManifest)</Manifest>
         <Configuration>$(GeneratedContainerConfiguration)</Configuration>
         <ManifestDigest>$(GeneratedContainerDigest)</ManifestDigest>
         <ManifestMediaType>$(GeneratedContainerMediaType)</ManifestMediaType>
-      </GeneratedContainers>
+      </GeneratedContainer>
     </ItemGroup>
   </Target>
 
-  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" >
-    <Error Text="ContainerArchiveOutputPath is invalid. It can only be a directory in multi-arch scenario because the runtime identifier is appended in the end of the filename."
-      Condition="'$(ContainerArchiveOutputPath)' != '' and 
-                 !$(ContainerArchiveOutputPath.EndsWith('/')) and 
-                 !$(ContainerArchiveOutputPath.EndsWith('\\')) and 
-                 $(ContainerArchiveOutputPath.EndsWith('.tar.gz'))" />
+  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" Returns="@(GeneratedContainer)" >
+    <PropertyGroup>
+      <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
+      <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
+      <!--We don't want to skip publishing individual images in case of local daemon podman because podman loads multi-arch tarball differently - only individual image for the current platform.-->
+      <_SkipContainerPublishing>false</_SkipContainerPublishing>
+      <_SkipContainerPublishing Condition="$(ContainerArchiveOutputPath) != '' or ( $(ContainerRegistry) == '' and ( $(LocalRegistry) == '' or $(LocalRegistry) == 'Docker' ) )">true</_SkipContainerPublishing>
+
+      <!--We want to skip CreateImageIndex task in case of local daemon podman because it is not supported.-->
+      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
+      <_SkipCreateImageIndex Condition="$(ContainerArchiveOutputPath) == '' and $(ContainerRegistry) == '' and $(LocalRegistry) == 'Podman'">true</_SkipCreateImageIndex>
+    </PropertyGroup>
 
     <ItemGroup>
       <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
@@ -314,22 +326,16 @@
           ContainerBaseRegistry=$(ContainerBaseRegistry);
           ContainerBaseName=$(ContainerBaseName);
           ContainerBaseTag=$(ContainerBaseTag);
+          ContainerBaseDigest=$(ContainerBaseDigest);
           ContainerRegistry=$(ContainerRegistry);
           _ContainerImageTags=@(ContainerImageTags, ';');
           ContainerRepository=$(ContainerRepository);
-          ContainerWorkingDirectory=$(ContainerWorkingDirectory);
-          _ContainerEntrypoint=@(ContainerEntrypoint, ';');
-          _ContainerEntrypointArgs=@(ContainerEntrypointArgs, ';');
-          _ContainerAppCommand=@(ContainerAppCommand, ';');
-          _ContainerAppCommandArgs=@(ContainerAppCommandArgs, ';');
-          ContainerAppCommandInstruction=$(ContainerAppCommandInstruction);
-          _ContainerDefaultArgs=@(ContainerDefaultArgs, ';');
           _ContainerLabel=@(ContainerLabel->'%(Identity):%(Value)');
           _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
-          ContainerUser=$(ContainerUser);
           ContainerGenerateLabels=$(ContainerGenerateLabels);
-          ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest)
+          ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
+          _SkipContainerPublishing=$(_SkipContainerPublishing)
         "/>
       <_rids Remove ="$(_rids)" />
     </ItemGroup>
@@ -337,21 +343,23 @@
     <MSBuild
         Projects="@(_InnerBuild)"
         Targets="Publish;_ParseItemsForPublishingSingleContainer;_PublishSingleContainer"
-        BuildInParallel="true">
-        <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainers" />
+        BuildInParallel="$([MSBuild]::ValueOrDefault('$(ContainerPublishInParallel)', 'true'))">
+        <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
 
-    <PropertyGroup>
-      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
-      <_SkipCreateImageIndex Condition="'$(ContainerRegistry)' == ''">true</_SkipCreateImageIndex>
-    </PropertyGroup>
-
     <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
-                      GeneratedContainers="@(GeneratedContainers)"
+                      GeneratedContainers="@(GeneratedContainer)"
+                      LocalRegistry="$(LocalRegistry)"
                       OutputRegistry="$(ContainerRegistry)"
+                      ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                       Repository="$(ContainerRepository)"
-                      ImageTags="@(ContainerImageTags)">
+                      ImageTags="@(ContainerImageTags)"
+                      BaseRegistry="$(ContainerBaseRegistry)"
+                      BaseImageName="$(ContainerBaseName)"
+                      BaseImageTag="$(ContainerBaseTag)"
+                      BaseImageDigest="$(ContainerBaseDigest)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
+      <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
     </CreateImageIndex>
   </Target>
 
@@ -359,11 +367,6 @@
     <ItemGroup>
       <OriginalImageTags Include="$(_ContainerImageTags)"/>
       <ContainerImageTags Include="@(OriginalImageTags->'%(Identity)-$(ContainerRuntimeIdentifier)')" />
-      <ContainerEntrypoint Include="$(_ContainerEntrypoint)"/>
-      <ContainerEntrypointArgs Include="$(_ContainerEntrypointArgs)"/>
-      <ContainerAppCommand Include="$(_ContainerAppCommand)"/>
-      <ContainerAppCommandArgs Include="$(_ContainerAppCommandArgs)"/>
-      <ContainerDefaultArgs Include="$(_ContainerDefaultArgs)"/>
 
       <_ParsedContainerLabel
         Condition="'$(_ContainerLabel)' != ':'"
@@ -389,26 +392,34 @@
         Include="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[0])"
         Value="$([System.String]::Copy('%(_ParsedContainerEnvironmentVariables.Identity)').Split(':')[1])" />
     </ItemGroup>
-    <PropertyGroup>
-      <!-- We've already validated that ContainerArchiveOutputPath is pointing to a directory. -->
-      <ContainerArchiveOutputPath Condition="'$(ContainerArchiveOutputPath)' != ''">$([System.IO.Path]::Combine($(ContainerArchiveOutputPath), $(ContainerRepository)-$(ContainerRuntimeIdentifier).tar.gz))</ContainerArchiveOutputPath>
-    </PropertyGroup>
   </Target>
 
   <Target Name="PublishContainer"
   DependsOnTargets="$(PublishContainerDependsOn)"
-  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
+  Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'"
+  Returns="@(GeneratedContainer)"
+  >
     <PropertyGroup>
       <_IsMultiTFMBuild Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">true</_IsMultiTFMBuild>
-      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and (('$(RuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '') or ('$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentfier)' == ''))">true</_IsMultiRIDBuild>
+      <!-- we are multi-RID if:
+          * we have CRIDs and no CRID
+          * we have RIDs and no (CRIDs or CRID or RID)
+      -->
+      <_HasCRIDsAndNoCRID Condition="'$(ContainerRuntimeIdentifiers)' != '' and '$(ContainerRuntimeIdentifier)' == ''">true</_HasCRIDsAndNoCRID>
+      <_HasRIDs Condition="'$(RuntimeIdentifiers)' != ''">true</_HasRIDs>
+      <_NoCRIDsOrCRIDorRID Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(ContainerRuntimeIdentifier)' == '' and '$(RuntimeIdentifier)' == ''">true</_NoCRIDsOrCRIDorRID>
+      <_IsMultiRIDBuild Condition="'$(BuildingInsideVisualStudio)' != 'true' and ('$(_HasCRIDsAndNoCRID)' == true or ('$(_HasRIDs)' == 'true' and '$(_NoCRIDsOrCRIDorRID)' == 'true'))">true</_IsMultiRIDBuild>
       <_IsSingleRIDBuild Condition="'$(_IsMultiRIDBuild)' == ''">true</_IsSingleRIDBuild>
     </PropertyGroup>
 
     <!-- Call _PublishMultiArchContainers if we are in a multi-rid build, and call _PublishSingleContainer if we are in a single-RID build -->
-    <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_PublishMultiArchContainers" />
-    <CallTarget Condition="'$(_IsSingleRIDBuild)' == 'true' " Targets="_PublishSingleContainer" />
+    <CallTarget Condition="'$(_IsMultiRIDBuild)' == 'true' " Targets="_PublishMultiArchContainers">
+      <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
+    </CallTarget>
+    <CallTarget Condition="'$(_IsSingleRIDBuild)' == 'true' " Targets="_PublishSingleContainer">
+      <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
+    </CallTarget>
 
     <Error Condition="'$(_IsMultiTFMBuild)' == 'true'" Code="CONTAINERS0666" Text="Containers cannot be published for multiple TargetFrameworks at this time. Please specify a TargetFramework." />
   </Target>
-
 </Project>

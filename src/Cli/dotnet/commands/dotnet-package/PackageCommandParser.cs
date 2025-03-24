@@ -2,20 +2,28 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal class PackageCommandParser
 {
-    internal class PackageCommandParser
+    private const string DocsLink = "https://aka.ms/dotnet-package";
+
+    public static readonly CliOption<string> ProjectOption = new("--project")
     {
-        private const string DocsLink = "https://aka.ms/dotnet-package";
+        Recursive = true
+    };
 
-        public static CliCommand GetCommand()
-        {
-            CliCommand command = new DocumentedCommand("package", DocsLink);
-            command.SetAction((parseResult) => parseResult.HandleMissingCommand());
-            command.Subcommands.Add(PackageSearchCommandParser.GetCommand());
+    public static CliCommand GetCommand()
+    {
+        CliCommand command = new DocumentedCommand("package", DocsLink);
+        command.SetAction((parseResult) => parseResult.HandleMissingCommand());
+        command.Subcommands.Add(PackageSearchCommandParser.GetCommand());
+        command.Subcommands.Add(PackageAddCommandParser.GetCommand());
+        command.Subcommands.Add(PackageListCommandParser.GetCommand());
+        command.Subcommands.Add(PackageRemoveCommandParser.GetCommand());
 
-            return command;
-        }
-    } 
-}
+        return command;
+    }
+} 

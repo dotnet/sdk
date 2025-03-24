@@ -44,14 +44,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <InvariantGlobalization Condition="'$(InvariantGlobalization)' == ''">false</InvariantGlobalization>
     <EventSourceSupport Condition="'$(EventSourceSupport)' == ''">false</EventSourceSupport>
     <UseSystemResourceKeys Condition="'$(UseSystemResourceKeys)' == ''">true</UseSystemResourceKeys>
+    <UseSizeOptimizedLinq Condition="'$(UseSizeOptimizedLinq)' == ''">true</UseSizeOptimizedLinq>
     <EnableUnsafeUTF7Encoding Condition="'$(EnableUnsafeUTF7Encoding)' == ''">false</EnableUnsafeUTF7Encoding>
     <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
+    <BlazorFingerprintBlazorJs Condition="'$(BlazorFingerprintBlazorJs)' == '' and '$(WriteImportMapToHtml)' == 'true'">true</BlazorFingerprintBlazorJs>
 
+    <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
     <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
-    <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
-    <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true'">false</WasmFingerprintDotnetJs>
+    <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
+
+    <!--  8 <  .NET      we want to fingerprint dotnet.js because it's part of the blazor.boot.json which is loaded from blazor.webassembly.js -->
+    <!--  8 <= .NET < 10 we don't want to fingerprint dotnet.js because it's path is hardcoded in blazor.webassembly.js -->
+    <!-- 10 <= .NET      we want to leave fingerprinting to WasmSDK because it knows if import maps where applied -->
+    <WasmFingerprintDotnetJs Condition="'$(_TargetingNETBefore80)' == 'true'">true</WasmFingerprintDotnetJs>
+    <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true' and '$(_TargetingNETBefore100)' == 'true'">false</WasmFingerprintDotnetJs>
     <WasmEnableWebcil Condition="'$(WasmEnableWebcil)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or '$(_TargetingNET80OrLater)' != 'true')">false</WasmEnableWebcil>
 
     <!-- Turn off parts of the build that do not apply to Blazor projects -->
@@ -76,6 +84,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       GenerateBuildBlazorBootExtensionJson;
     </GenerateBuildWasmBootJsonDependsOn>
 
+    <ResolvePublishRelatedStaticWebAssetsDependsOn>
+      $(ResolvePublishRelatedStaticWebAssetsDependsOn);
+      _ReplaceFingerprintedBlazorJsForPublish
+    </ResolvePublishRelatedStaticWebAssetsDependsOn>
+    <ResolveCompressedFilesForPublishDependsOn>
+      $(ResolveCompressedFilesForPublishDependsOn);
+      _ReplaceFingerprintedBlazorJsForPublish
+    </ResolveCompressedFilesForPublishDependsOn>
+
     <GeneratePublishWasmBootJsonDependsOn>
       $(GeneratePublishWasmBootJsonDependsOn);
       GeneratePublishBlazorBootExtensionJson;
@@ -97,6 +114,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorJsFile>
         <RelativePath>_framework/%(Filename)%(Extension)</RelativePath>
       </_BlazorJsFile>
+      <_BlazorJSFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
 
       <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
       <Error
@@ -107,6 +125,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorJSFile)"
+      FingerprintCandidates="$(BlazorFingerprintBlazorJs)"
+      FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
       AssetKind="All"
@@ -133,6 +153,61 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <StaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
       <StaticWebAssetEndpoint Include="@(_BlazorStaticWebAssetEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ReplaceFingerprintedBlazorJsForPublish" DependsOnTargets="ProcessPublishFilesForWasm" Condition="'$(WasmBuildingForNestedPublish)' != 'true' and '$(BlazorFingerprintBlazorJs)' == 'true'">
+    <ItemGroup>
+      <_BlazorJSStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(FileName)' == '%(_BlazorJSFile.FileName)'" />
+      <_BlazorJSPublishCandidate Include="%(_BlazorJSStaticWebAsset.RelativeDir)%(_BlazorJSStaticWebAsset.FileName).%(_BlazorJSStaticWebAsset.Fingerprint)%(_BlazorJSStaticWebAsset.Extension)" />
+      <_BlazorJSPublishCandidate>
+        <RelativePath>_framework/$([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)'))%(Extension)</RelativePath>
+      </_BlazorJSPublishCandidate>
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_BlazorJSPublishCandidate)"
+      FingerprintCandidates="true"
+      FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="All"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      AssetRole="Primary"
+      AssetTraitName="WasmResource"
+      AssetTraitValue="boot"
+      CopyToOutputDirectory="Never"
+      CopyToPublishDirectory="PreserveNewest"
+      ContentRoot="%(_BlazorJSStaticWebAsset.ContentRoot)"
+      BasePath="%(_BlazorJSStaticWebAsset.BasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="_BlazorJSPublishStaticWebAssets" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_BlazorJSPublishStaticWebAssets)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_BlazorJSPublishStaticWebAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+    <PropertyGroup>
+      <_BlazorJSStaticWebAssetFullPath>@(_BlazorJSStaticWebAsset->'%(FullPath)')</_BlazorJSStaticWebAssetFullPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_BlazorJSStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(RelatedAsset)' == '$(_BlazorJSStaticWebAssetFullPath)'" />
+    </ItemGroup>
+    <FilterStaticWebAssetEndpoints Condition="'@(_BlazorJSStaticWebAsset)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_BlazorJSStaticWebAsset)"
+      Filters=""
+    >
+      <Output TaskParameter="FilteredEndpoints" ItemName="_BlazorJSEndpointsToRemove" />
+    </FilterStaticWebAssetEndpoints>
+    <ItemGroup>
+      <StaticWebAsset Remove="@(_BlazorJSStaticWebAsset)" />
+      <StaticWebAsset Include="@(_BlazorJSPublishStaticWebAssets)" />
+      <StaticWebAssetEndpoint Remove="@(_BlazorJSEndpointsToRemove)" />
+      <StaticWebAssetEndpoint Include="@(_BlazorJSPublishStaticWebAssetsEndpoint)" />
     </ItemGroup>
   </Target>
 

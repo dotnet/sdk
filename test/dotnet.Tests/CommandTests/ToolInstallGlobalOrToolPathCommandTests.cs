@@ -5,11 +5,13 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.ShellShim;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Tool.Install;
@@ -118,7 +120,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 additionalSourceFeeds: [duplicateSource]);
             var nuGetPackageDownloader = new NuGetPackageDownloader(new DirectoryPath(testAsset.Path));
 
-            var sources = nuGetPackageDownloader.LoadNuGetSources(new ToolPackage.PackageId(PackageId), packageSourceLocation);
+            var sources = nuGetPackageDownloader.LoadNuGetSources(new Cli.ToolPackage.PackageId(PackageId), packageSourceLocation);
             // There should only be one source
             sources.Where(s => s.SourceUri == new Uri(duplicateSource))
                 .Should().HaveCount(1);

@@ -2,7 +2,10 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
 
-  <Target Name="DetermineSourceBuiltSdkVersion">
+  <!-- The SkipPrepareSdkArchive switch exists so that outside components like the license scan test pipeline
+       can run a subset of tests that don't need the SDK archive without building the VMR.
+       The switch is also useful for the local dev innerloop to build the test projects without needing to run them. -->
+  <Target Name="DetermineSourceBuiltSdkVersion" Condition="'$(SkipPrepareSdkArchive)' != 'true'">
     <PropertyGroup>
       <SdkFilenamePrefix>dotnet-sdk-</SdkFilenamePrefix>
     </PropertyGroup>
@@ -31,6 +34,34 @@
     </PropertyGroup>
   </Target>
 
+  <Target Name="DetermineSourceBuiltRuntimeVersion">
+    <PropertyGroup>
+      <RuntimeFilenamePrefix>dotnet-runtime-</RuntimeFilenamePrefix>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RuntimeArchiveItem Include="$(ArtifactsAssetsDir)Runtime/**/$(RuntimeFilenamePrefix)*$(ArchiveExtension)"
+                          Exclude="$(ArtifactsAssetsDir)Runtime/**/$(RuntimeFilenamePrefix)*.wixpack.zip" />
+    </ItemGroup>
+
+    <Error Text="Didn't find a runtime archive." Condition="'@(RuntimeArchiveItem)' == ''" />
+    <Error Text="Found more than one runtime archive." Condition="@(RuntimeArchiveItem->Count()) &gt; 1" />
+
+    <!--
+      Extract runtime version from the dotnet-runtime archive filename.
+      Keep in sync with dotnet-runtime's archive location and filename.
+
+      Example:
+      artifacts\assets\<config>\Runtime\9.0.100-alpha.1.24057.1\dotnet-runtime-9.0.100-alpha.1.24057.1-fedora.38-x64.tar.gz
+      artifacts\assets\<config>\Runtime\<RuntimeVersion>\dotnet-runtime-<RuntimeVersion>-<TargetRid><ArchiveExtension>
+    -->
+    <PropertyGroup>
+      <RuntimeFilename>%(RuntimeArchiveItem.Filename)%(RuntimeArchiveItem.Extension)</RuntimeFilename>
+      <RuntimeArchivePath>%(RuntimeArchiveItem.Identity)</RuntimeArchivePath>
+      <SourceBuiltRuntimeVersion>$(RuntimeFilename.Replace('$(RuntimeFilenamePrefix)','').Replace('-$(TargetRid)$(ArchiveExtension)',''))</SourceBuiltRuntimeVersion>
+    </PropertyGroup>
+  </Target>
+
   <ItemGroup>
     <!-- Binplace all assets and packages to ArtifactsStagingDir. -->
     <BinPlaceDir Include="$(ArtifactsStagingDir)" Condition="'$(ArtifactsStagingDir)' != ''" />
@@ -42,7 +73,6 @@
           Inputs="@(BinPlaceDir);%(BinPlaceDir.Identity)"
           Outputs="unused">
     <PropertyGroup>
-      <BinPlaceUseHardlinksIfPossible Condition="'$(BinPlaceUseHardlinksIfPossible)' == ''">true</BinPlaceUseHardlinksIfPossible>
       <_BinPlaceDir>%(BinPlaceDir.Identity)</_BinPlaceDir>
     </PropertyGroup>
 
@@ -59,7 +89,7 @@
           OverwriteReadOnlyFiles="true"
           Retries="$(CopyRetryCount)"
           RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-          UseHardlinksIfPossible="$(BinPlaceUseHardlinksIfPossible)" />
+          UseHardlinksIfPossible="true" />
   </Target>
 
 </Project>

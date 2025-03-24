@@ -3,35 +3,28 @@ parameters:
   type: string
   default: final
 
-- name: primaryDependentJob
+- name: vmrPath
   type: string
-  default: Windows_x64
+  default: $(Agent.BuildDirectory)/vmr
 
 - name: outputFolder
   type: string
   default: $(Build.ArtifactStagingDirectory)/artifacts
 
 steps:
-- task: DownloadBuildArtifacts@1
-  inputs:
-    artifactName: 'VerticalManifests'
-    downloadPath: $(Build.ArtifactStagingDirectory)
-    checkDownloadedFiles: true
-
-- task: DownloadPipelineArtifact@2
-  inputs:
-    artifactName: ${{ parameters.primaryDependentJob }}_Artifacts
-    targetPath: $(Build.ArtifactStagingDirectory)/${{ parameters.primaryDependentJob }}_Artifacts
-    checkDownloadedFiles: true
-
 - powershell: eng/join-verticals.ps1
-    /p:VerticalManifestsPath=$(Build.ArtifactStagingDirectory)/VerticalManifests 
-    /p:MainVertical=${{ parameters.primaryDependentJob }}
+    /p:VerticalManifestsPath=$(Build.ArtifactStagingDirectory)/VerticalManifests
     /p:DotNetBuildPass=${{ parameters.dotNetBuildPass }}
-    /p:BuildId=$(Build.BuildId)
-    /p:AzureDevOpsToken=$(System.AccessToken) 
-    /p:AzureDevOpsBaseUri=$(System.CollectionUri)
-    /p:AzureDevOpsProject=$(System.TeamProject)
-    /p:MainVerticalArtifactsFolder=$(Build.ArtifactStagingDirectory)/${{ parameters.primaryDependentJob }}_Artifacts
+    /p:VerticalArtifactsBaseFolder=$(Build.ArtifactStagingDirectory)/VerticalArtifacts
     /p:OutputFolder=${{ parameters.outputFolder }}
   displayName: Join Verticals
+  workingDirectory: ${{ parameters.vmrPath }}
+- task: CopyFiles@2
+  displayName: Copy logs for upload
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/artifacts/log'
+    Contents: |
+      **/*.log
+      **/*.binlog
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/log'
+    CleanTargetFolder: true

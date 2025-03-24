@@ -20,6 +20,13 @@ Similarly, VMR's `main` branch will follow `main` branches of product repositori
 More in-depth documentation about the VMR can be found in [VMR Design And Operation](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#layout).
 See also [dotnet/source-build](https://github.com/dotnet/source-build) for more information about our whole-product source-build.
 
+
+## Installing the SDK
+
+You can download the .NET SDK either as an installer (MSI, PKG) or as an archive (zip, tar.gz). The .NET SDK contains both the .NET runtimes and CLI tools.
+
+- [**Latest builds table**](docs/builds-table.md)
+
 ## Goals
 
 - The main purpose of the [dotnet/dotnet](https://github.com/dotnet/dotnet) repository is to have all source code necessary to build the .NET product available in one repository and identified by a single commit.
@@ -76,6 +83,14 @@ For the latest information about Source-Build support, please watch for announce
 
 The dependencies for building can be found [here](https://github.com/dotnet/runtime/blob/main/docs/workflow/requirements/).
 In case you don't want to / cannot prepare your environment per the requirements, consider [using Docker](#building-using-docker).
+
+For building the VMR on Windows, it is recommended to put the repo under a short path, i.e. `C:\dotnet`. Also, [long path support must be enabled](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry#enable-long-paths-in-windows-10-version-1607-and-later). This is necessary as some of the tools used don't support long paths (WiX Toolset v3 and cl.exe).
+
+For some `git` commands and when synchronizing changes via the `darc` CLI, long path support should be enabled in the `git` config as well:
+```bash
+git config --system core.longpaths true # needs elevated prompt
+git config --global core.longpaths true
+```
 
 ### Building
 

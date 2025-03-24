@@ -2,43 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Remove.ProjectToProjectReference;
-using LocalizableStrings = Microsoft.DotNet.Tools.Remove.ProjectToProjectReference.LocalizableStrings;
+using Microsoft.DotNet.Tools.Reference.Remove;
+using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Remove.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+internal static class RemoveProjectToProjectReferenceParser
 {
-    internal static class RemoveProjectToProjectReferenceParser
+    private static readonly CliCommand Command = ConstructCommand();
+
+    public static CliCommand GetCommand()
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new CliArgument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
-        {
-            Description = LocalizableStrings.ProjectPathArgumentDescription,
-            Arity = ArgumentArity.OneOrMore,
-        }.AddCompletions(Complete.ProjectReferencesFromProjectFile);
+        return Command;
+    }
 
-        public static readonly CliOption<string> FrameworkOption = new("--framework", "-f")
-        {
-            Description = LocalizableStrings.CmdFrameworkDescription,
-            HelpName = CommonLocalizableStrings.CmdFramework
-        };
+    private static CliCommand ConstructCommand()
+    {
+        var command = new CliCommand("reference", LocalizableStrings.AppFullName);
 
-        private static readonly CliCommand Command = ConstructCommand();
+        command.Arguments.Add(ReferenceRemoveCommandParser.ProjectPathArgument);
+        command.Options.Add(ReferenceRemoveCommandParser.FrameworkOption);
 
-        public static CliCommand GetCommand()
-        {
-            return Command;
-        }
+        command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
 
-        private static CliCommand ConstructCommand()
-        {
-            var command = new CliCommand("reference", LocalizableStrings.AppFullName);
-
-            command.Arguments.Add(ProjectPathArgument);
-            command.Options.Add(FrameworkOption);
-
-            command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
-
-            return command;
-        }
+        return command;
     }
 }

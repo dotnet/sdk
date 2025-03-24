@@ -17,35 +17,35 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             this.output = output;
         }
 
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m -tlp:default=auto -nologo";
-        const string ExpectedProperties = "--property:_IsPublishing=true";
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
+        private static readonly string[] ExpectedProperties = ["--property:_IsPublishing=true", "-property:NuGetInteractive=true"];
 
         [Theory]
-        [InlineData(new string[] { }, "")]
-        [InlineData(new string[] { "-r", "<rid>" }, "-property:RuntimeIdentifier=<rid> -property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "-r", "linux-amd64" }, "-property:RuntimeIdentifier=linux-x64 -property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "--runtime", "<rid>" }, "-property:RuntimeIdentifier=<rid> -property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "--use-current-runtime" }, "-property:UseCurrentRuntimeIdentifier=True")]
-        [InlineData(new string[] { "--ucr" }, "-property:UseCurrentRuntimeIdentifier=True")]
-        [InlineData(new string[] { "-o", "<publishdir>" }, "-property:PublishDir=<cwd><publishdir> -property:_CommandLineDefinedOutputPath=true")]
-        [InlineData(new string[] { "--output", "<publishdir>" }, "-property:PublishDir=<cwd><publishdir> -property:_CommandLineDefinedOutputPath=true")]
-        [InlineData(new string[] { "--artifacts-path", "foo" }, "-property:ArtifactsPath=<cwd>foo")]
-        [InlineData(new string[] { "-c", "<config>" }, "-property:Configuration=<config> -property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true")]
-        [InlineData(new string[] { "--configuration", "<config>" }, "-property:Configuration=<config> -property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true")]
-        [InlineData(new string[] { "--version-suffix", "<versionsuffix>" }, "-property:VersionSuffix=<versionsuffix>")]
-        [InlineData(new string[] { "--manifest", "<manifestfiles>" }, "-property:TargetManifestFiles=<cwd><manifestfiles>")]
-        [InlineData(new string[] { "-v", "minimal" }, "-verbosity:minimal")]
-        [InlineData(new string[] { "--verbosity", "minimal" }, "-verbosity:minimal")]
-        [InlineData(new string[] { "<project>" }, "<project>")]
-        [InlineData(new string[] { "<project>", "<extra-args>" }, "<project> <extra-args>")]
-        [InlineData(new string[] { "--disable-build-servers" }, "--property:UseRazorBuildServer=false --property:UseSharedCompilation=false /nodeReuse:false")]
-        public void MsbuildInvocationIsCorrect(string[] args, string expectedAdditionalArgs)
+        [InlineData(new string[] { }, new string[] { })]
+        [InlineData(new string[] { "-r", "<rid>" }, new string[] { "-property:RuntimeIdentifier=<rid>", "-property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [InlineData(new string[] { "-r", "linux-amd64" }, new string[] { "-property:RuntimeIdentifier=linux-x64", "-property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [InlineData(new string[] { "--runtime", "<rid>" }, new string[] { "-property:RuntimeIdentifier=<rid>", "-property:_CommandLineDefinedRuntimeIdentifier=true" })]
+        [InlineData(new string[] { "--use-current-runtime" }, new string[] { "-property:UseCurrentRuntimeIdentifier=True" })]
+        [InlineData(new string[] { "--ucr" }, new string[] { "-property:UseCurrentRuntimeIdentifier=True" })]
+        [InlineData(new string[] { "-o", "<publishdir>" }, new string[] { "-property:PublishDir=<cwd><publishdir>", "-property:_CommandLineDefinedOutputPath=true" })]
+        [InlineData(new string[] { "--output", "<publishdir>" }, new string[] { "-property:PublishDir=<cwd><publishdir>", "-property:_CommandLineDefinedOutputPath=true" })]
+        [InlineData(new string[] { "--artifacts-path", "foo" }, new string[] { "-property:ArtifactsPath=<cwd>foo" })]
+        [InlineData(new string[] { "-c", "<config>" }, new string[] { "-property:Configuration=<config>", "-property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true" })]
+        [InlineData(new string[] { "--configuration", "<config>" }, new string[] { "-property:Configuration=<config>", "-property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true" })]
+        [InlineData(new string[] { "--version-suffix", "<versionsuffix>" }, new string[] { "-property:VersionSuffix=<versionsuffix>" })]
+        [InlineData(new string[] { "--manifest", "<manifestfiles>" }, new string[] { "-property:TargetManifestFiles=<cwd><manifestfiles>" })]
+        [InlineData(new string[] { "-v", "minimal" }, new string[] { "-verbosity:minimal" })]
+        [InlineData(new string[] { "--verbosity", "minimal" }, new string[] { "-verbosity:minimal" })]
+        [InlineData(new string[] { "<project>" }, new string[] { "<project>" })]
+        [InlineData(new string[] { "<project>", "<extra-args>" }, new string[] { "<project>", "<extra-args>" })]
+        [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
+        public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
-                expectedAdditionalArgs =
-                    (string.IsNullOrEmpty(expectedAdditionalArgs) ? "" : $" {expectedAdditionalArgs}")
-                    .Replace("<cwd>", WorkingDirectory);
+                expectedAdditionalArgs = expectedAdditionalArgs
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
                 var command = PublishCommand.FromArgs(args, msbuildPath);
@@ -54,30 +54,28 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .Should()
                     .BeNull();
 
-                command.GetArgumentsToMSBuild()
+                command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .Be($"{ExpectedPrefix} -restore -target:Publish {ExpectedProperties}{expectedAdditionalArgs}");
+                    .BeEquivalentTo([.. ExpectedPrefix, "-restore", "-target:Publish", .. ExpectedProperties, .. expectedAdditionalArgs]);
             });
         }
 
         [Theory]
-        [InlineData(new string[] { "-f", "<tfm>" }, "-property:TargetFramework=<tfm>")]
-        [InlineData(new string[] { "--framework", "<tfm>" }, "-property:TargetFramework=<tfm>")]
-        public void MsbuildInvocationIsCorrectForSeparateRestore(string[] args, string expectedAdditionalArgs)
+        [InlineData(new string[] { "-f", "<tfm>" }, new string[] { "-property:TargetFramework=<tfm>" })]
+        [InlineData(new string[] { "--framework", "<tfm>" }, new string[] { "-property:TargetFramework=<tfm>" })]
+        public void MsbuildInvocationIsCorrectForSeparateRestore(string[] args, string[] expectedAdditionalArgs)
         {
-            expectedAdditionalArgs = (string.IsNullOrEmpty(expectedAdditionalArgs) ? "" : $" {expectedAdditionalArgs}");
-
             var msbuildPath = "<msbuildpath>";
             var command = PublishCommand.FromArgs(args, msbuildPath);
 
             command.SeparateRestoreCommand
-                   .GetArgumentsToMSBuild()
+                   .GetArgumentTokensToMSBuild()
                    .Should()
-                   .Be($"{ExpectedPrefix} -target:Restore -tlp:verbosity=quiet {ExpectedProperties}");
+                   .BeEquivalentTo([.. ExpectedPrefix, "-target:Restore", "-tlp:verbosity=quiet", .. ExpectedProperties]);
 
-            command.GetArgumentsToMSBuild()
+            command.GetArgumentTokensToMSBuild()
                    .Should()
-                   .Be($"{ExpectedPrefix} -nologo -target:Publish {ExpectedProperties}{expectedAdditionalArgs}");
+                   .BeEquivalentTo([.. ExpectedPrefix, "-nologo", "-target:Publish", .. ExpectedProperties, .. expectedAdditionalArgs]);
         }
 
         [Fact]
@@ -90,10 +88,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                    .Should()
                    .BeNull();
 
-            // NOTE --no-build implies no-restore hence no -restore argument to msbuild below.
-            command.GetArgumentsToMSBuild()
+            command.GetArgumentTokensToMSBuild()
                    .Should()
-                   .Be($"{ExpectedPrefix} -target:Publish {ExpectedProperties} -property:NoBuild=true");
+                   .BeEquivalentTo([.. ExpectedPrefix, "-target:Publish", .. ExpectedProperties, "-property:NoBuild=true"]);
         }
 
         [Fact]
@@ -102,9 +99,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var msbuildPath = "<msbuildpath>";
             var command = PublishCommand.FromArgs(new[] { "/p:Prop1=prop1", "/p:Prop2=prop2" }, msbuildPath);
 
-            command.GetArgumentsToMSBuild()
+            command.GetArgumentTokensToMSBuild()
                .Should()
-               .Be($"{ExpectedPrefix} -restore -target:Publish {ExpectedProperties} --property:Prop1=prop1 --property:Prop2=prop2");
+               .BeEquivalentTo([.. ExpectedPrefix, "-restore", "-target:Publish", .. ExpectedProperties, "--property:Prop1=prop1", "--property:Prop2=prop2"]);
         }
     }
 }

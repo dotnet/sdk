@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="BuildingImageIndex">
         <source>Building image index '{0}' on top of manifests {1}.</source>
-        <target state="new">Building image index '{0}' on top of manifests {1}.</target>
+        <target state="translated">マニフェスト {1} の上にイメージ インデックス '{0}' を構築しています。</target>
         <note>
       {0} is the name of the image index and its tag, {1} is the list of manifests digests
     </note>
@@ -77,6 +77,11 @@
       <trans-unit id="ContainerBuilder_StartBuildingImage">
         <source>Building image '{0}' with tags '{1}' on top of base image '{2}'.</source>
         <target state="translated">基本イメージ '{0}' の上にタグ '{1}' 付きのイメージ '{2}' をビルドしています。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ContainerBuilder_StartBuildingImageForRid">
+        <source>Building image '{0}' for runtime identifier '{1}' on top of base image '{2}'.</source>
+        <target state="translated">基本イメージ '{2}' の上にランタイム識別子 '{1}' のイメージ '{0}' をビルドしています。</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
@@ -159,9 +164,24 @@
         <target state="translated">ホスト オブジェクトが検出されませんでした。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImageConfigMissingArchitecture">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'architecture'.</source>
+        <target state="translated">指定されたイメージの構成の少なくとも 1 つに 'architecture' がないため、イメージ インデックスを作成できません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageConfigMissingOs">
+        <source>Cannot create image index because at least one of the provided images' config is missing 'os'.</source>
+        <target state="translated">指定されたイメージの構成の少なくとも 1 つに 'os' がないため、イメージ インデックスを作成できません。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImageIndexUploadedToRegistry">
         <source>Pushed image index '{0}' to registry '{1}'.</source>
-        <target state="new">Pushed image index '{0}' to registry '{1}'.</target>
+        <target state="translated">イメージ インデックス '{0}' をレジストリ '{1}' にプッシュしました。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImageIndex_PodmanNotSupported">
+        <source>Image index creation for Podman is not supported.</source>
+        <target state="translated">Podman のイメージ インデックスの作成はサポートされていません。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
@@ -169,24 +189,44 @@
         <target state="needs-review-translation">CONTAINER1009: ローカル レジストリからイメージを読み込めませんでした。stdout: {0}</target>
         <note>{StrBegins="CONTAINER1009: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_ContainerdStoreDisabled">
+        <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
+        <target state="translated">CONTAINER1020: コンテナー化されたイメージ ストアが Docker に対して有効になっていないため、イメージを読み込めませんでした。ヒント: Docker Desktop 設定で [イメージのプルと保存にコンテナー化を使用する] をオンにすると、有効にすることができます。</target>
+        <note>{StrBegin="CONTAINER1020: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="needs-review-translation">CONTAINER1010: ローカル レジストリからのイメージのプルはサポートされていません。</target>
         <note>{StrBegins="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="ImagesEmpty">
-        <source>Cannot create manifest list (image index) because no images were provided.</source>
-        <target state="new">Cannot create manifest list (image index) because no images were provided.</target>
+        <source>Cannot create image index because no images were provided.</source>
+        <target state="translated">イメージ インデックスを作成できません。イメージが指定されていません。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InvalidContainerImageFormat">
+        <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
+        <target state="translated">CONTAINER2031: コンテナー イメージ形式 '{0}' はサポートされていません。サポートされている形式は '{1}' です。</target>
+        <note>{StrBegins="CONTAINER2031: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="needs-review-translation">CONTAINER2015: {0}: '{1}' は有効な環境変数ではありませんでした。無視しています。</target>
         <note>{StrBegins="CONTAINER2015: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidImageConfig">
+        <source>Cannot create image index because at least one of the provided images' config is invalid.</source>
+        <target state="translated">指定されたイメージの構成の少なくとも 1 つが無効であるため、イメージ インデックスを作成できません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidImageManifest">
+        <source>Cannot create image index because at least one of the provided images' manifest is invalid.</source>
+        <target state="translated">指定されたイメージのマニフェストの少なくとも 1 つが無効であるため、イメージ インデックスを作成できません。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidImageMetadata">
-        <source>Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="new">Cannot create manifest list (image index) because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</target>
+        <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
+        <target state="translated">指定されたイメージが無効なため、イメージ インデックスを作成できません。項目には、'Config'、'Manifest'、'ManifestMediaType'、'ManifestDigest' のメタデータが必要です。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
@@ -236,7 +276,7 @@
       </trans-unit>
       <trans-unit id="InvalidTargetRuntimeIdentifiers">
         <source>Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</source>
-        <target state="new">Invalid string[] TargetRuntimeIdentifiers. Either all should be 'linux-musl' or none.</target>
+        <target state="translated">string[] TargetRuntimeIdentifiers が無効です。すべて 'linux-musl' または none のいずれかにする必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidTokenResponse">
@@ -275,8 +315,8 @@
         <note>{StrBegins="CONTAINER2016: "}</note>
       </trans-unit>
       <trans-unit id="MixedMediaTypes">
-        <source>'mediaType' of manifests should be the same in manifest list (image index).</source>
-        <target state="new">'mediaType' of manifests should be the same in manifest list (image index).</target>
+        <source>'mediaType' of manifests should be the same in image index.</source>
+        <target state="translated">マニフェストの 'mediaType' はイメージ インデックスで同じである必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="NoRequestUriSpecified">
@@ -287,11 +327,6 @@
       <trans-unit id="NormalizedContainerName">
         <source>'{0}' was not a valid container image name, it was normalized to '{1}'</source>
         <target state="translated">'{0}' は有効なコンテナー イメージ名ではありませんでした。'{1}' に正規化されました</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OciImageMultipleTagsNotSupported">
-        <source>Unable to create tarball for oci image with multiple tags.</source>
-        <target state="translated">複数のタグを持つ oci イメージの tarball を作成できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishDirectoryDoesntExist">
@@ -394,6 +429,11 @@
         <target state="needs-review-translation">CONTAINER1016: レジストリ '{1}' のリポジトリ '{0}' にアクセスできません。資格情報が正しいこと、およびこのリポジトリとレジストリへのアクセス権があることを確認してください。</target>
         <note>{StrBegins="CONTAINER1016:" }</note>
       </trans-unit>
+      <trans-unit id="UnableToDownloadFromRepository">
+        <source>CONTAINER1018: Unable to download image from the repository '{0}'.</source>
+        <target state="new">CONTAINER1018: Unable to download image from the repository '{0}'.</target>
+        <note>{StrBegins="CONTAINER1018:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
         <target state="needs-review-translation">CONTAINER2021: 不明な AppCommandInstruction '{0}'。有効な手順は {1} です。</target>
@@ -415,8 +455,8 @@
         <note>{StrBegins="CONTAINER2001: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedMediaType">
-        <source>Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</source>
-        <target state="new">Cannot create manifest list (image index) for the provided 'mediaType' = '{0}'.</target>
+        <source>Cannot create image index for the provided 'mediaType' = '{0}'.</source>
+        <target state="translated">指定された 'mediaType' = '{0}' のイメージ インデックスを作成できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="UnsupportedMediaTypeForTarball">

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
         [Fact]
         public void TestRemoveSystemObjectAsBaseClass()
         {
-            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier: true),
                 original: """
                 namespace A
                 {
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
         [Fact]
         public void TestAddPartialKeyword()
         {
-            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier: true),
                 original: """
                 namespace A
                 {
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.GenAPI.Tests.SyntaxRewriter
         [Fact]
         public void TestPartialTypeDeclaration()
         {
-            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(),
+            CompareSyntaxTree(new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier: true),
                 original: """
                 namespace A
                 {
