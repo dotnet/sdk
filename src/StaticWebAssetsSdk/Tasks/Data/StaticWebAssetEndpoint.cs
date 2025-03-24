@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, IComparable<StaticWebAssetEndpoint>
 {
     private ITaskItem _originalItem;
-    private StaticWebAssetEndpointProperty[] _endpointProperties = [];
-    private StaticWebAssetEndpointResponseHeader[] _responseHeaders = [];
-    private StaticWebAssetEndpointSelector[] _selectors = [];
+    private StaticWebAssetEndpointProperty[] _endpointProperties;
+    private StaticWebAssetEndpointResponseHeader[] _responseHeaders;
+    private StaticWebAssetEndpointSelector[] _selectors;
     private string _assetFile;
     private string _route;
     private bool _modified;
