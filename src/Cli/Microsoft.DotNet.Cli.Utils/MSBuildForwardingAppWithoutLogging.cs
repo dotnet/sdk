@@ -36,13 +36,7 @@ internal class MSBuildForwardingAppWithoutLogging
     // True if, given current state of the class, MSBuild would be executed in its own process.
     public bool ExecuteMSBuildOutOfProc => _forwardingApp != null;
 
-    private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables =
-        new()
-        {
-            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? AppContext.BaseDirectory },
-            { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
-            { "DOTNET_HOST_PATH", GetDotnetPath() },
-        };
+    private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
     private readonly List<string> _msbuildRequiredParameters =
         [ "-maxcpucount", "-verbosity:m" ];
@@ -198,6 +192,16 @@ internal class MSBuildForwardingAppWithoutLogging
     private static string GetDotnetPath()
     {
         return new Muxer().MuxerPath;
+    }
+
+    internal static Dictionary<string, string> GetMSBuildRequiredEnvironmentVariables()
+    {
+        return new()
+        {
+            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? AppContext.BaseDirectory },
+            { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
+            { "DOTNET_HOST_PATH", GetDotnetPath() },
+        };
     }
 
     private static bool IsRestoreSources(string arg)

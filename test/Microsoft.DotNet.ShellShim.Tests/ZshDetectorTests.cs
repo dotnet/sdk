@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Utils;
 using Moq;
 

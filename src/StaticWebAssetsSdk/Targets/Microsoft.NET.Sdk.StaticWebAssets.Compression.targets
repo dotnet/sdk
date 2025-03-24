@@ -219,16 +219,20 @@ Copyright (c) .NET Foundation. All rights reserved.
 <!-- Build -->
 
   <Target Name="ResolveBuildCompressedStaticWebAssets" DependsOnTargets="$(ResolveBuildCompressedStaticWebAssetsDependsOn)">
+
+    <PropertyGroup>
+      <_ResolveBuildCompressedStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rbcswa.dswa.cache.json</_ResolveBuildCompressedStaticWebAssetsCachePath>
+    </PropertyGroup>
+
     <DefineStaticWebAssets
       CandidateAssets="@(_CompressedStaticWebAssets)"
+      CacheManifestPath="$(_ResolveBuildCompressedStaticWebAssetsCachePath)"
     >
       <Output TaskParameter="Assets" ItemName="_CompressionBuildStaticWebAsset" />
-      <Output TaskParameter="AssetDetails" ItemName="_ResolveBuildCompressedStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(_CompressionBuildStaticWebAsset);@(_PrecompressedStaticWebAssets)"
-      AssetFileDetails="@(_ResolveBuildCompressedStaticWebAssetsDetails)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="_CompressionBuildStaticWebAssetEndpoint" />
@@ -242,7 +246,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
-      AssetFileDetails="@(_ResolveBuildCompressedStaticWebAssetsDetails)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />

@@ -13,6 +13,7 @@ namespace Microsoft.NET.TestFramework
     public abstract class AspNetSdkTest : SdkTest
     {
         public readonly string? DefaultTfm;
+        public const string WasmBootConfigFileName = "dotnet.boot.js";
 
 #if !GENERATE_MSBUILD_LOGS
         public static bool GenerateMSbuildLogs = true;

@@ -80,8 +80,8 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, "one.sln", "two.sln", "three.slnx", "add");
             cmd.Should().Fail();
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
-{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
+{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
         }
 
         [Theory]
@@ -246,10 +246,10 @@ Options:
 
         [Theory]
         // needs https://github.com/microsoft/vs-solutionpersistence/pull/101
-        //[InlineData("sln", true, ".sln")]
-        //[InlineData("sln", false, ".sln")]
-        //[InlineData("solution", true, ".sln")]
-        //[InlineData("solution", false, ".sln")]
+        // [InlineData("sln", true, ".sln")]
+        // [InlineData("sln", false, ".sln")]
+        // [InlineData("solution", true, ".sln")]
+        // [InlineData("solution", false, ".sln")]
         [InlineData("sln", true, ".slnx")]
         [InlineData("solution", false, ".slnx")]
         public void WhenNestedProjectIsAddedSolutionFoldersAreCreatedBuild(string solutionCommand, bool fooFirst, string solutionExtension)
