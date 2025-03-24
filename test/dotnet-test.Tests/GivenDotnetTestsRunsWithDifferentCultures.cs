@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests;
 
@@ -20,10 +21,9 @@ public class GivenDotnetTestsRunsWithDifferentCultures : SdkTest
 
         CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                 .WithWorkingDirectory(testInstance.Path)
-                                .WithEnableTestingPlatform()
                                 .WithCulture(locale)
                                 .Execute();
 
-        result.ExitCode.Should().Be(0);
+        result.ExitCode.Should().Be(ExitCodes.Success);
     }
 }

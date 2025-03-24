@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <VSTestLogger>console%3bverbosity=normal;trx%3bverbosity=diagnostic%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
+    <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotnetTool)</VSTestCLIRunSettings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BlobArtifactsDir Condition="'$(BlobArtifactsDir)' == ''">$(ArtifactsAssetsDir)</BlobArtifactsDir>
+    <PackageArtifactsDir Condition="'$(PackageArtifactsDir)' == ''">$(ArtifactsPackagesDir)</PackageArtifactsDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
+  </ItemGroup>
+
+  <Target Name="SetRuntimeConfigOptions"
+          BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
+    <ItemGroup>
+      <!-- General configs -->
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).AssetsDirectory">
+        <Value>$(BlobArtifactsDir)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PackagesDirectory">
+        <Value>$(PackageArtifactsDir)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).ScenarioTestsNuGetConfigPath">
+        <Value>$(RepoRoot)src\scenario-tests\NuGet.config</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).Architecture">
+        <Value>$(HostArchitecture)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TestRpmPackages">
+        <Value>$(TestRpmPackages)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TestDebPackages">
+        <Value>$(TestDebPackages)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).KeepDockerImages">
+        <Value>$(KeepDockerImages)</Value>
+      </RuntimeHostConfigurationOption>
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -1,0 +1,174 @@
+parameters:
+# Stages that build individual verticals
+- name: verticalsStages
+  type: stageList
+# Stages that need to run after the final artifacts are determined after joining all verticals.
+- name: postJoinStages
+  type: stageList
+  default: []
+# When we should run the final join stage and the stages that depend on it.
+- name: finalJoinCondition
+  type: boolean
+
+#### sdk parameters ####
+- name: isBuiltFromVmr
+  displayName: True when build is running from dotnet/dotnet directly
+  type: boolean
+
+- name: vmrBranch
+  displayName: dotnet/dotnet branch to use
+  type: string
+
+# These are not expected to be passed it but rather just object variables reused below
+- name: pool_Linux
+  type: object
+  default:
+    name: $(defaultPoolName)
+    image: $(poolImage_Linux)
+    demands: ImageOverride -equals $(poolImage_Linux)
+    os: linux
+
+- name: pool_Windows
+  type: object
+  default:
+    name: $(defaultPoolName)
+    image: $(poolImage_Windows)
+    demands: ImageOverride -equals $(poolImage_Windows)
+    os: windows
+
+- name: pool_LinuxArm64
+  type: object
+  default:
+    name: $(poolName_LinuxArm64)
+    image: $(poolImage_LinuxArm64)
+    demands: ImageOverride -equals $(poolImage_LinuxArm64)
+    hostArchitecture: Arm64
+    os: linux
+
+- name: pool_Mac
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: $(poolImage_Mac)
+    os: macOS
+
+
+- name: pool_Linux_Shortstack
+  type: object
+  default:
+    name: $(shortStackPoolName)
+    image: $(poolImage_Linux)
+    demands: ImageOverride -equals $(poolImage_Linux)
+    os: linux
+
+stages:
+# Insert all stages that build verticals
+# and publish artifacts for each vertical
+- ${{ each stage in parameters.verticalsStages }}:
+  - ${{ insert }}: ${{ stage }}
+- ${{ if parameters.finalJoinCondition }}:
+  # This stage should contain all jobs that take inputs from all verticals and determine the exact final outputs.
+  - stage: VMR_Final_Join
+    displayName: 'VMR Final Join'
+    dependsOn:
+    - ${{ each stage in parameters.verticalsStages }}:
+      - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
+        - ${{ stage.stage }}
+    variables:
+    - ${{ if parameters.isBuiltFromVmr }}:
+      - name: vmrPath
+        value: $(Build.SourcesDirectory)
+    - ${{ else }}:
+      - name: vmrPath
+        value: $(Agent.BuildDirectory)/vmr
+    - template: ../variables/vmr-build.yml
+      parameters:
+        vmrBranch: ${{ parameters.vmrBranch }}
+    jobs:
+      - job: FinalJoin
+        displayName: Final Build Pass
+        pool: ${{ parameters.pool_Windows }}
+        timeoutInMinutes: 240
+        templateContext:
+          outputParentDirectory: $(Build.ArtifactStagingDirectory)/artifacts
+          inputs:
+            # Download the artifacts from every job in every vertical stage under VerticalArtifacts
+            - ${{ each stage in parameters.verticalsStages }}:
+              - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
+                - ${{ each vertical in stage.jobs }}:
+                  - input: pipelineArtifact
+                    path: $(Build.ArtifactStagingDirectory)/VerticalArtifacts/${{ vertical.job }}
+                    artifactName: ${{ vertical.job }}_Artifacts
+            - input: pipelineArtifact
+              path: $(Build.ArtifactStagingDirectory)/VerticalManifests
+              artifactName: VerticalManifests
+          outputs:
+          - output: pipelineArtifact
+            path: $(Build.ArtifactStagingDirectory)/artifacts/MergedManifest.xml
+            artifact: AssetManifests
+            displayName: Publish Merged Manifest
+            sbomEnabled: false
+          - output: buildArtifacts
+            PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/assets
+            ArtifactName: BlobArtifacts
+            displayName: Publish Blob Artifacts
+            sbomEnabled: false
+          - output: buildArtifacts
+            PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/packages
+            ArtifactName: PackageArtifacts
+            displayName: Publish Package Artifacts
+            sbomEnabled: false
+          - output: pipelineArtifact
+            path: $(Build.ArtifactStagingDirectory)/artifacts/log
+            artifact: JoinVerticals_BuildLogs_Attempt$(System.JobAttempt)
+            displayName: Publish Build Logs
+            sbomEnabled: false
+            condition: succeededOrFailed()
+        steps:
+        - ${{ if ne(variables['System.TeamProject'], 'internal') }}:
+          - task: DownloadPipelineArtifact@2
+            displayName: Download asset manifests
+            inputs:
+              path: $(Build.ArtifactStagingDirectory)/VerticalManifests
+              artifactName: VerticalManifests
+          # Download the artifacts from every job in every vertical stage under VerticalArtifacts
+          - ${{ each stage in parameters.verticalsStages }}:
+            - ${{ if ne(stage.templateContext.validationOnly, 'true') }}:
+              - ${{ each vertical in stage.jobs }}:
+                - task: DownloadPipelineArtifact@2
+                  displayName: Download Artifacts for ${{ vertical.job }}
+                  inputs:
+                    path: $(Build.ArtifactStagingDirectory)/VerticalArtifacts/${{ vertical.job }}
+                    artifactName: ${{ vertical.job }}_Artifacts
+        - ${{ if not(parameters.isBuiltFromVmr) }}:
+          - template: ../steps/vmr-prepare.yml@self
+            parameters:
+              ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+                vmrBranch: $(System.PullRequest.TargetBranch)
+              ${{ else }}:
+                vmrBranch: ${{ variables.VmrBranch }}
+
+          - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+            - template: ../steps/vmr-pull-updates.yml@self
+              parameters:
+                vmrPath: ${{ variables.vmrPath }}
+                vmrBranch: ${{ variables.VmrBranch }}
+                targetRef: $(Build.SourceVersion) # Synchronize the current sdk commit
+        - template: ../steps/vmr-join-verticals.yml
+          parameters:
+            dotNetBuildPass: final
+            vmrPath: $(vmrPath)
+            outputFolder: $(Build.ArtifactStagingDirectory)/artifacts
+  # Insert all of the post-join stages.
+  - ${{ each postJoinStage in parameters.postJoinStages }}:
+    - stage: ${{ postJoinStage.stage }}
+      ${{ each pair in postJoinStage }}:
+        ${{ if notIn(pair.key, 'dependsOn', 'stage') }}:
+          ${{ pair.key }}: ${{ pair.value }}
+      dependsOn:
+        # Inject a dependency on the final join stage
+        - VMR_Final_Join
+        # add any dependencies provided via root yaml
+        - ${{ if ne(postJoinStage.dependsOn, '') }}:
+          - ${{ each dependency in postJoinStage.dependsOn }}:
+            - ${{ dependency }}

@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -412,11 +412,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var version = "6.0.100";
             var cachePath = Path.Combine(dotnetRoot, "MockCache");
 
-            var exceptionThrown = Assert.Throws<Exception>(() =>
+            var exceptionThrown = Assert.Throws<AggregateException>(() =>
                 CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context, new DirectoryPath(cachePath))));
-            exceptionThrown.Message.Should().Contain(packId);
-            exceptionThrown.Message.Should().Contain(packVersion);
-            exceptionThrown.Message.Should().Contain(cachePath);
+            exceptionThrown.InnerException.Message.Should().Contain(packId);
+            exceptionThrown.InnerException.Message.Should().Contain(packVersion);
+            exceptionThrown.InnerException.Message.Should().Contain(cachePath);
         }
 
         private (string, FileBasedInstaller, INuGetPackageDownloader, Func<string, IWorkloadResolver>) GetTestInstaller([CallerMemberName] string testName = "", bool failingInstaller = false, string identifier = "", bool manifestDownload = false,

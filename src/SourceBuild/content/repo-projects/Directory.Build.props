@@ -52,12 +52,25 @@
 
     <SbrpCacheNuGetSourceName>source-build-reference-package-cache</SbrpCacheNuGetSourceName>
     <SourceBuiltSourceNamePrefix>source-built-</SourceBuiltSourceNamePrefix>
+    <PreviousBuildPassSourceNamePrefix>previous-build-pass-</PreviousBuildPassSourceNamePrefix>
 
     <!-- Set the bootstrap version to the VMR's version if empty. (no bootstrap set). -->
     <ArcadeBootstrapVersion>$([MSBuild]::ValueOrDefault('$(ARCADE_BOOTSTRAP_VERSION)', '$(ArcadeSdkVersion)'))</ArcadeBootstrapVersion>
 
     <ArtifactsLogRepoDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsLogDir)', '$(RepositoryName)'))</ArtifactsLogRepoDir>
     <PackageReportRepoDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', '$(RepositoryName)'))</PackageReportRepoDir>
+
+    <RidAgnosticVerticalName>Windows_x64</RidAgnosticVerticalName>
+
+    <!--
+      Publish only RID-specific assets when we're not doing source-build and one of the following cases is true:
+      - This is not the Rid-agnostic vertical
+      - This is a BuildPass1 build
+    -->
+    <EnableDefaultRidSpecificArtifacts
+      Condition="('$(VerticalName)' != '' and '$(VerticalName)' != '$(RidAgnosticVerticalName)')
+                  and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')
+                  and '$(DotNetBuildSourceOnly)' != 'true'">true</EnableDefaultRidSpecificArtifacts>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildOS)' == 'windows'">
@@ -86,39 +99,48 @@
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
     <BuildActions Condition="'$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
-    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior for source-only builds changes to dev.
-         https://github.com/dotnet/source-build/issues/4855 -->
-    <BuildArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</BuildArgs>
-    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildArgs>
-    <BuildArgs>$(BuildArgs) -bl</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
-
-    <!-- Indicate that the build is being run from the orchestrator -->
-    <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
-
-    <!-- Pass down configuration properties -->
-    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
-
-    <!-- Pass through DotNetBuildPass for join point vertical support. -->
-    <BuildArgs Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">$(BuildArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</BuildArgs>
-
-    <!-- Only pass these properites through when necessary to reduce command line noise. -->
-    <BuildArgs Condition="'$(CrossBuild)' == 'true'">$(BuildArgs) /p:CrossBuild=true</BuildArgs>
-    <BuildArgs Condition="'$(NuGetConfigFile)' != ''">$(BuildArgs) /p:RestoreConfigFile=$(NuGetConfigFile)</BuildArgs>
-    <BuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(BuildArgs) /p:DotNetBuildUseMonoRuntime=$(DotNetBuildUseMonoRuntime)</BuildArgs>
-    <BuildArgs Condition="'$(OfficialBuildId)' != ''">$(BuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</BuildArgs>
-    <BuildArgs Condition="'$(ForceDryRunSigning)' != ''">$(BuildArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</BuildArgs>
-
-    <!-- Pass locations for assets -->
-    <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</BuildArgs>
-
-    <!-- PGO assets by default are "Vertical" visibilty. Each repo will enable the specific artifacts it must publish externally -->
-    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:DefaultArtifactVisibility=Vertical</BuildArgs>
-    <!-- ShortStack builds only publish new assets from the root repository. All other assets are duplicates. -->
-    <BuildArgs Condition="'$(ShortStack)' == 'true' and '$(MSBuildProjectName)' != '$(RootRepo)'">$(BuildArgs) /p:DefaultArtifactVisibility=Vertical</BuildArgs>
+    <TestActions>$(FlagParameterPrefix)test</TestActions>
   </PropertyGroup>
 
+  <!-- Common args used for building and testing. -->
+  <PropertyGroup>
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior for source-only builds changes to dev.
+         https://github.com/dotnet/source-build/issues/4855 -->
+    <CommonArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</CommonArgs>
+    <CommonArgs>$(CommonArgs) $(FlagParameterPrefix)configuration $(Configuration)</CommonArgs>
+
+    <!-- Pass down configuration properties -->
+    <CommonArgs>$(CommonArgs) /p:TargetRid=$(TargetRid)</CommonArgs>
+
+    <!-- Pass through DotNetBuildPass for join point vertical support. -->
+    <CommonArgs Condition="'$(DotNetBuildPass)' != '' and '$(DotNetBuildPass)' != '1'">$(CommonArgs) /p:DotNetBuildPass=$(DotNetBuildPass)</CommonArgs>
+
+    <!-- Only pass these properites through when necessary to reduce command line noise. -->
+    <CommonArgs Condition="'$(CrossBuild)' == 'true'">$(CommonArgs) /p:CrossBuild=true</CommonArgs>
+    <CommonArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(CommonArgs) /p:DotNetBuildUseMonoRuntime=$(DotNetBuildUseMonoRuntime)</CommonArgs>
+    <CommonArgs Condition="'$(OfficialBuildId)' != ''">$(CommonArgs) /p:OfficialBuildId=$(OfficialBuildId)</CommonArgs>
+    <CommonArgs Condition="'$(ForceDryRunSigning)' != ''">$(CommonArgs) /p:ForceDryRunSigning=$(ForceDryRunSigning)</CommonArgs>
+
+    <!-- Pass locations for assets -->
+    <CommonArgs>$(CommonArgs) /p:SourceBuiltAssetsDir=$(ArtifactsAssetsDir)</CommonArgs>
+    <CommonArgs>$(CommonArgs) /p:SourceBuiltAssetManifestsDir=$(RepoAssetManifestsDir)</CommonArgs>
+
+    <!-- PGO assets by default are "Vertical" visibilty. Each repo will enable the specific artifacts it must publish externally -->
+    <DefaultArtifactVisibility Condition="'$(PgoInstrument)' == 'true'">Vertical</DefaultArtifactVisibility>
+    <!-- ShortStack builds only publish new assets from the root repository. All other assets are duplicates. -->
+    <DefaultArtifactVisibility Condition="'$(ShortStack)' == 'true' and '$(MSBuildProjectName)' != '$(RootRepo)'">Vertical</DefaultArtifactVisibility>
+  </PropertyGroup>
+
+  <!-- Build specific args -->
+  <PropertyGroup>
+    <BuildArgs>$(BuildArgs) -bl</BuildArgs>
+    <!-- Don't flow these control properties during testing to avoid the outer/inner complexity. -->
+    <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
+    <!-- Pass the repository URL in globally so that we redirect sourcelink package information to the VMR repo. -->
+    <DotNetRepositoryUrl>https://github.com/dotnet/dotnet</DotNetRepositoryUrl>
+    <BuildArgs>$(BuildArgs) /p:RepositoryUrl=$(DotNetRepositoryUrl)</BuildArgs>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <BuildArgs>$(BuildArgs) /p:SourceBuiltSymbolsDir=$(IntermediateSymbolsRepoDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DotNetBuildSourceOnly=true</BuildArgs>
@@ -126,14 +148,8 @@
     <BuildArgs>$(BuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</BuildArgs>
   </PropertyGroup>
 
+  <!-- Test specific args-->
   <PropertyGroup>
-    <TestActions>$(FlagParameterPrefix)restore</TestActions>
-    <TestActions>$(TestActions) $(FlagParameterPrefix)test</TestActions>
-
-    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior for source-only builds changes to dev.
-         https://github.com/dotnet/source-build/issues/4855 -->
-    <TestArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</TestArgs>
-    <TestArgs>$(TestArgs) $(FlagParameterPrefix)configuration $(Configuration)</TestArgs>
     <TestArgs>$(TestArgs) /bl:$(ArtifactsLogRepoDir)Test.binlog</TestArgs>
   </PropertyGroup>
 
@@ -146,15 +162,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- TODO: Remove once net10.0 migration is complete -->
-    <EnvironmentVariables Include="SuppressTfmSupportBuildWarnings=True" />
-
     <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
     <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetRoot)" />
     <EnvironmentVariables Include="DOTNET_PATH=$(DotNetRoot)" />
     <EnvironmentVariables Include="DOTNET_HOST_PATH=$(DotNetTool)" />
 
-    <!-- _InitializeDotNetCli is used by websdk and templating to decide whether to init the SDK -->
     <EnvironmentVariables Include="_InitializeDotNetCli=$(DotNetRoot.TrimEnd('/\'))" />
     <EnvironmentVariables Include="_DotNetInstallDir=$(DotNetRoot)" />
     <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj"
@@ -184,7 +196,6 @@
     <!-- Need to be passed in here so that outer and inner builds don't restore into the orchestrator package cache (CI builds)
          or the user package cache (local dev builds). -->
     <EnvironmentVariables Include="NUGET_PACKAGES=$(RepoArtifactsPackageCache)" />
-    <TestEnvironmentVariable Include="NUGET_PACKAGES=$(RepoArtifactsPackageCache)" />
   </ItemGroup>
 
   <ItemGroup  Condition="'$(DotNetBuildSourceOnly)' == 'true'">

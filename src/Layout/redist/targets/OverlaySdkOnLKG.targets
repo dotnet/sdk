@@ -1,9 +1,6 @@
-<Project ToolsVersion="14.0" DefaultTargets="Test">
-  <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateLayout">
-    <PropertyGroup>
-      <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
-    </PropertyGroup>
+<Project>
 
+  <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateLayout">
     <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
     and a property. -->
     <Exec Command="$(DotnetTool) --version" ConsoleToMsbuild="true">
@@ -11,6 +8,10 @@
     </Exec>
 
     <PropertyGroup>
+      <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
+      <_DotNetHiveRoot Condition="'$(_DotNetHiveRoot)' == ''">$(RepoRoot).dotnet/</_DotNetHiveRoot>
+      <_DotNetHiveRoot Condition="!HasTrailingSlash('$(_DotNetHiveRoot)')">$(_DotNetHiveRoot)/</_DotNetHiveRoot>
+
       <Stage0IncludedWorkloadManifestsFile>$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/IncludedWorkloadManifests.txt</Stage0IncludedWorkloadManifestsFile>
       <Stage0KnownWorkloadManifestsFile>$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/KnownWorkloadManifests.txt</Stage0KnownWorkloadManifestsFile>
     </PropertyGroup>
@@ -50,10 +51,6 @@
     <Copy SourceFiles="@(OverlaySDK)"
           DestinationFiles="@(OverlaySDK->'$(RedistLayoutPath)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>
-
-    <PropertyGroup>
-      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)</SdkOutputDirectory>
-    </PropertyGroup>
 
     <Copy SourceFiles="@(OverlaySdkFilesFromStage0)"
           DestinationFiles="@(OverlaySdkFilesFromStage0->'$(SdkOutputDirectory)\%(RelativeDestination)\%(RecursiveDir)%(Filename)%(Extension)')"/>
@@ -107,7 +104,6 @@
       WorkloadManifestPath="%(MonoToolchainCurrentWorkloadManifests.FullPath)" />
   </Target>
 
-
   <Target Name="PublishTestWorkloads"
           AfterTargets="OverlaySdkOnLKG">
     <PropertyGroup>
@@ -130,6 +126,6 @@
 
     <Copy SourceFiles="@(WorkloadPackContent)"
       DestinationFiles="@(WorkloadPackContent->'$(RedistLayoutPath)\packs\%(RecursiveDir)%(Filename)%(Extension)')" />
-
   </Target>
+
 </Project>
