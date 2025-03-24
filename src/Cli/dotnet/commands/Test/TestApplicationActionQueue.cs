@@ -7,14 +7,23 @@ namespace Microsoft.DotNet.Cli;
 
 internal class TestApplicationActionQueue
 {
-    private readonly Channel<TestApplication> _channel = Channel.CreateUnbounded<TestApplication>(new UnboundedChannelOptions() { SingleReader = false, SingleWriter = false });
-    private readonly List<Task> _readers = [];
-    private bool _hasFailed = false;
+    private readonly Channel<TestApplication> _channel;
+    private readonly List<Task> _readers;
 
-    public TestApplicationActionQueue(int dop, Func<TestApplication, Task<int>> action)
+    private bool _hasFailed;
+    private int? _firstExitCode;
+    private bool _allSameExitCode;
+
+    public TestApplicationActionQueue(int degreeOfParallelism, Func<TestApplication, Task<int>> action)
     {
-        // Add readers to the channel, to read the test applications
-        for (int i = 0; i < dop; i++)
+        _channel = Channel.CreateUnbounded<TestApplication>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
+
+        _readers = [];
+        _hasFailed = false;
+        _firstExitCode = null;
+        _allSameExitCode = true;
+
+        for (int i = 0; i < degreeOfParallelism; i++)
         {
             _readers.Add(Task.Run(async () => await Read(action)));
         }
@@ -23,33 +32,46 @@ internal class TestApplicationActionQueue
     public void Enqueue(TestApplication testApplication)
     {
         if (!_channel.Writer.TryWrite(testApplication))
+        {
             throw new InvalidOperationException($"Failed to write to channel for test application: {testApplication}");
+        }
     }
 
-    public bool WaitAllActions()
+    public int WaitAllActions()
     {
         Task.WaitAll([.. _readers]);
-        return _hasFailed;
+
+        if (_allSameExitCode && _firstExitCode.HasValue)
+        {
+            return _firstExitCode.Value;
+        }
+
+        return _hasFailed ? ExitCode.GenericFailure : ExitCode.Success;
     }
 
     public void EnqueueCompleted()
     {
-        //Notify readers that no more data will be written
         _channel.Writer.Complete();
     }
 
     private async Task Read(Func<TestApplication, Task<int>> action)
     {
-        while (await _channel.Reader.WaitToReadAsync())
+        await foreach (var testApp in _channel.Reader.ReadAllAsync())
         {
-            if (_channel.Reader.TryRead(out TestApplication testApp))
-            {
-                int result = await action(testApp);
+            int result = await action(testApp);
 
-                if (result != ExitCode.Success)
-                {
-                    _hasFailed = true;
-                }
+            if (_firstExitCode == null)
+            {
+                _firstExitCode = result;
+            }
+            else if (_firstExitCode != result)
+            {
+                _allSameExitCode = false;
+            }
+
+            if (result != ExitCode.Success)
+            {
+                _hasFailed = true;
             }
         }
     }
