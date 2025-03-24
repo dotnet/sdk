@@ -234,10 +234,6 @@
     { "path": "Company.TestProject1.vbproj" },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "MSTestSettings.vb"
-    },
-    {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "Test1.vb"
     }
   ],
