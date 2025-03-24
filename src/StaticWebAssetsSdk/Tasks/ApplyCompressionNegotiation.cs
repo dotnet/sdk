@@ -16,25 +16,11 @@ public class ApplyCompressionNegotiation : Task
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
-    public ITaskItem[] AssetFileDetails { get; set; }
-
     [Output]
     public ITaskItem[] UpdatedEndpoints { get; set; }
 
-    private Dictionary<string, ITaskItem> _assetFileDetails;
-
     public override bool Execute()
     {
-        if (AssetFileDetails != null)
-        {
-            _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
-            for (int i = 0; i < AssetFileDetails.Length; i++)
-            {
-                var item = AssetFileDetails[i];
-                _assetFileDetails[item.ItemSpec] = item;
-            }
-        }
-
         var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
 
         var endpointsByAsset = CandidateEndpoints.Select(StaticWebAssetEndpoint.FromTaskItem)
@@ -208,24 +194,8 @@ public class ApplyCompressionNegotiation : Task
         return true;
     }
 
-    private string ResolveQuality(StaticWebAsset compressedAsset)
-    {
-        long length;
-        if(_assetFileDetails != null && _assetFileDetails.TryGetValue(compressedAsset.Identity, out var assetFileDetail))
-        {
-            length = long.Parse(assetFileDetail.GetMetadata("FileLength"));
-        }
-        else if (TestResolveFileLength != null)
-        {
-            length = TestResolveFileLength(compressedAsset.Identity);
-        }
-        else
-        {
-            length = new FileInfo(compressedAsset.Identity).Length;
-        }
-
-        return Math.Round(1.0 / (length + 1), 12).ToString("F12", CultureInfo.InvariantCulture);
-    }
+    private static string ResolveQuality(StaticWebAsset compressedAsset) =>
+        Math.Round(1.0 / (compressedAsset.FileLength + 1), 12).ToString("F12", CultureInfo.InvariantCulture);
 
     private static bool IsCompatible(StaticWebAssetEndpoint compressedEndpoint, StaticWebAssetEndpoint relatedEndpointCandidate)
     {

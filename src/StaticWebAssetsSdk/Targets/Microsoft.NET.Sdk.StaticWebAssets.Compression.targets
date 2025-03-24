@@ -229,7 +229,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       CacheManifestPath="$(_ResolveBuildCompressedStaticWebAssetsCachePath)"
     >
       <Output TaskParameter="Assets" ItemName="_CompressionBuildStaticWebAsset" />
-      <Output TaskParameter="AssetDetails" ItemName="_ResolveBuildCompressedStaticWebAssetsDetails" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
@@ -247,7 +246,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
-      AssetFileDetails="@(_ResolveBuildCompressedStaticWebAssetsDetails)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />

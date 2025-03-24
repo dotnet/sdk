@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.Diagnostics;
-using System.IO;
 using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;

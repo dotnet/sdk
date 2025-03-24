@@ -5,7 +5,6 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using System.Globalization;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -74,13 +73,9 @@ public partial class DefineStaticWebAssets : Task
 
     public Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> TestResolveFileDetails { get; set; }
 
-    [Output]
-    public ITaskItem[] AssetDetails { get; set; }
-
     public override bool Execute()
     {
         var assetsCache = GetOrCreateAssetsCache();
-        var assetDetails = new List<ITaskItem>();
 
         if (assetsCache.IsUpToDate())
         {
@@ -194,7 +189,7 @@ public partial class DefineStaticWebAssets : Task
                 // the asset.
                 var fingerprint = ComputePropertyValue(candidate, nameof(StaticWebAsset.Fingerprint), null, false);
                 var integrity = ComputePropertyValue(candidate, nameof(StaticWebAsset.Integrity), null, false);
-                FileInfo file = null;
+
                 var identity = Path.GetFullPath(candidate.GetMetadata("FullPath"));
                 var (file, fileLength, lastWriteTimeUtc) = ResolveFileDetails(originalItemSpec, identity);
 
@@ -202,7 +197,6 @@ public partial class DefineStaticWebAssets : Task
                 {
                     case (null, null):
                         Log.LogMessage(MessageImportance.Low, "Computing fingerprint and integrity for asset '{0}'", candidate.ItemSpec);
-                        file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
                         (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(file));
                         break;
                     case (null, not null):
@@ -211,20 +205,8 @@ public partial class DefineStaticWebAssets : Task
                         break;
                     case (not null, null):
                         Log.LogMessage(MessageImportance.Low, "Computing integrity for asset '{0}'", candidate.ItemSpec);
-                        file = StaticWebAsset.ResolveFile(candidate.ItemSpec, originalItemSpec);
                         integrity = StaticWebAsset.ComputeIntegrity(file);
                         break;
-                }
-
-                if (file != null)
-                {
-                    // Record the FileLength and LastWriteTimeUtc for the asset so that we don't have to read it again on other tasks
-                    // we'll flow this information to them
-                    assetDetails.Add(new TaskItem(file.FullName, new Dictionary<string, string>
-                    {
-                        ["FileLength"] = file.Length.ToString(CultureInfo.InvariantCulture),
-                        ["LastWriteTimeUtc"] = file.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture),
-                    }));
                 }
 
                 // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
@@ -290,7 +272,6 @@ public partial class DefineStaticWebAssets : Task
 
             Assets = [.. outputs.Assets];
             CopyCandidates = [.. outputs.CopyCandidates];
-            AssetDetails = [.. assetDetails];
         }
         catch (Exception ex)
         {

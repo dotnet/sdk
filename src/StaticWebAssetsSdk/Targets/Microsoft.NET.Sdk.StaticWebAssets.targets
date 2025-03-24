@@ -687,13 +687,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
       CacheManifestPath="$(_ResolveProjectStaticWebAssetsCachePath)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-        <Output TaskParameter="AssetDetails" ItemName="_ResolveProjectStaticWebAssetsDetails" />
         <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(_CurrentProjectStaticWebAsset)"
-      AssetFileDetails="@(_ResolveProjectStaticWebAssetsDetails)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />

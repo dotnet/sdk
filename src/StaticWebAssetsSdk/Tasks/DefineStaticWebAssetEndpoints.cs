@@ -18,25 +18,11 @@ public class DefineStaticWebAssetEndpoints : Task
     [Required]
     public ITaskItem[] ContentTypeMappings { get; set; }
 
-    public ITaskItem[] AssetFileDetails { get; set; }
-
     [Output]
     public ITaskItem[] Endpoints { get; set; }
 
-    private Dictionary<string, ITaskItem> _assetFileDetails;
-
     public override bool Execute()
     {
-        if (AssetFileDetails != null)
-        {
-            _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
-            for (int i = 0; i < AssetFileDetails.Length; i++)
-            {
-                var item = AssetFileDetails[i];
-                _assetFileDetails[item.ItemSpec] = item;
-            }
-        }
-
         var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
         var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
         var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
@@ -119,13 +105,12 @@ public class DefineStaticWebAssetEndpoints : Task
             string lastModified,
             StaticWebAssetGlobMatcher.MatchContext matchContext)
         {
-            var (length, lastModified) = ResolveDetails(asset);
             var result = new List<StaticWebAssetEndpoint>();
             foreach (var (label, route, values) in routes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
                 List<StaticWebAssetEndpointResponseHeader> headers = [
-                    new()
+                        new()
                     {
                         Name = "Accept-Ranges",
                         Value = "bytes"
@@ -193,30 +178,6 @@ public class DefineStaticWebAssetEndpoints : Task
             }
 
             return result;
-        }
-
-        private (string length, string lastModified) ResolveDetails(StaticWebAsset asset)
-        {
-            if (_assetFileDetails != null && _assetFileDetails.TryGetValue(asset.Identity, out var details))
-            {
-                return (length: details.GetMetadata("FileLength"), lastModified: details.GetMetadata("LastWriteTimeUtc"));
-            }
-            else if (_assetFileDetails != null && _assetFileDetails.TryGetValue(asset.OriginalItemSpec, out var originalDetails))
-            {
-                return (length: originalDetails.GetMetadata("FileLength"), lastModified: originalDetails.GetMetadata("LastWriteTimeUtc"));
-            }
-            else if (TestLastWriteResolver != null || TestLengthResolver != null)
-            {
-                return (length: GetTestFileLength(asset), lastModified: GetTestFileLastModified(asset));
-            }
-            else
-            {
-                Log.LogMessage(MessageImportance.High, $"No details found for {asset.Identity}. Using file system to resolve details.");
-                var fileInfo = StaticWebAsset.ResolveFile(asset.Identity, asset.OriginalItemSpec);
-                var length = fileInfo.Length.ToString(CultureInfo.InvariantCulture);
-                var lastModified = fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
-                return (length, lastModified);
-            }
         }
 
         private static (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider, StaticWebAssetGlobMatcher.MatchContext matchContext, TaskLoggingHelper log)
