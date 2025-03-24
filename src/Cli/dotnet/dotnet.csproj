@@ -21,70 +21,70 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="commands/dotnet-new" />
+    <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="commands/New" />
     <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
-    <Compile Remove="commands\dotnet-workload\list\VisualStudioWorkloads.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <Compile Remove="commands\Workload\list\VisualStudioWorkloads.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <Compile Remove="$(RepoRoot)\src\Cli\dotnet\Installer\Windows\Security\*.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="commands\dotnet-new\*.zip" />
+    <EmbeddedResource Include="commands\New\*.zip" />
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
     <EmbeddedResource Update="*.resx" Namespace="Microsoft.DotNet.Cli" />
     <EmbeddedResource Update="BuildServer\*.resx" Namespace="Microsoft.DotNet.Cli.BuildServer" />
     <EmbeddedResource Update="CommandFactory\*.resx" Namespace="Microsoft.DotNet.Cli.CommandFactory" />
-    <EmbeddedResource Update="**\dotnet-package\add\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Add" />
-    <EmbeddedResource Update="**\dotnet-project\convert\*.resx" Namespace="Microsoft.DotNet.Tools.Project.Convert" />
-    <EmbeddedResource Update="**\dotnet-reference-add\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Add" />
-    <EmbeddedResource Update="**\dotnet-add\*.resx" Namespace="Microsoft.DotNet.Tools.Add" />
-    <EmbeddedResource Update="**\dotnet-build\*.resx" Namespace="Microsoft.DotNet.Tools.Build" />
-    <EmbeddedResource Update="**\dotnet-buildserver\*.resx" Namespace="Microsoft.DotNet.Tools.BuildServer" />
-    <EmbeddedResource Update="**\dotnet-buildserver\shutdown\*.resx" Namespace="Microsoft.DotNet.Tools.BuildServer.Shutdown" />
-    <EmbeddedResource Update="**\dotnet-clean\*.resx" Namespace="Microsoft.DotNet.Tools.Clean" />
-    <EmbeddedResource Update="**\dotnet-sdk\*.resx" Namespace="Microsoft.DotNet.Tools.Sdk" />
-    <EmbeddedResource Update="**\dotnet-sdk\check\*.resx" Namespace="Microsoft.DotNet.Tools.Sdk.Check" />
-    <EmbeddedResource Update="**\dotnet-help\*.resx" Namespace="Microsoft.DotNet.Tools.Help" />
-    <EmbeddedResource Update="**\dotnet-package\list\*.resx" Namespace="Microsoft.DotNet.Tools.Package.List" />
-    <EmbeddedResource Update="**\dotnet-reference-list\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.List" />
-    <EmbeddedResource Update="**\dotnet-list\*.resx" Namespace="Microsoft.DotNet.Tools.List" />
-    <EmbeddedResource Update="**\dotnet-new\*.resx" Namespace="Microsoft.DotNet.Tools.New" />
-    <EmbeddedResource Update="**\dotnet-pack\*.resx" Namespace="Microsoft.DotNet.Tools.Pack" />
-    <EmbeddedResource Update="**\dotnet-package\search\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Search" />
-    <EmbeddedResource Update="**\dotnet-publish\*.resx" Namespace="Microsoft.DotNet.Tools.Publish" />
-    <EmbeddedResource Update="**\dotnet-package\remove\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Remove" />
-    <EmbeddedResource Update="**\dotnet-reference-remove\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Remove" />
-    <EmbeddedResource Update="**\dotnet-remove\*.resx" Namespace="Microsoft.DotNet.Tools.Remove" />
-    <EmbeddedResource Update="**\dotnet-restore\*.resx" Namespace="Microsoft.DotNet.Tools.Restore" />
-    <EmbeddedResource Update="**\dotnet-run\*.resx" Namespace="Microsoft.DotNet.Tools.Run" />
-    <EmbeddedResource Update="**\dotnet-sln\*.resx" Namespace="Microsoft.DotNet.Tools.Sln" />
-    <EmbeddedResource Update="**\dotnet-store\*.resx" Namespace="Microsoft.DotNet.Tools.Store" />
-    <EmbeddedResource Update="**\dotnet-test\*.resx" Namespace="Microsoft.DotNet.Tools.Test" />
-    <EmbeddedResource Update="**\dotnet-tool\*.resx" Namespace="Microsoft.DotNet.Tools.Tool" />
-    <EmbeddedResource Update="**\dotnet-tool\list\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.List" />
-    <EmbeddedResource Update="**\dotnet-tool\search\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Search" />
-    <EmbeddedResource Update="**\dotnet-tool\uninstall\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Uninstall" />
-    <EmbeddedResource Update="**\dotnet-tool\install\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Install" />
-    <EmbeddedResource Update="**\dotnet-tool\update\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Update" />
-    <EmbeddedResource Update="**\dotnet-tool\common\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Common" />
-    <EmbeddedResource Update="**\dotnet-tool\restore\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Restore" />
-    <EmbeddedResource Update="**\dotnet-tool\run\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Run" />
-    <EmbeddedResource Update="**\dotnet-workload\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload" />
-    <EmbeddedResource Update="**\dotnet-workload\clean\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Clean" />
-    <EmbeddedResource Update="**\dotnet-workload\common\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Common" />
-    <EmbeddedResource Update="**\dotnet-workload\config\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Config" />
-    <EmbeddedResource Update="**\dotnet-workload\elevate\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Elevate" />
-    <EmbeddedResource Update="**\dotnet-workload\history\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.History" />
-    <EmbeddedResource Update="**\dotnet-workload\install\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Install" />
-    <EmbeddedResource Update="**\dotnet-workload\list\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.List" />
-    <EmbeddedResource Update="**\dotnet-workload\repair\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Repair" />
-    <EmbeddedResource Update="**\dotnet-workload\restore\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Restore" />
-    <EmbeddedResource Update="**\dotnet-workload\search\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Search" />
-    <EmbeddedResource Update="**\dotnet-workload\uninstall\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Uninstall" />
-    <EmbeddedResource Update="**\dotnet-workload\update\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Update" />
+    <EmbeddedResource Update="commands\Package\add\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Add" />
+    <EmbeddedResource Update="commands\Project\convert\*.resx" Namespace="Microsoft.DotNet.Tools.Project.Convert" />
+    <EmbeddedResource Update="commands\Reference\dotnet-reference-add\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Add" />
+    <EmbeddedResource Update="commands\Add\*.resx" Namespace="Microsoft.DotNet.Tools.Add" />
+    <EmbeddedResource Update="commands\Build\*.resx" Namespace="Microsoft.DotNet.Tools.Build" />
+    <EmbeddedResource Update="commands\BuildServer\*.resx" Namespace="Microsoft.DotNet.Tools.BuildServer" />
+    <EmbeddedResource Update="commands\BuildServer\shutdown\*.resx" Namespace="Microsoft.DotNet.Tools.BuildServer.Shutdown" />
+    <EmbeddedResource Update="commands\Clean\*.resx" Namespace="Microsoft.DotNet.Tools.Clean" />
+    <EmbeddedResource Update="commands\Sdk\*.resx" Namespace="Microsoft.DotNet.Tools.Sdk" />
+    <EmbeddedResource Update="commands\Sdk\check\*.resx" Namespace="Microsoft.DotNet.Tools.Sdk.Check" />
+    <EmbeddedResource Update="commands\Help\*.resx" Namespace="Microsoft.DotNet.Tools.Help" />
+    <EmbeddedResource Update="commands\Package\list\*.resx" Namespace="Microsoft.DotNet.Tools.Package.List" />
+    <EmbeddedResource Update="commands\Reference\dotnet-reference-list\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.List" />
+    <EmbeddedResource Update="commands\List\*.resx" Namespace="Microsoft.DotNet.Tools.List" />
+    <EmbeddedResource Update="commands\New\*.resx" Namespace="Microsoft.DotNet.Tools.New" />
+    <EmbeddedResource Update="commands\Pack\*.resx" Namespace="Microsoft.DotNet.Tools.Pack" />
+    <EmbeddedResource Update="commands\Package\search\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Search" />
+    <EmbeddedResource Update="commands\Publish\*.resx" Namespace="Microsoft.DotNet.Tools.Publish" />
+    <EmbeddedResource Update="commands\Package\remove\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Remove" />
+    <EmbeddedResource Update="commands\Reference\dotnet-reference-remove\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Remove" />
+    <EmbeddedResource Update="commands\Remove\*.resx" Namespace="Microsoft.DotNet.Tools.Remove" />
+    <EmbeddedResource Update="commands\Restore\*.resx" Namespace="Microsoft.DotNet.Tools.Restore" />
+    <EmbeddedResource Update="commands\Run\*.resx" Namespace="Microsoft.DotNet.Tools.Run" />
+    <EmbeddedResource Update="commands\Solution\*.resx" Namespace="Microsoft.DotNet.Tools.Sln" />
+    <EmbeddedResource Update="commands\Store\*.resx" Namespace="Microsoft.DotNet.Tools.Store" />
+    <EmbeddedResource Update="commands\Test\*.resx" Namespace="Microsoft.DotNet.Tools.Test" />
+    <EmbeddedResource Update="commands\Tool\*.resx" Namespace="Microsoft.DotNet.Tools.Tool" />
+    <EmbeddedResource Update="commands\Tool\list\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.List" />
+    <EmbeddedResource Update="commands\Tool\search\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Search" />
+    <EmbeddedResource Update="commands\Tool\uninstall\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Uninstall" />
+    <EmbeddedResource Update="commands\Tool\install\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Install" />
+    <EmbeddedResource Update="commands\Tool\update\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Update" />
+    <EmbeddedResource Update="commands\Tool\common\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Common" />
+    <EmbeddedResource Update="commands\Tool\restore\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Restore" />
+    <EmbeddedResource Update="commands\Tool\run\*.resx" Namespace="Microsoft.DotNet.Tools.Tool.Run" />
+    <EmbeddedResource Update="commands\Workload\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload" />
+    <EmbeddedResource Update="commands\Workload\clean\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Clean" />
+    <EmbeddedResource Update="commands\Workload\common\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Common" />
+    <EmbeddedResource Update="commands\Workload\config\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Config" />
+    <EmbeddedResource Update="commands\Workload\elevate\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Elevate" />
+    <EmbeddedResource Update="commands\Workload\history\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.History" />
+    <EmbeddedResource Update="commands\Workload\install\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Install" />
+    <EmbeddedResource Update="commands\Workload\list\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.List" />
+    <EmbeddedResource Update="commands\Workload\repair\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Repair" />
+    <EmbeddedResource Update="commands\Workload\restore\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Restore" />
+    <EmbeddedResource Update="commands\Workload\search\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Search" />
+    <EmbeddedResource Update="commands\Workload\uninstall\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Uninstall" />
+    <EmbeddedResource Update="commands\Workload\update\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Update" />
     <EmbeddedResource Update="Installer\Windows\*.resx" Namespace="Microsoft.DotNet.Cli.Installer.Windows" />
     <EmbeddedResource Update="ToolManifest\*.resx" Namespace="Microsoft.DotNet.Cli.ToolManifest" />
     <EmbeddedResource Update="NugetSearch\*.resx" Namespace="Microsoft.DotNet.Cli.NugetSearch" />
@@ -128,7 +128,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="commands\dotnet-new\LocalizableStrings.resx">
+    <EmbeddedResource Update="commands\New\LocalizableStrings.resx">
       <Generator>MSBuild:_GenerateResxSource</Generator>
       <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
       <CustomToolNamespace></CustomToolNamespace>
