@@ -482,7 +482,7 @@ internal static partial class Patterns
 /// <summary>
 /// Represents a C# directive starting with <c>#:</c>. Those are ignored by the language but recognized by us.
 /// </summary>
-internal abstract record CSharpDirective
+internal abstract class CSharpDirective
 {
     private static readonly SearchValues<char> s_separators = SearchValues.Create('/', '=');
 
@@ -528,12 +528,12 @@ internal abstract record CSharpDirective
     /// <summary>
     /// <c>#!</c> directive.
     /// </summary>
-    public sealed record Shebang : CSharpDirective;
+    public sealed class Shebang : CSharpDirective;
 
     /// <summary>
     /// <c>#:sdk</c> directive.
     /// </summary>
-    public sealed record Sdk : CSharpDirective
+    public sealed class Sdk : CSharpDirective
     {
         private Sdk() { }
 
@@ -561,7 +561,7 @@ internal abstract record CSharpDirective
     /// <summary>
     /// <c>#:property</c> directive.
     /// </summary>
-    public sealed record Property : CSharpDirective
+    public sealed class Property : CSharpDirective
     {
         private Property() { }
 
@@ -598,7 +598,7 @@ internal abstract record CSharpDirective
     /// <summary>
     /// <c>#:package</c> directive.
     /// </summary>
-    public sealed record Package : CSharpDirective
+    public sealed class Package : CSharpDirective
     {
         private Package() { }
 
