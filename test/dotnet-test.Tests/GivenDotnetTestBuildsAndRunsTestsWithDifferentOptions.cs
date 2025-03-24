@@ -3,6 +3,7 @@
 
 using System.Text.RegularExpressions;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -28,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Regex.Matches(result.StdOut!, RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "exec", addVersionAndArchPattern: false));
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -48,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -68,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
             Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -85,7 +86,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
             Assert.DoesNotMatch(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -104,7 +105,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription, invalidProjectPath));
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -123,7 +124,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription, invalidSolutionPath));
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -146,7 +147,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -167,7 +168,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -187,7 +188,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string fullProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{testProjectPath}";
             result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentFileErrorDescription, fullProjectPath));
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -207,7 +208,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string fullSolutionPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{solutionPath}";
             result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentFileErrorDescription, fullSolutionPath));
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -225,7 +226,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentDirectoryErrorDescription, directoryPath));
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -245,7 +246,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -264,7 +265,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -283,7 +284,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                             CommonOptions.ArchitectureOption.Name, arch,
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -302,7 +303,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -323,7 +324,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -350,7 +351,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Assert that the bin folder hasn't been modified
             Assert.Equal(binDirectoryLastWriteTime, binDirectory?.LastWriteTime);
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -367,7 +368,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
             Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, "msbuild-dotnet-test.binlog")));
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -393,7 +394,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -418,7 +419,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -445,7 +446,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                  .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -492,7 +493,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             // This should fail because OtherTestProject is not built with the previous .NET version
             // Therefore, the build error will prevent the tests from running
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
 
@@ -531,7 +532,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                  .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -549,7 +550,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.True(File.Exists(Path.Combine(testInstance.Path, traceFile)), "Trace file should exist after test execution.");
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -567,7 +568,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.True(File.Exists(Path.Combine(testInstance.Path, traceFile)), "Trace file should exist after test execution.");
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
     }
 }

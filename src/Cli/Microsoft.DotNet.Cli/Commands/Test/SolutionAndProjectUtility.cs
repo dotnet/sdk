@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli;
 internal static class SolutionAndProjectUtility
 {
     private static readonly string s_computeRunArgumentsTarget = "ComputeRunArguments";
-    private static readonly Lock s_buildLock = new Lock();
+    private static readonly Lock s_buildLock = new();
 
     public static (bool SolutionOrProjectFileFound, string Message) TryGetProjectOrSolutionFilePath(string directory, out string projectOrSolutionFilePath, out bool isSolution)
     {

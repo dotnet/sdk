@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -31,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .Should().Contain("Discovered 0 tests.");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -54,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Discovered 0 tests.*", result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -75,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Discovered 1 tests.*", result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -97,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Discovered 3 tests.*", result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -119,7 +120,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 2 tests", ["TestMethod1", "TestMethod3"]), result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -139,7 +140,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
     }
 }

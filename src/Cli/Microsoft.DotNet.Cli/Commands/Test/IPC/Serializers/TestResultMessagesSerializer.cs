@@ -1,5 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 
@@ -11,6 +11,10 @@ namespace Microsoft.DotNet.Tools.Test;
   |---ExecutionId Id---| (2 bytes)
   |---ExecutionId Size---| (4 bytes)
   |---ExecutionId Value---| (n bytes)
+
+  |---InstanceId Id---| (2 bytes)
+  |---InstanceId Size---| (4 bytes)
+  |---InstanceId Value---| (n bytes)
 
   |---SuccessfulTestMessageList Id---| (2 bytes)
   |---SuccessfulTestMessageList Size---| (4 bytes)
@@ -106,6 +110,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
     public object Deserialize(Stream stream)
     {
         string? executionId = null;
+        string? instanceId = null;
         List<SuccessfulTestResultMessage>? successfulTestResultMessages = null;
         List<FailedTestResultMessage>? failedTestResultMessages = null;
 
@@ -120,6 +125,10 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
             {
                 case TestResultMessagesFieldsId.ExecutionId:
                     executionId = ReadStringValue(stream, fieldSize);
+                    break;
+
+                case TestResultMessagesFieldsId.InstanceId:
+                    instanceId = ReadStringValue(stream, fieldSize);
                     break;
 
                 case TestResultMessagesFieldsId.SuccessfulTestMessageList:
@@ -139,6 +148,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
 
         return new TestResultMessages(
             executionId,
+            instanceId,
             successfulTestResultMessages is null ? [] : [.. successfulTestResultMessages],
             failedTestResultMessages is null ? [] : [.. failedTestResultMessages]);
     }
@@ -325,6 +335,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
         WriteShort(stream, GetFieldCount(testResultMessages));
 
         WriteField(stream, TestResultMessagesFieldsId.ExecutionId, testResultMessages.ExecutionId);
+        WriteField(stream, TestResultMessagesFieldsId.InstanceId, testResultMessages.InstanceId);
         WriteSuccessfulTestMessagesPayload(stream, testResultMessages.SuccessfulTestMessages);
         WriteFailedTestMessagesPayload(stream, testResultMessages.FailedTestMessages);
     }
@@ -429,6 +440,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
 
     private static ushort GetFieldCount(TestResultMessages testResultMessages) =>
         (ushort)((testResultMessages.ExecutionId is null ? 0 : 1) +
+        (testResultMessages.InstanceId is null ? 0 : 1) +
         (IsNullOrEmpty(testResultMessages.SuccessfulTestMessages) ? 0 : 1) +
         (IsNullOrEmpty(testResultMessages.FailedTestMessages) ? 0 : 1));
 
