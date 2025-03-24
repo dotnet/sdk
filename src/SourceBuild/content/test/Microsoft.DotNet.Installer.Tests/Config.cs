@@ -9,6 +9,12 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Installer.Tests;
 
+public enum Architecture
+{
+    X64,
+    Arm64
+}
+
 public static class Config
 {
     public static string AssetsDirectory { get; } = GetRuntimeConfig(AssetsDirectorySwitch);
@@ -20,7 +26,7 @@ public static class Config
     public static string ScenarioTestsNuGetConfigPath { get; } = GetRuntimeConfig(ScenarioTestsNuGetConfigSwitch);
     const string ScenarioTestsNuGetConfigSwitch = RuntimeConfigSwitchPrefix + nameof(ScenarioTestsNuGetConfigPath);
 
-    public static string Architecture { get; } = GetRuntimeConfig(ArchitectureSwitch);
+    public static Architecture Architecture { get; } = GetArchitecture(GetRuntimeConfig(ArchitectureSwitch));
     const string ArchitectureSwitch = RuntimeConfigSwitchPrefix + nameof(Architecture);
 
     public static bool TestRpmPackages { get; } = TryGetRuntimeConfig(TestRpmPackagesSwitch, out bool value) ? value : false;
@@ -33,6 +39,13 @@ public static class Config
     const string KeepDockerImagesSwitch = RuntimeConfigSwitchPrefix + nameof(KeepDockerImages);
 
     public const string RuntimeConfigSwitchPrefix = "Microsoft.DotNet.Installer.Tests.";
+
+    public static Architecture GetArchitecture(string architecture) => architecture switch
+    {
+        "x64" => Architecture.X64,
+        "arm64" => Architecture.Arm64,
+        _ => throw new ArgumentException($"Unknown architecture: {architecture}")
+    };
 
     public static string GetRuntimeConfig(string key)
     {
