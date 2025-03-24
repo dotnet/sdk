@@ -47,7 +47,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\${PackageVersion}\\build\\${Tfm}\\blazor.webassembly.js",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
@@ -68,7 +70,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.js",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.timezones.blat",
@@ -89,7 +93,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.timezones.blat"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.timezones.blat",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.wasm",
@@ -110,7 +116,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.wasm"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.wasm",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_CJK.dat",
@@ -131,7 +139,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_CJK.dat"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_CJK.dat",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat",
@@ -152,7 +162,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_EFIGS.dat",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat",
@@ -173,7 +185,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\icudt_no_CJK.dat",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.webassembly.js.gz",
@@ -194,7 +208,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.webassembly.js.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\blazor.webassembly.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
@@ -215,7 +231,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.wasm.gz",
@@ -236,7 +254,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.wasm.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.wasm.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Client.dll.br",
@@ -257,7 +277,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Client.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\BlazorWasmHosted60.Client.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Client.dll.gz",
@@ -278,7 +300,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Client.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\BlazorWasmHosted60.Client.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Shared.dll.br",
@@ -299,7 +323,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Shared.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\BlazorWasmHosted60.Shared.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Shared.dll.gz",
@@ -320,7 +346,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\BlazorWasmHosted60.Shared.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\BlazorWasmHosted60.Shared.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.dll.br",
@@ -341,7 +369,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.AspNetCore.Components.Web.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.dll.gz",
@@ -362,7 +392,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.AspNetCore.Components.Web.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.dll.br",
@@ -383,7 +415,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.dll.gz",
@@ -404,7 +438,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.dll.br",
@@ -425,7 +461,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.AspNetCore.Components.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.dll.gz",
@@ -446,7 +484,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.AspNetCore.Components.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.dll.br",
@@ -467,7 +507,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Configuration.Abstractions.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.dll.gz",
@@ -488,7 +530,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Configuration.Abstractions.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.dll.br",
@@ -509,7 +553,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Configuration.Json.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.dll.gz",
@@ -530,7 +576,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Configuration.Json.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.dll.br",
@@ -551,7 +599,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Configuration.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.dll.gz",
@@ -572,7 +622,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Configuration.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.dll.br",
@@ -593,7 +645,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.dll.gz",
@@ -614,7 +668,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.dll.br",
@@ -635,7 +691,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.DependencyInjection.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.dll.gz",
@@ -656,7 +714,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.DependencyInjection.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.dll.br",
@@ -677,7 +737,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Logging.Abstractions.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.dll.gz",
@@ -698,7 +760,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Logging.Abstractions.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.dll.br",
@@ -719,7 +783,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Logging.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.dll.gz",
@@ -740,7 +806,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Logging.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.dll.br",
@@ -761,7 +829,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Options.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.dll.gz",
@@ -782,7 +852,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Options.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.dll.br",
@@ -803,7 +875,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Primitives.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.dll.gz",
@@ -824,7 +898,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.Extensions.Primitives.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.dll.br",
@@ -845,7 +921,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.JSInterop.WebAssembly.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.dll.gz",
@@ -866,7 +944,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.JSInterop.WebAssembly.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.dll.br",
@@ -887,7 +967,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.JSInterop.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.dll.gz",
@@ -908,7 +990,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\Microsoft.JSInterop.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.dll.br",
@@ -929,7 +1013,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Collections.Concurrent.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.dll.gz",
@@ -950,7 +1036,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Collections.Concurrent.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.dll.br",
@@ -971,7 +1059,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Collections.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.dll.gz",
@@ -992,7 +1082,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Collections.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.dll.br",
@@ -1013,7 +1105,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.ComponentModel.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.dll.gz",
@@ -1034,7 +1128,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.ComponentModel.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.dll.br",
@@ -1055,7 +1151,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Linq.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.dll.gz",
@@ -1076,7 +1174,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Linq.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.dll.br",
@@ -1097,7 +1197,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Memory.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.dll.gz",
@@ -1118,7 +1220,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Memory.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.dll.br",
@@ -1139,7 +1243,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Private.CoreLib.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.dll.gz",
@@ -1160,7 +1266,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Private.CoreLib.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Runtime.InteropServices.JavaScript.dll.br",
@@ -1181,7 +1289,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Runtime.InteropServices.JavaScript.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Private.Runtime.InteropServices.JavaScript.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Runtime.InteropServices.JavaScript.dll.gz",
@@ -1202,7 +1312,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Runtime.InteropServices.JavaScript.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Private.Runtime.InteropServices.JavaScript.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.dll.br",
@@ -1223,7 +1335,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Private.Uri.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.dll.gz",
@@ -1244,7 +1358,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Private.Uri.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.dll.br",
@@ -1265,7 +1381,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Runtime.CompilerServices.Unsafe.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.dll.gz",
@@ -1286,7 +1404,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Runtime.CompilerServices.Unsafe.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.dll.br",
@@ -1307,7 +1427,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Runtime.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.dll.gz",
@@ -1328,7 +1450,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Runtime.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.dll.br",
@@ -1349,7 +1473,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Text.Encodings.Web.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.dll.gz",
@@ -1370,7 +1496,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Text.Encodings.Web.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.dll.br",
@@ -1391,7 +1519,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.dll.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Text.Json.dll.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.dll.gz",
@@ -1412,7 +1542,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.dll.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\_framework\\System.Text.Json.dll.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.br",
@@ -1433,7 +1565,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\_framework\\blazor.boot.json.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.gz",
@@ -1454,7 +1588,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\_framework\\blazor.boot.json.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.webassembly.js.br",
@@ -1475,7 +1611,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.webassembly.js.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\blazor.webassembly.js.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br",
@@ -1496,7 +1634,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.js.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.timezones.blat.br",
@@ -1517,7 +1657,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.timezones.blat.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.timezones.blat.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.timezones.blat.gz",
@@ -1538,7 +1680,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.timezones.blat.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.timezones.blat.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.wasm.br",
@@ -1559,7 +1703,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.wasm.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.wasm.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.br",
@@ -1580,7 +1726,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_CJK.dat.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.gz",
@@ -1601,7 +1749,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_CJK.dat.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.br",
@@ -1622,7 +1772,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_EFIGS.dat.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.gz",
@@ -1643,7 +1795,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_EFIGS.dat.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.br",
@@ -1664,7 +1818,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.br"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_no_CJK.dat.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.gz",
@@ -1685,7 +1841,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.gz"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt_no_CJK.dat.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\BlazorWasmHosted60.Client.dll",
@@ -1706,7 +1864,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\BlazorWasmHosted60.Client.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\BlazorWasmHosted60.Client.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\BlazorWasmHosted60.Shared.dll",
@@ -1727,7 +1887,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\BlazorWasmHosted60.Shared.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\BlazorWasmHosted60.Shared.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.Web.dll",
@@ -1748,7 +1910,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.Web.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.Web.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.WebAssembly.dll",
@@ -1769,7 +1933,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.WebAssembly.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.WebAssembly.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.dll",
@@ -1790,7 +1956,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.AspNetCore.Components.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.Abstractions.dll",
@@ -1811,7 +1979,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.Abstractions.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.Abstractions.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.Json.dll",
@@ -1832,7 +2002,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.Json.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.Json.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.dll",
@@ -1853,7 +2025,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Configuration.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.DependencyInjection.Abstractions.dll",
@@ -1874,7 +2048,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.DependencyInjection.Abstractions.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.DependencyInjection.dll",
@@ -1895,7 +2071,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.DependencyInjection.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.DependencyInjection.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Logging.Abstractions.dll",
@@ -1916,7 +2094,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Logging.Abstractions.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Logging.Abstractions.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Logging.dll",
@@ -1937,7 +2117,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Logging.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Logging.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Options.dll",
@@ -1958,7 +2140,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Options.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Options.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Primitives.dll",
@@ -1979,7 +2163,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Primitives.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.Extensions.Primitives.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.JSInterop.WebAssembly.dll",
@@ -2000,7 +2186,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.JSInterop.WebAssembly.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.JSInterop.WebAssembly.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.JSInterop.dll",
@@ -2021,7 +2209,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.JSInterop.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\Microsoft.JSInterop.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Collections.Concurrent.dll",
@@ -2042,7 +2232,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Collections.Concurrent.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Collections.Concurrent.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Collections.dll",
@@ -2063,7 +2255,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Collections.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Collections.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.ComponentModel.dll",
@@ -2084,7 +2278,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.ComponentModel.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.ComponentModel.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Linq.dll",
@@ -2105,7 +2301,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Linq.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Linq.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Memory.dll",
@@ -2126,7 +2324,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Memory.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Memory.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.CoreLib.dll",
@@ -2147,7 +2347,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.CoreLib.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.CoreLib.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.Runtime.InteropServices.JavaScript.dll",
@@ -2168,7 +2370,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.Runtime.InteropServices.JavaScript.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.Runtime.InteropServices.JavaScript.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.Uri.dll",
@@ -2189,7 +2393,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.Uri.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Private.Uri.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Runtime.CompilerServices.Unsafe.dll",
@@ -2210,7 +2416,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Runtime.CompilerServices.Unsafe.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Runtime.CompilerServices.Unsafe.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Runtime.dll",
@@ -2231,7 +2439,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Runtime.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Runtime.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Text.Encodings.Web.dll",
@@ -2252,7 +2462,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Text.Encodings.Web.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Text.Encodings.Web.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Text.Json.dll",
@@ -2273,7 +2485,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Text.Json.dll"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\linked\\System.Text.Json.dll",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
@@ -2294,7 +2508,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\publish.blazor.boot.json",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\BlazorWasmHosted60.Client.styles.css",
@@ -2315,7 +2531,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\BlazorWasmHosted60.Client.styles.css"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\BlazorWasmHosted60.Client.styles.css",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\wwwroot\\css\\app.css",
@@ -2336,7 +2554,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\wwwroot\\css\\app.css"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\wwwroot\\css\\app.css",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\Client\\wwwroot\\index.html",
@@ -2357,7 +2577,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\wwwroot\\index.html"
+      "OriginalItemSpec": "${ProjectPath}\\Client\\wwwroot\\index.html",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     }
   ],
   "Endpoints": [

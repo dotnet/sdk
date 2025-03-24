@@ -57,15 +57,6 @@ namespace Microsoft.NET.TestFramework
                         targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
                         targetFrameworks.AddAfterSelf(new XElement("StaticWebAssetsFingerprintContent", "false"));
                     }
-
-                    if (project.Root != null)
-                    {
-                        var itemGroup = new XElement("PropertyGroup");
-                        itemGroup.SetAttributeValue("Condition", "'$(TargetFramework)' == 'net10.0'");
-                        var fingerprintAssets = new XElement("WasmBootConfigFileName", WasmBootConfigFileName);
-                        itemGroup.Add(fingerprintAssets);
-                        project.Root.Add(itemGroup);
-                    }
                 });
 
             foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(_testAssetsManager.TestAssetsRoot, "WasmOverride")))
