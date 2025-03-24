@@ -1,10 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli.Telemetry
+namespace Microsoft.DotNet.Cli.Telemetry;
+
+internal interface IDockerContainerDetector
 {
-    internal interface IDockerContainerDetector
-    {
-        IsDockerContainer IsDockerContainer();
-    }
+    IsDockerContainer IsDockerContainer();
 }

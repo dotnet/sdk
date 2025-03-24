@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
@@ -50,7 +52,9 @@ public class DiscoverPrecompressedAssetsTest
             AssetTraitValue = string.Empty,
             AssetTraitName = string.Empty,
             OriginalItemSpec = Path.Combine("wwwroot", "js", "site.js"),
-            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest
+            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest,
+            FileLength = 10,
+            LastWriteTime = DateTime.UtcNow
         };
 
         var compressedCandidate = new StaticWebAsset
@@ -73,7 +77,9 @@ public class DiscoverPrecompressedAssetsTest
             AssetTraitValue = string.Empty,
             AssetTraitName = string.Empty,
             OriginalItemSpec = Path.Combine("wwwroot", "js", "site.js.gz"),
-            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest
+            CopyToPublishDirectory = StaticWebAsset.AssetCopyOptions.PreserveNewest,
+            FileLength = 10,
+            LastWriteTime = DateTime.UtcNow
         };
 
         var task = new DiscoverPrecompressedAssets

@@ -19,8 +19,7 @@
   <ItemGroup>
     <!-- Use string resources from product in order to validate test output. -->
     <EmbeddedResource Include="..\..\src\Cli\dotnet\CommonLocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools" />
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\CommandLineValidation\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli.CommandLineValidation" />
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\commands\dotnet-sln\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools.Sln" />
+    <EmbeddedResource Include="..\..\src\Cli\dotnet\commands\Solution\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools.Sln" />
   </ItemGroup>
 
   <ItemGroup>
