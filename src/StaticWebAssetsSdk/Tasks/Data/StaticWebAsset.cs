@@ -21,74 +21,290 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 {
     public const string DateTimeAssetFormat = "ddd, dd MMM yyyy HH:mm:ss 'GMT'";
 
+    private bool _modified;
+    private ITaskItem _originalItem;
+    private string _identity;
+    private string _sourceId;
+    private string _sourceType;
+    private string _contentRoot;
+    private string _basePath;
+    private string _relativePath;
+    private string _assetKind;
+    private string _assetMode;
+    private string _assetRole;
+    private string _assetMergeBehavior;
+    private string _assetMergeSource;
+    private string _relatedAsset;
+    private string _assetTraitName;
+    private string _assetTraitValue;
+    private string _fingerprint;
+    private string _integrity;
+    private string _copyToOutputDirectory;
+    private string _copyToPublishDirectory;
+    private string _originalItemSpec;
+    private long _fileLength = -1;
+    private DateTimeOffset _lastWriteTime = DateTimeOffset.MinValue;
+
     public StaticWebAsset()
     {
     }
 
     public StaticWebAsset(StaticWebAsset asset)
     {
-        Identity = asset.Identity;
-        SourceType = asset.SourceType;
-        SourceId = asset.SourceId;
-        ContentRoot = asset.ContentRoot;
-        BasePath = asset.BasePath;
-        RelativePath = asset.RelativePath;
-        AssetKind = asset.AssetKind;
-        AssetMode = asset.AssetMode;
-        AssetRole = asset.AssetRole;
-        AssetMergeBehavior = asset.AssetMergeBehavior;
-        AssetMergeSource = asset.AssetMergeSource;
-        RelatedAsset = asset.RelatedAsset;
-        AssetTraitName = asset.AssetTraitName;
-        AssetTraitValue = asset.AssetTraitValue;
-        CopyToOutputDirectory = asset.CopyToOutputDirectory;
-        CopyToPublishDirectory = asset.CopyToPublishDirectory;
-        OriginalItemSpec = asset.OriginalItemSpec;
-        FileLength = asset.FileLength;
-        LastWriteTime = asset.LastWriteTime;
+        _identity = asset._identity;
+        _sourceType = asset._sourceType;
+        _sourceId = asset._sourceId;
+        _contentRoot = asset._contentRoot;
+        _basePath = asset._basePath;
+        _relativePath = asset._relativePath;
+        _assetKind = asset._assetKind;
+        _assetMode = asset._assetMode;
+        _assetRole = asset._assetRole;
+        _assetMergeBehavior = asset._assetMergeBehavior;
+        _assetMergeSource = asset._assetMergeSource;
+        _relatedAsset = asset._relatedAsset;
+        _assetTraitName = asset._assetTraitName;
+        _assetTraitValue = asset._assetTraitValue;
+        _copyToOutputDirectory = asset._copyToOutputDirectory;
+        _copyToPublishDirectory = asset._copyToPublishDirectory;
+        _originalItemSpec = asset._originalItemSpec;
+        _fileLength = asset._fileLength;
+        _lastWriteTime = asset._lastWriteTime;
+        _fingerprint = asset._fingerprint;
+        _integrity = asset._integrity;
     }
 
-    public string Identity { get; set; }
+    private string GetMetadata(string name) => _originalItem?.GetMetadata(name);
 
-    public string SourceId { get; set; }
+    public string Identity
+    {
+        get => _identity ??= GetMetadata("FullPath");
+        set
+        {
+            _modified = true;
+            _identity = value;
+        }
+    }
 
-    public string SourceType { get; set; }
+    public string SourceId
+    {
+        get => _sourceId ??= GetMetadata(nameof(SourceId));
+        set
+        {
+            _modified = true;
+            _sourceId = value;
+        }
+    }
 
-    public string ContentRoot { get; set; }
+    public string SourceType
+    {
+        get => _sourceType ??= GetMetadata(nameof(SourceType));
+        set
+        {
+            _modified = true;
+            _sourceType = value;
+        }
+    }
 
-    public string BasePath { get; set; }
+    public string ContentRoot
+    {
+        get => _contentRoot ??= GetMetadata(nameof(ContentRoot));
+        set
+        {
+            _modified = true;
+            _contentRoot = value;
+        }
+    }
 
-    public string RelativePath { get; set; }
+    public string BasePath
+    {
+        get => _basePath ??= GetMetadata(nameof(BasePath));
+        set
+        {
+            _modified = true;
+            _basePath = value;
+        }
+    }
 
-    public string AssetKind { get; set; }
+    public string RelativePath
+    {
+        get => _relativePath ??= GetMetadata(nameof(RelativePath));
+        set
+        {
+            _modified = true;
+            _relativePath = value;
+        }
+    }
 
-    public string AssetMode { get; set; }
+    public string AssetKind
+    {
+        get => _assetKind ??= GetMetadata(nameof(AssetKind));
+        set
+        {
+            _modified = true;
+            _assetKind = value;
+        }
+    }
 
-    public string AssetRole { get; set; }
+    public string AssetMode
+    {
+        get => _assetMode ??= GetMetadata(nameof(AssetMode));
+        set
+        {
+            _modified = true;
+            _assetMode = value;
+        }
+    }
 
-    public string AssetMergeBehavior { get; set; }
+    public string AssetRole
+    {
+        get => _assetRole ??= GetMetadata(nameof(AssetRole));
+        set
+        {
+            _modified = true;
+            _assetRole = value;
+        }
+    }
 
-    public string AssetMergeSource { get; set; }
+    public string AssetMergeBehavior
+    {
+        get => _assetMergeBehavior ??= GetMetadata(nameof(AssetMergeBehavior));
+        set
+        {
+            _modified = true;
+            _assetMergeBehavior = value;
+        }
+    }
 
-    public string RelatedAsset { get; set; }
+    public string AssetMergeSource
+    {
+        get => _assetMergeSource ??= GetMetadata(nameof(AssetMergeSource));
+        set
+        {
+            _modified = true;
+            _assetMergeSource = value;
+        }
+    }
 
-    public string AssetTraitName { get; set; }
+    public string RelatedAsset
+    {
+        get => _relatedAsset ??= GetMetadata(nameof(RelatedAsset));
+        set
+        {
+            _modified = true;
+            _relatedAsset = value;
+        }
+    }
 
-    public string AssetTraitValue { get; set; }
+    public string AssetTraitName
+    {
+        get => _assetTraitName ??= GetMetadata(nameof(AssetTraitName));
+        set
+        {
+            _modified = true;
+            _assetTraitName = value;
+        }
+    }
 
-    public string Fingerprint { get; set; }
+    public string AssetTraitValue
+    {
+        get => _assetTraitValue ??= GetMetadata(nameof(AssetTraitValue));
+        set
+        {
+            _modified = true;
+            _assetTraitValue = value;
+        }
+    }
 
-    public string Integrity { get; set; }
+    public string Fingerprint
+    {
+        get => _fingerprint ??= GetMetadata(nameof(Fingerprint));
+        set
+        {
+            _modified = true;
+            _fingerprint = value;
+        }
+    }
 
-    public string CopyToOutputDirectory { get; set; }
+    public string Integrity
+    {
+        get => _integrity ??= GetMetadata(nameof(Integrity));
+        set
+        {
+            _modified = true;
+            _integrity = value;
+        }
+    }
 
-    public string CopyToPublishDirectory { get; set; }
+    public string CopyToOutputDirectory
+    {
+        get => _copyToOutputDirectory ??= GetMetadata(nameof(CopyToOutputDirectory));
+        set
+        {
+            _modified = true;
+            _copyToOutputDirectory = value;
+        }
+    }
 
-    public string OriginalItemSpec { get; set; }
+    public string CopyToPublishDirectory
+    {
+        get => _copyToPublishDirectory ??= GetMetadata(nameof(CopyToPublishDirectory));
+        set
+        {
+            _modified = true;
+            _copyToPublishDirectory = value;
+        }
+    }
 
-    public long FileLength { get; set; } = -1;
+    public string OriginalItemSpec
+    {
+        get => _originalItemSpec ??= GetMetadata(nameof(OriginalItemSpec));
+        set
+        {
+            _modified = true;
+            _originalItemSpec = value;
+        }
+    }
 
-    public DateTimeOffset LastWriteTime { get; set; } = DateTimeOffset.MinValue;
+    public long FileLength
+    {
+        get
+        {
+            if (_fileLength < 0)
+            {
+                var fileLengthString = GetMetadata(nameof(FileLength));
+                _fileLength = !string.IsNullOrEmpty(fileLengthString) && long.TryParse(fileLengthString, out var fileLength)
+                    ? fileLength
+                    : -1;
+            }
+            return _fileLength;
+        }
+        set
+        {
+            _modified = true;
+            _fileLength = value;
+        }
+    }
+
+    public DateTimeOffset LastWriteTime
+    {
+        get
+        {
+            if (_lastWriteTime == DateTimeOffset.MinValue)
+            {
+                var lastWriteTimeString = GetMetadata(nameof(LastWriteTime));
+                _lastWriteTime = !string.IsNullOrEmpty(lastWriteTimeString) && DateTimeOffset.TryParse(lastWriteTimeString, out var lastWriteTime)
+                    ? lastWriteTime
+                    : DateTimeOffset.MinValue;
+            }
+            return _lastWriteTime;
+        }
+        set
+        {
+            _modified = true;
+            _lastWriteTime = value;
+        }
+    }
 
     public static StaticWebAsset FromTaskItem(ITaskItem item)
     {
@@ -196,12 +412,14 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return result;
     }
 
-    private static StaticWebAsset FromTaskItemCore(ITaskItem item) =>
-        new()
+    private static StaticWebAsset FromTaskItemCore(ITaskItem item)
+    {
+        return new()
         {
             // Register the identity as the full path since assets might have come
             // from packages and other sources and the identity (which is typically
             // just the relative path from the project) is not enough to locate them.
+            _originalItem = item,
             Identity = item.GetMetadata("FullPath"),
             SourceType = item.GetMetadata(nameof(SourceType)),
             SourceId = item.GetMetadata(nameof(SourceId)),
@@ -226,6 +444,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             LastWriteTime = item.GetMetadata("LastWriteTime") is string lastWriteTimeString &&
                 DateTimeOffset.TryParse(lastWriteTimeString, out var lastWriteTime) ? lastWriteTime : DateTimeOffset.MinValue
         };
+    }
 
     public void ApplyDefaults()
     {
@@ -301,6 +520,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public ITaskItem ToTaskItem()
     {
+        if (_originalItem != null && !_modified)
+        {
+            return _originalItem;
+        }
+
         var result = new TaskItem(Identity);
         result.SetMetadata(nameof(SourceType), SourceType);
         result.SetMetadata(nameof(SourceId), SourceId);
@@ -320,8 +544,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
         result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
         result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
-        result.SetMetadata("FileLength", FileLength.ToString(CultureInfo.InvariantCulture));
-        result.SetMetadata("LastWriteTime", LastWriteTime.ToString(DateTimeAssetFormat, CultureInfo.InvariantCulture));
+        result.SetMetadata(nameof(FileLength), FileLength.ToString(CultureInfo.InvariantCulture));
+        result.SetMetadata(nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, CultureInfo.InvariantCulture));
         return result;
     }
 
