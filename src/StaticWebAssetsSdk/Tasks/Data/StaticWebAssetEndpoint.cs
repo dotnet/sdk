@@ -13,20 +13,121 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, IComparable<StaticWebAssetEndpoint>
 {
+    private ITaskItem _originalItem;
+    private StaticWebAssetEndpointProperty[] _endpointProperties = [];
+    private StaticWebAssetEndpointResponseHeader[] _responseHeaders = [];
+    private StaticWebAssetEndpointSelector[] _selectors = [];
+    private string _assetFile;
+    private string _route;
+    private bool _modified;
+    private string _selectorsString;
+    private string _responseHeadersString;
+    private string _endpointPropertiesString;
+
     // Route as it should be registered in the routing table.
-    public string Route { get; set; }
+    public string Route
+    {
+        get
+        {
+            _route ??= _originalItem?.ItemSpec;
+            return _route;
+        }
+
+        set
+        {
+            _route = value;
+            _modified = true;
+        }
+    }
 
     // Path to the file system as provided by static web assets (BasePath + RelativePath).
-    public string AssetFile { get; set; }
+    public string AssetFile
+    {
+        get
+        {
+            _assetFile ??= _originalItem?.GetMetadata(nameof(AssetFile));
+            return _assetFile;
+        }
+
+        set
+        {
+            _assetFile = value;
+            _modified = true;
+        }
+    }
+
+    private string SelectorsString
+    {
+        get
+        {
+            _selectorsString ??= _originalItem?.GetMetadata(nameof(Selectors));
+            return _selectorsString;
+        }
+    }
 
     // Request values that must be compatible for the file to be selected.
-    public StaticWebAssetEndpointSelector[] Selectors { get; set; } = [];
+    public StaticWebAssetEndpointSelector[] Selectors
+    {
+        get
+        {
+            _selectors ??= StaticWebAssetEndpointSelector.FromMetadataValue(SelectorsString);
+            return _selectors;
+        }
+
+        set
+        {
+            _selectors = value;
+            _modified = true;
+        }
+    }
+
+    private string ResponseHeadersString
+    {
+        get
+        {
+            _responseHeadersString ??= _originalItem?.GetMetadata(nameof(ResponseHeaders));
+            return _responseHeadersString;
+        }
+    }
 
     // Response headers that must be added to the response.
-    public StaticWebAssetEndpointResponseHeader[] ResponseHeaders { get; set; } = [];
+    public StaticWebAssetEndpointResponseHeader[] ResponseHeaders
+    {
+        get
+        {
+            _responseHeaders ??= StaticWebAssetEndpointResponseHeader.FromMetadataValue(ResponseHeadersString);
+            return _responseHeaders;
+        }
+        set
+        {
+            _responseHeaders = value;
+            _modified = true;
+        }
+    }
+
+    private string EndpointPropertiesString
+    {
+        get
+        {
+            _endpointPropertiesString ??= _originalItem?.GetMetadata(nameof(EndpointProperties));
+            return _endpointPropertiesString;
+        }
+    }
 
     // Properties associated with the endpoint.
-    public StaticWebAssetEndpointProperty[] EndpointProperties { get; set; } = [];
+    public StaticWebAssetEndpointProperty[] EndpointProperties
+    {
+        get
+        {
+            _endpointProperties ??= StaticWebAssetEndpointProperty.FromMetadataValue(EndpointPropertiesString);
+            return _endpointProperties;
+        }
+        set
+        {
+            _endpointProperties = value;
+            _modified = true;
+        }
+    }
 
     public static IEqualityComparer<StaticWebAssetEndpoint> RouteAndAssetComparer { get; } = new RouteAndAssetEqualityComparer();
 
@@ -60,11 +161,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     {
         var result = new StaticWebAssetEndpoint()
         {
-            Route = item.ItemSpec,
-            AssetFile = item.GetMetadata(nameof(AssetFile)),
-            Selectors = StaticWebAssetEndpointSelector.FromMetadataValue(item.GetMetadata(nameof(Selectors))),
-            ResponseHeaders = StaticWebAssetEndpointResponseHeader.FromMetadataValue(item.GetMetadata(nameof(ResponseHeaders))),
-            EndpointProperties = StaticWebAssetEndpointProperty.FromMetadataValue(item.GetMetadata(nameof(EndpointProperties)))
+            _originalItem = item,
         };
 
         return result;
@@ -86,8 +183,13 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return endpointItems;
     }
 
-    public TaskItem ToTaskItem()
+    public ITaskItem ToTaskItem()
     {
+        if (!_modified && _originalItem != null)
+        {
+            return _originalItem;
+        }
+
         var item = new TaskItem(Route);
         item.SetMetadata(nameof(AssetFile), AssetFile);
         item.SetMetadata(nameof(Selectors), StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));

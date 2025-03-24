@@ -103,7 +103,7 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         return result.ToTaskItem();
     }
 
-    private static TaskItem CreateCandidateEndpoint(string route, string assetFile)
+    private static ITaskItem CreateCandidateEndpoint(string route, string assetFile)
     {
         return new StaticWebAssetEndpoint
         {
