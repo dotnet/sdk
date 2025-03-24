@@ -41,11 +41,6 @@ internal class TestApplicationActionQueue
     {
         Task.WaitAll([.. _readers]);
 
-        if (_firstExitCode is null)
-        {
-            return _hasFailed ? ExitCode.GenericFailure : ExitCode.Success;
-        }
-
         if (_allSameExitCode && _firstExitCode.HasValue)
         {
             return _firstExitCode.Value;
@@ -56,6 +51,7 @@ internal class TestApplicationActionQueue
 
     public void EnqueueCompleted()
     {
+        //Notify readers that no more data will be written
         _channel.Writer.Complete();
     }
 
