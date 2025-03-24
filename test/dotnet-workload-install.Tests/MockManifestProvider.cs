@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace ManifestReaderTests
@@ -48,10 +50,6 @@ namespace ManifestReaderTests
         }
 
         public string GetSdkFeatureBand() => SdkFeatureBand.ToString();
-        public WorkloadVersion GetWorkloadVersion() => new WorkloadVersion
-        {
-            Version = GetSdkFeatureBand() + ".2",
-            WorkloadInstallType = WorkloadVersion.Type.LooseManifest
-        };
+        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo(SdkFeatureBand.ToString() + ".2");
     }
 }

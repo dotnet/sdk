@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>ClassLib</RootNamespace>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
 </Project>

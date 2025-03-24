@@ -2,20 +2,10 @@
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
 
+  <!-- Don't use these feeds when testing. Projects under this directory are referenced by
+       test projects. This makes sure that the feeds aren't used. -->
   <PropertyGroup>
-    <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(ReferencePackagesDir);$(PrebuiltPackagesPath);$(PrebuiltSourceBuiltPackagesPath)</RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(Test)' != 'true'">$(ReferencePackagesDir);$(PrebuiltPackagesPath);$(PrebuiltSourceBuiltPackagesPath)</RestoreSources>
   </PropertyGroup>
-
-  <!--
-    Use some assemblies from the SDK, instead of package references. This ensures they match what's
-    found when the task is loaded by the SDK's MSBuild.
-    Reference NuGet assemblies, except a command line assembly that causes warnings such as:
-    MSB3277: Found conflicts between different versions of "System.Collections" that could not be resolved.
-  -->
-  <ItemGroup>
-    <SdkAssembly Include="$([MSBuild]::NormalizePath('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)', 'Newtonsoft.Json.dll'));
-                          $([MSBuild]::NormalizeDirectory('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)'))NuGet.*.dll"
-                 Exclude="$([MSBuild]::NormalizePath('$(NetCoreRoot)', 'sdk', '$(NETCoreSdkVersion)', 'NuGet.CommandLine.XPlat.dll'))" />
-  </ItemGroup>
 
 </Project>

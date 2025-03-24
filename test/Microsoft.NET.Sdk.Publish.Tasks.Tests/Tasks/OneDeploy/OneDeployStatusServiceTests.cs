@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
@@ -15,7 +17,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.OneDeploy.Tests;
 public class OneDeployStatusServiceTests
 {
     private const string Username = "someUser";
-    private const string Password = "123secret";
+    private const string NotShareableValue = "PLACEHOLDER";
     private const string UserAgent = "websdk/8.0"; // as OneDeploy.UserAgentName
     private const string PublishUrl = "https://mysite.scm.azurewebsites.net";
     private const string DeploymentId = "056f49ce-fcd7-497c-929b-d74bc6f8905e";
@@ -57,7 +59,7 @@ public class OneDeployStatusServiceTests
         var oneDeployStatusService = new OneDeployStatusService(taskLoggerMock.Object);
 
         // Act
-        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, Password, UserAgent, cancellationToken);
+        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: poll deployment status runs to completion, resulting in the given expectedDeploymentStatus
         Assert.Equal(expectedDeploymentStatus, deploymentResponse.Status);
@@ -85,7 +87,7 @@ public class OneDeployStatusServiceTests
         var oneDeployStatusService = new OneDeployStatusService(taskLoggerMock.Object);
 
         // Act
-        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, Password, UserAgent, cancellationToken);
+        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: poll deployment status runs to completion, resulting in 'Unknown' status because failed HTTP Response Status code
         Assert.Equal(DeploymentStatus.Unknown, result.Status);
@@ -112,7 +114,7 @@ public class OneDeployStatusServiceTests
         var oneDeployStatusService = new OneDeployStatusService();
 
         // Act
-        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, Password, UserAgent, cancellationToken);
+        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: poll deployment status runs to completion with NULL ITaskLogger
         Assert.Equal(DeploymentStatus.Success, deploymentResponse.Status);
@@ -136,7 +138,7 @@ public class OneDeployStatusServiceTests
 
         // Act
         cancellationTokenSource.Cancel();
-        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, Password, UserAgent, cancellationToken);
+        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: deployment status won't poll for deployment as 'CancellationToken' is already cancelled
         Assert.Equal(DeploymentStatus.Unknown, result.Status);
@@ -164,7 +166,7 @@ public class OneDeployStatusServiceTests
         var oneDeployStatusService = new OneDeployStatusService(taskLoggerMock.Object);
 
         // Act
-        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, invalidUrl, Username, Password, UserAgent, cancellationToken);
+        var result = await oneDeployStatusService.PollDeploymentAsync(httpClientMock.Object, invalidUrl, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: deployment status won't poll for deployment because given polling URL is invalid
         Assert.Equal(DeploymentStatus.Unknown, result.Status);
@@ -186,7 +188,7 @@ public class OneDeployStatusServiceTests
         var oneDeployStatusService = new OneDeployStatusService(taskLoggerMock.Object);
 
         // Act
-        var result = await oneDeployStatusService.PollDeploymentAsync(null, DeploymentUri.AbsoluteUri, Username, Password, UserAgent, cancellationToken);
+        var result = await oneDeployStatusService.PollDeploymentAsync(null, DeploymentUri.AbsoluteUri, Username, NotShareableValue, UserAgent, cancellationToken);
 
         // Assert: deployment status won't poll for deployment because IHttpClient is NULL
         Assert.Equal(DeploymentStatus.Unknown, result.Status);

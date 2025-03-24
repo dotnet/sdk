@@ -4,6 +4,7 @@ Param(
     [string]$sha,
     [string]$branchName,
     [string]$targetSolution,
+    [string]$runtimeSourceProperties,
     [bool]$useParentSdk,
     [string]$testPath,
     [string]$stage  # Valid values are "prepare", "format-workspace", "format-folder"
@@ -11,7 +12,7 @@ Param(
 
 if ($stage -eq "prepare") {
     Write-Output "$(Get-Date) - Building dotnet-format."
-    .\build.cmd -c Release
+    .\build.cmd -c Release $runtimeSourceProperties
 }
 
 $currentLocation = Get-Location

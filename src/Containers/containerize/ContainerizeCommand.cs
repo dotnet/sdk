@@ -35,6 +35,12 @@ internal class ContainerizeCommand : CliRootCommand
         DefaultValueFactory = (_) => "latest"
     };
 
+    internal CliOption<string> BaseImageDigestOption { get; } = new("--baseimagedigest")
+    {
+        Description = "The base image digest. Ex: sha256:6cec3641...",
+        Required = false
+    };
+
     internal CliOption<string> OutputRegistryOption { get; } = new("--outputregistry")
     {
         Description = "The registry to push to.",
@@ -197,6 +203,11 @@ internal class ContainerizeCommand : CliRootCommand
         Arity = ArgumentArity.Zero
     };
 
+    internal CliOption<KnownImageFormats?> ImageFormatOption { get; } = new("--image-format")
+    {
+        Description = "If set to OCI or Docker will force the generated image to be that format. If unset, the base images format will be used."
+    };
+
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
         PublishDirectoryArgument.AcceptLegalFilePathsOnly();
@@ -204,6 +215,7 @@ internal class ContainerizeCommand : CliRootCommand
         Options.Add(BaseRegistryOption);
         Options.Add(BaseImageNameOption);
         Options.Add(BaseImageTagOption);
+        Options.Add(BaseImageDigestOption);
         Options.Add(OutputRegistryOption);
         Options.Add(ArchiveOutputPathOption);
         Options.Add(RepositoryOption);
@@ -225,6 +237,7 @@ internal class ContainerizeCommand : CliRootCommand
         Options.Add(ContainerUserOption);
         Options.Add(GenerateLabelsOption);
         Options.Add(GenerateDigestLabelOption);
+        Options.Add(ImageFormatOption);
 
         SetAction(async (parseResult, cancellationToken) =>
         {
@@ -232,6 +245,7 @@ internal class ContainerizeCommand : CliRootCommand
             string _baseReg = parseResult.GetValue(BaseRegistryOption)!;
             string _baseName = parseResult.GetValue(BaseImageNameOption)!;
             string _baseTag = parseResult.GetValue(BaseImageTagOption)!;
+            string? _baseDigest = parseResult.GetValue(BaseImageDigestOption);
             string? _outputReg = parseResult.GetValue(OutputRegistryOption);
             string? _archiveOutputPath = parseResult.GetValue(ArchiveOutputPathOption);
             string _name = parseResult.GetValue(RepositoryOption)!;
@@ -252,6 +266,7 @@ internal class ContainerizeCommand : CliRootCommand
             string? _containerUser = parseResult.GetValue(ContainerUserOption);
             bool _generateLabels = parseResult.GetValue(GenerateLabelsOption);
             bool _generateDigestLabel = parseResult.GetValue(GenerateDigestLabelOption);
+            KnownImageFormats? _imageFormat = parseResult.GetValue(ImageFormatOption);
 
             //setup basic logging
             bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
@@ -264,6 +279,7 @@ internal class ContainerizeCommand : CliRootCommand
                 _baseReg,
                 _baseName,
                 _baseTag,
+                _baseDigest,
                 _entrypoint,
                 _entrypointArgs,
                 _defaultArgs,
@@ -283,6 +299,7 @@ internal class ContainerizeCommand : CliRootCommand
                 _archiveOutputPath,
                 _generateLabels,
                 _generateDigestLabel,
+                _imageFormat,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });

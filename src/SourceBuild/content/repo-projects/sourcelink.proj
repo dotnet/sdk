@@ -2,9 +2,6 @@
 
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
-
-    <!-- TODO: Remove once dotnet/sourcelink#964 is resolved. -->
-    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <ItemGroup>

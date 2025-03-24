@@ -4,13 +4,11 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
+namespace Microsoft.DotNet.Cli.ShellShim;
 
-namespace Microsoft.DotNet.ShellShim
+internal interface IShellShimRepository
 {
-    internal interface IShellShimRepository
-    {
-        void CreateShim(FilePath targetExecutablePath, ToolCommandName commandName, IReadOnlyList<FilePath> packagedShims = null);
+    void CreateShim(FilePath targetExecutablePath, ToolCommandName commandName, IReadOnlyList<FilePath> packagedShims = null);
 
-        void RemoveShim(ToolCommandName commandName);
-    }
+    void RemoveShim(ToolCommandName commandName);
 }

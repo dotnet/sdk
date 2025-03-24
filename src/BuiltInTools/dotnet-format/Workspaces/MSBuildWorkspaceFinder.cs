@@ -76,8 +76,11 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             return (isSolution, workspacePath);
         }
 
-        private static IEnumerable<string> FindSolutionFiles(string basePath) => Directory.EnumerateFileSystemEntries(basePath, "*.sln", SearchOption.TopDirectoryOnly)
-            .Concat(Directory.EnumerateFileSystemEntries(basePath, "*.slnf", SearchOption.TopDirectoryOnly));
+        private static IEnumerable<string> FindSolutionFiles(string basePath) => [
+            ..Directory.EnumerateFileSystemEntries(basePath, "*.sln", SearchOption.TopDirectoryOnly),
+            ..Directory.EnumerateFileSystemEntries(basePath, "*.slnf", SearchOption.TopDirectoryOnly),
+            ..Directory.EnumerateFileSystemEntries(basePath, "*.slnx", SearchOption.TopDirectoryOnly)
+        ];
 
         private static IEnumerable<string> FindProjectFiles(string basePath) => Directory.EnumerateFileSystemEntries(basePath, "*.*proj", SearchOption.TopDirectoryOnly)
                     .Where(f => !DnxProjectExtension.Equals(Path.GetExtension(f), StringComparison.OrdinalIgnoreCase));

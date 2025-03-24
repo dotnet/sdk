@@ -37,6 +37,36 @@
         <target state="translated">Zadání možností -r|--runtime a -os zároveň se nepodporuje.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">Nastaví hodnotu proměnné prostředí.
+Pokud proměnná neexistuje, vytvoří ji, a pokud existuje, přepíše ji.
+Tímto se vynutí spuštění testů v izolovaném procesu.
+Tento argument je možné zadat vícekrát a určit tak více proměnných.
+
+Příklady:
+-e PROMĚNNÁ=abc
+-e PROMĚNNÁ="hodnota s mezerami"
+-e PROMĚNNÁ="hodnota;oddělená;pomocí;středníků"
+-e PROM1=abc -e PROM2=def -e PROM3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="translated">NÁZEV="HODNOTA"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Umožňuje, aby se příkaz zastavil a počkal na vstup nebo akci uživatele (například na dokončení ověření).</target>
@@ -128,6 +158,11 @@ export PATH="$PATH:{0}"
       <trans-unit id="FrameworkDependentOptionDescription">
         <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
         <target state="translated">Publikujte svoji aplikaci jako aplikaci závislou na architektuře. Aby bylo možné vaši aplikaci spustit, musí být na cílovém počítači nainstalovaný kompatibilní modul runtime .NET.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="translated">Nesprávně formátované proměnné prostředí: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
@@ -222,6 +257,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zadán identifikátor modulu runtime, výchozí hodnota je true.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="translated">Vyhledejte dostupné verze úlohy nebo to, co se skládá z verze úlohy. Další informace získáte pomocí 'dotnet workload search version --help'.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">Řešení</target>
@@ -285,6 +325,11 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
         <target state="translated">Soubor nastavení nástroje {0} neexistuje.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="new">Unrecognized command or argument '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

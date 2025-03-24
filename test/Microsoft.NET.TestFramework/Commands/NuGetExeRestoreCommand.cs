@@ -10,13 +10,13 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public string ProjectFile { get; }
 
-        public string NuGetExeVersion { get; set; }
+        public string? NuGetExeVersion { get; set; }
 
         public string FullPathProjectFile => Path.Combine(ProjectRootPath, ProjectFile);
 
-        public string PackagesDirectory { get; set; }
+        public string? PackagesDirectory { get; set; }
 
-        public NuGetExeRestoreCommand(ITestOutputHelper log, string projectRootPath, string relativePathToProject = null) : base(log)
+        public NuGetExeRestoreCommand(ITestOutputHelper log, string projectRootPath, string? relativePathToProject = null) : base(log)
         {
             _projectRootPath = projectRootPath;
             ProjectFile = MSBuildCommand.FindProjectFile(ref _projectRootPath, relativePathToProject);
@@ -31,7 +31,7 @@ namespace Microsoft.NET.TestFramework.Commands
             newArgs.Add(FullPathProjectFile);
 
             newArgs.Add("-PackagesDirectory");
-            newArgs.Add(PackagesDirectory ?? TestContext.Current.NuGetCachePath);
+            newArgs.Add(PackagesDirectory ?? TestContext.Current.NuGetCachePath ?? string.Empty);
 
             newArgs.AddRange(args);
 
@@ -43,12 +43,12 @@ namespace Microsoft.NET.TestFramework.Commands
             var nugetExePath = TestContext.Current.NuGetExePath;
             if (!string.IsNullOrEmpty(NuGetExeVersion))
             {
-                nugetExePath = Path.Combine(Path.GetDirectoryName(nugetExePath), NuGetExeVersion, "nuget.exe");
+                nugetExePath = Path.Combine(Path.GetDirectoryName(nugetExePath) ?? string.Empty, NuGetExeVersion, "nuget.exe");
             }
 
             if (!File.Exists(nugetExePath))
             {
-                string directory = Path.GetDirectoryName(nugetExePath);
+                string directory = Path.GetDirectoryName(nugetExePath) ?? string.Empty;
                 if (!Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);

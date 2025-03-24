@@ -1,5 +1,11 @@
 ﻿{
   "author": "Microsoft",
   "name": "Projektmappendatei",
-  "description": "Erstellt eine leere Projektmappe, die keine Projekte enthält"
+  "description": "Erstellt eine leere Projektmappe, die keine Projekte enthält",
+  "symbols/Format/description": "Wählen Sie das Format für die Projektmappendatei aus: SLN oder SLNX.",
+  "symbols/Format/displayName": "Projektmappendateiformat",
+  "symbols/Format/choices/sln/description": "Projektmappendatei",
+  "symbols/Format/choices/sln/displayName": "SLN-Format",
+  "symbols/Format/choices/slnx/description": "XML-Projektmappendatei",
+  "symbols/Format/choices/slnx/displayName": "SLNX-Format"
 }

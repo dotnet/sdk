@@ -1,0 +1,61 @@
+steps:
+- task: DownloadPipelineArtifact@2
+  displayName: Download Asset Manifest
+  continueOnError: true
+  enabled: true
+  inputs:
+    artifact: AssetManifests
+    downloadPath: '$(Build.ArtifactStagingDirectory)/AssetManifests'
+
+- task: DownloadPipelineArtifact@2
+  displayName: Download Blob Artifacts
+  continueOnError: true
+  enabled: true
+  inputs:
+    artifact: BlobArtifacts
+    downloadPath: '$(Build.ArtifactStagingDirectory)/vmr-assets/BlobArtifacts'
+
+- task: DownloadPipelineArtifact@2
+  displayName: Download Package Artifacts
+  continueOnError: true
+  enabled: true
+  inputs:
+    artifact: PackageArtifacts
+    downloadPath: '$(Build.ArtifactStagingDirectory)/vmr-assets/PackageArtifacts'
+
+- powershell: $(Build.SourcesDirectory)\eng\common\darc-init.ps1 -toolpath $(Build.SourcesDirectory)\artifacts\tools\darc
+  displayName: Install darc
+
+- task: AzureCLI@2
+  displayName: 'Gather Drop'
+  continueOnError: true
+  inputs:
+    azureSubscription: DotNetStaging
+    scriptType: 'pscore'
+    scriptLocation: 'scriptPath'
+    scriptPath: $(Build.SourcesDirectory)\src\sdk\eng\GatherDrops.ps1
+    arguments: -filePath '$(Build.SourcesDirectory)\src\source-manifest.json' -outputPath '$(Build.ArtifactStagingDirectory)\base-assets\'
+      -darcPath '$(Build.SourcesDirectory)\artifacts\tools\darc\darc.exe' -githubPat $(BotAccount-dotnet-bot-repo-PAT) -azdevPat $(dn-bot-all-drop-rw-code-rw-release-all)
+
+- task: PowerShell@2
+  inputs:
+    filePath: $(Build.SourcesDirectory)\eng\common\build.ps1
+    arguments: -ci -projects $(Build.SourcesDirectory)\eng\tools\BuildComparer\BuildComparer.csproj -restore -build
+
+- script: $(Build.SourcesDirectory)\.dotnet\dotnet.exe
+    $(Build.SourcesDirectory)\artifacts\bin\BuildComparer\Debug\BuildComparer.dll
+    -vmrManifestPath "$(Build.ArtifactStagingDirectory)\AssetManifests\MergedManifest.xml"
+    -vmrAssetBasePath "$(Build.ArtifactStagingDirectory)\vmr-assets"
+    -msftAssetBasePath "$(Build.ArtifactStagingDirectory)\base-assets"
+    -report "$(Build.SourcesDirectory)\artifacts\AssetBaselines\BaselineComparison.xml"
+    -baseline "$(Build.SourcesDirectory)\src\sdk\eng\vmr-msft-comparison-baseline.json"
+  displayName: Validate Asset Baselines
+
+- task: 1ES.PublishPipelineArtifact@1
+  displayName: Publish Asset Baseline Files
+  continueOnError: true
+  inputs:
+    path: $(Build.SourcesDirectory)\artifacts\AssetBaselines\
+    artifactName: AssetBaselineFiles
+    artifactType: Container
+    parallel: true

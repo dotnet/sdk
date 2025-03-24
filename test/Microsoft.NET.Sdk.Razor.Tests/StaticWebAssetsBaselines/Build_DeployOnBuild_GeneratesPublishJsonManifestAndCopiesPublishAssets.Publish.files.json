@@ -2,6 +2,12 @@
   "${OutputPath}\\wwwroot\\ComponentApp.styles.css",
   "${OutputPath}\\wwwroot\\ComponentApp.styles.css.br",
   "${OutputPath}\\wwwroot\\ComponentApp.styles.css.gz",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js.br",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js.gz",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web.js",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web.js.br",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web.js.gz",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
@@ -10,5 +16,11 @@
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
   "${OutputPath}\\wwwroot\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
   "${OutputPath}\\wwwroot\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
-  "${OutputPath}\\wwwroot\\ComponentApp#[.{fingerprint}]?.styles.css"
+  "${OutputPath}\\wwwroot\\ComponentApp#[.{fingerprint}]?.styles.css",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js.br",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.server.js.gz",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web#[.{fingerprint=__fingerprint__}]?.js.br",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web#[.{fingerprint=__fingerprint__}]?.js.gz",
+  "${OutputPath}\\wwwroot\\_framework\\blazor.web#[.{fingerprint}]?.js"
 ]

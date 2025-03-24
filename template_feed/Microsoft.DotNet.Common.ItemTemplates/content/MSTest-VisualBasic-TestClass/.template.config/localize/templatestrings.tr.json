@@ -1,0 +1,16 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MSTest Test Sınıfı",
+  "description": "Yeni bir MSTest test sınıfı oluşturur",
+  "symbols/Fixture/description": "Projeye dahil edilecek düzen türlerini seçin.",
+  "symbols/Fixture/displayName": "Düzen",
+  "symbols/Fixture/choices/None/description": "Düzen yöntemi yok",
+  "symbols/Fixture/choices/None/displayName": "Hiçbiri",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize düzen yöntemi",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "AssemblyCleanup düzen yöntemi",
+  "symbols/Fixture/choices/ClassInitialize/description": "ClassInitialize düzen yöntemi",
+  "symbols/Fixture/choices/ClassCleanup/description": "ClassCleanup düzen yöntemi",
+  "symbols/Fixture/choices/TestInitialize/description": "TestInitialize düzen yöntemi",
+  "symbols/Fixture/choices/TestCleanup/description": "TestCleanup düzen yöntemi",
+  "postActions/openInEditor/description": "Test1.vb'yi düzenleyicide açar."
+}

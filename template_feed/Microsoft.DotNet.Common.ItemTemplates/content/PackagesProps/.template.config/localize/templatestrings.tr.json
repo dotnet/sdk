@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "MSBuild Directory.Packages.props dosyası",
-  "description": "Paket sürümünü merkezi olarak belirtmek için kullanılabilecek boş bir Directory.Packages.props dosyası",
+  "description": "Paket sürümlerini merkezi olarak belirtmek için kullanılabilen boş bir Directory.Packages.props dosyası",
   "symbols/inherit/displayName": "Inherit",
   "symbols/inherit/description": "True ise, dosya sistemi dizin hiyerarşisindeki en yakın Directory.Packages.props için bir Import değeri ekler. Directory.Packages.props varsayılan olarak devralmadığından bunu yapmak, klasörden klasöre bir özelleştirme kümesi oluşturmanızı sağlar."
 }

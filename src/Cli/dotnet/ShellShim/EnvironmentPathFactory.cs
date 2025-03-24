@@ -5,84 +5,83 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.ShellShim
+namespace Microsoft.DotNet.Cli.ShellShim;
+
+internal static class EnvironmentPathFactory
 {
-    internal static class EnvironmentPathFactory
+    public static IEnvironmentPath CreateEnvironmentPath(
+        bool isDotnetBeingInvokedFromNativeInstaller = false,
+        IEnvironmentProvider environmentProvider = null)
     {
-        public static IEnvironmentPath CreateEnvironmentPath(
-            bool isDotnetBeingInvokedFromNativeInstaller = false,
-            IEnvironmentProvider environmentProvider = null)
+        if (environmentProvider == null)
         {
-            if (environmentProvider == null)
-            {
-                environmentProvider = new EnvironmentProvider();
-            }
-
-            IEnvironmentPath environmentPath = new DoNothingEnvironmentPath();
-            if (OperatingSystem.IsWindows())
-            {
-                if (isDotnetBeingInvokedFromNativeInstaller)
-                {
-                    // On Windows MSI will in charge of appending ToolShimPath
-                    environmentPath = new DoNothingEnvironmentPath();
-                }
-                else
-                {
-                    environmentPath = new WindowsEnvironmentPath(
-                        CliFolderPathCalculator.ToolsShimPath,
-                        CliFolderPathCalculator.WindowsNonExpandedToolsShimPath,
-                        environmentProvider,
-                        new WindowsRegistryEnvironmentPathEditor(),
-                        Reporter.Output);
-                }
-            }
-            else if (OperatingSystem.IsLinux() && isDotnetBeingInvokedFromNativeInstaller)
-            {
-                environmentPath = new LinuxEnvironmentPath(
-                    CliFolderPathCalculator.ToolsShimPathInUnix,
-                    Reporter.Output,
-                    environmentProvider,
-                    new FileWrapper());
-            }
-            else if (OperatingSystem.IsMacOS() && isDotnetBeingInvokedFromNativeInstaller)
-            {
-                environmentPath = new OsxBashEnvironmentPath(
-                    executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
-                    reporter: Reporter.Output,
-                    environmentProvider: environmentProvider,
-                    fileSystem: new FileWrapper());
-            }
-
-            return environmentPath;
+            environmentProvider = new EnvironmentProvider();
         }
 
-        public static IEnvironmentPathInstruction CreateEnvironmentPathInstruction(
-            IEnvironmentProvider environmentProvider = null)
+        IEnvironmentPath environmentPath = new DoNothingEnvironmentPath();
+        if (OperatingSystem.IsWindows())
         {
-            if (environmentProvider == null)
+            if (isDotnetBeingInvokedFromNativeInstaller)
             {
-                environmentProvider = new EnvironmentProvider();
+                // On Windows MSI will in charge of appending ToolShimPath
+                environmentPath = new DoNothingEnvironmentPath();
             }
-
-            if (OperatingSystem.IsMacOS() && ZshDetector.IsZshTheUsersShell(environmentProvider))
+            else
             {
-                return new OsxZshEnvironmentPathInstruction(
-                    executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
-                    reporter: Reporter.Output,
-                    environmentProvider: environmentProvider);
-            }
-
-            if (OperatingSystem.IsWindows())
-            {
-                return new WindowsEnvironmentPath(
+                environmentPath = new WindowsEnvironmentPath(
                     CliFolderPathCalculator.ToolsShimPath,
-                    nonExpandedPackageExecutablePath: CliFolderPathCalculator.WindowsNonExpandedToolsShimPath,
-                    expandedEnvironmentReader: environmentProvider,
-                    environmentPathEditor: new WindowsRegistryEnvironmentPathEditor(),
-                    reporter: Reporter.Output);
+                    CliFolderPathCalculator.WindowsNonExpandedToolsShimPath,
+                    environmentProvider,
+                    new WindowsRegistryEnvironmentPathEditor(),
+                    Reporter.Output);
             }
-
-            return CreateEnvironmentPath(true, environmentProvider);
         }
+        else if (OperatingSystem.IsLinux() && isDotnetBeingInvokedFromNativeInstaller)
+        {
+            environmentPath = new LinuxEnvironmentPath(
+                CliFolderPathCalculator.ToolsShimPathInUnix,
+                Reporter.Output,
+                environmentProvider,
+                new FileWrapper());
+        }
+        else if (OperatingSystem.IsMacOS() && isDotnetBeingInvokedFromNativeInstaller)
+        {
+            environmentPath = new OsxBashEnvironmentPath(
+                executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
+                reporter: Reporter.Output,
+                environmentProvider: environmentProvider,
+                fileSystem: new FileWrapper());
+        }
+
+        return environmentPath;
+    }
+
+    public static IEnvironmentPathInstruction CreateEnvironmentPathInstruction(
+        IEnvironmentProvider environmentProvider = null)
+    {
+        if (environmentProvider == null)
+        {
+            environmentProvider = new EnvironmentProvider();
+        }
+
+        if (OperatingSystem.IsMacOS() && ZshDetector.IsZshTheUsersShell(environmentProvider))
+        {
+            return new OsxZshEnvironmentPathInstruction(
+                executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
+                reporter: Reporter.Output,
+                environmentProvider: environmentProvider);
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            return new WindowsEnvironmentPath(
+                CliFolderPathCalculator.ToolsShimPath,
+                nonExpandedPackageExecutablePath: CliFolderPathCalculator.WindowsNonExpandedToolsShimPath,
+                expandedEnvironmentReader: environmentProvider,
+                environmentPathEditor: new WindowsRegistryEnvironmentPathEditor(),
+                reporter: Reporter.Output);
+        }
+
+        return CreateEnvironmentPath(true, environmentProvider);
     }
 }

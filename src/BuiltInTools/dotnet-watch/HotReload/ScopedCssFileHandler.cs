@@ -2,25 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System.Collections;
-using System.Diagnostics;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class ScopedCssFileHandler(IReporter reporter, ProjectNodeMap projectMap, BrowserConnector browserConnector)
     {
         private const string BuildTargetName = "GenerateComputedBuildStaticWebAssets";
 
-        public async ValueTask HandleFileChangesAsync(IReadOnlyList<FileItem> files, CancellationToken cancellationToken)
+        public async ValueTask HandleFileChangesAsync(IReadOnlyList<ChangedFile> files, CancellationToken cancellationToken)
         {
             var projectsToRefresh = new HashSet<ProjectGraphNode>();
             var hasApplicableFiles = false;
 
             for (int i = 0; i < files.Count; i++)
             {
-                var file = files[i];
+                var file = files[i].Item;
 
                 if (!file.FilePath.EndsWith(".razor.css", StringComparison.Ordinal) &&
                     !file.FilePath.EndsWith(".cshtml.css", StringComparison.Ordinal))
@@ -51,61 +49,63 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             }
 
-            var logger = reporter.IsVerbose ? new[] { new Build.Logging.ConsoleLogger() } : null;
-
-            var tasks = projectsToRefresh.Select(async projectNode =>
+            if (!hasApplicableFiles)
             {
-                if (!projectNode.ProjectInstance.DeepCopy().Build(BuildTargetName, logger))
+                return;
+            }
+
+            var logger = reporter.IsVerbose ? new[] { new Build.Logging.ConsoleLogger(LoggerVerbosity.Minimal) } : null;
+
+            var buildTasks = projectsToRefresh.Select(projectNode => Task.Run(() =>
+            {
+                try
                 {
-                    return false;
+                    if (!projectNode.ProjectInstance.DeepCopy().Build(BuildTargetName, logger))
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception e)
+                {
+                    reporter.Error($"[{projectNode.GetDisplayName()}] Target {BuildTargetName} failed to build: {e}");
+                    return null;
                 }
 
+                return projectNode;
+            }));
+
+            var buildResults = await Task.WhenAll(buildTasks).WaitAsync(cancellationToken);
+
+            var browserRefreshTasks = buildResults.Where(p => p != null)!.GetTransitivelyReferencingProjects().Select(async projectNode =>
+            {
                 if (browserConnector.TryGetRefreshServer(projectNode, out var browserRefreshServer))
                 {
-                    await HandleBrowserRefresh(browserRefreshServer, projectNode.ProjectInstance.FullPath, cancellationToken);
+                    // We'd like an accurate scoped css path, but this needs a lot of work to wire-up now.
+                    // We'll handle this as part of https://github.com/dotnet/aspnetcore/issues/31217.
+                    // For now, we'll make it look like some css file which would cause JS to update a
+                    // single file if it's from the current project, or all locally hosted css files if it's a file from
+                    // referenced project.
+                    var relativeUrl = Path.GetFileNameWithoutExtension(projectNode.ProjectInstance.FullPath) + ".css";
+                    await browserRefreshServer.UpdateStaticAssetsAsync([relativeUrl], cancellationToken);
                 }
-
-                return true;
             });
 
-            var results = await Task.WhenAll(tasks).WaitAsync(cancellationToken);
+            await Task.WhenAll(browserRefreshTasks).WaitAsync(cancellationToken);
 
-            if (hasApplicableFiles)
+            var successfulCount = buildResults.Sum(r => r != null ? 1 : 0);
+
+            if (successfulCount == buildResults.Length)
             {
-                var successfulCount = results.Sum(r => r ? 1 : 0);
-
-                if (successfulCount == results.Length)
-                {
-                    reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
-                }
-                else if (successfulCount > 0)
-                {
-                    reporter.Output($"Hot reload of scoped css partially succeeded: {successfulCount} project(s) out of {results.Length} were updated.", emoji: "🔥");
-                }
-                else
-                {
-                    reporter.Output("Hot reload of scoped css failed.", emoji: "🔥");
-                }
+                reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
             }
-        }
-
-        private static async Task HandleBrowserRefresh(BrowserRefreshServer browserRefreshServer, string containingProjectPath, CancellationToken cancellationToken)
-        {
-            // We'd like an accurate scoped css path, but this needs a lot of work to wire-up now.
-            // We'll handle this as part of https://github.com/dotnet/aspnetcore/issues/31217.
-            // For now, we'll make it look like some css file which would cause JS to update a
-            // single file if it's from the current project, or all locally hosted css files if it's a file from
-            // referenced project.
-            var cssFilePath = Path.GetFileNameWithoutExtension(containingProjectPath) + ".css";
-            var message = new UpdateStaticFileMessage { Path = cssFilePath };
-            await browserRefreshServer.SendJsonSerlialized(message, cancellationToken);
-        }
-
-        private readonly struct UpdateStaticFileMessage
-        {
-            public string Type => "UpdateStaticFile";
-
-            public string Path { get; init; }
+            else if (successfulCount > 0)
+            {
+                reporter.Output($"Hot reload of scoped css partially succeeded: {successfulCount} project(s) out of {buildResults.Length} were updated.", emoji: "🔥");
+            }
+            else
+            {
+                reporter.Output("Hot reload of scoped css failed.", emoji: "🔥");
+            }
         }
     }
 }

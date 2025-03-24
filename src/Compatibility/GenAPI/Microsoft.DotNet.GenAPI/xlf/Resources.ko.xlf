@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="AddMemberThrowsException">
         <source>Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</source>
-        <target state="new">Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</target>
+        <target state="translated">예외 '{2}'(으)로 인해 구성원 ‘{0}’을(를) 명명된 형식 '{1}'에 추가하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolveTypeForwardFailed">
         <source>Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</source>
-        <target state="new">Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</target>
+        <target state="translated">형식 전달을 통해 '{1}' 어셈블리 형식을 포함하는 '{0}' 형식을 해결할 수 없습니다. 어셈블리가 참조로 제공되고 해당 형식을 포함하는지 확인하세요.</target>
         <note />
       </trans-unit>
     </body>

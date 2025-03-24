@@ -32,11 +32,6 @@ Required. Path to the temporary folder where repositories will be cloned
 .PARAMETER vmrBranch
 Optional. Branch of the 'dotnet/dotnet' repo to synchronize. The VMR will be checked out to this branch
 
-.PARAMETER component-template
-Optional. Template for VMRs Component.md used for regenerating the file to list the newest versions of
-components.
-Defaults to src/VirtualMonoRepo/Component.template.md
-
 .PARAMETER recursive
 Optional. Recursively synchronize all the source build dependencies (declared in Version.Details.xml)
 This is used when performing the full synchronization during sdk's CI and the final VMR sync.
@@ -65,18 +60,21 @@ Optional. Path to the dotnet/dotnet repository. When null, gets cloned to the te
 
 .PARAMETER debugOutput
 Optional. Enables debug logging in the darc vmr command.
+
+.PARAMETER ci
+Optional. Denotes that the script is running in a CI environment.
 #>
 param (
   [Parameter(Mandatory=$true, HelpMessage="Path to the temporary folder where repositories will be cloned")]
   [string][Alias('t', 'tmp')]$tmpDir,
   [string][Alias('b', 'branch')]$vmrBranch,
-  [string]$componentTemplate = "src/VirtualMonoRepo/Component.template.md",
   [switch]$recursive,
   [string]$remote,
   [string][Alias('r')]$repository,
   [string]$tpnTemplate = "src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt",
   [string]$azdevPat,
   [string][Alias('v', 'vmr')]$vmrDir,
+  [switch]$ci,
   [switch]$debugOutput
 )
 
@@ -114,11 +112,6 @@ if (-not (Test-Path -Path $sdkDir -PathType Container)) {
 
 if (-not $tmpDir) {
   Fail "Missing -tmpDir argument. Please specify the path to the temporary folder where the repositories will be cloned"
-  exit 1
-}
-
-if (-not (Test-Path -Path $componentTemplate -PathType Leaf)) {
-  Fail "File '$componentTemplate' does not exist. Please specify a valid path to the component template"
   exit 1
 }
 
@@ -184,15 +177,18 @@ $darcArgs = (
     "--vmr", $vmrDir,
     "--tmp", $tmpDir,
     "--$verbosity",
-    "--component-template", $componentTemplate,
     "--tpn-template", $tpnTemplate,
     "--discard-patches",
     "--generate-credscansuppressions",
     $repository
-)  
+)
 
 if ($recursive) {
   $darcArgs += ("--recursive")
+}
+
+if ($ci) {
+  $darcArgs += ("--ci")
 }
 
 if ($additionalRemotes) {

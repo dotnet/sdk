@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -117,37 +119,6 @@ namespace Microsoft.NET.Publish.Tests
                 // https://github.com/dotnet/core-setup/issues/2716 - an unintended native shim is getting published to the runtime store
                 files_on_disk.Add($"runtime.{_runtimeRid}.runtime.native.system.security.cryptography/1.0.1/runtimes/{_runtimeRid}/native/System.Security.Cryptography.Native{FileConstants.DynamicLibSuffix}");
             }
-
-            storeDirectory.Should().OnlyHaveFiles(files_on_disk);
-        }
-
-        [Fact]
-        public void store_nativeonlyassets()
-        {
-            TestAsset simpleDependenciesAsset = _testAssetsManager
-                .CopyTestAsset("UnmanagedStore")
-                .WithSource();
-
-            var storeCommand = new ComposeStoreCommand(Log, simpleDependenciesAsset.TestRoot);
-
-            var OutputFolder = Path.Combine(simpleDependenciesAsset.TestRoot, "outdir");
-            var WorkingDir = Path.Combine(simpleDependenciesAsset.TestRoot, "w");
-
-            NuGetConfigWriter.Write(simpleDependenciesAsset.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed);
-
-            storeCommand
-                .Execute($"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeWorkingDir={WorkingDir}", $"/p:ComposeDir={OutputFolder}", $"/p:DoNotDecorateComposeDir=true")
-                .Should()
-                .Pass();
-
-            DirectoryInfo storeDirectory = new(OutputFolder);
-
-            List<string> files_on_disk = new()
-            {
-               "artifact.xml",
-               $"runtime.{_runtimeRid}.microsoft.netcore.coredistools/1.0.1-prerelease-00001/runtimes/{_runtimeRid}/native/{_libPrefix}coredistools{FileConstants.DynamicLibSuffix}",
-               $"runtime.{_runtimeRid}.microsoft.netcore.coredistools/1.0.1-prerelease-00001/runtimes/{_runtimeRid}/native/coredistools.h"
-               };
 
             storeDirectory.Should().OnlyHaveFiles(files_on_disk);
         }

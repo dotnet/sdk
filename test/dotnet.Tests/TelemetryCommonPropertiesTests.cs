@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Configurer;
 
@@ -50,12 +52,16 @@ namespace Microsoft.DotNet.Tests
         }
 
         [Fact]
-        public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotDevDeviceId()
+        public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
         {
             var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
             var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
 
             Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            var secondAssignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
+
+            Guid.TryParse(secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            secondAssignedMachineId.Should().Be(assignedMachineId, "it should match the previously assigned guid");
         }
 
         [Fact]

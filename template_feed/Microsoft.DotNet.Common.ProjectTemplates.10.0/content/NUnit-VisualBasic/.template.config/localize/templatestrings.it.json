@@ -1,0 +1,19 @@
+﻿{
+  "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
+  "name": "Progetto di test NUnit 3",
+  "description": "Progetto che contiene i test NUnit eseguibili in .NET in Windows, Linux e macOS",
+  "symbols/TargetFrameworkOverride/description": "Ignora il framework di destinazione",
+  "symbols/TargetFrameworkOverride/displayName": "Override del framework di destinazione",
+  "symbols/Framework/description": "Il framework di destinazione per il progetto.",
+  "symbols/Framework/displayName": "Framework",
+  "symbols/Framework/choices/net10.0/description": "net10.0 di destinazione",
+  "symbols/EnablePack/description": "Indica se abilitare o meno la creazione del pacchetto (tramite \"dotnet pack\") per il progetto.",
+  "symbols/EnablePack/displayName": "Abilita pacchetto",
+  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
+  "symbols/skipRestore/displayName": "Salta ripristino",
+  "symbols/langVersion/description": "Imposta la proprietà LangVersion nel file di progetto creato",
+  "symbols/langVersion/displayName": "Versione del linguaggio",
+  "postActions/restoreNugetPackages/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "Esegui 'dotnet restore'",
+  "postActions/openInEditor/description": "Apre UnitTest1.vb nell'editor"
+}

@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <Target Name="GenerateRootFs"
-          AfterTargets="Build">
+          BeforeTargets="Build">
     <PropertyGroup>
       <ArmEnvironmentVariables Condition="'$(ArmEnvironmentVariables)' == ''">ROOTFS_DIR=$(ArtifactsObjDir)crossrootfs/arm</ArmEnvironmentVariables>
       <ArmEnvironmentVariables Condition="'$(Platform)' == 'armel'">ROOTFS_DIR=$(ArtifactsObjDir)crossrootfs/armel</ArmEnvironmentVariables>

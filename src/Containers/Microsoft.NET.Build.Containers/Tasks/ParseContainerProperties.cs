@@ -49,6 +49,9 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
     public string ParsedContainerTag { get; private set; }
 
     [Output]
+    public string ParsedContainerDigest { get; private set; }
+
+    [Output]
     public string NewContainerRegistry { get; private set; }
 
     [Output]
@@ -71,6 +74,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
         ParsedContainerRegistry = "";
         ParsedContainerImage = "";
         ParsedContainerTag = "";
+        ParsedContainerDigest = "";
         NewContainerRegistry = "";
         NewContainerRepository = "";
         NewContainerTags = Array.Empty<string>();
@@ -132,7 +136,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
                                                                   out string? outputReg,
                                                                   out string? outputImage,
                                                                   out string? outputTag,
-                                                                  out string? _outputDigest,
+                                                                  out string? outputDigest,
                                                                   out bool isRegistrySpecified))
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNameParsingFailed), nameof(FullyQualifiedBaseImageName), FullyQualifiedBaseImageName);
@@ -163,6 +167,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
         ParsedContainerRegistry = outputReg ?? "";
         ParsedContainerImage = outputImage ?? "";
         ParsedContainerTag = outputTag ?? "";
+        ParsedContainerDigest = outputDigest ?? "";
         NewContainerRegistry = ContainerRegistry;
         NewContainerTags = validTags;
 
@@ -172,6 +177,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
             Log.LogMessage(MessageImportance.Low, "Host: {0}", ParsedContainerRegistry);
             Log.LogMessage(MessageImportance.Low, "Image: {0}", ParsedContainerImage);
             Log.LogMessage(MessageImportance.Low, "Tag: {0}", ParsedContainerTag);
+            Log.LogMessage(MessageImportance.Low, "Digest: {0}", ParsedContainerDigest);
             Log.LogMessage(MessageImportance.Low, "Image Name: {0}", NewContainerRepository);
             Log.LogMessage(MessageImportance.Low, "Image Tags: {0}", string.Join(", ", NewContainerTags));
         }

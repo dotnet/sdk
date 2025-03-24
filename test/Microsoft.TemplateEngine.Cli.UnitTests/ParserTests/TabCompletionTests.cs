@@ -441,6 +441,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [Fact]
+        [SkipOnPlatform(TestPlatforms.Linux, "https://github.com/dotnet/sdk/issues/46212")]
         public void CanIgnoreTemplateGroupsWithConstraints()
         {
             MockTemplateInfo template1 = new MockTemplateInfo("foo1", identity: "foo.1")

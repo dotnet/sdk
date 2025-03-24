@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Soubor MSBuild Directory.Packages.props",
-  "description": "Prázdný soubor Directory.Packages.props, který lze použít k centrálnímu určení verze balíčku.",
+  "description": "Prázdný soubor Directory.Packages.props, který lze použít k centrálnímu zadání verzí balíčků.",
   "symbols/inherit/displayName": "Zdědit",
   "symbols/inherit/description": "Při hodnotě true přidá import pro nejbližší soubor Directory.Packages.props v hierarchii adresářů systému souborů. Directory.Packages.props ve výchozím nastavení nedědí, takže můžete vytvořit sadu přizpůsobení pro každou složku zvlášť."
 }

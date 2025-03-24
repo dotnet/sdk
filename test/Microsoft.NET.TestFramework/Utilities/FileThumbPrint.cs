@@ -53,11 +53,11 @@ namespace Microsoft.NET.TestFramework.Utilities
             return thumbprintLookup;
         }
 
-        public bool Equals(FileThumbPrint other)
+        public bool Equals(FileThumbPrint? other)
         {
             return
-                string.Equals(Path, other.Path, StringComparison.Ordinal) &&
-                LastWriteTimeUtc == other.LastWriteTimeUtc &&
+                string.Equals(Path, other?.Path, StringComparison.Ordinal) &&
+                LastWriteTimeUtc == other?.LastWriteTimeUtc &&
                 string.Equals(Hash, other.Hash, StringComparison.Ordinal);
         }
 

@@ -1,8 +1,10 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -94,7 +96,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssets : Task
         return !Log.HasLoggedErrors;
     }
 
-    private bool HasFingerprint(StaticWebAssetEndpoint endpoint)
+    private static bool HasFingerprint(StaticWebAssetEndpoint endpoint)
     {
         for (var i = 0; i < endpoint.EndpointProperties.Length; i++)
         {

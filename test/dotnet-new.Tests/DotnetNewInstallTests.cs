@@ -41,22 +41,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining("blazorwasm");
         }
 
-        [Theory]
-        [InlineData("-i")]
-        [InlineData("install")]
-        public void CanInstallRemoteNuGetPackage_LatestVariations(string commandName)
+        [Fact]
+        public void CanInstallRemoteNuGetPackage_LatestVariations()
         {
+            var commandName = "install";
             CommandResult command1 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
-            CommandResult command2 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::")
+            CommandResult command2 = new DotnetNewCommand(_log, commandName, $"Microsoft.DotNet.Common.ProjectTemplates.5.0@")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
-            CommandResult command3 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::*")
+            CommandResult command3 = new DotnetNewCommand(_log, commandName, $"Microsoft.DotNet.Common.ProjectTemplates.5.0@*")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -76,7 +75,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             // Install command are expected to output the requested version literaly as they got it on input,
             //  but otherwise the outputs are expected to be equal
-            string command3Out = command3.StdOut.Replace(
+            string? command3Out = command3.StdOut?.Replace(
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0::*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
 
@@ -110,12 +109,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("install")]
         public void CanInstallRemoteNuGetPackageWithVersionWildcard(string commandName)
         {
-            CommandResult command1 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.*")
+            CommandResult command1 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.*")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
-            CommandResult command2 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.*")
+            CommandResult command2 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0@5.0.*")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -133,13 +132,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .And.NotHaveStdOutContaining("web");
             }
 
-            // Install command are expected to output the requested version literaly as they got it on input,
+            // Install command are expected to output the requested version literally as they got it on input,
             //  but otherwise the outputs are expected to be equal
-            string command1Out = command1.StdOut.Replace(
+            string? command1Out = command1.StdOut?.Replace(
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
 
-            string command2Out = command2.StdOut.Replace(
+            string? command2Out = command2.StdOut?.Replace(
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.0.*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
 

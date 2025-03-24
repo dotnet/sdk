@@ -30,18 +30,18 @@
       <trans-unit id="FailedToValidatePackageSigning">
         <source>Failed to validate package signing.
 {0}</source>
-        <target state="new">Failed to validate package signing.
+        <target state="translated">Nepodařilo se ověřit podepisování balíčku.
 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="needs-review-translation">Balíček {0} se nenašel v informačních kanálech NuGet {1}.</target>
+        <target state="translated">Balíček {0} se nenašel v informačních kanálech NuGet {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageShouldNotBeSigned">
         <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
-        <target state="new">Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</target>
+        <target state="translated">Přeskakuje se ověření podpisu pro balíček NuGet {0}, protože pochází ze zdroje, který nevyžaduje ověření podpisu.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
@@ -76,7 +76,7 @@
       </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
-        <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>
+        <target state="translated">Ověřilo se, že balíček NuGet {0} má platný podpis.</target>
         <note />
       </trans-unit>
     </body>

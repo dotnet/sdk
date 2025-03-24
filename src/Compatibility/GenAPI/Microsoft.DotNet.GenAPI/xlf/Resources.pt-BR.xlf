@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="AddMemberThrowsException">
         <source>Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</source>
-        <target state="new">Adding member '{0}' to the named type '{1}' failed with exception '{2}'.</target>
+        <target state="translated">Falha ao adicionar o membro ''{0}'' ao tipo nomeado ''{1}'' com a exceção ''{2}''.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolveTypeForwardFailed">
         <source>Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</source>
-        <target state="new">Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.</target>
+        <target state="translated">Não foi possível resolver o tipo ''{0}'' no assembly que contém ''{1}'' por meio do tipo de encaminhamento. Certifique-se de que o assembly foi fornecido como uma referência e contém o tipo.</target>
         <note />
       </trans-unit>
     </body>

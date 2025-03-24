@@ -26,8 +26,7 @@ public class TargetsTests
         }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-        //Assert.True(instance.Build([ ComputeContainerConfig ], []));
-        instance.Build([ ComputeContainerConfig ], []);
+        instance.Build([ _ComputeContainerExecutionArgs ], []);
         var computedAppCommand = instance.GetItems(ContainerAppCommand).Select(i => i.EvaluatedInclude);
 
         // The test was not testing anything previously, as the list returned was zero length,
@@ -35,7 +34,6 @@ public class TargetsTests
         // So, to make sure we actually test something, we check that we actually get the expected collection.
         computedAppCommand.Should().BeEquivalentTo(expectedAppCommandArgs);
     }
-
 
     public static TheoryData<string, string, bool, string[]> ContainerAppCommands()
     {
@@ -316,7 +314,7 @@ public class TargetsTests
         }, projectName: $"{nameof(CanComputeContainerUser)}_{tfm}_{rid}_{expectedUser}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        instance.Build(new[] { _ComputeContainerExecutionArgs }, new[] { logger }, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedTag = instance.GetProperty("ContainerUser")?.EvaluatedValue;
         computedTag.Should().Be(expectedUser);
     }
@@ -385,6 +383,39 @@ public class TargetsTests
         instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData("linux-musl-x64;linux-musl-arm64", "mcr.microsoft.com/dotnet/runtime:8.0-alpine")]
+    [InlineData("linux-x64;linux-arm64", "mcr.microsoft.com/dotnet/runtime:8.0")]
+    [Theory]
+    public void AllMuslRidsGetAlpineContainers(string rids, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rids,
+        }, projectName: $"{nameof(AllMuslRidsGetAlpineContainers)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [Fact]
+    public void NotAllMuslRidsLogsError()
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-musl-x64;linux-arm64",
+        }, projectName: $"{nameof(NotAllMuslRidsLogsError)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, [logger], null, out var outputs).Should().BeFalse(String.Join(Environment.NewLine, logger.Errors));
+        logger.Errors.Should().ContainSingle(error => error.Message == Resources.Strings.InvalidTargetRuntimeIdentifiers);
     }
 
     [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-aot")]

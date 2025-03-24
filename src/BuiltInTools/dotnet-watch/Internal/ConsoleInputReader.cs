@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class ConsoleInputReader(IConsole console, bool quiet, bool suppressEmojis)
     {
@@ -17,6 +17,11 @@ namespace Microsoft.Extensions.Tools.Internal
             var questionMark = suppressEmojis ? "?" : "❔";
             while (true)
             {
+                // Start listening to the key before printing the prompt to avoid race condition
+                // in tests that wait for the prompt before sending the key press.
+                var tcs = new TaskCompletionSource<ConsoleKey>(TaskCreationOptions.RunContinuationsAsynchronously);
+                console.KeyPressed += KeyPressed;
+
                 WriteLine($"  {questionMark} {prompt}");
 
                 lock (_writeLock)
@@ -26,8 +31,6 @@ namespace Microsoft.Extensions.Tools.Internal
                     console.ResetColor();
                 }
 
-                var tcs = new TaskCompletionSource<ConsoleKey>(TaskCreationOptions.RunContinuationsAsynchronously);
-                console.KeyPressed += KeyPressed;
                 try
                 {
                     return await tcs.Task.WaitAsync(cancellationToken);

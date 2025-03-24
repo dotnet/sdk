@@ -8,27 +8,12 @@
     <!-- SBRP builds before Arcade so it also needs the bootstrap Arcade version -->
     <UseBootstrapArcade>true</UseBootstrapArcade>
 
-    <LocalNuGetPackageCacheDirectory>$(ArtifactsObjDir)source-build-reference-package-cache</LocalNuGetPackageCacheDirectory>
-
     <BuildArgs>$(BuildArgs) /p:MicrosoftNetCoreIlasmPackageRuntimeId=$(NETCoreSdkRuntimeIdentifier)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:LocalNuGetPackageCacheDirectory=$(LocalNuGetPackageCacheDirectory)</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
     <BuiltSdkPackage Include="Microsoft.Build.NoTargets" />
     <BuiltSdkPackage Include="Microsoft.Build.Traversal" />
   </ItemGroup>
-
-  <Target Name="AddLocalNuGetPackageCacheDirectory"
-          AfterTargets="CopyNuGetConfig"
-          BeforeTargets="UpdateNuGetConfig">
-    <MakeDir Condition="'$(LocalNuGetPackageCacheDirectory)' != ''"
-             Directories="$(LocalNuGetPackageCacheDirectory)" />
-
-    <AddSourceToNuGetConfig
-      NuGetConfigFile="$(NuGetConfigFile)"
-      SourceName="$(SbrpCacheNuGetSourceName)"
-      SourcePath="$(LocalNuGetPackageCacheDirectory)" />
-  </Target>
 
 </Project>

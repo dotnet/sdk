@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -50,7 +52,7 @@ namespace Microsoft.NET.Restore.Tests
 
             DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, toolProject.Name.ToLowerInvariant()));
             DeleteFolder(Path.Combine(TestContext.Current.NuGetCachePath, ".tools", toolProject.Name.ToLowerInvariant()));
-            NuGetConfigWriter.Write(toolReferenceProjectInstance.TestRoot, NuGetConfigWriter.DotnetCoreBlobFeed, nupkgPath);
+            NuGetConfigWriter.Write(toolReferenceProjectInstance.TestRoot, nupkgPath);
 
             RestoreCommand restoreCommand =
                 toolReferenceProjectInstance.GetRestoreCommand(log: Log, relativePath: toolReferenceProject.Name);

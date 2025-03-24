@@ -108,4 +108,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </When>
   </Choose>
 
+  <Target Name="ResolveRequiredWebAssets" BeforeTargets="ProcessFrameworkReferences">
+    <PropertyGroup>
+      <RequiresAspNetWebAssets Condition="'$(RequiresAspNetWebAssets)' == '' and @(Content->AnyHaveMetadataValue(Extension, .razor))">true</RequiresAspNetWebAssets>
+    </PropertyGroup>
+  </Target>
 </Project>

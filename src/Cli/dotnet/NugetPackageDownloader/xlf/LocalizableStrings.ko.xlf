@@ -30,18 +30,18 @@
       <trans-unit id="FailedToValidatePackageSigning">
         <source>Failed to validate package signing.
 {0}</source>
-        <target state="new">Failed to validate package signing.
+        <target state="translated">패키지 서명을 확인하지 못했습니다.
 {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="needs-review-translation">NuGet 피드 {1} 에서 {0}을(를) 찾을 수 없습니다.</target>
+        <target state="translated">{0}을(를) NuGet 피드 {1}에서 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageShouldNotBeSigned">
         <source>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</source>
-        <target state="new">Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</target>
+        <target state="translated">NuGet 패키지 "{0}"은(는) 서명 유효성 검사가 필요하지 않은 원본에서 제공되었으므로 서명 확인을 건너뜁니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
@@ -76,7 +76,7 @@
       </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
-        <target state="new">Verified that the NuGet package "{0}" has a valid signature.</target>
+        <target state="translated">NuGet 패키지 "{0}"에 유효한 서명이 있음을 확인했습니다.</target>
         <note />
       </trans-unit>
     </body>

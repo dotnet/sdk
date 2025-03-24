@@ -18,11 +18,15 @@ parameters:
 jobs:
 - job: ${{ parameters.buildName }}_${{ parameters.architecture }}
   timeoutInMinutes: 150
-  pool:
-    name: NetCore1ESPool-Svc-Internal
-    demands: ImageOverride -equals 1es-ubuntu-2004
   variables:
   - template: ../variables/pipelines.yml
+  templateContext:
+    outputs:
+    - output: pipelineArtifact
+      displayName: 'Publish BuildLogs'
+      condition: succeededOrFailed()
+      targetPath: '$(Build.StagingDirectory)/BuildLogs'
+      artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
   steps:
   - script: |
       dotnet_dotnet_build='${{ replace(parameters.dotnetDotnetRunId, ' ', '') }}'
@@ -104,7 +108,7 @@ jobs:
         exit 1
       fi
 
-      eng/common/build.sh -bl --projects $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/Microsoft.DotNet.SourceBuild.SmokeTests.csproj --restore
+      eng/common/build.sh -bl --projects $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.Tests/Microsoft.DotNet.SourceBuild.Tests.csproj --restore
 
       echo "##vso[task.setvariable variable=Platform]$platform"
       echo "##vso[task.setvariable variable=MsftSdkTarballPath]$(Pipeline.Workspace)/Artifacts/$msft_sdk_tarball_name"
@@ -115,7 +119,7 @@ jobs:
 
   - script: >
       .dotnet/dotnet test
-      $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/Microsoft.DotNet.SourceBuild.SmokeTests.csproj
+      $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.Tests/Microsoft.DotNet.SourceBuild.Tests.csproj
       --filter "Category=SdkContent"
       --logger:'trx;LogFileName=$(Agent.JobName)_SDKDiffTests.trx'
       --logger:'console;verbosity=detailed'
@@ -126,7 +130,6 @@ jobs:
       /p:MsftSdkTarballPath=$(MsftSdkTarballPath)
       /p:SdkTarballPath=$(SdkTarballPath)
       /p:SourceBuiltArtifactsPath=$(SourceBuiltArtifactsPath)
-      /p:SmokeTestsWarnOnSdkContentDiffs=false
       /p:TargetRid=${{ parameters.targetRid }}
       /p:PortableRid=$(Platform)-${{ parameters.architecture }}
     displayName: Run Tests
@@ -147,12 +150,6 @@ jobs:
     continueOnError: true
     condition: succeededOrFailed()
 
-  - publish: '$(Build.StagingDirectory)/BuildLogs'
-    artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
-    displayName: Publish BuildLogs
-    continueOnError: true
-    condition: succeededOrFailed()
-
   - task: PublishTestResults@2
     displayName: Publish Test Results
     condition: succeededOrFailed()
@@ -170,6 +167,6 @@ jobs:
         parameters:
           pipeline: sdk
           repo: dotnet/sdk
-          originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets
+          originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.Tests/assets
           updatedFilesDirectory: $(Build.StagingDirectory)/BuildLogs
           pullRequestTitle: Update Source-Build SDK Diff Tests Baselines and Exclusions

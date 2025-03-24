@@ -26,6 +26,11 @@ namespace Microsoft.NET.Build.Tasks
 
         public string[] PublishReadyToRunCompositeExclusions { get; set; }
 
+        // When specified, only these assemblies will be fully compiled into the composite image.
+        // All other input (non-reference) assemblies will only have code compiled for methods
+        // called by a method in a rooted assembly (possibly transitively).
+        public string[] PublishReadyToRunCompositeRoots { get; set; }
+
         public ITaskItem CrossgenTool { get; set; }
         public ITaskItem Crossgen2Tool { get; set; }
 
@@ -50,6 +55,9 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem[] ReadyToRunCompositeBuildInput => _r2rCompositeInput.ToArray();
 
+        [Output]
+        public ITaskItem[] ReadyToRunCompositeUnrootedBuildInput => _r2rCompositeUnrootedInput.ToArray();
+
         private bool _crossgen2IsVersion5;
         private int _perfmapFormatVersion;
 
@@ -59,6 +67,7 @@ namespace Microsoft.NET.Build.Tasks
         private List<ITaskItem> _r2rReferences = new();
         private List<ITaskItem> _r2rCompositeReferences = new();
         private List<ITaskItem> _r2rCompositeInput = new();
+        private List<ITaskItem> _r2rCompositeUnrootedInput = new();
 
         private bool IsTargetWindows
         {
@@ -108,7 +117,7 @@ namespace Microsoft.NET.Build.Tasks
                 !string.IsNullOrEmpty(diaSymReaderPath) && File.Exists(diaSymReaderPath);
 
             // Process input lists of files
-            ProcessInputFileList(Assemblies, _compileList, _symbolsCompileList, _r2rFiles, _r2rReferences, _r2rCompositeReferences, _r2rCompositeInput, hasValidDiaSymReaderLib);
+            ProcessInputFileList(Assemblies, _compileList, _symbolsCompileList, _r2rFiles, _r2rReferences, _r2rCompositeReferences, _r2rCompositeInput, _r2rCompositeUnrootedInput, hasValidDiaSymReaderLib);
         }
 
         private void ProcessInputFileList(
@@ -119,6 +128,7 @@ namespace Microsoft.NET.Build.Tasks
             List<ITaskItem> r2rReferenceList,
             List<ITaskItem> r2rCompositeReferenceList,
             List<ITaskItem> r2rCompositeInputList,
+            List<ITaskItem> r2rCompositeUnrootedInput,
             bool hasValidDiaSymReaderLib)
         {
             if (inputFiles == null)
@@ -128,10 +138,11 @@ namespace Microsoft.NET.Build.Tasks
 
             var exclusionSet = ExcludeList == null || Crossgen2Composite ? null : new HashSet<string>(ExcludeList, StringComparer.OrdinalIgnoreCase);
             var compositeExclusionSet = PublishReadyToRunCompositeExclusions == null || !Crossgen2Composite ? null : new HashSet<string>(PublishReadyToRunCompositeExclusions, StringComparer.OrdinalIgnoreCase);
+            var compositeRootSet = PublishReadyToRunCompositeRoots == null || !Crossgen2Composite ? null : new HashSet<string>(PublishReadyToRunCompositeRoots, StringComparer.OrdinalIgnoreCase);
 
             foreach (var file in inputFiles)
             {
-                var eligibility = GetInputFileEligibility(file, Crossgen2Composite, exclusionSet, compositeExclusionSet);
+                var eligibility = GetInputFileEligibility(file, Crossgen2Composite, exclusionSet, compositeExclusionSet, compositeRootSet);
 
                 if (eligibility.NoEligibility)
                 {
@@ -204,6 +215,10 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                     imageCompilationList.Add(r2rCompilationEntry);
+                }
+                else if (eligibility.CompileUnrootedIntoCompositeImage)
+                {
+                    r2rCompositeUnrootedInput.Add(file);
                 }
                 else if (eligibility.CompileIntoCompositeImage)
                 {
@@ -334,6 +349,7 @@ namespace Microsoft.NET.Build.Tasks
                 HideReferenceFromComposite = 2,
                 CompileSeparately = 4,
                 CompileIntoCompositeImage = 8,
+                CompileUnrootedIntoCompositeImage = 16,
             }
 
             private readonly EligibilityEnum _flags;
@@ -344,8 +360,9 @@ namespace Microsoft.NET.Build.Tasks
             public bool IsReference => (_flags & EligibilityEnum.Reference) == EligibilityEnum.Reference;
             public bool ReferenceHiddenFromCompositeBuild => (_flags & EligibilityEnum.HideReferenceFromComposite) == EligibilityEnum.HideReferenceFromComposite;
             public bool CompileIntoCompositeImage => (_flags & EligibilityEnum.CompileIntoCompositeImage) == EligibilityEnum.CompileIntoCompositeImage;
+            public bool CompileUnrootedIntoCompositeImage => (_flags & EligibilityEnum.CompileUnrootedIntoCompositeImage) == EligibilityEnum.CompileUnrootedIntoCompositeImage;
             public bool CompileSeparately => (_flags & EligibilityEnum.CompileSeparately) == EligibilityEnum.CompileSeparately;
-            public bool Compile => CompileIntoCompositeImage || CompileSeparately;
+            public bool Compile => CompileIntoCompositeImage || CompileUnrootedIntoCompositeImage || CompileSeparately;
 
             private Eligibility(EligibilityEnum flags)
             {
@@ -360,12 +377,14 @@ namespace Microsoft.NET.Build.Tasks
                     return new Eligibility(EligibilityEnum.Reference);
             }
 
-            public static Eligibility CreateCompileEligibility(bool doNotBuildIntoComposite)
+            public static Eligibility CreateCompileEligibility(bool doNotBuildIntoComposite, bool rootedInComposite)
             {
                 if (doNotBuildIntoComposite)
                     return new Eligibility(EligibilityEnum.Reference | EligibilityEnum.HideReferenceFromComposite | EligibilityEnum.CompileSeparately);
-                else
+                else if (rootedInComposite)
                     return new Eligibility(EligibilityEnum.Reference | EligibilityEnum.CompileIntoCompositeImage);
+                else
+                    return new Eligibility(EligibilityEnum.Reference | EligibilityEnum.CompileUnrootedIntoCompositeImage);
             }
         };
 
@@ -388,7 +407,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static Eligibility GetInputFileEligibility(ITaskItem file, bool compositeCompile, HashSet<string> exclusionSet, HashSet<string> r2rCompositeExclusionSet)
+        private static Eligibility GetInputFileEligibility(ITaskItem file, bool compositeCompile, HashSet<string> exclusionSet, HashSet<string> r2rCompositeExclusionSet, HashSet<string> r2rCompositeRootSet)
         {
             // Check to see if this is a valid ILOnly image that we can compile
             if (!file.ItemSpec.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) && !file.ItemSpec.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -422,6 +441,10 @@ namespace Microsoft.NET.Build.Tasks
 
                         bool excludeFromR2R = (exclusionSet != null && exclusionSet.Contains(Path.GetFileName(file.ItemSpec)));
                         bool excludeFromComposite = (r2rCompositeExclusionSet != null && r2rCompositeExclusionSet.Contains(Path.GetFileName(file.ItemSpec))) || excludeFromR2R;
+
+                        // Default to rooting all assemblies.
+                        // If a root set is specified, only root if in the set.
+                        bool rootedInComposite = (r2rCompositeRootSet == null || r2rCompositeRootSet.Contains(Path.GetFileName(file.ItemSpec)));
 
                         if ((pereader.PEHeaders.CorHeader.Flags & CorFlags.ILOnly) != CorFlags.ILOnly)
                         {
@@ -460,7 +483,7 @@ namespace Microsoft.NET.Build.Tasks
                                 return Eligibility.CreateReferenceEligibility(excludeFromComposite);
                         }
 
-                        return Eligibility.CreateCompileEligibility(!compositeCompile || excludeFromComposite);
+                        return Eligibility.CreateCompileEligibility(!compositeCompile || excludeFromComposite, rootedInComposite);
                     }
                 }
                 catch (BadImageFormatException)

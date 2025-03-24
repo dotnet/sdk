@@ -52,11 +52,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- don't reference MS.NET.Build.Tasks, but make sure it builds before this project -->
-    <ProjectReference Include="..\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="**\*.cs" />
     <Compile Include="..\Common\**\*.cs" LinkBase="Common" />
   </ItemGroup>

@@ -3,35 +3,34 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
+namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
+
+internal class NuGetPackageInstallerException : GracefulException
 {
-    internal class NuGetPackageInstallerException : GracefulException
+    public NuGetPackageInstallerException()
     {
-        public NuGetPackageInstallerException()
-        {
-        }
-
-        public NuGetPackageInstallerException(string message) : base(message)
-        {
-        }
-
-        public NuGetPackageInstallerException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
     }
 
-    internal class NuGetPackageNotFoundException : NuGetPackageInstallerException
+    public NuGetPackageInstallerException(string message) : base(message)
     {
-        public NuGetPackageNotFoundException()
-        {
-        }
+    }
 
-        public NuGetPackageNotFoundException(string message) : base(message)
-        {
-        }
+    public NuGetPackageInstallerException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
+}
 
-        public NuGetPackageNotFoundException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+internal class NuGetPackageNotFoundException : NuGetPackageInstallerException
+{
+    public NuGetPackageNotFoundException()
+    {
+    }
+
+    public NuGetPackageNotFoundException(string message) : base(message)
+    {
+    }
+
+    public NuGetPackageNotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

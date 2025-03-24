@@ -37,6 +37,36 @@
         <target state="translated">Não há suporte para especificar as opções '-r |--runtime ' e '-a |--os '.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableDescription">
+        <source>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</source>
+        <target state="translated">Define o valor de uma variável de ambiente. 
+Criará a variável quando ela não existir e a substituirá quando existir. 
+Isso forçará a execução dos testes em um processo isolado. 
+Esse argumento pode ser especificado várias vezes para fornecer várias variáveis.
+
+Exemplos:
+-e VARIABLE=abc
+-e VARIABLE="valor com espaços"
+-e VARIABLE="valor;separado com;ponto e vírgula"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdEnvironmentVariableExpression">
+        <source>NAME="VALUE"</source>
+        <target state="translated">NAME="VALUE"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Permite que o comando seja interrompido e aguarde a ação ou entrada do usuário (por exemplo, para concluir a autenticação).</target>
@@ -128,6 +158,11 @@ export PATH="$PATH:{0}"
       <trans-unit id="FrameworkDependentOptionDescription">
         <source>Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.</source>
         <target state="translated">Publique o seu aplicativo como um aplicativo dependente de estrutura. Um runtime do .NET compatível precisa ser instalado no computador de destino para executar o aplicativo.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
+        <source>Incorrectly formatted environment variables: {0}</source>
+        <target state="translated">Variáveis de ambiente formatadas incorretamente: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
@@ -222,6 +257,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
 O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão é 'verdadeiro' se um identificador de tempo de execução for especificado.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShortWorkloadSearchVersionDescription">
+        <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
+        <target state="translated">Pesquise versões de carga de trabalho disponíveis ou o que compõe uma versão de carga de trabalho. Use 'dotnet workload search version --help' para obter mais informações.</target>
+        <note>{Locked="dotnet workload search version --help"}</note>
+      </trans-unit>
       <trans-unit id="Solution">
         <source>Solution</source>
         <target state="translated">Solução</target>
@@ -285,6 +325,11 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
         <target state="translated">O arquivo de configurações de ferramenta não existe para a ferramenta {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="new">Unrecognized command or argument '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

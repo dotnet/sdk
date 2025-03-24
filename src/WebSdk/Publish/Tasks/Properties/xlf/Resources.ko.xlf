@@ -226,22 +226,22 @@ FWLink: http://go.microsoft.com/fwlink/?LinkId=246068</target>
       </trans-unit>
       <trans-unit id="DeploymentStatus">
         <source>Deployment status is '{0}'.</source>
-        <target state="new">Deployment status is '{0}'.</target>
+        <target state="translated">배포 상태는 '{0}'입니다.</target>
         <note>{0} - deployment status name</note>
       </trans-unit>
       <trans-unit id="DeploymentStatusWithText">
         <source>Deployment status is '{0}': {1}</source>
-        <target state="new">Deployment status is '{0}': {1}</target>
+        <target state="translated">배포 상태는 '{0}'({1})입니다.</target>
         <note>{0} - deployment status name, {1} - deployment status text</note>
       </trans-unit>
       <trans-unit id="DeploymentStatus_InvalidPollingUrl">
         <source>Deployment status URL '{0}' is missing or invalid</source>
-        <target state="new">Deployment status URL '{0}' is missing or invalid</target>
+        <target state="translated">'{0}' 배포 상태 URL이 없거나 잘못되었습니다.</target>
         <note>{0} - deployment polling URL</note>
       </trans-unit>
       <trans-unit id="DeploymentStatus_Polling">
         <source>Polling for deployment status...</source>
-        <target state="new">Polling for deployment status...</target>
+        <target state="translated">배포 상태에 대한 폴링...</target>
         <note />
       </trans-unit>
       <trans-unit id="EFSCRIPT_Generating">
@@ -356,47 +356,47 @@ FWLink: http://go.microsoft.com/fwlink/?LinkId=246068</target>
       </trans-unit>
       <trans-unit id="ONEDEPLOY_FailedDeployRequest">
         <source>OneDeploy attempt to publish file through '{0}' failed with HTTP status code '{1}'.</source>
-        <target state="new">OneDeploy attempt to publish file through '{0}' failed with HTTP status code '{1}'.</target>
+        <target state="translated">'{0}'을(를) 통해 파일을 게시하려는 OneDeploy 시도가 실패했습니다('{1}' HTTP 상태 코드).</target>
         <note>{0} - publish URL, {1} - HTTP response status code</note>
       </trans-unit>
       <trans-unit id="ONEDEPLOY_FailedDeployRequest_With_ResponseText">
         <source>OneDeploy attempt to publish file through '{0}' failed with HTTP status code '{1}': {2}.</source>
-        <target state="new">OneDeploy attempt to publish file through '{0}' failed with HTTP status code '{1}': {2}.</target>
+        <target state="translated">'{0}'을(를) 통해 파일을 게시하려는 OneDeploy 시도가 실패했습니다('{1}' HTTP 상태 코드: {2}).</target>
         <note>{0} - publish URL, {1} - HTTP response status code, {2} - response body as text</note>
       </trans-unit>
       <trans-unit id="ONEDEPLOY_FailedToRetrieveCredentials">
         <source>Failed to retrieve publish credentials.</source>
-        <target state="new">Failed to retrieve publish credentials.</target>
+        <target state="translated">게시 자격 증명을 찾아오지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ONEDEPLOY_FailedWithLogs">
         <source>OneDeploy attempt to publish file '{0}' through '{1}' failed with status code '{2}'. See the logs at '{3}'.</source>
-        <target state="new">OneDeploy attempt to publish file '{0}' through '{1}' failed with status code '{2}'. See the logs at '{3}'.</target>
+        <target state="translated">OneDeploy에서 '{1}'을(를) 통해 '{0}' 파일을 '(으)로 게시하려는 시도가 실패했습니다(상태 코드: '{2}'). '{3}'의 로그를 참조하세요.</target>
         <note>{0} - file to publish, {1} - publish URL, {2} - deployment response status code, {3} -  deployment logs URL</note>
       </trans-unit>
       <trans-unit id="ONEDEPLOY_FileToPublish_NotFound">
         <source>File to publish '{0}' was not found or is not accessible.</source>
-        <target state="new">File to publish '{0}' was not found or is not accessible.</target>
+        <target state="translated">'{0}'을(를) 게시할 파일을 찾을 수 없거나 액세스할 수 없습니다.</target>
         <note>{0} - file to publish</note>
       </trans-unit>
       <trans-unit id="ONEDEPLOY_InvalidPublishUrl">
         <source>PublishUrl '{0}' is missing or has an invalid value.</source>
-        <target state="new">PublishUrl '{0}' is missing or has an invalid value.</target>
+        <target state="translated">'{0}' PublishUrl이 없거나 값이 잘못되었습니다.</target>
         <note>{0} - publish URL</note>
       </trans-unit>
       <trans-unit id="ONEDEPLOY_PublishingOneDeploy">
         <source>Publishing '{0}' to '{1}'...</source>
-        <target state="new">Publishing '{0}' to '{1}'...</target>
+        <target state="translated">'{0}'을(를) '{1}에 게시하는 중...</target>
         <note>{0} - file to publish, {1} - publish URL</note>
       </trans-unit>
       <trans-unit id="ONEDEPLOY_Success">
         <source>OneDeploy deployment succeeded.</source>
-        <target state="new">OneDeploy deployment succeeded.</target>
+        <target state="translated">OneDeploy를 배포했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ONEDEPLOY_Uploaded">
         <source>File '{0}' uploaded to target instance.</source>
-        <target state="new">File '{0}' uploaded to target instance.</target>
+        <target state="translated">대상 인스턴스에 '{0}' 파일을 업로드했습니다.</target>
         <note>{0} - file to publish.</note>
       </trans-unit>
       <trans-unit id="POWERSHELL_PublishProfileParsingError">

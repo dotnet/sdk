@@ -3,31 +3,30 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Cli.Utils
-{
-    public static class DebugHelper
-    {
-        [Conditional("DEBUG")]
-        public static void HandleDebugSwitch(ref string[] args)
-        {
-            if (args.Length > 0 && string.Equals("--debug", args[0], StringComparison.OrdinalIgnoreCase))
-            {
-                args = args.Skip(1).ToArray();
-                WaitForDebugger();
-            }
-        }
+namespace Microsoft.DotNet.Cli.Utils;
 
-        public static void WaitForDebugger()
+public static class DebugHelper
+{
+    [Conditional("DEBUG")]
+    public static void HandleDebugSwitch(ref string[] args)
+    {
+        if (args.Length > 0 && string.Equals("--debug", args[0], StringComparison.OrdinalIgnoreCase))
         {
+            args = args.Skip(1).ToArray();
+            WaitForDebugger();
+        }
+    }
+
+    public static void WaitForDebugger()
+    {
 #if NET5_0_OR_GREATER
-            int processId = Environment.ProcessId;
+        int processId = Environment.ProcessId;
 #else
-            int processId = Process.GetCurrentProcess().Id;
+        int processId = Process.GetCurrentProcess().Id;
 #endif
 
-            Console.WriteLine(LocalizableStrings.WaitingForDebuggerToAttach);
-            Console.WriteLine(string.Format(LocalizableStrings.ProcessId, processId));
-            Console.ReadLine();
-        }
+        Console.WriteLine(LocalizableStrings.WaitingForDebuggerToAttach);
+        Console.WriteLine(string.Format(LocalizableStrings.ProcessId, processId));
+        Console.ReadLine();
     }
 }

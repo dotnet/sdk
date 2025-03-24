@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="tr" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Authors">
+        <source>Authors</source>
+        <target state="translated">Yazarlar</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Search dotnet tools in nuget.org</source>
+        <target state="translated">Nuget.org'da dotnet araçlarını arayın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandsColumn">
+        <source>Commands</source>
+        <target state="translated">Komutlar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Description">
+        <source>Description</source>
+        <target state="translated">Açıklama</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="DetailArgumentName">
+        <source>Detail</source>
+        <target state="translated">Ayrıntı</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailDescription">
+        <source>Show detail result of the query.</source>
+        <target state="translated">Sorgunun ayrıntılı sonucunu gösterir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Downloads">
+        <source>Downloads</source>
+        <target state="translated">İndirmeler</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="InvalidInputTypeInteger">
+        <source>{0} should be an integer</source>
+        <target state="translated">{0} bir tamsayı olmalıdır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LatestVersion">
+        <source>Latest Version</source>
+        <target state="translated">En Son Sürüm</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="NeedNuGetInConfig">
+        <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
+    This can be done with this command:
+  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</source>
+        <target state="translated">'dotnet tool search' komutu koşulsuz olarak nuget.org araçları bulmak için bu komuta erişer, ancak bu komut nuget.config. Bu komutu çalıştırmak için ekleyin.
+    Bu, şu komutla kullanılabilir:
+  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</target>
+        <note>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</note>
+      </trans-unit>
+      <trans-unit id="NoResult">
+        <source>Could not find any results.</source>
+        <target state="translated">Sonuç bulunamadı.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageId">
+        <source>Package ID</source>
+        <target state="translated">Paket Kimliği</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="PrereleaseDescription">
+        <source>Include pre-release packages.</source>
+        <target state="translated">Ön sürüm paketlerini ekleyin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermArgumentName">
+        <source>SEARCH_TERM</source>
+        <target state="translated">SEARCH_TERM</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermDescription">
+        <source>Search term from package id or package description. Require at least one character.</source>
+        <target state="translated">Paket kimliğinden veya paket açıklamasından terim arayın. En az bir karakter gerektirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipArgumentName">
+        <source>Skip</source>
+        <target state="translated">Atla</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipDescription">
+        <source>The number of results to skip, for pagination.</source>
+        <target state="translated">Sayfalandırma için atlanacak sonuç sayısı.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Summary">
+        <source>Summary</source>
+        <target state="translated">Özet</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="Tags">
+        <source>Tags</source>
+        <target state="translated">Etiketler</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="TakeArgumentName">
+        <source>Take</source>
+        <target state="translated">Al</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeDescription">
+        <source>The number of results to return, for pagination.</source>
+        <target state="translated">Sayfalandırma için döndürülecek sonuç sayısı.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Verified">
+        <source>Verified</source>
+        <target state="translated">Doğrulandı</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="Version">
+        <source>Version</source>
+        <target state="translated">SÜRÜM</target>
+        <note>Table lable</note>
+      </trans-unit>
+      <trans-unit id="Versions">
+        <source>Versions</source>
+        <target state="translated">Sürümler</target>
+        <note>Table lable</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,46 @@
+parameters:
+- name: artifactName
+  type: string
+
+- name: continueOnError
+  type: boolean
+  default: false
+
+- name: OS
+  type: string
+  values:
+    - Windows_NT
+    - Linux
+    - Darwin
+
+steps:
+- task: DownloadBuildArtifacts@1
+  inputs:
+    artifactName: ${{ parameters.artifactName }}
+    downloadPath: $(Build.ArtifactStagingDirectory)
+    checkDownloadedFiles: true
+  displayName: Download Artifacts
+
+# This is necessary whenever we want to publish/restore to an AzDO private feed
+# Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+# otherwise it'll complain about accessing a private feed.
+- task: NuGetAuthenticate@1
+  displayName: 'Authenticate to AzDO Feeds'
+
+- ${{ if eq(parameters.OS, 'Windows_NT') }}:
+  - task: PowerShell@2
+    inputs:
+      filePath: eng\common\sdk-task.ps1
+      arguments: -task SigningValidation -restore -msbuildEngine vs
+        /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
+    displayName: Validate Signing of Packages
+    continueOnError: ${{ parameters.continueOnError }}
+
+- ${{ else }}:
+  - task: Bash@3
+    inputs:
+      filePath: eng/common/sdk-task.sh
+      arguments: --task SigningValidation --restore
+        /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
+    displayName: Validate - ${{ parameters.OS }}
+    continueOnError: ${{ parameters.continueOnError }}

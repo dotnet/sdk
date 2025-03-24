@@ -97,15 +97,22 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
-                GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal),
-                    parseResult.GetValue(assembliesOption)!,
+                bool respectInternals = parseResult.GetValue(respectInternalsOption);
+
+                ILog log = new ConsoleLog(MessageImportance.Normal);
+
+                string[]? assemblies = parseResult.GetValue(assembliesOption);
+                Debug.Assert(assemblies != null, "Assemblies cannot be null.");
+
+                GenAPIApp.Run(log,
+                    assemblies,
                     parseResult.GetValue(assemblyReferencesOption),
                     parseResult.GetValue(outputPathOption),
                     parseResult.GetValue(headerFileOption),
                     parseResult.GetValue(exceptionMessageOption),
                     parseResult.GetValue(excludeApiFilesOption),
                     parseResult.GetValue(excludeAttributesFilesOption),
-                    parseResult.GetValue(respectInternalsOption),
+                    respectInternals,
                     parseResult.GetValue(includeAssemblyAttributesOption)
                 );
             });

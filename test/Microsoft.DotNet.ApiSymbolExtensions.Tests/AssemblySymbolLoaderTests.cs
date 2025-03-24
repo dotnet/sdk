@@ -1,8 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -87,14 +90,16 @@ namespace MyNamespace
         [Fact]
         public void LoadAssembly_Throws()
         {
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             Assert.Throws<FileNotFoundException>(() => loader.LoadAssembly(Guid.NewGuid().ToString("N").Substring(0, 8)));
         }
 
         [Fact]
         public void LoadAssemblyFromSourceFiles_Throws()
         {
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             IEnumerable<string> paths = new[] { Guid.NewGuid().ToString("N") };
             Assert.Throws<FileNotFoundException>(() => loader.LoadAssemblyFromSourceFiles(paths, "assembly1", Array.Empty<string>()));
             Assert.Throws<ArgumentNullException>("filePaths", () => loader.LoadAssemblyFromSourceFiles(Array.Empty<string>(), "assembly1", Array.Empty<string>()));
@@ -104,7 +109,8 @@ namespace MyNamespace
         [Fact]
         public void LoadMatchingAssemblies_Throws()
         {
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             IEnumerable<string> paths = new[] { Guid.NewGuid().ToString("N") };
             IAssemblySymbol assembly = SymbolFactory.GetAssemblyFromSyntax("namespace MyNamespace { class Foo { } }");
 
@@ -117,17 +123,13 @@ namespace MyNamespace
             IAssemblySymbol assembly = SymbolFactory.GetAssemblyFromSyntax("namespace MyNamespace { class Foo { } }");
             IEnumerable<string> paths = new[] { AppContext.BaseDirectory };
 
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             IEnumerable<IAssemblySymbol> symbols = loader.LoadMatchingAssemblies(new[] { assembly }, paths);
             Assert.Empty(symbols);
-            Assert.True(loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings));
-
-            IEnumerable<AssemblyLoadWarning> expected = new[]
-            {
-                new AssemblyLoadWarning(AssemblySymbolLoader.AssemblyNotFoundErrorCode, assembly.Identity.GetDisplayName(), $"Could not find matching assembly: '{assembly.Identity.GetDisplayName()}' in any of the search directories.")
-            };
-
-            Assert.Equal(expected, warnings);
+            Assert.True(log.HasLoggedWarnings);
+            List<string> expected = [ $"{AssemblySymbolLoader.AssemblyNotFoundErrorCode} Could not find matching assembly: '{assembly.Identity.GetDisplayName()}' in any of the search directories." ];
+            Assert.Equal(expected, log.Warnings, StringComparer.CurrentCultureIgnoreCase);
         }
 
         [Fact]
@@ -150,11 +152,12 @@ namespace MyNamespace
                 .Should()
                 .Pass();
 
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             IEnumerable<IAssemblySymbol> matchingAssemblies = loader.LoadMatchingAssemblies(new[] { fromAssembly }, new[] { outputDirectory });
 
             Assert.Single(matchingAssemblies);
-            Assert.False(loader.HasLoadWarnings(out var _));
+            Assert.False(log.HasLoggedWarnings);
         }
 
         [Theory]
@@ -165,25 +168,21 @@ namespace MyNamespace
             var assetInfo = GetSimpleTestAsset();
             IAssemblySymbol fromAssembly = SymbolFactory.GetAssemblyFromSyntax(SimpleAssemblySourceContents, assemblyName: assetInfo.TestAsset.TestProject.Name);
 
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             IEnumerable<IAssemblySymbol> matchingAssemblies = loader.LoadMatchingAssemblies(new[] { fromAssembly }, new[] { assetInfo.OutputDirectory }, validateMatchingIdentity: validateIdentities);
 
             if (validateIdentities)
             {
                 Assert.Empty(matchingAssemblies);
-                Assert.True(loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings));
-
-                IEnumerable<AssemblyLoadWarning> expected = new[]
-                {
-                    new AssemblyLoadWarning(AssemblySymbolLoader.AssemblyNotFoundErrorCode, fromAssembly.Identity.GetDisplayName(), $"Could not find matching assembly: '{fromAssembly.Identity.GetDisplayName()}' in any of the search directories.")
-                };
-
-                Assert.Equal(expected, warnings);
+                Assert.True(log.HasLoggedWarnings);
+                List<string> expected = [$"{AssemblySymbolLoader.AssemblyNotFoundErrorCode} Could not find matching assembly: '{fromAssembly.Identity.GetDisplayName()}' in any of the search directories."];
+                Assert.Equal(expected, log.Warnings, StringComparer.CurrentCultureIgnoreCase);
             }
             else
             {
                 Assert.Single(matchingAssemblies);
-                Assert.False(loader.HasLoadWarnings(out var _));
+                Assert.False(log.HasLoggedWarnings);
                 Assert.NotEqual(fromAssembly.Identity, matchingAssemblies.FirstOrDefault().Identity);
             }
         }
@@ -192,7 +191,8 @@ namespace MyNamespace
         public void LoadsSimpleAssemblyFromDirectory()
         {
             var assetInfo = GetSimpleTestAsset();
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             IEnumerable<IAssemblySymbol> symbols = loader.LoadAssemblies(assetInfo.OutputDirectory);
             Assert.Single(symbols);
 
@@ -210,7 +210,8 @@ namespace MyNamespace
         public void LoadSimpleAssemblyFullPath()
         {
             var assetInfo = GetSimpleTestAsset();
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             IAssemblySymbol symbol = loader.LoadAssembly(Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll"));
 
             IEnumerable<ITypeSymbol> types = symbol.GlobalNamespace
@@ -244,7 +245,8 @@ namespace MyNamespace
                 .Should()
                 .Pass();
 
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             IEnumerable<IAssemblySymbol> symbols = loader.LoadAssemblies(outputDirectory);
 
             Assert.Equal(2, symbols.Count());
@@ -261,31 +263,32 @@ namespace MyNamespace
         public void LoadAssemblyResolveReferences_WarnsWhenEnabled(bool resolveReferences)
         {
             var assetInfo = GetSimpleTestAsset();
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences: resolveReferences);
-            loader.LoadAssembly(Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll"));
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log, resolveAssemblyReferences: resolveReferences);
+            string assemblyPath = Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll");
+            loader.LoadAssembly(assemblyPath);
 
             if (resolveReferences)
             {
-                Assert.True(loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings));
+                // Temporarily downgrade assembly reference load warnings to messages: https://github.com/dotnet/sdk/issues/46236
 
-                string expectedReference = "System.Runtime.dll";
+                // Assert.True(log.HasLoggedWarnings);
 
-                if (TargetFrameworks.StartsWith("net4", StringComparison.OrdinalIgnoreCase))
-                {
-                    expectedReference = "mscorlib.dll";
-                }
+                // string expectedReference = "System.Runtime.dll";
 
-                IEnumerable<AssemblyLoadWarning> expected = new List<AssemblyLoadWarning>
-                {
-                    new AssemblyLoadWarning(AssemblySymbolLoader.AssemblyReferenceNotFoundErrorCode, expectedReference, $"Could not resolve reference '{expectedReference}' in any of the provided search directories.")
-                };
+                // if (TargetFrameworks.StartsWith("net4", StringComparison.OrdinalIgnoreCase))
+                // {
+                //     expectedReference = "mscorlib.dll";
+                // }
 
-                Assert.Equal(expected, warnings);
+                // Assert.Single(log.Warnings);
+                // Assert.Matches($"CP1002.*?'{Regex.Escape(expectedReference)}'.*?'{Regex.Escape(assemblyPath)}'.*", log.Warnings.Single());
+
+                Assert.Empty(log.Warnings);
             }
             else
             {
-                Assert.False(loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings));
-                Assert.Empty(warnings);
+                Assert.Empty(log.Warnings);
             }
         }
 
@@ -293,14 +296,14 @@ namespace MyNamespace
         public void LoadAssembliesShouldResolveReferencesNoWarnings()
         {
             var assetInfo = GetSimpleTestAsset();
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences: true);
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log, resolveAssemblyReferences: true);
             // AddReferenceSearchDirectories should be able to handle directories as well as full path to assemblies.
             loader.AddReferenceSearchPaths(Path.GetDirectoryName(typeof(string).Assembly.Location));
             loader.AddReferenceSearchPaths(Path.GetFullPath(typeof(string).Assembly.Location));
             loader.LoadAssembly(Path.Combine(assetInfo.OutputDirectory, assetInfo.TestAsset.TestProject.Name + ".dll"));
 
-            Assert.False(loader.HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings));
-            Assert.Empty(warnings);
+            Assert.Empty(log.Warnings);
 
             // Ensure we loaded more than one assembly since resolveReferences was set to true.
             Dictionary<string, MetadataReference> loadedAssemblies = (Dictionary<string, MetadataReference>)typeof(AssemblySymbolLoader)?.GetField("_loadedAssemblies", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(loader);
@@ -312,11 +315,12 @@ namespace MyNamespace
         {
             var assetInfo = GetSimpleTestAsset();
             TestProject testProject = assetInfo.TestAsset.TestProject;
-            AssemblySymbolLoader loader = new();
+            TestLog log = new();
+            AssemblySymbolLoader loader = new(log);
             using FileStream stream = File.OpenRead(Path.Combine(assetInfo.OutputDirectory, testProject.Name + ".dll"));
             IAssemblySymbol symbol = loader.LoadAssembly(testProject.Name, stream);
 
-            Assert.False(loader.HasLoadWarnings(out var _));
+            Assert.False(log.HasLoggedWarnings);
             Assert.Equal(testProject.Name, symbol.Name, StringComparer.Ordinal);
 
             IEnumerable<ITypeSymbol> types = symbol.GlobalNamespace

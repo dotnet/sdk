@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class StaticWebAssetsPackIntegrationTest(ITestOutputHelper log)
@@ -1233,7 +1235,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
   <PropertyGroup>
     <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -1309,7 +1310,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
   <PropertyGroup>
     <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -1387,7 +1387,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
   <PropertyGroup>
     <TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

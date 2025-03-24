@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Build.Tests
@@ -54,16 +56,32 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource()
-                .WithProjectChanges((projectPath, project) => ConfigureProject(projectPath, project, targetFramework, new string[] { "_EnablePackageReferencesInVCProjects", "IncludeWindowsSDKRefFrameworkReferences" }));
+                .WithProjectChanges((projectPath, project) =>
+                    {
+                        ConfigureProject(projectPath, project, targetFramework, new string[] { "_EnablePackageReferencesInVCProjects", "IncludeWindowsSDKRefFrameworkReferences" });
+
+                        var ns = project.Root.Name.Namespace;
+                        //  Use project-specific global packages folder so we can check what was downloaded
+                        project.Root.Element(ns + "PropertyGroup")
+                            .Add(new XElement(ns + "RestorePackagesPath", @"$(MSBuildProjectDirectory)\packages"));
+
+                    });
 
             new BuildCommand(testAsset, "NETCoreCppCliTest")
-                .Execute("-p:Platform=x64")
+                .WithWorkingDirectory(testAsset.TestRoot)
+                .Execute("-p:Platform=x64", "/bl")
                 .Should()
                 .Pass();
 
             var cppnProjProperties = GetPropertyValues(testAsset.TestRoot, "NETCoreCppCliTest", targetFramework: targetFramework);
             Assert.True(cppnProjProperties["_EnablePackageReferencesInVCProjects"] == "true");
             Assert.True(cppnProjProperties["IncludeWindowsSDKRefFrameworkReferences"] == "");
+
+            var packagesFolder = Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest", "packages");
+            if (Directory.Exists(packagesFolder))
+            {
+                new DirectoryInfo(packagesFolder).Should().NotHaveSubDirectories("microsoft.windows.sdk.net.ref");
+            }
         }
 
         [FullMSBuildOnlyFact]

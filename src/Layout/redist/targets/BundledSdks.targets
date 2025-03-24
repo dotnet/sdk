@@ -1,4 +1,5 @@
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
+
   <ItemGroup>
     <BundledSdk Include="NuGet.Build.Tasks.Pack" Version="$(NuGetBuildTasksPackPackageVersion)" />
     <BundledSdk Include="Microsoft.NET.Sdk.WindowsDesktop" Version="$(MicrosoftNETSdkWindowsDesktopPackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
@@ -12,4 +13,38 @@
     <BundledSdk Include="Microsoft.SourceLink.GitLab" Version="$(MicrosoftSourceLinkGitLabVersion)" />
     <BundledSdk Include="Microsoft.SourceLink.Bitbucket.Git" Version="$(MicrosoftSourceLinkBitBucketGitVersion)" />
   </ItemGroup>
+
+  <!-- Restore bundled sdks -->
+  <ItemGroup>
+    <PackageDownload Include="@(BundledSdk)" Version="[%(Version)]" />
+  </ItemGroup>
+
+  <Target Name="PublishSdks">
+    <ItemGroup>
+      <BundledSdk SdkLayoutDirectory="$(OutputPath)Sdks\%(Identity)\"
+                  PackageNameLowercase="$([System.String]::new('%(Identity)').ToLowerInvariant())" />
+      <BundledSdk NuPkgPath="$(NuGetPackageRoot)%(PackageNameLowercase)\%(Version)\" />
+    </ItemGroup>
+
+    <Error Text="Bundled SDK has not been restored yet: '%(BundledSdk.NuPkgPath)%(BundledSdk.PackageNameLowercase).nuspec'"
+           Condition="!Exists('%(BundledSdk.NuPkgPath)%(BundledSdk.PackageNameLowercase).nuspec')" />
+
+    <ItemGroup>
+      <SdkContent Include="%(BundledSdk.NuPkgPath)**\*"
+                  Exclude="%(BundledSdk.NuPkgPath)Icon.png;
+                           %(BundledSdk.NuPkgPath)%(BundledSdk.PackageNameLowercase).nuspec;
+                           %(BundledSdk.NuPkgPath)%(BundledSdk.PackageNameLowercase).%(BundledSdk.Version).nupkg;
+                           %(BundledSdk.NuPkgPath)%(BundledSdk.PackageNameLowercase).%(BundledSdk.Version).nupkg.sha512;
+                           %(BundledSdk.NuPkgPath)**\*.nupkg.metadata;
+                           %(BundledSdk.NuPkgPath)**\*.signature.p7s"
+                  SdkLayoutDirectory="%(BundledSdk.SdkLayoutDirectory)" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(SdkContent)"
+          DestinationFiles="@(SdkContent->'%(SdkLayoutDirectory)%(RecursiveDir)%(FileName)%(Extension)')"
+          SkipUnchangedFiles="true" />
+
+    <Message Text="Copied Sdk '%(BundledSdk.Identity)' from '%(BundledSdk.NuPkgPath)' to '%(BundledSdk.SdkLayoutDirectory)'." Importance="High" />
+  </Target>
+
 </Project>

@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute();
 
-            result.Should().Pass();
+            result.Should().PassWithoutWarning();
 
             result.Should().HaveStdOutContaining("aspire");
         }
@@ -39,12 +39,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithWorkingDirectory(@"C:\SdkTesting")
                 .Execute()
                 .Should()
-                .Pass();
+                .PassWithoutWarning();
 
             //  build (or any restoring) command should check for and notify of updates
             VM.CreateRunCommand("dotnet", "build")
                 .WithWorkingDirectory(@"C:\SdkTesting\LibraryTest")
-                .Execute().Should().Pass()
+                .Execute().Should().PassWithoutWarning()
                 .And.HaveStdOutContaining("Workload updates are available");
 
             //  Workload list should list the specific workloads that have updates
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .WithIsReadOnly(true)
                 .Execute()
                 .Should()
-                .Pass()
+                .PassWithoutWarning()
                 .And
                 .HaveStdOutContaining("Updates are available for the following workload(s): aspire");
         }

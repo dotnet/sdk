@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/EmptyFolder/" />
+  <Folder Name="/EmptyFolder/NestedEmptyFolder/" />
+  <Folder Name="/NestedSolution/" />
+  <Folder Name="/NestedSolution/NestedFolder/" />
+  <Folder Name="/NestedSolution/NestedFolder/NestedFolder/">
+    <Project Path="ConsoleApp2/ConsoleApp2.csproj" />
+  </Folder>
+  <Folder Name="/NewFolder1/" />
+  <Folder Name="/NewFolder1/NewFolder2/">
+    <File Path="TextFile1.txt" />
+  </Folder>
+  <Folder Name="/Root Empty Folder/" />
+  <Project Path="ConsoleApp1/ConsoleApp1.csproj" />
+</Solution>
