@@ -1,0 +1,24 @@
+From 856dfcd581ec40e6e2ea3971a922c33f28797ab3 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Mon, 24 Mar 2025 17:20:27 +0100
+Subject: [PATCH] Remove duplicate .msi FileExtensionSignInfo
+
+Backport: https://github.com/dotnet/aspnetcore/pull/61125
+---
+ eng/Signing.props | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 5d4786646198..9b981c9c8abc 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -8,9 +8,6 @@
+   </PropertyGroup>
+ 
+   <ItemGroup Label="File signing information">
+-    <!-- Arcade does not set a default for .msi's -->
+-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
+-
+     <!-- Third-party components which should be signed.  -->
+     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+     <FileSignInfo Include="AngleSharp.dll" CertificateName="3PartySHA2" />
