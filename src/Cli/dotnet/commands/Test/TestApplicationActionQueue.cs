@@ -14,6 +14,8 @@ internal class TestApplicationActionQueue
     private int? _firstExitCode;
     private bool _allSameExitCode;
 
+    private static readonly Lock _lock = new();
+
     public TestApplicationActionQueue(int degreeOfParallelism, Func<TestApplication, Task<int>> action)
     {
         _channel = Channel.CreateUnbounded<TestApplication>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
@@ -61,18 +63,21 @@ internal class TestApplicationActionQueue
         {
             int result = await action(testApp);
 
-            if (_firstExitCode == null)
+            lock (_lock)
             {
-                _firstExitCode = result;
-            }
-            else if (_firstExitCode != result)
-            {
-                _allSameExitCode = false;
-            }
+                if (_firstExitCode == null)
+                {
+                    _firstExitCode = result;
+                }
+                else if (_firstExitCode != result)
+                {
+                    _allSameExitCode = false;
+                }
 
-            if (result != ExitCode.Success)
-            {
-                _hasFailed = true;
+                if (result != ExitCode.Success)
+                {
+                    _hasFailed = true;
+                }
             }
         }
     }
