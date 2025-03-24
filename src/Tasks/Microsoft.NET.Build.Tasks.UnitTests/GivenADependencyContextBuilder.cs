@@ -196,6 +196,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
+        public void ItDoesntCreateKeepUnneededRuntimeReferences()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextWithReferenceAssemblies(useCompilationOptions: false);
+
+            dependencyContext.RuntimeLibraries.Count.Should().Be(1);
+            dependencyContext.RuntimeLibraries[0].Name.Should().Be("simple.dependencies"); // This is the entrypoint
+        }
+
+        [Fact]
         public void ItHandlesReferenceAndPackageReferenceNameCollisions()
         {
             DependencyContext dependencyContext = BuildDependencyContextWithReferenceAssemblies(useCompilationOptions: true);
