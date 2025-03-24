@@ -21,8 +21,11 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     private string _route;
     private bool _modified;
     private string _selectorsString;
+    private bool _selectorsModified;
     private string _responseHeadersString;
+    private bool _responseHeadersModified;
     private string _endpointPropertiesString;
+    private bool _endpointPropertiesModified;
 
     // Route as it should be registered in the routing table.
     public string Route
@@ -77,6 +80,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         set
         {
             _selectors = value;
+            _selectorsModified = true;
             _modified = true;
         }
     }
@@ -101,6 +105,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         set
         {
             _responseHeaders = value;
+            _responseHeadersModified = true;
             _modified = true;
         }
     }
@@ -125,6 +130,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         set
         {
             _endpointProperties = value;
+            _endpointPropertiesModified = true;
             _modified = true;
         }
     }
@@ -192,9 +198,32 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
         var item = new TaskItem(Route);
         item.SetMetadata(nameof(AssetFile), AssetFile);
-        item.SetMetadata(nameof(Selectors), StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));
-        item.SetMetadata(nameof(ResponseHeaders), StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders));
-        item.SetMetadata(nameof(EndpointProperties), StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties));
+        if(!_selectorsModified)
+        {
+            item.SetMetadata(nameof(Selectors), SelectorsString);
+        }
+        else
+        {
+            item.SetMetadata(nameof(Selectors), StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));
+        }
+
+        if (!_responseHeadersModified)
+        {
+            item.SetMetadata(nameof(ResponseHeaders), ResponseHeadersString);
+        }
+        else
+        {
+            item.SetMetadata(nameof(ResponseHeaders), StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders));
+        }
+
+        if (!_endpointPropertiesModified)
+        {
+            item.SetMetadata(nameof(EndpointProperties), EndpointPropertiesString);
+        }
+        else
+        {
+            item.SetMetadata(nameof(EndpointProperties), StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties));
+        }
         return item;
     }
 
