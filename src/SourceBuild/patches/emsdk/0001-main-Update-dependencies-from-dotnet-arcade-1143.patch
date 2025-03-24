@@ -8,6 +8,8 @@ Subject: [PATCH] [main] Update dependencies from dotnet/arcade (#1143)
 
 
  - Remove duplicate .msi FileExtensionSignInfo
+
+ Backport: https://github.com/dotnet/emsdk/pull/1143
 ---
  eng/Signing.props | 1 -
  1 file changed, 1 deletion(-)
