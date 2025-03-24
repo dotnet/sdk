@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "path": "src/test/integration/DesignSurface/THIRD-PARTY-NOTICE.txt",
+      "detected_license_expression": "cpol-1.02"
+    }
+  ]
+}
