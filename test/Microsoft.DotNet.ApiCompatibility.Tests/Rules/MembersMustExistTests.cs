@@ -630,5 +630,44 @@ namespace CompatTests
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
             Assert.Equal(expectedDiffs, differences);
         }
+
+        [Fact]
+        public void GenericMembersMustNotRemoveGenericParameters()
+        {
+            string leftSyntax =
+                """
+                namespace CompatTests
+                {
+                  public class C
+                  {
+                    public void M<T1, T2>() { }
+                  }
+                }
+                """;
+            string rightSyntax =
+                """
+                namespace CompatTests
+                {
+                  public class C
+                  {
+                    public void M<T1>() { }
+                  }
+                }
+                """;
+
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            CompatDifference[] expectedDiffs =
+            {
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.C.M``2"),
+            };
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+            Console.WriteLine(differences.Single().ReferenceId);
+            Assert.Equal(expectedDiffs, differences);
+
+        }
     }
 }

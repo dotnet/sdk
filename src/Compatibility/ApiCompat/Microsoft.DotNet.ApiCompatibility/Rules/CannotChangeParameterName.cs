@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
@@ -30,7 +31,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
-            CompareParameters(leftType.TypeParameters, rightType.TypeParameters, left, leftMetadata, rightMetadata, differences, parameterIndicator: "``");
+            CompareParameters(leftType.TypeParameters, rightType.TypeParameters, left, right, leftMetadata, rightMetadata, differences, parameterIndicator: "``");
         }
 
         private void RunOnMemberSymbol(
@@ -47,21 +48,25 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
-            CompareParameters(leftMethod.Parameters, rightMethod.Parameters, left, leftMetadata, rightMetadata, differences);
+            CompareParameters(leftMethod.Parameters, rightMethod.Parameters, left, right, leftMetadata, rightMetadata, differences);
 
-            CompareParameters(leftMethod.TypeParameters, rightMethod.TypeParameters, left, leftMetadata, rightMetadata, differences, parameterIndicator: "``");
+            CompareParameters(leftMethod.TypeParameters, rightMethod.TypeParameters, left, right, leftMetadata, rightMetadata, differences, parameterIndicator: "``");
 
         }
 
         private void CompareParameters(IReadOnlyList<ISymbol> leftParameters,
             IReadOnlyList<ISymbol> rightParameters,
             ISymbol left,
+            ISymbol right,
             MetadataInformation leftMetadata,
             MetadataInformation rightMetadata,
             IList<CompatDifference> differences,
             string parameterIndicator = "$")
         {
-            Debug.Assert(leftParameters.Count == rightParameters.Count);
+            if (leftParameters.Count != rightParameters.Count)
+            {
+                throw new InvalidOperationException($"Unexpected parameter count mismatch for {left.GetDocumentationCommentId()} {left.ToComparisonDisplayString()} {leftParameters.Count} vs  {right.GetDocumentationCommentId()} {right.ToComparisonDisplayString()} {rightParameters.Count}.");
+            }
 
             for (int i = 0; i < leftParameters.Count; i++)
             {
