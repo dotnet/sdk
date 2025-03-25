@@ -77,8 +77,10 @@ internal class PackageListCommand(
     "}";
                 Console.WriteLine(jsonError);
             }
-
-            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore));
+            else
+            {
+                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore));
+            }
         }
 
         return exitCode;
