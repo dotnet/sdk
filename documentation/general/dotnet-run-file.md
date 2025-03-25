@@ -184,9 +184,9 @@ Other directives result in a warning, reserving them for future use.
 
 ```cs
 #:sdk      Microsoft.NET.Sdk.Web
-#:property TargetFramework=net11.0
-#:property LangVersion=preview
-#:package  System.CommandLine=2.0.0-*
+#:property TargetFramework net11.0
+#:property LangVersion preview
+#:package  System.CommandLine 2.0.0-*
 ```
 
 The value must be separated from the name of the directive by white space and any leading and trailing white space is not considered part of the value.
