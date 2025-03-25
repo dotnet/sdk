@@ -589,7 +589,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
     private static void VerifyConversionThrows(string inputCSharp, string expectedWildcardPattern)
     {
-        0.Invoking(delegate { Convert(inputCSharp, out _, out _); })
-            .Should().Throw<GracefulException>().WithMessage(expectedWildcardPattern);
+        var convert = () => Convert(inputCSharp, out _, out _);
+        convert.Should().Throw<GracefulException>().WithMessage(expectedWildcardPattern);
     }
 }

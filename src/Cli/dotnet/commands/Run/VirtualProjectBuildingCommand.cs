@@ -138,7 +138,7 @@ internal sealed class VirtualProjectBuildingCommand
     {
         Debug.Assert(_directives.IsDefault && _targetFilePath is null, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
 
-        var sourceFile = CreateSourceFile(EntryPointFileFullPath);
+        var sourceFile = LoadSourceFile(EntryPointFileFullPath);
         _directives = FindDirectives(sourceFile);
 
         // If there were any `#:` directives, remove them from the file.
@@ -421,7 +421,7 @@ internal sealed class VirtualProjectBuildingCommand
         return builder.ToImmutable();
     }
 
-    public static SourceFile CreateSourceFile(string filePath)
+    public static SourceFile LoadSourceFile(string filePath)
     {
         using var stream = File.OpenRead(filePath);
         return new SourceFile(filePath, SourceText.From(stream, Encoding.UTF8));

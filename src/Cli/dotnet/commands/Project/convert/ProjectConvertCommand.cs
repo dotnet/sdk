@@ -38,7 +38,7 @@ internal sealed class ProjectConvertCommand : CommandBase
         }
 
         // Find directives (this can fail, so do this before creating the target directory).
-        var sourceFile = VirtualProjectBuildingCommand.CreateSourceFile(file);
+        var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(file);
         var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile);
 
         Directory.CreateDirectory(targetDirectory);
