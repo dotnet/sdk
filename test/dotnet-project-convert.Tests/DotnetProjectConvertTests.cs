@@ -532,6 +532,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                   #!  /program   x   
                     #:   sdk   TestSdk
                 #:property Name   Value   
+                #:property NugetPackageDescription "My package with spaces"
                  # :property Name Value
                 """,
             expectedProject: """
@@ -546,6 +547,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
                   <PropertyGroup>
                     <Name>Value</Name>
+                    <NugetPackageDescription>&quot;My package with spaces&quot;</NugetPackageDescription>
                   </PropertyGroup>
 
                 </Project>

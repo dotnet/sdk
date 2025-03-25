@@ -4,7 +4,6 @@
 #nullable enable
 
 using System;
-using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security;
@@ -185,7 +184,7 @@ internal sealed class VirtualProjectBuildingCommand
 
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
-            WriteProjectFile(projectFileWriter, _directives, virtualProjectFile: true, targetFilePath: _targetFilePath);
+            WriteProjectFile(projectFileWriter, _directives, isVirtualProject: true, targetFilePath: _targetFilePath);
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -198,10 +197,10 @@ internal sealed class VirtualProjectBuildingCommand
 
     public static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives)
     {
-        WriteProjectFile(writer, directives, virtualProjectFile: false, targetFilePath: null);
+        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null);
     }
 
-    private static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives, bool virtualProjectFile, string? targetFilePath)
+    private static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives, bool isVirtualProject, string? targetFilePath)
     {
         int processedDirectives = 0;
 
@@ -217,7 +216,7 @@ internal sealed class VirtualProjectBuildingCommand
             processedDirectives++;
         }
 
-        if (virtualProjectFile)
+        if (isVirtualProject)
         {
             writer.WriteLine($"""
                 <Project>
@@ -236,7 +235,7 @@ internal sealed class VirtualProjectBuildingCommand
 
         foreach (var sdk in sdkDirectives.Skip(1))
         {
-            if (virtualProjectFile)
+            if (isVirtualProject)
             {
                 writer.WriteLine($"""
                       <Import Project="Sdk.props" Sdk="{EscapeValue(sdk.ToSlashDelimitedString())}" />
@@ -273,7 +272,7 @@ internal sealed class VirtualProjectBuildingCommand
               </PropertyGroup>
             """);
 
-        if (virtualProjectFile)
+        if (isVirtualProject)
         {
             writer.WriteLine("""
 
@@ -332,7 +331,7 @@ internal sealed class VirtualProjectBuildingCommand
 
         Debug.Assert(processedDirectives + directives.OfType<CSharpDirective.Shebang>().Count() == directives.Length);
 
-        if (virtualProjectFile)
+        if (isVirtualProject)
         {
             Debug.Assert(targetFilePath is not null);
 
@@ -491,22 +490,22 @@ internal abstract class CSharpDirective
     /// </summary>
     public required TextSpan Span { get; init; }
 
-    public static CSharpDirective Parse(SourceFile sourceFile, TextSpan span, string name, string value)
+    public static CSharpDirective Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
     {
-        return name switch
+        return directiveKind switch
         {
-            "sdk" => Sdk.Parse(sourceFile, span, name, value),
-            "property" => Property.Parse(sourceFile, span, name, value),
-            "package" => Package.Parse(sourceFile, span, name, value),
-            _ => throw new GracefulException(LocalizableStrings.UnrecognizedDirective, name, sourceFile.GetLocationString(span)),
+            "sdk" => Sdk.Parse(sourceFile, span, directiveKind, directiveText),
+            "property" => Property.Parse(sourceFile, span, directiveKind, directiveText),
+            "package" => Package.Parse(sourceFile, span, directiveKind, directiveText),
+            _ => throw new GracefulException(LocalizableStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
         };
     }
 
-    private static (string, string?) ParseNameAndOptionalVersion(SourceFile sourceFile, TextSpan span, string name, string value)
+    private static (string, string?) ParseOptionalTwoParts(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
     {
-        var i = value.IndexOf(' ', StringComparison.Ordinal);
-        var firstPart = checkFirstPart(i < 0 ? value : value[..i]);
-        var secondPart = i < 0 ? [] : value.AsSpan((i + 1)..).TrimStart();
+        var i = directiveText.IndexOf(' ', StringComparison.Ordinal);
+        var firstPart = checkFirstPart(i < 0 ? directiveText : directiveText[..i]);
+        var secondPart = i < 0 ? [] : directiveText.AsSpan((i + 1)..).TrimStart();
         if (i < 0 || secondPart.IsWhiteSpace())
         {
             return (firstPart, null);
@@ -518,7 +517,7 @@ internal abstract class CSharpDirective
         {
             if (string.IsNullOrWhiteSpace(firstPart))
             {
-                throw new GracefulException(LocalizableStrings.MissingDirectiveName, name, sourceFile.GetLocationString(span));
+                throw new GracefulException(LocalizableStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
             }
 
             return firstPart;
@@ -540,9 +539,9 @@ internal abstract class CSharpDirective
         public required string Name { get; init; }
         public string? Version { get; init; }
 
-        public static new Sdk Parse(SourceFile sourceFile, TextSpan span, string name, string value)
+        public static new Sdk Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            var (sdkName, sdkVersion) = ParseNameAndOptionalVersion(sourceFile, span, name, value);
+            var (sdkName, sdkVersion) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText);
 
             return new Sdk
             {
@@ -568,9 +567,9 @@ internal abstract class CSharpDirective
         public required string Name { get; init; }
         public required string Value { get; init; }
 
-        public static new Property Parse(SourceFile sourceFile, TextSpan span, string name, string value)
+        public static new Property Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            var (propertyName, propertyValue) = ParseNameAndOptionalVersion(sourceFile, span, name, value);
+            var (propertyName, propertyValue) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText);
 
             if (propertyValue is null)
             {
@@ -605,9 +604,9 @@ internal abstract class CSharpDirective
         public required string Name { get; init; }
         public string? Version { get; init; }
 
-        public static new Package Parse(SourceFile sourceFile, TextSpan span, string name, string value)
+        public static new Package Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            var (packageName, packageVersion) = ParseNameAndOptionalVersion(sourceFile, span, name, value);
+            var (packageName, packageVersion) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText);
 
             return new Package
             {
