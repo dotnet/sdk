@@ -292,7 +292,7 @@ Options:
 
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/47859")]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenNestedDuplicateProjectIsAddedToASolutionFolder(string solutionCommand)
