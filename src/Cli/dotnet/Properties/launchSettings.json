@@ -1,9 +1,7 @@
 {
   "profiles": {
     "dotnet": {
-      "commandName": "Project",
-      "commandLineArgs": "package list --format json",
-      "workingDirectory": "N:\\trash\\p7\\p7"
+      "commandName": "Project"
     }
   }
 }
