@@ -3,7 +3,7 @@ From: "Nikola Milosavljevic (CLR) false" <nikolam@microsoft.com>
 Date: Tue, 25 Mar 2025 07:52:19 -0700
 Subject: [PATCH] Condition out the native tests in VMR
 
-Backport: https://github.com/dotnet/winforms/issues/13186
+Backport: https://github.com/dotnet/winforms/pull/13187
 ---
  src/test/unit/interop/System.Windows.Forms.Interop.Tests.csproj | 2 ++
  1 file changed, 2 insertions(+)
