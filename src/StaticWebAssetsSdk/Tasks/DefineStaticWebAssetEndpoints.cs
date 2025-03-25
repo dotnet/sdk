@@ -33,7 +33,7 @@ public class DefineStaticWebAssetEndpoints : Task
             CandidateAssets.Length,
             () => new ParallelWorker(
                 endpoints,
-                new List<StaticWebAssetEndpoint>(2048),
+                new List<StaticWebAssetEndpoint>(512),
                 CandidateAssets,
                 existingEndpointsByAssetFile,
                 Log,
@@ -98,14 +98,15 @@ public class DefineStaticWebAssetEndpoints : Task
         public TaskLoggingHelper Log { get; } = log;
         public ContentTypeProvider ContentTypeProvider { get; } = contentTypeProvider;
 
+        private readonly List<StaticWebAsset.StaticWebAssetResolvedRoute> _resolvedRoutes = new(2);
+
         private void CreateAnAddEndpoints(
-            List<StaticWebAsset.StaticWebAssetResolvedRoute> routes,
             StaticWebAsset asset,
             string length,
             string lastModified,
             StaticWebAssetGlobMatcher.MatchContext matchContext)
         {
-            foreach (var (label, route, values) in routes)
+            foreach (var (label, route, values) in _resolvedRoutes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
                 var headers = new StaticWebAssetEndpointResponseHeader[6]
@@ -215,7 +216,7 @@ public class DefineStaticWebAssetEndpoints : Task
         internal ParallelWorker Process(int i, ParallelLoopState _)
         {
             var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
-            var routes = asset.ComputeRoutes().ToList();
+            asset.ComputeRoutes(_resolvedRoutes);
             // We extract these from the metadata because we avoid the conversion to their typed version and then back to string.
             var length = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.FileLength));
             var lastWriteTime = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.LastWriteTime));
@@ -223,9 +224,9 @@ public class DefineStaticWebAssetEndpoints : Task
 
             if (ExistingEndpointsByAssetFile != null && ExistingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
             {
-                for (var j = routes.Count - 1; j >= 0; j--)
+                for (var j = _resolvedRoutes.Count - 1; j >= 0; j--)
                 {
-                    var (_, route, _) = routes[j];
+                    var (_, route, _) = _resolvedRoutes[j];
                     // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
                     // package or a referenced project and ignored if it comes from the current project.
                     // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
@@ -238,12 +239,12 @@ public class DefineStaticWebAssetEndpoints : Task
                     if (set.Contains(finalRoute))
                     {
                         Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {route}.");
-                        routes.RemoveAt(j);
+                        _resolvedRoutes.RemoveAt(j);
                     }
                 }
             }
 
-            CreateAnAddEndpoints(routes, asset, length, lastWriteTime, matchContext);
+            CreateAnAddEndpoints(asset, length, lastWriteTime, matchContext);
 
             return this;
         }
