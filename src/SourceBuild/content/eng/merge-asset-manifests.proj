@@ -21,7 +21,6 @@
     <Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests 
       AssetManifest="@(RepoAssetManifest)" 
       MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
-      VmrBuildNumber="$(BUILD_BUILDNUMBER)"
       VerticalName="$(VerticalName)" />
 
     <!-- Mark the artifact so that it gets binplaced. -->

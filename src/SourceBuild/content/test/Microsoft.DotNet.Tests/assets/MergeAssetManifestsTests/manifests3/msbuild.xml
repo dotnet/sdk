@@ -1,0 +1,39 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.Build" Version="17.15.0-preview-25168-115" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Framework" Version="17.15.0-preview-25168-115" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Localization" Version="17.15.0-preview-25168-115" NonShipping="true" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Runtime" Version="17.15.0-preview-25168-115" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Tasks.Core" Version="17.15.0-preview-25168-115" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Templates" Version="17.15.0-preview-25168-115" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.Build.Utilities.Core" Version="17.15.0-preview-25168-115" RepoOrigin="msbuild" Visibility="External" />
+  <Package Id="Microsoft.NET.StringTools" Version="17.15.0-preview-25168-115" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Build.17.15.0-preview-25168-115.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Build.Framework.17.15.0-preview-25168-115.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Build.Localization.17.15.0-preview-25168-115.symbols.nupkg" NonShipping="true" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Build.Runtime.17.15.0-preview-25168-115.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Build.Tasks.Core.17.15.0-preview-25168-115.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Build.Templates.17.15.0-preview-25168-115.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Build.Utilities.Core.17.15.0-preview-25168-115.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.NET.StringTools.17.15.0-preview-25168-115.symbols.nupkg" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build.Framework\net472\Microsoft.Build.Framework.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build.Framework\net9.0\Microsoft.Build.Framework.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build.Tasks\net472\Microsoft.Build.Tasks.Core.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build.Tasks\net9.0\Microsoft.Build.Tasks.Core.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build.Templates\net9.0\Microsoft.Build.Templates.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build.UnGAC\net45\Microsoft.Build.UnGAC.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build.Utilities\net472\Microsoft.Build.Utilities.Core.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build.Utilities\net9.0\Microsoft.Build.Utilities.Core.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build\net472\Microsoft.Build.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="Microsoft.Build\net9.0\Microsoft.Build.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="MSBuild.Bootstrap\net472\MSBuild.Bootstrap.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="MSBuild.Bootstrap\net9.0\MSBuild.Bootstrap.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="MSBuild\net472\amd64\MSBuild.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="MSBuild\net472\MSBuild.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="MSBuild\net472\x64\MSBuild.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="MSBuild\net9.0\MSBuild.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="StringTools.Benchmark\net472\StringTools.Benchmark.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="StringTools.Benchmark\net9.0\StringTools.Benchmark.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="StringTools\net472\Microsoft.NET.StringTools.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="StringTools\net9.0\Microsoft.NET.StringTools.pdb" RepoOrigin="msbuild" Visibility="External" />
+  <Pdb Id="StringTools\netstandard2.0\Microsoft.NET.StringTools.pdb" RepoOrigin="msbuild" Visibility="External" />
+</Build>

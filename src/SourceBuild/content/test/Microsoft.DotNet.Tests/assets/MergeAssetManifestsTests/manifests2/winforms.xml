@@ -1,0 +1,37 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-preview.2.25168.115" NonShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Package Id="Microsoft.Private.Winforms" Version="10.0.0-preview.2.25168.115" NonShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Package Id="System.Drawing.Common" Version="10.0.0-preview.2.25168.115" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Package Id="System.Private.Windows.Core.TestUtilities" Version="10.0.0-preview.2.25168.115" NonShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Dotnet.WinForms.ProjectTemplates.10.0.0-preview.2.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Private.Winforms.10.0.0-preview.2.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//System.Drawing.Common.10.0.0-preview.2.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//System.Private.Windows.Core.TestUtilities.10.0.0-preview.2.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="Accessibility-version\net10.0\Accessibility-version.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="Microsoft.VisualBasic.Facade\net10.0\Microsoft.VisualBasic.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="Microsoft.VisualBasic.Forms\net10.0\Microsoft.VisualBasic.Forms.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Design.Facade\net10.0\System.Design.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Drawing.Common\net10.0\System.Drawing.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Drawing.Common\net462\System.Drawing.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Drawing.Common\net8.0\System.Drawing.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Drawing.Common\net9.0\System.Drawing.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Drawing.Common\netstandard2.0\System.Drawing.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Drawing.Design.Facade\net10.0\System.Drawing.Design.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Drawing.Facade\net10.0\System.Drawing.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Private.Windows.Core\net10.0\System.Private.Windows.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Private.Windows.Core\net8.0\System.Private.Windows.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Private.Windows.Core\net9.0\System.Private.Windows.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Private.Windows.GdiPlus\net10.0\System.Private.Windows.GdiPlus.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Private.Windows.GdiPlus\net8.0\System.Private.Windows.GdiPlus.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Private.Windows.GdiPlus\net9.0\System.Private.Windows.GdiPlus.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.Analyzers.CodeFixes.CSharp\netstandard2.0\System.Windows.Forms.Analyzers.CodeFixes.CSharp.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.Analyzers.CodeFixes.VisualBasic\netstandard2.0\System.Windows.Forms.Analyzers.CodeFixes.VisualBasic.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.Analyzers.CSharp\netstandard2.0\System.Windows.Forms.Analyzers.CSharp.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.Analyzers.VisualBasic\netstandard2.0\System.Windows.Forms.Analyzers.VisualBasic.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.Analyzers\netstandard2.0\System.Windows.Forms.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.Design.Editors.Facade3x\net10.0\System.Windows.Forms.Design.Editors.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.Design\net10.0\System.Windows.Forms.Design.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.Primitives\net10.0\System.Windows.Forms.Primitives.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms.PrivateSourceGenerators\netstandard2.0\System.Windows.Forms.PrivateSourceGenerators.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Forms\net10.0\System.Windows.Forms.pdb" DotNetReleaseShipping="true" RepoOrigin="winforms" Visibility="Vertical" />
+</Build>

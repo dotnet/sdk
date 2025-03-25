@@ -19,11 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="assets\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets\**" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
-  <Target Name="SetRuntimeConfigOptions"
-          BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
+  <Target Name="SetRuntimeConfigOptions" BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
     <ItemGroup>
       <!-- General configs -->
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).LogsDirectory">

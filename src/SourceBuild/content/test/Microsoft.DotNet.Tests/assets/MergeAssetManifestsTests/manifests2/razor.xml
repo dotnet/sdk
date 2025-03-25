@@ -1,0 +1,50 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.AspNetCore.Razor.ExternalAccess.LegacyEditor" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.AspNetCore.Razor.ExternalAccess.RoslynWorkspace" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.AspNetCore.Razor.LanguageServer" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.AspNetCore.Razor.ProjectEngineHost" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.AspNetCore.Razor.Test.Common" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.AspNetCore.Razor.Utilities.Shared" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.AspNetCore.Razor.Utilities.Shared.Test" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Razor.Compiler" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Razor.Workspaces" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Remote.Razor" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Remote.Razor.CoreComponents" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.Net.Compilers.Razor.Toolset" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.DevKit.Razor" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServer.ContainedLanguage" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.Razor" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LegacyEditor.Razor" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.RazorExtension" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="Razor.Diagnostics.Analyzers.Test" Version="9.0.0-preview.25168.115" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="RazorDeployment" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="rzls.neutral" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Package Id="rzls.win-x64" Version="9.0.0-preview.25168.115" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Razor.Tooling.Internal.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Net.Compilers.Razor.Toolset.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.NET.Sdk.Razor.SourceGenerators.Transport.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.AspNetCore.Razor.ExternalAccess.LegacyEditor.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.AspNetCore.Razor.ExternalAccess.RoslynWorkspace.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.AspNetCore.Razor.LanguageServer.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.AspNetCore.Razor.ProjectEngineHost.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.AspNetCore.Razor.Test.Common.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.AspNetCore.Razor.Utilities.Shared.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.AspNetCore.Razor.Utilities.Shared.Test.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.CodeAnalysis.Razor.Compiler.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.CodeAnalysis.Razor.Workspaces.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.CodeAnalysis.Remote.Razor.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.CodeAnalysis.Remote.Razor.CoreComponents.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.VisualStudio.DevKit.Razor.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.VisualStudio.LanguageServer.ContainedLanguage.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.VisualStudio.LanguageServices.Razor.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.VisualStudio.LegacyEditor.Razor.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.VisualStudio.RazorExtension.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Razor.Diagnostics.Analyzers.Test.9.0.0-preview.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/RazorDeployment.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/rzls.neutral.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/rzls.win-x64.9.0.0-preview.25168.115.symbols.nupkg" RepoOrigin="razor" Visibility="Vertical" />
+</Build>

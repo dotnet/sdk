@@ -1,4 +1,4 @@
-﻿using Microsoft.DotNet.VersionTools.BuildManifest;
+﻿using Microsoft.DotNet.Build.Manifest;
 using NuGet.Packaging;
 using System.Collections.Immutable;
 using System.CommandLine;

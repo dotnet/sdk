@@ -1,0 +1,4 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.DotNet.Cecil" Version="0.11.5-alpha.25168.115" NonShipping="true" RepoOrigin="cecil" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Cecil.0.11.5-alpha.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="cecil" Visibility="Vertical" />
+</Build>

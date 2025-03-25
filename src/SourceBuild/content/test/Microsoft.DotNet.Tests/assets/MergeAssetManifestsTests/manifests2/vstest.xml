@@ -1,0 +1,143 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.CodeCoverage" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.TestPlatform.AdapterUtilities" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.TestPlatform.Build" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.TestPlatform.CLI" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.TestPlatform.Extensions.TrxLogger" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.TestPlatform.Internal.Uwp" Version="17.14.0-preview-25168-115" NonShipping="true" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.TestPlatform.ObjectModel" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.TestPlatform.TestHost" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Package Id="Microsoft.TestPlatform.TranslationLayer" Version="17.14.0-preview-25168-115" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.CodeCoverage.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Test.Sdk.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TestPlatform.AdapterUtilities.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TestPlatform.Build.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TestPlatform.CLI.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TestPlatform.Extensions.TrxLogger.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TestPlatform.Internal.Uwp.17.14.0-preview-25168-115.symbols.nupkg" NonShipping="true" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TestPlatform.ObjectModel.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TestPlatform.TestHost.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TestPlatform.TranslationLayer.17.14.0-preview-25168-115.symbols.nupkg" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="AttachVS\net462\AttachVS.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="AttachVS\net8.0\AttachVS.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="coverlet.collector\net48\coverlet.collector.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="coverlet.collector\net9.0\coverlet.collector.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="datacollector.arm64\net48\datacollector.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="datacollector.arm64\net8.0\datacollector.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="datacollector.arm64\net9.0\datacollector.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="datacollector\net48\datacollector.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="datacollector\net8.0\datacollector.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="datacollector\net9.0\datacollector.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="DumpMinitool.arm64\net462\DumpMinitool.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="DumpMinitool.x86\net462\DumpMinitool.x86.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="DumpMinitool\net462\DumpMinitool.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Intent.Primitives\net8.0\Intent.Primitives.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Intent\net8.0\Intent.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.CodeCoverage\net462\Microsoft.CodeCoverage.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.CodeCoverage\net8.0\Microsoft.CodeCoverage.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.CodeCoverage\netstandard2.0\Microsoft.CodeCoverage.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.NET.Test.Sdk\netstandard2.0\Microsoft.NET.Test.Sdk.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.AdapterUtilities\net462\Microsoft.TestPlatform.AdapterUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.AdapterUtilities\net8.0\Microsoft.TestPlatform.AdapterUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.AdapterUtilities\net9.0\Microsoft.TestPlatform.AdapterUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.AdapterUtilities\netstandard2.0\Microsoft.TestPlatform.AdapterUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Build\netstandard2.0\Microsoft.TestPlatform.Build.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Client\net48\Microsoft.VisualStudio.TestPlatform.Client.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Client\netstandard2.0\Microsoft.VisualStudio.TestPlatform.Client.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CLI\net462\Microsoft.TestPlatform.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CLI\net471\Microsoft.TestPlatform.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CLI\net472\Microsoft.TestPlatform.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CLI\net47\Microsoft.TestPlatform.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CLI\net481\Microsoft.TestPlatform.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CLI\net48\Microsoft.TestPlatform.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CLI\net8.0\Microsoft.TestPlatform.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CLI\net9.0\Microsoft.TestPlatform.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Common\net462\Microsoft.VisualStudio.TestPlatform.Common.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Common\netstandard2.0\Microsoft.VisualStudio.TestPlatform.Common.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CommunicationUtilities\net462\Microsoft.TestPlatform.CommunicationUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CommunicationUtilities\netstandard2.0\Microsoft.TestPlatform.CommunicationUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CoreUtilities\net462\Microsoft.TestPlatform.CoreUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CoreUtilities\net8.0\Microsoft.TestPlatform.CoreUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CoreUtilities\netstandard2.0\Microsoft.TestPlatform.CoreUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CrossPlatEngine\net462\Microsoft.TestPlatform.CrossPlatEngine.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.CrossPlatEngine\netstandard2.0\Microsoft.TestPlatform.CrossPlatEngine.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Extensions.BlameDataCollector\net48\Microsoft.TestPlatform.Extensions.BlameDataCollector.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Extensions.BlameDataCollector\netstandard2.0\Microsoft.TestPlatform.Extensions.BlameDataCollector.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Extensions.EventLogCollector\net48\Microsoft.TestPlatform.Extensions.EventLogCollector.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Extensions.HtmlLogger\net48\Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Extensions.HtmlLogger\netstandard2.0\Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Extensions.TrxLogger\net462\Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Extensions.TrxLogger\netstandard2.0\Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Internal.Uwp\netstandard2.0\Microsoft.TestPlatform.Internal.Uwp.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.ObjectModel\net462\Microsoft.VisualStudio.TestPlatform.ObjectModel.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.ObjectModel\net8.0\Microsoft.VisualStudio.TestPlatform.ObjectModel.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.ObjectModel\netstandard2.0\Microsoft.VisualStudio.TestPlatform.ObjectModel.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.PlatformAbstractions\net462\Microsoft.TestPlatform.PlatformAbstractions.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.PlatformAbstractions\net8.0\Microsoft.TestPlatform.PlatformAbstractions.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.PlatformAbstractions\netstandard2.0\Microsoft.TestPlatform.PlatformAbstractions.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Portable\net462\Microsoft.TestPlatform.Portable.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Portable\net471\Microsoft.TestPlatform.Portable.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Portable\net472\Microsoft.TestPlatform.Portable.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Portable\net47\Microsoft.TestPlatform.Portable.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Portable\net481\Microsoft.TestPlatform.Portable.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Portable\net48\Microsoft.TestPlatform.Portable.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Portable\net8.0\Microsoft.TestPlatform.Portable.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Portable\netstandard2.0\Microsoft.TestPlatform.Portable.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.TestHostProvider\net48\Microsoft.TestPlatform.TestHostRuntimeProvider.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.TestHostProvider\netstandard2.0\Microsoft.TestPlatform.TestHostRuntimeProvider.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.TestHost\net462\Microsoft.TestPlatform.TestHost.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.TestHost\net8.0\Microsoft.TestPlatform.TestHost.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.TestUtilities\net48\Microsoft.TestPlatform.TestUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.TestUtilities\net9.0\Microsoft.TestPlatform.TestUtilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Utilities\net462\Microsoft.TestPlatform.Utilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.Utilities\netstandard2.0\Microsoft.TestPlatform.Utilities.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.VsTestConsole.TranslationLayer\net462\Microsoft.TestPlatform.VsTestConsole.TranslationLayer.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform.VsTestConsole.TranslationLayer\netstandard2.0\Microsoft.TestPlatform.VsTestConsole.TranslationLayer.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform\net462\Microsoft.TestPlatform.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform\net471\Microsoft.TestPlatform.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform\net472\Microsoft.TestPlatform.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform\net47\Microsoft.TestPlatform.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform\net481\Microsoft.TestPlatform.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform\net48\Microsoft.TestPlatform.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.TestPlatform\net8.0\Microsoft.TestPlatform.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="Microsoft.VisualStudio.TestTools.TestPlatform.V2.CLI\net48\Microsoft.VisualStudio.TestTools.TestPlatform.V2.CLI.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="MSTest1\net48\MSTest1.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="MSTest1\net8.0\MSTest1.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="MSTest1\net9.0\MSTest1.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="MSTest2\net48\MSTest2.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="MSTest2\net8.0\MSTest2.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="MSTest2\net9.0\MSTest2.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="SettingsMigrator\net48\SettingsMigrator.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.arm64\net462\testhost.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.arm64\net471\testhost.net471.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.arm64\net472\testhost.net472.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.arm64\net47\testhost.net47.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.arm64\net481\testhost.net481.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.arm64\net48\testhost.net48.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.arm64\net8.0\testhost.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.x86\net462\testhost.x86.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.x86\net471\testhost.net471.x86.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.x86\net472\testhost.net472.x86.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.x86\net47\testhost.net47.x86.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.x86\net481\testhost.net481.x86.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.x86\net48\testhost.net48.x86.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost.x86\net8.0\testhost.x86.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost\net462\testhost.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost\net471\testhost.net471.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost\net472\testhost.net472.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost\net47\testhost.net47.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost\net481\testhost.net481.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost\net48\testhost.net48.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="testhost\net8.0\testhost.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="TestPlatform.Playground\net48\TestPlatform.Playground.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="TestPlatform.Playground\net8.0\TestPlatform.Playground.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="TestPlatform.Playground\net9.0\TestPlatform.Playground.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="vstest.console.arm64\net48\vstest.console.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="vstest.console.arm64\net8.0\vstest.console.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="vstest.console.arm64\net9.0\vstest.console.arm64.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="vstest.console\net48\vstest.console.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="vstest.console\net8.0\vstest.console.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="vstest.console\net9.0\vstest.console.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+  <Pdb Id="vstest.ProgrammerTests\net8.0\vstest.ProgrammerTests.pdb" RepoOrigin="vstest" Visibility="Vertical" />
+</Build>
