@@ -306,12 +306,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
     }
 
-    public static StaticWebAsset FromTaskItem(ITaskItem item)
+    public static StaticWebAsset FromTaskItem(ITaskItem item, bool validate = false)
     {
         var result = FromTaskItemCore(item);
 
         result.Normalize();
-        result.Validate();
+        if (validate)
+        {
+            result.Validate();
+        }
 
         return result;
     }
@@ -335,14 +338,20 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         {
             if (item.HasKind(assetKind))
             {
+                // The moment we find a Build or Publish asset, we start ignoring the
+                // All assets
                 ignoreAllKind = true;
 
+                // We still return multiple Build or Publish items if they are present
+                // But we won't error out if there are multiple All assets as long as there
+                // is a single Build or Publish asset present.
                 yield return item;
             }
             else if (!ignoreAllKind && item.IsBuildAndPublish())
             {
                 if (allKindAssetCandidate != null)
                 {
+                    // At this point we have more than one `All` asset, which is an error
                     yield return allKindAssetCandidate;
                     yield return item;
                     yield break;
@@ -420,29 +429,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             // from packages and other sources and the identity (which is typically
             // just the relative path from the project) is not enough to locate them.
             _originalItem = item,
-            Identity = item.GetMetadata("FullPath"),
-            SourceType = item.GetMetadata(nameof(SourceType)),
-            SourceId = item.GetMetadata(nameof(SourceId)),
-            ContentRoot = item.GetMetadata(nameof(ContentRoot)),
-            BasePath = item.GetMetadata(nameof(BasePath)),
-            RelativePath = item.GetMetadata(nameof(RelativePath)),
-            AssetKind = item.GetMetadata(nameof(AssetKind)),
-            AssetMode = item.GetMetadata(nameof(AssetMode)),
-            AssetRole = item.GetMetadata(nameof(AssetRole)),
-            AssetMergeSource = item.GetMetadata(nameof(AssetMergeSource)),
-            AssetMergeBehavior = item.GetMetadata(nameof(AssetMergeBehavior)),
-            RelatedAsset = item.GetMetadata(nameof(RelatedAsset)),
-            AssetTraitName = item.GetMetadata(nameof(AssetTraitName)),
-            AssetTraitValue = item.GetMetadata(nameof(AssetTraitValue)),
-            Fingerprint = item.GetMetadata(nameof(Fingerprint)),
-            Integrity = item.GetMetadata(nameof(Integrity)),
-            CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
-            CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
-            OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
-            FileLength = item.GetMetadata("FileLength") is string fileLengthString &&
-                long.TryParse(fileLengthString, out var fileLength) ? fileLength : -1,
-            LastWriteTime = item.GetMetadata("LastWriteTime") is string lastWriteTimeString &&
-                DateTimeOffset.TryParse(lastWriteTimeString, out var lastWriteTime) ? lastWriteTime : DateTimeOffset.MinValue
         };
     }
 
@@ -1193,6 +1179,93 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
 
         throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'.");
+    }
+
+    internal static Dictionary<string, StaticWebAsset> ToAssetDictionary(ITaskItem[] candidateAssets, bool validate = false)
+    {
+        var dictionary = new Dictionary<string, StaticWebAsset>(candidateAssets.Length);
+        for (var i = 0; i < candidateAssets.Length; i++)
+        {
+            var candidateAsset = FromTaskItem(candidateAssets[i], validate);
+            dictionary.Add(candidateAsset.Identity, candidateAsset);
+        }
+
+        return dictionary;
+    }
+
+    internal static StaticWebAsset[] FromTaskItemGroup(ITaskItem[] candidateAssets, bool validate = false)
+    {
+        var result = new StaticWebAsset[candidateAssets.Length];
+        for (var i = 0; i != result.Length; i++)
+        {
+            var candidateAsset = FromTaskItem(candidateAssets[i], validate);
+            result[i] = candidateAsset;
+        }
+        return result;
+    }
+
+    internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
+    {
+        // We return either the selected asset or a list with all the candidates that we re found to be ambiguous
+        var result = new Dictionary<string, (StaticWebAsset selected, List<StaticWebAsset> all)>();
+        for (var i = 0; i < assets.Length; i++)
+        {
+            var candidate = assets[i];
+            if (!HasSourceId(candidate, source))
+            {
+                continue;
+            }
+            if (HasOppositeKind(candidate, assetKind))
+            {
+                continue;
+            }
+            var asset = FromTaskItem(candidate);
+            var key = asset.ComputeTargetPath("", '/');
+            if (!result.TryGetValue(key, out var existing))
+            {
+                result[key] = (asset, null);
+            }
+            else
+            {
+                var (existingAsset, all) = existing;
+                if (existingAsset == null)
+                {
+                    Debug.Assert(all != null);
+                    // We are going to error out, just add to the list
+                    all.Add(asset);
+                }
+                else if (existingAsset.AssetKind == asset.AssetKind)
+                {
+                    // We have an ambiguity because there are either two Build, Publish or All assets
+                    result[key] = (null, [existingAsset, asset]);
+                }
+                else if (existingAsset.IsBuildAndPublish() && !asset.IsBuildAndPublish())
+                {
+                    // There is an All asset overriden by a Build or Publish asset.
+                    result[key] = (asset, null);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static bool HasOppositeKind(ITaskItem candidate, string assetKind)
+    {
+        var candidateKind = candidate.GetMetadata(nameof(AssetKind));
+        return candidateKind switch
+        {
+            AssetKinds.Publish => assetKind switch
+            {
+                AssetKinds.Build => true,
+                _ => false,
+            },
+            AssetKinds.Build => assetKind switch
+            {
+                AssetKinds.Publish => true,
+                _ => false,
+            },
+            _ => false
+        };
     }
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
