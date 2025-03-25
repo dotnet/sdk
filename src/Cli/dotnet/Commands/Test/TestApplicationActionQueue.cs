@@ -10,20 +10,14 @@ internal class TestApplicationActionQueue
     private readonly Channel<TestApplication> _channel;
     private readonly List<Task> _readers;
 
-    private bool _hasFailed;
-    private int? _firstExitCode;
-    private bool _allSameExitCode;
+    private int? _exitCode;
 
     private static readonly Lock _lock = new();
 
     public TestApplicationActionQueue(int degreeOfParallelism, Func<TestApplication, Task<int>> action)
     {
         _channel = Channel.CreateUnbounded<TestApplication>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
-
         _readers = [];
-        _hasFailed = false;
-        _firstExitCode = null;
-        _allSameExitCode = true;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
@@ -43,12 +37,9 @@ internal class TestApplicationActionQueue
     {
         Task.WaitAll([.. _readers]);
 
-        if (_allSameExitCode && _firstExitCode.HasValue)
-        {
-            return _firstExitCode.Value;
-        }
-
-        return _hasFailed ? ExitCode.GenericFailure : ExitCode.Success;
+        // If _exitCode is null, that means we didn't get any results.
+        // So, we exit with "zero tests".
+        return _exitCode ?? ExitCode.ZeroTests;
     }
 
     public void EnqueueCompleted()
@@ -65,18 +56,16 @@ internal class TestApplicationActionQueue
 
             lock (_lock)
             {
-                if (_firstExitCode == null)
+                if (_exitCode is null)
                 {
-                    _firstExitCode = result;
+                    // This is the first result we are getting.
+                    // So we assign the exit code.
+                    _exitCode = result;
                 }
-                else if (_firstExitCode != result)
+                else if (_exitCode.Value != result)
                 {
-                    _allSameExitCode = false;
-                }
-
-                if (result != ExitCode.Success)
-                {
-                    _hasFailed = true;
+                    // If our aggregate exitCode is different from the current result, we use the generic failure code.
+                    _exitCode = ExitCode.GenericFailure;
                 }
             }
         }
