@@ -637,6 +637,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "Specifies the output format type for the list packages command.")
                 [CompletionResult]::new('--output-version', '--output-version', [CompletionResultType]::ParameterName, "Specifies the version of machine-readable output. Requires the `'--format json`' option.")
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
+                [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Do not restore before running the command.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

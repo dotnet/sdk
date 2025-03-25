@@ -630,6 +630,7 @@ _testhost() {
                                             '--format=[Specifies the output format type for the list packages command.]: :((console\:"console" json\:"json" ))' \
                                             '--output-version=[Specifies the version of machine-readable output. Requires the '\''--format json'\'' option.]: : ' \
                                             '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
+                                            '--no-restore[Do not restore before running the command.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0

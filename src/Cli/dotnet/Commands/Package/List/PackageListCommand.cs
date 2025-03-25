@@ -6,6 +6,12 @@ using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+<<<<<<< HEAD:src/Cli/dotnet/Commands/Package/List/PackageListCommand.cs
+=======
+using Microsoft.DotNet.Tools.NuGet;
+using System.Globalization;
+using Microsoft.DotNet.Tools.MSBuild;
+>>>>>>> 27439c5902 (dotnet list package restores):src/Cli/dotnet/Commands/Package/List/ListPackageReferencesCommand.cs
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
@@ -25,7 +31,57 @@ internal class PackageListCommand(
 
     public override int Execute()
     {
-        return NuGetCommand.Run(TransformArgs());
+        string projectFile = GetProjectOrSolution();
+        bool noRestore = _parseResult.HasOption(PackageListCommandParser.NoRestore);
+        int restoreExitCode = 0;
+
+        if (!noRestore)
+        {
+            ReportOutputFormat formatOption = _parseResult.GetValue((CliOption<ReportOutputFormat>)PackageListCommandParser.FormatOption);
+            restoreExitCode = RunRestore(projectFile, formatOption);
+        }
+
+        return restoreExitCode == 0
+            ? NuGetCommand.Run(TransformArgs(projectFile))
+            : restoreExitCode;
+    }
+
+    private int RunRestore(string projectOrSolution, ReportOutputFormat formatOption)
+    {
+        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: ["-target:restore", projectOrSolution, "-noConsoleLogger"]);
+
+        int exitCode = 0;
+
+        try
+        {
+            exitCode = restoringCommand.Execute();
+        }
+        catch (Exception)
+        {
+            exitCode = 1;
+        }
+
+        if (exitCode != 0)
+        {
+            if (formatOption == ReportOutputFormat.json)
+            {
+                string jsonError =
+    "{\r\n" +
+    "   \"version\": 1,\r\n" +
+    "   \"problems\": [\r\n" +
+    "      {\r\n" +
+    $"         \"text\": \"{String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore)}\",\r\n" +
+    "         \"level\": \"error\"\r\n" +
+    "      }\r\n" +
+    "   ]\r\n" +
+    "}";
+                Console.WriteLine(jsonError);
+            }
+
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore));
+        }
+
+        return exitCode;
     }
 
     internal static void EnforceOptionRules(ParseResult parseResult)
@@ -40,7 +96,7 @@ internal class PackageListCommand(
         }
     }
 
-    private string[] TransformArgs()
+    private string[] TransformArgs(string projectOrSolution)
     {
         var args = new List<string>
         {
@@ -49,6 +105,11 @@ internal class PackageListCommand(
             GetProjectOrSolution()
         };
 
+<<<<<<< HEAD:src/Cli/dotnet/Commands/Package/List/PackageListCommand.cs
+=======
+        args.Add(projectOrSolution);
+
+>>>>>>> 27439c5902 (dotnet list package restores):src/Cli/dotnet/Commands/Package/List/ListPackageReferencesCommand.cs
         args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
 
         EnforceOptionRules(_parseResult);
