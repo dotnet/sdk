@@ -6,6 +6,8 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.NuGet;
+using System.Globalization;
+using Microsoft.DotNet.Tools.MSBuild;
 
 namespace Microsoft.DotNet.Tools.Package.List;
 
@@ -30,7 +32,57 @@ internal class ListPackageReferencesCommand : CommandBase
 
     public override int Execute()
     {
-        return NuGetCommand.Run(TransformArgs());
+        string projectFile = GetProjectOrSolution();
+        bool noRestore = _parseResult.HasOption(PackageListCommandParser.NoRestore);
+        int restoreExitCode = 0;
+
+        if (!noRestore)
+        {
+            ReportOutputFormat formatOption = _parseResult.GetValue((CliOption<ReportOutputFormat>)PackageListCommandParser.FormatOption);
+            restoreExitCode = RunRestore(projectFile, formatOption);
+        }
+
+        return restoreExitCode == 0
+            ? NuGetCommand.Run(TransformArgs(projectFile))
+            : restoreExitCode;
+    }
+
+    private int RunRestore(string projectOrSolution, ReportOutputFormat formatOption)
+    {
+        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: ["-target:restore", projectOrSolution, "-noConsoleLogger"]);
+
+        int exitCode = 0;
+
+        try
+        {
+            exitCode = restoringCommand.Execute();
+        }
+        catch (Exception)
+        {
+            exitCode = 1;
+        }
+
+        if (exitCode != 0)
+        {
+            if (formatOption == ReportOutputFormat.json)
+            {
+                string jsonError =
+    "{\r\n" +
+    "   \"version\": 1,\r\n" +
+    "   \"problems\": [\r\n" +
+    "      {\r\n" +
+    $"         \"text\": \"{String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore)}\",\r\n" +
+    "         \"level\": \"error\"\r\n" +
+    "      }\r\n" +
+    "   ]\r\n" +
+    "}";
+                Console.WriteLine(jsonError);
+            }
+
+            Console.WriteLine(String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore));
+        }
+
+        return exitCode;
     }
 
     internal static void EnforceOptionRules(ParseResult parseResult)
@@ -45,7 +97,7 @@ internal class ListPackageReferencesCommand : CommandBase
         }
     }
 
-    private string[] TransformArgs()
+    private string[] TransformArgs(string projectOrSolution)
     {
         var args = new List<string>
         {
@@ -53,7 +105,7 @@ internal class ListPackageReferencesCommand : CommandBase
             "list",
         };
 
-        args.Add(GetProjectOrSolution());
+        args.Add(projectOrSolution);
 
         args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
 
