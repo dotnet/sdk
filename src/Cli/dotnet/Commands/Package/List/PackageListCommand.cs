@@ -65,16 +65,17 @@ internal class PackageListCommand(
         {
             if (formatOption == ReportOutputFormat.json)
             {
-                string jsonError =
-    "{\r\n" +
-    "   \"version\": 1,\r\n" +
-    "   \"problems\": [\r\n" +
-    "      {\r\n" +
-    $"         \"text\": \"{String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore)}\",\r\n" +
-    "         \"level\": \"error\"\r\n" +
-    "      }\r\n" +
-    "   ]\r\n" +
-    "}";
+                string jsonError = $$"""
+{
+   "version": 1,
+   "problems": [
+      {
+         "text": "{{String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore)}}",
+         "level": "error"
+      }
+   ]
+}
+""";
                 Console.WriteLine(jsonError);
             }
             else
