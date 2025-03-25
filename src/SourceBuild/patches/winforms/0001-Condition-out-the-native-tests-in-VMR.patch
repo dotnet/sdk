@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Nikola Milosavljevic (CLR) false" <nikolam@microsoft.com>
+Date: Tue, 25 Mar 2025 07:52:19 -0700
+Subject: [PATCH] Condition out the native tests in VMR
+
+Backport: https://github.com/dotnet/winforms/issues/13186
+---
+ src/test/unit/interop/System.Windows.Forms.Interop.Tests.csproj | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/test/unit/interop/System.Windows.Forms.Interop.Tests.csproj b/src/test/unit/interop/System.Windows.Forms.Interop.Tests.csproj
+index d3fc8eb04..a46d5848e 100644
+--- a/src/test/unit/interop/System.Windows.Forms.Interop.Tests.csproj
++++ b/src/test/unit/interop/System.Windows.Forms.Interop.Tests.csproj
+@@ -6,6 +6,8 @@
+     <AssemblyName>System.Windows.Forms.Interop.Tests</AssemblyName>
+     <Platforms>x86;x64</Platforms>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
++    <!-- Native tests do not build in VMR - https://github.com/dotnet/winforms/issues/13186 -->
++    <ExcludeFromBuild Condition="'$(DotNetBuild)' == 'true'">true</ExcludeFromBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
