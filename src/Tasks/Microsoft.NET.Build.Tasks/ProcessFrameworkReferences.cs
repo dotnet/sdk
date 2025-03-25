@@ -863,6 +863,19 @@ namespace Microsoft.NET.Build.Tasks
                                 targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageId, targetIlcPackName);
                                 targetIlcPack.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
                                 TargetILCompilerPacks = new[] { targetIlcPack };
+
+                                string targetILCompilerPackPath = GetPackPath(targetIlcPackName, packVersion);
+                                if (targetILCompilerPackPath != null)
+                                {
+                                    targetIlcPack.SetMetadata(MetadataKeys.PackageDirectory, targetILCompilerPackPath);
+                                }
+                                else if (EnableRuntimePackDownload)
+                                {
+                                    // We need to download the runtime pack
+                                    var targetIlcPackToDownload = new TaskItem(targetIlcPackName);
+                                    targetIlcPackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
+                                    packagesToDownload.Add(targetIlcPackToDownload);
+                                }
                             }
                         }
 
