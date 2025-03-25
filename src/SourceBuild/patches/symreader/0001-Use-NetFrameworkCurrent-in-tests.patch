@@ -1,0 +1,39 @@
+From be7e77ec9ff663b621db24be91ac3d7f43156a66 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Mon, 24 Mar 2025 17:09:12 +0100
+Subject: [PATCH] Use NetFrameworkCurrent in tests since xunit now targets a
+ later netfx version
+
+Backport: https://github.com/dotnet/symreader/pull/338
+
+---
+ .../Microsoft.DiaSymReader.Native.UnitTests.csproj              | 2 +-
+ .../Microsoft.DiaSymReader.UnitTests.csproj                     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/Microsoft.DiaSymReader.Native.Tests/Microsoft.DiaSymReader.Native.UnitTests.csproj b/src/Microsoft.DiaSymReader.Native.Tests/Microsoft.DiaSymReader.Native.UnitTests.csproj
+index fa52c31fc1..84bb618f22 100644
+--- a/src/Microsoft.DiaSymReader.Native.Tests/Microsoft.DiaSymReader.Native.UnitTests.csproj
++++ b/src/Microsoft.DiaSymReader.Native.Tests/Microsoft.DiaSymReader.Native.UnitTests.csproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
++    <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <!-- 
+       We would need to download 32bit dotnet cli, which would add extra time to PR runs 
+diff --git a/src/Microsoft.DiaSymReader.Tests/Microsoft.DiaSymReader.UnitTests.csproj b/src/Microsoft.DiaSymReader.Tests/Microsoft.DiaSymReader.UnitTests.csproj
+index b840d2f158..cfe67e06b4 100644
+--- a/src/Microsoft.DiaSymReader.Tests/Microsoft.DiaSymReader.UnitTests.csproj
++++ b/src/Microsoft.DiaSymReader.Tests/Microsoft.DiaSymReader.UnitTests.csproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCurrent);$(NetFrameworkMinimum)</TargetFrameworks>
++    <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <!-- 
+       We would need to download 32bit dotnet cli, which would add extra time to PR runs 
