@@ -103,6 +103,8 @@ internal sealed class MSBuildHandler : IDisposable
                     string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
                 new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
 
+            _output.DisableTestRunSummary();
+
             return;
         }
 
