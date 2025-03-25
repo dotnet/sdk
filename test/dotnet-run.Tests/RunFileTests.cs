@@ -781,7 +781,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:package System.CommandLine=2.0.0-beta4.22272.1
+            #:package System.CommandLine 2.0.0-beta4.22272.1
             using System.CommandLine;
 
             var rootCommand = new RootCommand("Sample app for System.CommandLine");

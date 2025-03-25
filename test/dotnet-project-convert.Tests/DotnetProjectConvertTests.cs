@@ -323,10 +323,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #!/program
                 #:sdk Microsoft.NET.Sdk
-                #:sdk Aspire.Hosting.Sdk/9.1.0
-                #:property TargetFramework=net11.0
-                #:package System.CommandLine=2.0.0-beta4.22272.1
-                #:property LangVersion=preview
+                #:sdk Aspire.Hosting.Sdk 9.1.0
+                #:property TargetFramework net11.0
+                #:package System.CommandLine 2.0.0-beta4.22272.1
+                #:property LangVersion preview
                 Console.WriteLine();
                 """,
             expectedProject: """
@@ -363,8 +363,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                #:package MyPackage=$(MyProp)
-                #:property MyProp=MyValue
+                #:package MyPackage $(MyProp)
+                #:property MyProp MyValue
                 """,
             expectedProject: """
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -395,13 +395,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                #:property Prop1=One=a/b
-                #:property Prop2/Two/a=b
-                #:sdk First=1.0=a/b
-                #:sdk Second=2.0/a=b
-                #:sdk Third/3.0=a/b
-                #:package P1=1.0/a=b
-                #:package P2/2.0/a=b
+                #:property Prop1   One=a/b
+                #:property Prop2   Two/a=b
+                #:sdk First 1.0=a/b
+                #:sdk Second 2.0/a=b
+                #:sdk Third 3.0=a/b
+                #:package P1 1.0/a=b
+                #:package P2 2.0/a=b
                 """,
             expectedProject: """
                 <Project Sdk="First/1.0=a/b">
@@ -459,11 +459,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Theory, CombinatorialData]
     public void Directives_EmptyName(
         [CombinatorialValues("sdk", "property", "package")] string directive,
-        [CombinatorialValues("=1.0", "")] string value)
+        [CombinatorialValues(" ", "")] string value)
     {
         VerifyConversionThrows(
             inputCSharp: $"""
-                #:{directive} {value}
+                #:{directive}{value}
                 """,
             expectedWildcardPattern: $"Missing name of '{directive}' at /app/Program.cs:1.");
     }
@@ -483,7 +483,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversionThrows(
             inputCSharp: """
-                #:property Name"=Value
+                #:property Name" Value
                 """,
             expectedWildcardPattern: """
                 Invalid property name at /app/Program.cs:1. The '"' character, hexadecimal value 0x22, cannot be included in a name.
@@ -495,9 +495,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                #:property Prop=<test">
-                #:sdk <test">/="<>test
-                #:package <test">/="<>test
+                #:property Prop <test">
+                #:sdk <test"> ="<>test
+                #:package <test"> ="<>test
                 """,
             expectedProject: """
                 <Project Sdk="&lt;test&quot;&gt;/=&quot;&lt;&gt;test">
@@ -531,8 +531,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                  #  !  /test
                   #!  /program   x   
                     #:   sdk   TestSdk
-                #:property Name=   Value   
-                 # :property Name=Value
+                #:property Name   Value   
+                 # :property Name Value
                 """,
             expectedProject: """
                 <Project Sdk="TestSdk">
@@ -545,7 +545,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                   </PropertyGroup>
 
                   <PropertyGroup>
-                    <Name>   Value</Name>
+                    <Name>Value</Name>
                   </PropertyGroup>
 
                 </Project>
@@ -553,7 +553,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """,
             expectedCSharp: """
                  #  !  /test
-                 # :property Name=Value
+                 # :property Name Value
                 """);
     }
 
@@ -561,10 +561,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void Directives_Whitespace_Invalid()
     {
         VerifyConversionThrows(
-            inputCSharp: """
-                #:   property   Name   =   Value
+            inputCSharp: $"""
+                #:   property   Name{'\t'}     Value
                 """,
-            expectedWildcardPattern: "Invalid property name at /app/Program.cs:1. The ' ' character, hexadecimal value 0x20, cannot be included in a name.");
+            expectedWildcardPattern: "Invalid property name at /app/Program.cs:1. The '\t' character, hexadecimal value 0x09, cannot be included in a name.");
     }
 
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp)

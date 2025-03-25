@@ -484,8 +484,6 @@ internal static partial class Patterns
 /// </summary>
 internal abstract class CSharpDirective
 {
-    private static readonly SearchValues<char> s_separators = SearchValues.Create('/', '=');
-
     private CSharpDirective() { }
 
     /// <summary>
@@ -506,13 +504,15 @@ internal abstract class CSharpDirective
 
     private static (string, string?) ParseNameAndOptionalVersion(SourceFile sourceFile, TextSpan span, string name, string value)
     {
-        var i = value.AsSpan().IndexOfAny(s_separators);
-        if (i < 0)
+        var i = value.IndexOf(' ', StringComparison.Ordinal);
+        var firstPart = checkFirstPart(i < 0 ? value : value[..i]);
+        var secondPart = i < 0 ? [] : value.AsSpan((i + 1)..).TrimStart();
+        if (i < 0 || secondPart.IsWhiteSpace())
         {
-            return (checkFirstPart(value), null);
+            return (firstPart, null);
         }
 
-        return (checkFirstPart(value[..i]), value[(i + 1)..]);
+        return (firstPart, secondPart.ToString());
 
         string checkFirstPart(string firstPart)
         {
