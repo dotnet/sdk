@@ -27,7 +27,7 @@ public class ComputeStaticWebAssetsTargetPaths : Task
         try
         {
             Log.LogMessage(MessageImportance.Low, "Using path prefix '{0}'", PathPrefix);
-            AssetsWithTargetPath = new TaskItem[Assets.Length];
+            AssetsWithTargetPath = new ITaskItem[Assets.Length];
 
             for (var i = 0; i < Assets.Length; i++)
             {
