@@ -500,9 +500,9 @@
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="10.0.616801">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="10.0.617401">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>b0d22926bbbcbb12ac5264341ac218f0c9f01511</Sha>
+      <Sha>960dc55f53a7bc6fe355fd0a2bdc8eeaa025ab5f</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
