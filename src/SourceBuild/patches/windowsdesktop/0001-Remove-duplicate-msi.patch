@@ -1,0 +1,26 @@
+From e6a00cd5a39609d13826574d090a9eca9e40cd16 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Mon, 24 Mar 2025 17:07:32 +0100
+Subject: [PATCH] Remove duplicate .msi FileExtensionSignInfo
+
+Backport: https://github.com/dotnet/windowsdesktop/pull/4988
+
+---
+ eng/Signing.props | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 44d5a7de3..fb46b9e51 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -8,10 +8,6 @@
+                                        '$(TargetArchitecture)' != ''">false</EnableDefaultArtifacts>
+   </PropertyGroup>
+ 
+-  <ItemGroup>
+-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
+-  </ItemGroup>
+-
+   <!-- Include installers -->
+   <ItemGroup>
+     <Artifact Include="$(ArtifactsPackagesDir)**\*.zip;

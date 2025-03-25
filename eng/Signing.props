@@ -6,7 +6,6 @@
 
   <PropertyGroup>
     <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
-    <InternalCertificateId Condition="'$(InternalCertificateId)' == ''">MicrosoftDotNet500</InternalCertificateId>
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
@@ -44,10 +43,6 @@
     <FileExtensionSignInfo Include=".otf" CertificateName="None" />
     <FileExtensionSignInfo Remove=".js" />
     <FileExtensionSignInfo Include=".js" CertificateName="None" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <FileExtensionSignInfo Include=".msi" CertificateName="$(InternalCertificateId)" />
   </ItemGroup>
 
   <!--
