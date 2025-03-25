@@ -292,7 +292,7 @@ Options:
 
         }
 
-        [Theory(Skip = "Having projects with the same name in different paths is allowed.")]
+        [Theory]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenNestedDuplicateProjectIsAddedToASolutionFolder(string solutionCommand)
