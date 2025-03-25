@@ -4,43 +4,42 @@
 using Microsoft.Build.Evaluation;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Cli.Extensions
+namespace Microsoft.DotNet.Cli.Extensions;
+
+internal static class ProjectExtensions
 {
-    internal static class ProjectExtensions
+    public static IEnumerable<string> GetRuntimeIdentifiers(this Project project)
     {
-        public static IEnumerable<string> GetRuntimeIdentifiers(this Project project)
-        {
-            return project
-                .GetPropertyCommaSeparatedValues("RuntimeIdentifier")
-                .Concat(project.GetPropertyCommaSeparatedValues("RuntimeIdentifiers"))
-                .Select(value => value.ToLower())
-                .Distinct();
-        }
+        return project
+            .GetPropertyCommaSeparatedValues("RuntimeIdentifier")
+            .Concat(project.GetPropertyCommaSeparatedValues("RuntimeIdentifiers"))
+            .Select(value => value.ToLower())
+            .Distinct();
+    }
 
-        public static IEnumerable<NuGetFramework> GetTargetFrameworks(this Project project)
-        {
-            var targetFrameworksStrings = project
-                    .GetPropertyCommaSeparatedValues("TargetFramework")
-                    .Union(project.GetPropertyCommaSeparatedValues("TargetFrameworks"))
-                    .Select((value) => value.ToLower());
+    public static IEnumerable<NuGetFramework> GetTargetFrameworks(this Project project)
+    {
+        var targetFrameworksStrings = project
+                .GetPropertyCommaSeparatedValues("TargetFramework")
+                .Union(project.GetPropertyCommaSeparatedValues("TargetFrameworks"))
+                .Select((value) => value.ToLower());
 
-            var uniqueTargetFrameworkStrings = new HashSet<string>(targetFrameworksStrings);
+        var uniqueTargetFrameworkStrings = new HashSet<string>(targetFrameworksStrings);
 
-            return uniqueTargetFrameworkStrings
-                .Select((frameworkString) => NuGetFramework.Parse(frameworkString));
-        }
+        return uniqueTargetFrameworkStrings
+            .Select((frameworkString) => NuGetFramework.Parse(frameworkString));
+    }
 
-        public static IEnumerable<string> GetConfigurations(this Project project)
-        {
-            return project.GetPropertyCommaSeparatedValues("Configurations");
-        }
+    public static IEnumerable<string> GetConfigurations(this Project project)
+    {
+        return project.GetPropertyCommaSeparatedValues("Configurations");
+    }
 
-        public static IEnumerable<string> GetPropertyCommaSeparatedValues(this Project project, string propertyName)
-        {
-            return project.GetPropertyValue(propertyName)
-                .Split(';')
-                .Select((value) => value.Trim())
-                .Where((value) => !string.IsNullOrEmpty(value));
-        }
+    public static IEnumerable<string> GetPropertyCommaSeparatedValues(this Project project, string propertyName)
+    {
+        return project.GetPropertyValue(propertyName)
+            .Split(';')
+            .Select((value) => value.Trim())
+            .Where((value) => !string.IsNullOrEmpty(value));
     }
 }

@@ -8,5 +8,5 @@ if %errorlevel%==0 (
     set SkipBuildingInstallers=/p:SkipBuildingInstallers=true
     set DISABLE_CROSSGEN=true
 )
-powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -nativeToolsOnMachine -msbuildEngine dotnet %SkipBuildingInstallers% %*"
+powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -msbuildEngine dotnet %SkipBuildingInstallers% %*"
 exit /b %ErrorLevel%

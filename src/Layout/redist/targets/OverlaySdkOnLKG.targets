@@ -1,10 +1,6 @@
 <Project>
 
   <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateLayout">
-    <PropertyGroup>
-      <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
-    </PropertyGroup>
-
     <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
     and a property. -->
     <Exec Command="$(DotnetTool) --version" ConsoleToMsbuild="true">
@@ -55,10 +51,6 @@
     <Copy SourceFiles="@(OverlaySDK)"
           DestinationFiles="@(OverlaySDK->'$(RedistLayoutPath)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>
-
-    <PropertyGroup>
-      <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)</SdkOutputDirectory>
-    </PropertyGroup>
 
     <Copy SourceFiles="@(OverlaySdkFilesFromStage0)"
           DestinationFiles="@(OverlaySdkFilesFromStage0->'$(SdkOutputDirectory)\%(RelativeDestination)\%(RecursiveDir)%(Filename)%(Extension)')"/>

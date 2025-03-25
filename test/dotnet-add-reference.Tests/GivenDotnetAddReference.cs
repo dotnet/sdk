@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using Microsoft.DotNet.Cli.CommandLineValidation;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Add.Reference.Tests
@@ -68,7 +63,7 @@ Commands:
             return new ProjDir(_testAssetsManager.CreateTestDirectory(testName: callingMethod, identifier: identifier).Path);
         }
 
-        private ProjDir NewLib(string dir = null, [System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
+        private ProjDir NewLib(string? dir = null, [System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
         {
             var projDir = dir == null ? NewDir(callingMethod: callingMethod, identifier: identifier) : new ProjDir(dir);
 
@@ -95,7 +90,7 @@ Commands:
             csproj.Save();
         }
 
-        private ProjDir NewLibWithFrameworks(string dir = null, [System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
+        private ProjDir NewLibWithFrameworks(string? dir = null, [System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(NewDir), string identifier = "")
         {
             var ret = NewLib(dir, callingMethod: callingMethod, identifier: identifier);
             SetTargetFrameworks(ret, DefaultFrameworks);
@@ -122,8 +117,8 @@ Commands:
             var cmd = new DotnetCommand(Log, "add", "one", "two", "three", "reference")
                     .Execute("proj.csproj");
             cmd.ExitCode.Should().NotBe(0);
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(LocalizableStrings.UnrecognizedCommandOrArgument, "two")}
-{string.Format(LocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "two")}
+{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
         [Theory]
@@ -711,7 +706,7 @@ Commands:
 
             var result = new DotnetCommand(Log, "add", lib.CsProjPath, "reference")
                     .WithWorkingDirectory(setup.TestRoot)
-                    .Execute(Path.GetDirectoryName(setup.ValidRefCsprojPath));
+                    .Execute(Path.GetDirectoryName(setup.ValidRefCsprojPath) ?? string.Empty);
 
             result.Should().Pass();
             result.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj"));

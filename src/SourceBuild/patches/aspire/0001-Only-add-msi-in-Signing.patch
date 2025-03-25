@@ -1,0 +1,25 @@
+From 19613e59556056f1f2c7326e48210991b58061e7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Mon, 24 Mar 2025 17:12:26 +0100
+Subject: [PATCH] Only add .msi in Signing.props when missing
+
+Backport: https://github.com/dotnet/aspire/pull/8272
+---
+ eng/Signing.props | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 3b4b6c2ee4..1d50eda172 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -3,7 +3,9 @@
+   <ItemGroup>
+     <FileExtensionSignInfo Update=".nupkg" CertificateName="NuGet" />
+     <FileExtensionSignInfo Update=".zip" CertificateName="None" />
+-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
++
++    <!-- add missing entry for .msi, this can be removed once aspire uses arcade 10.0 -->
++    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" Condition="!@(FileExtensionSignInfo->AnyHaveMetadataValue('Identity', '.msi'))" />
+   </ItemGroup>
+ 
+   <ItemGroup>

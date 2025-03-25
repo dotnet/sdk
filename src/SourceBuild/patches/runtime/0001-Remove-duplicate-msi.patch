@@ -1,0 +1,24 @@
+From 16440d517a611da20179e62aedaf5d269851d7a2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Mon, 24 Mar 2025 17:23:00 +0100
+Subject: [PATCH] Remove duplicate .msi FileExtensionSignInfo
+
+Backport: https://github.com/dotnet/runtime/pull/113592
+
+---
+ eng/Signing.props | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 0623aaa1c18cc1..d06028e5d5e24b 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -56,8 +56,6 @@
+     <FileSignInfo Include="Mono.Cecil.Mdb.dll" CertificateName="3PartySHA2" />
+     <FileSignInfo Include="Mono.Cecil.Pdb.dll" CertificateName="3PartySHA2" />
+     <FileSignInfo Include="Mono.Cecil.Rocks.dll" CertificateName="3PartySHA2" />
+-
+-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
+   </ItemGroup>
+ 
+   <!--
