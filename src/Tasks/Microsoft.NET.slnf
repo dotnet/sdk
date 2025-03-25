@@ -6,7 +6,7 @@
       "src\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
       "src\\Cli\\Microsoft.DotNet.Configurer\\Microsoft.DotNet.Configurer.csproj",
       "src\\Cli\\Microsoft.DotNet.InternalAbstractions\\Microsoft.DotNet.InternalAbstractions.csproj",
-      "src\\Cli\\Microsoft.DotNet.Cli\\Microsoft.DotNet.Cli.csproj",
+      "src\\Cli\\dotnet\\dotnet.csproj",
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompat.Shared\\Microsoft.DotNet.ApiCompat.Shared.shproj",
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompat.Task\\Microsoft.DotNet.ApiCompat.Task.csproj",
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompat.Tool\\Microsoft.DotNet.ApiCompat.Tool.csproj",
