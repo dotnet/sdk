@@ -44,7 +44,8 @@ public class GenerateStaticWebAssetsManifest : Task
     {
         try
         {
-            var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem).ToArray();
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets, validate: true);
+            Array.Sort(assets, (l, r) => string.CompareOrdinal(l.Identity, r.Identity));
 
             var endpoints = FilterPublishEndpointsIfNeeded(assets)
                 .OrderBy(a => a.Route)

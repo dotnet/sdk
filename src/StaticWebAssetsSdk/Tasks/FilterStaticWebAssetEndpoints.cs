@@ -32,7 +32,7 @@ public class FilterStaticWebAssetEndpoints : Task
     public override bool Execute()
     {
         var filterCriteria = (Filters ?? []).Select(FilterCriteria.FromTaskItem).ToArray();
-        var assetFiles = (Assets ?? []).ToDictionary(a => a.ItemSpec, StaticWebAsset.FromTaskItem);
+        var assetFiles = Assets != null ? StaticWebAsset.ToAssetDictionary(Assets) : [];
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints ?? []);
         var endpointFoundMatchingAsset = new Dictionary<string, StaticWebAsset>();
 
