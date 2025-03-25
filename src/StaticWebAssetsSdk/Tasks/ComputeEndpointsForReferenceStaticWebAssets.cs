@@ -43,8 +43,9 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
                 {
                     candidateEndpoint.Route = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, candidateEndpoint.Route, '/');
 
-                    foreach (var property in candidateEndpoint.EndpointProperties)
+                    for (var i = 0; i < candidateEndpoint.EndpointProperties.Length; i++)
                     {
+                        ref var property = ref candidateEndpoint.EndpointProperties[i];
                         if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
                         {
                             property.Value = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, property.Value, '/');

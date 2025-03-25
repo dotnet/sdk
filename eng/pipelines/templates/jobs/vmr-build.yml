@@ -46,7 +46,7 @@ parameters:
 - name: sign
   displayName: True when build output should be signed (includes dry runs)
   type: boolean
-  default: true
+  default: false
 
 - name: signDac
   displayName: True when the diagnostic files should be signed
@@ -138,13 +138,6 @@ jobs:
         image: ${{ parameters.container.image }}
         options: $(defaultContainerOptions)
 
-  # Currently, CodeQL slows the build down too much
-  # https://github.com/dotnet/source-build/issues/4276
-  ${{ if and(parameters.isBuiltFromVmr, startswith(parameters.buildName, 'Windows'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
-    timeoutInMinutes: 720
-  ${{ else }}:
-    timeoutInMinutes: 240
-
   ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
     ${{ if eq(parameters.buildPass, '') }}:
       # For PR builds, skip the stage 2 build if the stage 1 build fails.
@@ -206,51 +199,87 @@ jobs:
   # Build up the command line variables. We avoid doing this in the script sections below
   # because AzDO will not echo command lines if they are more than a single line.
 
-  ## Build command line - Windows
-  - ${{ if eq(parameters.targetOS, 'windows') }}:
-    ## Basic arguments
-    - name: baseArguments
-      value: -ci -cleanWhileBuilding -prepareMachine -c ${{ parameters.configuration }} $(officialBuildParameter) /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+  ## Build command line
 
-    - name: targetArguments
+  ### Command line prefix
+  - name: commandPrefix
+    ${{ if eq(parameters.targetOS, 'windows') }}:
+      value: '-'
+    ${{ else }}:
+      value: '--'
+
+  ### Basic arguments
+  - name: cleanArgument
+    ${{ if eq(parameters.targetOS, 'windows') }}:
+      value: cleanWhileBuilding
+    ${{ else }}:
+      value: clean-while-building
+
+  - name: baseArguments
+    value: $(commandPrefix)ci $(commandPrefix)$(cleanArgument) $(commandPrefix)prepareMachine -c ${{ parameters.configuration }}
+
+  - name: baseProperties
+    value: $(officialBuildParameter) /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+
+  - name: targetProperties
+    ${{ if and(ne(parameters.targetOS, ''), ne(parameters.targetArchitecture, '')) }}:
       value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+    ${{ elseif ne(parameters.targetOS, '') }}:
+      value: /p:TargetOS=${{ parameters.targetOS }}
+    ${{ else }}:
+      value: /p:TargetArchitecture=${{ parameters.targetArchitecture }}
 
-    ### Signing variables
-    - ${{ if eq(parameters.sign, 'True') }}:
-      - name: _SignDiagnosticFilesArgs
+  ### Signing
+  - name: _SignDiagnosticFilesArgs
+    value: ''
+  - ${{ if eq(parameters.sign, 'True') }}:
+    - name: signArguments
+      value: $(commandPrefix)sign
+    - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+      # The _SignType variable is used by microbuild installation
+      - name: _SignType
         value: ''
-      - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-        # The _SignType variable is used by microbuild installation
-        - name: _SignType
-          value: ''
-        - name: signArguments
-          value: -sign /p:ForceDryRunSigning=true
-      - ${{ else }}:
-        - name: _SignType
-          value: real
-        - name: signArguments
-          value: -sign /p:DotNetSignType=real /p:TeamName=$(_TeamName)
+      - name: signProperties
+        value: /p:ForceDryRunSigning=true
     - ${{ else }}:
-      - name: signArguments
-        value: ''
-      - name: _SignDiagnosticFilesArgs
-        value: ''
+      - name: _SignType
+        value: real
+      - name: signProperties
+        value: /p:DotNetSignType=real /p:TeamName=$(_TeamName)
+  - ${{ else }}:
+    - name: signArguments
+      value: ''
+    - name: signProperties
+      value: ''
+    - name: _SignType
+      value: ''
 
-    ### Build Pass
-    - ${{ if ne(parameters.buildPass, '') }}:
-      - name: buildPassArguments
-        value: /p:DotNetBuildPass=${{ parameters.buildPass }}
-    - ${{ else }}:
-      - name: buildPassArguments
-        value: ''
+  ### Build Pass
+  - ${{ if ne(parameters.buildPass, '') }}:
+    - name: buildPassProperties
+      value: /p:DotNetBuildPass=${{ parameters.buildPass }}
+  - ${{ else }}:
+    - name: buildPassProperties
+      value: ''
 
-    ### Additional arguments
-    - ${{ if eq(parameters.enableIBCOptimization, 'true') }}:
-      - name: ibcArguments
-        value: '/p:EnableIBCOptimization=true /p:IBCDropAccessToken=$(dn-bot-devdiv-drop-r-code-r)'
-    - ${{ else }}:
-      - name: ibcArguments
-        value: ''
+  ### Additional properties
+  - ${{ if eq(parameters.enableIBCOptimization, 'true') }}:
+    - name: ibcProperties
+      value: '/p:EnableIBCOptimization=true /p:IBCDropAccessToken=$(dn-bot-devdiv-drop-r-code-r)'
+  - ${{ else }}:
+    - name: ibcProperties
+      value: ''
+
+  # Timeout
+  ## Real signing takes a while - increase the timeout to allow for that
+  ${{ if eq(variables['_SignType'], 'real') }}:
+    timeoutInMinutes: 720
+  ## Currently, CodeQL slows the build down too much
+  ## https://github.com/dotnet/source-build/issues/4276
+  ${{ elseif and(parameters.isBuiltFromVmr, startswith(parameters.buildName, 'Windows'), eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    timeoutInMinutes: 720
+  ${{ else }}:
+    timeoutInMinutes: 240
 
   templateContext:
     outputParentDirectory: $(Build.ArtifactStagingDirectory)
@@ -402,10 +431,12 @@ jobs:
 
     - script: build.cmd
         $(baseArguments)
-        $(targetArguments)
         $(signArguments)
-        $(buildPassArguments)
-        $(ibcArguments)
+        $(baseProperties)
+        $(targetProperties)
+        $(signProperties)
+        $(buildPassProperties)
+        $(ibcProperties)
         $(_SignDiagnosticFilesArgs)
         ${{ parameters.extraProperties }}
       displayName: Build
@@ -421,8 +452,8 @@ jobs:
     - ${{ if eq(parameters.runTests, 'True') }}:
       - script: build.cmd
           $(baseArguments)
-          $(targetArguments)
-          $(buildPassArguments)
+          $(targetProperties)
+          $(buildPassProperties)
           ${{ parameters.extraProperties }}
           -test
           -excludeCIBinarylog
@@ -476,7 +507,8 @@ jobs:
 
         customEnvVars=""
         customPreBuildArgs=""
-        customBuildArgs="--ci --clean-while-building --prepareMachine -c ${{ parameters.configuration }} $(officialBuildParameter)"
+        customBuildArgs="$(baseArguments) $(signArguments) $(_SignDiagnosticFilesArgs)"
+        extraBuildProperties="$(baseProperties) $(targetProperties) $(signProperties) $(buildPassProperties) ${{ parameters.extraProperties }}"
 
         if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --online"
@@ -502,16 +534,6 @@ jobs:
           customBuildArgs="$customBuildArgs --use-mono-runtime"
         fi
 
-        if [[ '${{ parameters.sign }}' == 'True' ]] && [[ '${{ parameters.buildSourceOnly }}' != 'True' ]]; then
-          customBuildArgs="$customBuildArgs --sign"
-          if [[ '$(_SignType)' == 'real' ]] || [[ '$(_SignType)' == 'test' ]]; then
-            # Force dry run signing until https://github.com/dotnet/source-build/issues/4793 is resolved - https://github.com/dotnet/source-build/issues/4678
-            extraBuildProperties="$extraBuildProperties /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName) /p:ForceDryRunSigning=true"
-          else
-            extraBuildProperties="$extraBuildProperties /p:ForceDryRunSigning=true"
-          fi
-        fi
-
         if [[ -n "${{ parameters.targetRid }}" ]]; then
           customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
         fi
@@ -523,26 +545,8 @@ jobs:
           fi
         fi
 
-        if [[ ! -z '${{ parameters.targetOS }}' ]]; then
-          extraBuildProperties="$extraBuildProperties /p:TargetOS=${{ parameters.targetOS }}"
-        fi
-
-        if [[ ! -z '${{ parameters.targetArchitecture }}' ]]; then
-          extraBuildProperties="$extraBuildProperties /p:TargetArchitecture=${{ parameters.targetArchitecture }}"
-        fi
-
-        if [[ -n "${{ parameters.buildPass }}" ]]; then
-          extraBuildProperties="$extraBuildProperties /p:DotNetBuildPass=${{ parameters.buildPass }}"
-        fi
-
-        if [[ -n "${{ parameters.extraProperties }}" ]]; then
-          extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
-        fi
-
-        extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
-        extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
-
         buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
+        buildArgs=$(echo $buildArgs | xargs) # Remove extra spaces
 
         for envVar in $customEnvVars; do
           customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
@@ -580,20 +584,11 @@ jobs:
           set -ex
 
           customPreBuildArgs=''
-          customBuildArgs=''
-          extraBuildProperties=''
-          customBuildArgs="--ci --prepareMachine -c ${{ parameters.configuration }} $(officialBuildParameter)"
+          customBuildArgs="--test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $(baseArguments)"
+          extraBuildProperties="$(baseProperties) $(targetProperties) ${{ parameters.extraProperties }}"
 
           if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
             customPreBuildArgs="$customPreBuildArgs sudo"
-          fi
-
-          if [[ ! -z '${{ parameters.targetOS }}' ]]; then
-            extraBuildProperties="$extraBuildProperties /p:TargetOS=${{ parameters.targetOS }}"
-          fi
-
-          if [[ ! -z '${{ parameters.targetArchitecture }}' ]]; then
-            extraBuildProperties="$extraBuildProperties /p:TargetArchitecture=${{ parameters.targetArchitecture }}"
           fi
 
           if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
@@ -607,15 +602,11 @@ jobs:
             customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
           fi
 
-          extraBuildProperties="$extraBuildProperties /p:VerticalName=$(Agent.JobName)"
-          extraBuildProperties="$extraBuildProperties /p:ArtifactsStagingDir=$(artifactsStagingDir)"
-
-          if [[ -n "${{ parameters.extraProperties }}" ]]; then
-            extraBuildProperties="$extraBuildProperties ${{ parameters.extraProperties }}"
-          fi
+          buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
+          buildArgs=$(echo $buildArgs | xargs) # Remove extra spaces
 
           cd $(sourcesPath)
-          $customPreBuildArgs ./build.sh --test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $customBuildArgs $extraBuildProperties $(additionalBuildArgs)
+          $customPreBuildArgs ./build.sh $buildArgs
 
         displayName: Run Tests
         timeoutInMinutes: ${{ variables.runTestsTimeout }}
